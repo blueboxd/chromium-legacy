@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">நேரடி இணைய இணைப்பு</translation>
 <translation id="1272293450992660632">'பின்' பொருந்தவில்லை.</translation>
 <translation id="1280820357415527819">மொபைல் நெட்வொர்க்குகளைத் தேடுகிறது</translation>
-<translation id="1291603679744561561">சிம் பூட்டப்பட்டுள்ளது</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google இயக்ககம் இப்போது கிடைக்கவில்லை. Google இயக்ககம் இணைப்பு கிடைத்தவுடன் பதிவேற்றம் தானாகவே மறுதொடக்கம் செய்யப்படும்.</translation>
 <translation id="1307931752636661898">Linux ஃபைல்களைப் பார்க்க முடியவில்லை</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Parallels Desktopபிற்குள் ஃபைல்களை இழுத்து விட, அவற்றை ’Windows ஃபைல்கள் ’ ஃபோல்டருக்கு நகர்த்த வேண்டும்.</translation>
 <translation id="1435838927755162558">Parallels Desktop மூலம் ஃபோல்டரைப் பகிருங்கள்</translation>
 <translation id="1439919885608649279">பூக்களுடன் இருக்கும் நபர்</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> ஐ வெளியேற்று</translation>
 <translation id="1471718551822868769">ஸ்லோவாக்</translation>
 <translation id="1482884275703521657">ஃபின்னிஷ்</translation>
 <translation id="148466539719134488">சுவிஸ்</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Bruschetta உடன் 1 ஃபோல்டர் பகிரப்பட்டது</translation>
 <translation id="2578394532502990878">தமிழ் ஒலிப்புமுறை</translation>
 <translation id="2579959351793446050">ஒடியா</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> ஒத்திசைக்கத் தயாராகிறது...</translation>
 <translation id="2602810353103180630">நெட்வொர்க் <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை <ph name="SIGNAL_STRENGTH" />%, உங்கள் நிர்வாகி தடுத்துள்ளார், விவரங்கள்</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> வீடியோ</translation>
 <translation id="2620090360073999360">இந்த நேரத்தில் Google இயக்ககத்தை அடைய முடியாது.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">மங்கோலியன்</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> பிழைகள்.</translation>
 <translation id="3509680540198371098">நெட்வொர்க்: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, சிக்னல் வலிமை: <ph name="SIGNAL_STRENGTH" />%, விவரங்கள்</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> ஆவணங்களை ஒத்திசைக்கத் தயாராகிறது...</translation>
 <translation id="3522708245912499433">போர்ச்சுகீஸ்</translation>
 <translation id="3524311639100184459">எச்சரிக்கை: இந்த ஃபைல்கள் தற்காலிகமானவை, டிஸ்க்கில் இடத்தைக் காலியாக்கும் வகையில் இவை தானாகவே நீக்கப்படலாம்.  <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ஃபோல்டர்</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">ஒட்டு</translation>
 <translation id="3952872973865944257">தெலுங்கு ஒலிப்புமுறை</translation>
+<translation id="3954354850384043518">பதிவிறக்குகிறது</translation>
 <translation id="3958548648197196644">கிவி</translation>
 <translation id="3971140002794351170">இந்த மொபைல் சுயவிவரத்தைப் பதிவிறக்கும்: நெட்வொர்க் <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ஆங்கிலம் (யுகே)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">பிரத்தியேகப் பெயர் சேவையகங்கள்</translation>
 <translation id="4465725236958772856">நெட்வொர்க்: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, உங்கள் நிர்வாகி நிர்வகிக்கிறார், இணை</translation>
 <translation id="4470564870223067757">ஹாங்குல் 2 செட்</translation>
+<translation id="4474142134969976028">பொருந்தும் முடிவுகள் இல்லை</translation>
 <translation id="4477002475007461989">ரொமானியன்</translation>
 <translation id="4477219268485577442">பல்கேரியன் ஒலிப்புமுறை</translation>
 <translation id="4508265954913339219">செயலாக்கம் தோல்வியுற்றது</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> அல்லது அதற்குக் குறைவான எழுத்துக்குறிகள் உள்ள பெயரைப் பயன்படுத்தவும்</translation>
 <translation id="4973970068702235170">ஜிப் செய்ய முடியவில்லை, எதிர்பாராத பிழை: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ஜாப்பனீஸ்</translation>
+<translation id="4987699874727873250">ஆங்கிலம் (இந்தியா)</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />"ஐ நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
 <translation id="498902553138568924">சிவப்புப் பட்டாம்பூச்சி</translation>
 <translation id="4992066212339426712">ஒலி இயக்கு</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">சமீபத்திய படங்கள் எதுவும் இல்லை</translation>
 <translation id="7460898608667578234">உக்ரைனியன்</translation>
 <translation id="7469894403370665791">இந்த நெட்வொர்க்குடன் தானாகவே இணைக்கவும்</translation>
+<translation id="7481358317100446445">தயார்</translation>
 <translation id="7486315294984620427">Parallels Desktopபிற்குள் ஃபைல்களை இழுத்து விட, அவற்றை ’Windows ஃபைல்கள் ’ ஃபோல்டருக்கு நகலெடுக்க வேண்டும்.</translation>
 <translation id="749452993132003881">ஹிரகனா</translation>
 <translation id="7495372004724182530">மலையாள ஒலிப்புமுறை</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Google Photosஸை எளிதாக அணுகுங்கள்</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7663224033570512922">இந்தி</translation>
+<translation id="7665680517722058469">வேறு வகையில் தேடவும்</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> ஃபைல்கள் 'நீக்கியவை' ஃபோல்டருக்கு நகர்த்தப்பட்டன</translation>
 <translation id="7693909743393669729">டிரைவை ஃபார்மேட் செய்தால் அதிலுள்ள தரவுகள் அனைத்தும் அழிக்கப்படும். அத்துடன் காட்டப்படாத பார்ட்டிஷன்கள் உட்பட அதிலுள்ள அனைத்துப் பார்ட்டிஷன்களும் அகற்றப்படும். இதைச் செயல்தவிர்க்க முடியாது.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ஐ ஃபார்மேட் செய்ய முடியவில்லை</translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">அரபிக் ஒலிபெயர்ப்பு</translation>
 <translation id="8873014196523807561">இவற்றை மீட்டெடுக்க புதிய ஃபோல்டருக்கு இழுத்து விடவும். இவற்றில் சிலவற்றின் அசல் ஃபோல்டர்கள் நீக்கப்பட்டுள்ளன.</translation>
 <translation id="8874184842967597500">இணைக்கப்படவில்லை</translation>
+<translation id="8876368061475701452">வரிசைப்படுத்தப்பட்டது</translation>
 <translation id="8900820606136623064">ஹங்கேரியன்</translation>
 <translation id="8903931173357132290">பட்டப் படிப்பு</translation>
 <translation id="8912078710089354287">வாலாட்டும் நாய்</translation>

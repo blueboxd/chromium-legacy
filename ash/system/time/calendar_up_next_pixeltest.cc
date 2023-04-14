@@ -12,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/pixel/ash_pixel_differ.h"
 #include "ash/test/pixel/ash_pixel_test_init_params.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 
@@ -22,12 +23,13 @@ std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
     const base::Time start_time,
     const base::Time end_time,
     const char* summary = "Event with long name that should ellipsis",
-    bool all_day_event = false) {
+    bool all_day_event = false,
+    const std::string hangout_link = "") {
   return calendar_test_utils::CreateEvent(
       "id_0", summary, start_time, end_time,
       google_apis::calendar::CalendarEvent::EventStatus::kConfirmed,
       google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted,
-      all_day_event);
+      all_day_event, hangout_link);
 }
 
 }  // namespace
@@ -38,6 +40,9 @@ class CalendarUpNextViewPixelTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitWithFeatures(
+        {features::kJelly, features::kCalendarJelly}, {});
     AshTestBase::SetUp();
 
     controller_ = std::make_unique<CalendarViewController>();
@@ -104,6 +109,7 @@ class CalendarUpNextViewPixelTest : public AshTestBase {
   std::unique_ptr<views::Widget> widget_;
   CalendarUpNextView* up_next_view_ = nullptr;
   std::unique_ptr<CalendarViewController> controller_;
+  std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
 };
 
 TEST_F(CalendarUpNextViewPixelTest,
@@ -177,6 +183,28 @@ TEST_F(
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "calendar_up_next_multiple_upcoming_events_press_scroll_right_button",
+      /*revision_number=*/0, Widget()));
+}
+
+TEST_F(CalendarUpNextViewPixelTest, ShouldShowJoinMeetingButton) {
+  // Set time override.
+  base::subtle::ScopedTimeClockOverrides time_override(
+      []() { return base::subtle::TimeNowIgnoringOverride().LocalMidnight(); },
+      nullptr, nullptr);
+
+  // Add an upcoming event with a hangout_link.
+  std::list<std::unique_ptr<google_apis::calendar::CalendarEvent>> events;
+  auto start_time = base::subtle::TimeNowIgnoringOverride().LocalMidnight() +
+                    base::Minutes(10);
+  auto end_time =
+      base::subtle::TimeNowIgnoringOverride().LocalMidnight() + base::Hours(1);
+  events.push_back(CreateEvent(start_time, end_time, "First event", false,
+                               "https://meet.google.com/abc-123"));
+
+  CreateCalendarUpNextView(std::move(events));
+
+  EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
+      "calendar_up_next_join_button",
       /*revision_number=*/0, Widget()));
 }
 

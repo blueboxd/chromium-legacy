@@ -90,8 +90,7 @@ class UpdateServiceInternalQualifyingImpl : public UpdateServiceInternal {
 
   void RegisterQualificationAppDone(base::OnceCallback<void(bool)> callback,
                                     int result) {
-    if (result != kRegistrationSuccess &&
-        result != kRegistrationAlreadyRegistered) {
+    if (result != kRegistrationSuccess) {
       VLOG(1) << "Registration failed: " << result;
       std::move(callback).Run(false);
       return;
@@ -109,7 +108,7 @@ class UpdateServiceInternalQualifyingImpl : public UpdateServiceInternal {
                        kQualificationAppId, "",
                        UpdateService::Priority::kBackground,
                        UpdateService::PolicySameVersionUpdate::kNotAllowed,
-                       base::DoNothing()))
+                       /*do_update_check_only=*/false, base::DoNothing()))
         ->Run(base::BindOnce(
             &UpdateServiceInternalQualifyingImpl::UpdateCheckDone, this,
             std::move(callback)));

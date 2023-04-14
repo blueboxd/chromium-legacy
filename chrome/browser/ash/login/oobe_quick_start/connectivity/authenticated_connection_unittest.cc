@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/authenticated_connection.h"
 
 #include "base/base64.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_reader.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
@@ -31,6 +32,8 @@ const char kCtapRequestType[] = "webauthn.get";
 
 const std::vector<uint8_t> kTestBytes = {0x00, 0x01, 0x02};
 const std::vector<uint8_t> kExpectedGetInfoRequest = {0x04};
+
+const char kNotifySourceOfUpdateMessageKey[] = "isForcedUpdateRequired";
 }  // namespace
 
 class AuthenticatedConnectionTest : public testing::Test {
@@ -74,7 +77,7 @@ TEST_F(AuthenticatedConnectionTest, RequestAccountTransferAssertion) {
   // Start the Quick Start account transfer flow by initially sending
   // BootstrapOptions.
   authenticated_connection_->RequestAccountTransferAssertion(
-      kChallengeBase64Url);
+      kChallengeBase64Url, base::DoNothing());
   std::vector<uint8_t> bootstrap_options_data =
       fake_nearby_connection_->GetWrittenData();
   std::string bootstrap_options_string(bootstrap_options_data.begin(),
@@ -196,6 +199,21 @@ TEST_F(AuthenticatedConnectionTest, CBOREncodeGetAssertionRequest) {
   const cbor::Value::MapValue& cbor_map = cbor->GetMap();
   // CBOR Index 0x01 stores the relying_party_id for the GetAssertionRequest.
   EXPECT_EQ(cbor_map.find(cbor::Value(0x01))->second.GetString(), "google.com");
+}
+
+TEST_F(AuthenticatedConnectionTest, NotifySourceOfUpdate) {
+  authenticated_connection_->NotifySourceOfUpdate();
+
+  std::vector<uint8_t> written_payload =
+      fake_nearby_connection_->GetWrittenData();
+  std::string written_payload_string(written_payload.begin(),
+                                     written_payload.end());
+  absl::optional<base::Value> parsed_json =
+      base::JSONReader::Read(written_payload_string);
+  ASSERT_TRUE(parsed_json);
+  ASSERT_TRUE(parsed_json->is_dict());
+  base::Value::Dict& parsed_json_dict = parsed_json.value().GetDict();
+  EXPECT_EQ(*parsed_json_dict.FindBool(kNotifySourceOfUpdateMessageKey), true);
 }
 
 }  // namespace ash::quick_start

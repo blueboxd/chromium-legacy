@@ -195,6 +195,11 @@ void ThreadControllerWithMessagePumpImpl::ScheduleWork() {
   base::internal::CheckedLock::AssertNoLockHeldOnCurrentThread();
   if (work_deduplicator_.OnWorkRequested() ==
       ShouldScheduleWork::kScheduleImmediate) {
+    if (!associated_thread_->IsBoundToCurrentThread()) {
+      run_level_tracker_.RecordScheduleWork();
+    } else {
+      TRACE_EVENT_INSTANT("wakeup.flow", "ScheduleWorkToSelf");
+    }
     pump_->ScheduleWork();
   }
 }
@@ -484,14 +489,14 @@ WorkDetails ThreadControllerWithMessagePumpImpl::DoWorkImpl(
 
       // Note: all arguments after task are just passed to a TRACE_EVENT for
       // logging so lambda captures are safe as lambda is executed inline.
+      SequencedTaskSource* source = main_thread_only().task_source;
       task_annotator_.RunTask(
           "ThreadControllerImpl::RunTask", *selected_task->task,
-          [&selected_task](perfetto::EventContext& ctx) {
+          [&selected_task, &source](perfetto::EventContext& ctx) {
             if (selected_task->task_execution_trace_logger)
               selected_task->task_execution_trace_logger.Run(
                   ctx, *selected_task->task);
-            SequenceManagerImpl::MaybeEmitTaskDetails(ctx,
-                                                      selected_task.value());
+            source->MaybeEmitTaskDetails(ctx, selected_task.value());
           });
     }
 

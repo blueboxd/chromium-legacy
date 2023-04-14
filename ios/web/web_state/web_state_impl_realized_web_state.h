@@ -41,7 +41,9 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   // the initialisation will invoke methods on the owning WebState. To support
   // this, the RealizedWebState object must have been constructed and assigned
   // to WebState's `pimpl_` pointer.
-  void Init(const CreateParams& params, CRWSessionStorage* session_storage);
+  void Init(const CreateParams& params,
+            CRWSessionStorage* session_storage,
+            FaviconStatus favicon_status);
 
   // Tears down the RealizedWebState. The tear down *must* be called before
   // the object is destroyed because the WebStateObserver may call methods on
@@ -54,8 +56,8 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   NavigationManagerImpl& GetNavigationManager();
 
   // Returns the WebFrameManagerImpl associated with the owning WebStateImpl.
-  const WebFramesManagerImpl& GetWebFramesManager() const;
-  WebFramesManagerImpl& GetWebFramesManager();
+  const WebFramesManagerImpl& GetPageWorldWebFramesManager() const;
+  WebFramesManagerImpl& GetPageWorldWebFramesManager();
 
   // Returns the SessionCertificationPolicyCacheImpl associated with the owning
   // WebStateImpl.
@@ -253,9 +255,6 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
   // The NavigationManagerImpl that stores session info for this WebStateImpl.
   std::unique_ptr<NavigationManagerImpl> navigation_manager_;
 
-  // The associated WebFramesManagerImpl.
-  WebFramesManagerImpl web_frames_manager_;
-
   // The SessionCertificatePolicyCacheImpl that stores the certificate policy
   // information for this WebStateImpl.
   std::unique_ptr<SessionCertificatePolicyCacheImpl> certificate_policy_cache_;
@@ -293,6 +292,10 @@ class WebStateImpl::RealizedWebState final : public NavigationManagerDelegate {
 
   // The User-Agent type.
   UserAgentType user_agent_type_ = UserAgentType::AUTOMATIC;
+
+  // The favicon status used while restoring the session from the storage.
+  // May be empty even during session restoration.
+  FaviconStatus favicon_status_;
 
   // The stable identifier. Set during `Init()` call. Never nil after this
   // method has been called. Stable across application restarts.

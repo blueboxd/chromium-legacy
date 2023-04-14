@@ -37,6 +37,7 @@
 #include "components/fuchsia_component_support/feedback_registration.h"
 #include "fuchsia_web/webengine/switches.h"
 #include "fuchsia_web/webinstance_host/fuchsia_web_debug_proxy.h"
+#include "fuchsia_web/webinstance_host/web_instance_host_constants.h"
 #include "fuchsia_web/webinstance_host/web_instance_host_internal.h"
 #include "third_party/widevine/cdm/buildflags.h"
 
@@ -145,7 +146,6 @@ std::vector<std::string> GetRequiredServicesForConfig(
       "fuchsia.settings.Display",  // Used if preferred theme is DEFAULT.
       "fuchsia.sysmem.Allocator",
       "fuchsia.tracing.perfetto.ProducerConnector",
-      "fuchsia.tracing.provider.Registry",
       "fuchsia.ui.scenic.Scenic"};
 
   // TODO(crbug.com/1209031): Provide these conditionally, once corresponding
@@ -185,6 +185,7 @@ std::vector<std::string> GetRequiredServicesForConfig(
 
   if ((features & fuchsia::web::ContextFeatureFlags::VULKAN) ==
       fuchsia::web::ContextFeatureFlags::VULKAN) {
+    services.emplace_back("fuchsia.tracing.provider.Registry");
     services.emplace_back("fuchsia.vulkan.loader.Loader");
   }
 
@@ -281,7 +282,7 @@ zx_status_t WebInstanceHostV1::CreateInstanceForContextWithCopiedArgs(
   // TODO(1010222): Make kWebInstanceComponentUrl a relative component URL, and
   // remove this workaround.
   launch_info.url =
-      base::CommandLine::ForCurrentProcess()->HasSwitch("with-webui")
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kWithWebui)
           ? kWebInstanceWithWebUiComponentUrl
           : kWebInstanceComponentUrl;
   launch_info.flat_namespace = fuchsia::sys::FlatNamespace::New();
@@ -343,10 +344,21 @@ zx_status_t WebInstanceHostV1::CreateInstanceForContextWithCopiedArgs(
   launch_info.arguments = std::vector<std::string>(
       launch_args.argv().begin() + 1, launch_args.argv().end());
 
+  fuchsia::sys::ComponentControllerPtr component_controller;
+  component_controller.events().OnTerminated =
+      [](int64_t code, fuchsia::sys::TerminationReason reason) {
+        LOG_IF(ERROR,
+               code != 0 || reason != fuchsia::sys::TerminationReason::EXITED)
+            << "component terminated with code: " << code
+            << ", fuchsia::sys::TerminationReason: "
+            << static_cast<uint32_t>(reason);
+      };
+  auto controller_request = component_controller.NewRequest();
+  component_controller_set_.AddInterfacePtr(std::move(component_controller));
   // Launch the component with the accumulated settings.  The Component will
   // self-terminate when the fuchsia.web.Context client disconnects.
   IsolatedEnvironmentLauncher()->CreateComponent(std::move(launch_info),
-                                                 nullptr /* controller */);
+                                                 std::move(controller_request));
 
   return ZX_OK;
 }

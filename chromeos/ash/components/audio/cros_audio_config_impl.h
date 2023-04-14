@@ -11,6 +11,15 @@
 
 namespace ash::audio_config {
 
+// This enum is used in histograms, do not remove/renumber entries. If you're
+// adding to this enum, update the corresponding enum listing in
+// tools/metrics/histograms/enums.xml.
+enum class AudioMuteButtonAction {
+  kMuted = 0,
+  kUnmuted = 1,
+  kMaxValue = kUnmuted,
+};
+
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrosAudioConfigImpl
     : public CrosAudioConfig,
       public CrasAudioHandler::AudioObserver {
@@ -32,6 +41,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrosAudioConfigImpl
   void SetInputGainPercent(uint8_t gain) override;
   void SetActiveDevice(uint64_t device_id) override;
   void SetInputMuted(bool muted) override;
+  void SetNoiseCancellationEnabled(bool enabled) override;
 
   // CrasAudioHandler::AudioObserver:
   void OnOutputNodeVolumeChanged(uint64_t node_id, int volume) override;
@@ -44,6 +54,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrosAudioConfigImpl
       bool mute_on,
       CrasAudioHandler::InputMuteChangeMethod method) override;
   void OnInputMutedByMicrophoneMuteSwitchChanged(bool muted) override;
+  void OnNoiseCancellationStateChanged() override;
 };
 
 }  // namespace ash::audio_config

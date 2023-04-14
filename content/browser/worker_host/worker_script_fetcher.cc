@@ -409,18 +409,12 @@ void WorkerScriptFetcher::CreateScriptLoader(
     const url::Origin& request_initiator = *resource_request->request_initiator;
     // TODO(https://crbug.com/1060837): Pass the Mojo remote which is connected
     // to the COEP reporter in DedicatedWorkerHost.
-    // TODO(crbug.com/1231019): make sure client_security_state is no longer
-    // nullptr anywhere.
     network::mojom::URLLoaderFactoryParamsPtr factory_params =
         URLLoaderFactoryParamsHelper::CreateForWorker(
             factory_process, request_initiator, trusted_isolation_info,
             /*coep_reporter=*/mojo::NullRemote(),
             std::move(url_loader_network_observer),
-            std::move(devtools_observer),
-            base::FeatureList::IsEnabled(
-                features::kPrivateNetworkAccessForWorkers)
-                ? mojo::Clone(client_security_state)
-                : nullptr,
+            std::move(devtools_observer), client_security_state.Clone(),
             /*debug_tag=*/"CreateScriptLoader");
 
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>
@@ -641,12 +635,15 @@ void WorkerScriptFetcher::OnReceiveResponse(
   if (script_loader && script_loader->default_loader_used_) {
     // If the default network loader was used to handle the URL load request we
     // need to see if the request interceptors want to potentially create a new
-    // loader for the response, e.g. SXG or WebBundles.
+    // loader for the response, e.g. SXG or WebBundles. Since the response has
+    // already been received, this means the loader completed without any
+    // network errors, so we pass a URLLoaderCompletionStatus of `net::OK`.
     DCHECK(!response_url_loader_);
     mojo::PendingReceiver<network::mojom::URLLoaderClient>
         response_client_receiver;
+    auto status = network::URLLoaderCompletionStatus(net::OK);
     if (script_loader->MaybeCreateLoaderForResponse(
-            &response_head_, &body, &response_url_loader_,
+            status, &response_head_, &body, &response_url_loader_,
             &response_client_receiver, url_loader_.get())) {
       DCHECK(response_url_loader_);
       response_url_loader_receiver_.Bind(std::move(response_client_receiver));

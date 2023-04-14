@@ -7,11 +7,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/task/sequenced_task_runner.h"
@@ -25,6 +24,8 @@ namespace updater {
 class ActionHandler : public update_client::ActionHandler {
  public:
   ActionHandler() = default;
+  ActionHandler(const ActionHandler&) = delete;
+  ActionHandler& operator=(const ActionHandler&) = delete;
 
  private:
   using Result =
@@ -38,9 +39,6 @@ class ActionHandler : public update_client::ActionHandler {
 
   // For Windows, the action is a path to an EXE file.
   static Result RunCommand(const base::FilePath& exe_path);
-
-  ActionHandler(const ActionHandler&) = delete;
-  ActionHandler& operator=(const ActionHandler&) = delete;
 };
 
 void ActionHandler::Handle(const base::FilePath& action,

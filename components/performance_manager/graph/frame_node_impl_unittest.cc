@@ -148,7 +148,6 @@ class LenientMockObserver : public FrameNodeImpl::Observer {
   MOCK_METHOD2(OnPriorityAndReasonChanged,
                void(const FrameNode*, const PriorityAndReason& previous_value));
   MOCK_METHOD1(OnHadFormInteractionChanged, void(const FrameNode*));
-  MOCK_METHOD1(OnHadUserEditsChanged, void(const FrameNode*));
   MOCK_METHOD1(OnIsAudibleChanged, void(const FrameNode*));
   MOCK_METHOD1(OnViewportIntersectionChanged, void(const FrameNode*));
   MOCK_METHOD2(OnFrameVisibilityChanged,
@@ -407,21 +406,6 @@ TEST_F(FrameNodeImplTest, FormInteractions) {
   graph()->RemoveFrameNodeObserver(&obs);
 }
 
-TEST_F(FrameNodeImplTest, UserEdits) {
-  auto process = CreateNode<ProcessNodeImpl>();
-  auto page = CreateNode<PageNodeImpl>();
-  auto frame_node = CreateFrameNodeAutoId(process.get(), page.get());
-
-  MockObserver obs;
-  graph()->AddFrameNodeObserver(&obs);
-
-  EXPECT_CALL(obs, OnHadUserEditsChanged(frame_node.get()));
-  frame_node->SetHadUserEdits();
-  EXPECT_TRUE(frame_node->had_user_edits());
-
-  graph()->RemoveFrameNodeObserver(&obs);
-}
-
 TEST_F(FrameNodeImplTest, IsAudible) {
   auto process = CreateNode<ProcessNodeImpl>();
   auto page = CreateNode<PageNodeImpl>();
@@ -535,7 +519,6 @@ TEST_F(FrameNodeImplTest, PublicInterface) {
             public_frame_node->IsHoldingIndexedDBLock());
   EXPECT_EQ(frame_node->had_form_interaction(),
             public_frame_node->HadFormInteraction());
-  EXPECT_EQ(frame_node->had_user_edits(), public_frame_node->HadUserEdits());
   // Use the child frame node to test the viewport intersection because the
   // viewport intersection of the main frame is not tracked.
   EXPECT_EQ(child_frame_node->viewport_intersection(),
@@ -551,27 +534,21 @@ TEST_F(FrameNodeImplTest, VisitChildFrameNodes) {
   auto frame3 = CreateFrameNodeAutoId(process.get(), page.get(), frame1.get());
 
   std::set<const FrameNode*> visited;
-  EXPECT_TRUE(
-      ToPublic(frame1.get())
-          ->VisitChildFrameNodes(base::BindRepeating(
-              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
-                EXPECT_TRUE(visited->insert(frame).second);
-                return true;
-              },
-              base::Unretained(&visited))));
+  EXPECT_TRUE(ToPublic(frame1.get())
+                  ->VisitChildFrameNodes([&visited](const FrameNode* frame) {
+                    EXPECT_TRUE(visited.insert(frame).second);
+                    return true;
+                  }));
   EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(frame2.get()),
                                                      ToPublic(frame3.get())));
 
   // Do an aborted visit.
   visited.clear();
-  EXPECT_FALSE(
-      ToPublic(frame1.get())
-          ->VisitChildFrameNodes(base::BindRepeating(
-              [](std::set<const FrameNode*>* visited, const FrameNode* frame) {
-                EXPECT_TRUE(visited->insert(frame).second);
-                return false;
-              },
-              base::Unretained(&visited))));
+  EXPECT_FALSE(ToPublic(frame1.get())
+                   ->VisitChildFrameNodes([&visited](const FrameNode* frame) {
+                     EXPECT_TRUE(visited.insert(frame).second);
+                     return false;
+                   }));
   EXPECT_EQ(1u, visited.size());
 }
 
@@ -666,38 +643,29 @@ TEST_F(FrameNodeImplTest, PageRelationships) {
 
   // Do an embedded page traversal.
   std::set<const PageNode*> visited;
-  EXPECT_TRUE(
-      ToPublic(frameA1.get())
-          ->VisitEmbeddedPageNodes(base::BindRepeating(
-              [](std::set<const PageNode*>* visited, const PageNode* page) {
-                EXPECT_TRUE(visited->insert(page).second);
-                return true;
-              },
-              base::Unretained(&visited))));
+  EXPECT_TRUE(ToPublic(frameA1.get())
+                  ->VisitEmbeddedPageNodes([&visited](const PageNode* page) {
+                    EXPECT_TRUE(visited.insert(page).second);
+                    return true;
+                  }));
   EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(pageB.get())));
 
   // Do an opened page traversal.
   visited.clear();
-  EXPECT_TRUE(
-      ToPublic(frameA1.get())
-          ->VisitOpenedPageNodes(base::BindRepeating(
-              [](std::set<const PageNode*>* visited, const PageNode* page) {
-                EXPECT_TRUE(visited->insert(page).second);
-                return true;
-              },
-              base::Unretained(&visited))));
+  EXPECT_TRUE(ToPublic(frameA1.get())
+                  ->VisitOpenedPageNodes([&visited](const PageNode* page) {
+                    EXPECT_TRUE(visited.insert(page).second);
+                    return true;
+                  }));
   EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(pageC.get())));
 
   // Do an aborted visit.
   visited.clear();
-  EXPECT_FALSE(
-      ToPublic(frameA1.get())
-          ->VisitEmbeddedPageNodes(base::BindRepeating(
-              [](std::set<const PageNode*>* visited, const PageNode* page) {
-                EXPECT_TRUE(visited->insert(page).second);
-                return false;
-              },
-              base::Unretained(&visited))));
+  EXPECT_FALSE(ToPublic(frameA1.get())
+                   ->VisitEmbeddedPageNodes([&visited](const PageNode* page) {
+                     EXPECT_TRUE(visited.insert(page).second);
+                     return false;
+                   }));
   EXPECT_EQ(1u, visited.size());
 
   // Manually clear the embedder relationship (initiated from the page).

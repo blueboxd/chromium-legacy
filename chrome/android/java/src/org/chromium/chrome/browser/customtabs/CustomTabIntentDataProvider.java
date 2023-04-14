@@ -189,6 +189,8 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private static final String EXTRA_TWA_DISCLOSURE_UI =
             "androidx.browser.trusted.extra.DISCLOSURE_VERSION";
 
+    private static final int DEFAULT_BREAKPOINT_DP = 840;
+
     private static final int MAX_CUSTOM_MENU_ITEMS = 5;
 
     private static final int MAX_CUSTOM_TOOLBAR_ITEMS = 2;
@@ -227,10 +229,21 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
             "androidx.browser.customtabs.extra.INITIAL_ACTIVITY_HEIGHT_PX";
 
     /**
+     * Extra that, if set, makes the Custom Tab Activity's width to be x pixels, the Custom Tab
+     * will behave as a side sheet. x will be clamped between 33% and 100% of screen width.
+     */
+    public static final String EXTRA_INITIAL_ACTIVITY_WIDTH_PX =
+            "androidx.browser.customtabs.extra.INITIAL_ACTIVITY_WIDTH_PX";
+
+    /**
      * Extra that, if set, allows you to interact with the background app when a PCCT is launched
      */
     public static final String EXTRA_ENABLE_BACKGROUND_INTERACTION =
             "androix.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION";
+
+    /** Extra that enables the maximization button on the side sheet Custom Tab toolbar. */
+    public static final String EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION =
+            "androix.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION";
 
     /**
      * Extra that, if set in combination with
@@ -239,6 +252,21 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
      */
     public static final String EXTRA_ACTIVITY_HEIGHT_RESIZE_BEHAVIOR =
             "androidx.browser.customtabs.extra.ACTIVITY_HEIGHT_RESIZE_BEHAVIOR";
+
+    /**
+     * Extra that, if set, allows you to set a custom breakpoint for PCCT side sheet -
+     * a value, x, for which if the screen's width is higher than x, the Custom Tab will behave as a
+     * side sheet, otherwise it will behave as a bottom sheet.
+     */
+    public static final String EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP =
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_BREAKPOINT_DP";
+
+    /**
+     * Extra that, if set, allows you to set how you want to distinguish the PCCT side sheet from
+     * the rest of the display. Options include shadow, a divider line, or no decoration.
+     */
+    public static final String EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE =
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_DECORATION_TYPE";
 
     /**
      * Extra that, if set, makes the toolbar's top corner radii to be x pixels. This will only have
@@ -263,6 +291,13 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public static final StringCachedFieldTrialParameter ALLOWLIST_ENTRIES =
             new StringCachedFieldTrialParameter(ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
                     ALLOWLIST_ENTRIES_PARAM_NAME, "");
+
+    /**
+     * Extra that specifies the {@link PendingIntent} to be sent when the user swipes up from the
+     * secondary (bottom) toolbar.
+     */
+    public static final String EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION =
+            "androidx.browser.customtabs.extra.SECONDARY_TOOLBAR_SWIPE_UP_ACTION";
 
     private final Intent mIntent;
     private final CustomTabsSessionToken mSession;
@@ -294,8 +329,11 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     private List<CustomButtonParams> mToolbarButtons = new ArrayList<>(1);
     private List<CustomButtonParams> mBottombarButtons = new ArrayList<>(2);
     private RemoteViews mRemoteViews;
+    @SideSheetDecorationType
+    private int mSideSheetDecorationType;
     private int[] mClickableViewIds;
     private PendingIntent mRemoteViewsPendingIntent;
+    private PendingIntent mSecondaryToolbarSwipeUpPendingIntent;
     // OnFinished listener for PendingIntents. Used for testing only.
     private PendingIntent.OnFinished mOnFinished;
 
@@ -317,7 +355,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @NonNull
     private final ColorProvider mColorProvider;
 
+    private final int mBreakPointDp;
     private final @Px int mInitialActivityHeight;
+    private final @Px int mInitialActivityWidth;
     private final @Px int mPartialTabToolbarCornerRadius;
 
     private final boolean mIsPartialCustomTabFixedHeight;
@@ -360,7 +400,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     }
 
     public static void configureIntentForResizableCustomTab(Context context, Intent intent) {
-        if (getInitialActivityHeightFromIntent(intent) == 0) {
+        if (getInitialActivityHeightFromIntent(intent) == 0
+                && (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()
+                        || getInitialActivityWidthFromIntent(intent) == 0)) {
             // fallback to normal Custom Tab.
             return;
         }
@@ -377,6 +419,28 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         int heightPx2 = IntentUtils.safeGetIntExtra(
                 intent, CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX, 0);
         return heightPx2 > 0 ? heightPx2 : 0;
+    }
+
+    private static int getInitialActivityWidthFromIntent(Intent intent) {
+        int widthPx = IntentUtils.safeGetIntExtra(
+                intent, CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_WIDTH_PX, 0);
+        return widthPx > 0 ? widthPx : 0;
+    }
+
+    private static int getActivityBreakPointFromIntent(Intent intent) {
+        int breakPointDp = IntentUtils.safeGetIntExtra(intent,
+                CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP,
+                DEFAULT_BREAKPOINT_DP);
+        return breakPointDp < 0 ? DEFAULT_BREAKPOINT_DP : breakPointDp;
+    }
+
+    private static int getActivitySideSheetDecorationTypeFromIntent(Intent intent) {
+        int decorationType =
+                IntentUtils.safeGetIntExtra(intent, EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE,
+                        ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT);
+        return decorationType < 0 || decorationType > ACTIVITY_SIDE_SHEET_DECORATION_TYPE_MAX
+                ? ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT
+                : decorationType;
     }
 
     /**
@@ -466,6 +530,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                 intent, CustomTabsIntent.EXTRA_REMOTEVIEWS_VIEW_IDS);
         mRemoteViewsPendingIntent = IntentUtils.safeGetParcelableExtra(
                 intent, CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
+        if (ChromeFeatureList.sCctBottomBarSwipeUpGesture.isEnabled()) {
+            mSecondaryToolbarSwipeUpPendingIntent = IntentUtils.safeGetParcelableExtra(
+                    intent, EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION);
+        }
         mMediaViewerUrl = isMediaViewer()
                 ? IntentUtils.safeGetStringExtra(intent, EXTRA_MEDIA_VIEWER_URL)
                 : null;
@@ -493,9 +561,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         boolean usingDynamicFeatures =
                 CustomTabsConnection.getInstance().setupDynamicFeatures(intent);
 
+        mBreakPointDp = getActivityBreakPointFromIntent(intent);
         mInitialActivityHeight = getInitialActivityHeightFromIntent(intent);
+        mInitialActivityWidth = getInitialActivityWidthFromIntent(intent);
         mPartialTabToolbarCornerRadius = getToolbarCornerRadiusFromIntent(context, intent);
-
         // The default behavior is that the PCCT's height is resizable.
         @ActivityHeightResizeBehavior
         int activityHeightResizeBehavior = IntentUtils.safeGetIntExtra(
@@ -507,6 +576,7 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         int backgroundInteractBehavior = IntentUtils.safeGetIntExtra(
                 intent, EXTRA_ENABLE_BACKGROUND_INTERACTION, BACKGROUND_INTERACT_DEFAULT);
         mInteractWithBackground = backgroundInteractBehavior != BACKGROUND_INTERACT_OFF;
+        mSideSheetDecorationType = getActivitySideSheetDecorationTypeFromIntent(intent);
 
         logCustomTabFeatures(intent, colorScheme, usingDynamicFeatures);
     }
@@ -780,6 +850,18 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
                         intent, CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX)) {
             featureUsage.log(CustomTabsFeature.EXTRA_INITIAL_ACTIVITY_HEIGHT_PX);
         }
+        if (IntentUtils.safeHasExtra(
+                    intent, CustomTabIntentDataProvider.EXTRA_INITIAL_ACTIVITY_WIDTH_PX)) {
+            featureUsage.log(CustomTabsFeature.EXTRA_INITIAL_ACTIVITY_WIDTH_PX);
+        }
+        if (IntentUtils.safeHasExtra(
+                    intent, CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP)) {
+            featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP);
+        }
+        if (IntentUtils.safeHasExtra(intent,
+                    CustomTabIntentDataProvider.EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE)) {
+            featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE);
+        }
         if (mEnableEmbeddedMediaExperience) {
             featureUsage.log(CustomTabsFeature.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE);
         }
@@ -798,6 +880,9 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         }
         if (isPartialHeightCustomTab()) {
             featureUsage.log(CustomTabsFeature.CTF_PARTIAL);
+        }
+        if (isPartialWidthCustomTab()) {
+            featureUsage.log(CustomTabsFeature.CTF_PARTIAL_SIDE_SHEET);
         }
         if (mRemoteViewsPendingIntent != null) {
             featureUsage.log(CustomTabsFeature.EXTRA_REMOTEVIEWS_PENDINGINTENT);
@@ -843,6 +928,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         if (isUsingDynamicFeatures) {
             featureUsage.log(CustomTabsFeature.EXTRA_INTENT_FEATURE_OVERRIDES);
         }
+        if (showSideSheetMaximizeButton()) {
+            featureUsage.log(CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION);
+        }
+        if (mSecondaryToolbarSwipeUpPendingIntent != null) {
+            featureUsage.log(CustomTabsFeature.EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION);
+        }
     }
 
     @Override
@@ -875,6 +966,18 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Override
     public boolean isPartialHeightCustomTab() {
         return getInitialActivityHeight() > 0;
+    }
+
+    @Override
+    public boolean isPartialWidthCustomTab() {
+        return getInitialActivityWidth() > 0;
+    }
+
+    @Override
+    public boolean isPartialCustomTab() {
+        return isPartialHeightCustomTab()
+                || (ChromeFeatureList.sCctResizableSideSheet.isEnabled()
+                        && isPartialWidthCustomTab());
     }
 
     @Override
@@ -974,6 +1077,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     @Nullable
     public PendingIntent getRemoteViewsPendingIntent() {
         return mRemoteViewsPendingIntent;
+    }
+
+    @Nullable
+    @Override
+    public PendingIntent getSecondaryToolbarSwipeUpPendingIntent() {
+        return mSecondaryToolbarSwipeUpPendingIntent;
     }
 
     @Override
@@ -1123,6 +1232,12 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
         return version;
     }
 
+    @SideSheetDecorationType
+    @Override
+    public int getActivitySideSheetDecorationType() {
+        return mSideSheetDecorationType;
+    }
+
     @Override
     @Nullable
     public int[] getGsaExperimentIds() {
@@ -1133,7 +1248,22 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
     public @Px int getInitialActivityHeight() {
         boolean enabledDueToThirdParty = ChromeFeatureList.sCctResizableForThirdParties.isEnabled()
                 && isAllowedThirdParty(getClientPackageName());
-        return enabledDueToThirdParty ? mInitialActivityHeight : 0;
+        return (mIsTrustedIntent || enabledDueToThirdParty) ? mInitialActivityHeight : 0;
+    }
+
+    @Override
+    public @Px int getInitialActivityWidth() {
+        if (!ChromeFeatureList.sCctResizableSideSheet.isEnabled()) return 0;
+
+        boolean enabledDueToThirdParty =
+                ChromeFeatureList.sCctResizableSideSheetForThirdParties.isEnabled()
+                && isAllowedThirdParty(getClientPackageName());
+        return (mIsTrustedIntent || enabledDueToThirdParty) ? mInitialActivityWidth : 0;
+    }
+
+    @Override
+    public int getActivityBreakPoint() {
+        return mBreakPointDp;
     }
 
     boolean isAllowedThirdParty(String packageName) {
@@ -1175,4 +1305,10 @@ public class CustomTabIntentDataProvider extends BrowserServicesIntentDataProvid
 
     @Override
     public boolean canInteractWithBackground() { return mInteractWithBackground; }
+
+    @Override
+    public boolean showSideSheetMaximizeButton() {
+        return IntentUtils.safeGetBooleanExtra(
+                mIntent, EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION, false);
+    }
 }

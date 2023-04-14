@@ -21,7 +21,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/test/test_extension_dir.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/ui_controls_aura.h"
 
 namespace {
 const char kBasicBrowserActionKeybinding[] = "Ctrl+Shift+F";
@@ -217,7 +216,6 @@ void CommandServiceMv3UpgradeTest::UpdateExtensionMv3(
 void CommandServiceMv3UpgradeTest::ChangeMv2CommandKeybinding(
     const std::string& id,
     const char* new_keybinding) {
-  ui_controls::EnableUIControls();
   const char* action_command_name = GetParam().action_command_name;
   Command action_command =
       command_service()->FindCommandByName(id, action_command_name);
@@ -471,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(CommandServiceTest,
   // another platform.
   std::string anotherPlatformKey = GetAnotherCommandPlatform() + ":Alt+G";
   const char kNamedCommandName[] = "toggle-feature";
-  base::Value keybinding(base::Value::Type::DICTIONARY);
+  base::Value keybinding(base::Value::Type::DICT);
   keybinding.SetStringKey("extension", extension->id());
   keybinding.SetStringKey("command_name", kNamedCommandName);
   keybinding.SetBoolKey("global", false);

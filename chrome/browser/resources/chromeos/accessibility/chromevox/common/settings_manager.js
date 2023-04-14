@@ -57,9 +57,13 @@ export class SettingsManager {
    */
   static migrateFromChromeStorage_() {
     for (const key of SettingsManager.PREFS) {
-      const value = LocalStorage.get(key);
+      let value = LocalStorage.get(key);
       if (value === undefined) {
         continue;
+      }
+      // Convert virtualBrailleColumns and virtualBrailleRows to numbers.
+      if (['virtualBrailleColumns', 'virtualBrailleRows'].includes(key)) {
+        value = parseInt(value, 10);
       }
       const prefName = SettingsManager.getPrefName_(key);
       try {
@@ -85,7 +89,7 @@ export class SettingsManager {
     if (Object.keys(eventStreamFilters).length) {
       // Combine with any event stream filters already in settings prefs.
       eventStreamFilters = {
-        ...Settings.get(this.getPrefName_('eventStreamFilters'), {}),
+        ...Settings.get(this.getPrefName_('eventStreamFilters')),
         ...eventStreamFilters,
       };
       Settings.set(this.getPrefName_('eventStreamFilters'), eventStreamFilters);
@@ -94,7 +98,16 @@ export class SettingsManager {
 
   /**
    * @param {string} key
-   * @return {?PrefObject}
+   * @param {Function} callback
+   */
+  static addListenerForKey(key, callback) {
+    const pref = SettingsManager.getPrefName_(key);
+    Settings.addListener(pref, callback);
+  }
+
+  /**
+   * @param {string} key
+   * @return {*}
    */
   static get(key) {
     const pref = SettingsManager.getPrefName_(key);
@@ -103,11 +116,80 @@ export class SettingsManager {
 
   /**
    * @param {string} key
+   * @param {string|Function} type A string (for primitives) or type constructor
+   *     (for classes) corresponding to the expected type
+   * @return {*}
+   */
+  static getTypeChecked(key, type) {
+    const value = SettingsManager.get(key);
+    if ((typeof type === 'string') && (typeof value === type)) {
+      return value;
+    }
+    throw new Error(
+        'Value in SettingsManager for key "' + key + '" is not a ' + type);
+  }
+
+  /**
+   * @param {string} key
+   * @return {boolean}
+   */
+  static getBoolean(key) {
+    const value = SettingsManager.getTypeChecked(key, 'boolean');
+    return Boolean(value);
+  }
+
+  /**
+   * @param {string} key
+   * @return {number}
+   */
+  static getNumber(key) {
+    const value = SettingsManager.getTypeChecked(key, 'number');
+    if (isNaN(value)) {
+      throw new Error('Value in SettingsManager for key "' + key + '" is NaN');
+    }
+    return Number(value);
+  }
+
+  /**
+   * @param {string} key
+   * @return {string}
+   */
+  static getString(key) {
+    const value = SettingsManager.getTypeChecked(key, 'string');
+    return String(value);
+  }
+
+  /**
+   * @param {string} key
    * @param {*} value
    */
   static set(key, value) {
     const pref = SettingsManager.getPrefName_(key);
-    return Settings.set(pref, value);
+    Settings.set(pref, value);
+  }
+
+  /**
+   * Get event stream filters from the event_stream_filter dictionary pref.
+   * @return {!Object<string, boolean>}
+   */
+  static getEventStreamFilters() {
+    return Settings.get(this.getPrefName_('eventStreamFilters'));
+  }
+
+  /**
+   * Set an event stream filter on the event_stream_filter dictionary pref.
+   * @param {string} key
+   * @param {boolean} value
+   */
+  static setEventStreamFilter(key, value) {
+    if (!SettingsManager.EVENT_STREAM_FILTERS.includes(key)) {
+      throw new Error('Cannot set unknown event stream filter: ' + key);
+    }
+
+    const eventStreamFilters =
+        Settings.get(this.getPrefName_('eventStreamFilters'));
+    eventStreamFilters[key] = value;
+    Settings.set(this.getPrefName_('eventStreamFilters'), eventStreamFilters);
   }
 }
 
@@ -115,92 +197,97 @@ export class SettingsManager {
 SettingsManager.instance;
 
 /**
- * TODO(b/262786141): Uncomment each of these and update call sites.
+ * List of the prefs used in ChromeVox, including in options page, each stored
+ * as a Chrome settings pref.
  * @const {!Array<string>}
  */
 SettingsManager.PREFS = [
-  // 'announceDownloadNotifications',
-  // 'announceRichTextAttributes',
-  // 'audioStrategy',
+  'announceDownloadNotifications',
+  'announceRichTextAttributes',
+  'audioStrategy',
   'autoRead',
-  // 'brailleSideBySide',
-  // 'brailleTable',
-  // 'brailleTable6',
-  // 'brailleTable8',
-  // 'brailleTableType',
-  // 'brailleWordWrap',
-  // 'capitalStrategy',
-  // 'enableBrailleLogging',
-  // 'enableEarconLogging',
-  // 'enableEventStreamLogging',
-  // 'enableSpeechLogging',
-  // 'languageSwitching',
-  // 'menuBrailleCommands',
-  // 'numberReadingStyle',
-  // 'preferredBrailleDisplayAddress',
-  // 'punctuationEcho',
-  // 'smartStickyMode',
-  // 'speakTextUnderMouse',
-  // 'usePitchChanges',
-  // 'useVerboseMode',
-  // 'virtualBrailleColumns',
-  // 'virtualBrailleRows',
-  // 'voiceName',
+  'brailleSideBySide',
+  'brailleTable',
+  'brailleTable6',
+  'brailleTable8',
+  'brailleTableType',
+  'brailleWordWrap',
+  'capitalStrategy',
+  'capitalStrategyBackup',
+  'enableBrailleLogging',
+  'enableEarconLogging',
+  'enableEventStreamLogging',
+  'enableSpeechLogging',
+  'eventStreamFilters',
+  'languageSwitching',
+  'menuBrailleCommands',
+  'numberReadingStyle',
+  'preferredBrailleDisplayAddress',
+  'punctuationEcho',
+  'smartStickyMode',
+  'speakTextUnderMouse',
+  'usePitchChanges',
+  'useVerboseMode',
+  'virtualBrailleColumns',
+  'virtualBrailleRows',
+  'voiceName',
 ];
 
-// List of event stream filters used on the ChromeVox options page to indicate
-// which events to log, to store together in a dictionary Chrome settings pref.
+/**
+ * List of event stream filters used on the ChromeVox options page to indicate
+ * which events to log, stored together in a Chrome settings dictionary pref.
+ * @const {!Array<string>}
+ */
 SettingsManager.EVENT_STREAM_FILTERS = [
-  // TODO(b/262786141: Update call sites and uncomment.
-  // 'activedescendantchanged',
-  // 'alert',
-  // 'ariaAttributeChanged',
-  // 'autocorrectionOccured',
-  // 'blur',
-  // 'checkedStateChanged',
-  // 'childrenChanged',
-  // 'clicked',
-  // 'documentSelectionChanged',
-  // 'documentTitleChanged',
-  // 'expandedChanged',
-  // 'focus',
-  // 'focusContext',
-  // 'hide',
-  // 'hitTestResult',
-  // 'hover',
-  // 'imageFrameUpdated',
-  // 'invalidStatusChanged',
-  // 'layoutComplete',
-  // 'liveRegionChanged',
-  // 'liveRegionCreated',
-  // 'loadComplete',
-  // 'locationChanged',
-  // 'mediaStartedPlaying',
-  // 'mediaStoppedPlaying',
-  // 'menuEnd',
-  // 'menuListItemSelected',
-  // 'menuListValueChanged',
-  // 'menuPopupEnd',
-  // 'menuPopupStart',
-  // 'menuStart',
-  // 'mouseCanceled',
-  // 'mouseDragged',
-  // 'mouseMoved',
-  // 'mousePressed',
-  // 'mouseReleased',
-  // 'rowCollapsed',
-  // 'rowCountChanged',
-  // 'rowExpanded',
-  // 'scrollPositionChanged',
-  // 'scrolledToAnchor',
-  // 'selectedChildrenChanged',
-  // 'selection',
-  // 'selectionAdd',
-  // 'selectionRemove',
-  // 'show',
-  // 'stateChanged',
-  // 'textChanged',
-  // 'textSelectionChanged',
-  // 'treeChanged',
-  // 'valueInTextFieldChanged',
+  'activedescendantchanged',
+  'alert',
+  'ariaAttributeChanged',
+  'autocorrectionOccured',
+  'blur',
+  'checkedStateChanged',
+  'childrenChanged',
+  'clicked',
+  'documentSelectionChanged',
+  'documentTitleChanged',
+  'expandedChanged',
+  'focus',
+  'focusContext',
+  'hide',
+  'hitTestResult',
+  'hover',
+  'imageFrameUpdated',
+  'invalidStatusChanged',
+  'layoutComplete',
+  'liveRegionChanged',
+  'liveRegionCreated',
+  'loadComplete',
+  'locationChanged',
+  'mediaStartedPlaying',
+  'mediaStoppedPlaying',
+  'menuEnd',
+  'menuItemSelected',
+  'menuListValueChanged',
+  'menuPopupEnd',
+  'menuPopupStart',
+  'menuStart',
+  'mouseCanceled',
+  'mouseDragged',
+  'mouseMoved',
+  'mousePressed',
+  'mouseReleased',
+  'rowCollapsed',
+  'rowCountChanged',
+  'rowExpanded',
+  'scrollPositionChanged',
+  'scrolledToAnchor',
+  'selectedChildrenChanged',
+  'selection',
+  'selectionAdd',
+  'selectionRemove',
+  'show',
+  'stateChanged',
+  'textChanged',
+  'textSelectionChanged',
+  'treeChanged',
+  'valueInTextFieldChanged',
 ];

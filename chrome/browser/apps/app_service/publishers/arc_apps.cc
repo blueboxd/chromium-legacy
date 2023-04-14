@@ -59,10 +59,8 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "components/services/app_service/public/cpp/intent.h"
 #include "components/services/app_service/public/cpp/intent_filter.h"
-#include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/permission.h"
-#include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -257,83 +255,6 @@ absl::optional<arc::UserInteractionType> GetUserInterationType(
       return absl::nullopt;
   }
   return user_interaction_type;
-}
-
-// Check if this intent filter only contains HTTP and HTTPS schemes.
-bool IsHttpOrHttpsIntentFilter(const apps::IntentFilterPtr& intent_filter) {
-  for (const auto& condition : intent_filter->conditions) {
-    if (condition->condition_type != apps::ConditionType::kScheme) {
-      continue;
-    }
-    for (const auto& condition_value : condition->condition_values) {
-      if (condition_value->value != url::kHttpScheme &&
-          condition_value->value != url::kHttpsScheme) {
-        return false;
-      }
-    }
-    return true;
-  }
-  // If there is no scheme |condition_type| found, return false.
-  return false;
-}
-
-void AddPreferredApp(const std::string& app_id,
-                     const apps::IntentFilterPtr& intent_filter,
-                     apps::IntentPtr intent,
-                     arc::ArcServiceManager* arc_service_manager,
-                     ArcAppListPrefs* prefs) {
-  arc::mojom::IntentHelperInstance* instance = nullptr;
-  if (arc_service_manager) {
-    instance = ARC_GET_INSTANCE_FOR_METHOD(
-        arc_service_manager->arc_bridge_service()->intent_helper(),
-        AddPreferredApp);
-  }
-  if (!instance) {
-    return;
-  }
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
-
-  // If |app_info| doesn't exist, we are trying to set preferences for a
-  // non-ARC app. Set the preferred app as the ARC intent helper package.
-  const std::string& package_name =
-      app_info ? app_info->package_name : arc::kArcIntentHelperPackageName;
-
-  instance->AddPreferredApp(
-      package_name,
-      apps_util::ConvertAppServiceToArcIntentFilter(package_name,
-                                                    intent_filter),
-      apps_util::ConvertAppServiceToArcIntent(std::move(intent)));
-}
-
-void ResetVerifiedLinks(
-    const apps::ReplacedAppPreferences& replaced_app_preferences,
-    arc::ArcServiceManager* arc_service_manager,
-    ArcAppListPrefs* prefs) {
-  if (!arc_service_manager) {
-    return;
-  }
-  std::vector<std::string> package_names;
-
-  // Find the apps that needs to reset verified link domain status in ARC.
-  for (auto& entry : replaced_app_preferences) {
-    auto app_info = prefs->GetApp(entry.first);
-    if (!app_info) {
-      continue;
-    }
-    for (auto& intent_filter : entry.second) {
-      if (IsHttpOrHttpsIntentFilter(intent_filter)) {
-        package_names.push_back(app_info->package_name);
-        break;
-      }
-    }
-  }
-
-  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(
-      arc_service_manager->arc_bridge_service()->intent_helper(),
-      SetVerifiedLinks);
-  if (instance) {
-    instance->SetVerifiedLinks(package_names, /*always_open=*/false);
-  }
 }
 
 bool ShouldShow(const ArcAppListPrefs::AppInfo& app_info) {
@@ -663,23 +584,6 @@ void ArcApps::Initialize() {
 void ArcApps::Shutdown() {
   // Disconnect the observee-observer connections that we made during the
   // constructor.
-  //
-  // This isn't entirely correct. The object returned by
-  // ArcAppListPrefs::Get(some_profile) can vary over the lifetime of that
-  // profile. If it changed, we'll try to disconnect from different
-  // ArcAppListPrefs-related objects than the ones we connected to, at the time
-  // of this object's construction.
-  //
-  // Even so, this is probably harmless, assuming that calling
-  // foo->RemoveObserver(bar) is a no-op (and e.g. does not crash) if bar
-  // wasn't observing foo in the first place, and assuming that the dangling
-  // observee-observer connection on the old foo's are never followed again.
-  //
-  // To fix this properly, we would probably need to add something like an
-  // OnArcAppListPrefsWillBeDestroyed method to ArcAppListPrefs::Observer, and
-  // in this class's implementation of that method, disconnect. Furthermore,
-  // when the new ArcAppListPrefs object is created, we'll have to somehow be
-  // notified so we can re-connect this object as an observer.
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (prefs) {
     prefs->RemoveObserver(this);
@@ -1024,22 +928,6 @@ void ArcApps::GetMenuModel(const std::string& app_id,
                        std::move(callback));
 }
 
-void ArcApps::OnPreferredAppSet(
-    const std::string& app_id,
-    IntentFilterPtr intent_filter,
-    IntentPtr intent,
-    ReplacedAppPreferences replaced_app_preferences) {
-  auto* arc_service_manager = arc::ArcServiceManager::Get();
-
-  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
-  if (!prefs) {
-    return;
-  }
-  AddPreferredApp(app_id, intent_filter, std::move(intent), arc_service_manager,
-                  prefs);
-  ResetVerifiedLinks(replaced_app_preferences, arc_service_manager, prefs);
-}
-
 void ArcApps::SetResizeLocked(const std::string& app_id, bool locked) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (!prefs) {
@@ -1288,13 +1176,11 @@ void ArcApps::OnArcSupportedLinksChanged(
       continue;
     }
 
-    // When kDefaultLinkCapturingInBrowser is enabled, ignore any requests from
-    // ARC to set an app as handling supported links by default. We allow
-    // requests if they were initiated by user action, or if the app already
-    // has a non-default setting on the Ash side.
+    // Ignore any requests from the ARC system to set an app as handling
+    // supported links by default. We allow requests if they were initiated by
+    // user action, or if the app already has a non-default setting on the Ash
+    // side.
     bool should_ignore_update =
-        base::FeatureList::GetInstance()->IsEnabled(
-            features::kDefaultLinkCapturingInBrowser) &&
         AppShouldDefaultHandleLinksInBrowser(app_id) &&
         source == arc::mojom::SupportedLinkChangeSource::kArcSystem &&
         !proxy()->PreferredAppsList().IsPreferredAppForSupportedLinks(app_id);

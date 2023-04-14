@@ -228,7 +228,6 @@ zx_status_t AppendLaunchArgs(fuchsia::web::CreateContextParams& params,
                              base::CommandLine& launch_args) {
   // Arguments to be stripped rather than propagated.
   launch_args.RemoveSwitch(switches::kContextProvider);
-  launch_args.RemoveSwitch(switches::kEnableCfv2);
 
   const fuchsia::web::ContextFeatureFlags features =
       params.has_features() ? params.features()
@@ -435,6 +434,8 @@ void AppendDynamicServices(fuchsia::web::ContextFeatureFlags features,
      "fuchsia.media.AudioDeviceEnumerator"},
     {ContextFeatureFlags::AUDIO, ContextFeatureFlags::AUDIO,
      "fuchsia.media.SessionAudioConsumerFactory"},
+    {ContextFeatureFlags::VULKAN, ContextFeatureFlags::VULKAN,
+     "fuchsia.tracing.provider.Registry"},
     {ContextFeatureFlags::VULKAN, ContextFeatureFlags::VULKAN,
      "fuchsia.vulkan.loader.Loader"},
     {ContextFeatureFlags::HARDWARE_VIDEO_DECODER,

@@ -49,8 +49,8 @@ WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
-  // Win7 does not support WebGPU
-  if (GPUTestBotConfig::CurrentConfigMatches("Win7")) {
+  // Nexus 5X does not support WebGPU
+  if (GPUTestBotConfig::CurrentConfigMatches("Android Qualcomm 0x4010800")) {
     return false;
   }
 
@@ -82,6 +82,14 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
+  // Some tests that inherit from WebGPUTest call Initialize in SetUp, which
+  // won't be skipped even if the SKIP_TEST_IF in WebGPUTest::SetUp() is
+  // triggered. As a result, to avoid potential crashes, skip initializing if
+  // this device has been marked as not supporting WebGPU.
+  if (!WebGPUSupported()) {
+    return;
+  }
+
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
   gpu_preferences.use_passthrough_cmd_decoder =
@@ -94,6 +102,8 @@ void WebGPUTest::Initialize(const Options& options) {
   gpu_preferences.enable_unsafe_webgpu = options.enable_unsafe_webgpu;
   gpu_preferences.texture_target_exception_list =
       gpu::CreateBufferUsageAndFormatExceptionList();
+  // Disable the blocklist so even blocked adapters may be tested.
+  gpu_preferences.disabled_dawn_features_list = {"adapter_blocklist"};
 
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);

@@ -145,7 +145,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.selection.SelectionPopupBackPressHandler;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -633,17 +632,17 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     mCompositorViewHolderSupplier.get().getCompositorView());
 
             initializeTabModels();
+            if (isFinishing()) return;
+
             TabModelSelector tabModelSelector = mTabModelOrchestrator.getTabModelSelector();
             setTabContentManager(new TabContentManager(this, getContentOffsetProvider(),
                     !SysUtils.isLowEndDevice(),
                     tabModelSelector != null ? tabModelSelector::getTabById : null));
 
-            if (!isFinishing()) {
-                getBrowserControlsManager().initialize(
-                        (ControlContainer) findViewById(R.id.control_container),
-                        getActivityTabProvider(), getTabModelSelector(),
-                        getControlContainerHeightResource());
-            }
+            getBrowserControlsManager().initialize(
+                    (ControlContainer) findViewById(R.id.control_container),
+                    getActivityTabProvider(), getTabModelSelector(),
+                    getControlContainerHeightResource());
 
             mBottomContainer.initialize(getBrowserControlsManager(),
                     getWindowAndroid().getApplicationBottomInsetProvider(),
@@ -2196,7 +2195,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     protected final boolean handleOnBackPressed() {
         assert !BackPressManager.isEnabled()
             : "Back press should be handled by implementors of BackPressHandler if enabled";
-        if (mNativeInitialized) RecordUserAction.record("SystemBack");
+        RecordUserAction.record(
+                mNativeInitialized ? "SystemBack" : "SystemBackBeforeNativeInitialized");
+        if (isActivityFinishingOrDestroyed()) {
+            RecordUserAction.record("SystemBackOnActivityFinishingOrDestroyed");
+        }
 
         if (TextBubble.getCountSupplier().get() != null
                 && TextBubble.getCountSupplier().get() > 0) {
@@ -2446,20 +2449,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             TrackerFactory.getTrackerForProfile(Profile.getLastUsedRegularProfile())
                     .notifyEvent(EventConstants.APP_MENU_BOOKMARK_STAR_ICON_PRESSED);
             RecordUserAction.record("MobileMenuAddToBookmarks");
-            return true;
-        }
-
-        if (id == R.id.add_to_reading_list_menu_id) {
-            mTabBookmarkerSupplier.get().addToReadingList(currentTab);
-            RecordUserAction.record("MobileMenuAddToReadingList");
-            return true;
-        }
-
-        if (id == R.id.delete_from_reading_list_menu_id) {
-            assert mBookmarkModelSupplier.hasValue();
-            ReadingListUtils.deleteFromReadingList(
-                    mBookmarkModelSupplier.get(), mSnackbarManager, /*activity=*/this, currentTab);
-            RecordUserAction.record("MobileMenuDeleteFromReadingList");
             return true;
         }
 

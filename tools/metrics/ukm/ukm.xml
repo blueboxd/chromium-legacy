@@ -197,6 +197,41 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Accessibility.ScreenAI">
+  <owner>abigailbklein@google.com</owner>
+  <owner>rhalavati@google.com</owner>
+  <owner>kyungjunlee@google.com</owner>
+  <summary>
+    Records the time taken to distill a web page.
+  </summary>
+  <metric name="Screen2xDistillationTime.Failure">
+    <summary>
+      The amount of time (ms) required to distill a web page if distillation
+      failed.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="Screen2xDistillationTime.Success">
+    <summary>
+      The amount of time (ms) required to distill a web page if distillation
+      succeeded.
+    </summary>
+    <aggregation>
+      <history>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+</event>
+
 <event name="AccuracyTipDialog">
   <obsolete>
     Deprecated as of 12/2022.
@@ -2035,6 +2070,25 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.FastCheckoutRunOutcome">
+  <owner>bwolfgang@google.com</owner>
+  <owner>jkeitel@google.com</owner>
+  <owner>vizcay@google.com</owner>
+  <summary>
+    Recorded at the end of a Fast Checkout run.
+  </summary>
+  <metric name="RunId">
+    <summary>
+      Unique run ID for linking to other UKM events.
+    </summary>
+  </metric>
+  <metric name="RunOutcome" enum="FastCheckoutRunOutcome">
+    <summary>
+      States if the run was successful or why it was not.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.FieldFillStatus">
   <owner>rogerm@chromium.org</owner>
   <summary>
@@ -2334,13 +2388,19 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AutofillAssistantIntent" enum="AutofillAssistantIntent">
     <summary>
-      Describes the trigger source that invoked Autofill. Only recorded if
-      AutofillAssistantIntent was not undefined.
+      Obsolete. Used to describe the trigger source that invoked Autofill. Was
+      only recorded if AutofillAssistantIntent was not undefined.
     </summary>
   </metric>
   <metric name="AutofillFills">
     <summary>
       Number of Autofill fills invoked by the user on the current form.
+    </summary>
+  </metric>
+  <metric name="FastCheckoutRunId">
+    <summary>
+      Optional, only set if a form was filled by Fast Checkout. Unique ID of a
+      Fast Checkout run.
     </summary>
   </metric>
   <metric name="FillingAcceptance">
@@ -2674,7 +2734,7 @@ be describing additional metrics about the same event.
       counting distinct forms. Two different users would have different values.
       A single user loading the same form in two different tabs would have two
       different values. This is used to link the fields to a form in
-      Autofill.FormSummary.
+      Autofill2.FormSummary.
     </summary>
   </metric>
   <metric name="HadTypedOrFilledValueAtSubmission" enum="Boolean">
@@ -2741,11 +2801,27 @@ be describing additional metrics about the same event.
       visibility with false positives.
     </summary>
   </metric>
+  <metric name="OverallType" enum="AutofillServerFieldType">
+    <summary>
+      The final field type from the list of |autofill::ServerFieldType| that we
+      choose after rationalization, which is used to determine the autofill
+      suggestion when the user triggers autofilling.
+    </summary>
+  </metric>
   <metric name="RankInFieldSignatureGroup">
     <summary>
       If multiple fields have the same signature, this indicates the position
       within this set of fields. This allows us to understand problems related
       to duplicated field signatures.
+    </summary>
+  </metric>
+  <metric name="SectionId">
+    <summary>
+      A single HTML form can consist of multiple sections. A section is a set of
+      fields that are filled together. For example a single form can contain a
+      shipping and a billing address. Each of those corresponds to one section.
+      The sections are mapped to consecutive natural numbers starting at 1. The
+      section IDs are unique per form.
     </summary>
   </metric>
   <metric name="ServerPredictionSource1" enum="AutofillServerPredictionSource">
@@ -2804,6 +2880,11 @@ be describing additional metrics about the same event.
       had focus and user had data on file).
     </summary>
   </metric>
+  <metric name="TypeChangedByRationalization" enum="Boolean">
+    <summary>
+      Whether the field's type was changed by running the rationalization.
+    </summary>
+  </metric>
   <metric name="UserTypedIntoField" enum="Boolean">
     <summary>
       Whether the user ever typed into the field (regardless of autofill).
@@ -2826,6 +2907,79 @@ be describing additional metrics about the same event.
   <metric name="WasRefill" enum="Boolean">
     <summary>
       Whether the form was refilled by autofill.
+    </summary>
+  </metric>
+</event>
+
+<event name="Autofill2.FormSummary">
+  <owner>battre@chromium.org</owner>
+  <owner>chrome-autofill-team@google.com</owner>
+  <summary>
+    Information recorded for a HTML form element on the HTML page, recorded at
+    form submission or form destruction time (whatever comes first).
+  </summary>
+  <metric name="AutofillFormEvents">
+    <summary>
+      A bit vector of some autofill form events that records a funnel of this
+      autofill form. The autofill form events are from an enum list specifying
+      the possible status of the autofill forms, such as if a dropdown with
+      suggestions was shown, if the user interacted with a field in the form.
+      Some of the events are triggered separately for address and credit card
+      forms, e.g. if all the fillable fields in the credit card forms were
+      filled. New form events can be added over time and a form can have
+      multiple form events.
+    </summary>
+  </metric>
+  <metric name="FormSessionIdentifier">
+    <summary>
+      A random variable assigned to a specific instance of a HTML form in a
+      specific renderer. This should be globally unique and suitable for
+      counting distinct forms. Two different users would have different values.
+      A single user loading the same form in two different tabs would have two
+      different values. This is used to link the fields in this form in
+      Autofill2.FieldInfo.
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form, which is a 10-bit hash of the form's domain,
+      name and all the supported form fields (including empty names).
+    </summary>
+  </metric>
+  <metric name="IsInMainframe" enum="Boolean">
+    <summary>
+      This indicates whether the form is located in the main frame or in an
+      iframe. A cross-origin autofill is prevented only because shared-autofill
+      is disabled in the field's frame. Shared-autofill is a policy-controlled
+      feature by which a frame can allow a child-frame to be autofilled across
+      origin. We record the url of the main frame not the iframe even if the
+      form is in the iframe.
+    </summary>
+  </metric>
+  <metric name="MillisecondsFromFirstInteratctionUntilSubmission">
+    <summary>
+      The time interval from first interaction on the form to form submission in
+      ms in exponential buckets from |GetSemanticBucketMinForDurationTiming()|.
+    </summary>
+  </metric>
+  <metric name="MillisecondsFromFormParsedUntilSubmission">
+    <summary>
+      The time interval from form parse to form submission in ms in exponential
+      buckets from |GetSemanticBucketMinForDurationTiming()|.
+    </summary>
+  </metric>
+  <metric name="SampleRate">
+    <summary>
+      A sampling rate is a precomputed positive integer and is applied to each
+      form and adaptive to the popularity of forms. The most popular forms are
+      classified into a `very popular` category and maybe apply a 1:100 sampling
+      while the less popular forms have a sampling of 1:1. If the sampling is
+      1:X, this sample rate value stores the `X`.
+    </summary>
+  </metric>
+  <metric name="WasSubmitted" enum="Boolean">
+    <summary>
+      Whether the form was submitted.
     </summary>
   </metric>
 </event>
@@ -3100,10 +3254,29 @@ be describing additional metrics about the same event.
 
 <event name="Blink.FedCm">
   <owner>yigu@chromium.org</owner>
-  <owner>webid-core@google.com</owner>
+  <owner>web-identity-eng@google.com</owner>
   <summary>
     Records performance metrics for FedCM(Federated Credential Management) API.
   </summary>
+  <metric name="AutoReauthn.ReturningAccounts" enum="FedCmReturningAccounts">
+    <summary>
+      Records whether there was zero, one, or multiple returning accounts when a
+      site calls the FedCM API with autoReauthn: true. Records at most one
+      sample per failed API call: some failures could occur before this metric
+      is recorded.
+    </summary>
+  </metric>
+  <metric name="AutoReauthn.Succeeded" enum="Boolean">
+    <summary>
+      Records whether auto re-authn checks succeeded or not. The count would
+      provide roughly the number of FedCM re-authn attempts, the true count
+      would provide the number of times the re-authn UI is shown to the user,
+      and the false count would provide the number of attempts where auto
+      re-authn was blocked for some non-network related reason. Records at most
+      one sample per FedCM API with auto re-authn enabled: some failures could
+      occur before this metric is recorded.
+    </summary>
+  </metric>
   <metric name="FedCmSessionID">
     <summary>
       Records the session ID associated to the FedCM call for which this event
@@ -3158,7 +3331,7 @@ be describing additional metrics about the same event.
 
 <event name="Blink.FedCmIdp">
   <owner>npm@chromium.org</owner>
-  <owner>webid-core@google.com</owner>
+  <owner>web-identity-eng@google.com</owner>
   <summary>
     Records performance metrics for FedCM (Federated Credential Management) API.
     Recorded when the web developer calls the FedCM API. Individual metrics are
@@ -7463,8 +7636,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Graphics.Smoothness.EventLatency">
-  <owner>mohsen@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Tracks the duration of stages in the rendering pipeline when processing a
     single frame in response to an input event. To meet UKM goals for data
@@ -8291,7 +8463,7 @@ be describing additional metrics about the same event.
 
 <event name="Graphics.Smoothness.Latency">
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <owner>schenney@chromium.org</owner>
   <summary>
     Tracks the duration of stages in the rendering pipeline while processing a
@@ -8815,7 +8987,7 @@ be describing additional metrics about the same event.
 <event name="Graphics.Smoothness.NormalizedPercentDroppedFrames"
     singular="True">
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Measures various normalizations for the smoothness metric. The metric is
     measured by counting dropped frames, and various normalization strategies
@@ -9270,8 +9442,11 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Graphics.Smoothness.PercentDroppedFrames">
+  <obsolete>
+    Deprecated 02/2023.
+  </obsolete>
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     Tracks the percent of dropped frames for a particular sequence of frames
     such as during scroll or animation. PercentDroppedFrames is measured by
@@ -9600,7 +9775,7 @@ be describing additional metrics about the same event.
     Deprecated 02/2020.
   </obsolete>
   <owner>animations-dev@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <summary>
     As of 2020-02-12, this is deprecated in favor of
     Graphics.Smoothness.PercentDroppedFrames.
@@ -13254,8 +13429,7 @@ be describing additional metrics about the same event.
   </summary>
   <metric name="AnchorIndex">
     <summary>
-      The index of the clicked-on anchor element in NavigationPredictor's
-      |top_urls_|.
+      The index of the clicked-on anchor element in the tracked list.
     </summary>
   </metric>
   <metric name="BucketedPathHash">
@@ -13357,6 +13531,13 @@ be describing additional metrics about the same event.
     <summary>
       1 if the href of the anchor element at the time the click is handled is
       the same as the href when the element was created. 0 if the href changed.
+    </summary>
+  </metric>
+  <metric name="NavigationStartToLinkClickedMs">
+    <summary>
+      The time in milliseconds between the moment an entry for the anchor
+      element was logged to UKM and the moment the user clicked on it.
+      Exponentially bucketed, 1.3 factor.
     </summary>
   </metric>
 </event>
@@ -13461,6 +13642,50 @@ be describing additional metrics about the same event.
     <summary>
       A bool that is set if the page is a search result page for the browser's
       default search engine
+    </summary>
+  </metric>
+</event>
+
+<event name="NavigationPredictorUserInteractions">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>isaboori@google.com</owner>
+  <summary>
+    Metrics that describe user interaction with an anchor element. This event is
+    emitted once per randomly selected anchor elements.
+  </summary>
+  <metric name="AnchorIndex">
+    <summary>
+      The index of the anchor element in NavigationPredictor's |top_urls_|.
+    </summary>
+  </metric>
+  <metric name="IsInViewport">
+    <summary>
+      1 if anchor element is in viewport, otherwise 0.
+    </summary>
+  </metric>
+  <metric name="IsPointerHoveringOver">
+    <summary>
+      1 if the pointer is hovering over the anchor element, otherwise 0.
+    </summary>
+  </metric>
+  <metric name="MaxEnteredViewportToLeftViewportMs">
+    <summary>
+      Maximum time between the moment the anchor element entered the viewport
+      and the moment it left the viewport in milliseconds. Exponentially
+      bucketed using GetExponentialBucketMin a value of 1.3.
+    </summary>
+  </metric>
+  <metric name="MaxHoverDwellTimeMs">
+    <summary>
+      Maximum dwelltime of pointer hovering over the anchor element in
+      milliseconds. Exponentially bucketed using GetExponentialBucketMin a value
+      of 1.3.
+    </summary>
+  </metric>
+  <metric name="PointerHoveringOverCount">
+    <summary>
+      How many times the pointer was hovering over the anchor element.
+      Exponentially bucketed using GetExponentialBucketMin a value of 1.3.
     </summary>
   </metric>
 </event>
@@ -13570,6 +13795,9 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="Net.LegacyTLSVersion">
+  <obsolete>
+    Deprecated as of 2/2023.
+  </obsolete>
   <owner>davidben@chromium.org</owner>
   <summary>
     Recorded when a resource is loaded using TLS 1.0 or TLS 1.1.
@@ -15686,6 +15914,24 @@ be describing additional metrics about the same event.
       image, and omitted when it is text.
     </summary>
   </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageLoadEnd">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the LCP element(image) finishes loading. For
+      animated images, this is when the image resource finishes loading
+      completely, not the first frame time. See web.dev/optimize-lcp for more
+      details. This metric is not recorded when the LCP element is text or
+      video.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaintImageLoadStart">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the LCP element(image) starts loading. See
+      web.dev/optimize-lcp for more details. This metric is not recorded when
+      the LCP element is text or video.
+    </summary>
+  </metric>
   <metric name="PaintTiming.LargestContentfulPaintRequestPriority"
       enum="NetRequestPriority">
     <summary>
@@ -16945,6 +17191,27 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PerformanceManager.PageResourceUsage">
+  <owner>anthonyvd@chromium.org</owner>
+  <owner>joenotcharles@chromium.org</owner>
+  <summary>
+    Metrics detailing the estimated resources used by pages. The resources of a
+    renderer process are allocated to all pages hosted in that process using the
+    algorithm in performance_manager::ProcessMetricsDecorator. An event is
+    collected for each open page every 5 minutes.
+  </summary>
+  <metric name="PrivateFootprintEstimate">
+    <summary>
+      The estimated private footprint of the page, in kilobytes.
+    </summary>
+  </metric>
+  <metric name="ResidentSetSizeEstimate">
+    <summary>
+      The estimated resident set size of the page, in kilobytes.
+    </summary>
+  </metric>
+</event>
+
 <event name="PerformanceManager.PageTimelineState">
   <owner>anthonyvd@chromium.org</owner>
   <owner>spvw@chromium.org</owner>
@@ -17005,7 +17272,7 @@ be describing additional metrics about the same event.
   <metric name="ResidentSetSize">
     <summary>
       The total resident set size footprint of this page at the moment the
-      sample was recorded, in bytes.
+      sample was recorded, in kilobytes.
     </summary>
   </metric>
   <metric name="SliceId">
@@ -19854,6 +20121,78 @@ be describing additional metrics about the same event.
       Predicted result from executing the ML model. This is normally a score for
       determining whether to show a particular feature. The value is a floating
       number between 0 to 1 and encoded into IEEE 754 double precision here.
+      This is being deprecated. Use PredictionResult1 instead. Will add
+      deprecated flag once all the code are start using PredictionResult1.
+    </summary>
+  </metric>
+  <metric name="PredictionResult1">
+    <summary>
+      The 1st output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult10">
+    <summary>
+      The 10th output when inferencing the ML model with input data. The value
+      is a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult2">
+    <summary>
+      The 2nd output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult3">
+    <summary>
+      The 3rd output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult4">
+    <summary>
+      The 4th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult5">
+    <summary>
+      The 5th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult6">
+    <summary>
+      The 6th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult7">
+    <summary>
+      The 7th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult8">
+    <summary>
+      The 8th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
+    </summary>
+  </metric>
+  <metric name="PredictionResult9">
+    <summary>
+      The 9th output when inferencing the ML model with input data. The value is
+      a floating number between 0 to 1 and encoded into IEEE 754 double
+      precision here.
     </summary>
   </metric>
   <metric name="SelectionResult">
@@ -19995,6 +20334,20 @@ be describing additional metrics about the same event.
       Whether the user selected a device, an app or nothing (i.e. dismissal) in
       the user interface. For some entry points this might always be the same
       value (e.g. right clicks always select devices).
+    </summary>
+  </metric>
+</event>
+
+<event name="Shopping.AddToCartDetection">
+  <owner>wychen@chromium.org</owner>
+  <owner>yuezhanggg@chromium.org</owner>
+  <summary>
+    Metrics related to DOM-based AddToCart button detection in ChromeCart.
+  </summary>
+  <metric name="HeuristicsExecutionTime">
+    <summary>
+      Logged when DOM-based AddToCart button detection heuristic is executed and
+      records the execution time. This is expressed in microseconds.
     </summary>
   </metric>
 </event>
@@ -22991,6 +23344,7 @@ be describing additional metrics about the same event.
     Features of a web app recorded at most once per day if a user interacted
     with the web app. Recorded for installed and/or promotable (installable) web
     apps unless noted otherwise on the metric. Keyed by start_url of the app.
+    Note: Changed in Feb 2022 to only record when App sync is enabled.
   </summary>
   <metric name="BackgroundDuration">
     <summary>

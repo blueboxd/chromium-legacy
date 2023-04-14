@@ -417,7 +417,7 @@ bool SwiftShaderAllowed() {
 
 // Determines if Metal is available for the GPU process.
 [[maybe_unused]] bool MetalAllowed() {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
   return base::FeatureList::IsEnabled(features::kMetal);
 #else
   return false;

@@ -137,17 +137,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
 
     @Override
     @CalledByNative
-    public void didStartNavigationNoop(NavigationHandle navigation) {
-        handleObserverCall();
-        Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
-        for (; observersIterator.hasNext();) {
-            observersIterator.next().didStartNavigationNoop(navigation);
-        }
-        finishObserverCall();
-    }
-
-    @Override
-    @CalledByNative
     public void didRedirectNavigation(NavigationHandle navigation) {
         handleObserverCall();
         Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
@@ -164,17 +153,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
         Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
         for (; observersIterator.hasNext();) {
             observersIterator.next().didFinishNavigationInPrimaryMainFrame(navigation);
-        }
-        finishObserverCall();
-    }
-
-    @Override
-    @CalledByNative
-    public void didFinishNavigationNoop(NavigationHandle navigation) {
-        handleObserverCall();
-        Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
-        for (; observersIterator.hasNext();) {
-            observersIterator.next().didFinishNavigationNoop(navigation);
         }
         finishObserverCall();
     }
@@ -311,26 +289,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
     }
 
     @CalledByNative
-    private void didFinishLoadNoop(int renderProcessId, int renderFrameId, GURL url,
-            boolean isKnownValid, boolean isInPrimaryMainFrame,
-            @LifecycleState int frameLifecycleState) {
-        didFinishLoadNoop(new GlobalRenderFrameHostId(renderProcessId, renderFrameId), url,
-                isKnownValid, isInPrimaryMainFrame, frameLifecycleState);
-    }
-
-    @Override
-    public void didFinishLoadNoop(GlobalRenderFrameHostId rfhId, GURL url, boolean isKnownValid,
-            boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
-        handleObserverCall();
-        Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
-        for (; observersIterator.hasNext();) {
-            observersIterator.next().didFinishLoadNoop(
-                    rfhId, url, isKnownValid, isInPrimaryMainFrame, rfhLifecycleState);
-        }
-        finishObserverCall();
-    }
-
-    @CalledByNative
     private void documentLoadedInPrimaryMainFrame(
             int renderProcessId, int renderFrameId, @LifecycleState int rfhLifecycleState) {
         documentLoadedInPrimaryMainFrame(
@@ -344,25 +302,6 @@ class WebContentsObserverProxy extends WebContentsObserver {
         Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
         for (; observersIterator.hasNext();) {
             observersIterator.next().documentLoadedInPrimaryMainFrame(rfhId, rfhLifecycleState);
-        }
-        finishObserverCall();
-    }
-
-    @CalledByNative
-    private void documentLoadedInFrameNoop(int renderProcessId, int renderFrameId,
-            boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
-        documentLoadedInFrameNoop(new GlobalRenderFrameHostId(renderProcessId, renderFrameId),
-                false, rfhLifecycleState);
-    }
-
-    @Override
-    public void documentLoadedInFrameNoop(GlobalRenderFrameHostId rfhId,
-            boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
-        handleObserverCall();
-        Iterator<WebContentsObserver> observersIterator = mObservers.iterator();
-        for (; observersIterator.hasNext();) {
-            observersIterator.next().documentLoadedInFrameNoop(
-                    rfhId, isInPrimaryMainFrame, rfhLifecycleState);
         }
         finishObserverCall();
     }

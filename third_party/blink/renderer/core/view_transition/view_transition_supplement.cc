@@ -152,7 +152,6 @@ void ViewTransitionSupplement::StartTransition(
   }
   DCHECK(!transition_)
       << "skipTransition() should finish existing |transition_|";
-
   transition_ = ViewTransition::CreateForSnapshotForNavigation(
       &document, std::move(callback), this);
 }
@@ -166,12 +165,32 @@ void ViewTransitionSupplement::CreateFromSnapshotForNavigation(
   supplement->StartTransition(document, std::move(transition_state));
 }
 
+// static
+void ViewTransitionSupplement::AbortTransition(Document& document) {
+  auto* supplement = FromIfExists(document);
+  if (supplement && supplement->transition_) {
+    supplement->transition_->skipTransition();
+    DCHECK(!supplement->transition_);
+  }
+}
+
 void ViewTransitionSupplement::StartTransition(
     Document& document,
     ViewTransitionState transition_state) {
   DCHECK(!transition_) << "Existing transition on new Document";
   transition_ = ViewTransition::CreateFromSnapshotForNavigation(
       &document, std::move(transition_state), this);
+
+  // We may already be past the render blocking if this page is coming back from
+  // a BFCache or has been pre-rendered. In that case, let the transition know
+  // to advance the state. Note that this has to be done outside of
+  // `CreateFromSnapshotForNavigation`, because future phases will cause parts
+  // of the code (layout & paint specifically) to try and access the transition
+  // object, which wouldn't have been set yet if the following code is done in
+  // the constructor.
+  if (document.RenderingHasBegun()) {
+    transition_->NotifyRenderingHasBegun();
+  }
 }
 
 void ViewTransitionSupplement::OnTransitionFinished(
@@ -185,15 +204,6 @@ ViewTransition* ViewTransitionSupplement::GetActiveTransition() {
   return transition_;
 }
 
-void ViewTransitionSupplement::UpdateViewTransitionNames(
-    const Element& element,
-    const ComputedStyle* style) {
-  if (style && style->ViewTransitionName())
-    elements_with_view_transition_name_.insert(&element);
-  else
-    elements_with_view_transition_name_.erase(&element);
-}
-
 ViewTransitionSupplement::ViewTransitionSupplement(Document& document)
     : Supplement<Document>(document) {}
 
@@ -201,7 +211,6 @@ ViewTransitionSupplement::~ViewTransitionSupplement() = default;
 
 void ViewTransitionSupplement::Trace(Visitor* visitor) const {
   visitor->Trace(transition_);
-  visitor->Trace(elements_with_view_transition_name_);
 
   Supplement<Document>::Trace(visitor);
 }

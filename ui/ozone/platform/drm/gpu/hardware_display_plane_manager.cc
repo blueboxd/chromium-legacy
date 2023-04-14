@@ -141,9 +141,13 @@ base::flat_set<uint32_t> HardwareDisplayPlaneManager::CrtcMaskToCrtcIds(
 bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
                                                const DrmOverlayPlane& overlay,
                                                uint32_t crtc_id) const {
-  if (plane->in_use() || plane->type() == DRM_PLANE_TYPE_CURSOR ||
-      !plane->CanUseForCrtcId(crtc_id))
+  bool ownership_compatible =
+      plane->owning_crtc() == 0 || plane->owning_crtc() == crtc_id;
+  if (plane->in_use() || !ownership_compatible ||
+      plane->type() == DRM_PLANE_TYPE_CURSOR ||
+      !plane->CanUseForCrtcId(crtc_id)) {
     return false;
+  }
 
   const uint32_t format =
       overlay.enable_blend ? overlay.buffer->framebuffer_pixel_format()
@@ -364,19 +368,6 @@ bool HardwareDisplayPlaneManager::SetGammaCorrection(
   return CommitGammaCorrection(*crtc_props);
 }
 
-bool HardwareDisplayPlaneManager::SetVrrEnabled(uint32_t crtc_id,
-                                                bool vrr_enabled) {
-  const auto crtc_index = LookupCrtcIndex(crtc_id);
-  if (!crtc_index) {
-    LOG(ERROR) << "Unknown CRTC ID=" << crtc_id;
-    return false;
-  }
-
-  CrtcState* crtc_state = &crtc_state_[*crtc_index];
-  crtc_state->properties.vrr_enabled.value = vrr_enabled;
-  return true;
-}
-
 bool HardwareDisplayPlaneManager::InitializeCrtcState() {
   ScopedDrmResourcesPtr resources(drm_->GetResources());
   if (!resources) {
@@ -458,8 +449,7 @@ void HardwareDisplayPlaneManager::DisableConnectedConnectorsToCrtcs(
     // encoder).
     if (connector->encoder_id &&
         connector->connection == DRM_MODE_DISCONNECTED) {
-      ScopedDrmEncoderPtr encoder(
-          drmModeGetEncoder(drm_->get_fd(), connector->encoder_id));
+      ScopedDrmEncoderPtr encoder = drm_->GetEncoder(connector->encoder_id);
       if (encoder)
         drm_->DisableCrtc(encoder->crtc_id);
     }
@@ -483,7 +473,7 @@ void HardwareDisplayPlaneManager::UpdateCrtcAndPlaneStatesAfterModeset(
   base::flat_set<HardwareDisplayPlaneList*> disable_planes_lists;
 
   for (const auto& crtc_request : commit_request) {
-    bool is_enabled = crtc_request.should_enable();
+    bool is_enabled = crtc_request.should_enable_crtc();
 
     auto connector_index = LookupConnectorIndex(crtc_request.connector_id());
     DCHECK(connector_index.has_value());
@@ -492,6 +482,7 @@ void HardwareDisplayPlaneManager::UpdateCrtcAndPlaneStatesAfterModeset(
 
     CrtcState& crtc_state = CrtcStateForCrtcId(crtc_request.crtc_id());
     crtc_state.properties.active.value = static_cast<uint64_t>(is_enabled);
+    crtc_state.properties.vrr_enabled.value = crtc_request.enable_vrr();
 
     if (is_enabled) {
       crtc_state.mode = crtc_request.mode();
@@ -526,13 +517,13 @@ void HardwareDisplayPlaneManager::ResetModesetStateForCrtc(uint32_t crtc_id) {
   crtc_state.modeset_framebuffers.clear();
 }
 
-ui::HardwareCapabilities HardwareDisplayPlaneManager::GetHardwareCapabilities(
+HardwareCapabilities HardwareDisplayPlaneManager::GetHardwareCapabilities(
     uint32_t crtc_id) {
   absl::optional<std::string> driver = drm_->GetDriverName();
   if (!driver.has_value())
     return {.is_valid = false};
 
-  ui::HardwareCapabilities hc;
+  HardwareCapabilities hc;
   hc.is_valid = true;
   hc.num_overlay_capable_planes = base::ranges::count_if(
       planes_, [crtc_id](const std::unique_ptr<HardwareDisplayPlane>& plane) {

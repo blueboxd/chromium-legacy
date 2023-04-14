@@ -5,12 +5,17 @@
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <utility>
 
 #include "ash/constants/ash_features.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_forward.h"
+#include "base/location.h"
 #include "base/strings/strcat.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "base/unguessable_token.h"
 #include "chromeos/ash/components/drivefs/drivefs_bootstrap.h"
 #include "chromeos/ash/components/drivefs/drivefs_host_observer.h"
@@ -18,6 +23,7 @@
 #include "chromeos/ash/components/drivefs/drivefs_search.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
+#include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "components/drive/drive_notification_manager.h"
 #include "components/drive/drive_notification_observer.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -29,6 +35,11 @@
 namespace drivefs {
 
 namespace {
+
+// Time to accumulate individual sync status events after a SyncingStatusUpdate
+// is received from DriveFS. By the end of this interval, all events accumulated
+// so far are dispatched in batch to observers, excluding any redundant events.
+constexpr auto kIndividualSyncStatusIntervalMs = base::Milliseconds(100);
 
 constexpr char kDataPath[] = "GCache/v2";
 
@@ -63,6 +74,14 @@ class DriveFsHost::MountState : public DriveFsSession,
       http_client_ = std::make_unique<DriveFsHttpClient>(
           host_->delegate_->GetURLLoaderFactory());
     }
+
+    if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+      sync_throttle_timer_ = std::make_unique<base::RetainingOneShotTimer>(
+          FROM_HERE, kIndividualSyncStatusIntervalMs,
+          base::BindRepeating(
+              &DriveFsHost::MountState::DispatchBatchIndividualSyncEvents,
+              weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 
   MountState(const MountState&) = delete;
@@ -70,6 +89,9 @@ class DriveFsHost::MountState : public DriveFsSession,
 
   ~MountState() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
+    if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+      sync_throttle_timer_->Stop();
+    }
     if (team_drives_fetched_) {
       host_->delegate_->GetDriveNotificationManager().ClearTeamDriveIds();
       host_->delegate_->GetDriveNotificationManager().RemoveObserver(this);
@@ -124,8 +146,36 @@ class DriveFsHost::MountState : public DriveFsSession,
     token_fetch_attempted_ = true;
   }
 
+  void DispatchBatchIndividualSyncEvents() {
+    if (!base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+      return;
+    }
+
+    // Get all the syncing states for the paths that had any updates since the
+    // timer started running.
+    const auto sync_states = sync_status_tracker_->GetChangesAndClean();
+
+    if (sync_states.empty()) {
+      return;
+    }
+
+    // Only send states with paths below the mount path.
+    std::vector<const SyncState> filtered_states;
+    for (const auto& state : sync_states) {
+      if (mount_path().IsParent(state.path)) {
+        filtered_states.emplace_back(std::move(state));
+      }
+    }
+
+    for (auto& observer : host_->observers_) {
+      observer.OnIndividualSyncingStatusesDelta(filtered_states);
+    }
+  }
+
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
     if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus)) {
+      ResetThrottleTimer();
+
       // Keep track of the syncing paths.
       bool has_invalid_progress = false;
       for (const mojom::ItemEventPtr& event : status->item_events) {
@@ -170,6 +220,15 @@ class DriveFsHost::MountState : public DriveFsSession,
     }
   }
 
+  // Reset the timer if it has finished. This will cause individual syncing
+  // status events to be dispatched as soon as the timer finishes again.
+  void ResetThrottleTimer() {
+    if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus) &&
+        !sync_throttle_timer_->IsRunning()) {
+      sync_throttle_timer_->Reset();
+    }
+  }
+
   void OnMirrorSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
     for (auto& observer : host_->observers_) {
       observer.OnMirrorSyncingStatusUpdate(*status);
@@ -188,14 +247,15 @@ class DriveFsHost::MountState : public DriveFsSession,
   }
 
   void OnError(mojom::DriveErrorPtr error) override {
-    base::FilePath path = host_->GetMountPath();
-
     // Verify if we have a valid stable_id. It could be invalid because the
     // DriveFs version that reports stable_id for DriveErrors hasn't been
     // uprreved into ChromeOS yet, but it could be due to some actual error.
-    if (error->stable_id > 0) {
+    if (base::FeatureList::IsEnabled(ash::features::kFilesInlineSyncStatus) &&
+        error->stable_id > 0) {
+      base::FilePath path = host_->GetMountPath();
       if (base::FilePath("/").AppendRelativePath(base::FilePath(error->path),
                                                  &path)) {
+        ResetThrottleTimer();
         sync_status_tracker_->SetError(error->stable_id, std::move(path));
       } else {
         LOG(ERROR) << "Failed to make path relative to drive root";
@@ -240,8 +300,8 @@ class DriveFsHost::MountState : public DriveFsSession,
       mojo::PendingReceiver<mojom::NativeMessagingPort> port,
       mojo::PendingRemote<mojom::NativeMessagingHost> host,
       ConnectToExtensionCallback callback) override {
-    std::move(callback).Run(host_->delegate_->ConnectToExtension(
-        std::move(params), std::move(port), std::move(host)));
+    host_->delegate_->ConnectToExtension(std::move(params), std::move(port),
+                                         std::move(host), std::move(callback));
   }
 
   void DisplayConfirmDialog(mojom::DialogReasonPtr error,
@@ -312,6 +372,11 @@ class DriveFsHost::MountState : public DriveFsSession,
 
   bool token_fetch_attempted_ = false;
   bool team_drives_fetched_ = false;
+
+  // Used to dispatch individual sync status updates in a debounced manner, only
+  // sending the sync states that have changed since the last dispatched event.
+  std::unique_ptr<base::RetainingOneShotTimer> sync_throttle_timer_;
+  base::WeakPtrFactory<DriveFsHost::MountState> weak_ptr_factory_{this};
 };
 
 DriveFsHost::DriveFsHost(

@@ -80,7 +80,7 @@ void AutofillMetricsBaseTest::SetUpHelper() {
 
   auto touch_to_fill_delegate_uptr =
       std::make_unique<TouchToFillDelegateImpl>(&autofill_manager());
-  touch_to_fill_delgate_ = touch_to_fill_delegate_uptr.get();
+  touch_to_fill_delegate_ = touch_to_fill_delegate_uptr.get();
   autofill_manager().SetTouchToFillDelegateImplForTest(
       std::move(touch_to_fill_delegate_uptr));
 
@@ -159,7 +159,7 @@ void AutofillMetricsBaseTest::OnDidGetRealPan(
     bool is_virtual_card) {
   payments::FullCardRequest* full_card_request = autofill_manager()
                                                      .client()
-                                                     ->GetCVCAuthenticator()
+                                                     ->GetCvcAuthenticator()
                                                      ->full_card_request_.get();
   DCHECK(full_card_request);
 
@@ -178,7 +178,7 @@ void AutofillMetricsBaseTest::OnDidGetRealPan(
 void AutofillMetricsBaseTest::OnDidGetRealPanWithNonHttpOkResponse() {
   payments::FullCardRequest* full_card_request = autofill_manager()
                                                      .client()
-                                                     ->GetCVCAuthenticator()
+                                                     ->GetCvcAuthenticator()
                                                      ->full_card_request_.get();
   DCHECK(full_card_request);
 

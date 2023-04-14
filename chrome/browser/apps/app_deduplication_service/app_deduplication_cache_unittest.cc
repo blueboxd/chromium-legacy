@@ -12,6 +12,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
+#include "base/test/bind.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/apps/app_deduplication_service/proto/deduplication_data.pb.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,6 +37,7 @@ class AppDeduplicationCacheTest : public testing::Test {
   base::FilePath temp_dir_path_;
 
  private:
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -43,43 +47,84 @@ TEST_F(AppDeduplicationCacheTest, WriteAndReadDataSuccess) {
   app->set_app_id("com.skype.raidar");
   app->set_platform("phonehub");
 
-  const base::FilePath file_path = temp_dir_path_.AppendASCII("test.pb");
+  EXPECT_FALSE(base::DirectoryExists(temp_dir_path_));
 
-  EXPECT_TRUE(cache_->WriteDeduplicateDataToDisk(file_path, data));
+  {
+    base::RunLoop loop;
+    bool write_result;
+    cache_->WriteDeduplicationCache(
+        data, base::BindLambdaForTesting([&write_result, &loop](bool result) {
+          write_result = std::move(result);
+          loop.Quit();
+        }));
+    loop.Run();
 
-  EXPECT_TRUE(base::PathExists(file_path));
+    EXPECT_TRUE(write_result);
+  }
 
-  absl::optional<proto::DeduplicateData> data_read =
-      cache_->ReadDeduplicateDataFromDisk(file_path);
+  EXPECT_TRUE(
+      base::PathExists(temp_dir_path_.AppendASCII("deduplication_data.pb")));
 
-  EXPECT_TRUE(data_read.has_value());
-  EXPECT_EQ(data_read->app_group_size(), 1);
+  {
+    base::RunLoop loop;
+    absl::optional<proto::DeduplicateData> data_read;
+    cache_->ReadDeduplicationCache(base::BindLambdaForTesting(
+        [&data_read, &loop](absl::optional<proto::DeduplicateData> result) {
+          data_read = std::move(result);
+          loop.Quit();
+        }));
+    loop.Run();
 
-  auto observed_app = data_read->app_group(0).app(0);
-  EXPECT_EQ(observed_app.app_id(), "com.skype.raidar");
-  EXPECT_EQ(observed_app.platform(), "phonehub");
+    EXPECT_TRUE(data_read.has_value());
+    EXPECT_EQ(data_read->app_group_size(), 1);
+
+    auto observed_app = data_read->app_group(0).app(0);
+    EXPECT_EQ(observed_app.app_id(), "com.skype.raidar");
+    EXPECT_EQ(observed_app.platform(), "phonehub");
+  }
 }
 
-TEST_F(AppDeduplicationCacheTest, WriteDataInvalidPath) {
-  proto::DeduplicateData data;
-
-  EXPECT_FALSE(cache_->WriteDeduplicateDataToDisk(
-      temp_dir_path_.AppendASCII("fake_folder").AppendASCII("test.pb"), data));
-}
-
-TEST_F(AppDeduplicationCacheTest, ReadDataInvalidPath) {
+TEST_F(AppDeduplicationCacheTest, WriteAndReadDataExistingPath) {
   proto::DeduplicateData data;
   auto* app = data.add_app_group()->add_app();
   app->set_app_id("com.skype.raidar");
   app->set_platform("phonehub");
 
-  EXPECT_TRUE(cache_->WriteDeduplicateDataToDisk(
-      temp_dir_path_.AppendASCII("test.pb"), data));
+  EXPECT_TRUE(base::CreateDirectory(temp_dir_path_));
 
-  EXPECT_FALSE(cache_
-                   ->ReadDeduplicateDataFromDisk(
-                       temp_dir_path_.AppendASCII("fake_file.pb"))
-                   .has_value());
+  {
+    base::RunLoop loop;
+    bool write_result;
+    cache_->WriteDeduplicationCache(
+        data, base::BindLambdaForTesting([&write_result, &loop](bool result) {
+          write_result = std::move(result);
+          loop.Quit();
+        }));
+    loop.Run();
+
+    EXPECT_TRUE(write_result);
+  }
+
+  EXPECT_TRUE(
+      base::PathExists(temp_dir_path_.AppendASCII("deduplication_data.pb")));
+
+  {
+    base::RunLoop loop;
+    absl::optional<proto::DeduplicateData> data_read;
+    cache_->ReadDeduplicationCache(base::BindLambdaForTesting(
+        [&data_read, &loop](absl::optional<proto::DeduplicateData> result) {
+          data_read = std::move(result);
+          loop.Quit();
+        }));
+    loop.Run();
+
+    EXPECT_TRUE(data_read.has_value());
+    EXPECT_EQ(data_read->app_group_size(), 1);
+
+    auto observed_app = data_read->app_group(0).app(0);
+    EXPECT_EQ(observed_app.app_id(), "com.skype.raidar");
+    EXPECT_EQ(observed_app.platform(), "phonehub");
+  }
 }
 
 }  // namespace apps::deduplication

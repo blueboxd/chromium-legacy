@@ -11,10 +11,11 @@
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/dangling_raw_ptr_checks.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/feature_list.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +35,7 @@ TEST(PartitionAllocSupportTest, ProposeSyntheticFinchTrials_BRPAndPCScan) {
         features::kPartitionAllocPCScanBrowserOnly};
     pcscan_scope.InitWithFeatures(pcscan_enabled ? pcscan_list : empty_list,
                                   pcscan_enabled ? empty_list : pcscan_list);
-#if !PA_CONFIG(ALLOW_PCSCAN)
+#if !BUILDFLAG(USE_STARSCAN)
     pcscan_enabled = false;
 #endif
 
@@ -50,7 +51,7 @@ TEST(PartitionAllocSupportTest, ProposeSyntheticFinchTrials_BRPAndPCScan) {
       brp_expectation = pcscan_enabled ? "Ignore_PCScanIsOn" : "Ignore_NoGroup";
 #endif
       pcscan_expectation = "Unavailable";
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
       pcscan_expectation = pcscan_enabled ? "Enabled" : "Disabled";
 #endif
 
@@ -91,13 +92,13 @@ TEST(PartitionAllocSupportTest, ProposeSyntheticFinchTrials_BRPAndPCScan) {
         // (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
       pcscan_expectation = "Unavailable";
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 #if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
       pcscan_expectation = "Ignore_BRPIsOn";
 #else
       pcscan_expectation = pcscan_enabled ? "Enabled" : "Disabled";
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
       auto trials = ProposeSyntheticFinchTrials();
       auto group_iter = trials.find("BackupRefPtr_Effective");
@@ -149,14 +150,14 @@ TEST(PartitionAllocSupportTest, ProposeSyntheticFinchTrials_BRPAndPCScan) {
         }
         pcscan_expectation = "Unavailable";
         std::string pcscan_expectation_fallback = "Unavailable";
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
         pcscan_expectation = brp_truly_enabled
                                  ? "Ignore_BRPIsOn"
                                  : (pcscan_enabled ? "Enabled" : "Disabled");
         pcscan_expectation_fallback =
             brp_nondefault_behavior ? "Ignore_BRPIsOn"
                                     : (pcscan_enabled ? "Enabled" : "Disabled");
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
         auto trials = ProposeSyntheticFinchTrials();
         auto group_iter = trials.find("BackupRefPtr_Effective");
@@ -195,14 +196,22 @@ namespace {
 // Install dangling raw_ptr handler and restore them when going out of scope.
 class ScopedInstallDanglingRawPtrChecks {
  public:
-  ScopedInstallDanglingRawPtrChecks() {
+  struct ConstructorParams {
+    std::string mode = "crash";
+    std::string type = "all";
+  };
+  ScopedInstallDanglingRawPtrChecks(ConstructorParams params) {
     enabled_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kPartitionAllocDanglingPtr, {{"mode", "crash"}}}},
+        {{features::kPartitionAllocDanglingPtr,
+          {{"mode", params.mode}, {"type", params.type}}}},
         {/* disabled_features */});
+
     old_detected_fn_ = partition_alloc::GetDanglingRawPtrDetectedFn();
     old_dereferenced_fn_ = partition_alloc::GetDanglingRawPtrReleasedFn();
     InstallDanglingRawPtrChecks();
   }
+  ScopedInstallDanglingRawPtrChecks()
+      : ScopedInstallDanglingRawPtrChecks(ConstructorParams{}) {}
   ~ScopedInstallDanglingRawPtrChecks() {
     partition_alloc::SetDanglingRawPtrDetectedFn(old_detected_fn_);
     partition_alloc::SetDanglingRawPtrReleasedFn(old_dereferenced_fn_);
@@ -222,6 +231,7 @@ TEST(PartitionAllocDanglingPtrChecks, Basic) {
   EXPECT_DEATH(
       partition_alloc::GetDanglingRawPtrReleasedFn()(42),
       AllOf(HasSubstr("Detected dangling raw_ptr with id=0x000000000000002a:"),
+            HasSubstr("[DanglingSignature]\t"),
             HasSubstr("The memory was freed at:"),
             HasSubstr("The dangling raw_ptr was released at:")));
 }
@@ -233,6 +243,7 @@ TEST(PartitionAllocDanglingPtrChecks, FreeNotRecorded) {
   EXPECT_DEATH(
       partition_alloc::GetDanglingRawPtrReleasedFn()(42),
       AllOf(HasSubstr("Detected dangling raw_ptr with id=0x000000000000002a:"),
+            HasSubstr("[DanglingSignature]\tmissing\tmissing\t"),
             HasSubstr("It was not recorded where the memory was freed."),
             HasSubstr("The dangling raw_ptr was released at:")));
 }
@@ -247,6 +258,74 @@ TEST(PartitionAllocDanglingPtrChecks, DoubleDetection) {
                            "Check failed: !entry \\|\\| entry->id != id");
 }
 #endif  // !defined(OFFICIAL_BUILD) || !defined(NDEBUG)
+
+// Free and release from two different tasks with cross task dangling pointer
+// detection enabled.
+TEST(PartitionAllocDanglingPtrChecks, CrossTask) {
+  ScopedInstallDanglingRawPtrChecks scoped_install_dangling_checks({
+      .type = "cross_task",
+  });
+
+  base::test::TaskEnvironment task_environment;
+  task_environment.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(partition_alloc::GetDanglingRawPtrDetectedFn(), 42));
+  task_environment.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        BASE_EXPECT_DEATH(
+            partition_alloc::GetDanglingRawPtrReleasedFn()(42),
+            AllOf(HasSubstr(
+                      "Detected dangling raw_ptr with id=0x000000000000002a:"),
+                  HasSubstr("[DanglingSignature]\t"),
+                  HasSubstr("The memory was freed at:"),
+                  HasSubstr("The dangling raw_ptr was released at:")));
+      }));
+  task_environment.RunUntilIdle();
+}
+
+TEST(PartitionAllocDanglingPtrChecks, CrossTaskIgnoredFailuresClearsCache) {
+  ScopedInstallDanglingRawPtrChecks scoped_install_dangling_checks({
+      .type = "cross_task",
+  });
+
+  base::test::TaskEnvironment task_environment;
+  partition_alloc::GetDanglingRawPtrDetectedFn()(42);
+  partition_alloc::GetDanglingRawPtrReleasedFn()(42);
+  task_environment.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(partition_alloc::GetDanglingRawPtrReleasedFn(), 42));
+  task_environment.RunUntilIdle();
+}
+
+TEST(PartitionAllocDanglingPtrChecks, CrossTaskIgnoresNoTask) {
+  ScopedInstallDanglingRawPtrChecks scoped_install_dangling_checks({
+      .type = "cross_task",
+  });
+
+  partition_alloc::GetDanglingRawPtrDetectedFn()(42);
+  partition_alloc::GetDanglingRawPtrReleasedFn()(42);
+}
+
+TEST(PartitionAllocDanglingPtrChecks, CrossTaskIgnoresSameTask) {
+  ScopedInstallDanglingRawPtrChecks scoped_install_dangling_checks({
+      .type = "cross_task",
+  });
+
+  base::test::TaskEnvironment task_environment;
+  task_environment.GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce([]() {
+        partition_alloc::GetDanglingRawPtrDetectedFn()(37);
+        partition_alloc::GetDanglingRawPtrReleasedFn()(37);
+      }));
+  task_environment.RunUntilIdle();
+}
+
+TEST(PartitionAllocDanglingPtrChecks, CrossTaskNoFreeConsideredCrossTask) {
+  ScopedInstallDanglingRawPtrChecks scoped_install_dangling_checks({
+      .type = "cross_task",
+  });
+  partition_alloc::GetDanglingRawPtrReleasedFn()(42);
+}
 
 #endif
 

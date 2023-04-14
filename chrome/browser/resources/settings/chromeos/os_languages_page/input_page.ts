@@ -35,7 +35,7 @@ import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -112,7 +112,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kShowInputOptionsInShelf,
           Setting.kAddInputMethod,
           Setting.kSpellCheck,
@@ -196,7 +196,7 @@ class OsSettingsInputPageElement extends OsSettingsInputPageElementBase {
 
   // Internal properties for mixins.
   // From DeepLinkingMixin.
-  // override supportedSettingIds = new Set([
+  // override supportedSettingIds = new Set<Setting>([
   //   Setting.kShowInputOptionsInShelf,
   //   Setting.kAddInputMethod,
   //   Setting.kSpellCheck,

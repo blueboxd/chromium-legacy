@@ -8,12 +8,14 @@
 
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/download/bubble/download_bubble_controller.h"
 #include "chrome/browser/download/bubble/download_display_controller.h"
 #include "chrome/browser/download/download_ui_model.h"
+#include "chrome/browser/platform_util.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_security_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_bubble_started_animation_views.h"
 #include "chrome/browser/ui/views/download/bubble/download_dialog_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -30,6 +33,8 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -92,7 +97,7 @@ class CircleBadgeImageSource : public gfx::CanvasImageSource {
 
  private:
   // Pointee may be modified to change the text color upon painting.
-  gfx::RenderText* const render_text_ = nullptr;
+  const raw_ptr<gfx::RenderText> render_text_ = nullptr;
   const SkColor text_color_;
   const SkColor background_color_;
 };
@@ -255,7 +260,13 @@ void DownloadToolbarButtonView::Disable() {
   SetEnabled(false);
 }
 
-void DownloadToolbarButtonView::UpdateDownloadIcon() {
+void DownloadToolbarButtonView::UpdateDownloadIcon(bool show_animation) {
+  if (show_animation && gfx::Animation::ShouldRenderRichAnimation()) {
+    has_pending_download_started_animation_ = true;
+    if (!needs_layout()) {
+      ShowPendingDownloadStartedAnimation();
+    }
+  }
   UpdateIcon();
 }
 
@@ -334,6 +345,10 @@ void DownloadToolbarButtonView::Layout() {
   }
   badge_image_view_->SetBoundsRect(
       gfx::Rect(badge_offset_x, badge_offset_y, badge_height, badge_height));
+
+  // If there is a pending animation, show it now after we have laid out the
+  // view properly.
+  ShowPendingDownloadStartedAnimation();
 }
 
 std::unique_ptr<views::View> DownloadToolbarButtonView::GetPrimaryView() {
@@ -458,6 +473,25 @@ std::unique_ptr<views::View> DownloadToolbarButtonView::CreateRowListView(
   scroll_view->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kEnabled);
   return std::move(scroll_view);
+}
+
+void DownloadToolbarButtonView::ShowPendingDownloadStartedAnimation() {
+  if (!has_pending_download_started_animation_) {
+    return;
+  }
+  content::WebContents* const web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents ||
+      !platform_util::IsVisible(web_contents->GetNativeView())) {
+    return;
+  }
+  const ui::ColorProvider* color_provider = GetColorProvider();
+  // Animation cleans itself up after it's done.
+  new DownloadBubbleStartedAnimationViews(
+      web_contents, image()->GetBoundsInScreen(),
+      color_provider->GetColor(kColorDownloadToolbarButtonAnimationForeground),
+      color_provider->GetColor(kColorDownloadToolbarButtonAnimationBackground));
+  has_pending_download_started_animation_ = false;
 }
 
 SkColor DownloadToolbarButtonView::GetIconColor() const {

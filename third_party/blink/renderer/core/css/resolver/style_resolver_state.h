@@ -76,10 +76,7 @@ class CORE_EXPORT StyleResolverState {
     return element_context_.ParentNode();
   }
   const ComputedStyle* RootElementStyle() const {
-    if (const auto* root_element_style = element_context_.RootElementStyle()) {
-      return root_element_style;
-    }
-    return style_builder_.InternalStyle();
+    return element_context_.RootElementStyle();
   }
   EInsideLink ElementLinkState() const {
     return element_context_.ElementLinkState();
@@ -89,10 +86,14 @@ class CORE_EXPORT StyleResolverState {
     return element_context_;
   }
 
-  void SetStyle(scoped_refptr<ComputedStyle>);
-  ComputedStyleBuilder& StyleBuilder() { return style_builder_; }
-  const ComputedStyleBuilder& StyleBuilder() const { return style_builder_; }
-  scoped_refptr<ComputedStyle> TakeStyle();
+  void SetStyle(const ComputedStyle& style) {
+    // FIXME: Improve RAII of StyleResolverState to remove this function.
+    style_builder_ = ComputedStyleBuilder(style);
+    UpdateLengthConversionData();
+  }
+  ComputedStyleBuilder& StyleBuilder() { return *style_builder_; }
+  const ComputedStyleBuilder& StyleBuilder() const { return *style_builder_; }
+  scoped_refptr<const ComputedStyle> TakeStyle();
 
   const CSSToLengthConversionData& CssToLengthConversionData() const {
     return css_to_length_conversion_data_;
@@ -132,6 +133,11 @@ class CORE_EXPORT StyleResolverState {
   const ComputedStyle* LayoutParentStyle() const {
     return layout_parent_style_.get();
   }
+
+  void SetOldStyle(scoped_refptr<const ComputedStyle> old_style) {
+    old_style_ = std::move(old_style);
+  }
+  const ComputedStyle* OldStyle() const { return old_style_.get(); }
 
   ElementStyleResources& GetElementStyleResources() {
     return element_style_resources_;
@@ -206,16 +212,16 @@ class CORE_EXPORT StyleResolverState {
   // Update computed line-height and font used for 'lh' unit resolution.
   void UpdateLineHeight();
 
- private:
   void UpdateLengthConversionData();
-  CSSToLengthConversionData UnzoomedLengthConversionData(
-      const ComputedStyle* font_style);
+
+ private:
+  CSSToLengthConversionData UnzoomedLengthConversionData(const FontSizeStyle&);
 
   ElementResolveContext element_context_;
   Document* document_;
 
   // The primary output for each element's style resolve.
-  ComputedStyleBuilder style_builder_;
+  absl::optional<ComputedStyleBuilder> style_builder_;
 
   CSSToLengthConversionData::Flags length_conversion_flags_ = 0;
   CSSToLengthConversionData css_to_length_conversion_data_;
@@ -227,6 +233,9 @@ class CORE_EXPORT StyleResolverState {
   // presence of display: contents. This is the style against which we have to
   // do adjustment.
   scoped_refptr<const ComputedStyle> layout_parent_style_;
+  // The ComputedStyle stored on the element before the current lifecycle update
+  // started.
+  scoped_refptr<const ComputedStyle> old_style_;
 
   CSSAnimationUpdate animation_update_;
   StyleRequest::RequestType pseudo_request_type_;

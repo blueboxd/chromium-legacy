@@ -64,7 +64,9 @@ class AddressNormalizer;
 class AutocompleteHistoryManager;
 class AutofillAblationStudy;
 class AutofillDriver;
+class AutofillDownloadManager;
 struct AutofillErrorDialogContext;
+class AutofillManager;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillPopupDelegate;
@@ -74,7 +76,7 @@ struct CardUnmaskChallengeOption;
 class CardUnmaskDelegate;
 struct CardUnmaskPromptOptions;
 class CreditCard;
-class CreditCardCVCAuthenticator;
+class CreditCardCvcAuthenticator;
 enum class CreditCardFetchResult;
 class CreditCardOtpAuthenticator;
 class FormDataImporter;
@@ -347,6 +349,10 @@ class AutofillClient : public RiskDataLoader {
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
 
+  // Returns the AutofillDownloadManager for communication with the Autofill
+  // crowdsourcing server.
+  virtual AutofillDownloadManager* GetDownloadManager();
+
   // Gets the PersonalDataManager instance associated with the client.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
 
@@ -361,7 +367,7 @@ class AutofillClient : public RiskDataLoader {
   virtual MerchantPromoCodeManager* GetMerchantPromoCodeManager();
 
   // Can be null on unsupported platforms.
-  virtual CreditCardCVCAuthenticator* GetCVCAuthenticator();
+  virtual CreditCardCvcAuthenticator* GetCvcAuthenticator();
   virtual CreditCardOtpAuthenticator* GetOtpAuthenticator();
 
   // Creates and returns a SingleFieldFormFillRouter using the
@@ -433,9 +439,8 @@ class AutofillClient : public RiskDataLoader {
   CreateCreditCardInternalAuthenticator(AutofillDriver* driver);
 #endif
 
-  // Causes the Autofill settings UI to be shown. If |show_credit_card_settings|
-  // is true, will show the credit card specific subpage.
-  virtual void ShowAutofillSettings(bool show_credit_card_settings) = 0;
+  // Causes the Autofill settings UI to be shown.
+  virtual void ShowAutofillSettings(PopupType popup_type) = 0;
 
   // Show the OTP unmask dialog to accept user-input OTP value.
   virtual void ShowCardUnmaskOtpInputDialog(
@@ -638,9 +643,10 @@ class AutofillClient : public RiskDataLoader {
   // extensive than `IsFastCheckoutSupported()`.
   // If it is, shows the FastCheckout surface (for autofilling information
   // during the checkout flow) and returns `true` on success.
-  virtual bool TryToShowFastCheckout(const FormData& form,
-                                     const FormFieldData& field,
-                                     AutofillDriver* driver) = 0;
+  virtual bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) = 0;
 
   // Hides the Fast Checkout surface (for autofilling information during the
   // checkout flow) if one is currently shown.
@@ -698,7 +704,7 @@ class AutofillClient : public RiskDataLoader {
   virtual PopupOpenArgs GetReopenPopupArgs() const = 0;
 
   // Returns (not elided) suggestions currently held by the UI.
-  virtual base::span<const Suggestion> GetPopupSuggestions() const = 0;
+  virtual std::vector<Suggestion> GetPopupSuggestions() const = 0;
 
   // Updates the popup contents with the newly given suggestions.
   virtual void UpdatePopup(const std::vector<Suggestion>& suggestions,
@@ -760,9 +766,6 @@ class AutofillClient : public RiskDataLoader {
 
   // If the context is secure.
   virtual bool IsContextSecure() const = 0;
-
-  // Whether it is appropriate to show a signin promo for this user.
-  virtual bool ShouldShowSigninPromo() = 0;
 
   // Handles simple actions for the autofill popups.
   virtual void ExecuteCommand(int id) = 0;

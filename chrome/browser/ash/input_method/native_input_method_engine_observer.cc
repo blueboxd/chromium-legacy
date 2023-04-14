@@ -194,6 +194,20 @@ void LogEvent(ImeServiceEvent event) {
   UMA_HISTOGRAM_ENUMERATION("InputMethod.Mojo.Extension.Event", event);
 }
 
+enum class JapaneseStartupAction {
+  kStillLegacy = 0,
+  kAlreadyMigrated = 1,
+  kPerformMigration = 2,
+  kUndoMigration = 3,
+  kMaxValue = kUndoMigration
+};
+
+void LogJapaneseStartupAction(JapaneseStartupAction japanese_startup_action) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      japanese_startup_action);
+}
+
 // Not using a EnumTraits here because the mapping is not 1:1.
 mojom::DomCode DomCodeToMojom(const ui::DomCode code) {
   switch (code) {
@@ -625,9 +639,14 @@ void NativeInputMethodEngineObserver::OnJapaneseDecoderConnected(bool bound) {
   if (!bound) {
     return;
   }
-  if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
+  if (!base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping)) {
     return;
   }
+  if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
+    LogJapaneseStartupAction(JapaneseStartupAction::kAlreadyMigrated);
+    return;
+  }
+  LogJapaneseStartupAction(JapaneseStartupAction::kPerformMigration);
   japanese_decoder_->FetchJapaneseConfig(base::BindOnce(
       &NativeInputMethodEngineObserver::OnJapaneseSettingsReceived,
       weak_ptr_factory_.GetWeakPtr()));
@@ -665,10 +684,6 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
         base::BindOnce(
             &NativeInputMethodEngineObserver::OnJapaneseDecoderConnected,
             weak_ptr_factory_.GetWeakPtr()));
-  } else {
-    if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
-      SetJapaneseSettingsMigrationComplete(*prefs_, false);
-    }
   }
   // If this is fast enough, maybe this code can block the ConnectToInputMethod
   // function on waiting for the migration if and only if the input_method
@@ -699,6 +714,15 @@ void NativeInputMethodEngineObserver::ActivateTextClient(
 }
 
 void NativeInputMethodEngineObserver::OnActivate(const std::string& engine_id) {
+  if (!base::FeatureList::IsEnabled(features::kSystemJapanesePhysicalTyping) &&
+      base::StartsWith(engine_id, "nacl_mozc_")) {
+    if (IsJapaneseSettingsMigrationComplete(*prefs_)) {
+      LogJapaneseStartupAction(JapaneseStartupAction::kUndoMigration);
+      SetJapaneseSettingsMigrationComplete(*prefs_, false);
+    } else {
+      LogJapaneseStartupAction(JapaneseStartupAction::kStillLegacy);
+    }
+  }
   // Always hide the candidates window and clear the quick settings menu when
   // switching input methods.
   UpdateCandidatesWindowSync(nullptr);
@@ -960,29 +984,24 @@ void NativeInputMethodEngineObserver::OnCaretBoundsChanged(
 void NativeInputMethodEngineObserver::OnSurroundingTextChanged(
     const std::string& engine_id,
     const std::u16string& text,
-    int cursor_pos,
-    int anchor_pos,
+    const gfx::Range selection_range,
     int offset_pos) {
-  DCHECK_GE(cursor_pos, 0);
-  DCHECK_GE(anchor_pos, 0);
-
   last_surrounding_text_ = SurroundingText{.text = text,
-                                           .cursor_pos = cursor_pos,
-                                           .anchor_pos = anchor_pos,
+                                           .selection_range = selection_range,
                                            .offset_pos = offset_pos};
 
-  assistive_suggester_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
-  autocorrect_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
+  assistive_suggester_->OnSurroundingTextChanged(text, selection_range);
+  autocorrect_manager_->OnSurroundingTextChanged(text, selection_range);
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
-    grammar_manager_->OnSurroundingTextChanged(text, cursor_pos, anchor_pos);
+    grammar_manager_->OnSurroundingTextChanged(text, selection_range);
   }
   if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (IsInputMethodBound()) {
       SendSurroundingTextToNativeMojoEngine(last_surrounding_text_);
     }
   } else {
-    ime_base_observer_->OnSurroundingTextChanged(engine_id, text, cursor_pos,
-                                                 anchor_pos, offset_pos);
+    ime_base_observer_->OnSurroundingTextChanged(engine_id, text,
+                                                 selection_range, offset_pos);
   }
 }
 
@@ -1019,6 +1038,14 @@ void NativeInputMethodEngineObserver::OnAssistiveWindowButtonClicked(
         chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
             ProfileManager::GetActiveUserProfile(),
             chromeos::settings::mojom::kSmartInputsSubpagePath);
+      }
+      if (button.window_type == ash::ime::AssistiveWindowType::kLearnMore) {
+        autocorrect_manager_->HideUndoWindow();
+        base::RecordAction(base::UserMetricsAction(
+            "ChromeOS.Settings.InputMethod.Autocorrect.Open"));
+        chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+            ProfileManager::GetActiveUserProfile(),
+            chromeos::settings::mojom::kInputMethodOptionsSubpagePath);
       }
       break;
     case ui::ime::ButtonId::kSuggestion:
@@ -1293,14 +1320,18 @@ bool NativeInputMethodEngineObserver::IsTextClientActive() {
 void NativeInputMethodEngineObserver::SendSurroundingTextToNativeMojoEngine(
     const SurroundingText& surrounding_text) {
   std::vector<size_t> selection_indices = {
-      static_cast<size_t>(surrounding_text.anchor_pos),
-      static_cast<size_t>(surrounding_text.cursor_pos)};
+      static_cast<size_t>(surrounding_text.selection_range.start()),
+      static_cast<size_t>(surrounding_text.selection_range.end())};
   std::string utf8_text = base::UTF16ToUTF8AndAdjustOffsets(
       surrounding_text.text, &selection_indices);
 
+  // Due to a legacy mistake, the selection is reversed (i.e. 'focus' is the
+  // start and 'anchor' is the end), opposite to what the API documentation
+  // claims.
+  // TODO(b/245020074): Fix this without breaking existing 1p IMEs.
   auto selection = mojom::SelectionRange::New();
-  selection->anchor = selection_indices[0];
-  selection->focus = selection_indices[1];
+  selection->anchor = selection_indices[1];
+  selection->focus = selection_indices[0];
 
   input_method_->OnSurroundingTextChanged(
       std::move(utf8_text), surrounding_text.offset_pos, std::move(selection));

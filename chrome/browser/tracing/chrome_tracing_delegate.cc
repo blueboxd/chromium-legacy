@@ -22,7 +22,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/pref_names.h"
@@ -265,17 +264,18 @@ bool ChromeTracingDelegate::IsSystemWideTracingEnabled() {
 #endif
 }
 
-absl::optional<base::Value> ChromeTracingDelegate::GenerateMetadataDict() {
+absl::optional<base::Value::Dict>
+ChromeTracingDelegate::GenerateMetadataDict() {
   base::Value::Dict metadata_dict;
   std::vector<std::string> variations;
   variations::GetFieldTrialActiveGroupIdsAsStrings(base::StringPiece(),
                                                    &variations);
 
-  base::Value variations_list(base::Value::Type::LIST);
+  base::Value::List variations_list;
   for (const auto& it : variations)
     variations_list.Append(it);
 
   metadata_dict.Set("field-trials", std::move(variations_list));
   metadata_dict.Set("revision", version_info::GetLastChange());
-  return base::Value(std::move(metadata_dict));
+  return metadata_dict;
 }

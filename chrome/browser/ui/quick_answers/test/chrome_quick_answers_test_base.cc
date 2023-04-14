@@ -48,8 +48,3 @@ void ChromeQuickAnswersTestBase::CreateAndShowBasicMenu() {
                           views::MenuAnchorPosition::kTopLeft,
                           ui::MENU_SOURCE_MOUSE);
 }
-
-void ChromeQuickAnswersTestBase::ResetMenuParent() {
-  CHECK(menu_parent_.get() != nullptr);
-  menu_parent_.reset();
-}

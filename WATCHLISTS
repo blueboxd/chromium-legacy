@@ -1188,6 +1188,9 @@
                   'extensions/renderer/resources/guest_view|'\
                   'extensions/test/data/(app|web)_view',
     },
+    'hashprefix_realtime': {
+      'filepath': 'components/safe_browsing/core/browser/hashprefix_realtime/'
+    },
     'hats': {
       'filepath': 'chrome/browser/ash/hats/',
     },
@@ -1274,6 +1277,9 @@
       'filepath': 'ios/chrome/browser/about_flags\.(h|mm)|'\
                   'ios/chrome/browser/experimental_flags\.(h|mm)|'\
                   'ios/chrome/browser/resources/Settings.bundle/Experimental\.plist',
+    },
+    'ios_ntp': {
+      'filepath': 'ios/chrome/browser/ui/ntp/',
     },
     'ios_showcase': {
       'filepath': 'ios/showcase/',
@@ -1431,6 +1437,15 @@
     },
     'minidump_tests': {
       'filepath': 'tools/perf/core/minidump_unittest.py',
+    },
+    'multi_apps': {
+      'filepath': 'chrome/test/data/webapps_integration/has_sub_apps/'\
+                  '|third_party/blink/renderer/modules/subapps/'\
+                  '|chrome/browser/ui/web_applications/.*sub_app'\
+                  '|third_party/blink/public/mojom/subapps/'\
+                  '|chrome/browser/web_applications/commands/.*sub_app'\
+                  '|third_party/blink/web_tests/external/wpt/resources/chromium/mock-subapps.js'\
+                  '|third_party/blink/web_tests/external/wpt/subapps/',
     },
     'multidevice': {
       'filepath': 'ash/multi_device_setup/'\
@@ -1695,6 +1710,7 @@
     },
     'prerender': {
       'filepath': 'chrome/browser/chrome_content_browser_client_binder_policies' \
+                  '|chrome/browser/preloading/prefetch/search_prefetch/' \
                   '|chrome/browser/preloading/prerender/' \
                   '|content/browser/mojo_binder_policy' \
                   '|content/browser/preloading/prerender/'
@@ -2587,7 +2603,9 @@
     'clipboard': ['dcheng@chromium.org'],
     'components_deps': ['droger+watchlist@chromium.org'],
     'compositor_animator': ['mdjones+watch@chromium.org'],
-    'compute_pressure': ['raphael.kubo.da.costa@intel.com'],
+    'compute_pressure': ['raphael.kubo.da.costa@intel.com',
+                         'arnaud.mandy@intel.com',
+                         'wei4.wang@intel.com'],
     'content_bluetooth': ['mattreynolds+watch@chromium.org'],
     'content_index': ['rayankans+watch@chromium.org'],
     'content_loader': ['loading-reviews@chromium.org'],
@@ -2713,6 +2731,7 @@
     'gpu_passthrough_cmd_decoder': ['geofflang+watch@chromium.org'],
     'guest_view': ['mcnee@chromium.org',
                    'wjmaclean@chromium.org'],
+    'hashprefix_realtime': ['thefrog+watch@chromium.org'],
     'hats': ['cros-telemetry+hats@google.com'],
     'headless': ['headless-reviews@chromium.org'],
     'heap_mojo': ['chikamune+watch@chromium.org'],
@@ -2744,6 +2763,7 @@
                   'marq+scrutinize@chromium.org'],
     'ios_credential_provider': ['rkgibson+watch@chromium.org'],
     'ios_flags': ['noyau+watch@chromium.org'],
+    'ios_ntp': ['thegreenfrog+watch@chromium.org'],
     'ios_showcase': ['ios-reviews+showcase@chromium.org',
                      'marq+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org'],
@@ -2753,13 +2773,11 @@
     'libaom': ['fgalligan@chromium.org',
                'jianj@chromium.org',
                'jzern@chromium.org',
-               'marpan@chromium.org',
-               'tomfinegan@chromium.org'],
+               'marpan@chromium.org'],
     'libvpx': ['fgalligan@chromium.org',
                'jianj@chromium.org',
                'jzern@chromium.org',
-               'marpan@chromium.org',
-               'tomfinegan@chromium.org'],
+               'marpan@chromium.org'],
     'libwebp': ['jzern@chromium.org',
                 'skal@google.com',
                 'urvang@chromium.org'],
@@ -2802,6 +2820,9 @@
     'metrics_perf': ['cwp-reviews+chromium@google.com'],
     'midi': ['toyoshim+midi@chromium.org'],
     'minidump_tests': ['bsheedy@chromium.org'],
+    'multi_apps': ['samicolon+watch@google.com',
+                   'isandrk+watch@chromium.org',
+                   'phweiss+watch@chromium.org'],
     'multidevice': ['danlee+watch-multidevice@google.com',
                     'hansberry+watch-multidevice@chromium.org',
                     'joeantonetti+watch-multidevice@google.com',

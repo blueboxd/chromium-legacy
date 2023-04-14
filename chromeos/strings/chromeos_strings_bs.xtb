@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Prozor ažuriranja firmvera za vanjski uređaj je otvoren. Dostupan je sljedeći broj ažuriranja: <ph name="NUM_UPDATES" /></translation>
 <translation id="1145516343487477149">Pronađite članke za pomoć i odgovore na uobičajena pitanja o Chromebooku</translation>
+<translation id="1167755866710282443">Otvorite meni da prilagodite tipke. Prevucite meni da ga premjestite.</translation>
 <translation id="1175697296044146566">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Prosječno (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ukloni</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Odaberite album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB dodirna podloga</translation>
 <translation id="4117637339509843559">Tamni način rada</translation>
+<translation id="4130035430755296270">Postavite i zadržite pokazivač miša iznad za više opcija rasporeda</translation>
 <translation id="4131410914670010031">Crno-bijelo</translation>
 <translation id="4145784616224233563">HTTP zaštitni zid</translation>
 <translation id="4147897805161313378">Google Fotografije</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS rezolucija</translation>
 <translation id="4848429997038228357">U TOKU</translation>
 <translation id="4854586501323951986">Ugrađen ekran na dodir</translation>
+<translation id="4855250849489639581">Prevucite nadolje za više opcija rasporeda</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Preostao je još {0} pokušaj}one{<ph name="ERROR_MESSAGE" /> Preostao je još {0} pokušaj}few{<ph name="ERROR_MESSAGE" /> Preostala su još {0} pokušaja}other{<ph name="ERROR_MESSAGE" /> Preostalo je još {0} pokušaja}}</translation>
 <translation id="4873827928179867585">Algoritam autentifikacije</translation>
 <translation id="4880328057631981605">Naziv pristupne tačke</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Pojačavanje osvjetljenja ekrana</translation>
 <translation id="57838592816432529">Isključi zvuk</translation>
 <translation id="5784136236926853061">Visoka HTTP latentnost</translation>
+<translation id="5826644637650799838">O umjetnosti</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
 <translation id="583281660410589416">Nepoznato</translation>
 <translation id="5843706793424741864">Farenhajt</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 slika</translation>
 <translation id="7177485034254901881">Ovim uređajem <ph name="DEVICE_TYPE" /> upravlja <ph name="MANAGER" />. Administratori mogu daljinski konfigurirati uređaj.</translation>
 <translation id="7180611975245234373">Osvježi</translation>
+<translation id="7180865173735832675">Prilagodi</translation>
 <translation id="7212734716605298123">Ažuriranja firmvera za vanjske uređaje</translation>
 <translation id="7216409898977639127">Mobilni operater</translation>
 <translation id="725133483556299729">Odabir e-poruke</translation>

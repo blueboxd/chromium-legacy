@@ -56,6 +56,11 @@ FlossLEScanClient::~FlossLEScanClient() {
     exported_scanner_callback_manager_.UnexportCallback(
         dbus::ObjectPath(kScannerCallbackPath));
   }
+  while (!pending_register_scanners_.empty()) {
+    std::move(pending_register_scanners_.front())
+        .Run(base::unexpected(Error(kNoCallbackRegistered, "")));
+    pending_register_scanners_.pop();
+  }
 }
 
 void FlossLEScanClient::Init(dbus::Bus* bus,
@@ -71,8 +76,18 @@ void FlossLEScanClient::Init(dbus::Bus* bus,
       adapter::kOnScannerRegistered, &ScannerClientObserver::ScannerRegistered);
   exported_scanner_callback_manager_.AddMethod(
       adapter::kOnScanResult, &ScannerClientObserver::ScanResultReceived);
+  exported_scanner_callback_manager_.AddMethod(
+      adapter::kOnScanResultLost, &ScannerClientObserver::ScanResultLost);
 
-  RegisterScannerCallback();
+  dbus::ObjectPath callback_path(kScannerCallbackPath);
+
+  if (!exported_scanner_callback_manager_.ExportCallback(
+          callback_path, weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&FlossLEScanClient::RegisterScannerCallback,
+                         weak_ptr_factory_.GetWeakPtr()))) {
+    LOG(ERROR) << "Failed exporting callback " + callback_path.value();
+    return;
+  }
 }
 
 void FlossLEScanClient::AddObserver(ScannerClientObserver* observer) {
@@ -84,25 +99,11 @@ void FlossLEScanClient::RemoveObserver(ScannerClientObserver* observer) {
 }
 
 void FlossLEScanClient::RegisterScannerCallback() {
-  dbus::ObjectPath callback_path(kScannerCallbackPath);
-
-  if (!exported_scanner_callback_manager_.ExportCallback(
-          callback_path, weak_ptr_factory_.GetWeakPtr())) {
-    LOG(ERROR) << "Failed exporting callback " + callback_path.value();
-    return;
-  }
-
   CallLEScanMethod<>(
       base::BindOnce(&FlossLEScanClient::OnRegisterScannerCallback,
                      weak_ptr_factory_.GetWeakPtr()),
-      adapter::kRegisterScannerCallback, callback_path);
-
-  dbus::ExportedObject* exported_callback =
-      bus_->GetExportedObject(callback_path);
-  if (!exported_callback) {
-    LOG(ERROR) << "FlossLEScanClient couldn't export client callbacks";
-    return;
-  }
+      adapter::kRegisterScannerCallback,
+      dbus::ObjectPath(kScannerCallbackPath));
 }
 
 void FlossLEScanClient::OnRegisterScannerCallback(DBusResult<uint32_t> ret) {
@@ -114,6 +115,12 @@ void FlossLEScanClient::OnRegisterScannerCallback(DBusResult<uint32_t> ret) {
   }
 
   le_scan_callback_id_ = ret.value();
+
+  while (!pending_register_scanners_.empty()) {
+    CallLEScanMethod<>(std::move(pending_register_scanners_.front()),
+                       adapter::kRegisterScanner, le_scan_callback_id_.value());
+    pending_register_scanners_.pop();
+  }
 }
 
 void FlossLEScanClient::OnUnregisterScannerCallback(DBusResult<bool> ret) {
@@ -125,8 +132,11 @@ void FlossLEScanClient::OnUnregisterScannerCallback(DBusResult<bool> ret) {
 void FlossLEScanClient::RegisterScanner(
     ResponseCallback<device::BluetoothUUID> callback) {
   if (!le_scan_callback_id_) {
-    // callback ID required before registering scanners
-    std::move(callback).Run(base::unexpected(Error(kNoCallbackRegistered, "")));
+    LOG(WARNING) << "RegisterScanner called before callback ID was available. "
+                    "Queueing to register when callback ID is available.";
+
+    // Add to queue to register when callback ID is available
+    pending_register_scanners_.push(std::move(callback));
     return;
   }
 
@@ -164,6 +174,12 @@ void FlossLEScanClient::ScannerRegistered(device::BluetoothUUID uuid,
 void FlossLEScanClient::ScanResultReceived(ScanResult scan_result) {
   for (auto& observer : observers_) {
     observer.ScanResultReceived(scan_result);
+  }
+}
+
+void FlossLEScanClient::ScanResultLost(ScanResult scan_result) {
+  for (auto& observer : observers_) {
+    observer.ScanResultLost(scan_result);
   }
 }
 

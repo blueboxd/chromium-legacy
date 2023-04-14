@@ -41,7 +41,7 @@ struct CreditCardCloudTokenData;
 struct FormFieldData;
 class IBAN;
 struct PaymentsCustomerData;
-struct VirtualCardUsageData;
+class VirtualCardUsageData;
 
 // This class manages the various Autofill tables within the SQLite database
 // passed to the constructor. It expects the following schemas:
@@ -283,7 +283,11 @@ struct VirtualCardUsageData;
 //                      The product description for the card. Used to be shown
 //                      in the UI when card is presented. Added in version 102.
 //   card_issuer_id     The id of the card's issuer.
-//
+//   virtual_card_enrollment_type
+//                      An enum indicating the type of virtual card enrollment
+//                      of this card. TYPE_UNSPECIFIED is the default value.
+//                      ISSUER denotes that it is an issuer-level enrollment.
+//                      NETWORK denotes that it is a network-level enrollment.
 // unmasked_credit_cards
 //                      When a masked credit credit card is unmasked and the
 //                      full number is downloaded or when the full number is
@@ -707,13 +711,21 @@ class AutofillTable : public WebDatabaseTable,
   bool GetAutofillOffers(
       std::vector<std::unique_ptr<AutofillOfferData>>* autofill_offer_data);
 
-  // |virtual_card_usage_data| must include all existing virtual card usage
-  // data, since table will be completely overwritten.
+  // CRUD operations for VirtualCardUsageData in the virtual_card_usage_data
+  // table
+  bool AddVirtualCardUsageData(
+      const VirtualCardUsageData& virtual_card_usage_data);
+  bool UpdateVirtualCardUsageData(
+      const VirtualCardUsageData& virtual_card_usage_data);
+  std::unique_ptr<VirtualCardUsageData> GetVirtualCardUsageData(
+      const std::string& usage_data_id);
+  bool RemoveVirtualCardUsageData(const std::string& usage_data_id);
   void SetVirtualCardUsageData(
       const std::vector<VirtualCardUsageData>& virtual_card_usage_data);
-  bool GetVirtualCardUsageData(
+  bool GetAllVirtualCardUsageData(
       std::vector<std::unique_ptr<VirtualCardUsageData>>*
           virtual_card_usage_data);
+  bool RemoveAllVirtualCardUsageData();
 
   // Adds |upi_id| to the saved UPI IDs.
   bool InsertUpiId(const std::string& upi_id);
@@ -817,6 +829,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion108AddCardIssuerIdColumn();
   bool MigrateToVersion109AddVirtualCardUsageDataTable();
   bool MigrateToVersion110AddInitialCreatorIdAndLastModifierId();
+  bool MigrateToVersion111AddVirtualCardEnrollmentTypeColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

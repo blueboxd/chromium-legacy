@@ -57,7 +57,6 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #endif
 
@@ -377,6 +376,13 @@ void AppBrowserController::OnBackgroundColorChanged() {
 }
 
 absl::optional<SkColor> AppBrowserController::GetThemeColor() const {
+  ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForNativeUi();
+  if (native_theme->InForcedColorsMode()) {
+    // use system [Window ThemeColor] when enable high contrast
+    return native_theme->GetSystemThemeColor(
+        ui::NativeTheme::SystemThemeColor::kWindow);
+  }
+
   absl::optional<SkColor> result;
   // HTML meta theme-color tag overrides manifest theme_color, see spec:
   // https://www.w3.org/TR/appmanifest/#theme_color-member
@@ -456,6 +462,12 @@ void AppBrowserController::OnTabStripModelChanged(
     // WebContents should be null when the last tab is closed.
     DCHECK_EQ(web_contents() == nullptr, tab_strip_model->empty());
   }
+
+  // Do not update the UI during window shutdown.
+  if (!selection.new_contents) {
+    return;
+  }
+
   UpdateCustomTabBarVisibility(/*animate=*/false);
 }
 

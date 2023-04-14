@@ -8,19 +8,17 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 
-#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "ui/display/types/gamma_ramp_rgb_entry.h"
-#include "ui/ozone/platform/drm/gpu/drm_device.h"
 
 namespace ui {
 
-bool GetDrmPropertyForName(DrmDevice* drm,
+bool GetDrmPropertyForName(DrmWrapper* drm,
                            drmModeObjectProperties* properties,
                            const std::string& name,
-                           DrmDevice::Property* property) {
+                           DrmWrapper::Property* property) {
   for (uint32_t i = 0; i < properties->count_props; ++i) {
     ScopedDrmPropertyPtr drm_property(drm->GetProperty(properties->props[i]));
     if (name != drm_property->name)
@@ -37,7 +35,7 @@ bool GetDrmPropertyForName(DrmDevice* drm,
 
 bool AddPropertyIfValid(drmModeAtomicReq* property_set,
                         uint32_t object_id,
-                        const DrmDevice::Property& property) {
+                        const DrmWrapper::Property& property) {
   if (!property.id)
     return true;
 
@@ -122,13 +120,14 @@ std::vector<display::GammaRampRGBEntry> ResampleLut(
   return result;
 }
 
-HardwareDisplayControllerInfoList GetDisplayInfosAndUpdateCrtcs(int fd) {
-  auto [displays, invalid_crtcs] = GetDisplayInfosAndInvalidCrtcs(fd);
+HardwareDisplayControllerInfoList GetDisplayInfosAndUpdateCrtcs(
+    DrmWrapper& drm) {
+  auto [displays, invalid_crtcs] = GetDisplayInfosAndInvalidCrtcs(drm);
   // Disable invalid CRTCs to allow the preferred CRTCs to be enabled later
   // instead.
   for (uint32_t crtc : invalid_crtcs) {
-    drmModeSetCrtc(fd, crtc, 0, 0, 0, nullptr, 0, nullptr);
-    VLOG(1) << "Disabled unpreferred CRTC " << crtc;
+    drm.DisableCrtc(crtc);
+    VLOG(1) << "Disabled undesired CRTC " << crtc;
   }
   return std::move(displays);
 }
@@ -144,4 +143,5 @@ void DrmWriteIntoTraceHelper(const drmModeModeInfo& mode_info,
   dict.Add("hdisplay", mode_info.hdisplay);
   dict.Add("vdisplay", mode_info.vdisplay);
 }
+
 }  // namespace ui

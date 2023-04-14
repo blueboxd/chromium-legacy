@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Vinduet Opdater firmware for eksterne enheder er åbent. <ph name="NUM_UPDATES" /> opdateringer er tilgængelige.</translation>
 <translation id="1145516343487477149">Find artikler i Hjælp og svar på almindelige spørgsmål om Chromebook</translation>
+<translation id="1167755866710282443">Åbn menuen for at tilpasse nøgler. Træk i menuen for at flytte den.</translation>
 <translation id="1175697296044146566">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Gennemsnitligt (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Vælg albummet <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-touchplade</translation>
 <translation id="4117637339509843559">Mørk tilstand</translation>
+<translation id="4130035430755296270">Bliv ved med at holde markøren over menuen for at se flere layoutmuligheder</translation>
 <translation id="4131410914670010031">Sort/hvid</translation>
 <translation id="4145784616224233563">HTTP-firewall</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS-oversættelse</translation>
 <translation id="4848429997038228357">KØRER</translation>
 <translation id="4854586501323951986">Indbygget touchskærm</translation>
+<translation id="4855250849489639581">Stryg nedad for at se flere valgmuligheder for layout</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} forsøg tilbage}one{<ph name="ERROR_MESSAGE" /> {0} forsøg tilbage}other{<ph name="ERROR_MESSAGE" /> {0} forsøg tilbage}}</translation>
 <translation id="4873827928179867585">Algoritme til godkendelse</translation>
 <translation id="4880328057631981605">Navn på adgangspunkt</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 billede</translation>
 <translation id="7177485034254901881">Denne <ph name="DEVICE_TYPE" /> administreres af <ph name="MANAGER" />. Administratorer kan fjernkonfigurere enheden.</translation>
 <translation id="7180611975245234373">Opdater</translation>
+<translation id="7180865173735832675">Tilpas</translation>
 <translation id="7212734716605298123">Opdateringer af firmware på eksterne enheder</translation>
 <translation id="7216409898977639127">Mobilselskab</translation>
 <translation id="725133483556299729">Vælg mailadresse</translation>

@@ -22,6 +22,7 @@
   }
 
   cr-toolbar-search-field {
+    flex-shrink: 0;
     margin: 14px;
     width: auto;
   }
@@ -124,7 +125,7 @@
         aria-label="$i18n{sortMenuA11yLabel}"
         on-click="onShowSortMenuClicked_">
       [[getSortLabel_(activeSortIndex_)]]
-      <iron-icon icon="bookmarks:filter-list"></iron-icon>
+      <iron-icon icon="sp:filter-list"></iron-icon>
     </cr-button>
     <cr-icon-button slot="buttons" iron-icon="bookmarks:create-new-folder"
         disabled="[[editing_]]"
@@ -141,7 +142,8 @@
   <div id="bookmarks" class="bookmarks" hidden="[[!shownBookmarks_.length]]"
       role="[[getBookmarksListRole_(editing_)]]"
       aria-multiselectable="[[editing_]]">
-    <iron-list items="[[shownBookmarks_]]" scroll-target="bookmarks">
+    <iron-list id="shownBookmarksIronList"
+        items="[[shownBookmarks_]]" scroll-target="bookmarks">
       <template>
         <power-bookmark-row id="bookmark-[[item.id]]" bookmark="[[item]]"
             description="[[getBookmarkDescription_(item,
@@ -158,13 +160,16 @@
             on-checkbox-change="onRowSelectedChange_"
             on-input-change="onRename_">
           <div slot="badges">
-            <template is="dom-if" if="[[isPriceTracked_(item)]]" restamp>
-              <sp-list-item-badge updated="[[showDiscountedPrice_(item)]]">
+            <template is="dom-if"
+                if="[[isPriceTracked(item, trackedProductInfos_.*)]]" restamp>
+              <sp-list-item-badge updated="[[showDiscountedPrice_(
+                                             item, trackedProductInfos_.*)]]">
                 <iron-icon icon="bookmarks:price-tracking"></iron-icon>
-                <div>[[getCurrentPrice_(item)]]</div>
+                <div>[[getCurrentPrice_(item, trackedProductInfos_.*)]]</div>
                 <div slot="previous-badge"
-                    hidden$="[[!showDiscountedPrice_(item)]]">
-                  [[getPreviousPrice_(item)]]
+                    hidden$="[[!showDiscountedPrice_(
+                                item, trackedProductInfos_.*)]]">
+                  [[getPreviousPrice_(item, trackedProductInfos_.*)]]
                 </div>
               </sp-list-item-badge>
             </template>
@@ -184,7 +189,7 @@
   </sp-empty-state>
   <sp-footer
       pinned="[[shouldPinFooter_(shownBookmarks_.length)]]">
-    <cr-button
+    <cr-button class="floating-button"
         hidden="[[hideAddTabButton_(editing_)]]"
         on-click="onAddTabClicked_"
         disabled="[[!canAddCurrentUrl_(shownBookmarks_.*, activeFolderPath_.*,
@@ -236,7 +241,9 @@
   </button>
 </cr-action-menu>
 
-<power-bookmarks-edit-dialog id="editDialog"></power-bookmarks-edit-dialog>
+<power-bookmarks-edit-dialog id="editDialog"
+    on-save="onBookmarksEdited_">
+</power-bookmarks-edit-dialog>
 
 <cr-lazy-render id="contextMenu">
   <template>

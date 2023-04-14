@@ -8,11 +8,12 @@
 #include <memory>
 
 #include "base/json/json_writer.h"
-#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chromeos/ash/components/mojo_service_manager/fake_mojo_service_manager.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -104,8 +105,9 @@ em::RemoteCommand GenerateCommandProto(
   if (routine.has_value()) {
     root_dict.Set(kRoutineEnumFieldName, static_cast<int>(routine.value()));
   }
-  if (params.has_value())
+  if (params.has_value()) {
     root_dict.Set(kParamsFieldName, std::move(params).value());
+  }
   std::string payload;
   base::JSONWriter::Write(root_dict, &payload);
   command_proto.set_payload(payload);
@@ -161,6 +163,7 @@ class DeviceCommandRunRoutineJobTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  ::ash::mojo_service_manager::FakeMojoServiceManager fake_service_manager_;
 
   base::TimeTicks test_start_time_;
 };
@@ -201,13 +204,12 @@ bool DeviceCommandRunRoutineJobTest::RunJob(
   InitializeJob(job.get(), kUniqueID, test_start_time_, base::Seconds(30),
                 /*terminate_upon_input=*/false, routine,
                 std::move(params_dict));
-  base::RunLoop run_loop;
+  base::test::TestFuture<void> job_finished_future;
   bool success = job->Run(base::Time::Now(), base::TimeTicks::Now(),
-                          base::BindLambdaForTesting([&]() {
-                            std::move(callback).Run(job.get());
-                            run_loop.Quit();
-                          }));
-  run_loop.Run();
+                          job_finished_future.GetCallback());
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(job_finished_future.Wait()) << "Job did not finish.";
+  std::move(callback).Run(job.get());
   return success;
 }
 

@@ -118,7 +118,6 @@
 #include "third_party/blink/public/platform/web_isolated_world_info.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_associated_url_loader_options.h"
@@ -265,6 +264,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_context.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/scheduling_policy.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -301,7 +301,6 @@ class ChromePrintContext : public PrintContext {
   void BeginPrintMode(float width, float height) override {
     DCHECK(!printed_page_width_);
     printed_page_width_ = width;
-    printed_page_height_ = height;
     PrintContext::BeginPrintMode(printed_page_width_, height);
   }
 
@@ -406,13 +405,11 @@ class ChromePrintContext : public PrintContext {
         current_height += page_size_in_pixels.width() + 1;
       }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
       // Account for the disabling of scaling in spoolPage. In the context of
       // SpoolPagesWithBoundariesForTesting the scale HAS NOT been
       // pre-applied.
       float scale = GetPageShrink(page_index);
       transform.Scale(scale, scale);
-#endif
       context.Save();
       context.ConcatCTM(transform);
 
@@ -425,19 +422,11 @@ class ChromePrintContext : public PrintContext {
   }
 
  protected:
-  // Spools the printed page, a subrect of frame(). Skip the scale step.
-  // NativeTheme doesn't play well with scaling. Scaling is done browser side
-  // instead. Returns the scale to be applied.
-  // On Linux, we don't have the problem with NativeTheme, hence we let WebKit
-  // do the scaling and ignore the return value.
   virtual float SpoolPage(GraphicsContext& context, int page_number) {
     gfx::Rect page_rect = page_rects_[page_number];
     float scale = printed_page_width_ / page_rect.width();
 
     AffineTransform transform;
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_MAC)
-    transform.Scale(scale);
-#endif
     transform.Translate(static_cast<float>(-page_rect.x()),
                         static_cast<float>(-page_rect.y()));
     context.Save();
@@ -485,7 +474,6 @@ class ChromePrintContext : public PrintContext {
 
   // Set when printing.
   float printed_page_width_;
-  float printed_page_height_;
 };
 
 // Simple class to override some of PrintContext behavior. This is used when
@@ -1878,10 +1866,7 @@ void WebLocalFrameImpl::PrintEnd() {
 bool WebLocalFrameImpl::GetPrintPresetOptionsForPlugin(
     const WebNode& node,
     WebPrintPresetOptions* preset_options) {
-  WebPluginContainerImpl* plugin_container =
-      node.IsNull() ? GetFrame()->GetWebPluginContainer()
-                    : To<WebPluginContainerImpl>(node.PluginContainer());
-
+  WebPluginContainerImpl* plugin_container = GetPluginToPrintHelper(node);
   if (!plugin_container || !plugin_container->SupportsPaginatedPrint())
     return false;
 
@@ -2320,7 +2305,9 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   policy_container_data->sandbox_flags |= frame_policy.sandbox_flags;
   frame_policy.sandbox_flags = policy_container_data->sandbox_flags;
 
-  ukm::SourceId document_ukm_source_id = ukm::UkmRecorder::GetNewSourceID();
+  // No URL is associated with this frame, but we can still assign UKM events to
+  // this identifier.
+  ukm::SourceId document_ukm_source_id = ukm::NoURLSourceId();
 
   auto complete_initialization = [this, owner_element, &policy_container_remote,
                                   &policy_container_data, &name,

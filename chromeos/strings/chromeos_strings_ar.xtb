@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">نافذة تحديث البرامج الثابتة للأجهزة الخارجية مفتوحة. عدد التحديثات المتاحة: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">‏البحث عن مقالات مساعدة وإجابات عن الأسئلة الشائعة حول أجهزة Chromebook</translation>
+<translation id="1167755866710282443">افتح القائمة لتخصيص المفاتيح. اسحب القائمة لنقلها.</translation>
 <translation id="1175697296044146566">تتم إدارة جهاز <ph name="DEVICE_TYPE" /> هذا من خلال <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">إشارة متوسطة (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">إزالة</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">اختيار ألبوم <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">‏لوحة لمس USB</translation>
 <translation id="4117637339509843559">الوضع الداكن</translation>
+<translation id="4130035430755296270">استمِر في تمرير مؤشر الماوس هنا للاطّلاع على المزيد من خيارات التنسيق.</translation>
 <translation id="4131410914670010031">أبيض وأسود</translation>
 <translation id="4145784616224233563">‏الجدار الناري لبروتوكل HTTP</translation>
 <translation id="4147897805161313378">‏صور Google‏‏</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">‏(نظام التشغيل Android) اختبار التحويل باستخدام نظام أسماء النطاقات (DNS)</translation>
 <translation id="4848429997038228357">قيد التشغيل</translation>
 <translation id="4854586501323951986">شاشة مُدمَجة تعمل باللمس</translation>
+<translation id="4855250849489639581">مرِّر سريعًا للأسفل لعرض المزيد من خيارات التنسيق.</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> تتبقّى محاولة واحدة ({0}).}zero{<ph name="ERROR_MESSAGE" /> تتبقّى {0} محاولة.}two{<ph name="ERROR_MESSAGE" /> تتبقّى محاولتان ({0}).}few{<ph name="ERROR_MESSAGE" /> تتبقّى {0} محاولات.}many{<ph name="ERROR_MESSAGE" /> تتبقّى {0} محاولة.}other{<ph name="ERROR_MESSAGE" /> تتبقّى {0} محاولة.}}</translation>
 <translation id="4873827928179867585">خوارزمية المصادقة</translation>
 <translation id="4880328057631981605">اسم نقطة الوصول</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">زيادة سطوع الشاشة</translation>
 <translation id="57838592816432529">كتم الصوت</translation>
 <translation id="5784136236926853061">‏وقت استجابة بروتوكول HTTP طويل.</translation>
+<translation id="5826644637650799838">لمحة عن العمل الفني</translation>
 <translation id="5832805196449965646">إضافة شخص</translation>
 <translation id="583281660410589416">غير معروف</translation>
 <translation id="5843706793424741864">فهرنهايت</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">صورة واحدة</translation>
 <translation id="7177485034254901881">يدير <ph name="MANAGER" /> جهاز <ph name="DEVICE_TYPE" /> هذا. ويمكن للمشرفين إعداد هذا الجهاز عن بُعد.</translation>
 <translation id="7180611975245234373">إعادة التحميل</translation>
+<translation id="7180865173735832675">تخصيص</translation>
 <translation id="7212734716605298123">تحديثات البرامج الثابتة للأجهزة الخارجية</translation>
 <translation id="7216409898977639127">موفر شبكة الجوّال</translation>
 <translation id="725133483556299729">اختيار عنوان البريد الإلكتروني</translation>

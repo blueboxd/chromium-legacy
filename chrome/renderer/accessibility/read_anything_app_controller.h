@@ -12,9 +12,11 @@
 #include <vector>
 
 #include "chrome/common/accessibility/read_anything.mojom.h"
+#include "chrome/renderer/accessibility/read_anything_app_model.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -83,7 +85,8 @@ class ReadAnythingAppController
       const ui::AXTreeID& tree_id,
       const std::vector<ui::AXTreeUpdate>& updates,
       const std::vector<ui::AXEvent>& events) override;
-  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) override;
+  void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id,
+                               ukm::SourceId ukm_source_id) override;
   void OnAXTreeDestroyed(const ui::AXTreeID& tree_id) override;
   void OnThemeChanged(
       read_anything::mojom::ReadAnythingThemePtr new_theme) override;
@@ -97,6 +100,10 @@ class ReadAnythingAppController
 
   // gin templates:
   ui::AXNodeID RootId() const;
+  ui::AXNodeID StartNodeId() const;
+  int StartOffset() const;
+  ui::AXNodeID EndNodeId() const;
+  int EndOffset() const;
   SkColor BackgroundColor() const;
   std::string FontName() const;
   float FontSize() const;
@@ -168,10 +175,6 @@ class ReadAnythingAppController
   void SetPageHandlerForTesting(
       mojo::PendingRemote<read_anything::mojom::PageHandler> page_handler);
 
-  double GetLetterSpacingValue(
-      read_anything::mojom::Spacing letter_spacing) const;
-  double GetLineSpacingValue(read_anything::mojom::Spacing line_spacing) const;
-
   ui::AXNode* GetAXNode(ui::AXNodeID ax_node_id) const;
   bool IsNodeIgnoredForReadAnything(ui::AXNodeID ax_node_id) const;
 
@@ -190,6 +193,10 @@ class ReadAnythingAppController
 
   // The AXTreeID of the currently active web contents.
   ui::AXTreeID active_tree_id_ = ui::AXTreeIDUnknown();
+
+  // The UKM source ID of the main frame of the active web contents, whose
+  // AXTree has ID active_tree_id_. This is used for metrics collection.
+  ukm::SourceId active_ukm_source_id_ = ukm::kInvalidSourceId;
 
   // Distillation is slow and happens out-of-process when Screen2x is running.
   // This boolean marks when distillation is in progress to avoid sending
@@ -218,19 +225,13 @@ class ReadAnythingAppController
 
   // Selection information.
   bool has_selection_ = false;
-  ui::AXNode* start_node_ = nullptr;
-  ui::AXNode* end_node_ = nullptr;
+  ui::AXNodeID start_node_id_ = ui::kInvalidAXNodeID;
+  ui::AXNodeID end_node_id_ = ui::kInvalidAXNodeID;
   int32_t start_offset_ = -1;
   int32_t end_offset_ = -1;
 
-  // Theme information.
-  SkColor background_color_;
-  std::string font_name_;
-  float font_size_;
-  SkColor foreground_color_;
-  float letter_spacing_;
-  float line_spacing_;
-
+  // Model that holds state for this controller.
+  ReadAnythingAppModel model_;
   base::WeakPtrFactory<ReadAnythingAppController> weak_ptr_factory_{this};
 };
 

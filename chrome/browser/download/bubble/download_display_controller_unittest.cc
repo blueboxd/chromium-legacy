@@ -74,7 +74,7 @@ class FakeDownloadDisplay : public DownloadDisplay {
 
   void Disable() override { enabled_ = false; }
 
-  void UpdateDownloadIcon() override {
+  void UpdateDownloadIcon(bool show_animation) override {
     icon_state_ = controller_->GetIconInfo().icon_state;
     is_active_ = controller_->GetIconInfo().is_active;
   }
@@ -259,15 +259,17 @@ class DownloadDisplayControllerTest : public testing::Test {
     item(index).AddObserver(&controller().get_download_notifier_for_testing());
     content::DownloadItemUtils::AttachInfoForTesting(&(item(index)), profile_,
                                                      nullptr);
-    controller().OnNewItem((state == download::DownloadItem::IN_PROGRESS) &&
-                           show_details);
+    controller().OnNewItem(
+        (state == download::DownloadItem::IN_PROGRESS) && show_details,
+        /*show_animation=*/false);
   }
 
   void InitOfflineItem(OfflineItemState state) {
     OfflineItem item;
     item.state = state;
     bubble_controller().AddOfflineItem(item);
-    controller().OnNewItem(state == OfflineItemState::IN_PROGRESS);
+    controller().OnNewItem(state == OfflineItemState::IN_PROGRESS,
+                           /*show_animation=*/false);
   }
 
   void UpdateOfflineItem(int item_index, OfflineItemState state) {
@@ -360,7 +362,7 @@ class DownloadDisplayControllerTest : public testing::Test {
   raw_ptr<Profile> profile_;
   std::unique_ptr<TestBrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
-  MockDownloadCoreService* mock_download_core_service_;
+  raw_ptr<MockDownloadCoreService> mock_download_core_service_;
   std::unique_ptr<ChromeDownloadManagerDelegate> delegate_;
 };
 
@@ -583,7 +585,7 @@ TEST_F(DownloadDisplayControllerTest, UpdateToolbarButtonState_EmptyFilePath) {
   EXPECT_CALL(item(0), GetTargetFilePath())
       .WillRepeatedly(
           ReturnRefOfCopy(base::FilePath(FILE_PATH_LITERAL("bar.pdf"))));
-  controller().OnNewItem(/*show_details=*/true);
+  controller().OnNewItem(/*show_details=*/true, /*show_animation=*/false);
   EXPECT_TRUE(VerifyDisplayState(/*shown=*/true, /*detail_shown=*/true,
                                  /*icon_state=*/DownloadIconState::kProgress,
                                  /*is_active=*/true));

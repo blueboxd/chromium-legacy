@@ -15,6 +15,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -30,6 +31,7 @@ extern const char kSafeBrowsingForTrustedSourcesEnabled[];
 extern const char kDisableScreenshots[];
 extern const char kDownloadRestrictions[];
 extern const char kDownloadBubbleEnabled[];
+extern const char kDownloadDuplicateFilePromptEnabled[];
 extern const char kForceEphemeralProfiles[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];
@@ -546,6 +548,7 @@ extern const char kWebRTCUDPPortRange[];
 extern const char kWebRtcEventLogCollectionAllowed[];
 extern const char kWebRtcLocalIpsAllowedUrls[];
 extern const char kWebRTCAllowLegacyTLSProtocols[];
+extern const char kWebRtcTextLogCollectionAllowed[];
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
 extern const char kFirstRunFinished[];
@@ -629,6 +632,8 @@ extern const char kDefaultTasksBySuffix[];
 extern const char kDefaultHandlersForFileExtensions[];
 extern const char kOfficeSetupComplete[];
 extern const char kOfficeFilesAlwaysMove[];
+extern const char kOfficeFileMovedToOneDrive[];
+extern const char kOfficeFileMovedToGoogleDrive[];
 #endif
 
 extern const char kSharedClipboardEnabled[];
@@ -1158,6 +1163,11 @@ extern const char kCACertificateManagementAllowed[];
 #if BUILDFLAG(CHROME_ROOT_STORE_POLICY_SUPPORTED)
 extern const char kChromeRootStoreEnabled[];
 #endif
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
+// TODO(https://crbug.com/1406103): delete this after a few milestones.
+extern const char kEnforceLocalAnchorConstraintsEnabled[];
+#endif
 
 extern const char kSharingVapidKey[];
 extern const char kSharingFCMRegistration[];
@@ -1306,6 +1316,10 @@ extern const char kNewBaseUrlInheritanceBehaviorAllowed[];
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
 extern const char kOutOfProcessSystemDnsResolutionEnabled[];
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_ANDROID)
+extern const char kQuickDeleteDialogSuppressed[];
+#endif
 
 }  // namespace prefs
 

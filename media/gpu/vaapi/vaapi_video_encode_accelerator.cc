@@ -25,13 +25,14 @@
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/format_utils.h"
 #include "media/base/media_log.h"
 #include "media/base/media_switches.h"
@@ -86,17 +87,9 @@ std::unique_ptr<ScopedVASurface> CreateScopedSurface(
 struct VaapiVideoEncodeAccelerator::InputFrameRef {
   InputFrameRef(scoped_refptr<VideoFrame> frame, bool force_keyframe)
       : frame(frame), force_keyframe(force_keyframe) {}
+  // If |frame| is nullptr, the InputFrameRef indicates the Flush request.
   const scoped_refptr<VideoFrame> frame;
   const bool force_keyframe;
-};
-
-struct VaapiVideoEncodeAccelerator::BitstreamBufferRef {
-  BitstreamBufferRef(int32_t id, BitstreamBuffer buffer)
-      : id(id), shm_region(buffer.TakeRegion()), offset(buffer.offset()) {}
-  const int32_t id;
-  base::UnsafeSharedMemoryRegion shm_region;
-  base::WritableSharedMemoryMapping shm_mapping;
-  const off_t offset;
 };
 
 // static
@@ -113,7 +106,7 @@ VaapiVideoEncodeAccelerator::VaapiVideoEncodeAccelerator()
     : can_use_encoder_(num_instances_.Increment() < kMaxNumOfInstances),
       output_buffer_byte_size_(0),
       state_(kUninitialized),
-      child_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
+      child_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       // TODO(akahuang): Change to use SequencedTaskRunner to see if the
       // performance is affected.
       encoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
@@ -468,7 +461,7 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffers() {
                "available bitstream buffers",
                available_bitstream_buffers_.size());
   while (!pending_encode_results_.empty()) {
-    if (pending_encode_results_.front() == nullptr) {
+    if (!pending_encode_results_.front()) {
       // A null job indicates a flush command.
       pending_encode_results_.pop();
       DVLOGF(2) << "FlushDone";
@@ -481,41 +474,41 @@ void VaapiVideoEncodeAccelerator::TryToReturnBitstreamBuffers() {
     if (available_bitstream_buffers_.empty())
       return;
 
-    auto buffer = std::move(available_bitstream_buffers_.front());
+    ReturnBitstreamBuffer(*pending_encode_results_.front(),
+                          available_bitstream_buffers_.front());
     available_bitstream_buffers_.pop();
-    auto encode_result = std::move(pending_encode_results_.front());
     pending_encode_results_.pop();
-
-    ReturnBitstreamBuffer(std::move(encode_result), std::move(buffer));
   }
 }
 
 void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
-    std::unique_ptr<EncodeResult> encode_result,
-    std::unique_ptr<BitstreamBufferRef> buffer) {
+    const EncodeResult& encode_result,
+    const BitstreamBuffer& buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  uint8_t* target_data = buffer->shm_mapping.GetMemoryAs<uint8_t>();
+  const base::UnsafeSharedMemoryRegion& shm_region = buffer.region();
+  DCHECK(shm_region.IsValid());
+  base::WritableSharedMemoryMapping shm_mapping = shm_region.Map();
+  uint8_t* target_data = shm_mapping.GetMemoryAs<uint8_t>();
   size_t data_size = 0;
   // vaSyncSurface() is not necessary because GetEncodedChunkSize() has been
   // called in VaapiVideoEncoderDelegate::Encode().
   if (!vaapi_wrapper_->DownloadFromVABuffer(
-          encode_result->coded_buffer_id(), /*sync_surface_id=*/absl::nullopt,
-          target_data, buffer->shm_region.GetSize(), &data_size)) {
+          encode_result.coded_buffer_id(), /*sync_surface_id=*/absl::nullopt,
+          target_data, shm_mapping.size(), &data_size)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed downloading coded buffer");
     return;
   }
 
-  auto metadata = encode_result->metadata();
+  auto metadata = encode_result.metadata();
   DCHECK_NE(metadata.payload_size_bytes, 0u);
-  encode_result.reset();
 
   DVLOGF(4) << "Returning bitstream buffer "
-            << (metadata.key_frame ? "(keyframe)" : "") << " id: " << buffer->id
-            << " size: " << data_size;
+            << (metadata.key_frame ? "(keyframe)" : "")
+            << " id: " << buffer.id() << " size: " << data_size;
 
   child_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::BitstreamBufferReady, client_,
-                                buffer->id, std::move(metadata)));
+                                buffer.id(), std::move(metadata)));
 }
 
 void VaapiVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
@@ -549,8 +542,7 @@ void VaapiVideoEncodeAccelerator::EncodeTask(scoped_refptr<VideoFrame> frame,
     }
   }
 
-  input_queue_.push(
-      std::make_unique<InputFrameRef>(std::move(frame), force_keyframe));
+  input_queue_.emplace(std::move(frame), force_keyframe);
   EncodePendingInputs();
 }
 
@@ -733,9 +725,10 @@ scoped_refptr<VASurface> VaapiVideoEncodeAccelerator::CreateEncodeSurface(
   const VASurfaceID id = scoped_va_surface->id();
   const gfx::Size& size = scoped_va_surface->size();
   const unsigned int format = scoped_va_surface->format();
-  VASurface::ReleaseCB release_cb = BindToCurrentLoop(base::BindOnce(
-      &VaapiVideoEncodeAccelerator::RecycleVASurface, encoder_weak_this_,
-      &surfaces, std::move(scoped_va_surface)));
+  VASurface::ReleaseCB release_cb =
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
+          &VaapiVideoEncodeAccelerator::RecycleVASurface, encoder_weak_this_,
+          &surfaces, std::move(scoped_va_surface)));
 
   return base::MakeRefCounted<VASurface>(id, size, format,
                                          std::move(release_cb));
@@ -855,12 +848,12 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
   TRACE_EVENT1("media,gpu", "VAVEA::EncodePendingInputs",
                "pending input frames", input_queue_.size());
   while (state_ == kEncoding && !input_queue_.empty()) {
-    std::unique_ptr<InputFrameRef>& input_frame = input_queue_.front();
-    if (!input_frame) {
+    const InputFrameRef& input_frame = input_queue_.front();
+    if (!input_frame.frame) {
       // If this is a flush (null) frame, don't create/submit a new encode
-      // result for it, but forward a null result to the
+      // result for it, but forward absl::nulloptto the
       // |pending_encode_results_| queue.
-      pending_encode_results_.push(nullptr);
+      pending_encode_results_.push(absl::nullopt);
       input_queue_.pop();
       TryToReturnBitstreamBuffers();
       continue;
@@ -873,7 +866,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     std::vector<scoped_refptr<VASurface>> reconstructed_surfaces;
     if (native_input_mode_) {
       if (!CreateSurfacesForGpuMemoryBufferEncoding(
-              *input_frame->frame, spatial_layer_resolutions, &input_surfaces,
+              *input_frame.frame, spatial_layer_resolutions, &input_surfaces,
               &reconstructed_surfaces)) {
         return;
       }
@@ -881,7 +874,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
       DCHECK_EQ(num_spatial_layers, 1u);
       input_surfaces.resize(1u);
       reconstructed_surfaces.resize(1u);
-      if (!CreateSurfacesForShmemEncoding(*input_frame->frame,
+      if (!CreateSurfacesForShmemEncoding(*input_frame.frame,
                                           &input_surfaces[0],
                                           &reconstructed_surfaces[0])) {
         return;
@@ -895,8 +888,8 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
       std::unique_ptr<EncodeJob> job;
       TRACE_EVENT0("media,gpu", "VAVEA::FromCreateEncodeJobToReturn");
       const bool force_key =
-          (spatial_idx == 0 ? input_frame->force_keyframe : false);
-      job = CreateEncodeJob(force_key, input_frame->frame->timestamp(),
+          (spatial_idx == 0 ? input_frame.force_keyframe : false);
+      job = CreateEncodeJob(force_key, input_frame.frame->timestamp(),
                             *input_surfaces[spatial_idx],
                             std::move(reconstructed_surfaces[spatial_idx]));
       if (!job)
@@ -917,7 +910,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
 
       {
         TRACE_EVENT0("media,gpu", "VAVEA::GetEncodeResult");
-        std::unique_ptr<EncodeResult> result =
+        absl::optional<EncodeResult> result =
             encoder_->GetEncodeResult(std::move(job));
         if (!result) {
           NOTIFY_ERROR(kPlatformFailureError, "Failed getting encode result");
@@ -927,7 +920,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
       }
     }
 
-    // Invalidates |input_frame| here; it notifies a client |input_frame->frame|
+    // Invalidates |input_frame| here; it notifies a client |input_frame.frame|
     // can be reused for the future encoding.
     // If the frame is copied (|native_input_mode_| == false), it is clearly
     // safe to release |input_frame|. If the frame is imported
@@ -935,7 +928,6 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     // blocked on DMA_BUF_IOCTL_SYNC because a VA-API driver protects the buffer
     // through a DRM driver until encoding is complete, that is, vaMapBuffer()
     // on a coded buffer returns.
-    input_frame.reset();
     input_queue_.pop();
 
     TryToReturnBitstreamBuffers();
@@ -952,28 +944,18 @@ void VaapiVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     return;
   }
 
-  auto buffer_ref =
-      std::make_unique<BitstreamBufferRef>(buffer.id(), std::move(buffer));
-
   encoder_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask,
-                     encoder_weak_this_, std::move(buffer_ref)));
+                     encoder_weak_this_, std::move(buffer)));
 }
 
 void VaapiVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
-    std::unique_ptr<BitstreamBufferRef> buffer_ref) {
+    BitstreamBuffer buffer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   DCHECK_NE(state_, kUninitialized);
 
-  buffer_ref->shm_mapping = buffer_ref->shm_region.MapAt(
-      buffer_ref->offset, buffer_ref->shm_region.GetSize());
-  if (!buffer_ref->shm_mapping.IsValid()) {
-    NOTIFY_ERROR(kPlatformFailureError, "Failed mapping shared memory.");
-    return;
-  }
-
-  available_bitstream_buffers_.push(std::move(buffer_ref));
+  available_bitstream_buffers_.push(std::move(buffer));
   TryToReturnBitstreamBuffers();
 }
 
@@ -1035,8 +1017,8 @@ void VaapiVideoEncodeAccelerator::FlushTask(FlushCallback flush_callback) {
   }
   flush_callback_ = std::move(flush_callback);
 
-  // Insert an null job to indicate a flush command.
-  input_queue_.push(std::unique_ptr<InputFrameRef>(nullptr));
+  // Insert InputFrameRef whose frame is nullptr to indicate a flush command.
+  input_queue_.emplace(nullptr, false);
   EncodePendingInputs();
 }
 
@@ -1083,18 +1065,14 @@ void VaapiVideoEncodeAccelerator::DestroyTask() {
 
   input_surfaces_.clear();
 
-  while (!available_bitstream_buffers_.empty())
-    available_bitstream_buffers_.pop();
-
-  while (!input_queue_.empty())
-    input_queue_.pop();
+  available_bitstream_buffers_ = {};
+  input_queue_ = {};
 
   // Note ScopedVABuffer owned by EncodeResults must be destroyed before
   // |vaapi_wrapper_| is destroyed to ensure VADisplay is valid on the
   // ScopedVABuffer's destruction.
   DCHECK(vaapi_wrapper_ || pending_encode_results_.empty());
-  while (!pending_encode_results_.empty())
-    pending_encode_results_.pop();
+  pending_encode_results_ = {};
 
   encoder_ = nullptr;
 
@@ -1115,7 +1093,7 @@ void VaapiVideoEncodeAccelerator::SetState(State state) {
 }
 
 void VaapiVideoEncodeAccelerator::NotifyError(Error error) {
-  if (!child_task_runner_->BelongsToCurrentThread()) {
+  if (!child_task_runner_->RunsTasksInCurrentSequence()) {
     child_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VaapiVideoEncodeAccelerator::NotifyError,
                                   child_weak_this_, error));

@@ -198,6 +198,10 @@ extern const char kCmdLineExpectDeElevated[];
 // is now trying to install the app per-user.
 extern const char kCmdLinePrefersUser[];
 
+// Environment variables.
+extern const char kUsageStatsEnabled[];
+extern const char kUsageStatsEnabledValueEnabled[];
+
 // File system paths.
 //
 // The directory name where CRX apps get installed. This is provided for demo
@@ -216,9 +220,6 @@ extern const char kDevOverrideKeyServerKeepAliveSeconds[];
 extern const char kDevOverrideKeyCrxVerifierFormat[];
 extern const char kDevOverrideKeyGroupPolicies[];
 extern const char kDevOverrideKeyOverinstallTimeout[];
-
-// File name of developer overrides file.
-extern const char kDevOverrideFileName[];
 
 // Timing constants.
 // How long to wait for an application installer (such as chrome_installer.exe)

@@ -10,10 +10,8 @@
 #include "base/files/file_util.h"
 #include "base/functional/callback.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/message_loop/message_pump_type.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
-#include "chrome/updater/constants.h"
 #include "chrome/updater/prefs.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/update_service_internal.h"
@@ -61,8 +59,8 @@ class AppServerTest : public AppServer {
 void ClearPrefs() {
   const UpdaterScope updater_scope = GetUpdaterScope();
   for (const absl::optional<base::FilePath>& path :
-       {GetBaseDataDirectory(updater_scope),
-        GetVersionedDataDirectory(updater_scope)}) {
+       {GetInstallDirectory(updater_scope),
+        GetVersionedInstallDirectory(updater_scope)}) {
     ASSERT_TRUE(path);
     ASSERT_TRUE(
         base::DeleteFile(path->Append(FILE_PATH_LITERAL("prefs.json"))));

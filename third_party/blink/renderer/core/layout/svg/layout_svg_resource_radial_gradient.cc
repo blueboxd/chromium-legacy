@@ -22,29 +22,30 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_radial_gradient.h"
 
 #include "third_party/blink/renderer/core/svg/svg_radial_gradient_element.h"
-#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
 LayoutSVGResourceRadialGradient::LayoutSVGResourceRadialGradient(
     SVGRadialGradientElement* node)
-    : LayoutSVGResourceGradient(node),
-      attributes_wrapper_(
-          MakeGarbageCollected<RadialGradientAttributesWrapper>()) {}
+    : LayoutSVGResourceGradient(node) {}
 
 LayoutSVGResourceRadialGradient::~LayoutSVGResourceRadialGradient() = default;
 
 void LayoutSVGResourceRadialGradient::Trace(Visitor* visitor) const {
-  visitor->Trace(attributes_wrapper_);
+  visitor->Trace(attributes_);
   LayoutSVGResourceGradient::Trace(visitor);
 }
 
-void LayoutSVGResourceRadialGradient::CollectGradientAttributes() {
+const GradientAttributes& LayoutSVGResourceRadialGradient::EnsureAttributes()
+    const {
   NOT_DESTROYED();
   DCHECK(GetElement());
-  attributes_wrapper_->Set(RadialGradientAttributes());
-  To<SVGRadialGradientElement>(GetElement())
-      ->CollectGradientAttributes(MutableAttributes());
+  if (should_collect_gradient_attributes_) {
+    attributes_ =
+        To<SVGRadialGradientElement>(*GetElement()).CollectGradientAttributes();
+    should_collect_gradient_attributes_ = false;
+  }
+  return attributes_;
 }
 
 gfx::PointF LayoutSVGResourceRadialGradient::CenterPoint(
@@ -75,15 +76,13 @@ float LayoutSVGResourceRadialGradient::FocalRadius(
 
 scoped_refptr<Gradient> LayoutSVGResourceRadialGradient::BuildGradient() const {
   NOT_DESTROYED();
-  const RadialGradientAttributes& attributes = Attributes();
-  scoped_refptr<Gradient> gradient = Gradient::CreateRadial(
-      FocalPoint(attributes), FocalRadius(attributes), CenterPoint(attributes),
-      Radius(attributes), 1,
-      PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),
+  DCHECK(!should_collect_gradient_attributes_);
+  return Gradient::CreateRadial(
+      FocalPoint(attributes_), FocalRadius(attributes_),
+      CenterPoint(attributes_), Radius(attributes_), 1,
+      PlatformSpreadMethodFromSVGType(attributes_.SpreadMethod()),
       Gradient::ColorInterpolation::kUnpremultiplied,
       Gradient::DegenerateHandling::kAllow);
-  gradient->AddColorStops(attributes.Stops());
-  return gradient;
 }
 
 }  // namespace blink

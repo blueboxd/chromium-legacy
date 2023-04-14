@@ -20,6 +20,7 @@ ChromeVoxEditingTest = class extends ChromeVoxE2ETest {
     await importModule(
         'BrailleCommandHandler',
         '/chromevox/background/braille/braille_command_handler.js');
+    await importModule('ChromeVox', '/chromevox/background/chromevox.js');
     await importModule(
         'DesktopAutomationInterface',
         '/chromevox/background/desktop_automation_interface.js');
@@ -33,6 +34,8 @@ ChromeVoxEditingTest = class extends ChromeVoxE2ETest {
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
     await importModule('LocalStorage', '/common/local_storage.js');
+    await importModule(
+        'SettingsManager', '/chromevox/common/settings_manager.js');
 
     globalThis.EventType = chrome.automation.EventType;
     globalThis.RoleType = chrome.automation.RoleType;
@@ -153,7 +156,7 @@ AX_TEST_F('ChromeVoxEditingTest', 'TextButNoSelectionChange', async function() {
 
 AX_TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', async function() {
   // Turn on rich text output settings.
-  LocalStorage.set('announceRichTextAttributes', true);
+  SettingsManager.set('announceRichTextAttributes', true);
 
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(`
@@ -205,7 +208,7 @@ AX_TEST_F('ChromeVoxEditingTest', 'RichTextMoveByLine', async function() {
 
 AX_TEST_F('ChromeVoxEditingTest', 'RichTextMoveByCharacter', async function() {
   // Turn on rich text output settings.
-  LocalStorage.set('announceRichTextAttributes', true);
+  SettingsManager.set('announceRichTextAttributes', true);
 
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(`
@@ -281,7 +284,7 @@ AX_TEST_F(
     'ChromeVoxEditingTest', 'RichTextMoveByCharacterAllAttributes',
     async function() {
       // Turn on rich text output settings.
-      LocalStorage.set('announceRichTextAttributes', true);
+      SettingsManager.set('announceRichTextAttributes', true);
 
       const mockFeedback = this.createMockFeedback();
       const root = await this.runWithLoadedTree(`
@@ -525,7 +528,7 @@ AX_TEST_F(
 
 AX_TEST_F('ChromeVoxEditingTest', 'RichTextLinkOutput', async function() {
   // Turn on rich text output settings.
-  LocalStorage.set('announceRichTextAttributes', true);
+  SettingsManager.set('announceRichTextAttributes', true);
 
   const mockFeedback = this.createMockFeedback();
   const root = await this.runWithLoadedTree(`
@@ -2058,7 +2061,7 @@ AX_TEST_F(
 
       // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
       // contracted braille).
-      LocalStorage.set('brailleTable', 'en-ueb-g2');
+      SettingsManager.set('brailleTable', 'en-ueb-g2');
 
       // Wait for it to be fully refreshed (liblouis loads the new tables, our
       // translators are re-created).
@@ -2071,10 +2074,10 @@ AX_TEST_F(
 
       // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
       // contracted braille).
-      LocalStorage.set('brailleTable', 'en-ueb-g2');
+      SettingsManager.set('brailleTable', 'en-ueb-g2');
       await new Promise(
           r => BrailleBackground.instance.getTranslatorManager().refresh(
-              LocalStorage.get('brailleTable'), undefined, r));
+              SettingsManager.getString('brailleTable'), undefined, r));
 
       async function waitForBrailleDots(expectedDots) {
         return new Promise(r => {
@@ -2144,39 +2147,36 @@ AX_TEST_F('ChromeVoxEditingTest', 'ContextMenus', async function() {
   await mockFeedback.replay();
 });
 
-// TODO(crbug.com/1352225): Flaky.
-AX_TEST_F(
-    'ChromeVoxEditingTest', 'DISABLED_NativeCharWordCommands',
-    async function() {
-      const mockFeedback = this.createMockFeedback();
-      const site = `
+AX_TEST_F('ChromeVoxEditingTest', 'NativeCharWordCommands', async function() {
+  const mockFeedback = this.createMockFeedback();
+  const site = `
     <p>start</p>
     <div role="textbox" contenteditable>This is a test</div>
   `;
-      const root = await this.runWithLoadedTree(site);
-      await this.focusFirstTextField(root);
+  const root = await this.runWithLoadedTree(site);
+  await this.focusFirstTextField(root);
 
-      const textField = root.find({role: RoleType.TEXT_FIELD});
-      mockFeedback.expectSpeech('Text area')
-          .call(this.press(KeyCode.HOME, {ctrl: true}))
-          .call(this.press(KeyCode.RIGHT))
-          .expectSpeech('h')
-          .call(this.press(KeyCode.RIGHT))
-          .expectSpeech('i')
-          .call(this.press(KeyCode.LEFT))
-          .expectSpeech('h')
+  const textField = root.find({role: RoleType.TEXT_FIELD});
+  mockFeedback.expectSpeech('Text area')
+      .call(this.press(KeyCode.HOME, {ctrl: true}))
+      .call(this.press(KeyCode.RIGHT))
+      .expectSpeech('h')
+      .call(this.press(KeyCode.RIGHT))
+      .expectSpeech('i')
+      .call(this.press(KeyCode.LEFT))
+      .expectSpeech('h')
 
-          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
-          .expectSpeech('This')
-          .call(this.press(KeyCode.RIGHT, {ctrl: true}))
-          .expectSpeech('is')
-          .call(this.press(KeyCode.LEFT, {ctrl: true}))
-          .expectSpeech('is')
-          .call(this.press(KeyCode.LEFT, {ctrl: true}))
-          .expectSpeech('This');
+      .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+      .expectSpeech(/This\s*/)
+      .call(this.press(KeyCode.RIGHT, {ctrl: true}))
+      .expectSpeech('is')
+      .call(this.press(KeyCode.LEFT, {ctrl: true}))
+      .expectSpeech('is')
+      .call(this.press(KeyCode.LEFT, {ctrl: true}))
+      .expectSpeech(/This\s*/);
 
-      await mockFeedback.replay();
-    });
+  await mockFeedback.replay();
+});
 
 AX_TEST_F('ChromeVoxEditingTest', 'TablesWithEmptyCells', async function() {
   const mockFeedback = this.createMockFeedback();

@@ -180,7 +180,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="1984417487208496350">Ingen beskyttelse (anbefales ikke)</translation>
 <translation id="1986685561493779662">Navnet finnes allerede</translation>
 <translation id="1995884366040846621">For at du skal kunne fortsette, må <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> dele navnet ditt, e-postadressen din og profilbildet ditt med dette nettstedet. Se nettstedets <ph name="BEGIN_LINK1" />personvernregler<ph name="END_LINK1" />.</translation>
-<translation id="2000419248597011803">Sender noen informasjonskapsler og søk fra adressefeltet og søkefeltet samt noen informasjonskapsler til standardsøkemotoren din</translation>
 <translation id="200114059308480249">Vil du inkludere omliggende tekst i Google-søk?</translation>
 <translation id="2009341475524975924">For å måle resultatene for en annonse kan begrensede typer data deles mellom nettsteder, for eksempel klokkeslettet da du ble vist en annonse.</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
@@ -227,7 +226,6 @@ Når du sletter nettleserloggen, enten det er hele loggen eller bare loggen for 
 <translation id="2248941474044011069">Passordene dine krypteres på enheten før de lagres i Google Passordlagring</translation>
 <translation id="2249635629516220541">Tilpass informasjonen som brukes av nettsteder for å vise deg annonser</translation>
 <translation id="2259659629660284697">Eksportér passord</translation>
-<translation id="2276231040576210443">Du kan når som helst velge hva du vil synkronisere, i <ph name="BEGIN_LINK1" />innstillingene<ph name="END_LINK1" />. Google kan gi Søk og andre tjenester personlig preg basert på loggen din.</translation>
 <translation id="2276696007612801991">Logg på Google-kontoen din for å sjekke passordene dine</translation>
 <translation id="2278052315791335171">Sletting av dette passordet sletter ikke kontoen din på <ph name="SITE" /></translation>
 <translation id="2286841657746966508">Faktureringsadresse</translation>
@@ -304,9 +302,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="2656405586795711023">Nettprogrammer</translation>
 <translation id="2669454659051515572">Alle som bruker denne enheten, kan se nedlastede filer</translation>
 <translation id="2702516483241149200">Ny: del en link som ruller til denne teksten</translation>
-<translation id="2704606927547763573">Kopiert</translation>
 <translation id="2707726405694321444">Last inn siden på nytt</translation>
-<translation id="2709516037105925701">Autofyll</translation>
 <translation id="271033894570825754">Ny</translation>
 <translation id="2711073837061989559">Prøveprosjekter</translation>
 <translation id="2718352093833049315">Bare når Wifi er på</translation>
@@ -391,13 +387,13 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3066573403916685335">Flytt ned</translation>
 <translation id="3070005020161560471">Oversett automatisk</translation>
 <translation id="3072980200212375806"><ph name="APP_NAME" /> åpnes i Chrome. Ved å fortsette samtykker du i <ph name="BEGIN_LINK1" />Googles vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />tilleggsvilkårene for bruk av Google Chrome og ChromeOS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Personvernreglene<ph name="END_LINK3" /> gjelder også.</translation>
+<translation id="3083194063661536258">Logget av. Knapp. Åpner dialogboksen for å logge på og slå på synkronisering.</translation>
 <translation id="3091010850649238832">Vis innholdet på utklippstavlen</translation>
 <translation id="3098745985164956033">Noen bilder blir sendt til Google for å gjøre beskrivelsene bedre</translation>
 <translation id="3104179992611025423">Nettleseren administreres av dine overordnede</translation>
 <translation id="3114507951000454849">Les dagens nyheter <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">Tilknyttet til</translation>
 <translation id="3123734510202723619">Kunngjøringer</translation>
-<translation id="3130863904455712965">Logg med mer</translation>
 <translation id="3134784203083076891">»</translation>
 <translation id="314939179385989105">Startsiden for Chrome</translation>
 <translation id="3157931365184549694">Gjenopprett</translation>
@@ -454,6 +450,7 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3421726884497337397">Velg når informasjonskapsler fra tredjeparter skal blokkeres</translation>
 <translation id="3428747202529429621">Holder deg trygg i Chrome og kan brukes til å øke sikkerheten din i andre Google-apper når du er pålogget</translation>
 <translation id="3429160811076349561">Prøvefunksjoner er avslått</translation>
+<translation id="3432973700170747422">Slett de siste 15 minuttene</translation>
 <translation id="3435465986463792564">Har du mange vinduer? Du kan administrere dem her</translation>
 <translation id="3435738964857648380">Sikkerhet</translation>
 <translation id="3443221991560634068">Last inn den aktive siden på nytt</translation>
@@ -520,7 +517,6 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="3830886834687455630">Oppdater Google Play-tjenester for å sjekke passordene dine</translation>
 <translation id="3845098929839618392">Åpne i inkognitofane</translation>
 <translation id="3856096718352044181">Verifiser at dette er en gyldig leverandør, eller prøv på nytt senere</translation>
-<translation id="3858127568696903256">Se innholdet du følger, her</translation>
 <translation id="3858860766373142691">Navn</translation>
 <translation id="3861633093716975811">Populære videoer</translation>
 <translation id="3874520961715512166">Nettsted fjernet</translation>
@@ -629,7 +625,6 @@ Med private tilstandstokener får du bedre personvern på nettet, og de kan ikke
 <translation id="4452411734226507615">Lukk <ph name="TAB_TITLE" />-fanen</translation>
 <translation id="4452548195519783679">Satt som bokmerke i <ph name="FOLDER_NAME" /></translation>
 <translation id="4461614516424362539">Når du tilknytter en annen enhet med QR-kode, kan den bruke denne telefonen som sikkerhetsnøkkel. Hvis du fjerner den, må du skanne QR-koden for å tilknytte den igjen.</translation>
-<translation id="4479839115899251637">Slett fra leselisten</translation>
 <translation id="4479972344484327217">Installerer <ph name="MODULE" /> for Chrome …</translation>
 <translation id="4484496141267039529">Ingen tilkobling. Prøv på nytt senere.</translation>
 <translation id="4487967297491345095">Alle appdataene for Chrome slettes permanent. Dette omfatter alle filer, innstillinger, kontoer, databaser osv.</translation>
@@ -924,10 +919,12 @@ For å endre denne innstillingen, <ph name="BEGIN_LINK" />tilbakestill synkronis
 <translation id="6000203700195075278">Følg på nytt</translation>
 <translation id="6002122790816966947">Enhetene dine</translation>
 <translation id="6005538289190791541">Foreslått passord</translation>
+<translation id="6011308810877101166">Gjør søkeforslagene bedre</translation>
 <translation id="6039379616847168523">Gå til den neste fanen</translation>
 <translation id="6040143037577758943">Lukk</translation>
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
+<translation id="6049046116080614938">Logget på som <ph name="USER_NAME" />. <ph name="USER_EMAIL" />. Knapp. Åpner innstillinger.</translation>
 <translation id="604996488070107836">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt på grunn av en ukjent feil.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6059830886158432458">Styr nyhetssakene dine og aktiviteten din her</translation>
@@ -990,7 +987,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6397616442223433927">På nettet igjen</translation>
 <translation id="6401458660421980302">For å sende denne fanen til en annen enhet, logg på Chrome der</translation>
 <translation id="6402652558933147609"><ph name="ERROR_CODE" /> på <ph name="VIOLATED_URL" /></translation>
-<translation id="6403371459378431832">Synkroniser dataene dine på alle enheter</translation>
 <translation id="6404511346730675251">Rediger bokmerket</translation>
 <translation id="6406506848690869874">Synkroniser</translation>
 <translation id="6407224748847589805">Kan ikke koble til datamaskinen din. Prøv et annet bekreftelsesalternativ.</translation>
@@ -1246,8 +1242,8 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7682724950699840886">Prøv dette: Sørg for at det er nok plass på enheten, og prøv å eksportere på nytt.</translation>
 <translation id="7686086654630106285">Mer om annonser som foreslås på nettstedet</translation>
 <translation id="768618399695552958">Noen av sidene du besøker, er forhåndslastede. Sider kan bli forhåndslastet via Googles tjenere når de er linket på Google-nettsteder.</translation>
+<translation id="7691043218961417207">Utforsk innhold du kan følge</translation>
 <translation id="7698359219371678927">Opprett en e-post i <ph name="APP_NAME" /></translation>
-<translation id="7704317875155739195">Autofullfør søk og nettadresser</translation>
 <translation id="7707922173985738739">Bruk mobildata</translation>
 <translation id="7709094866268987903">Interesser du fjerner, vises her</translation>
 <translation id="7709918231054955894">Hent alle fanene dine</translation>
@@ -1302,6 +1298,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7968014550143838305">Lagt til på leselisten</translation>
 <translation id="7971136598759319605">Aktiv for én dag siden</translation>
 <translation id="7975379999046275268">Forhåndsvis siden <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
+<translation id="7981085434646346979">Logget på som <ph name="USER_NAME" />. Knapp. Åpner innstillinger.</translation>
 <translation id="7986497153528221272">For å se passord må du først angi en skjermlås på enheten din</translation>
 <translation id="7995059495660416932">Du ser innhold når det blir tilgjengelig</translation>
 <translation id="799576009106109668">Du kan surfe raskere, siden innholdet lastes inn proaktivt basert på nettsiden du er på for øyeblikket</translation>
@@ -1319,7 +1316,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8037801708772278989">Sjekket nettopp</translation>
 <translation id="804335162455518893">Finner ikke SD-kort</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> inkognitofane}other{<ph name="TAB_COUNT_NORMAL" /> inkognitofaner}}</translation>
-<translation id="8048728378294435881">Sikkerhetskopier tingene dine og bruk dem på alle enheter</translation>
 <translation id="8051695050440594747"><ph name="MEGABYTES" /> MB tilgjengelig</translation>
 <translation id="8058655154417507695">Utløpsår</translation>
 <translation id="8058746566562539958">Åpne i en ny Chrome-fane</translation>
@@ -1453,6 +1449,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8746155870861185046">Del merket tekst</translation>
 <translation id="8748850008226585750">Innholdet er skjult</translation>
 <translation id="8756969031206844760">Vil du oppdatere passordet?</translation>
+<translation id="8765470054473112089">Når du skriver i adressefeltet eller søkefeltet, sender Chrome det du skriver til standardsøkemotoren din, for å gi deg bedre forslag. Dette er av i Inkognito.</translation>
 <translation id="8766529642647037772">Vil du opprette en fremhevet link som denne?</translation>
 <translation id="8773160212632396039">Behandler forespørselen</translation>
 <translation id="8788265440806329501">Navigasjonsloggen er lukket</translation>
@@ -1492,7 +1489,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8955719471735800169">Tilbake til toppen</translation>
 <translation id="8964479563882643397">For å åpne en ny inkognitofane, åpne menyen</translation>
 <translation id="8965591936373831584">venter</translation>
-<translation id="8967427617812342790">Legg til på leselisten</translation>
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> inkognitofaner og <ph name="TAB_COUNT_ONE" /> annen fane blir lukket}other{<ph name="INCOGNITO_TAB_COUNT" /> inkognitofaner og <ph name="TAB_COUNT_MANY" /> andre faner blir lukket}}</translation>
 <translation id="8970887620466824814">Noe gikk galt.</translation>
 <translation id="8972098258593396643">Vil du laste ned til standardmappen?</translation>

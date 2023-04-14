@@ -123,6 +123,7 @@ ash_ts_library("build_ts") {
   root_dir = preprocess_folder
   out_dir = "$target_gen_dir/tsc"
   tsconfig_base = "tsconfig_base.json"
+  allow_js = true
   composite = true
   use_lit = true
 
@@ -140,7 +141,8 @@ ash_ts_library("build_ts") {
 
   deps = [
     "//third_party/material_web_components:library",
-    "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
 
   path_mappings = [ "chrome://resources/mwc/*|" + rebase_path(
@@ -148,10 +150,12 @@ ash_ts_library("build_ts") {
                         target_gen_dir) ]
 
   in_files = static_js_files + generated_js_files + ts_files + ts_polymer +
-             ts_generated_templates + image_loader_static_js_files
+             ts_generated_templates + image_loader_static_js_files +
+             [ "file_manager/externs/file_manager_private.js" ]
+
+  manifest_excludes = [ "file_manager/externs/file_manager_private.js" ]
 
   definitions = [
-    "$preprocess_folder/file_manager/externs/file_manager_private.js",
     "//tools/typescript/definitions/chrome_event.d.ts",
     "//tools/typescript/definitions/runtime.d.ts",
     "//tools/typescript/definitions/tabs.d.ts",
@@ -169,19 +173,25 @@ ts_library("test_build_ts") {
   testonly = true
   root_dir = preprocess_folder
   out_dir = "$target_gen_dir/tsc"
+  allow_js = true
   tsconfig_base = "tsconfig_base.json"
 
-  in_files = ts_test_files
+  in_files =
+      ts_test_files + [ "file_manager/externs/test/file_manager_private.js" ]
+
+  manifest_excludes = [ "file_manager/externs/test/file_manager_private.js" ]
 
   path_mappings = [
     # for chai_assert.js.
+    "chrome://webui-test/chromeos/*|" +
+        rebase_path("$root_gen_dir/chrome/test/data/webui/chromeos/tsc/*",
+                    target_gen_dir),
     "chrome://webui-test/*|" +
         rebase_path("$root_gen_dir/chrome/test/data/webui/tsc/*",
                     target_gen_dir),
   ]
 
-  definitions =
-      [ "$preprocess_folder/file_manager/externs/file_manager_private.js" ]
+  definitions = []
   foreach(_file, generate_definitions_js_files) {
     definitions +=
         [ "$target_gen_dir/" + string_replace(_file, ".js", ".d.ts") ]
@@ -193,11 +203,14 @@ ts_library("test_build_ts") {
   deps = [
     ":build_ts",
     "//chrome/test/data/webui:build_ts",
+    "//chrome/test/data/webui/chromeos:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
   extra_deps = [
     ":copy_definitions_to_gen",
     ":copy_definitions_to_proprocess",
-    ":copy_fmp",
+    ":copy_fmp_test",
     ":copy_ts",
     ":generate_definitions",
   ]
@@ -208,7 +221,6 @@ ts_definitions("generate_definitions") {
   out_dir = target_gen_dir
 
   extra_deps = [ "//ash/webui/common/resources:generate_definitions" ]
-  deps = [ "//ui/webui/resources:library" ]
 
   js_files = generate_definitions_js_files
 }
@@ -234,6 +246,16 @@ copy("copy_ts") {
 copy("copy_fmp") {
   sources = [ "//third_party/closure_compiler/externs/file_manager_private.js" ]
   outputs = [ "$preprocess_folder/file_manager/externs/{{source_file_part}}" ]
+}
+
+# Copy file_manager_private.js to a different location than copy_fmp, to
+# work-around the fact that both :build_ts__ts_library and :test_build_ts
+# generate files in the same folder and both have file_manager_private.js as an
+# input file.
+copy("copy_fmp_test") {
+  sources = [ "//third_party/closure_compiler/externs/file_manager_private.js" ]
+  outputs =
+      [ "$preprocess_folder/file_manager/externs/test/{{source_file_part}}" ]
 }
 
 copy("for_image_loader") {
@@ -278,7 +300,7 @@ generate_grd("build_grd") {
     input_files += [
       "file_manager/foreground/js/deferred_elements.rollup.js",
       "file_manager/foreground/js/main.rollup.js",
-      "file_manager/foreground/js/metadata_dispatcher.rollup.js",
+      "file_manager/foreground/js/metadata/metadata_dispatcher.rollup.js",
       "file_manager/foreground/js/shared.rollup.js",
 
       # For Image Loader unittests:
@@ -290,7 +312,7 @@ generate_grd("build_grd") {
     resource_path_rewrites += [
       "file_manager/foreground/js/deferred_elements.rollup.js|file_manager/foreground/js/deferred_elements.js",
       "file_manager/foreground/js/main.rollup.js|file_manager/foreground/js/main.js",
-      "file_manager/foreground/js/metadata_dispatcher.rollup.js|file_manager/foreground/js/metadata/metadata_dispatcher.js",
+      "file_manager/foreground/js/metadata/metadata_dispatcher.rollup.js|file_manager/foreground/js/metadata/metadata_dispatcher.js",
     ]
 
     deps += [

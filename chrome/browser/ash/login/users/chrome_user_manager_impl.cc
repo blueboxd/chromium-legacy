@@ -16,6 +16,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/session/session_controller.h"
+#include "base/barrier_closure.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
@@ -132,10 +133,6 @@ const char kDeviceLocalAccountPendingDataRemoval[] =
 const char kDeviceLocalAccountsWithSavedData[] = "PublicAccounts";
 
 constexpr char kBluetoothLoggingUpstartJob[] = "bluetoothlog";
-
-std::string FullyCanonicalize(const std::string& email) {
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
-}
 
 // Callback that is called after user removal is complete.
 void OnRemoveUserComplete(const AccountId& account_id,
@@ -266,7 +263,6 @@ void ChromeUserManagerImpl::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kDeviceLocalAccountsWithSavedData);
   registry->RegisterStringPref(kDeviceLocalAccountPendingDataRemoval,
                                std::string());
-  registry->RegisterListPref(::prefs::kReportingUsers);
 
   SupervisedUserManager::RegisterLocalStatePrefs(registry);
   SessionLengthLimiter::RegisterPrefs(registry);
@@ -921,10 +917,27 @@ void ChromeUserManagerImpl::NotifyOnLogin() {
 
 void ChromeUserManagerImpl::RemoveNonCryptohomeData(
     const AccountId& account_id) {
-  // Wallpaper removal depends on user preference, so it must happen before
-  // `known_user::RemovePrefs`. See https://crbug.com/778077.
-  for (auto& handler : cloud_external_data_policy_handlers_)
-    handler->RemoveForAccountId(account_id);
+  // Wallpaper removal can be async if system salt is not yet received (see
+  // `WallpaperControllerClientImpl::GetFilesId`), and depends on user
+  // preference, so it must happen before `known_user::RemovePrefs`.
+  // See https://crbug.com/778077. Here we use a latch to ensure that
+  // `known_user::RemovePrefs` does indeed get invoked after wallpaper and other
+  // external data that might be associated with `account_id` are removed (in
+  // case those removal operations are async).
+  remove_non_cryptohome_data_barrier_ = base::BarrierClosure(
+      cloud_external_data_policy_handlers_.size(),
+      base::BindOnce(&ChromeUserManagerImpl::
+                         RemoveNonCryptohomeDataPostExternalDataRemoval,
+                     weak_factory_.GetWeakPtr(), account_id));
+
+  for (auto& handler : cloud_external_data_policy_handlers_) {
+    handler->RemoveForAccountId(account_id,
+                                remove_non_cryptohome_data_barrier_);
+  }
+}
+
+void ChromeUserManagerImpl::RemoveNonCryptohomeDataPostExternalDataRemoval(
+    const AccountId& account_id) {
   // TODO(tbarzic): Forward data removal request to HammerDeviceHandler,
   // instead of removing the prefs value here.
   if (GetLocalState()->FindPreference(prefs::kDetachableBaseDevices)) {
@@ -1271,13 +1284,6 @@ void ChromeUserManagerImpl::SetUserAffiliation(
   }
 }
 
-bool ChromeUserManagerImpl::ShouldReportUser(const std::string& user_id) const {
-  const base::Value::List& reporting_users =
-      GetLocalState()->GetList(::prefs::kReportingUsers);
-  base::Value user_id_value(FullyCanonicalize(user_id));
-  return base::Contains(reporting_users, user_id_value);
-}
-
 bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {
   return AreRiskyPoliciesUsed(broker) ||
@@ -1285,23 +1291,6 @@ bool ChromeUserManagerImpl::IsFullManagementDisclosureNeeded(
              ::prefs::kManagedSessionUseFullLoginWarning) ||
          PolicyHasWebTrustedAuthorityCertificate(broker) ||
          IsProxyUsed(GetLocalState());
-}
-
-void ChromeUserManagerImpl::AddReportingUser(const AccountId& account_id) {
-  ScopedListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  base::Value email_value(account_id.GetUserEmail());
-  if (!base::Contains(users_update.Get(), email_value))
-    users_update->Append(std::move(email_value));
-}
-
-void ChromeUserManagerImpl::RemoveReportingUser(const AccountId& account_id) {
-  ScopedListPrefUpdate users_update(GetLocalState(), ::prefs::kReportingUsers);
-  base::Value::List& update_list = users_update.Get();
-  auto it = base::ranges::find(
-      update_list, base::Value(FullyCanonicalize(account_id.GetUserEmail())));
-  if (it == update_list.end())
-    return;
-  update_list.erase(it);
 }
 
 const AccountId& ChromeUserManagerImpl::GetGuestAccountId() const {

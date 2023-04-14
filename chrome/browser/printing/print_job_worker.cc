@@ -77,6 +77,15 @@ PrintJobWorker::~PrintJobWorker() {
   Stop();
 }
 
+#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+void PrintJobWorker::SetPrintDocumentClient(
+    PrintBackendServiceManager::ClientId client_id) {
+  // This call should only be made for configurations that use
+  // `PrintJobWorkerOop`.
+  NOTREACHED();
+}
+#endif
+
 bool PrintJobWorker::StartPrintingSanityCheck(
     const PrintedDocument* new_document) const {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
@@ -111,14 +120,25 @@ std::u16string PrintJobWorker::GetDocumentName(
   return document_name;
 }
 
+bool PrintJobWorker::SetupDocument(const std::u16string& document_name) {
+  mojom::ResultCode result = printing_context_->NewDocument(document_name);
+  switch (result) {
+    case mojom::ResultCode::kSuccess:
+      return true;
+    case mojom::ResultCode::kCanceled:
+      OnCancel();
+      return false;
+    default:
+      OnFailure();
+      return false;
+  }
+}
+
 void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
   if (!StartPrintingSanityCheck(new_document))
     return;
 
-  mojom::ResultCode result =
-      printing_context_->NewDocument(GetDocumentName(new_document));
-  if (result != mojom::ResultCode::kSuccess) {
-    OnFailure();
+  if (!SetupDocument(GetDocumentName(new_document))) {
     return;
   }
 
@@ -303,6 +323,15 @@ bool PrintJobWorker::SpoolDocument() {
     return false;
   }
   return true;
+}
+
+void PrintJobWorker::OnCancel() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(print_job_);
+
+  print_job_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&PrintJob::Cancel, base::RetainedRef(print_job_.get())));
 }
 
 void PrintJobWorker::OnFailure() {

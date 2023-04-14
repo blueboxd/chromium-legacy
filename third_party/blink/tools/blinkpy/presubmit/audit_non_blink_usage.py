@@ -477,6 +477,7 @@ _CONFIG = [
             "gfx::KeyframedColorAnimationCurve",
             "gfx::KeyframedFloatAnimationCurve",
             "gfx::KeyframedTransformAnimationCurve",
+            "gfx::LinearEasingPoint",
             "gfx::TransformKeyframe",
             "gfx::TransformOperations",
 
@@ -727,6 +728,7 @@ _CONFIG = [
         'disallowed': [
             ('base::Bind(|Once|Repeating)',
              'Use WTF::Bind or WTF::BindRepeating.'),
+            'base::BindPostTaskToCurrentDefault',
             _DISALLOW_NON_BLINK_MOJOM,
         ],
         # These task runners are generally banned in blink to ensure
@@ -734,7 +736,7 @@ _CONFIG = [
         # //third_party/blink/renderer/platform/scheduler/TaskSchedulingInBlink.md
         # for more.
         'inclass_disallowed': [
-            'base::(SingleThread|Sequenced)TaskRunner::(GetCurrentDefault|CurrentDefaultHandle)',
+            'base::(SingleThread|Sequenced)TaskRunner::(GetCurrentDefault|CurrentDefaultHandle)'
         ],
     },
     {
@@ -1166,6 +1168,7 @@ _CONFIG = [
             'viz::ReleaseCallback',
             'viz::ResourceFormat',
             'viz::ResourceFormatToClosestSkColorType',
+            'viz::ToClosestSkColorType',
             'viz::TransferableResource',
         ],
     },

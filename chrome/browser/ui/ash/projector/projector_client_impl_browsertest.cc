@@ -12,6 +12,7 @@
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/test/mock_projector_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/projector/projector_app_client_impl.h"
 #include "chrome/browser/ui/ash/projector/projector_utils.h"
@@ -119,9 +119,7 @@ class ProjectorClientTest : public InProcessBrowserTest {
  public:
   ProjectorClientTest() {
     scoped_feature_list_.InitWithFeatures(
-        {features::kProjector, features::kProjectorAnnotator,
-         features::kOnDeviceSpeechRecognition},
-        {});
+        {features::kProjector, features::kOnDeviceSpeechRecognition}, {});
   }
 
   ~ProjectorClientTest() override = default;

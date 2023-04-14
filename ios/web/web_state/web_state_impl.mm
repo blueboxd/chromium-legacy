@@ -12,6 +12,7 @@
 #import "base/feature_list.h"
 #import "base/time/time.h"
 #import "ios/web/common/features.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/permissions/permissions.h"
 #import "ios/web/public/session/crw_session_storage.h"
@@ -99,7 +100,7 @@ WebStateImpl::WebStateImpl(const CreateParams& params,
     saved_ = std::make_unique<SerializedData>(this, params, session_storage);
   } else {
     pimpl_ = std::make_unique<RealizedWebState>(this);
-    pimpl_->Init(params, session_storage);
+    pimpl_->Init(params, session_storage, FaviconStatus{});
   }
 
   // Send creation event.
@@ -198,7 +199,7 @@ int WebStateImpl::GetNavigationItemCount() const {
 }
 
 WebFramesManagerImpl& WebStateImpl::GetWebFramesManagerImpl() {
-  return RealizedState()->GetWebFramesManager();
+  return RealizedState()->GetPageWorldWebFramesManager();
 }
 
 SessionCertificatePolicyCacheImpl&
@@ -388,8 +389,7 @@ WebState* WebStateImpl::ForceRealized() {
     // Perform the initialisation of the RealizedWebState. No outside
     // code should be able to observe the WebStateImpl with both `saved_`
     // and `pimpl_` set.
-    pimpl_->Init(params, session_storage);
-    pimpl_->SetFaviconStatus(favicon_status);
+    pimpl_->Init(params, session_storage, std::move(favicon_status));
 
     // Notify all observers that the WebState has become realized.
     for (auto& observer : observers_)
@@ -486,12 +486,12 @@ NavigationManager* WebStateImpl::GetNavigationManager() {
   return &RealizedState()->GetNavigationManager();
 }
 
-const WebFramesManager* WebStateImpl::GetWebFramesManager() const {
-  return LIKELY(pimpl_) ? &pimpl_->GetWebFramesManager() : nullptr;
+const WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() const {
+  return LIKELY(pimpl_) ? &pimpl_->GetPageWorldWebFramesManager() : nullptr;
 }
 
-WebFramesManager* WebStateImpl::GetWebFramesManager() {
-  return &RealizedState()->GetWebFramesManager();
+WebFramesManager* WebStateImpl::GetPageWorldWebFramesManager() {
+  return &RealizedState()->GetPageWorldWebFramesManager();
 }
 
 const SessionCertificatePolicyCache*
@@ -707,7 +707,8 @@ void WebStateImpl::SetFindInteractionEnabled(bool enabled) {
   [GetWebController() setFindInteractionEnabled:enabled];
 }
 
-UIFindInteraction* WebStateImpl::GetFindInteraction() API_AVAILABLE(ios(16)) {
+id<CRWFindInteraction> WebStateImpl::GetFindInteraction()
+    API_AVAILABLE(ios(16)) {
   return [GetWebController() findInteraction];
 }
 

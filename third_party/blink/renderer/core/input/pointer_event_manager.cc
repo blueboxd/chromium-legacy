@@ -7,25 +7,19 @@
 #include "base/auto_reset.h"
 #include "base/metrics/field_trial_params.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/input/web_touch_event.h"
 #include "third_party/blink/public/mojom/frame/user_activation_notification_type.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/events/event_path.h"
-#include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/event_handling_util.h"
-#include "third_party/blink/renderer/core/input/gesture_manager.h"
 #include "third_party/blink/renderer/core/input/mouse_event_manager.h"
 #include "third_party/blink/renderer/core/input/touch_action_util.h"
-#include "third_party/blink/renderer/core/layout/hit_test_canvas_result.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/loader/anchor_element_interaction_tracker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -33,10 +27,9 @@
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar.h"
-#include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/event_timing.h"
-#include "third_party/blink/renderer/core/timing/window_performance.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "ui/display/screen_info.h"
@@ -125,7 +118,6 @@ void PointerEventManager::Trace(Visitor* visitor) const {
   visitor->Trace(pending_pointer_capture_target_);
   visitor->Trace(touch_event_manager_);
   visitor->Trace(mouse_event_manager_);
-  visitor->Trace(gesture_manager_);
   visitor->Trace(captured_scrollbar_);
   visitor->Trace(resize_scrollable_area_);
 }
@@ -401,6 +393,12 @@ void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event) {
       pointer_event.pointer_type == WebPointerProperties::PointerType::kPen ||
       pointer_event.pointer_type == WebPointerProperties::PointerType::kEraser);
 
+  Node* adjusted_node = nullptr;
+  AdjustPointerEvent(pointer_event, adjusted_node);
+}
+
+void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event,
+                                             Node*& adjusted_node) {
   float adjustment_width = 0.0f;
   float adjustment_height = 0.0f;
   if (pointer_event.pointer_type == WebPointerProperties::PointerType::kTouch) {
@@ -436,7 +434,6 @@ void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event) {
   HitTestLocation location(PhysicalRect(hit_test_point, hit_rect_size));
   HitTestResult hit_test_result =
       root_frame.GetEventHandler().HitTestResultAtLocation(location, hit_type);
-  Node* adjusted_node = nullptr;
   gfx::Point adjusted_point;
 
   if (pointer_event.pointer_type == WebPointerProperties::PointerType::kTouch) {
@@ -458,8 +455,6 @@ void PointerEventManager::AdjustPointerEvent(WebPointerEvent& pointer_event) {
         frame_->GetEventHandler().BestStylusWritableNodeForHitTestResult(
             location, hit_test_result, adjusted_point, adjusted_node);
 
-    // TODO(crbug.com/1399797): Update Stylus pointer icon to indicate writing
-    // can be started when adjustment is about to be done.
     if (adjusted)
       pointer_event.SetPositionInWidget(adjusted_point.x(), adjusted_point.y());
   }
@@ -674,14 +669,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
     return WebInputEventResult::kHandledSystem;
   }
 
-  if (!event.hovering) {
-    if (!touch_event_manager_->IsAnyTouchActive()) {
-      non_hovering_pointers_canceled_ = false;
-    }
-  }
-
-  // The rest of this function does not handle hovering
-  // (i.e. mouse like) events yet.
+  // The rest of this function doesn't handle hovering (i.e. mouse like) events.
 
   WebPointerEvent pointer_event = event.WebPointerEventInRootFrame();
   if (ShouldAdjustPointerEvent(event))
@@ -726,8 +714,7 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
   // Any finger lifting is a user gesture only when it wasn't associated with a
   // scroll.
   // https://docs.google.com/document/d/1oF1T3O7_E4t1PYHV6gyCwHxOi3ystm0eSL5xZu7nvOg/edit#
-  // Re-use the same UserGesture for touchend and pointerup (but not for the
-  // mouse events generated by GestureTap).
+  //
   // For the rare case of multi-finger scenarios spanning documents, it
   // seems extremely unlikely to matter which document the gesture is
   // associated with so just pick the pointer event that comes.
@@ -738,6 +725,9 @@ WebInputEventResult PointerEventManager::HandlePointerEvent(
         mojom::blink::UserActivationNotificationType::kInteraction);
   }
 
+  if (!event.hovering && !IsAnyTouchActive()) {
+    non_hovering_pointers_canceled_ = false;
+  }
   Node* pointerdown_node = nullptr;
   if (event.GetType() == WebInputEvent::Type::kPointerDown) {
     pointerdown_node =
@@ -830,7 +820,9 @@ bool PointerEventManager::HandleResizerDrag(
       break;
     }
     case WebInputEvent::Type::kPointerMove: {
-      if (resize_scrollable_area_ && resize_scrollable_area_->InResizeMode()) {
+      if (resize_scrollable_area_ && resize_scrollable_area_->Layer() &&
+          resize_scrollable_area_->Layer()->GetLayoutBox() &&
+          resize_scrollable_area_->InResizeMode()) {
         gfx::Point pos = gfx::ToRoundedPoint(event.PositionInWidget());
         resize_scrollable_area_->Resize(pos, offset_from_resize_corner_);
         return true;
@@ -925,6 +917,19 @@ void PointerEventManager::SendEffectivePanActionAtPointer(
     const Node* node_at_pointer) {
   if (IsAnyTouchActive())
     return;
+
+  if (ShouldAdjustStylusPointerEvent(event)) {
+    Node* adjusted_node = nullptr;
+    // Check if node adjustment allows stylus writing. Use a cloned event to
+    // avoid adjusting actual pointer's position.
+    std::unique_ptr<WebInputEvent> cloned_event = event.Clone();
+    WebPointerEvent& cloned_pointer_event =
+        static_cast<WebPointerEvent&>(*cloned_event);
+    AdjustPointerEvent(cloned_pointer_event, adjusted_node);
+    if (adjusted_node) {
+      node_at_pointer = adjusted_node;
+    }
+  }
 
   TouchAction effective_touch_action = TouchAction::kAuto;
   if (node_at_pointer) {
@@ -1297,6 +1302,7 @@ bool PointerEventManager::IsPointerIdActiveOnFrame(PointerId pointer_id,
 }
 
 bool PointerEventManager::IsAnyTouchActive() const {
+  // TODO(mustaq@chromium.org): Rely on PEF's states instead of TEM's.
   return touch_event_manager_->IsAnyTouchActive();
 }
 
@@ -1336,10 +1342,6 @@ void PointerEventManager::SetLastPointerPositionForFrameBoundary(
 
 void PointerEventManager::RemoveLastMousePosition() {
   pointer_event_factory_.RemoveLastPosition(PointerEventFactory::kMouseId);
-}
-
-void PointerEventManager::SetGestureManager(GestureManager* gesture_manager) {
-  gesture_manager_ = Member<GestureManager>(gesture_manager);
 }
 
 int PointerEventManager::GetPointerEventId(

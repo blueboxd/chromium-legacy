@@ -82,6 +82,8 @@ def sign_part(paths, config, part):
     reqs = part.requirements_string(config)
     if reqs:
         command.extend(['--requirements', '=' + reqs])
+    if part.options:
+        command.extend(['--options', part.options.to_comma_delimited_string()])
     if part.entitlements:
         command.extend(
             ['--entitlements',

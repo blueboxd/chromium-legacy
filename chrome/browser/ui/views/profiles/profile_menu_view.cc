@@ -77,7 +77,7 @@ namespace {
 
 std::u16string GetSyncErrorButtonText(AvatarSyncErrorType error) {
   switch (error) {
-    case AvatarSyncErrorType::kAuthError:
+    case AvatarSyncErrorType::kSyncPaused:
     case AvatarSyncErrorType::kUnrecoverableError:
       // The user was signed out. Offer them to sign in again.
       return l10n_util::GetStringUTF16(IDS_SYNC_ERROR_USER_MENU_SIGNIN_BUTTON);
@@ -135,7 +135,7 @@ int CountBrowsersFor(Profile* profile) {
 }
 
 bool IsSyncPaused(Profile* profile) {
-  return GetAvatarSyncErrorType(profile) == AvatarSyncErrorType::kAuthError;
+  return GetAvatarSyncErrorType(profile) == AvatarSyncErrorType::kSyncPaused;
 }
 
 }  // namespace
@@ -196,7 +196,7 @@ gfx::ImageSkia ProfileMenuView::GetSyncIcon() const {
   if (!error)
     return ColoredImageForMenu(kSyncCircleIcon, ui::kColorAlertLowSeverity);
 
-  ui::ColorId color_id = error == AvatarSyncErrorType::kAuthError
+  ui::ColorId color_id = error == AvatarSyncErrorType::kSyncPaused
                              ? ui::kColorButtonBackgroundProminent
                              : ui::kColorAlertHighSeverity;
   return ColoredImageForMenu(kSyncPausedCircleIcon, color_id);
@@ -308,7 +308,7 @@ void ProfileMenuView::OnSyncErrorButtonClicked(AvatarSyncErrorType error) {
           signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN);
       break;
     }
-    case AvatarSyncErrorType::kAuthError:
+    case AvatarSyncErrorType::kSyncPaused:
       GetWidget()->CloseWithReason(views::Widget::ClosedReason::kUnspecified);
       signin_ui_util::ShowReauthForPrimaryAccountWithAuthError(
           browser()->profile(),
@@ -349,8 +349,11 @@ void ProfileMenuView::OnSigninAccountButtonClicked(CoreAccountInfo account) {
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 void ProfileMenuView::OnSignoutButtonClicked() {
-  DCHECK(signin_util::UserSignoutSetting::GetForProfile(browser()->profile())
-             ->IsClearPrimaryAccountAllowed())
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(browser()->profile());
+  DCHECK(ChromeSigninClientFactory::GetForProfile(browser()->profile())
+             ->IsClearPrimaryAccountAllowed(identity_manager->HasPrimaryAccount(
+                 signin::ConsentLevel::kSync)))
       << "Clear primary account is not allowed. Signout should not be offered "
          "in the UI.";
 
@@ -365,11 +368,9 @@ void ProfileMenuView::OnSignoutButtonClicked() {
           kUserMenu_SignOutAllAccounts);
 #else
   CHECK(!browser()->profile()->IsMainProfile());
-  IdentityManagerFactory::GetForProfile(browser()->profile())
-      ->GetPrimaryAccountMutator()
-      ->ClearPrimaryAccount(
-          signin_metrics::ProfileSignout::kUserClickedSignoutProfileMenu,
-          signin_metrics::SignoutDelete::kIgnoreMetric);
+  identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
+      signin_metrics::ProfileSignout::kUserClickedSignoutProfileMenu,
+      signin_metrics::SignoutDelete::kIgnoreMetric);
 #endif
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -539,7 +540,7 @@ void ProfileMenuView::BuildSyncInfo() {
     BuildSyncInfoWithCallToAction(
         GetAvatarSyncErrorDescription(*error, is_sync_feature_enabled),
         GetSyncErrorButtonText(*error),
-        error == AvatarSyncErrorType::kAuthError
+        error == AvatarSyncErrorType::kSyncPaused
             ? ui::kColorSyncInfoBackgroundPaused
             : ui::kColorSyncInfoBackgroundError,
         base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,

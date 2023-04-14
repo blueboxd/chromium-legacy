@@ -11,22 +11,26 @@
 #include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/supervised_user/supervised_users.h"
 #include "components/prefs/pref_store.h"
+#include "components/supervised_user/core/common/supervised_users.h"
 
 namespace base {
 class Value;
 }
 
 class PrefValueMap;
+
+namespace supervised_user {
 class SupervisedUserSettingsService;
+}  // namespace supervised_user
 
 // A PrefStore that gets its values from supervised user settings via the
 // SupervisedUserSettingsService passed in at construction.
 class SupervisedUserPrefStore : public PrefStore {
  public:
   explicit SupervisedUserPrefStore(
-      SupervisedUserSettingsService* supervised_user_settings_service);
+      supervised_user::SupervisedUserSettingsService*
+          supervised_user_settings_service);
 
   // PrefStore overrides:
   bool GetValue(base::StringPiece key,

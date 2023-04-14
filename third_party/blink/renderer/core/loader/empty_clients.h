@@ -44,8 +44,6 @@
 #include "third_party/blink/public/mojom/frame/viewport_intersection_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_spell_check_panel_host_client.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
@@ -55,6 +53,8 @@
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "ui/base/cursor/cursor.h"
@@ -295,6 +295,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       WebNavigationType,
       NavigationPolicy,
       WebFrameLoadType,
+      mojom::blink::ForceHistoryPush,
       bool,
       // TODO(crbug.com/1315802): Refactor _unfencedTop handling.
       bool,
@@ -397,15 +398,20 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void SetTextCheckerClientForTesting(WebTextCheckClient*);
   WebTextCheckClient* GetTextCheckerClient() const override;
 
-  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
     // Most consumers of EmptyLocalFrameClient should not make network requests.
     // If an exception needs to be made (e.g. in test code), then the consumer
     // should define their own subclass of LocalFrameClient or
-    // EmptyLocalFrameClient and override the CreateURLLoaderFactory method.
+    // EmptyLocalFrameClient and override the CreateURLLoaderForTesting method.
     // See also https://crbug.com/891872.
     // We use CHECK(false) instead of NOTREACHED() here to catch errors on
     // clusterfuzz and production.
     CHECK(false);
+    return nullptr;
+  }
+
+  std::unique_ptr<URLLoader> CreateURLLoaderForTesting() override {
     return nullptr;
   }
 

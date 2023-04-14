@@ -19,6 +19,7 @@
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/in_process_context_provider.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
@@ -70,7 +71,8 @@ TEST_F(BufferTest, ReleaseCallback) {
   // Produce a transferable resource for the contents of the buffer.
   int release_resource_count = 0;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr,
       base::BindOnce(&ExplicitRelease,
                      base::Unretained(&release_resource_count)));
   ASSERT_TRUE(rv);
@@ -115,7 +117,8 @@ TEST_F(BufferTest, SolidColorReleaseCallback) {
   // Produce a transferable resource for the contents of the buffer.
   int release_resource_count = 0;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr,
       base::BindOnce(&ExplicitRelease,
                      base::Unretained(&release_resource_count)));
   // Solid color buffer is immediately released after commit.
@@ -150,8 +153,8 @@ TEST_F(BufferTest, IsLost) {
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
-      base::DoNothing());
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr, base::DoNothing());
   ASSERT_TRUE(rv);
 
   scoped_refptr<viz::RasterContextProvider> context_provider =
@@ -177,7 +180,7 @@ TEST_F(BufferTest, IsLost) {
   viz::TransferableResource new_resource;
   rv = buffer->ProduceTransferableResource(
       frame_sink_holder->resource_manager(), nullptr, false, &new_resource,
-      nullptr, base::DoNothing());
+      gfx::ColorSpace::CreateSRGB(), nullptr, base::DoNothing());
   ASSERT_TRUE(rv);
   buffer->OnDetach();
 
@@ -204,8 +207,8 @@ TEST_F(BufferTest, OnLostResources) {
   // Acquire a texture transferable resource for the contents of the buffer.
   viz::TransferableResource resource;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
-      base::DoNothing());
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr, base::DoNothing());
   ASSERT_TRUE(rv);
 
   viz::RasterContextProvider* context_provider =
@@ -239,7 +242,8 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
   // Produce a transferable resource for the contents of the buffer.
   int release_resource_count = 0;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr,
       base::BindOnce(&ExplicitRelease,
                      base::Unretained(&release_resource_count)));
   ASSERT_TRUE(rv);
@@ -252,7 +256,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
     frame.metadata.begin_frame_ack.frame_id.sequence_number =
         viz::BeginFrameArgs::kStartingFrameNumber;
     frame.metadata.begin_frame_ack.has_damage = true;
-    frame.metadata.frame_token = 1;
+    frame.metadata.frame_token = surface_tree_host->GenerateNextFrameToken();
     frame.metadata.device_scale_factor = 1;
     auto pass = viz::CompositorRenderPass::Create();
     pass->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(buffer_size),
@@ -260,7 +264,7 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
     frame.render_pass_list.push_back(std::move(pass));
     frame.resource_list.push_back(resource);
     VerifySyncTokensInCompositorFrame(&frame);
-    frame_sink_holder->SubmitCompositorFrame(std::move(frame));
+    surface_tree_host->SubmitCompositorFrameForTesting(std::move(frame));
   }
 
   buffer->OnDetach();
@@ -296,7 +300,8 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
   // Produce a transferable resource for the contents of the buffer.
   int release_resource_count = 0;
   bool rv = buffer->ProduceTransferableResource(
-      frame_sink_holder->resource_manager(), nullptr, false, &resource, nullptr,
+      frame_sink_holder->resource_manager(), nullptr, false, &resource,
+      gfx::ColorSpace::CreateSRGB(), nullptr,
       base::BindOnce(&ExplicitRelease,
                      base::Unretained(&release_resource_count)));
   ASSERT_TRUE(rv);
@@ -308,7 +313,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
         viz::BeginFrameId(viz::BeginFrameArgs::kManualSourceId,
                           viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
-    frame.metadata.frame_token = 1;
+    frame.metadata.frame_token = surface_tree_host->GenerateNextFrameToken();
     frame.metadata.device_scale_factor = 1;
     auto pass = viz::CompositorRenderPass::Create();
     pass->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(buffer_size),
@@ -316,7 +321,7 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
     frame.render_pass_list.push_back(std::move(pass));
     frame.resource_list.push_back(resource);
     VerifySyncTokensInCompositorFrame(&frame);
-    frame_sink_holder->SubmitCompositorFrame(std::move(frame));
+    surface_tree_host->SubmitCompositorFrameForTesting(std::move(frame));
 
     // Try to release buffer in last frame. This can happen during a resize
     // when frame sink id changes.
@@ -341,13 +346,13 @@ TEST_F(BufferTest, SurfaceTreeHostLastFrame) {
         viz::BeginFrameId(viz::BeginFrameArgs::kManualSourceId,
                           viz::BeginFrameArgs::kStartingFrameNumber);
     frame.metadata.begin_frame_ack.has_damage = true;
-    frame.metadata.frame_token = 1;
+    frame.metadata.frame_token = surface_tree_host->GenerateNextFrameToken();
     frame.metadata.device_scale_factor = 1;
     auto pass = viz::CompositorRenderPass::Create();
     pass->SetNew(viz::CompositorRenderPassId{1}, gfx::Rect(buffer_size),
                  gfx::Rect(buffer_size), gfx::Transform());
     frame.render_pass_list.push_back(std::move(pass));
-    frame_sink_holder->SubmitCompositorFrame(std::move(frame));
+    surface_tree_host->SubmitCompositorFrameForTesting(std::move(frame));
   }
 
   base::RunLoop().RunUntilIdle();

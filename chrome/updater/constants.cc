@@ -10,7 +10,7 @@
 namespace updater {
 
 // App ids.
-const char kUpdaterAppId[] = "{44FC7FE2-65CE-487C-93F4-EDEE46EEAAAB}";
+const char kUpdaterAppId[] = "{44fc7fe2-65ce-487c-93f4-edee46eeaaab}";
 const char kQualificationAppId[] = "{6f0f9a34-a0ab-4a75-a0eb-6eab78d0dc4b}";
 
 const char kNullVersion[] = "0.0.0.0";
@@ -81,6 +81,11 @@ const char kCmdLineExpectDeElevated[] = "expect-de-elevated";
 
 const char kCmdLinePrefersUser[] = "prefers-user";
 
+// Environment variables.
+const char kUsageStatsEnabled[] =
+    COMPANY_SHORTNAME_UPPERCASE_STRING "_USAGE_STATS_ENABLED";
+const char kUsageStatsEnabledValueEnabled[] = "1";
+
 // Path names.
 const char kAppsDir[] = "apps";
 const char kUninstallScript[] = "uninstall.cmd";
@@ -93,9 +98,6 @@ const char kDevOverrideKeyServerKeepAliveSeconds[] = "server_keep_alive";
 const char kDevOverrideKeyCrxVerifierFormat[] = "crx_verifier_format";
 const char kDevOverrideKeyGroupPolicies[] = "group_policies";
 const char kDevOverrideKeyOverinstallTimeout[] = "overinstall_timeout";
-
-// Developer override file name, relative to app data directory.
-const char kDevOverrideFileName[] = "overrides.json";
 
 // Policy Management constants.
 const char kProxyModeDirect[] = "direct";

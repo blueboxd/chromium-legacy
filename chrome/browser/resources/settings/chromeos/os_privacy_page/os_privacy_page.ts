@@ -16,40 +16,30 @@ import './peripheral_data_access_protection_dialog.js';
 import '../../controls/settings_toggle_button.js';
 import '../../settings_shared.css.js';
 import '../os_settings_page/os_settings_subpage.js';
-import '../os_people_page/users_page.js';
 import '../os_settings_page/os_settings_animated_pages.js';
 import '../os_people_page/lock_screen.js';
 import '../os_people_page/lock_screen_password_prompt_dialog.js';
+import './manage_users_page.js';
 import './metrics_consent_toggle_button.js';
 
-import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {afterNextRender, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {SettingsToggleButtonElement} from '../../controls/settings_toggle_button.js';
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
-import {PrefsMixin, PrefsMixinInterface} from '../../prefs/prefs_mixin.js';
-import {Constructor} from '../common/types.js';
-import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
-import {LockStateBehavior, LockStateBehaviorInterface} from '../os_people_page/lock_state_behavior.js';
-import {routes} from '../os_route.js';
-import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
+import {PrefsMixin} from '../../prefs/prefs_mixin.js';
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {LockStateMixin} from '../lock_state_mixin.js';
+import {routes} from '../os_settings_routes.js';
+import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
 import {getTemplate} from './os_privacy_page.html.js';
 import {PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './peripheral_data_access_browser_proxy.js';
 import {PrivacyHubNavigationOrigin} from './privacy_hub_page.js';
 
-const OsSettingsPrivacyPageElementBase =
-    mixinBehaviors(
-        [
-          LockStateBehavior,
-        ],
-        PrefsMixin(
-            RouteObserverMixin(DeepLinkingMixin(I18nMixin(PolymerElement))))) as
-    Constructor<PolymerElement&I18nMixinInterface&DeepLinkingMixinInterface&
-                RouteObserverMixinInterface&PrefsMixinInterface&
-                LockStateBehaviorInterface>;
+const OsSettingsPrivacyPageElementBase = PrefsMixin(
+    LockStateMixin(RouteObserverMixin(DeepLinkingMixin(PolymerElement))));
 
 class OsSettingsPrivacyPageElement extends OsSettingsPrivacyPageElementBase {
   static get is() {
@@ -98,7 +88,7 @@ class OsSettingsPrivacyPageElement extends OsSettingsPrivacyPageElementBase {
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,

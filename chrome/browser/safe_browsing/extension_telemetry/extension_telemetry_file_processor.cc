@@ -4,10 +4,14 @@
 
 #include "chrome/browser/safe_browsing/extension_telemetry/extension_telemetry_file_processor.h"
 
+#include "base/check.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/values.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "crypto/sha2.h"
 
 namespace safe_browsing {
@@ -16,16 +20,16 @@ namespace {
 // Max number of files to read per extension.
 constexpr int64_t kMaxFilesToRead = 1000;
 
-const base::FilePath::CharType kManifestFilePath[] =
+constexpr base::FilePath::CharType kManifestFilePath[] =
     FILE_PATH_LITERAL("manifest.json");
-const base::FilePath::CharType kJSFileSuffix[] = FILE_PATH_LITERAL(".js");
-const base::FilePath::CharType kHTMLFileSuffix[] = FILE_PATH_LITERAL(".html");
-const base::FilePath::CharType kCSSFileSuffix[] = FILE_PATH_LITERAL(".css");
+constexpr base::FilePath::CharType kJSFileSuffix[] = FILE_PATH_LITERAL(".js");
+constexpr base::FilePath::CharType kHTMLFileSuffix[] =
+    FILE_PATH_LITERAL(".html");
+constexpr base::FilePath::CharType kCSSFileSuffix[] = FILE_PATH_LITERAL(".css");
 
-const base::flat_map<base::FilePath::StringType, int> kFileTypePriorityMap = {
-    {kJSFileSuffix, 3},
-    {kHTMLFileSuffix, 2},
-    {kCSSFileSuffix, 1}};
+constexpr auto kFileTypePriorityMap =
+    base::MakeFixedFlatMap<base::FilePath::StringPieceType, int>(
+        {{kJSFileSuffix, 3}, {kHTMLFileSuffix, 2}, {kCSSFileSuffix, 1}});
 
 void RecordLargestFileSizeObserved(size_t size) {
   base::UmaHistogramCounts1M(
@@ -62,26 +66,27 @@ struct ExtensionTelemetryFileProcessor::FileExtensionsComparator {
 
 ExtensionTelemetryFileProcessor::~ExtensionTelemetryFileProcessor() = default;
 
-ExtensionTelemetryFileProcessor::ExtensionTelemetryFileProcessor(
-    const uint32_t max_files_to_process,
-    const int64_t max_file_size,
-    base::FilePath extension_root_dir)
-    : max_files_to_process_(max_files_to_process),
-      max_file_size_(max_file_size),
-      max_files_to_read_(kMaxFilesToRead),
-      extension_root_dir_(std::move(extension_root_dir)) {}
+ExtensionTelemetryFileProcessor::ExtensionTelemetryFileProcessor()
+    : max_files_to_process_(kExtensionTelemetryFileDataMaxFilesToProcess.Get()),
+      max_file_size_(kExtensionTelemetryFileDataMaxFileSizeBytes.Get()),
+      max_files_to_read_(kMaxFilesToRead) {}
 
-base::Value::Dict ExtensionTelemetryFileProcessor::ProcessExtension() {
+base::Value::Dict ExtensionTelemetryFileProcessor::ProcessExtension(
+    const base::FilePath& root_dir) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (root_dir.empty()) {
+    return base::Value::Dict();
+  }
 
   // Gather all installed extension files, filter and sort by types.
-  SortedFilePaths installed_files = RetrieveFilePaths();
+  SortedFilePaths installed_files = RetrieveFilePaths(root_dir);
 
   // Compute hashes of files until |max_files_to_process_| limit is reached.
-  base::Value::Dict extension_data = ComputeHashes(std::move(installed_files));
+  base::Value::Dict extension_data =
+      ComputeHashes(root_dir, std::move(installed_files));
 
   // Add Manifest.json file data, unhashed.
-  base::FilePath manifest_path = extension_root_dir_.Append(kManifestFilePath);
+  base::FilePath manifest_path = root_dir.Append(kManifestFilePath);
   std::string manifest_contents;
 
   if (base::ReadFileToString(manifest_path, &manifest_contents) &&
@@ -95,8 +100,9 @@ base::Value::Dict ExtensionTelemetryFileProcessor::ProcessExtension() {
 }
 
 ExtensionTelemetryFileProcessor::SortedFilePaths
-ExtensionTelemetryFileProcessor::RetrieveFilePaths() {
-  base::FileEnumerator enumerator(extension_root_dir_, /*recursive=*/true,
+ExtensionTelemetryFileProcessor::RetrieveFilePaths(
+    const base::FilePath& root_dir) {
+  base::FileEnumerator enumerator(root_dir, /*recursive=*/true,
                                   base::FileEnumerator::FILES);
   int64_t exceeded_file_size_counter = 0;
   int64_t largest_file_size = 0;
@@ -135,6 +141,7 @@ ExtensionTelemetryFileProcessor::RetrieveFilePaths() {
 }
 
 base::Value::Dict ExtensionTelemetryFileProcessor::ComputeHashes(
+    const base::FilePath& root_dir,
     const SortedFilePaths& file_paths) {
   base::Value::Dict extension_data;
 
@@ -146,7 +153,7 @@ base::Value::Dict ExtensionTelemetryFileProcessor::ComputeHashes(
         !file_contents.empty()) {
       // Use relative path as key since file names can repeat.
       base::FilePath relative_path;
-      extension_root_dir_.AppendRelativePath(full_path, &relative_path);
+      root_dir.AppendRelativePath(full_path, &relative_path);
 
       std::string hash = crypto::SHA256HashString(file_contents);
       std::string hex_encode = base::HexEncode(hash.c_str(), hash.size());

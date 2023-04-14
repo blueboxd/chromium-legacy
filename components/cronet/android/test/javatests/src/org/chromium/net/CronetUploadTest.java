@@ -10,8 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -20,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.impl.CronetUploadDataStream;
@@ -78,7 +76,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testInitTriggersRewindAndInitBeforeRewindCompletes() throws Exception {
         // Init completes synchronously and read succeeds.
@@ -128,7 +125,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testInitTriggersRewindAndInitAfterRewindCompletes() throws Exception {
         // Init completes synchronously and read succeeds.
@@ -177,7 +173,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testReadCompleteTriggerRewind() throws Exception {
         // Reset and init before read completes.
@@ -213,7 +208,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testReadCompleteTriggerRewindOnlyOneRewind() throws Exception {
         testReadCompleteTriggerRewind();
@@ -232,7 +226,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testResetBeforeReadCompleteAndInitTriggerRewind() throws Exception {
         // Reset before read completes. Rewind is not triggered.
@@ -268,7 +261,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testDestroyNativeStreamBeforeReadComplete() throws Exception {
         // Start a read and wait for it to be pending.
@@ -300,7 +292,6 @@ public class CronetUploadTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testDestroyNativeStreamBeforeRewindComplete() throws Exception {
         // Start a read and wait for it to complete.

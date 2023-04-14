@@ -9,6 +9,7 @@
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 import '../../icons.html.js';
 import '../../settings_shared.css.js';
@@ -18,16 +19,14 @@ import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/audio/cros_audio_config.mojom-webui.js';
-import {routes} from '../os_route.js';
+import {AudioDevice, AudioDeviceType, AudioEffectState, AudioSystemProperties, AudioSystemPropertiesObserverReceiver, MuteState} from '../../mojom-webui/cros_audio_config.mojom-webui.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
 import {getTemplate} from './audio.html.js';
 import {CrosAudioConfigInterface, getCrosAudioConfig} from './cros_audio_config.js';
-// TODO(b/260277007): Update import to get `AudioSystemProperties` from
-// `cros_audio_config.mojom-webui.js` once mojo updated to handle audio input.
-import {AudioDevice, AudioEffectState, AudioSystemProperties, FakeCrosAudioConfig} from './fake_cros_audio_config.js';
+import {FakeCrosAudioConfig} from './fake_cros_audio_config.js';
 
 /** Utility for keeping percent in inclusive range of [0,100].  */
 function clampPercent(percent: number): number {
@@ -114,8 +113,6 @@ class SettingsAudioElement extends SettingsAudioElementBase {
   onPropertiesUpdated(properties: AudioSystemProperties): void {
     this.audioSystemProperties_ = properties;
 
-    // TODO(crbug.com/1092970): Create and show managed by policy badge if
-    // kMutedByPolicy.
     this.isOutputMuted_ =
         this.audioSystemProperties_.outputMuteState !== MuteState.kNotMuted;
     this.isInputMuted_ =
@@ -124,10 +121,10 @@ class SettingsAudioElement extends SettingsAudioElementBase {
         (device: AudioDevice) => device.isActive);
     this.isNoiseCancellationEnabled_ =
         (activeInputDevice?.noiseCancellationState ===
-         AudioEffectState.ENABLED);
+         AudioEffectState.kEnabled);
     this.isNoiseCancellationSupported_ =
         !(activeInputDevice?.noiseCancellationState ===
-          AudioEffectState.NOT_SUPPORTED);
+          AudioEffectState.kNotSupported);
     this.outputVolume_ = this.audioSystemProperties_.outputVolumePercent;
   }
 
@@ -152,7 +149,8 @@ class SettingsAudioElement extends SettingsAudioElementBase {
             .bindNewPipeAndPassRemote());
   }
 
-  private isOutputVolumeSliderDisabled_(): boolean {
+  /** Determines if audio output is muted by policy. */
+  protected isOutputMutedByPolicy_(): boolean {
     return this.audioSystemProperties_.outputMuteState ===
         MuteState.kMutedByPolicy;
   }
@@ -181,10 +179,14 @@ class SettingsAudioElement extends SettingsAudioElementBase {
 
   /** Handles updates to noise cancellation state. */
   protected onNoiseCancellationEnabledChanged(
-      enabled: SettingsAudioElement['isNoiseCancellationEnabled_']): void {
-    // TODO(b/260277007): Remove condition when setActiveDevice added to mojo
-    // definition.
-    if (!this.crosAudioConfig_.setNoiseCancellationEnabled) {
+      enabled: SettingsAudioElement['isNoiseCancellationEnabled_'],
+      previousEnabled: SettingsAudioElement['isNoiseCancellationEnabled_']):
+      void {
+    // Polymer triggers change event on all assignment to
+    // `isNoiseCancellationEnabled_` even if the value is logically unchanged.
+    // Check previous value before calling `setNoiseCancellationEnabled` to test
+    // if value actually updated.
+    if (previousEnabled === undefined || previousEnabled === enabled) {
       return;
     }
 
@@ -282,6 +284,60 @@ class SettingsAudioElement extends SettingsAudioElementBase {
    */
   protected getInputHidden_(): boolean {
     return this.audioSystemProperties_.inputDevices.length === 0;
+  }
+
+  /**
+   * Returns true if input is muted by physical switch; otherwise, return false.
+   */
+  protected shouldDisableInputGainControls(): boolean {
+    return this.audioSystemProperties_.inputMuteState ===
+        MuteState.kMutedExternally;
+  }
+
+  /** Translates the device name if applicable. */
+  private getDeviceName_(audioDevice: AudioDevice): string {
+    switch (audioDevice.deviceType) {
+      case AudioDeviceType.kHeadphone:
+        return this.i18n('audioDeviceHeadphoneLabel');
+      case AudioDeviceType.kMic:
+        return this.i18n('audioDeviceMicJackLabel');
+      case AudioDeviceType.kUsb:
+        return this.i18n('audioDeviceUsbLabel', audioDevice.displayName);
+      case AudioDeviceType.kBluetooth:
+      case AudioDeviceType.kBluetoothNbMic:
+        return this.i18n('audioDeviceBluetoothLabel', audioDevice.displayName);
+      case AudioDeviceType.kHdmi:
+        return this.i18n('audioDeviceHdmiLabel', audioDevice.displayName);
+      case AudioDeviceType.kInternalSpeaker:
+        return this.i18n('audioDeviceInternalSpeakersLabel');
+      case AudioDeviceType.kInternalMic:
+        return this.i18n('audioDeviceInternalMicLabel');
+      case AudioDeviceType.kFrontMic:
+        return this.i18n('audioDeviceFrontMicLabel');
+      case AudioDeviceType.kRearMic:
+        return this.i18n('audioDeviceRearMicLabel');
+      default:
+        return audioDevice.displayName;
+    }
+  }
+
+  /**
+   * Returns the appropriate tooltip for output and input device mute buttons
+   * based on `muteState`.
+   */
+  private getMuteTooltip_(muteState: MuteState): string {
+    switch (muteState) {
+      case MuteState.kNotMuted:
+        return this.i18n('audioToggleToMuteTooltip');
+      case MuteState.kMutedByUser:
+        return this.i18n('audioToggleToUnmuteTooltip');
+      case MuteState.kMutedByPolicy:
+        return this.i18n('audioMutedByPolicyTooltip');
+      case MuteState.kMutedExternally:
+        return this.i18n('audioMutedExternallyTooltip');
+      default:
+        return '';
+    }
   }
 }
 

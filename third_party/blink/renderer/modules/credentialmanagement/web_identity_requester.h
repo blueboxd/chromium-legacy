@@ -34,19 +34,19 @@ class MODULES_EXPORT WebIdentityRequester final
   void AppendGetCall(
       ScriptPromiseResolver* resolver,
       const HeapVector<Member<IdentityProviderConfig>>& providers,
-      bool prefer_auto_sign_in,
+      bool auto_reauthn,
       mojom::blink::RpContext rp_context);
   void InsertScopedAbortState(
       std::unique_ptr<ScopedAbortState> scoped_abort_state);
 
   // Starts the timer for recording the duration from when RequestToken is
-  // called directly to when RequestToken would be called if invoked through a
-  // window onload event listener.
-  void StartWindowOnloadDelayTimer(ScriptPromiseResolver* resolver);
+  // called directly to when RequestToken would be called if invoked through
+  // WebIdentityRequester.
+  void StartDelayTimer(ScriptPromiseResolver* resolver);
   // Stops the timer for recording the duration from when RequestToken is
-  // called directly to when RequestToken would be called if invoked through a
-  // window onload event listener.
-  void StopWindowOnloadDelayTimer();
+  // called directly to when RequestToken would be called if invoked through
+  // WebIdentityRequester.
+  void StopDelayTimer(bool timer_started_before_onload);
 
   void Trace(Visitor* visitor) const;
 
@@ -56,7 +56,7 @@ class MODULES_EXPORT WebIdentityRequester final
   // A vector of pointers to mojom class objects. Each mojom class object
   // corresponds to parameters of a navigator.credentials.get call and contains
   // a vector of IDPs. This is to reduce storage of duplicate data such as
-  // prefer_auto_sign_in values. We flatten these arrays of IDPs into a single
+  // auto_reauthn values. We flatten these arrays of IDPs into a single
   // array of IDPs in FederatedAuthRequestImpl::RequestToken.
   Vector<mojom::blink::IdentityProviderGetParametersPtr> idp_get_params_;
   Member<ExecutionContext> execution_context_;
@@ -65,7 +65,7 @@ class MODULES_EXPORT WebIdentityRequester final
   HeapHashMap<KURL, Member<ScriptPromiseResolver>> provider_to_resolver_;
   bool is_requesting_token_{false};
   bool has_posted_task_{false};
-  base::TimeTicks window_onload_delay_start_time_;
+  base::TimeTicks delay_start_time_;
 };
 
 }  // namespace blink

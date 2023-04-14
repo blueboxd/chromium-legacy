@@ -58,6 +58,7 @@
 #import "ios/chrome/browser/web/print/print_java_script_feature.h"
 #import "ios/chrome/browser/web/session_state/web_session_state_tab_helper.h"
 #import "ios/chrome/browser/web/web_performance_metrics/web_performance_metrics_java_script_feature.h"
+#import "ios/chrome/browser/web_selection/web_selection_java_script_feature.h"
 #import "ios/components/security_interstitials/https_only_mode/feature.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_blocking_page.h"
 #import "ios/components/security_interstitials/https_only_mode/https_only_mode_container.h"
@@ -78,6 +79,7 @@
 #import "ios/public/provider/chrome/browser/url_rewriters/url_rewriters_api.h"
 #import "ios/web/common/features.h"
 #import "ios/web/common/user_agent.h"
+#import "ios/web/public/find_in_page/crw_find_session.h"
 #import "ios/web/public/navigation/browser_url_rewriter.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -87,6 +89,8 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/resource/resource_bundle.h"
 #import "url/gurl.h"
+
+#import <UIKit/UIKit.h>
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -302,6 +306,9 @@ std::vector<web::JavaScriptFeature*> ChromeWebClient::GetJavaScriptFeatures(
   features.push_back(
       password_manager::PasswordManagerJavaScriptFeature::GetInstance());
   features.push_back(LinkToTextJavaScriptFeature::GetInstance());
+  if (base::FeatureList::IsEnabled(kIOSEditMenuPartialTranslate)) {
+    features.push_back(WebSelectionJavaScriptFeature::GetInstance());
+  }
 
   SearchEngineJavaScriptFeature::GetInstance()->SetDelegate(
       SearchEngineTabHelperFactory::GetInstance());
@@ -454,9 +461,13 @@ bool ChromeWebClient::IsPointingToSameDocument(const GURL& url1,
   return url_to_compare1 == url_to_compare2;
 }
 
-id<UITextSearching> ChromeWebClient::GetSearchableObjectForWebState(
+id<CRWFindSession> ChromeWebClient::CreateFindSessionForWebState(
     web::WebState* web_state) const API_AVAILABLE(ios(16)) {
-  return ios::provider::GetSearchableObjectForWebState(web_state);
+  id<UITextSearching> searchable_object =
+      ios::provider::GetSearchableObjectForWebState(web_state);
+  UIFindSession* UIFindSession = [[UITextSearchingFindSession alloc]
+      initWithSearchableObject:searchable_object];
+  return [[CRWFindSession alloc] initWithUIFindSession:UIFindSession];
 }
 
 void ChromeWebClient::StartTextSearchInWebState(web::WebState* web_state) {

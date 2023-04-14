@@ -88,12 +88,6 @@ public class PostMessageHandler implements OriginVerificationListener {
             }
 
             @Override
-            public void didFinishNavigationNoop(NavigationHandle navigationHandle) {
-                mNavigatedOnce = true;
-                if (!mNavigatedOnce || !navigationHandle.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void renderProcessGone() {
                 disconnectChannel();
             }
@@ -105,14 +99,6 @@ public class PostMessageHandler implements OriginVerificationListener {
                     return;
                 }
                 initializeWithWebContents(webContents);
-            }
-
-            @Override
-            public void documentLoadedInFrameNoop(GlobalRenderFrameHostId rfhId,
-                    boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {
-                if (!isInPrimaryMainFrame) {
-                    return;
-                }
             }
         };
     }

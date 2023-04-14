@@ -112,17 +112,17 @@ int WebSocketHttp3HandshakeStream::SendRequest(
 
   callback_ = std::move(callback);
 
-  stream_adapter_ = session_->CreateWebSocketQuicStreamAdapter(this);
-  if (!stream_adapter_) {
-    // TODO(momoka): Add request to streamRequest and postpone the creation of
-    // stream. Also, add a boolean 'for_websocket' and a
-    // WebSocketHttp3HandshakeStream member to streamRequest to indicate if a
-    // particular request is for websockets. OnCanCreateNewOutgoingStream() will
-    // create a stream when we can create a new stream and call Start
-    // RequestCallback().
+  std::unique_ptr<WebSocketQuicStreamAdapter> stream_adapter =
+      session_->CreateWebSocketQuicStreamAdapter(
+          this,
+          base::BindOnce(
+              &WebSocketHttp3HandshakeStream::ReceiveAdapterAndStartRequest,
+              base::Unretained(this)),
+          NetworkTrafficAnnotationTag(request_info_->traffic_annotation));
+  if (!stream_adapter) {
     return ERR_IO_PENDING;
   }
-  StartRequestCallback();
+  ReceiveAdapterAndStartRequest(std::move(stream_adapter));
   return OK;
 }
 
@@ -304,7 +304,7 @@ void WebSocketHttp3HandshakeStream::OnClose(int status) {
   // If response headers have already been received,
   // then ValidateResponse() sets `result_`.
   if (!response_headers_complete_) {
-    result_ = HandshakeResult::HTTP2_FAILED;
+    result_ = HandshakeResult::HTTP3_FAILED;
   }
 
   OnFailure(std::string("Stream closed with error: ") + ErrorToString(status),
@@ -315,7 +315,9 @@ void WebSocketHttp3HandshakeStream::OnClose(int status) {
   }
 }
 
-void WebSocketHttp3HandshakeStream::StartRequestCallback() {
+void WebSocketHttp3HandshakeStream::ReceiveAdapterAndStartRequest(
+    std::unique_ptr<WebSocketQuicStreamAdapter> adapter) {
+  stream_adapter_ = std::move(adapter);
   // WriteHeaders returns synchronously.
   stream_adapter_->WriteHeaders(std::move(http3_request_headers_), false);
 }
@@ -341,7 +343,7 @@ int WebSocketHttp3HandshakeStream::ValidateResponse() {
               "Error during WebSocket handshake: Unexpected response code: %d",
               headers->response_code()),
           ERR_FAILED, headers->response_code());
-      result_ = HandshakeResult::HTTP2_INVALID_STATUS;
+      result_ = HandshakeResult::HTTP3_INVALID_STATUS;
       return ERR_INVALID_RESPONSE;
   }
 }
@@ -351,15 +353,15 @@ int WebSocketHttp3HandshakeStream::ValidateUpgradeResponse(
   extension_params_ = std::make_unique<WebSocketExtensionParams>();
   std::string failure_message;
   if (!ValidateStatus(headers)) {
-    result_ = HandshakeResult::HTTP2_INVALID_STATUS;
+    result_ = HandshakeResult::HTTP3_INVALID_STATUS;
   } else if (!ValidateSubProtocol(headers, requested_sub_protocols_,
                                   &sub_protocol_, &failure_message)) {
-    result_ = HandshakeResult::HTTP2_FAILED_SUBPROTO;
+    result_ = HandshakeResult::HTTP3_FAILED_SUBPROTO;
   } else if (!ValidateExtensions(headers, &extensions_, &failure_message,
                                  extension_params_.get())) {
-    result_ = HandshakeResult::HTTP2_FAILED_EXTENSIONS;
+    result_ = HandshakeResult::HTTP3_FAILED_EXTENSIONS;
   } else {
-    result_ = HandshakeResult::HTTP2_CONNECTED;
+    result_ = HandshakeResult::HTTP3_CONNECTED;
     return OK;
   }
 

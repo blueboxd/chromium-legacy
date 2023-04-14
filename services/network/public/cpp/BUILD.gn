@@ -114,6 +114,8 @@ component("cpp") {
     "session_cookie_delete_predicate.h",
     "shared_url_loader_factory.cc",
     "shared_url_loader_factory.h",
+    "simple_host_resolver.cc",
+    "simple_host_resolver.h",
     "simple_url_loader.cc",
     "simple_url_loader.h",
     "simple_url_loader_stream_consumer.h",
@@ -210,6 +212,21 @@ component("ip_address_mojom_support") {
   defines = [ "IS_NETWORK_CPP_IP_ADDRESS_IMPL" ]
 }
 
+component("host_resolver_mojom_support") {
+  sources = [
+    "host_resolver_mojom_traits.cc",
+    "host_resolver_mojom_traits.h",
+  ]
+  deps = [
+    ":ip_address_mojom_support",
+    "//mojo/public/cpp/base:shared_typemap_traits",
+    "//mojo/public/mojom/base",
+    "//net",
+    "//services/network/public/mojom:mojom_host_resolver_shared",
+  ]
+  defines = [ "IS_NETWORK_CPP_HOST_RESOLVER_IMPL" ]
+}
+
 component("cookies_mojom_support") {
   sources = [
     "cookie_manager_shared_mojom_traits.cc",
@@ -293,6 +310,34 @@ component("cross_origin_embedder_policy") {
   defines = [ "IS_NETWORK_CPP_CROSS_ORIGIN_IMPL" ]
 }
 
+# This component is separate from `:cpp_base` to avoid a circular dependency as
+# its needed by :trigger_attestation_traits.
+component("trigger_attestation") {
+  sources = [
+    "trigger_attestation.cc",
+    "trigger_attestation.h",
+  ]
+  deps = [ "//base" ]
+  defines = [ "IS_NETWORK_CPP_TRIGGER_ATTESTATION_IMPL" ]
+}
+
+# This component is separate from
+# //services/network/public/mojom:url_loader_base to use the same typemap for
+# both Blink and non-Blink bindings.
+component("trigger_attestation_traits") {
+  sources = [
+    "attribution_mojom_traits.cc",
+    "attribution_mojom_traits.h",
+    "trigger_attestation.h",
+  ]
+  deps = [
+    ":trigger_attestation",
+    "//base",
+    "//services/network/public/mojom:mojom_attribution_shared",
+  ]
+  defines = [ "IS_NETWORK_CPP_ATTRIBUTION_MOJOM_TRAITS_IMPL" ]
+}
+
 # This component is separate from cpp_base as it is a dependency of
 # //services/network/public/mojom:cookies_mojom.
 component("schemeful_site_mojom_support") {
@@ -328,6 +373,8 @@ component("cpp_base") {
   output_name = "network_cpp_base"
 
   sources = [
+    "cookie_setting_overrides_mojom_traits.cc",
+    "cookie_setting_overrides_mojom_traits.h",
     "cors/cors_error_status.cc",
     "cors/cors_error_status.h",
     "cors/cors_mojom_traits.cc",
@@ -388,6 +435,7 @@ component("cpp_base") {
     ":proxy_config_mojom_support",
     ":schemeful_site_mojom_support",
     ":structured_headers_mojom_support",
+    ":trigger_attestation",
     "//services/network/public/mojom:url_loader_base",
     "//url/ipc:url_ipc",
     "//url/mojom:url_mojom_gurl",
@@ -438,10 +486,15 @@ mojom("test_interfaces") {
 source_set("test_support") {
   testonly = true
 
-  sources = [ "is_potentially_trustworthy_unittest.h" ]
+  sources = [
+    "is_potentially_trustworthy_unittest.h",
+    "trigger_attestation_test_utils.cc",
+    "trigger_attestation_test_utils.h",
+  ]
 
   public_deps = [
     ":cpp",
+    ":trigger_attestation",
     "//base",
     "//base/test:test_support",
     "//testing/gmock",
@@ -462,6 +515,7 @@ source_set("tests") {
     "content_security_policy/csp_source_unittest.cc",
     "cookie_manager_mojom_traits_unittest.cc",
     "cookie_manager_shared_mojom_traits_unittest.cc",
+    "cookie_setting_overrides_mojom_traits_unittest.cc",
     "corb/corb_impl_unittest.cc",
     "cors/cors_mojom_traits_unittest.cc",
     "cors/cors_unittest.cc",
@@ -499,6 +553,7 @@ source_set("tests") {
     "parsed_headers_unittest.cc",
     "proxy_config_mojom_traits_unittest.cc",
     "schemeful_site_mojom_traits_unittest.cc",
+    "simple_host_resolver_unittest.cc",
     "simple_url_loader_unittest.cc",
     "source_stream_to_data_pipe_unittest.cc",
     "structured_headers_mojom_traits_unittest.cc",
@@ -506,6 +561,7 @@ source_set("tests") {
     "timing_allow_origin_parser_unittest.cc",
     "transferable_directory_unittest.cc",
     "transferable_socket_unittest.cc",
+    "trigger_attestation_unittest.cc",
     "url_loader_completion_status_mojom_traits_unittest.cc",
     "url_request_mojom_traits_unittest.cc",
     "variants_header_parser_unittest.cc",

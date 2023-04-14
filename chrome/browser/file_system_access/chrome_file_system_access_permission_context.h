@@ -143,6 +143,12 @@ class ChromeFileSystemAccessPermissionContext
   };
   Grants GetPermissionGrants(const url::Origin& origin);
 
+  // Revokes read access and/or write access for the given origin
+  // and given file path.
+  void RevokeGrant(const url::Origin& origin,
+                   const base::FilePath& file_path,
+                   PersistedPermissionOptions persisted_status);
+
   // Revokes write access and directory read access for the given origin.
   void RevokeGrants(const url::Origin& origin,
                     PersistedPermissionOptions persisted_status);
@@ -234,7 +240,7 @@ class ChromeFileSystemAccessPermissionContext
   // An origin can only specify up to `max_ids_per_origin_` custom IDs per
   // origin (not including the default ID). If this limit is exceeded, evict
   // using LRU.
-  void MaybeEvictEntries(base::Value& value);
+  void MaybeEvictEntries(base::Value::Dict& dict);
 
   // Schedules triggering all open windows to update their File System Access
   // usage indicator icon. Multiple calls to this method can result in only a
@@ -258,13 +264,13 @@ class ChromeFileSystemAccessPermissionContext
   // Renew the persisted permission if it has active permissions, or
   // revoke the persisted permission if it has expired.
   void MaybeRenewOrRevokePersistedPermission(const url::Origin& origin,
-                                             base::Value grant,
+                                             base::Value::Dict grant,
                                              bool has_extended_permissions);
 
   bool AncestorHasActivePermission(const url::Origin& origin,
                                    const base::FilePath& path,
                                    GrantType grant_type) const;
-  absl::optional<base::Value> GetPersistedPermission(
+  absl::optional<base::Value::Dict> GetPersistedPermission(
       const url::Origin& origin,
       const base::FilePath& path);
   bool HasPersistedPermission(const url::Origin& origin,

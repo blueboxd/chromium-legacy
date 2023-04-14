@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">インターネットへの直接接続</translation>
 <translation id="1272293450992660632">PIN の値が一致しません。</translation>
 <translation id="1280820357415527819">モバイル ネットワークを検索しています</translation>
-<translation id="1291603679744561561">SIM がロックされています</translation>
 <translation id="1293556467332435079">ファイル</translation>
 <translation id="1297922636971898492">Google ドライブは現在ご利用いただけません。Google ドライブが利用可能になったときに、自動的にアップロードを再開します。</translation>
 <translation id="1307931752636661898">[Linux ファイル] を表示できません</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Parallels Desktop にファイルをドロップするには [Windows ファイル] にファイルを移動する必要があります。</translation>
 <translation id="1435838927755162558">Parallels Desktop とのフォルダ共有</translation>
 <translation id="1439919885608649279">花を持っている人</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> を取り外す</translation>
 <translation id="1471718551822868769">スロバキア語</translation>
 <translation id="1482884275703521657">フィンランド語</translation>
 <translation id="148466539719134488">スイス語</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 個のフォルダが Bruschetta と共有されています</translation>
 <translation id="2578394532502990878">タミル語（表音）</translation>
 <translation id="2579959351793446050">オディア語</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> の同期を準備しています...</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によってブロック、詳細</translation>
 <translation id="2614589611416690597">動画（<ph name="VIDEO_TYPE" />）</translation>
 <translation id="2620090360073999360">現在 Google ドライブにアクセスできません。</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">モンゴル語</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> 件のエラーがあります。</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、詳細</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムの同期を準備しています...</translation>
 <translation id="3522708245912499433">ポルトガル語</translation>
 <translation id="3524311639100184459">注: これらのファイルは一時的なもので、ディスクの空き容量を増やすために自動的に削除されることがあります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">フォルダ</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">貼り付け</translation>
 <translation id="3952872973865944257">テルグ語（表音）</translation>
+<translation id="3954354850384043518">ダウンロード中</translation>
 <translation id="3958548648197196644">キウイ</translation>
 <translation id="3971140002794351170">モバイル プロファイルのダウンロード - <ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">英語（イギリス）</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">カスタム ネーム サーバー</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、管理者によって管理、接続</translation>
 <translation id="4470564870223067757">ハングル（2 ボル式）</translation>
+<translation id="4474142134969976028">一致する結果がありません</translation>
 <translation id="4477002475007461989">ルーマニア語</translation>
 <translation id="4477219268485577442">ブルガリア語（表音）</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">名前は <ph name="MAX_LENGTH" /> 文字以内で指定してください</translation>
 <translation id="4973970068702235170">圧縮できませんでした。予期しないエラー: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">日本語</translation>
+<translation id="4987699874727873250">英語（インド）</translation>
 <translation id="4988205478593450158">「<ph name="FILE_NAME" />」を削除してもよろしいですか？</translation>
 <translation id="498902553138568924">赤い蝶</translation>
 <translation id="4992066212339426712">ミュートを解除</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">最近使用した画像はありません</translation>
 <translation id="7460898608667578234">ウクライナ語</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
+<translation id="7481358317100446445">準備完了</translation>
 <translation id="7486315294984620427">Parallels Desktop にファイルをドロップするには、[Windows ファイル] にファイルをコピーする必要があります。</translation>
 <translation id="749452993132003881">ひらがな</translation>
 <translation id="7495372004724182530">マラヤーラム語（表音）</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Google フォトに簡単アクセス</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7663224033570512922">ヒンディー語</translation>
+<translation id="7665680517722058469">別の検索条件をお試しください</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> 個のアイテムをゴミ箱に移動しました</translation>
 <translation id="7693909743393669729">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが消去され、既存のパーティションは非表示のパーティションを含めすべて削除されます。この操作は元に戻せません。</translation>
 <translation id="7695430100978772476">「<ph name="DRIVE_NAME" />」をフォーマットできませんでした</translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">アラビア語（文字変換）</translation>
 <translation id="8873014196523807561">これらのアイテムを復元するには、新しいフォルダにドラッグしてください。アイテムの元のフォルダは一部削除されています。</translation>
 <translation id="8874184842967597500">未接続</translation>
+<translation id="8876368061475701452">キューに追加済み</translation>
 <translation id="8900820606136623064">ハンガリー語</translation>
 <translation id="8903931173357132290">卒業</translation>
 <translation id="8912078710089354287">尻尾を振る犬</translation>

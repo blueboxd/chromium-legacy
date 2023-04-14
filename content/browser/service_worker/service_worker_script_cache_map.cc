@@ -32,6 +32,15 @@ int64_t ServiceWorkerScriptCacheMap::LookupResourceId(const GURL& url) {
   return found->second->resource_id;
 }
 
+absl::optional<std::string> ServiceWorkerScriptCacheMap::LookupSha256Checksum(
+    const GURL& url) {
+  ResourceMap::const_iterator found = resource_map_.find(url);
+  if (found == resource_map_.end()) {
+    return absl::nullopt;
+  }
+  return found->second->sha256_checksum;
+}
+
 void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
                                                        int64_t resource_id) {
   DCHECK_EQ(blink::mojom::kInvalidServiceWorkerResourceId,
@@ -44,7 +53,8 @@ void ServiceWorkerScriptCacheMap::NotifyStartedCaching(const GURL& url,
   resource_map_[url] = storage::mojom::ServiceWorkerResourceRecord::New(
       resource_id, url, -1, /*sha256_checksum=*/"");
   context_->registry()->StoreUncommittedResourceId(
-      resource_id, blink::StorageKey(url::Origin::Create(owner_->scope())));
+      resource_id, blink::StorageKey::CreateFirstParty(
+                       url::Origin::Create(owner_->scope())));
 }
 
 void ServiceWorkerScriptCacheMap::NotifyFinishedCaching(
@@ -94,6 +104,13 @@ void ServiceWorkerScriptCacheMap::SetResources(
   for (auto it = resources.begin(); it != resources.end(); ++it) {
     resource_map_[(*it)->url] = (*it)->Clone();
   }
+}
+
+void ServiceWorkerScriptCacheMap::UpdateSha256Checksum(
+    const GURL& url,
+    const std::string& sha256_checksum) {
+  DCHECK(base::Contains(resource_map_, url));
+  resource_map_[url]->sha256_checksum = sha256_checksum;
 }
 
 void ServiceWorkerScriptCacheMap::WriteMetadata(

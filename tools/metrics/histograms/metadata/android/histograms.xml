@@ -154,7 +154,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Android.ActivityStop.NumberOfTabsUsed" units="count"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -170,7 +170,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ActivityStop.PercentageOfTabsUsed" units="%"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -308,7 +308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.AppLaunch.DurationDrawWasBlocked.OnIncognitoReauth"
-    units="ms" expires_after="M115">
+    units="ms" expires_after="2023-08-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -356,7 +356,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.ApplicationState.TimeInBackgroundBeforeForegroundedAgain"
-    units="ms" expires_after="2023-06-04">
+    units="ms" expires_after="2023-08-08">
   <owner>lizeb@google.com</owner>
   <owner>clank-performance-team@google.com</owner>
   <summary>
@@ -482,7 +482,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskExpired"
-    enum="BackgroundTaskId" expires_after="2023-06-04">
+    enum="BackgroundTaskId" expires_after="2023-08-08">
   <owner>nator@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
@@ -535,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Failure"
-    enum="BackgroundTaskId" expires_after="2023-06-04">
+    enum="BackgroundTaskId" expires_after="2023-08-13">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -544,7 +544,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskScheduled.Success"
-    enum="BackgroundTaskId" expires_after="2023-06-04">
+    enum="BackgroundTaskId" expires_after="2023-08-13">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>
@@ -553,7 +553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskStarted"
-    enum="BackgroundTaskId" expires_after="2023-06-04">
+    enum="BackgroundTaskId" expires_after="2023-08-08">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>Records that a specific background task has been started.</summary>
@@ -589,7 +589,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BindingManger.ConnectionsDroppedDueToMaxSize"
-    units="connections" expires_after="2023-06-18">
+    units="connections" expires_after="2023-08-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -601,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.BiometricAuth.AuthRequester"
-    enum="BiometricAuthRequester" expires_after="M112">
+    enum="BiometricAuthRequester" expires_after="M118">
   <owner>ioanap@chromium.org</owner>
   <owner>fhorschig@chromium.org</owner>
   <summary>
@@ -625,7 +625,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ChildMismatch.AppInfoError2" enum="ChildAppInfoError"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>torne@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -652,7 +652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ChildMismatch.BrowserVersionChanged2"
-    enum="BooleanChanged" expires_after="2023-06-18">
+    enum="BooleanChanged" expires_after="2023-08-20">
   <owner>torne@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -690,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ChildProcessBinding.TotalConnections"
-    units="connections" expires_after="2023-06-18">
+    units="connections" expires_after="2023-08-20">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -1216,7 +1216,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip"
-    units="dp" expires_after="2023-06-04">
+    units="dp" expires_after="2023-08-08">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1230,7 +1230,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.DropInWebContent.Duration"
-    units="ms" expires_after="2023-05-27">
+    units="ms" expires_after="2023-07-30">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1242,7 +1242,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.Duration{DropResult}"
-    units="ms" expires_after="2023-03-19">
+    units="ms" expires_after="2023-08-08">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1262,7 +1262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.TargetType"
-    enum="AndroidDragTargetType" expires_after="2023-06-04">
+    enum="AndroidDragTargetType" expires_after="2023-08-08">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1274,7 +1274,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.AllExpired" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1294,7 +1294,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.FirstAttempt" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1308,7 +1308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.FirstExpired" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1327,7 +1327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.OpenFileTime.LastAttempt" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1343,7 +1343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.Size" units="KB"
-    expires_after="2023-05-27">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1354,7 +1354,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.UriCreatedInterval" units="ms"
-    expires_after="2023-05-27">
+    expires_after="2023-08-08">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1364,7 +1364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DynamicColors.IsAvailable" enum="Boolean"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>skym@chromium.org</owner>
   <owner>clank-sbui-team@google.com</owner>
   <summary>
@@ -1498,7 +1498,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.Blink.DLFontsLatencySuccess2"
-    units="microseconds" expires_after="2023-05-27">
+    units="microseconds" expires_after="2023-07-30">
   <owner>drott@chromium.org</owner>
   <owner>layout-dev@chromium.org</owner>
   <summary>
@@ -1527,7 +1527,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.FetchAllFontFiles.Time" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1566,7 +1566,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.GmsFontRequest.Time" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1578,7 +1578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FontLookup.MatchLocalFontByUniqueName.Time" units="ms"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>twellington@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
   <summary>
@@ -1652,7 +1652,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
-    enum="BrowserProfileType" expires_after="2023-06-04">
+    enum="BrowserProfileType" expires_after="2023-08-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1682,8 +1682,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.IncognitoReauth.AuthResult" enum="BiometricAuthResult"
+    expires_after="M115">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the result of the attempt to re-auth the user via biometrics or
+    device lock for the Incognito re-auth screen.
+  </summary>
+</histogram>
+
 <histogram name="Android.IncognitoReauth.PrefToggledFromSettingPage"
-    enum="IncognitoReauthToggleValueType" expires_after="M115">
+    enum="IncognitoReauthToggleValueType" expires_after="2023-08-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1700,7 +1710,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.IncognitoReauth.PromoActionType"
+<histogram name="Android.IncognitoReauth.PromoAcceptedOrDismissed"
     enum="IncognitoReauthPromoActionType" expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
@@ -1712,6 +1722,18 @@ chromium-metrics-reviews@google.com.
     clicks on &quot;Turn on Incognito lock&quot; (gated on successful
     re-authentication) and a &quot;No thanks&quot; value is emitted when the
     user clicks on &quot;No thanks&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Android.IncognitoReauth.ToggleOnOrOff" enum="BooleanToggled"
+    expires_after="M115">
+  <owner>roagarwal@chromium.org</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the Incognito lock setting state (if available to clients) exactly
+    once during the browser startup, after the native code is initialized. Note,
+    for multi-windows this histogram would be emitted as many times as the users
+    enter multi-window(s).
   </summary>
 </histogram>
 
@@ -1768,13 +1790,13 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Intent.ShouldIgnoreNewTabResult"
-    enum="NavigationInterceptResult" expires_after="2023-11-07">
+<histogram name="Android.Intent.ShareIntentUrlCount" units="URLs"
+    expires_after="2024-02-01">
   <owner>mthiesse@chromium.org</owner>
-  <owner>yfriedman@chromium.org</owner>
+  <owner>tedchoc@google.com</owner>
   <summary>
-    Records the result of Navigation Interception for popup navigations from
-    Tabs.
+    Number of URLs present in Text Share intents (ACTION_SEND) received by
+    Chrome.
   </summary>
 </histogram>
 
@@ -1825,7 +1847,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Jank.AsyncTaskGetOnUiThreadStatus"
-    enum="AsyncTaskStatus" expires_after="2023-06-18">
+    enum="AsyncTaskStatus" expires_after="2023-08-20">
   <owner>smaier@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -1988,7 +2010,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MediaPickerShown" enum="MediaPickerShown"
-    expires_after="2023-06-01">
+    expires_after="2023-08-08">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -2062,7 +2084,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued" enum="MessageIdentifier"
-    expires_after="M115">
+    expires_after="2023-08-08">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2074,7 +2096,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Hidden" enum="MessageIdentifier"
-    expires_after="M115">
+    expires_after="2023-08-08">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2100,7 +2122,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Enqueued.Visible" enum="MessageIdentifier"
-    expires_after="M115">
+    expires_after="2023-08-08">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2112,7 +2134,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking" enum="StackingAnimationType"
-    expires_after="M115">
+    expires_after="2023-08-20">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2123,7 +2145,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking.ThreeStacked"
-    enum="StackingAnimationThreeStackedType" expires_after="M115">
+    enum="StackingAnimationThreeStackedType" expires_after="2023-08-20">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2248,7 +2270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MultipleUserProfilesState"
-    enum="MultipleUserProfilesState" expires_after="2023-06-04">
+    enum="MultipleUserProfilesState" expires_after="2023-08-08">
   <owner>ckitagawa@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <owner>chrome-metrics-team@google.com</owner>
@@ -2334,7 +2356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskStarted.FullBrowser"
-    enum="BackgroundTaskId" expires_after="2023-06-15">
+    enum="BackgroundTaskId" expires_after="2023-08-20">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -2345,7 +2367,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.NativeBackgroundTask.TaskStarted.ReducedMode"
-    enum="BackgroundTaskId" expires_after="2023-06-15">
+    enum="BackgroundTaskId" expires_after="2023-08-20">
   <owner>mheikal@chromium.org</owner>
   <owner>hanxi@chromium.org</owner>
   <owner>hnakashima@chromium.org</owner>
@@ -2395,7 +2417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.InputToNavigationControllerStart" units="ms"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -2441,7 +2463,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SetGeolocationHeadersTime" units="ms"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -2482,7 +2504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.LayoutTime2"
-    units="microseconds" expires_after="2023-06-11">
+    units="microseconds" expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2540,7 +2562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.MeasureTime2"
-    units="microseconds" expires_after="2023-06-11">
+    units="microseconds" expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2568,9 +2590,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionsListScrolled.{PageClass}"
-    enum="Boolean" expires_after="2023-01-31">
+    enum="Boolean" expires_after="2024-02-01">
   <owner>ender@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
     For every interaction with the Omnibox, this metric records whether the user
@@ -2637,7 +2658,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionView.CreateTime2"
-    units="microseconds" expires_after="2023-06-11">
+    units="microseconds" expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2795,7 +2816,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.OmniboxFocusReason" enum="OmniboxFocusReason"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>mdjones@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>amaralp@chromium.org</owner>
@@ -2944,7 +2965,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.PhotoPicker.DialogAction"
-    enum="PhotoPickerDialogAction" expires_after="2023-06-01">
+    enum="PhotoPickerDialogAction" expires_after="2023-08-08">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3119,7 +3140,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.Changed" enum="SiteLayout"
-    expires_after="2023-06-25">
+    expires_after="2023-08-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3130,7 +3151,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.DomainSettingChanged"
-    enum="Boolean" expires_after="2023-03-19">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3142,7 +3163,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.PerSiteIphDismissed.AppMenuOpened"
-    enum="Boolean" expires_after="2023-07-26">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>aishwaryarj@google.com</owner>
   <owner>shuyng@google.com</owner>
   <summary>
@@ -3152,7 +3173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.SubDomainSettingChanged"
-    enum="Boolean" expires_after="2023-06-04">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3200,7 +3221,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.DomainSettingAdded"
-    enum="Boolean" expires_after="2023-06-04">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3213,7 +3234,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.SubDomainSettingAdded"
-    enum="Boolean" expires_after="2023-06-04">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3265,7 +3286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SearchEngineChoice.EventsV2"
-    enum="AndroidSearchEngineChoiceEventsV2" expires_after="2023-06-01">
+    enum="AndroidSearchEngineChoiceEventsV2" expires_after="2023-08-08">
   <owner>wylieb@chromium.org</owner>
   <owner>pavely@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
@@ -3276,7 +3297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.SearchEngineChoice.SearchEngineBeforeChoicePrompt"
-    enum="OmniboxSearchEngineType" expires_after="2023-06-01">
+    enum="OmniboxSearchEngineType" expires_after="2023-08-08">
   <owner>wylieb@chromium.org</owner>
   <owner>fgorski@chromium.org</owner>
   <summary>
@@ -3436,7 +3457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Survey.ShowSurveyStatus"
-    enum="SurveyPresentationStatusCode" expires_after="2023-04-30">
+    enum="SurveyPresentationStatusCode" expires_after="2023-08-08">
   <owner>aishwaryarj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
@@ -3619,8 +3640,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.TabNavigationIntercept.Scheme"
+    enum="NavigationInterceptScheme" expires_after="2023-05-15">
+  <owner>rbyers@chromium.org</owner>
+  <owner>mthiesse@chromium.org</owner>
+  <summary>
+    When a navigation is intercepted, the scheme of the URL being intercepted.
+  </summary>
+</histogram>
+
 <histogram name="Android.TabNavigationInterceptResult.For{ProtocolType}"
-    enum="NavigationInterceptResult" expires_after="2023-03-24">
+    enum="NavigationInterceptResult" expires_after="2024-03-24">
   <owner>blundell@chromium.org</owner>
   <owner>mthiesse@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -3636,7 +3666,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>gauravjj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -3651,7 +3681,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.CreationTime" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -3662,7 +3692,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.IncognitoClickedIsEmpty" enum="Boolean"
-    expires_after="2023-02-02">
+    expires_after="M115">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -3861,7 +3891,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.Callback.Counts" enum="WebViewCallbackType"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>Records the invocation count of WebView callbacks.</summary>
@@ -4283,8 +4313,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.Gfx.GLDrawWasToFBO" units="Boolean"
+    expires_after="2023-12-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    For each draw in GL that WebView does on request from HWUI, records whether
+    the draw was done into the FBO or not.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.Gfx.HardwareDrawType"
-    enum="WebViewDrawAndSubmissionType" expires_after="2023-05-27">
+    enum="WebViewDrawAndSubmissionType" expires_after="2023-07-30">
   <owner>vasilyt@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -4295,8 +4335,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.WebView.Gfx.SaveHWUIStateDuration" units="ms"
+    expires_after="2023-12-01">
+  <owner>blundell@chromium.org</owner>
+  <owner>vasilyt@chromium.org</owner>
+  <summary>
+    Tracks the amount of time that it took for WebView to save HWUI state.
+    Recorded once per saving of HWUI state.
+  </summary>
+</histogram>
+
 <histogram name="Android.WebView.InputStreamTime" units="ms"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>jam@chromium.org</owner>
   <owner>cduvall@chromium.org</owner>
   <summary>
@@ -4439,7 +4489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.HistogramRecordAge"
-    units="minutes" expires_after="2023-06-18">
+    units="minutes" expires_after="2023-08-20">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4453,7 +4503,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.NumHistograms"
-    units="histograms" expires_after="2023-06-18">
+    units="histograms" expires_after="2023-08-20">
   <owner>ntfschr@chromium.org</owner>
   <owner>hazems@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4466,7 +4516,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.WebView.NonEmbeddedMetrics.ParsingLogResult"
     enum="AndroidWebViewNonEmbeddedMetricsParsingLogResult"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>hazems@chromium.org</owner>
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4623,6 +4673,22 @@ chromium-metrics-reviews@google.com.
     differ from the user settings, as it also captures if the header has been
     set explicitly on the request by other means, such as javascript or
     embedding code.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.WebView.RequestedWithHeader.HadWebContentsForPartitionOrigin"
+    enum="BooleanAvailable" expires_after="2023-07-01">
+  <owner>pbirk@chromium.org</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records whether a suitable WebContents was available for use to look up the
+    partition origin for the XRequestedWith deprecation origin trial. This
+    histogram is recorded when the AwProxyingUrlLoader attemps to get the last
+    committed origin of the top frame for partitioning use, which is on all
+    requests that are not top frame navigation requests. If the WebContents is
+    not available, an opaque origin will be used for partitioning, which will
+    result in a failed lookup.
   </summary>
 </histogram>
 
@@ -4789,7 +4855,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SafeMode.SafeModeEnabled"
-    enum="BooleanEnabled" expires_after="2023-06-18">
+    enum="BooleanEnabled" expires_after="2023-08-20">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4801,7 +4867,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SecureCookieAction" enum="SecureCookieAction"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>ntfschr@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
@@ -4859,8 +4925,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.SitesVisitedWeekly" units="sites"
-    expires_after="2023-02-15">
-  <owner>bewise@chromium.org</owner>
+    expires_after="2023-12-15">
+  <owner>mvanouwerkerk@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
     Measures the count of distinct sites visited per week in WebView. This is
@@ -4967,7 +5033,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.UniversalAccess.OriginUrlMismatchInHistoryUtil"
-    enum="BooleanAllowed" expires_after="2023-06-04">
+    enum="BooleanAllowed" expires_after="2023-08-08">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

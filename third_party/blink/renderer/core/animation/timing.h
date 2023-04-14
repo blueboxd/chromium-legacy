@@ -91,8 +91,6 @@ struct CORE_EXPORT Timing {
   };
 
   using V8Delay = V8UnionCSSNumericValueOrDouble;
-  using V8TimelineRangeOffset = V8UnionStringOrTimelineRangeOffset;
-  using TimelineNamedRange = V8TimelineRange::Enum;
 
   // Delay can be directly expressed as time delays or calculated based on a
   // position on a view timeline. As part of the normalization process, a
@@ -101,6 +99,7 @@ struct CORE_EXPORT Timing {
     // TODO(crbug.com/7575): Support percent delays in addition to time-based
     // delays.
     AnimationTimeDelta time_delay;
+    absl::optional<double> relative_delay;
 
     Delay() = default;
 
@@ -109,13 +108,17 @@ struct CORE_EXPORT Timing {
     bool IsInfinite() const { return time_delay.is_inf(); }
 
     bool operator==(const Delay& other) const {
-      return time_delay == other.time_delay;
+      return time_delay == other.time_delay &&
+             relative_delay == other.relative_delay;
     }
 
     bool operator!=(const Delay& other) const { return !(*this == other); }
 
-    bool IsNonzeroTimeBasedDelay() const { return !time_delay.is_zero(); }
+    bool IsNonzeroTimeBasedDelay() const {
+      return !relative_delay && !time_delay.is_zero();
+    }
 
+    // Scaling only affects time based delays.
     void Scale(double scale_factor) { time_delay *= scale_factor; }
 
     AnimationTimeDelta AsTimeValue() const { return time_delay; }
@@ -174,9 +177,6 @@ struct CORE_EXPORT Timing {
   V8CSSNumberish* ToComputedValue(absl::optional<AnimationTimeDelta>,
                                   absl::optional<AnimationTimeDelta>) const;
 
-  static String TimelineRangeNameToString(TimelineNamedRange range_name);
-
-  // TODO(crbug.com/1216527): Support CSSNumberish delays
   Delay start_delay;
   Delay end_delay;
   FillMode fill_mode = FillMode::AUTO;

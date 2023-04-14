@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="1143896152279775643">‏הסיסמה תישמר במנהל הסיסמאות של Google עבור <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">‏עזרה בשיפור התכונות והביצועים של Chrome</translation>
+<translation id="1352919863522755794">‏למנהל הסיסמאות של Google לא הייתה אפשרות לבדוק את הסיסמאות. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="1462727070346936664">‏כדי להפיק את המרב מ-Chrome, עליך להיכנס לחשבון.</translation>
 <translation id="1479202195792305274">‏Chrome יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google.</translation>
 <translation id="1493827051843127077">‏כדאי להגדיר את Chrome כדפדפן ברירת המחדל כדי לסנכרן את הכרטיסיות, הסיסמאות ופרטי התשלומים שלך בכל המכשירים שלך</translation>
@@ -12,17 +13,16 @@
 <translation id="1682483655351012182">‏סנכרון נתוני Chrome שלך</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">‏החשבון הזה וכל הנתונים שלא נשמרו יוסרו מ-Chrome ומאפליקציות אחרות של Google במכשיר הזה.</translation>
-<translation id="1968388653333775699">‏להספיק יותר עם Chrome</translation>
 <translation id="2009224836393115614">‏Chrome לא הצליח לבדוק את הסיסמאות שלך. יש לבדוק את החיבור לאינטרנט.</translation>
 <translation id="2056123005618757196">‏Google Chrome מאפשר לך להספיק יותר באופן פשוט, מאובטח ומהיר מאי פעם.</translation>
 <translation id="2147651015520127414">‏Chrome אימת ש-<ph name="ISSUER" /> הנפיק את האישור של אתר זה.</translation>
 <translation id="2199719347983604670">‏נתונים מסנכרון Chrome</translation>
-<translation id="2313070403598893276">‏Google Chrome הוא פשוט, מאובטח ומהיר יותר מאי פעם</translation>
 <translation id="2339201583852607431">‏הסיסמה שלך תישמר בחשבון Google‏ (<ph name="EMAIL" />).</translation>
 <translation id="2342919707875585281">‏המיקום שלך ישותף על ידי Chrome עם אתרים שיאושרו על ידך.</translation>
 <translation id="2347208864470321755">‏כשהתכונה הזו פועלת, Chrome יציע לתרגם דפים שנכתבו בשפות אחרות באמצעות Google Translate‏. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
 <translation id="2427791862912929107">‏דפדפן Chrome כולל תכונות שעוזרות לנהל את נתוני האינטרנט ואת מהירות הטעינה של דפי אינטרנט.
 <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
+<translation id="2444854139071078915">‏אפשר להשתמש ב-Chrome למילוי אוטומטי כדי לגשת בקלות לסיסמאות השמורות שלך באפליקציות אחרות</translation>
 <translation id="2561231791489583059">‏כדאי להשתמש ב-Chrome כדפדפן ברירת המחדל כדי ליהנות מהגנה מפני אתרים מסוכנים ולשמור על אבטחת הסיסמאות</translation>
 <translation id="2574249610672786438">‏כדי לראות את הכרטיסיות שלך מכל מקום שבו פתחת את Chrome יש להיכנס לחשבון בכל המכשירים</translation>
 <translation id="2576431527583832481">‏‫Chrome ממשיך להשתפר! קיימת גירסה חדשה.</translation>
@@ -31,6 +31,7 @@
 <translation id="2689064829982324496">‏כדי לצאת מחשבון Google שלך בכל האתרים, עליך <ph name="BEGIN_LINK" />לצאת מ-Chrome<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">‏Chrome לא הצליח לחפש עדכונים. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="2732745070297234559">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר.</translation>
+<translation id="2767464022270041271">‏אין סיסמאות שמורות. למנהל הסיסמאות של Google יש אפשרות לבדוק את הסיסמאות שלך רק אם שמרת אותן.</translation>
 <translation id="2869959624320573933">‏כניסה ל-Chrome</translation>
 <translation id="2957447865124070833">‏בוחרים באפשרות <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" />.</translation>
 <translation id="3030414234702425231">‏יציאה מחשבון שמנוהל על ידי <ph name="SIGNOUT_MANAGED_DOMAIN" /> תגרום למחיקת נתוני Chrome שלך מהמכשיר הזה. הנתונים האלה יישארו בחשבון Google שלך.</translation>
@@ -59,15 +60,18 @@
 <translation id="4698415050768537821">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר או <ph name="BEGIN_LINK" />לבדוק את הסיסמאות בחשבון Google.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">‏כדי לעזור בשיפור האפליקציה, Chrome ישלח נתוני שימוש וקריסות אל Google. <ph name="BEGIN_LINK" />ניהול<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">‏אין תמיכה ב-Chrome בטא</translation>
+<translation id="4840404732697892756">‏למנהל הסיסמאות של Google יש אפשרות לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google.</translation>
 <translation id="5030102366287574140">‏Chrome יכול להגן עליך מפני פרצות באבטחת מידע, אתרים לא בטוחים וסכנות נוספות.</translation>
 <translation id="5108659628347594808">‏משפרים את Chrome</translation>
 <translation id="5119391094379141756">‏בוחרים באפשרות Chrome</translation>
 <translation id="5162467219239570114">‏Chrome אינו מעודכן. אם אין עדכון זמין ב-<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ייתכן שהמכשיר שלך אינו תומך עוד בגרסאות חדשות של Chrome.</translation>
 <translation id="5389212809648216794">‏Google Chrome לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
 <translation id="5460571915754665838">‏4. בוחרים באפשרות Chrome</translation>
+<translation id="5492504007368565877">‏למנהל הסיסמאות של Google אין אפשרות לבדוק את הסיסמאות.</translation>
 <translation id="5552137475244467770">‏מערכת Chrome בודקת מדי פעם את הסיסמאות שלך ומשווה אותן לרשימות שהתפרסמו באינטרנט. כשהפעולה הזו מבוצעת, הסיסמאות ושמות המשתמש מוצפנים, כך שאיש לא יוכל לקרוא אותם, כולל Google.</translation>
 <translation id="5639704535586432836">‏יש לעבור אל 'הגדרות' &gt; 'פרטיות' &gt; 'מצלמה' &gt; Google Chrome ולהפעיל את המצלמה.</translation>
 <translation id="5642200033778930880">‏Google Chrome לא יכול להשתמש במצלמה במצב תצוגה מפוצלת</translation>
+<translation id="5661521615548540542">‏למנהל הסיסמאות של Google לא הייתה אפשרות לבדוק את כל הסיסמאות. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">‏Chrome לא יכול לחפש עדכונים</translation>
 <translation id="5716154293141027663">‏Chrome ייפתח בכל פעם שתתבצע הקשה על קישור באפליקציות אחרות</translation>
@@ -87,6 +91,7 @@
 <translation id="6709398533399187136">‏הסיסמה שלך נחשפה בעקבות פרצה באבטחת מידע. לפי מנהל הסיסמאות של Google, מומלץ לשנות אותה עכשיו.</translation>
 <translation id="6822673484890854830">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="6964931465519938134">‏אפשר עכשיו להשתמש ב-Chrome בכל פעם שמקישים על קישורים בהודעות, במסמכים ובאפליקציות אחרות.</translation>
+<translation id="6975725306479268850">‏בחירת Chrome למילוי אוטומטי</translation>
 <translation id="701356708427365932">‏היכרות עם תפריט Chrome החדש</translation>
 <translation id="7059914902409643750">‏אפשר להתאים אישית את Chrome בדרך שנוחה לך</translation>
 <translation id="7124339256045485976">‏Chrome יתעדכן באופן קבוע</translation>
@@ -107,6 +112,7 @@
 <translation id="7754633291442704733">‏לדומיין <ph name="DOMAIN" /> של הארגון תהיה גישה לנתונים, לסימניות, להיסטוריה, לסיסמאות ולהגדרות אחרות ששמרת בחשבון הזה ב-Chrome. לאחר היציאה מהחשבון, הנתונים יימחקו מהמכשיר הזה.  עם זאת, הנתונים יישארו בחשבון Google המנוהל שלך ויהיו זמינים לארגון שלך. בנוסף, לארגון יש אפשרות להגדיר מדיניות משתמש ספציפית לחשבון, שיכולה לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="7780154209050837198">‏אפשר להיכנס ל-Chrome באמצעות חשבון Google כדי להפיק את המרב מ-Chrome.</translation>
 <translation id="7855730255114109580">‏Google Chrome מעודכן</translation>
+<translation id="7939179037291298976">‏בהגדרות של iPhone, פותחים את ההגדרה 'אפשרויות של סיסמאות' ובוחרים באפשרות 'Chrome'.</translation>
 <translation id="8022947259858476807">‏כדאי להגדיר את Chrome כדפדפן ברירת המחדל כדי לפתוח קישורים, לחפש מווידג'טים ולבצע מילוי אוטומטי של סיסמאות באפליקציות אחרות</translation>
 <translation id="81358522153858150">‏עכשיו יש ב-Chrome תמיכה במדיניות משתמש בחשבון המנוהל שלך</translation>
 <translation id="8160472928944011082">‏אי אפשר לעדכן את Chrome</translation>
@@ -120,9 +126,12 @@
   2. מקישים על אפליקציית הדפדפן שמוגדרת כברירת מחדל
   3. בוחרים את Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8603022514504485810">‏למנהל הסיסמאות של Google לא הייתה אפשרות לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר או <ph name="BEGIN_LINK" />לבדוק את הסיסמאות בחשבון Google<ph name="END_LINK" />.</translation>
 <translation id="8736550665979974340">‏פשוט לשמור על הבטיחות בעזרת Google Chrome</translation>
+<translation id="8765470054473112089">‏כשמקלידים טקסט בסרגל הכתובות או בתיבת החיפוש, Chrome שולח את הטקסט הזה למנוע החיפוש שמוגדר כברירת מחדל כדי לקבל הצעות טובות יותר. האפשרות הזו מושבתת במצב הפרטי.</translation>
 <translation id="8772179140489533211">‏יוצגו הודעות לצורך כניסה אל Chrome.</translation>
 <translation id="8788269841521769222">‏אין צורך לזכור את הסיסמה הזו. היא תישמר במנהל הסיסמאות של Google בחשבון <ph name="EMAIL" /></translation>
+<translation id="8857676124663337448">‏למנהל הסיסמאות של Google לא הייתה אפשרות לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר.</translation>
 <translation id="8897749957032330183">‏סיסמאות נשמרות במנהל הסיסמאות של Google במכשיר הזה.</translation>
 <translation id="8969290730818637510">‏כשהאפשרות פועלת:
 <ph name="BEGIN_INDENT" />  • עוזרים לשפר את Chrome אצל אנשים שמשתמשים בדפדפן בצורה דומה.<ph name="END_INDENT" />

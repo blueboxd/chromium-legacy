@@ -18,8 +18,7 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace display {
-namespace test {
+namespace display::test {
 
 namespace {
 
@@ -63,6 +62,8 @@ class ConfigureDisplaysTaskTest : public testing::Test {
                             .AddMode(small_mode_30hz_.Clone())
                             .SetType(DISPLAY_CONNECTION_TYPE_INTERNAL)
                             .SetBaseConnectorId(kEdpConnectorId)
+                            .SetVariableRefreshRateState(kVrrDisabled)
+                            .SetVerticalDisplayRangeLimits(gfx::Range())
                             .Build());
     displays_.push_back(FakeDisplaySnapshot::Builder()
                             .SetId(456)
@@ -73,6 +74,7 @@ class ConfigureDisplaysTaskTest : public testing::Test {
                             .AddMode(small_mode_30hz_.Clone())
                             .SetType(DISPLAY_CONNECTION_TYPE_DISPLAYPORT)
                             .SetBaseConnectorId(kSecondConnectorId)
+                            .SetVariableRefreshRateState(kVrrNotCapable)
                             .Build());
   }
 
@@ -2121,7 +2123,7 @@ TEST_F(ConfigureDisplaysTaskTest,
       log_.GetActionsAndClear());
 }
 
-// Tests a nested MST configuration in which after a successful modset on the
+// Tests a nested MST configuration in which after a successful modeset on the
 // root branch device (i.e. two external displays connected to a single MST hub)
 // one display is removed from the original MST hub, connected to a second MST
 // hub together with a third display, and then the second MST hub is connected
@@ -2583,5 +2585,41 @@ TEST_F(ConfigureDisplaysTaskTest, CloseLidThenOpenLid) {
             log_.GetActionsAndClear());
 }
 
-}  // namespace test
-}  // namespace display
+TEST_F(ConfigureDisplaysTaskTest, ConfigureVrr) {
+  ConfigureDisplaysTask::ResponseCallback callback = base::BindOnce(
+      &ConfigureDisplaysTaskTest::ConfigureCallback, base::Unretained(this));
+
+  std::vector<DisplayConfigureRequest> requests;
+  for (const auto& display : displays_) {
+    requests.emplace_back(display.get(), display->native_mode(), gfx::Point(),
+                          /*enable_vrr=*/true);
+  }
+
+  ConfigureDisplaysTask task(&delegate_, requests, std::move(callback));
+  task.Run();
+
+  EXPECT_TRUE(callback_called_);
+  EXPECT_EQ(ConfigureDisplaysTask::SUCCESS, status_);
+  EXPECT_EQ(displays_[0]->variable_refresh_rate_state(), kVrrEnabled);
+  EXPECT_EQ(displays_[1]->variable_refresh_rate_state(), kVrrNotCapable);
+  EXPECT_EQ(
+      JoinActions(
+          kTestModesetStr,
+          GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                         displays_[0]->native_mode(), /*enable_vrr=*/true})
+              .c_str(),
+          GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                         &big_mode_60hz_, /*enable_vrr=*/true})
+              .c_str(),
+          kModesetOutcomeSuccess, kCommitModesetStr,
+          GetCrtcAction({displays_[0]->display_id(), gfx::Point(),
+                         displays_[0]->native_mode(), /*enable_vrr=*/true})
+              .c_str(),
+          GetCrtcAction({displays_[1]->display_id(), gfx::Point(),
+                         &big_mode_60hz_, /*enable_vrr=*/true})
+              .c_str(),
+          kModesetOutcomeSuccess, nullptr),
+      log_.GetActionsAndClear());
+}
+
+}  // namespace display::test

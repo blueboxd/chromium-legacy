@@ -226,6 +226,8 @@ component("gl") {
 
     if (is_linux || is_chromeos || use_ozone) {
       sources += [
+        "gl_image_gl_texture.cc",
+        "gl_image_gl_texture.h",
         "gl_image_native_pixmap.cc",
         "gl_image_native_pixmap.h",
       ]
@@ -240,7 +242,7 @@ component("gl") {
       ]
     }
 
-    if (is_posix && !is_fuchsia && !is_mac) {
+    if (is_posix && !is_fuchsia && !is_mac && !is_ios) {
       # Windows has USE_EGL but doesn't support base::FileDescriptor.
       # libsync isn't supported or needed on MacOSX.
       # Fuchsia is excluded due to a libsync dependency and because it's
@@ -404,6 +406,25 @@ component("gl") {
 
     defines += [ "GL_SILENCE_DEPRECATION" ]
   }
+  if (is_ios) {
+    sources += [
+      "ca_renderer_layer_params.cc",
+      "ca_renderer_layer_params.h",
+      "egl_surface_io_surface.cc",
+      "egl_surface_io_surface.h",
+      "gl_display_egl.mm",
+      "gl_fence_apple.cc",
+      "gl_fence_apple.h",
+      "gl_image_io_surface.h",
+      "gl_image_io_surface.mm",
+    ]
+    frameworks = [
+      "CoreFoundation.framework",
+      "IOSurface.framework",
+    ]
+
+    deps += [ "//components/metal_util:metal_util_types" ]
+  }
   if (is_android) {
     defines += [
       "GL_GLEXT_PROTOTYPES",
@@ -483,17 +504,16 @@ static_library("gl_unittest_utils") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "test/gl_image_test_support.cc",
-    "test/gl_image_test_support.h",
     "test/gl_surface_test_support.cc",
     "test/gl_surface_test_support.h",
     "test/gl_test_helper.cc",
     "test/gl_test_helper.h",
+    "test/gl_test_support.cc",
+    "test/gl_test_support.h",
   ]
 
   if (!is_android) {
     sources += [
-      "test/gl_image_bind_test_template.h",
       "test/gl_image_test_template.cc",
       "test/gl_image_test_template.h",
     ]
@@ -583,7 +603,7 @@ test("gl_unittests") {
   }
 
   if (is_linux || is_chromeos_lacros) {
-    sources += [ "gl_image_native_pixmap_unittest.cc" ]
+    sources += [ "gl_image_gl_texture_unittest.cc" ]
   }
 
   include_dirs = [ "//third_party/khronos" ]

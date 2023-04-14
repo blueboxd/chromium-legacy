@@ -20,12 +20,14 @@ let feedbackInfo: chrome.feedbackPrivate.FeedbackInfo = {
   assistantDebugInfoAllowed: false,
   attachedFile: undefined,
   attachedFileBlobUuid: undefined,
+  autofillMetadata: '',
   categoryTag: undefined,
   description: '...',
   descriptionPlaceholder: undefined,
   email: undefined,
   flow: chrome.feedbackPrivate.FeedbackFlow.REGULAR,
   fromAssistant: false,
+  fromAutofill: false,
   includeBluetoothLogs: false,
   pageUrl: undefined,
   sendHistograms: undefined,
@@ -96,6 +98,10 @@ class FeedbackHelper {
 
   showMetrics() {
     chrome.send('showMetrics');
+  }
+
+  showAutofillMetadataInfo() {
+    chrome.send('showAutofillMetadataInfo');
   }
 }
 
@@ -427,6 +433,12 @@ function sendReport(): boolean {
     useSystemInfo = true;
   }
 
+  const autofillCheckbox = $<HTMLInputElement>('autofill-metadata-checkbox');
+  if (autofillCheckbox != null && autofillCheckbox.checked &&
+      !getRequiredElement('autofill-checkbox-container').hidden) {
+    feedbackInfo.sendAutofillMetadata = true;
+  }
+
   // <if expr="chromeos_ash">
   const assistantCheckbox = $<HTMLInputElement>('assistant-info-checkbox');
   if (assistantCheckbox != null && assistantCheckbox.checked &&
@@ -556,6 +568,13 @@ function initialize() {
       getRequiredElement('assistant-checkbox-container').hidden = false;
     }
 
+    if ($('autofill-checkbox-container') != null &&
+        feedbackInfo.flow ===
+            chrome.feedbackPrivate.FeedbackFlow.GOOGLE_INTERNAL &&
+        feedbackInfo.fromAutofill) {
+      getRequiredElement('autofill-checkbox-container').hidden = false;
+    }
+
     getRequiredElement('description-text').textContent =
         feedbackInfo.description;
     if (feedbackInfo.descriptionPlaceholder) {
@@ -640,6 +659,21 @@ function initialize() {
       getRequiredElement('performance-info-link').onclick = openSlowTraceWindow;
     }
     // </if>
+
+    const autofillMetadataUrlElement = $('autofill-metadata-url');
+
+    if (autofillMetadataUrlElement) {
+      // Opens a new window showing the full anonymized autofill metadata.
+      autofillMetadataUrlElement.onclick = function(e) {
+        e.preventDefault();
+
+        feedbackHelper.showAutofillMetadataInfo();
+      };
+
+      autofillMetadataUrlElement.onauxclick = function(e) {
+        e.preventDefault();
+      };
+    }
 
     const sysInfoUrlElement = $('sys-info-url');
     if (sysInfoUrlElement) {

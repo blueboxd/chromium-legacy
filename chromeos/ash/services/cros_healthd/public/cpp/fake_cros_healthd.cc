@@ -13,8 +13,6 @@
 #include "base/functional/bind.h"
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
-#include "chromeos/ash/components/dbus/cros_healthd/cros_healthd_client.h"
-#include "chromeos/ash/components/dbus/cros_healthd/fake_cros_healthd_client.h"
 #include "chromeos/ash/components/mojo_service_manager/connection.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
@@ -56,27 +54,15 @@ void FakeCrosHealthd::Initialize() {
   CHECK(!g_instance);
   g_instance = new FakeCrosHealthd();
 
-  if (mojo_service_manager::IsServiceManagerBound()) {
-    auto* proxy = mojo_service_manager::GetServiceManagerProxy();
-    proxy->Register(
-        chromeos::mojo_services::kCrosHealthdDiagnostics,
-        g_instance->diagnostics_provider_.BindNewPipeAndPassRemote());
-    proxy->Register(chromeos::mojo_services::kCrosHealthdEvent,
-                    g_instance->event_provider_.BindNewPipeAndPassRemote());
-    proxy->Register(chromeos::mojo_services::kCrosHealthdProbe,
-                    g_instance->probe_provider_.BindNewPipeAndPassRemote());
-  }
-
-  if (!FakeCrosHealthdClient::Get()) {
-    CHECK(!CrosHealthdClient::Get())
-        << "A real dbus client has already been initialized. Cannot initialize "
-           "FakeCrosHealthd.";
-    CrosHealthdClient::InitializeFake();
-  }
-  // FakeCrosHealthd will shutdown the fake dbus client when shutdowning so it
-  // is safe to use `Unretained` here.
-  FakeCrosHealthdClient::Get()->SetBootstrapCallback(base::BindRepeating(
-      &FakeCrosHealthd::BindNewRemote, base::Unretained(g_instance)));
+  CHECK(mojo_service_manager::IsServiceManagerBound())
+      << "Healthd requires mojo service manager.";
+  auto* proxy = mojo_service_manager::GetServiceManagerProxy();
+  proxy->Register(chromeos::mojo_services::kCrosHealthdDiagnostics,
+                  g_instance->diagnostics_provider_.BindNewPipeAndPassRemote());
+  proxy->Register(chromeos::mojo_services::kCrosHealthdEvent,
+                  g_instance->event_provider_.BindNewPipeAndPassRemote());
+  proxy->Register(chromeos::mojo_services::kCrosHealthdProbe,
+                  g_instance->probe_provider_.BindNewPipeAndPassRemote());
 }
 
 // static
@@ -87,11 +73,6 @@ void FakeCrosHealthd::Shutdown() {
   // behavior.
   ServiceConnection::GetInstance();
 
-  CHECK(FakeCrosHealthdClient::Get())
-      << "The fake dbus client has been shutdowned by others. Cannot shutdown "
-         "the FakeCrosHealthd";
-  CrosHealthdClient::Shutdown();
-
   CHECK(g_instance);
   delete g_instance;
   g_instance = nullptr;
@@ -100,6 +81,28 @@ void FakeCrosHealthd::Shutdown() {
   // remote in ServiceConnection so it will be disconnected and reset. Without
   // this, the mojo object remain in a unstable state and cause errors.
   ServiceConnection::GetInstance()->FlushForTesting();
+}
+
+// static
+void FakeCrosHealthd::InitializeInBrowserTest() {
+  CHECK(!g_instance);
+  g_instance = new FakeCrosHealthd();
+
+  CHECK(mojo_service_manager::IsServiceManagerBound());
+  auto* proxy = mojo_service_manager::GetServiceManagerProxy();
+  proxy->Register(chromeos::mojo_services::kCrosHealthdDiagnostics,
+                  g_instance->diagnostics_provider_.BindNewPipeAndPassRemote());
+  proxy->Register(chromeos::mojo_services::kCrosHealthdEvent,
+                  g_instance->event_provider_.BindNewPipeAndPassRemote());
+  proxy->Register(chromeos::mojo_services::kCrosHealthdProbe,
+                  g_instance->probe_provider_.BindNewPipeAndPassRemote());
+}
+
+// static
+void FakeCrosHealthd::ShutdownInBrowserTest() {
+  CHECK(g_instance);
+  delete g_instance;
+  g_instance = nullptr;
 }
 
 // static
@@ -153,226 +156,162 @@ void FakeCrosHealthd::SetCallbackDelay(base::TimeDelta delay) {
 void FakeCrosHealthd::EmitAcInsertedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : power_observers_)
+  for (auto& observer : power_observers_) {
     observer->OnAcInserted();
+  }
 }
 
 void FakeCrosHealthd::EmitAcRemovedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : power_observers_)
+  for (auto& observer : power_observers_) {
     observer->OnAcRemoved();
+  }
 }
 
 void FakeCrosHealthd::EmitOsSuspendEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : power_observers_)
+  for (auto& observer : power_observers_) {
     observer->OnOsSuspend();
+  }
 }
 
 void FakeCrosHealthd::EmitOsResumeEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : power_observers_)
+  for (auto& observer : power_observers_) {
     observer->OnOsResume();
+  }
 }
 
 void FakeCrosHealthd::EmitAdapterAddedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnAdapterAdded();
+  }
 }
 
 void FakeCrosHealthd::EmitAdapterRemovedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnAdapterRemoved();
+  }
 }
 
 void FakeCrosHealthd::EmitAdapterPropertyChangedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnAdapterPropertyChanged();
+  }
 }
 
 void FakeCrosHealthd::EmitDeviceAddedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnDeviceAdded();
+  }
 }
 
 void FakeCrosHealthd::EmitDeviceRemovedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnDeviceRemoved();
+  }
 }
 
 void FakeCrosHealthd::EmitDevicePropertyChangedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : bluetooth_observers_)
+  for (auto& observer : bluetooth_observers_) {
     observer->OnDevicePropertyChanged();
+  }
 }
 
 void FakeCrosHealthd::EmitLidClosedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : lid_observers_)
+  for (auto& observer : lid_observers_) {
     observer->OnLidClosed();
+  }
 }
 
 void FakeCrosHealthd::EmitLidOpenedEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : lid_observers_)
+  for (auto& observer : lid_observers_) {
     observer->OnLidOpened();
+  }
 }
 
 void FakeCrosHealthd::EmitAudioUnderrunEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : audio_observers_)
+  for (auto& observer : audio_observers_) {
     observer->OnUnderrun();
+  }
 }
 
 void FakeCrosHealthd::EmitAudioSevereUnderrunEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : audio_observers_)
+  for (auto& observer : audio_observers_) {
     observer->OnSevereUnderrun();
+  }
 }
 
 void FakeCrosHealthd::EmitThunderboltAddEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
-  for (auto& observer : thunderbolt_observers_)
+  for (auto& observer : thunderbolt_observers_) {
     observer->OnAdd();
+  }
 }
 
 void FakeCrosHealthd::EmitUsbAddEventForTesting() {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
   mojom::UsbEventInfo info;
-  for (auto& observer : usb_observers_)
+  for (auto& observer : usb_observers_) {
     observer->OnAdd(info.Clone());
+  }
 }
 
 void FakeCrosHealthd::EmitEventForCategory(mojom::EventCategoryEnum category,
@@ -391,12 +330,7 @@ void FakeCrosHealthd::EmitConnectionStateChangedEventForTesting(
     chromeos::network_health::mojom::NetworkState state) {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
   for (auto& observer : network_observers_) {
     observer->OnConnectionStateChanged(network_guid, state);
@@ -408,40 +342,13 @@ void FakeCrosHealthd::EmitSignalStrengthChangedEventForTesting(
     chromeos::network_health::mojom::UInt32ValuePtr signal_strength) {
   // Flush the receiver, so any pending observers are registered before the
   // event is emitted.
-  if (healthd_receiver_.is_bound()) {
-    healthd_receiver_.FlushForTesting();
-    event_receiver_set_.FlushForTesting();
-  } else {
-    event_provider_.FlushForTesting();
-  }
+  event_provider_.FlushForTesting();
 
   for (auto& observer : network_observers_) {
     observer->OnSignalStrengthChanged(
         network_guid, chromeos::network_health::mojom::UInt32Value::New(
                           signal_strength->value));
   }
-}
-
-void FakeCrosHealthd::RequestNetworkHealthForTesting(
-    chromeos::network_health::mojom::NetworkHealthService::
-        GetHealthSnapshotCallback callback) {
-  // Flush the receiver, so pending network interface are registered before it
-  // is used.
-  if (healthd_receiver_.is_bound())
-    healthd_receiver_.FlushForTesting();
-
-  network_health_remote_->GetHealthSnapshot(std::move(callback));
-}
-
-void FakeCrosHealthd::RunLanConnectivityRoutineForTesting(
-    chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines::
-        RunLanConnectivityCallback callback) {
-  // Flush the receiver, so pending network interface are registered before it
-  // is used.
-  if (healthd_receiver_.is_bound())
-    healthd_receiver_.FlushForTesting();
-
-  network_diagnostics_routines_->RunLanConnectivity(std::move(callback));
 }
 
 absl::optional<mojom::DiagnosticRoutineEnum>
@@ -454,63 +361,11 @@ FakeCrosHealthd::GetRoutineUpdateParams() const {
   return routine_update_params_;
 }
 
-mojo::Remote<mojom::CrosHealthdServiceFactory>
-FakeCrosHealthd::BindNewRemote() {
-  healthd_receiver_.reset();
-  return mojo::Remote<mojom::CrosHealthdServiceFactory>(
-      healthd_receiver_.BindNewPipeAndPassRemote());
-}
-
 FakeCrosHealthd::RoutineUpdateParams::RoutineUpdateParams(
     int32_t id,
     mojom::DiagnosticRoutineCommandEnum command,
     bool include_output)
     : id(id), command(command), include_output(include_output) {}
-
-void FakeCrosHealthd::GetProbeService(
-    mojo::PendingReceiver<mojom::CrosHealthdProbeService> service) {
-  probe_receiver_set_.Add(this, std::move(service));
-}
-
-void FakeCrosHealthd::GetDiagnosticsService(
-    mojo::PendingReceiver<mojom::CrosHealthdDiagnosticsService> service) {
-  diagnostics_receiver_set_.Add(this, std::move(service));
-}
-
-void FakeCrosHealthd::GetEventService(
-    mojo::PendingReceiver<mojom::CrosHealthdEventService> service) {
-  event_receiver_set_.Add(this, std::move(service));
-}
-
-void FakeCrosHealthd::SendNetworkHealthService(
-    mojo::PendingRemote<chromeos::network_health::mojom::NetworkHealthService>
-        remote) {
-  network_health_remote_.Bind(std::move(remote));
-}
-
-void FakeCrosHealthd::SendNetworkDiagnosticsRoutines(
-    mojo::PendingRemote<
-        chromeos::network_diagnostics::mojom::NetworkDiagnosticsRoutines>
-        network_diagnostics_routines) {
-  network_diagnostics_routines_.Bind(std::move(network_diagnostics_routines));
-}
-
-void FakeCrosHealthd::GetSystemService(
-    mojo::PendingReceiver<mojom::CrosHealthdSystemService> service) {
-  system_receiver_set_.Add(this, std::move(service));
-}
-
-void FakeCrosHealthd::SendChromiumDataCollector(
-    mojo::PendingRemote<internal::mojom::ChromiumDataCollector> remote) {
-  NOTIMPLEMENTED();
-}
-
-void FakeCrosHealthd::GetServiceStatus(GetServiceStatusCallback callback) {
-  auto response = mojom::ServiceStatus::New();
-  response->network_health_bound = network_health_remote_.is_bound();
-  response->network_diagnostics_bound = network_health_remote_.is_bound();
-  std::move(callback).Run(std::move(response));
-}
 
 void FakeCrosHealthd::GetAvailableRoutines(
     GetAvailableRoutinesCallback callback) {
@@ -972,6 +827,29 @@ void FakeCrosHealthd::RunAudioSetGainRoutine(
   actual_passed_parameters_.Set("mute_on", mute_on);
 
   last_run_routine_ = mojom::DiagnosticRoutineEnum::kAudioSetGain;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+
+void FakeCrosHealthd::RunBluetoothPowerRoutine(
+    RunBluetoothPowerRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kBluetoothPower;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+void FakeCrosHealthd::RunBluetoothDiscoveryRoutine(
+    RunBluetoothDiscoveryRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kBluetoothDiscovery;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+void FakeCrosHealthd::RunBluetoothScanningRoutine(
+    ash::cros_healthd::mojom::NullableUint32Ptr length_seconds,
+    RunBluetoothScanningRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kBluetoothScanning;
+  std::move(callback).Run(run_routine_response_.Clone());
+}
+void FakeCrosHealthd::RunBluetoothPairingRoutine(
+    const std::string& peripheral_id,
+    RunBluetoothPairingRoutineCallback callback) {
+  last_run_routine_ = mojom::DiagnosticRoutineEnum::kBluetoothPairing;
   std::move(callback).Run(run_routine_response_.Clone());
 }
 

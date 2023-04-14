@@ -94,6 +94,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_resource.h"
+#include "media/base/audio_codecs.h"
 #include "services/accessibility/buildflags.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -408,35 +409,46 @@ AccessibilityManager::AccessibilityManager() {
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(static_cast<int>(Sound::kShutdown),
-                      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_SHUTDOWN_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(
       static_cast<int>(Sound::kSpokenFeedbackEnabled),
-      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV));
+      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_ENABLED_WAV),
+      media::AudioCodec::kPCM);
   manager->Initialize(
       static_cast<int>(Sound::kSpokenFeedbackDisabled),
-      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV));
+      bundle.GetRawDataResource(IDR_SOUND_SPOKEN_FEEDBACK_DISABLED_WAV),
+      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kPassthrough),
-                      bundle.GetRawDataResource(IDR_SOUND_PASSTHROUGH_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_PASSTHROUGH_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kExitScreen),
-                      bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kEnterScreen),
-                      bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(
       static_cast<int>(Sound::kSpokenFeedbackToggleCountdownHigh),
       bundle.GetRawDataResource(
-          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV));
+          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV),
+      media::AudioCodec::kPCM);
   manager->Initialize(
       static_cast<int>(Sound::kSpokenFeedbackToggleCountdownLow),
       bundle.GetRawDataResource(
-          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
+          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV),
+      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kTouchType),
-                      bundle.GetRawDataResource(IDR_SOUND_TOUCH_TYPE_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_TOUCH_TYPE_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kStartup),
-                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV),
+                      media::AudioCodec::kPCM);
 
   if (VolumeAdjustSoundEnabled()) {
     manager->Initialize(static_cast<int>(Sound::kVolumeAdjust),
-                        bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV));
+                        bundle.GetRawDataResource(IDR_SOUND_VOLUME_ADJUST_WAV),
+                        media::AudioCodec::kPCM);
   }
   if (::features::IsAccessibilityServiceEnabled()) {
     // We create an AccessibilityServiceClient even if the build flag is not
@@ -2408,16 +2420,31 @@ void AccessibilityManager::UpdateDictationNotification() {
   // 3. Pumpkin not installed, SODA installed
   // 4. Pumpkin not installed, SODA not installed
   DictationNotificationType type;
+  std::string notification_shown_pref;
   if (pumpkin_installed && soda_installed) {
     type = DictationNotificationType::kAllDlcsDownloaded;
+    notification_shown_pref =
+        prefs::kDictationDlcSuccessNotificationHasBeenShown;
   } else if (pumpkin_installed && !soda_installed) {
     type = DictationNotificationType::kOnlyPumpkinDownloaded;
+    notification_shown_pref =
+        prefs::kDictationDlcOnlyPumpkinDownloadedNotificationHasBeenShown;
   } else if (!pumpkin_installed && soda_installed) {
     type = DictationNotificationType::kOnlySodaDownloaded;
+    notification_shown_pref =
+        prefs::kDictationDlcOnlySodaDownloadedNotificationHasBeenShown;
   } else {
     type = DictationNotificationType::kNoDlcsDownloaded;
+    notification_shown_pref =
+        prefs::kDictationNoDlcsDownloadedNotificationHasBeenShown;
   }
 
+  if (profile_->GetPrefs()->GetBoolean(notification_shown_pref)) {
+    // Do not show DLC notifications more than once.
+    return;
+  }
+
+  profile_->GetPrefs()->SetBoolean(notification_shown_pref, true);
   AccessibilityController::Get()->ShowNotificationForDictation(type,
                                                                display_name);
 
@@ -2444,17 +2471,14 @@ void AccessibilityManager::InstallPumpkinForDictation(
   install_pumpkin_callback_ = std::move(callback);
   pumpkin_installer_->MaybeInstall(
       base::BindOnce(&AccessibilityManager::OnPumpkinInstalled,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     base::Unretained(this)),
       base::BindRepeating([](double progress) {}),
       base::BindOnce(&AccessibilityManager::OnPumpkinError,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     base::Unretained(this)));
 }
 
 void AccessibilityManager::OnPumpkinInstalled(bool success) {
-  if (install_pumpkin_callback_.is_null()) {
-    return;
-  }
-
+  DCHECK(!install_pumpkin_callback_.is_null());
   if (!::features::IsExperimentalAccessibilityDictationWithPumpkinEnabled() ||
       !success) {
     std::move(install_pumpkin_callback_).Run(nullptr);
@@ -2476,18 +2500,12 @@ void AccessibilityManager::OnPumpkinInstalled(bool success) {
 
 void AccessibilityManager::OnPumpkinDataCreated(
     std::unique_ptr<PumpkinData> data) {
-  if (install_pumpkin_callback_.is_null()) {
-    return;
-  }
-
+  CHECK(!install_pumpkin_callback_.is_null());
   std::move(install_pumpkin_callback_).Run(std::move(data));
 }
 
 void AccessibilityManager::OnPumpkinError(const std::string& error) {
-  if (install_pumpkin_callback_.is_null()) {
-    return;
-  }
-
+  DCHECK(!install_pumpkin_callback_.is_null());
   std::move(install_pumpkin_callback_).Run(nullptr);
   is_pumpkin_installed_for_testing_ = false;
 

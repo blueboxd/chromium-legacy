@@ -17,6 +17,10 @@
 
 namespace blink {
 
+// For base::PassKey<NavigationAuction>.
+// TODO(crbug.com/1347953): Remove when the accessor is removed.
+class NavigatorAuction;
+
 // FencedFrameConfig class implements the FencedFrameConfig IDL. It specifies
 // the fenced frame's inner properties. It can be returned by shared storage's
 // selectURL() and FLEDGE's runAdAuction(), or directly constructed for
@@ -83,6 +87,22 @@ class CORE_EXPORT FencedFrameConfig final : public ScriptWrappable {
     return urn_uuid_;
   }
 
+  // Temporary accessor for `deprecatedURNToURL` and `deprecatedReplaceInURN`.
+  // TODO(crbug.com/1347953): Remove when those functions are removed.
+  absl::optional<KURL> urn_uuid(base::PassKey<NavigatorAuction>) {
+    return urn_uuid_;
+  }
+
+  absl::optional<gfx::Size> content_size(
+      base::PassKey<HTMLFencedFrameElement>) {
+    return content_size_;
+  }
+
+  bool deprecated_should_freeze_initial_size(
+      base::PassKey<HTMLFencedFrameElement>) {
+    return deprecated_should_freeze_initial_size_;
+  }
+
  private:
   KURL url_;
   uint32_t width_;
@@ -147,6 +167,22 @@ class CORE_EXPORT FencedFrameConfig final : public ScriptWrappable {
   // non-null `urn_`, we navigate to that URN instead of the platform-provided
   // URL. This value is never exposed to the web platform.
   absl::optional<KURL> urn_uuid_;
+
+  // `content_size` and `deprecated_should_freeze_initial_size` temporarily need
+  // to be treated differently than other fields, because for implementation
+  // convenience the fenced frame size is frozen by the embedder. In the long
+  // term, it should be frozen by the browser (i.e. neither the embedder's
+  // renderer nor the fenced frame's renderer), so that it is secure to
+  // compromised renderers.
+
+  // The size that the inner frame of the fenced frame should be frozen to (if
+  // any).
+  absl::optional<gfx::Size> content_size_;
+
+  // Whether we should use the old size freezing behavior (coerce the size at
+  // navigation time to an allowlist, then freeze it) for backwards
+  // compatibility.
+  bool deprecated_should_freeze_initial_size_ = false;
 };
 
 template <>

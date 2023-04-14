@@ -38,7 +38,8 @@ class SequencedTaskSource {
                  QueueName task_queue_name);
     ~SelectedTask();
 
-    const raw_ref<Task> task;
+    // TODO(crbug.com/1409100): breaks base_unittests.
+    const raw_ref<Task, DisableDanglingPtrDetection> task;
     // Callback to fill trace event arguments associated with the task
     // execution. Can be null
     TaskExecutionTraceLogger task_execution_trace_logger =
@@ -82,6 +83,11 @@ class SequencedTaskSource {
   // becomes available as a result of any processing done by this callback,
   // return true to schedule a future DoWork.
   virtual bool OnSystemIdle() = 0;
+
+  // Called prior to running `selected_task` to emit trace event data for it.
+  virtual void MaybeEmitTaskDetails(
+      perfetto::EventContext& ctx,
+      const SelectedTask& selected_task) const = 0;
 };
 
 }  // namespace internal

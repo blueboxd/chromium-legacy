@@ -22,14 +22,13 @@
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/url_loader_throttle_provider.h"
 #include "third_party/blink/public/platform/weak_wrapper_resource_load_info_notifier.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_code_cache_loader.h"
 #include "third_party/blink/public/platform/web_frame_request_blocker.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle_provider.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "url/url_constants.h"
 
 namespace blink {
@@ -54,53 +53,49 @@ void CreateServiceWorkerSubresourceLoaderFactory(
 
 }  // namespace
 
-// An implementation of WebURLLoaderFactory that is aware of service workers. In
+// An implementation of URLLoaderFactory that is aware of service workers. In
 // the usual case, it creates a loader that uses |loader_factory_|. But if the
 // worker fetch context is controlled by a service worker, it creates a loader
 // that uses |service_worker_loader_factory_| for requests that should be
 // intercepted by the service worker.
 class DedicatedOrSharedWorkerFetchContextImpl::Factory
-    : public WebURLLoaderFactory {
+    : public URLLoaderFactory {
  public:
   Factory(scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-          const WebVector<WebString>& cors_exempt_header_list,
+          const Vector<String>& cors_exempt_header_list,
           base::WaitableEvent* terminate_sync_load_event)
-      : WebURLLoaderFactory(std::move(loader_factory),
-                            cors_exempt_header_list,
-                            terminate_sync_load_event) {}
+      : URLLoaderFactory(std::move(loader_factory),
+                         cors_exempt_header_list,
+                         terminate_sync_load_event) {}
   Factory(const Factory&) = delete;
   Factory& operator=(const Factory&) = delete;
   ~Factory() override = default;
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
+  std::unique_ptr<URLLoader> CreateURLLoader(
       const WebURLRequest& request,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          freezable_task_runner_handle,
-      std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
-          unfreezable_task_runner_handle,
-      CrossVariantMojoRemote<mojom::KeepAliveHandleInterfaceBase>
-          keep_alive_handle,
-      WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
-      override {
-    DCHECK(freezable_task_runner_handle);
-    DCHECK(unfreezable_task_runner_handle);
+      scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
+      mojo::PendingRemote<mojom::blink::KeepAliveHandle> keep_alive_handle,
+
+      BackForwardCacheLoaderHelper* back_forward_cache_loader_helper) override {
+    DCHECK(freezable_task_runner);
+    DCHECK(unfreezable_task_runner);
 
     if (CanCreateServiceWorkerURLLoader(request)) {
       // Create our own URLLoader to route the request to the controller service
       // worker.
-      return std::make_unique<WebURLLoader>(
+      return std::make_unique<URLLoader>(
           cors_exempt_header_list_, terminate_sync_load_event_,
-          std::move(freezable_task_runner_handle),
-          std::move(unfreezable_task_runner_handle),
+          std::move(freezable_task_runner), std::move(unfreezable_task_runner),
           service_worker_loader_factory_, std::move(keep_alive_handle),
           back_forward_cache_loader_helper);
     }
 
-    return std::make_unique<WebURLLoader>(
+    return std::make_unique<URLLoader>(
         cors_exempt_header_list_, terminate_sync_load_event_,
-        std::move(freezable_task_runner_handle),
-        std::move(unfreezable_task_runner_handle), loader_factory_,
-        std::move(keep_alive_handle), back_forward_cache_loader_helper);
+        std::move(freezable_task_runner), std::move(unfreezable_task_runner),
+        loader_factory_, std::move(keep_alive_handle),
+        back_forward_cache_loader_helper);
   }
 
   void SetServiceWorkerURLLoaderFactory(
@@ -171,7 +166,7 @@ DedicatedOrSharedWorkerFetchContextImpl::
         std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
         std::unique_ptr<WebSocketHandshakeThrottleProvider>
             websocket_handshake_throttle_provider,
-        const WebVector<WebString>& cors_exempt_header_list,
+        Vector<String> cors_exempt_header_list,
         mojo::PendingRemote<mojom::ResourceLoadInfoNotifier>
             pending_resource_load_info_notifier)
     : service_worker_client_receiver_(
@@ -189,12 +184,9 @@ DedicatedOrSharedWorkerFetchContextImpl::
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      cors_exempt_header_list_(cors_exempt_header_list.size()),
+      cors_exempt_header_list_(std::move(cors_exempt_header_list)),
       pending_resource_load_info_notifier_(
-          std::move(pending_resource_load_info_notifier)) {
-  for (const WebString& cors_exempt_header : cors_exempt_header_list)
-    cors_exempt_header_list_.emplace_back(cors_exempt_header);
-}
+          std::move(pending_resource_load_info_notifier)) {}
 
 scoped_refptr<WebDedicatedOrSharedWorkerFetchContext>
 DedicatedOrSharedWorkerFetchContextImpl::CloneForNestedWorkerDeprecated(
@@ -369,16 +361,16 @@ void DedicatedOrSharedWorkerFetchContextImpl::InitializeOnWorkerThread(
   ResetServiceWorkerURLLoaderFactory();
 }
 
-WebURLLoaderFactory*
+URLLoaderFactory*
 DedicatedOrSharedWorkerFetchContextImpl::GetURLLoaderFactory() {
   return web_loader_factory_.get();
 }
 
-std::unique_ptr<WebURLLoaderFactory>
+std::unique_ptr<URLLoaderFactory>
 DedicatedOrSharedWorkerFetchContextImpl::WrapURLLoaderFactory(
     CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
         url_loader_factory) {
-  return std::make_unique<WebURLLoaderFactory>(
+  return std::make_unique<URLLoaderFactory>(
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
           std::move(url_loader_factory)),
       cors_exempt_header_list_, terminate_sync_load_event_);
@@ -642,7 +634,7 @@ WebDedicatedOrSharedWorkerFetchContext::Create(
         pending_fallback_factory,
     CrossVariantMojoReceiver<mojom::SubresourceLoaderUpdaterInterfaceBase>
         pending_subresource_loader_updater,
-    const WebVector<WebString>& cors_exempt_header_list,
+    const WebVector<WebString>& web_cors_exempt_header_list,
     mojo::PendingRemote<mojom::ResourceLoadInfoNotifier>
         pending_resource_load_info_notifier) {
   mojo::PendingReceiver<mojom::blink::ServiceWorkerWorkerClient>
@@ -667,6 +659,13 @@ WebDedicatedOrSharedWorkerFetchContext::Create(
         provider_context->CloneRemoteContainerHost();
   }
 
+  Vector<String> cors_exempt_header_list(
+      base::checked_cast<wtf_size_t>(web_cors_exempt_header_list.size()));
+  std::transform(web_cors_exempt_header_list.begin(),
+                 web_cors_exempt_header_list.end(),
+                 cors_exempt_header_list.begin(),
+                 [](const WebString& h) { return WTF::String(h); });
+
   scoped_refptr<DedicatedOrSharedWorkerFetchContextImpl> worker_fetch_context =
       base::AdoptRef(new DedicatedOrSharedWorkerFetchContextImpl(
           renderer_preferences, std::move(watcher_receiver),
@@ -679,7 +678,7 @@ WebDedicatedOrSharedWorkerFetchContext::Create(
           Platform::Current()->CreateURLLoaderThrottleProviderForWorker(
               URLLoaderThrottleProviderType::kWorker),
           Platform::Current()->CreateWebSocketHandshakeThrottleProvider(),
-          cors_exempt_header_list,
+          std::move(cors_exempt_header_list),
           std::move(pending_resource_load_info_notifier)));
   if (provider_context) {
     worker_fetch_context->set_controller_service_worker_mode(

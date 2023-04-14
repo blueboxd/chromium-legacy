@@ -524,6 +524,10 @@ body.check-select .dialog-header
   width: 48px;
 }
 
+.dialog-header cr-button.icon-button > xf-icon {
+  position: absolute;
+}
+
 .dialog-header #tasks {
   border-radius: 4px;
   height: 32px;
@@ -1272,17 +1276,7 @@ body.files-ng .thumbnail-frame > .img-container {
   position: relative;
 }
 
-#list-container.thumbnail-view .inline-status {
-  align-items: center;
-  display: none;
-  height: 16px;
-  justify-content: center;
-  position: absolute;
-  right: 4px;
-  top: 4px;
-  width: 16px;
-}
-
+#list-container.thumbnail-view .inline-status,
 #list-container.thumbnail-view .inline-status .progress,
 #list-container.thumbnail-view .inline-status xf-icon {
   display: none;
@@ -1290,8 +1284,12 @@ body.files-ng .thumbnail-frame > .img-container {
   width: 16px;
 }
 
-#list-container.thumbnail-view .inline-status xf-icon[type^=offline] {
-  --xf-icon-color: var(--cros-icon-color-secondary);
+#list-container.thumbnail-view .inline-status {
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: 4px;
+  top: 4px;
 }
 
 #list-container.thumbnail-view li.directory .inline-status {
@@ -1299,11 +1297,21 @@ body.files-ng .thumbnail-frame > .img-container {
   top: 0;
 }
 
-#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type^=offline]),
-#list-container.thumbnail-view li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type^=offline],
-#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
-#list-container.thumbnail-view li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
+#list-container.thumbnail-view li.pinned:not([renaming]):not(.dim-offline) .inline-status,
+#list-container.thumbnail-view li.pinned:not([renaming]):not(.dim-offline) .inline-status xf-icon,
+#list-container.thumbnail-view li:not([renaming])[data-sync-status]:not([data-sync-status=not_found]) .inline-status,
+#list-container.thumbnail-view li:not([renaming])[data-sync-status]:not([data-sync-status=not_found]) .inline-status .progress {
   display: flex;
+}
+
+#list-container.thumbnail-view li.pinned .inline-status xf-icon[type=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
+}
+
+/* Only display outlines for entries with thumbnails. */
+#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status .progress,
+#list-container.thumbnail-view li.pinned:has(.thumbnail) .inline-status xf-icon[type=offline] {
+  --xf-icon-color-outline: var(--cros-bg-color);
 }
 
 html:not(.pointer-active) body[type='full-page'] .thumbnail-frame > .img-container,
@@ -1320,13 +1328,9 @@ body[type='full-page'] .detail-name .detail-icon:active {
   display: flex;
   flex-direction: row;
   left: 0;
-  padding: 0 6px;
+  padding: 0;
   position: absolute;
   right: 0;
-}
-
-body.files-ng .thumbnail-bottom {
-  padding: 0;
 }
 
 .thumbnail-bottom .detail-icon {
@@ -1337,48 +1341,43 @@ body.files-ng .thumbnail-bottom {
 
 .thumbnail-bottom .filename-label {
   flex: auto;
-  font-weight: 500;
-  padding-inline-end: 6px;
-}
-
-body.files-ng .thumbnail-item .filename-label {
   font-weight: normal;
-  padding-inline-end: 12px;
+  padding-inline-end: 8px;
 }
 
 /* Styles specific for the grid view. */
 
-body.files-ng .thumbnail-grid .thumbnail-item {
+.thumbnail-grid .thumbnail-item {
   background-color: inherit;
-  border-radius: 4px;
+  border-radius: 12px;
   height: 160px;
   margin-inline-start: 16px;
   margin-top: 16px;
   overflow: hidden;
   position: relative;
   vertical-align: top;  /* Prevent vertical spacing for wrapped inline box. */
-  width: 180px;
+  width: 160px;
 }
 
-body.files-ng .thumbnail-item.directory   {
+.thumbnail-item.directory   {
   box-shadow: none;
-  height: 40px;
+  height: 48px;
 }
 
-body.files-ng #list-container .thumbnail-grid li {
-  border: 1px solid var(--cros-separator-color);
+#list-container .thumbnail-grid li {
+  border: 1px solid var(--cros-sys-separator);
 }
 
-body.files-ng grid .thumbnail-bottom .detail-icon {
+grid .thumbnail-bottom .detail-icon {
   color: var(--cros-icon-color-secondary);
-  height: 40px;
+  height: 48px;
   padding-inline-end: 6px;
   padding-inline-start: 6px;
   width: 32px;
 }
 
-html:not(.pointer-active) body.files-ng grid .thumbnail-bottom .detail-icon,
-body.files-ng grid .thumbnail-bottom .detail-icon:active {
+html:not(.pointer-active) grid .thumbnail-bottom .detail-icon,
+grid .thumbnail-bottom .detail-icon:active {
   cursor: pointer;
 }
 
@@ -1388,14 +1387,9 @@ body.files-ng grid .thumbnail-bottom .detail-icon:active {
 }
 
 .thumbnail-grid .img-container {
-  background-color: var(--cros-highlight-color-hover);
-  height: 100%;
+  color: var(--cros-sys-on_surface_bodytext);
+  height: 112px;
   width: 100%;
-}
-
-body.files-ng .thumbnail-grid .img-container {
-  color: var(--cros-text-color-secondary);
-  height: 120px;
 }
 
 .thumbnail-grid .img-container > .thumbnail {
@@ -1409,43 +1403,43 @@ body.files-ng .thumbnail-grid .img-container {
   width: 100%;
 }
 
-body.files-ng .thumbnail-grid .thumbnail-bottom {
+.thumbnail-grid .thumbnail-bottom {
   color: var(--cros-text-color-primary);
-  height: 40px;
+  height: 48px;
 }
 
-body.files-ng .thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom,
-body.files-ng .thumbnail-grid .thumbnail-item[lead] .thumbnail-bottom,
-body.files-ng .thumbnail-grid .thumbnail-item[selected].directory
+.thumbnail-grid .thumbnail-item[selected] .thumbnail-bottom,
+.thumbnail-grid .thumbnail-item[lead] .thumbnail-bottom,
+.thumbnail-grid .thumbnail-item[selected].directory
     .thumbnail-bottom,
-body.files-ng .thumbnail-grid .thumbnail-item[lead].directory
+.thumbnail-grid .thumbnail-item[lead].directory
     .thumbnail-bottom {
   background-color: var(--cros-highlight-color-hover);
 }
 
-body.files-ng .thumbnail-grid:focus .thumbnail-item[selected] .thumbnail-bottom,
-body.files-ng .thumbnail-grid:focus .thumbnail-item[lead] .thumbnail-bottom,
-body.files-ng .thumbnail-grid:focus .thumbnail-item[selected].directory
+.thumbnail-grid:focus .thumbnail-item[selected] .thumbnail-bottom,
+.thumbnail-grid:focus .thumbnail-item[lead] .thumbnail-bottom,
+.thumbnail-grid:focus .thumbnail-item[selected].directory
     .thumbnail-bottom,
-body.files-ng .thumbnail-grid:focus .thumbnail-item[lead].directory
+.thumbnail-grid:focus .thumbnail-item[lead].directory
     .thumbnail-bottom {
   background-color: var(--cros-highlight-color);
 }
 
-body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[selected]
+body.check-select .thumbnail-grid:focus .thumbnail-item[selected]
     .thumbnail-bottom,
-body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[lead]
+body.check-select .thumbnail-grid:focus .thumbnail-item[lead]
     .thumbnail-bottom,
-body.check-select.files-ng .thumbnail-grid:focus
+body.check-select .thumbnail-grid:focus
     .thumbnail-item[selected].directory .thumbnail-bottom,
-body.check-select.files-ng .thumbnail-grid:focus .thumbnail-item[lead].directory
+body.check-select .thumbnail-grid:focus .thumbnail-item[lead].directory
     .thumbnail-bottom {
   color: var(--cros-text-color-selection);
 }
 
-body.check-select.files-ng #list-container .thumbnail-grid:focus
+body.check-select #list-container .thumbnail-grid:focus
     .thumbnail-item[lead],
-body.files-ng #list-container .thumbnail-grid:focus
+#list-container .thumbnail-grid:focus
     .thumbnail-item[lead]:not([selected]) {
   /* 2px border: 1px via box-shadow + 1px via border, to accommodate
      the difference between regular border 1px and selected border 2px.*/
@@ -1453,9 +1447,9 @@ body.files-ng #list-container .thumbnail-grid:focus
   box-shadow: 0 0 0 1px var(--cros-focus-ring-color);
 }
 
-body.check-select.files-ng #list-container .thumbnail-grid
+body.check-select #list-container .thumbnail-grid
     .thumbnail-item[lead],
-body.files-ng #list-container .thumbnail-grid
+#list-container .thumbnail-grid
     .thumbnail-item[lead]:not([selected]) {
   /* 2px border: 1px via box-shadow + 1px via border, to accommodate
      the difference between regular border 1px and selected border 2px.*/
@@ -1467,7 +1461,7 @@ body.files-ng #list-container .thumbnail-grid
   height: 5px;
 }
 
-body.files-ng .thumbnail-grid > .spacer {
+.thumbnail-grid > .spacer {
   height: 0;
 }
 
@@ -1579,7 +1573,7 @@ body.check-select #list-container list:focus > li[lead]:not([selected]),
   background-color: var(--cros-highlight-color);
 }
 
-body.files-ng #list-container li {
+#list-container li {
   border: 1px solid transparent;
 }
 
@@ -1793,8 +1787,9 @@ li[renaming=''] .filename-label {
   background-color: currentColor;
   color: var(--cros-icon-color-primary);
   height: 24px;
-  margin-inline-end: 10px;
+  margin-inline-end: 14px;
   margin-inline-start: auto;
+  padding-inline-start: 8px;
   width: 24px;
 }
 
@@ -2075,12 +2070,12 @@ html.col-resize .table-header-label .sort-icon:not(:active):hover {
   line-height: 20px;
 }
 
-body.files-ng.check-select #list-container list li[selected] .detail-thumbnail
+.check-select #list-container list li[selected] .detail-thumbnail
 > .thumbnail {
   animation: none;
 }
 
-body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
+#list-container list li .detail-thumbnail > .thumbnail {
   border-radius: 50%;
   height: 24px;
   margin-inline-start: 8px;
@@ -2088,11 +2083,15 @@ body.files-ng #list-container list li .detail-thumbnail > .thumbnail {
   width: 24px;
 }
 
-body.files-ng .table-row-cell > * {
+.table-row-cell > * {
   color: var(--cros-text-color-secondary);
   padding: 0;
   padding-inline-start: 32px;
   padding-top: 0 !important;
+}
+
+.table-row-cell > .dateholder {
+  display: flex;
 }
 
 .table-header-splitter  {
@@ -2135,21 +2134,22 @@ html.col-resize .table-header-splitter .splitter-icon:not(:active):hover {
   padding-inline-start: 32px;
 }
 
-body.files-ng.check-select list:focus li[selected] .table-row-cell > * {
+.check-select list:focus li[selected] .table-row-cell > * {
   color: var(--cros-text-color-selection);
 }
 
-body.files-ng .table-row-cell:first-child > * {
+.table-row-cell:first-child > * {
   padding-inline-start: 0;
 }
 
-body.files-ng .table-row-cell .filename-label {
+.table-row-cell .filename-label {
   color: var(--cros-text-color-primary);
   flex-grow: 1;
+  margin-inline-end: 8px;
   padding-top: 0;
 }
 
-body.files-ng.check-select list:focus li[selected] .table-row-cell
+.check-select list:focus li[selected] .table-row-cell
 .filename-label {
   color: var(--cros-text-color-selection);
 }
@@ -2181,14 +2181,7 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 32px;
 }
 
-#list-container .list .inline-status {
-  align-items: center;
-  display: none;
-  height: 16px;
-  justify-content: center;
-  width: 16px;
-}
-
+#list-container .list .inline-status,
 #list-container .list .inline-status .progress,
 #list-container .list .inline-status xf-icon {
   display: none;
@@ -2196,15 +2189,20 @@ body.files-ng #list-container li .detail-thumbnail {
   width: 16px;
 }
 
-#list-container .list .inline-status xf-icon[type=offline] {
-  --xf-icon-color: var(--cros-icon-color-secondary);
+#list-container .list .inline-status {
+  align-items: center;
+  justify-content: center;
 }
 
-#list-container .list li:not([renaming]):not(.dim-offline) .inline-status:has(xf-icon[type=offline]),
-#list-container .list li:not([renaming]):not(.dim-offline) .inline-status xf-icon[type=offline],
-#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status,
-#list-container .list li:not([renaming]):is([data-sync-status=in_progress], [data-sync-status=queued]) .inline-status .progress {
+#list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status,
+#list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status xf-icon,
+#list-container .list li:not([renaming])[data-sync-status]:not([data-sync-status=not_found]) .inline-status,
+#list-container .list li:not([renaming])[data-sync-status]:not([data-sync-status=not_found]) .inline-status .progress {
   display: flex;
+}
+
+#list-container .list li.pinned .inline-status xf-icon[type=offline] {
+  --xf-icon-color: var(--cros-icon-color-secondary);
 }
 
 #new-folder-button {

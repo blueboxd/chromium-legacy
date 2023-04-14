@@ -60,6 +60,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const override;
+  gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const override;
+  void LayoutWebAppWindowTitle(const gfx::Rect& available_space,
+                               views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
@@ -116,6 +120,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
   ui::WindowTiledEdges GetTiledEdges() const override;
 #endif
+  int WebAppButtonHeight() const override;
 
  protected:
   views::Button* minimize_button() const { return minimize_button_; }

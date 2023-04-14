@@ -88,6 +88,8 @@ class AutofillAgent : public content::RenderFrameObserver,
 
   // mojom::AutofillAgent:
   void TriggerReparse() override;
+  void TriggerReparseWithResponse(
+      base::OnceCallback<void(bool)> callback) override;
   void FillOrPreviewForm(const FormData& form,
                          mojom::RendererFormDataAction action) override;
   void FieldTypePredictionsAvailable(
@@ -318,8 +320,9 @@ class AutofillAgent : public content::RenderFrameObserver,
   std::set<FieldRendererId> formless_elements_user_edited_;
   bool formless_elements_were_autofilled_ = false;
 
-  // The form user interacted, it is used if last_interacted_form_ or formless
-  // form can't be converted to FormData at the time of form submission.
+  // The form the user interacted with last. It is used if last_interacted_form_
+  // or a formless form can't be converted to FormData at the time of form
+  // submission (e.g. because they have been removed from the DOM).
   absl::optional<FormData> provisionally_saved_form_;
 
   // Keeps track of the forms for which form submitted event has been sent to
@@ -377,6 +380,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   base::OneShotTimer select_option_change_batch_timer_;
   base::OneShotTimer datalist_option_change_batch_timer_;
   base::OneShotTimer reparse_timer_;
+  base::OneShotTimer reparse_with_response_timer_;
 
   // Will be set when accessibility mode changes, depending on what the new mode
   // is.

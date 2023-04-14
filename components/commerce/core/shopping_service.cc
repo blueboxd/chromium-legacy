@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/check_is_test.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
@@ -41,6 +42,7 @@
 #include "components/power_bookmarks/core/proto/power_bookmark_meta.pb.h"
 #include "components/power_bookmarks/core/proto/shopping_specifics.pb.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/search/ntp_features.h"
 #include "components/session_proto_db/session_proto_storage.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -61,6 +63,8 @@ ProductInfo::ProductInfo(const ProductInfo&) = default;
 ProductInfo& ProductInfo::operator=(const ProductInfo&) = default;
 ProductInfo::~ProductInfo() = default;
 MerchantInfo::MerchantInfo() = default;
+MerchantInfo::MerchantInfo(const MerchantInfo&) = default;
+MerchantInfo& MerchantInfo::operator=(const MerchantInfo&) = default;
 MerchantInfo::MerchantInfo(MerchantInfo&&) = default;
 MerchantInfo::~MerchantInfo() = default;
 
@@ -93,7 +97,7 @@ ShoppingService::ShoppingService(
       types.push_back(
           optimization_guide::proto::OptimizationType::PRICE_TRACKING);
     }
-    if (IsMerchantInfoApiEnabled()) {
+    if (IsMerchantViewerEnabled()) {
       types.push_back(optimization_guide::proto::OptimizationType::
                           MERCHANT_TRUST_SIGNALS_V2);
     }
@@ -208,6 +212,11 @@ void ShoppingService::HandleDidFinishLoadForProductInfo(WebWrapper* web) {
 
 void ShoppingService::OnProductInfoJavascriptResult(const GURL url,
                                                     base::Value result) {
+  // We should only ever get a string result from the script execution.
+  if (!result.is_string()) {
+    return;
+  }
+
   data_decoder::DataDecoder::ParseJsonIsolated(
       result.GetString(),
       base::BindOnce(&ShoppingService::OnProductInfoJsonSanitizationCompleted,
@@ -371,7 +380,7 @@ void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
     return;
 
   // Crash if this API is used without a valid experiment.
-  CHECK(IsMerchantInfoApiEnabled());
+  CHECK(IsMerchantViewerEnabled());
 
   opt_guide_->CanApplyOptimization(
       url,
@@ -381,28 +390,25 @@ void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
 }
 
 bool ShoppingService::IsProductInfoApiEnabled() {
-  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingList) ||
-                      commerce::kAddToCartProductImage.Get();
-  bool region_launched =
-      base::FeatureList::IsEnabled(kShoppingListRegionLaunched) &&
-      IsEnabledForCountryAndLocale(kShoppingListRegionLaunched,
-                                   country_on_startup_, locale_on_startup_);
-
-  return flag_enabled || region_launched;
+  return IsRegionLockedFeatureEnabled(
+             kShoppingList, kShoppingListRegionLaunched, country_on_startup_,
+             locale_on_startup_) ||
+         (base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule) &&
+          IsEnabledForCountryAndLocale(ntp_features::kNtpChromeCartModule,
+                                       country_on_startup_,
+                                       locale_on_startup_));
 }
 
 bool ShoppingService::IsPDPMetricsRecordingEnabled() {
-  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingPDPMetrics);
-  bool region_launched =
-      base::FeatureList::IsEnabled(kShoppingPDPMetricsRegionLaunched) &&
-      IsEnabledForCountryAndLocale(kShoppingPDPMetricsRegionLaunched,
-                                   country_on_startup_, locale_on_startup_);
-
-  return flag_enabled || region_launched;
+  return IsRegionLockedFeatureEnabled(kShoppingPDPMetrics,
+                                      kShoppingPDPMetricsRegionLaunched,
+                                      country_on_startup_, locale_on_startup_);
 }
 
-bool ShoppingService::IsMerchantInfoApiEnabled() {
-  return base::FeatureList::IsEnabled(kCommerceMerchantViewer);
+bool ShoppingService::IsMerchantViewerEnabled() {
+  return IsRegionLockedFeatureEnabled(kCommerceMerchantViewer,
+                                      kCommerceMerchantViewerRegionLaunched,
+                                      country_on_startup_, locale_on_startup_);
 }
 
 void ShoppingService::HandleOptGuideProductInfoResponse(
@@ -715,6 +721,36 @@ void ShoppingService::RemoveSubscriptionsObserver(
   }
 }
 
+void ShoppingService::GetAllSubscriptions(
+    SubscriptionType type,
+    base::OnceCallback<void(std::vector<CommerceSubscription>)> callback) {
+  if (subscriptions_manager_) {
+    subscriptions_manager_->GetAllSubscriptions(type, std::move(callback));
+  } else {
+    CHECK_IS_TEST();
+  }
+}
+
+void ShoppingService::IsSubscribed(CommerceSubscription subscription,
+                                   base::OnceCallback<void(bool)> callback) {
+  if (subscriptions_manager_) {
+    subscriptions_manager_->IsSubscribed(std::move(subscription),
+                                         std::move(callback));
+  } else {
+    CHECK_IS_TEST();
+  }
+}
+
+bool ShoppingService::IsSubscribedFromCache(
+    const CommerceSubscription& subscription) {
+  if (subscriptions_manager_) {
+    return subscriptions_manager_->IsSubscribedFromCache(subscription);
+  } else {
+    CHECK_IS_TEST();
+  }
+  return false;
+}
+
 void ShoppingService::FetchPriceEmailPref() {
   if (account_checker_) {
     account_checker_->FetchPriceEmailPref();
@@ -734,13 +770,8 @@ bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
                                              PrefService* prefs,
                                              const std::string& country_code,
                                              const std::string& locale) {
-  bool flag_enabled = base::FeatureList::IsEnabled(kShoppingList);
-  bool region_launched =
-      base::FeatureList::IsEnabled(kShoppingListRegionLaunched) &&
-      IsEnabledForCountryAndLocale(kShoppingListRegionLaunched, country_code,
-                                   locale);
-
-  if (!flag_enabled && !region_launched) {
+  if (!IsRegionLockedFeatureEnabled(kShoppingList, kShoppingListRegionLaunched,
+                                    country_code, locale)) {
     return false;
   }
 
@@ -751,7 +782,8 @@ bool ShoppingService::IsShoppingListEligible(AccountChecker* account_checker,
   // store data.
   if (!account_checker || !account_checker->IsSignedIn() ||
       !account_checker->IsAnonymizedUrlDataCollectionEnabled() ||
-      !account_checker->IsWebAndAppActivityEnabled()) {
+      !account_checker->IsWebAndAppActivityEnabled() ||
+      account_checker->IsSubjectToParentalControls()) {
     return false;
   }
 

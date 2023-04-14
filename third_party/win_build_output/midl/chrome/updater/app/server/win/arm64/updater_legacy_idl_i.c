@@ -9,7 +9,7 @@
 /* at a redacted point in time
  */
 /* Compiler settings for gen/chrome/updater/app/server/win/updater_legacy_idl.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0626 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=ARM64 8.01.0628 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -66,6 +66,9 @@ typedef IID CLSID;
         EXTERN_C __declspec(selectany) const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 
 #endif // !_MIDL_USE_GUIDDEF_
+
+MIDL_DEFINE_GUID(IID, IID_IAppVersionWeb,0xAA10D17D,0x7A09,0x48AC,0xB1,0xE4,0xF1,0x24,0x93,0x7E,0x3D,0x26);
+
 
 MIDL_DEFINE_GUID(IID, IID_ICurrentState,0xA643508B,0xB1E3,0x4457,0x97,0x69,0x32,0xC9,0x53,0xBD,0x1D,0x57);
 

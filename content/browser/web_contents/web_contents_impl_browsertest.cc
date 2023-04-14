@@ -114,9 +114,7 @@
 #include "ui/display/screen.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#include "base/allocator/partition_alloc_features.h"
-#include "base/allocator/partition_allocator/partition_alloc_config.h"
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #endif
 
@@ -310,6 +308,26 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DidStopLoadingDetails) {
   EXPECT_EQ(0, load_observer.session_index_);
   EXPECT_EQ(&shell()->web_contents()->GetController(),
             load_observer.controller_);
+}
+
+// Regression test for https://crbug.com/1405036
+// Dumping the accessibility tree should not crash, even if it has not received
+// an ID through a renderer tree yet.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DumpAccessibilityTreeWithoutTreeID) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  LoadStopNotificationObserver load_observer(
+      &shell()->web_contents()->GetController());
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  load_observer.Wait();
+  std::string expected = "-";
+
+  std::vector<ui::AXPropertyFilter> property_filters;
+  EXPECT_EQ(
+      shell()->web_contents()->DumpAccessibilityTree(false, property_filters),
+      expected);
 }
 
 // Test that DidStopLoading includes the correct URL in the details when a
@@ -2548,94 +2566,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
             EvalJs(shell()->web_contents(), "document.body.textContent;"));
 }
 
-class WebContentsImplBrowserTestUserAgentOverrideSubstring
-    : public WebContentsImplBrowserTest {
- public:
-  void SetUp() override {
-    scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(
-        blink::features::kUserAgentOverrideExperiment);
-    WebContentsImplBrowserTest::SetUp();
-  }
-};
-
-// Verify UserAgentOverride histograms
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTestUserAgentOverrideSubstring,
-                       UserAgentOverrideHistogram) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  const std::string kHeaderPath =
-      std::string("/echoheader?") + net::HttpRequestHeaders::kUserAgent;
-  const GURL kUrl(embedded_test_server()->GetURL(kHeaderPath));
-  EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-
-  std::string original_ua = ShellContentBrowserClient::Get()->GetUserAgent();
-  std::string ua_no_substring = "foo";
-  std::string ua_prefix = "foo" + original_ua;
-  std::string ua_suffix = original_ua + "foo";
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_no_substring), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 1);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
-  }
-
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_prefix), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 1);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
-  }
-
-  {
-    base::HistogramTester histogram;
-    shell()->web_contents()->SetUserAgentOverride(
-        blink::UserAgentOverride::UserAgentOnly(ua_suffix), false);
-    shell()
-        ->web_contents()
-        ->GetController()
-        .GetLastCommittedEntry()
-        ->SetIsOverridingUserAgent(true);
-    EXPECT_TRUE(NavigateToURL(shell(), kUrl));
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverriden, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
-    histogram.ExpectBucketCount(
-        blink::UserAgentOverride::kUserAgentOverrideHistogram,
-        blink::UserAgentOverride::UserAgentOverrideSuffix, 1);
-  }
-}
-
 // Verifies the user-agent string may be changed in DidStartNavigation().
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        SetUserAgentOverrideFromDidStartNavigation) {
@@ -3726,11 +3656,53 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FrozenAndUnfrozenIPC) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SuppressedPopupWindowBrowserNavResumeLoad) {
+  // This test verifies a suppressed pop up that requires navigation from
+  // browser side works with a delegate that delays navigations of pop ups.
+  base::FilePath test_data_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
+  base::FilePath simple_links_path =
+      test_data_dir.Append(GetTestDataFilePath())
+          .Append(FILE_PATH_LITERAL("simple_links.html"));
+  GURL url("file://" + simple_links_path.AsUTF8Unsafe());
+
+  shell()->set_delay_popup_contents_delegate_for_testing(true);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  Shell* new_shell = nullptr;
+  WebContents* new_contents = nullptr;
+  {
+    ShellAddedObserver new_shell_observer;
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(),
+        "window.domAutomationController.send(clickLinkToSelfNoOpener());",
+        &success));
+    new_shell = new_shell_observer.GetShell();
+    new_contents = new_shell->web_contents();
+    // Delaying popup holds the initial load of |url|.
+    EXPECT_TRUE(WaitForLoadStop(new_contents));
+    EXPECT_TRUE(new_contents->GetController()
+                    .GetLastCommittedEntry()
+                    ->IsInitialEntry());
+    EXPECT_NE(url, new_contents->GetLastCommittedURL());
+  }
+
+  EXPECT_FALSE(new_contents->GetDelegate());
+  new_contents->SetDelegate(new_shell);
+  EXPECT_TRUE(
+      static_cast<WebContentsImpl*>(new_contents)->delayed_load_url_params_);
+  new_contents->ResumeLoadingCreatedWebContents();
+  EXPECT_TRUE(WaitForLoadStop(new_contents));
+  EXPECT_EQ(url, new_contents->GetLastCommittedURL());
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        PopupWindowBrowserNavResumeLoad) {
   // This test verifies a pop up that requires navigation from browser side
   // works with a delegate that delays navigations of pop ups.
-  // Create a file: scheme pop up from a file: scheme page, which requires
-  // requires an OpenURL IPC to the browser process.
+  // Create a file: scheme non-suppressed pop up from a file: scheme page will
+  // be blocked and wait for the renderer to signal.
   base::FilePath test_data_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
   base::FilePath simple_links_path =
@@ -3761,6 +3733,11 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
 
   EXPECT_FALSE(new_contents->GetDelegate());
   new_contents->SetDelegate(new_shell);
+  EXPECT_FALSE(
+      static_cast<WebContentsImpl*>(new_contents)->delayed_load_url_params_);
+  EXPECT_FALSE(
+      static_cast<WebContentsImpl*>(new_contents)->delayed_open_url_params_);
+  EXPECT_TRUE(static_cast<WebContentsImpl*>(new_contents)->is_resume_pending_);
   new_contents->ResumeLoadingCreatedWebContents();
   EXPECT_TRUE(WaitForLoadStop(new_contents));
   EXPECT_EQ(url, new_contents->GetLastCommittedURL());
@@ -5830,7 +5807,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsFencedFrameBrowserTest,
     test_recorder_.ExpectEntryMetric(entry, UkmEntry::kIsTopFrameName, false);
 }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 
 namespace {
 
@@ -5955,6 +5932,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplStarScanPrerenderBrowserTest,
   EXPECT_TRUE(partition_alloc::internal::PCScan::IsEnabled());
 }
 
-#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 
 }  // namespace content

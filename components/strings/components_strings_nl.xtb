@@ -8,7 +8,6 @@
 <translation id="1011206368273183593">Bestanden voorbereiden</translation>
 <translation id="1015730422737071372">Aanvullende gegevens verzenden</translation>
 <translation id="1019413721762100891">Uit</translation>
-<translation id="1021110881106174305">Geaccepteerde passen</translation>
 <translation id="1021753677514347426">Dit probleem doet zich voor als gevolg van een certificaat dat jij of iemand anders heeft geïnstalleerd op je apparaat. Het certificaat staat erom bekend dat het wordt gebruikt voor netwerkmonitoring en -onderschepping en wordt niet vertrouwd door Chromium. Hoewel er ook legitieme certificaten bestaan, bijvoorbeeld op een school- of zakelijk netwerk, wil Chromium zeker weten dat je begrijpt wat er gebeurt, ook als je het niet kunt tegenhouden. Monitoring kan plaatsvinden in elke browser of app met toegang tot internet.</translation>
 <translation id="1024111578869940408">Aanvallers maken sites soms na door wijzigingen in het webadres aan te brengen die je moeilijk kunt zien.</translation>
 <translation id="1028781062521375153">Details bekijken</translation>
@@ -53,6 +52,7 @@
 <translation id="1100782917270858593">De knop Je traject hervatten, druk op Enter om je traject te hervatten en relevante activiteit in je Chrome-geschiedenis te bekijken</translation>
 <translation id="1101672080107056897">Fout in actie</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> altijd vertalen</translation>
+<translation id="1104409666019087579">Sommige verplichte velden zijn leeg. Vul ze in voordat je opslaat.</translation>
 <translation id="1108464073729874771">A3x4</translation>
 <translation id="1110994991967754504">Rechten selecteren voor <ph name="PERMISSION_NAME" /></translation>
 <translation id="1112828774174131240">Antiek en verzamelobjecten</translation>
@@ -477,6 +477,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2091887806945687916">Geluid</translation>
 <translation id="2093982008204312032">Google Chrome probeert Windows Hello aan te zetten voor het invullen van wachtwoorden.</translation>
 <translation id="2094505752054353250">Domeinen komen niet overeen</translation>
+<translation id="2094704029599359040">Versiegegevens</translation>
 <translation id="2099652385553570808">Drie nietjes links</translation>
 <translation id="2101225219012730419">Versie:</translation>
 <translation id="2102134110707549001">Sterk wachtwoord voorstellen…</translation>
@@ -501,7 +502,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2148613324460538318">Pas toevoegen</translation>
 <translation id="2149968176347646218">Verbinding is niet beveiligd</translation>
 <translation id="2153609454945889823">Google Play-services voor AR installeren?</translation>
-<translation id="2154054054215849342">De synchronisatieservice is niet beschikbaar voor je domein</translation>
 <translation id="2154484045852737596">Pas bewerken</translation>
 <translation id="2155260325161282517">5 x 7 inch</translation>
 <translation id="2157640075051554492">Meldingen voor prijstracking</translation>
@@ -524,6 +524,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2202627062836089804">achterkant van je kaart</translation>
 <translation id="22081806969704220">Lade 3</translation>
 <translation id="2210794033760923560">Rapport uploaden</translation>
+<translation id="2212579473415663542">Dit adres is opgeslagen in je Google-account (<ph name="ACCOUNT" />). Je kunt het adres gebruiken in Google-producten op elk apparaat.</translation>
 <translation id="2212735316055980242">Beleid niet gevonden</translation>
 <translation id="2213606439339815911">Items ophalen…</translation>
 <translation id="2213612003795704869">Pagina is afgedrukt</translation>
@@ -539,6 +540,7 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2241693394036365668">Bestand wordt gedownload</translation>
 <translation id="2246264294482514010">10 x 12 inch</translation>
 <translation id="2246480341630108201">Je ouder heeft nog niet aangegeven dat het goed is</translation>
+<translation id="2247789808226901522">Kaart verlopen</translation>
 <translation id="2248949050832152960">WebAuthn gebruiken</translation>
 <translation id="2250931979407627383">Inbinden met nietjes links</translation>
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
@@ -707,7 +709,6 @@ Anders wordt dit geblokkeerd door je privacyinstellingen. Hierdoor werkt de cont
 <translation id="2688969097326701645">Ja, doorgaan</translation>
 <translation id="2691924980723297736">Veiligheidswaarschuwing</translation>
 <translation id="2692131511336778528">Sciencefiction en fantasy</translation>
-<translation id="2699302886720511147">Geaccepteerde passen</translation>
 <translation id="2701514975700770343">Bedrukte zijde omlaag</translation>
 <translation id="2702801445560668637">Leeslijst</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
@@ -889,7 +890,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3218181027817787318">Relatief</translation>
 <translation id="3223287115535306850">Trilling bij app-lancering</translation>
 <translation id="3223425961342298674">Locatie niet toegestaan</translation>
-<translation id="3225347164936328585">Applaus</translation>
 <translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
 <translation id="3226128629678568754">Klik op de knop 'Opnieuw laden' om de gegevens opnieuw te verzenden die nodig zijn om de pagina te laden.</translation>
 <translation id="3226387218769101247">Miniaturen</translation>
@@ -906,7 +906,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3249151924975132674">Studentenleningen en studiefinanciering</translation>
 <translation id="3249845759089040423">Groovy</translation>
 <translation id="3250640885957938546">Reclame en marketing</translation>
-<translation id="3251133337102041130">Government Legal</translation>
 <translation id="3252266817569339921">Frans</translation>
 <translation id="3254301855501243548">18 x 22 inch</translation>
 <translation id="3256863843508922226">Pensioen en oudedagsvoorziening</translation>
@@ -947,7 +946,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3340978935015468852">instellingen</translation>
 <translation id="3342018947887487892">Later kan een site die je bezoekt vragen om je advertentieonderwerpen of om advertenties die zijn voorgesteld door sites die je hebt bezocht.</translation>
 <translation id="3342366525167526994">Body art</translation>
-<translation id="3345782426586609320">Ogen</translation>
 <translation id="3349952286488694786">SRA2</translation>
 <translation id="3355823806454867987">Proxyinstellingen wijzigen...</translation>
 <translation id="3359565626472459400">Huwelijk</translation>
@@ -987,7 +985,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="342781501876943858">Chromium raadt je aan je wachtwoord te resetten als je het voor andere sites hebt hergebruikt.</translation>
 <translation id="3428151540071562330">Een of meer van de servertemplate-URI's voor DnsOverHttpsTemplates zijn ongeldig en worden niet gebruikt.</translation>
 <translation id="3431216045099978607">Druk op |<ph name="ACCELERATOR" />| om het volledige scherm te sluiten en de download te bekijken.</translation>
-<translation id="3431636764301398940">Deze creditcard opslaan op dit apparaat</translation>
 <translation id="3432601291244612633">Pagina sluiten</translation>
 <translation id="3435738964857648380">Beveiliging</translation>
 <translation id="3438829137925142401">Wachtwoorden gebruiken die zijn opgeslagen in je Google-account</translation>
@@ -1074,6 +1071,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3646643500201740985">Meten hoe goed een advertentie presteert</translation>
 <translation id="3647286794400715637">Elke URL-tekenreeks moet 1 of 2 URL's bevatten.</translation>
 <translation id="3650584904733503804">Validatie geslaagd</translation>
+<translation id="3650594806107685466">Geef de CVC op de <ph name="SIDE_OF_CARD" /> op om je kaart te beveiligen</translation>
 <translation id="3653033846669030038">Attractieparken</translation>
 <translation id="3655241534245626312">Naar de instellingen voor rechten</translation>
 <translation id="3655670868607891010">Als je deze melding vaker ziet, probeer je deze <ph name="HELP_LINK" />.</translation>
@@ -1104,6 +1102,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3713662424819367124">Parfums en geuren</translation>
 <translation id="3714633008798122362">online agenda</translation>
 <translation id="3714780639079136834">Zet je mobiele data of wifi aan</translation>
+<translation id="3715545959749027023">Als Chrome beveiligingsgebeurtenissen markeert, worden relevante gegevens over de gebeurtenissen naar je beheerder gestuurd. Dit kunnen URL's zijn van pagina's die je bezoekt in Chrome, bestandsnamen of metadata, browser- of tabbladcrashes en de gebruikersnaam die je gebruikt om in te loggen bij webgebaseerde apps, je apparaat en Chrome.</translation>
 <translation id="3715597595485130451">Verbinding maken met wifi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />Controleer de proxy, firewall en DNS-configuratie<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">Apps die deze fout kunnen veroorzaken, omvatten antivirussoftware, firewalls en webfilter- of proxysoftware.</translation>
@@ -1115,7 +1114,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3744286742364977428">Bestanden die je downloadt, worden voor analyse naar Google Cloud of naar derden gestuurd. Ze kunnen bijvoorbeeld worden gescand op gevoelige gegevens of malware en worden opgeslagen volgens het bedrijfsbeleid.</translation>
 <translation id="3744899669254331632">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verstuurd die niet door Chromium kunnen worden verwerkt. Aangezien netwerkfouten en aanvallen doorgaans van tijdelijke aard zijn, zal deze pagina later waarschijnlijk wel werken.</translation>
-<translation id="3745099705178523657">Nadat je hebt bevestigd, worden de kaartgegevens uit je Google-account gedeeld met deze site.</translation>
 <translation id="3748148204939282805">Cybercriminelen op <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> kunnen proberen om je te misleiden zodat je iets gevaarlijks doet, bijvoorbeeld software installeren of je persoonlijke informatie bekendmaken (zoals wachtwoorden, telefoonnummers of creditcardgegevens). <ph name="BEGIN_LEARN_MORE_LINK" />Meer informatie<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">Luchtvaartindustrie</translation>
 <translation id="3752543821772132562">Genegeerd omdat <ph name="POLICY_NAME" /> niet is ingesteld.</translation>
@@ -1133,7 +1131,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="3781428340399460090">Felroze</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3784372983762739446">Bluetooth-apparaten</translation>
-<translation id="3787705759683870569">Verloopt: <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">Grootte 16</translation>
 <translation id="3789841737615482174">Installeren</translation>
 <translation id="3792100426446126328"><ph name="NAME" /> (<ph name="WIDTH" /> x <ph name="HEIGHT" /> in)</translation>
@@ -1237,7 +1234,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="4088981014127559358">Beeldverschuiving Y van zijde 1</translation>
 <translation id="4089152113577680600">Lade 14</translation>
 <translation id="4096237801206588987">11 x 15 inch</translation>
-<translation id="4097288585054919042">Meldingen uitzetten</translation>
 <translation id="4098354747657067197">Misleidende site gedetecteerd</translation>
 <translation id="4099048595830172239">Op basis van het beheerdersbeleid wordt afgeraden dat je je scherm met <ph name="APPLICATION_TITLE" /> deelt als er vertrouwelijke content zichtbaar is:</translation>
 <translation id="4099391883283080991"><ph name="CUSTOMIZE_CHROME_FONTS_FOCUSED_FRIENDLY_MATCH_TEXT" />, druk op Tab en daarna op Enter om je lettertypen en lettergrootten aan te passen in Chrome</translation>
@@ -1315,6 +1311,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="4223404254440398437">Microfoon niet toegestaan</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />Voer Netwerkcontrole uit<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">Kan vragen of deze site je camera mag gebruiken en bewegen</translation>
+<translation id="4231448684371260244">8 x 13 inch</translation>
 <translation id="4235360514405112390">Geldig</translation>
 <translation id="4250431568374086873">Je verbinding met deze site is niet volledig beveiligd</translation>
 <translation id="4250680216510889253">Nee</translation>
@@ -1387,7 +1384,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="4393632246160856858">Nagelverzorgingsproducten</translation>
 <translation id="4406883609789734330">Live ondertiteling</translation>
 <translation id="4406896451731180161">zoekresultaten</translation>
-<translation id="4407755609041463909">Brand</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> cookies</translation>
 <translation id="4411435778612100394">Consumentenelektronica</translation>
 <translation id="4412074349188076601">Deze configuratie is gemarkeerd als installeerbaar, maar er is geen image opgegeven voor deze architectuur, dus deze kan niet worden geïnstalleerd.</translation>
@@ -1773,7 +1769,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5333022057423422993">Chrome heeft het wachtwoord dat je net hebt gebruikt, gevonden bij een gegevenslek. We raden je aan je opgeslagen wachtwoorden te checken om je accounts te beveiligen.</translation>
 <translation id="5334013548165032829">Gedetailleerde systeemlogboeken</translation>
 <translation id="5334145288572353250">Adres opslaan?</translation>
-<translation id="5335920952954443287">Kloppend hart</translation>
 <translation id="5337569431717511221">Knop Chrome instellen als standaardbrowser, druk op Enter om Chrome in te stellen als de standaardbrowser van het systeem</translation>
 <translation id="5340250774223869109">App is geblokkeerd</translation>
 <translation id="534295439873310000">NFC-apparaten</translation>
@@ -1781,7 +1776,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5344579389779391559">Deze pagina brengt je mogelijk kosten in rekening</translation>
 <translation id="5347645913823149105">De knop Lettertypen aanpassen in Chrome, druk op Enter om lettertypen en lettergrootten aan te passen in Chrome</translation>
 <translation id="5355557959165512791">Je kunt <ph name="SITE" /> momenteel niet bezoeken, omdat het bijbehorende certificaat is ingetrokken. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
-<translation id="5356837363448394805">Blozend</translation>
 <translation id="5357848622083956825">Visuele kunst en visueel ontwerp</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
 <translation id="5363309033720083897">Seriële poort toegestaan door je beheerder</translation>
@@ -1795,7 +1789,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5396631636586785122">Inbinden met nietjes rechts</translation>
 <translation id="5398772614898833570">Advertenties geblokkeerd</translation>
 <translation id="5400836586163650660">Grijs</translation>
-<translation id="540630185148148480">Meldingen aanzetten</translation>
 <translation id="540969355065856584">Deze server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat is momenteel niet geldig. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5412040515238827314">Ongeldige indeling: er wordt een lijst met patronen verwacht.</translation>
 <translation id="5412236728747081950">Deze site krijgt je interesses van Chrome zodat de site je relevantere advertenties kan laten zien</translation>
@@ -1856,6 +1849,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5552137475244467770">Chrome vergelijkt periodiek je wachtwoorden met lijsten die online zijn gepubliceerd. Als dit wordt gedaan, zijn je wachtwoorden en gebruikersnamen versleuteld, zodat ze door niemand (inclusief Google) kunnen worden gelezen.</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5558125320634132440">Deze site is geblokkeerd omdat deze mogelijk niet-gezinsvriendelijke content bevat</translation>
+<translation id="5559311991468302423">Adres verwijderen</translation>
 <translation id="5560088892362098740">Vervaldatum</translation>
 <translation id="55635442646131152">Documentoverzicht</translation>
 <translation id="5565613213060953222">Incognitotabblad openen</translation>
@@ -1954,7 +1948,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5808435672482059465">Je Chrome-geschiedenis bekijken</translation>
 <translation id="5808542072418270309">Simulatiegames</translation>
 <translation id="5810442152076338065">Je verbinding met <ph name="DOMAIN" /> is versleuteld via een verouderde Cipher Suite.</translation>
-<translation id="5812947184178430888">Als Chrome beveiligingsgebeurtenissen markeert, worden relevante gegevens over de gebeurtenissen naar je beheerder gestuurd. Deze gegevens zijn bijvoorbeeld URL's van pagina's die je hebt bezocht in Chrome, bestandsnamen of metadata en de gebruikersnaam die je gebruikt om in te loggen bij webgebaseerde apps, je apparaat en Chrome.</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="5813309815819933152">Tv-realityseries</translation>
 <translation id="5813753398265398978">Natuurkunde</translation>
@@ -1973,6 +1966,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5866898949289125849">Je bekijkt een Developer Tools-pagina</translation>
 <translation id="5869405914158311789">Deze site is niet bereikbaar</translation>
 <translation id="5869522115854928033">Opgeslagen wachtwoorden</translation>
+<translation id="5872692522325383488">IBAN opgeslagen</translation>
 <translation id="5873013647450402046">Je bank wil bevestigen dat jij het bent.</translation>
 <translation id="5877831137320480913">Beauty en fitness</translation>
 <translation id="5884465125445718607">Envelop Chinees #6</translation>
@@ -2019,6 +2013,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="5992691462791905444">Zizagvouw 2-slag oneven center</translation>
 <translation id="5992805036496113940">Informatie bekijken die wordt gebruikt om advertenties aan je te laten zien</translation>
 <translation id="5995727681868049093">Je gegevens, privacy en beveiliging beheren in je Google-account</translation>
+<translation id="5996887213716993070"><ph name="FIELD" /> mag niet leeg zijn</translation>
 <translation id="5997247540087773573">Het wachtwoord dat je net hebt gebruikt, is gevonden bij een gegevenslek. Google Wachtwoordmanager raadt je aan dit wachtwoord nu te wijzigen en je opgeslagen wachtwoorden te checken om je account te beveiligen.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultaten voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="6005765687956866568">De automatisch ingevulde informatie is verwijderd uit het formulier</translation>
@@ -2111,7 +2106,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="6226163402662242066"><ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />, druk op Tab en daarna op Enter om je toegankelijkheidstools te personaliseren in de Chrome-instellingen</translation>
 <translation id="6229649258872345286">Gezinsreizen</translation>
 <translation id="6232271601416750929">Natuurlijke cosmetica</translation>
-<translation id="6233160458685643793">Grijnzend</translation>
 <translation id="6234122620015464377">Bijsnijden na elk document</translation>
 <translation id="6236290670123303279">Instellingen beheren</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
@@ -2141,6 +2135,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="6300452962057769623">{0,plural, =0{Je apparaat wordt nu opnieuw opgestart}=1{Je apparaat wordt over 1 seconde opnieuw opgestart}other{Je apparaat wordt over # seconden opnieuw opgestart}}</translation>
 <translation id="6301104306974789820">Meldingen voor volgen van prijzen krijgen</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is niet bereikbaar.</translation>
+<translation id="6306713302480826305">Dit adres wordt verwijderd van dit apparaat en je andere ingelogde apparaten</translation>
 <translation id="6311165245110979290">Virtuele kaart beschikbaar</translation>
 <translation id="6312113039770857350">Webpagina niet beschikbaar</translation>
 <translation id="6316226860534107313">Scooters en bromfietsen</translation>
@@ -2178,7 +2173,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="6391700400718590966">Pagina gesloten waarop staat dat er geen overeenkomende inloggegevens zijn voor beveiligde betaling</translation>
 <translation id="6393956493820063117">Plakken van <ph name="ORIGIN_NAME" /> naar deze locatie is geblokkeerd op basis van beheerdersbeleid</translation>
 <translation id="6394852772105848029">Deze site wil de <ph name="APP_NAME" />-app openen</translation>
-<translation id="6398277657359595425">Hard huilend</translation>
 <translation id="6398765197997659313">Volledig scherm sluiten</translation>
 <translation id="6401136357288658127">Dit beleid is beëindigd. Gebruik in plaats daarvan dit beleid: <ph name="NEW_POLICY" />.</translation>
 <translation id="6404511346730675251">Bookmark bewerken</translation>
@@ -2278,7 +2272,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="6660413144148052430">locatie</translation>
 <translation id="6662457027866368246">1e rol</translation>
 <translation id="666259744093848177">(x86_64 vertaald)</translation>
-<translation id="6663846344464066639">Gevouwen handen</translation>
 <translation id="6665553082534466207">Drie perforaties rechts</translation>
 <translation id="6668389483194953109">De papierformaatnaam 'custom' is gevonden, maar de property 'custom_size' is leeg of ongeldig.</translation>
 <translation id="6671697161687535275">Formuliersuggestie verwijderen uit Chromium?</translation>
@@ -2379,7 +2372,6 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="6939469646605424232">Tv-drama's</translation>
 <translation id="6944692733090228304">Je hebt je wachtwoord ingevoerd op een site die niet door <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> wordt beheerd. Ter bescherming van je account kun je je wachtwoord beter niet hergebruiken voor andere apps en sites.</translation>
 <translation id="6945221475159498467">Selecteren</translation>
-<translation id="6946722113367118030">Denken</translation>
 <translation id="6948051842255602737">Game over! Je score is <ph name="SCORE" />.</translation>
 <translation id="6948701128805548767">Selecteer een adres om ophaalmethoden en vereisten te bekijken</translation>
 <translation id="6948874830249067134">A1x3</translation>
@@ -2455,6 +2447,7 @@ Het kan langer dan normaal duren voordat je app wordt gestart.</translation>
 <translation id="7112327784801341716">Is je informatie niet actueel? Neem contact op met je bank om deze te updaten.</translation>
 <translation id="7118618213916969306">Zoeken naar klembord-URL, <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">Andere tabbladen of programma's sluiten</translation>
+<translation id="7124354851782353862">Geef je CVC op</translation>
 <translation id="7129355289156517987">Als je alle Chromium-incognitotabbladen sluit, wordt je activiteit op die tabbladen van dit apparaat gewist:
 <ph name="BEGIN_LIST" />
 <ph name="LIST_ITEM" />Browse-activiteit<ph name="END_LIST_ITEM" />
@@ -2570,6 +2563,7 @@ Aanvullende informatie:
 <translation id="7388594495505979117">{0,plural, =1{Je apparaat wordt over 1 minuut opnieuw opgestart}other{Je apparaat wordt over # minuten opnieuw opgestart}}</translation>
 <translation id="7390545607259442187">Creditcard bevestigen</translation>
 <translation id="7392089738299859607">Adres updaten</translation>
+<translation id="739728382607845710">Icoon van betalingshandler</translation>
 <translation id="7399802613464275309">Veiligheidscheck</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7403392780200267761">Deel dit tabblad door bijvoorbeeld de link te delen, een QR-code te maken en te casten</translation>
@@ -2701,7 +2695,6 @@ Aanvullende informatie:
 <translation id="765676359832457558">Geavanceerde instellingen verbergen...</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7659327900411729175">Envelop Kaku 8</translation>
-<translation id="7659878911471462949">Vreugdetranen</translation>
 <translation id="766014026101194726">{0,plural, =1{Dit bestand uploaden is geblokkeerd door het beheerdersbeleid}other{# bestanden kopiëren is geblokkeerd door het beheerdersbeleid}}</translation>
 <translation id="7662298039739062396">Instelling beheerd door een extensie</translation>
 <translation id="7663736086183791259">Certificaat <ph name="CERTIFICATE_VALIDITY" /></translation>
@@ -2759,6 +2752,7 @@ Aanvullende informatie:
 <translation id="7766518757692125295">Skirt</translation>
 <translation id="7773005668374414287">Dezelfde volgorde met de bedrukte zijde omhoog</translation>
 <translation id="7785790577395078482">deze tablet</translation>
+<translation id="7786368602962652765">Een verplicht veld is leeg. Vul het in voordat je opslaat.</translation>
 <translation id="7790488044432570133">Sites die je bezoekt kunnen Chrome om informatie vragen waarmee ze de prestaties van hun advertenties kunnen meten. Met Chrome kunnen sites slechts bepaalde soorten gegevens verzamelen, zoals het tijdstip waarop je een advertentie te zien kreeg.</translation>
 <translation id="7791011319128895129">Niet uitgebracht</translation>
 <translation id="7791196057686275387">Bundelen</translation>
@@ -2781,6 +2775,7 @@ Aanvullende informatie:
 <translation id="7844689747373518809">{COUNT,plural, =0{Geen}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">Later kan een site die je bezoekt Chrome om relevante onderwerpen vragen om de advertenties te personaliseren die je te zien krijgt. Chrome deelt maximaal 3 onderwerpen en beschermt je browsegeschiedenis en identiteit.</translation>
+<translation id="7860345425589240791">Geef je nieuwe vervaldatum en CVC op de <ph name="SIDE_OF_CARD" /> op</translation>
 <translation id="7862185352068345852">Site verlaten?</translation>
 <translation id="7865448901209910068">Beste snelheid</translation>
 <translation id="7871445724586827387">Het wachtwoord van je Google-account wijzigen</translation>
@@ -2904,7 +2899,6 @@ Aanvullende informatie:
 <translation id="8150722005171944719">Het bestand op <ph name="URL" /> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
 <translation id="8153865548451212769">{0,plural, =1{Op basis van het beheerdersbeleid wordt afgeraden dit bestand te downloaden naar <ph name="DESTINATION_NAME" />}other{Op basis van het beheerdersbeleid wordt afgeraden deze bestanden te downloaden naar <ph name="DESTINATION_NAME" />}}</translation>
 <translation id="8163866351304776260">Vier perforaties links</translation>
-<translation id="8175330382720204696">Government Letter</translation>
 <translation id="8175796834047840627">Chrome biedt aan je passen in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen.</translation>
 <translation id="8176440868214972690">De beheerder van dit apparaat heeft bepaalde gegevens gestuurd naar de volgende websites, zoals instellingen of beleidsregels.</translation>
 <translation id="8184538546369750125">Algemene standaardinstelling gebruiken (Toestaan)</translation>
@@ -2952,6 +2946,7 @@ Aanvullende informatie:
 <translation id="8270242299912238708">Pdf-documenten</translation>
 <translation id="8275952078857499577">Niet aanbieden om deze site te vertalen</translation>
 <translation id="8277900682056760511">Blad voor betalingshandler is geopend</translation>
+<translation id="827820107214076967">Logboeken vernieuwen</translation>
 <translation id="8279611986089885641">Chrome-meldingen moeten aanstaan. Je kunt ze aanzetten in <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="8280630997017109758">Lade 11</translation>
 <translation id="8281886186245836920">Overslaan</translation>
@@ -3031,6 +3026,7 @@ Aanvullende informatie:
 <translation id="8473863474539038330">Adressen en meer</translation>
 <translation id="8474910779563686872">Ontwikkelaarsgegevens bekijken</translation>
 <translation id="8479754468255770962">Nietje linksonder</translation>
+<translation id="8483229036294884935">Dit adres wordt verwijderd uit je Google-account, <ph name="ACCOUNT" /></translation>
 <translation id="8483780878231876732">Log in bij Chrome om passen uit je Google-account te gebruiken</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
 <translation id="8490137692873530638">Stapeleenheid 10</translation>
@@ -3054,6 +3050,7 @@ Aanvullende informatie:
 <translation id="8542014550340843547">Drie nietjes onder</translation>
 <translation id="8542617028204211143">SRA0</translation>
 <translation id="8543181531796978784">Je kunt <ph name="BEGIN_ERROR_LINK" />een detectieprobleem melden<ph name="END_ERROR_LINK" />. Als je de veiligheidsrisico's begrijpt, kun je ook <ph name="BEGIN_LINK" />deze onveilige site bezoeken<ph name="END_LINK" />.</translation>
+<translation id="8546350655047701518">Logboeken exporteren naar JSON</translation>
 <translation id="854892890027593466">Envelop C6/C5</translation>
 <translation id="8553387990086529628">Toeristische bestemmingen</translation>
 <translation id="8554010658308662631">Meer laden</translation>
@@ -3077,7 +3074,6 @@ Aanvullende informatie:
 <translation id="8620276786115098679">Envelop Kaku 7</translation>
 <translation id="8623885649813806493">Geen overeenkomende wachtwoorden. Alle opgeslagen wachtwoorden bekijken.</translation>
 <translation id="8624354461147303341">Kortingen zoeken</translation>
-<translation id="8625384913736129811">Deze pas opslaan op dit apparaat</translation>
 <translation id="8634957317623797170">54 x 86 mm</translation>
 <translation id="8637577059508742477">Je profiel en browser worden beheerd door <ph name="DOMAIN" /></translation>
 <translation id="8643409044755049933">Envelop Kaku 3</translation>
@@ -3126,6 +3122,7 @@ Aanvullende informatie:
 <translation id="8742371904523228557">Je code voor <ph name="ORIGIN" /> is<ph name="ONE_TIME_CODE" />.</translation>
 <translation id="874918643257405732">Bookmark toevoegen voor dit tabblad</translation>
 <translation id="8751426954251315517">Probeer het de volgende keer opnieuw</translation>
+<translation id="8753913772043329557">Beleidslogboeken</translation>
 <translation id="8755125092386286553">A4x9</translation>
 <translation id="8757526089434340176">Google Pay-aanbieding beschikbaar</translation>
 <translation id="8758885506338294482">Competitief videogamen</translation>
@@ -3187,6 +3184,7 @@ Aanvullende informatie:
 <translation id="8899807382908246773">Opdringerige advertenties</translation>
 <translation id="8903921497873541725">Inzoomen</translation>
 <translation id="890493561996401738">Suggestieknop verwijderen, druk op Enter om te verwijderen, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
+<translation id="8910898109640902752">8 x 10 inch</translation>
 <translation id="8912362522468806198">Google-account</translation>
 <translation id="8913778647360618320">Knop 'Betaalmethoden beheren'. Druk op Enter om je betalingen en creditcardgegevens te beheren in de Chrome-instellingen.</translation>
 <translation id="8922013791253848639">Altijd advertenties op deze site toestaan</translation>

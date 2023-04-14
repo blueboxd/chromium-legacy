@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Okno aktualizácie firmvéru externých zariadení je otvorené. K dispozícii je tento počet aktualizácií: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">Vyhľadajte články pomocníka a odpovede na bežné otázky o Chromebooku</translation>
+<translation id="1167755866710282443">Ak chcete prispôsobiť klávesy, otvorte ponuku. Pohybujte sa jej presúvaním.</translation>
 <translation id="1175697296044146566">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Priemerné (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Odstrániť</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Vyberte album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Tmavý režim</translation>
+<translation id="4130035430755296270">Ďalšie možnosti rozloženia zobrazíte umiestnením kurzora na príslušné miesto</translation>
 <translation id="4131410914670010031">Čiernobielo</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Fotky Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Preklad DNS</translation>
 <translation id="4848429997038228357">PREBIEHA</translation>
 <translation id="4854586501323951986">Vstavaná dotyková obrazovka</translation>
+<translation id="4855250849489639581">Ďalšie možnosti rozloženia zobrazíte potiahnutím nadol</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Zostáva {0} pokus}few{<ph name="ERROR_MESSAGE" /> Zostávajú {0} pokusy}many{<ph name="ERROR_MESSAGE" /> {0} attempts left}other{<ph name="ERROR_MESSAGE" /> Zostáva {0} pokusov}}</translation>
 <translation id="4873827928179867585">Algoritmus overenia</translation>
 <translation id="4880328057631981605">Názov prístupového bodu</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 obrázok</translation>
 <translation id="7177485034254901881">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje <ph name="MANAGER" />. Správcovia ho môžu vzdialene konfigurovať.</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
+<translation id="7180865173735832675">Prispôsobiť</translation>
 <translation id="7212734716605298123">Aktualizácie firmvéru pre externé zariadenia</translation>
 <translation id="7216409898977639127">Poskytovateľ mobilného pripojenia</translation>
 <translation id="725133483556299729">Vybrať e‑mail</translation>

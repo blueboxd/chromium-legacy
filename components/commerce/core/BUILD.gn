@@ -202,6 +202,7 @@ static_library("shopping_service") {
     "//components/power_bookmarks/core:proto",
     "//components/prefs:prefs",
     "//components/resources:components_resources_grit",
+    "//components/search:search",
     "//components/session_proto_db:core",
     "//components/signin/public/identity_manager:identity_manager",
     "//services/network/public/cpp:cpp",
@@ -335,6 +336,7 @@ source_set("account_checker_test_support") {
     ":account_checker",
     "//base",
     "//services/network/public/cpp:cpp",
+    "//testing/gmock",
   ]
 }
 

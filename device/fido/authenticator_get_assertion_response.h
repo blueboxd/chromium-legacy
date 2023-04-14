@@ -49,7 +49,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse {
   absl::optional<PublicKeyCredentialUserEntity> user_entity;
   absl::optional<uint8_t> num_credentials;
 
-  // hmac_secret contains the output of the hmac_secret extension.
+  // hmac-secret contains the output of the hmac-secret or prf extension. The
+  // values have already been decrypted.
   absl::optional<std::vector<uint8_t>> hmac_secret;
 
   // hmac_secret_not_evaluated will be true in cases where the
@@ -69,11 +70,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse {
   bool user_selected = false;
 
   // The large blob associated with the credential.
-  absl::optional<LargeBlob> large_blob;
+  absl::optional<std::vector<uint8_t>> large_blob;
 
   // Whether a large blob was successfully written as part of this GetAssertion
   // request.
   bool large_blob_written = false;
+
+  // Contains the compressed largeBlob data when the extension form is used.
+  // This will be decompressed during processing and used to populate
+  // `large_blob`.
+  absl::optional<LargeBlob> large_blob_extension;
 
   // The transport used to generate this response. This is unknown when using
   // the Windows WebAuthn API.

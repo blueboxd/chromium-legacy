@@ -95,7 +95,7 @@ class WebAppInstallManager {
   // TODO(crbug.com/1322974): migrate loggign to WebAppCommandManager after all
   // tasks are migrated to the command system.
   void TakeCommandErrorLog(base::PassKey<WebAppCommandManager>,
-                           base::Value log);
+                           base::Value::Dict log);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,
@@ -140,8 +140,8 @@ class WebAppInstallManager {
   void OnWriteErrorLog(Result result);
   void OnReadErrorLog(Result result, base::Value error_log);
 
-  void LogErrorObject(base::Value object);
-  void LogErrorObjectAtStage(const char* stage, base::Value object);
+  void LogErrorObject(base::Value::Dict object);
+  void LogErrorObjectAtStage(const char* stage, base::Value::Dict object);
   void LogUrlLoaderError(const char* stage,
                          const PendingTask& task,
                          WebAppUrlLoader::Result result);

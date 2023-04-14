@@ -54,6 +54,11 @@ const char kDownloadRestrictions[] = "download_restrictions";
 // set to false, the old download shelf UI will be shown instead.
 const char kDownloadBubbleEnabled[] = "download_bubble_enabled";
 
+// Whether the user wants to be prompted upon downloading a duplicate file. Only
+// used when the new download bubble UI is enabled.
+const char kDownloadDuplicateFilePromptEnabled[] =
+    "download_duplicate_file_prompt_enabled";
+
 // If set to true profiles are created in ephemeral mode and do not store their
 // data in the profile folder on disk but only in memory.
 const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";
@@ -1660,6 +1665,9 @@ const char kWebRtcLocalIpsAllowedUrls[] = "webrtc.local_ips_allowed_urls";
 // and DTLS protocols.
 const char kWebRTCAllowLegacyTLSProtocols[] =
     "webrtc.allow_legacy_tls_protocols";
+// Whether WebRTC text log collection by Google domains is allowed.
+const char kWebRtcTextLogCollectionAllowed[] =
+    "webrtc.text_log_collection_allowed";
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(ENABLE_DICE_SUPPORT)
 // Boolean that indicates that the first run experience has been finished (or
@@ -1904,6 +1912,14 @@ const char kOfficeSetupComplete[] = "filebrowser.office.setup_complete";
 
 // Whether we should always move office files without prompting the user first.
 const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
+
+// Whether at least one file has been moved to OneDrive.
+const char kOfficeFileMovedToOneDrive[] =
+    "filebrowser.office.file_moved_one_drive";
+
+// Whether at least one office file has been moved to Google Drive.
+const char kOfficeFileMovedToGoogleDrive[] =
+    "filebrowser.office.file_moved_google_drive";
 #endif
 
 // A flag to enable/disable the Shared Clipboard feature which enables users to
@@ -3355,6 +3371,11 @@ const char kCACertificateManagementAllowed[] =
 // If not set, Chrome will choose the root store based on experiments.
 const char kChromeRootStoreEnabled[] = "chrome_root_store_enabled";
 #endif
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
+const char kEnforceLocalAnchorConstraintsEnabled[] =
+    "enforce_local_anchor_constraints_enabled";
+#endif
 
 const char kSharingVapidKey[] = "sharing.vapid_key";
 const char kSharingFCMRegistration[] = "sharing.fcm_registration";
@@ -3687,5 +3708,9 @@ const char kNewBaseUrlInheritanceBehaviorAllowed[] =
 const char kOutOfProcessSystemDnsResolutionEnabled[] =
     "net.out_of_process_system_dns_resolution_enabled";
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_ANDROID)
+const char kQuickDeleteDialogSuppressed[] = "quick_delete.dialog_suppressed";
+#endif
 
 }  // namespace prefs

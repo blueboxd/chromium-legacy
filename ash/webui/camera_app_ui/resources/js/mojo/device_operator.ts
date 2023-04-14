@@ -27,6 +27,7 @@ import {
   CameraEventObserverCallbackRouter,
   CameraFacing,
   CameraInfo,
+  CameraInfoObserverCallbackRouter,
   CameraMetadata,
   CameraMetadataEntry,
   CameraMetadataTag,
@@ -144,8 +145,41 @@ export class DeviceOperator {
 
   /**
    * Map for cached camera infos.
+   *
+   * The relation of this and cameraInfoErrorHandlers for a particular cameraId
+   * is as follows:
+   *
+   * -------------------------------------------------------------------------.
+   *     | cameraInfos.get(deviceId)  | cameraInfoErrorHandlers.get(deviceId)
+   * -------------------------------------------------------------------------.
+   *     |         undefined          |           undefined
+   * (1)>|                            |
+   *     | pending CameraInfo Promise |    reject() of the pending promise
+   * (2)>|                            |
+   *     |      cached CameraInfo     |           undefined
+   * (3)>|                            |
+   *     |     updated CameraInfo     |           undefined
+   * (4)>|                            |
+   *     |         undefined          |           undefined
+   * -------------------------------------------------------------------------.
+   *
+   * (1) The getCameraInfo() is first called, for all other calls between (1)
+   *     and (2), the same pending promise will be returned and might fail if
+   *     cameraInfoErrorHandlers is called.
+   * (2) The first CameraInfo is returned from onCameraInfoUpdated callback.
+   * (3) The updated CameraInfo is returned from onCameraInfoUpdated callback.
+   *     For any getCameraInfo() calls between (2) and (4), the cached camera
+   *     info is returned immediately and the call never fails.
+   * (4) removeDevice() is called. The cached info are deleted after this.
    */
-  private readonly cameraInfos = new Map<string, Promise<CameraInfo>>();
+  private readonly cameraInfos =
+      new Map<string, CameraInfo|Promise<CameraInfo>>();
+
+  /**
+   * Map for camera info error handlers.
+   */
+  private readonly cameraInfoErrorHandlers =
+      new Map<string, (error: Error) => void>();
 
   /**
    * Return if the direct communication between camera app and video capture
@@ -161,6 +195,12 @@ export class DeviceOperator {
    */
   removeDevice(deviceId: string): void {
     this.devices.delete(deviceId);
+
+    const errorHandler = this.cameraInfoErrorHandlers.get(deviceId);
+    if (errorHandler !== undefined) {
+      errorHandler(new Error('Camera info retrieval is canceled'));
+      this.cameraInfoErrorHandlers.delete(deviceId);
+    }
     this.cameraInfos.delete(deviceId);
   }
 
@@ -171,7 +211,7 @@ export class DeviceOperator {
    * @return Corresponding device remote.
    * @throws Thrown when given device id is invalid.
    */
-  private async getDevice(deviceId: string): Promise<CameraAppDeviceRemote> {
+  private getDevice(deviceId: string): Promise<CameraAppDeviceRemote> {
     const d = this.devices.get(deviceId);
     if (d !== undefined) {
       return d;
@@ -204,13 +244,9 @@ export class DeviceOperator {
     if (info !== undefined) {
       return info;
     }
-    const newInfo = (async () => {
-      const device = await this.getDevice(deviceId);
-      const {cameraInfo} = await device.getCameraInfo();
-      return cameraInfo;
-    })();
-    this.cameraInfos.set(deviceId, newInfo);
-    return newInfo;
+    const pendingInfo = this.registerCameraInfoObserver(deviceId);
+    this.cameraInfos.set(deviceId, pendingInfo);
+    return pendingInfo;
   }
 
   /**
@@ -708,6 +744,39 @@ export class DeviceOperator {
     await device.registerDocumentCornersObserver(
         observerCallbackRouter.$.bindNewPipeAndPassRemote());
     return observerCallbackRouter;
+  }
+
+  /**
+   * Registers observer to monitor when the camera info is updated.
+   *
+   * @param deviceId The id of the target camera device.
+   * @return The initial camera info.
+   */
+  async registerCameraInfoObserver(deviceId: string): Promise<CameraInfo> {
+    const observerCallbackRouter =
+        wrapEndpoint(new CameraInfoObserverCallbackRouter());
+    observerCallbackRouter.onCameraInfoUpdated.addListener(
+        (info: CameraInfo) => {
+          this.cameraInfos.set(deviceId, info);
+          onInfoReady.signal(info);
+        });
+    const device = await this.getDevice(deviceId);
+
+    const onInfoReady = new CancelableEvent<CameraInfo>();
+    // Note that this needs to be set after this.getDevice, otherwise, the
+    // getDevice() might raise an exception, but the onInfoReady.signalError()
+    // will also be called in removeDevice, which cause an unhandled promise
+    // rejection since onInfoReady.wait() won't be called in this case.
+    this.cameraInfoErrorHandlers.set(deviceId, (e) => {
+      onInfoReady.signalError(e);
+    });
+    await device.registerCameraInfoObserver(
+        observerCallbackRouter.$.bindNewPipeAndPassRemote());
+    try {
+      return await onInfoReady.wait();
+    } finally {
+      this.cameraInfoErrorHandlers.delete(deviceId);
+    }
   }
 
   /**

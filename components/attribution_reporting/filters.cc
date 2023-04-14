@@ -9,14 +9,17 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/notreached.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "components/attribution_reporting/constants.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
+#include "components/attribution_reporting/source_type.h"
+#include "components/attribution_reporting/source_type.mojom.h"
 #include "components/attribution_reporting/trigger_registration_error.mojom.h"
 
 namespace attribution_reporting {
@@ -27,15 +30,16 @@ using ::attribution_reporting::mojom::SourceRegistrationError;
 using ::attribution_reporting::mojom::TriggerRegistrationError;
 
 enum class FilterValuesError {
-  kWrongType,
   kTooManyKeys,
-  kFilterDataHasSourceTypeKey,
   kKeyTooLong,
   kListWrongType,
   kListTooLong,
   kValueWrongType,
   kValueTooLong,
 };
+
+constexpr char kFilters[] = "filters";
+constexpr char kNotFilters[] = "not_filters";
 
 bool IsValidForSourceOrTrigger(const FilterValues& filter_values) {
   if (filter_values.size() > kMaxFiltersPerSource)
@@ -87,28 +91,17 @@ void RecordValuesPerFilter(base::HistogramBase::Sample count) {
 }
 
 base::expected<FilterValues, FilterValuesError> ParseFilterValuesFromJSON(
-    base::Value* input_value,
-    bool is_filter_data) {
-  if (!input_value)
-    return FilterValues();
-
-  base::Value::Dict* dict = input_value->GetIfDict();
-  if (!dict)
-    return base::unexpected(FilterValuesError::kWrongType);
-
-  const size_t num_filters = dict->size();
+    base::Value::Dict dict) {
+  const size_t num_filters = dict.size();
   if (num_filters > kMaxFiltersPerSource)
     return base::unexpected(FilterValuesError::kTooManyKeys);
 
   RecordFiltersPerFilterData(num_filters);
 
-  if (is_filter_data && dict->contains(FilterData::kSourceTypeFilterKey))
-    return base::unexpected(FilterValuesError::kFilterDataHasSourceTypeKey);
-
   FilterValues::container_type filter_values;
-  filter_values.reserve(dict->size());
+  filter_values.reserve(dict.size());
 
-  for (auto [filter, value] : *dict) {
+  for (auto [filter, value] : dict) {
     if (filter.size() > kMaxBytesPerFilterString)
       return base::unexpected(FilterValuesError::kKeyTooLong);
 
@@ -167,20 +160,27 @@ absl::optional<FilterData> FilterData::Create(FilterValues filter_values) {
 // static
 base::expected<FilterData, SourceRegistrationError> FilterData::FromJSON(
     base::Value* input_value) {
-  auto filter_values =
-      ParseFilterValuesFromJSON(input_value, /*is_filter_data=*/true);
+  if (!input_value) {
+    return FilterData();
+  }
 
+  base::Value::Dict* dict = input_value->GetIfDict();
+  if (!dict) {
+    return base::unexpected(SourceRegistrationError::kFilterDataWrongType);
+  }
+
+  if (dict->contains(kSourceTypeFilterKey)) {
+    return base::unexpected(
+        SourceRegistrationError::kFilterDataHasSourceTypeKey);
+  }
+
+  auto filter_values = ParseFilterValuesFromJSON(std::move(*dict));
   if (filter_values.has_value())
     return FilterData(std::move(*filter_values));
 
   switch (filter_values.error()) {
-    case FilterValuesError::kWrongType:
-      return base::unexpected(SourceRegistrationError::kFilterDataWrongType);
     case FilterValuesError::kTooManyKeys:
       return base::unexpected(SourceRegistrationError::kFilterDataTooManyKeys);
-    case FilterValuesError::kFilterDataHasSourceTypeKey:
-      return base::unexpected(
-          SourceRegistrationError::kFilterDataHasSourceTypeKey);
     case FilterValuesError::kKeyTooLong:
       return base::unexpected(SourceRegistrationError::kFilterDataKeyTooLong);
     case FilterValuesError::kListWrongType:
@@ -217,6 +217,63 @@ base::Value::Dict FilterData::ToJson() const {
   return FilterValuesToJson(filter_values_);
 }
 
+bool FilterData::Matches(mojom::SourceType source_type,
+                         const Filters& filters,
+                         bool negated) const {
+  // A filter is considered matched if the filter key is only present either on
+  // the source or trigger, or the intersection of the filter values is
+  // non-empty.
+  // Returns true if all the filters matched.
+  //
+  // If the filters are negated, the behavior should be that every single filter
+  // key does not match between the two (negating the function result is not
+  // sufficient by the API definition).
+  return base::ranges::all_of(
+      filters.filter_values(), [&](const auto& trigger_filter) {
+        if (trigger_filter.first == kSourceTypeFilterKey) {
+          bool has_intersection = base::ranges::any_of(
+              trigger_filter.second, [&](const std::string& value) {
+                return value == SourceTypeName(source_type);
+              });
+
+          return negated != has_intersection;
+        }
+
+        auto source_filter = filter_values_.find(trigger_filter.first);
+        if (source_filter == filter_values_.end()) {
+          return true;
+        }
+
+        // Desired behavior is to treat any empty set of values as a single
+        // unique value itself. This means:
+        //  - x:[] match x:[] is false when negated, and true otherwise.
+        //  - x:[1,2,3] match x:[] is true when negated, and false otherwise.
+        if (trigger_filter.second.empty()) {
+          return negated != source_filter->second.empty();
+        }
+
+        bool has_intersection = base::ranges::any_of(
+            trigger_filter.second, [&](const std::string& value) {
+              return base::Contains(source_filter->second, value);
+            });
+        // Negating filters are considered matched if the intersection of the
+        // filter values is empty.
+        return negated != has_intersection;
+      });
+}
+
+bool FilterData::MatchesForTesting(mojom::SourceType source_type,
+                                   const Filters& filters,
+                                   bool negated) const {
+  return Matches(source_type, filters, negated);
+}
+
+bool FilterData::Matches(mojom::SourceType source_type,
+                         const FilterPair& filters) const {
+  return Matches(source_type, filters.positive, /*negated=*/false) &&
+         Matches(source_type, filters.negative, /*negated=*/true);
+}
+
 // static
 absl::optional<Filters> Filters::Create(FilterValues filter_values) {
   if (!IsValidForSourceOrTrigger(filter_values))
@@ -228,20 +285,22 @@ absl::optional<Filters> Filters::Create(FilterValues filter_values) {
 // static
 base::expected<Filters, TriggerRegistrationError> Filters::FromJSON(
     base::Value* input_value) {
-  auto filter_values =
-      ParseFilterValuesFromJSON(input_value, /*is_filter_data=*/false);
+  if (!input_value) {
+    return Filters();
+  }
 
+  base::Value::Dict* dict = input_value->GetIfDict();
+  if (!dict) {
+    return base::unexpected(TriggerRegistrationError::kFiltersWrongType);
+  }
+
+  auto filter_values = ParseFilterValuesFromJSON(std::move(*dict));
   if (filter_values.has_value())
     return Filters(std::move(*filter_values));
 
   switch (filter_values.error()) {
-    case FilterValuesError::kWrongType:
-      return base::unexpected(TriggerRegistrationError::kFiltersWrongType);
     case FilterValuesError::kTooManyKeys:
       return base::unexpected(TriggerRegistrationError::kFiltersTooManyKeys);
-    case FilterValuesError::kFilterDataHasSourceTypeKey:
-      NOTREACHED();
-      return base::unexpected(TriggerRegistrationError::kFiltersWrongType);
     case FilterValuesError::kKeyTooLong:
       return base::unexpected(TriggerRegistrationError::kFiltersKeyTooLong);
     case FilterValuesError::kListWrongType:
@@ -253,6 +312,19 @@ base::expected<Filters, TriggerRegistrationError> Filters::FromJSON(
     case FilterValuesError::kValueTooLong:
       return base::unexpected(TriggerRegistrationError::kFiltersValueTooLong);
   }
+}
+
+// static
+Filters Filters::ForSourceTypeForTesting(mojom::SourceType source_type) {
+  std::vector<std::string> values;
+  values.reserve(1);
+  values.emplace_back(SourceTypeName(source_type));
+
+  FilterValues filter_values;
+  filter_values.reserve(1);
+  filter_values.emplace(FilterData::kSourceTypeFilterKey, std::move(values));
+
+  return Filters(std::move(filter_values));
 }
 
 Filters::Filters() = default;
@@ -281,6 +353,28 @@ void Filters::SerializeIfNotEmpty(base::Value::Dict& dict,
   if (!filter_values_.empty()) {
     dict.Set(key, ToJson());
   }
+}
+
+// static
+base::expected<FilterPair, mojom::TriggerRegistrationError>
+FilterPair::FromJSON(base::Value::Dict& dict) {
+  auto positive = Filters::FromJSON(dict.Find(kFilters));
+  if (!positive.has_value()) {
+    return base::unexpected(positive.error());
+  }
+
+  auto negative = Filters::FromJSON(dict.Find(kNotFilters));
+  if (!negative.has_value()) {
+    return base::unexpected(negative.error());
+  }
+
+  return FilterPair{.positive = std::move(*positive),
+                    .negative = std::move(*negative)};
+}
+
+void FilterPair::SerializeIfNotEmpty(base::Value::Dict& dict) const {
+  positive.SerializeIfNotEmpty(dict, kFilters);
+  negative.SerializeIfNotEmpty(dict, kNotFilters);
 }
 
 }  // namespace attribution_reporting

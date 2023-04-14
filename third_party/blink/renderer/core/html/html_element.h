@@ -79,9 +79,9 @@ enum class HidePopoverFocusBehavior {
   kFocusPreviousElement,
 };
 
-enum class HidePopoverForcingLevel {
-  kHideAfterAnimations,
-  kHideImmediately,
+enum class HidePopoverTransitionBehavior {
+  kFireEventsAndWaitForTransitions,
+  kNoEventsNoWaiting,
 };
 
 class CORE_EXPORT HTMLElement : public Element {
@@ -225,14 +225,15 @@ class CORE_EXPORT HTMLElement : public Element {
   // response to clicking a button with popovershowtarget.
   void ShowPopoverInternal(ExceptionState* exception_state);
   void HidePopoverInternal(HidePopoverFocusBehavior focus_behavior,
-                           HidePopoverForcingLevel forcing_level,
+                           HidePopoverTransitionBehavior event_firing,
                            ExceptionState* exception_state);
-  void PopoverHideFinishIfNeeded();
-  static const HTMLElement* FindTopmostPopoverAncestor(const HTMLElement&);
+  void PopoverHideFinishIfNeeded(bool immediate);
+  static const HTMLElement* FindTopmostPopoverAncestor(HTMLElement&);
 
   // Retrieves the element pointed to by this element's 'anchor' content
-  // attribute, if that element exists, and if this element is a popover.
-  Element* anchorElement() const;
+  // attribute, if that element exists.
+  Element* anchorElement();
+  void setAnchorElement(Element*);
   void ResetPopoverAnchorObserver();
   void PopoverAnchorElementChanged();
   static void HandlePopoverLightDismiss(const Event& event, const Node& node);
@@ -243,7 +244,7 @@ class CORE_EXPORT HTMLElement : public Element {
   static void HideAllPopoversUntil(const HTMLElement*,
                                    Document&,
                                    HidePopoverFocusBehavior,
-                                   HidePopoverForcingLevel);
+                                   HidePopoverTransitionBehavior);
   // This function checks that the ancestor relationships are still valid for
   // the entire popover stack. These can change in various ways, such as a
   // triggering element changing its `disabled` attribute. If any relationships

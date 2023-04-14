@@ -562,9 +562,21 @@ export class DestinationStore extends EventTarget {
     return new DestinationMatch(idRegExp, displayNameRegExp);
   }
 
-  /** @param Key identifying the destination to select */
+  /**
+   * This function is only invoked when the user selects a new destination via
+   * the UI. Programmatic selection of a destination should not use this
+   * function.
+   * @param Key identifying the destination to select
+   */
   selectDestinationByKey(key: string) {
-    assert(this.tryToSelectDestinationByKey_(key));
+    const success = this.tryToSelectDestinationByKey_(key);
+    assert(success);
+    // <if expr="is_chromeos">
+    if (success && this.selectedDestination_ &&
+        this.selectedDestination_.type !== PrinterType.PDF_PRINTER) {
+      this.selectedDestination_.printerManuallySelected = true;
+    }
+    // </if>
   }
 
   /**
@@ -1058,8 +1070,8 @@ const MEDIA_DISPLAY_NAMES_: {[key: string]: string} = {
   'NA_FANFOLD_EUR': 'FanFold European',
   'NA_FANFOLD_US': 'FanFold US',
   'NA_FOOLSCAP': 'FanFold German Legal',
-  'NA_GOVT_LEGAL': 'Government Legal',
-  'NA_GOVT_LETTER': 'Government Letter',
+  'NA_GOVT_LEGAL': '8x13',
+  'NA_GOVT_LETTER': '8x10',
   'NA_INDEX_3X5': 'Index 3x5',
   'NA_INDEX_4X6': 'Index 4x6',
   'NA_INDEX_4X6_EXT': 'Index 4x6 ext',

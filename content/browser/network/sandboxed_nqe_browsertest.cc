@@ -16,6 +16,7 @@
 #include "sandbox/features.h"
 #include "sandbox/policy/features.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -115,7 +116,7 @@ class SandboxedNQEBrowserTest : public ContentBrowserTest {
     DCHECK(content::GetNetworkService());
 
     mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-    content::GetNetworkService()->BindTestInterface(
+    content::GetNetworkService()->BindTestInterfaceForTesting(
         network_service_test.BindNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     network_service_test->SimulateNetworkQualityChange(type,
@@ -128,7 +129,7 @@ class SandboxedNQEBrowserTest : public ContentBrowserTest {
     DCHECK(content::GetNetworkService());
 
     mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-    content::GetNetworkService()->BindTestInterface(
+    content::GetNetworkService()->BindTestInterfaceForTesting(
         network_service_test.BindNewPipeAndPassReceiver());
     base::RunLoop run_loop;
     network_service_test->ForceNetworkQualityEstimatorReportWifiAsSlow2G(

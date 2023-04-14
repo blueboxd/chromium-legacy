@@ -24,10 +24,10 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/better_auth_metrics.h"
-#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/strike_databases/payments/fido_authentication_strike_database.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -658,12 +658,11 @@ base::Value::Dict CreditCardFidoAuthenticator::ParseAttestationResponse(
       "attestation_object",
       BytesToBase64(attestation_response->attestation_object));
 
-  base::Value authenticator_transport_list =
-      base::Value(base::Value::Type::LIST);
+  base::Value::List authenticator_transport_list;
   for (device::FidoTransportProtocol protocol :
        attestation_response->transports) {
     authenticator_transport_list.Append(
-        base::Value(base::ToUpperASCII(device::ToString(protocol))));
+        base::ToUpperASCII(device::ToString(protocol)));
   }
 
   response.Set("fido_attestation_info", std::move(fido_attestation_info));

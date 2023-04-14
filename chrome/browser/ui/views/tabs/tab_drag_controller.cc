@@ -12,6 +12,7 @@
 #include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/cxx17_backports.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/i18n/rtl.h"
@@ -509,9 +510,9 @@ void TabDragController::Init(TabDragContext* source_context,
   //     Mouse capture is not synchronous on desktop Linux. Chrome makes
   //     transferring capture between widgets without releasing capture appear
   //     synchronous on desktop Linux, so use that.
-  // - Chrome OS
+  // - ChromeOS Ash
   //     Releasing capture on Ash cancels gestures so avoid it.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_ASH)
   can_release_capture_ = false;
 #endif
   start_point_in_screen_ = gfx::Point(source_view_offset, mouse_offset.y());
@@ -687,6 +688,11 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
     GetAttachedBrowserWidget()->Hide();
   }
 
+  // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  DragState old_state = current_state_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   if (current_state_ == DragState::kWaitingToDragTabs ||
       current_state_ == DragState::kStopped)
     return;
@@ -756,6 +762,18 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
                                                    new_bounds);
 #endif
 
+      // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      static bool reported = false;
+      if (in_move_loop_ && !reported) {
+        reported = true;
+        LOG(ERROR) << "Before the move loop is nested, Drag() is called with a "
+                      "DraggingState that equals "
+                   << static_cast<std::underlying_type<DragState>::type>(
+                          old_state)
+                   << ".";
+      }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
       RunMoveLoop(drag_offset);
       return;
     }
@@ -1007,6 +1025,18 @@ TabDragController::Liveness TabDragController::ContinueDragging(
   }
 
   bool tab_strip_changed = (target_context != attached_context_);
+  // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  static bool reported = false;
+  if (in_move_loop_ && tab_strip_changed && !reported) {
+    reported = true;
+    LOG(ERROR) << "Before the move loop is nested, tab strip change is "
+                  "detected. (target_context == nullptr) is "
+               << (target_context == nullptr)
+               << ", and (attached_context_ == nullptr) is "
+               << (attached_context_ == nullptr);
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   last_point_in_screen_ = point_in_screen;
 
@@ -1081,6 +1111,15 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
                "point_in_screen", point_in_screen.ToString());
 
   if (!target_context) {
+// TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    static bool reported = false;
+    if (in_move_loop_ && !reported) {
+      reported = true;
+      LOG(ERROR)
+          << "Before the move loop is nested, target context is nullified.";
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     DetachIntoNewBrowserAndRunMoveLoop(point_in_screen);
     return DRAG_BROWSER_RESULT_STOP;
   }
@@ -1126,8 +1165,8 @@ TabDragController::DragBrowserToNewTabStrip(TabDragContext* target_context,
     // Ideally we would always swap the tabs now, but on non-ash Windows, it
     // seems that running the move loop implicitly activates the window when
     // done, leading to all sorts of flicker. So, on non-ash Windows, instead
-    // we process the move after the loop completes. But on chromeos, we can
-    // do tab swapping now to avoid the tab flashing issue
+    // we process the move after the loop completes. But on ChromeOS Ash, we
+    // can do tab swapping now to avoid the tab flashing issue
     // (crbug.com/116329).
     if (can_release_capture_) {
       tab_strip_to_attach_to_after_exit_ = target_context;
@@ -1399,6 +1438,23 @@ TabDragController::Liveness TabDragController::GetTargetTabStripForPoint(
   *context = current_state_ == DragState::kDraggingWindow
                  ? attached_context_.get()
                  : nullptr;
+// TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  static bool reported = false;
+  if (in_move_loop_ && !context && !reported) {
+    reported = true;
+    if (current_state_ != DragState::kDraggingWindow) {
+      LOG(ERROR) << "Before the move loop is nested, context is nullified "
+                    "because current_state_ is "
+                 << static_cast<std::underlying_type<DragState>::type>(
+                        current_state_)
+                 << " instead of kDraggingWindow.";
+    } else {
+      LOG(ERROR) << "Before the move loop is nested, context is nullified "
+                    "because attached context is nullified.";
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   return Liveness::ALIVE;
 }
 
@@ -1583,6 +1639,15 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     // All the tabs in a browser are being dragged but all the tabs weren't
     // initially being dragged. For this to happen the user would have to
     // start dragging a set of tabs, the other tabs close, then detach.
+    // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    static bool reported = false;
+    if (in_move_loop_ && !reported) {
+      reported = true;
+      LOG(ERROR) << "Before the move loop is nested, all the tabs in a browser "
+                    "are being dragged.";
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
     RunMoveLoop(GetWindowOffset(point_in_screen));
     return;
   }
@@ -1654,6 +1719,15 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
     if (!ref)
       return;
   }
+  // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  static bool reported = false;
+  if (in_move_loop_ && !reported) {
+    reported = true;
+    LOG(ERROR) << "Before the move loop is nested, not all the tabs in a "
+                  "browser are being dragged.";
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   RunMoveLoop(drag_offset);
 }
 
@@ -1668,6 +1742,10 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   // in which case the observation is already established.
   widget_observation_.Reset();
   widget_observation_.Observe(move_loop_widget_.get());
+  // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  DragState old_state = current_state_;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   current_state_ = DragState::kDraggingWindow;
   base::WeakPtr<TabDragController> ref(weak_factory_.GetWeakPtr());
   if (can_release_capture_) {
@@ -1697,6 +1775,24 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
   // lead to all sorts of interesting crashes, and generally indicate a bug
   // lower in the stack. This is a CHECK() as there may be security
   // implications to attempting a nested run loop.
+
+  // TODO:(crbug.com/1411147) Remove debug log in tab_drag_controller.cc
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  static bool reported = false;
+  if (in_move_loop_ && !reported) {
+    reported = true;
+    if (!ref) {
+      LOG(ERROR) << "The enclosing tab drag controller is already gone during "
+                    "a nested move loop.";
+    } else {
+      LOG(ERROR) << "The enclosing tab drag controller is still alive during a "
+                    "nested move loop.";
+    }
+    LOG(ERROR) << "Before the move loop is nested, the previous DragState is "
+               << static_cast<std::underlying_type<DragState>::type>(old_state)
+               << ".";
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   CHECK(!in_move_loop_);
   in_move_loop_ = true;
   views::Widget::MoveLoopResult result = move_loop_widget_->RunMoveLoop(
@@ -2690,8 +2786,34 @@ bool TabDragController::CanAttachTo(gfx::NativeWindow window) {
 #else
   TabStripModel* model = other_browser->tab_strip_model();
   DCHECK(model);
-  if (model->IsTabBlocked(model->active_index()))
+
+  const int active_index = model->active_index();
+
+  // TODO(crbug.com/1411448): Investigate whether active index being kNoTab is
+  // expected or not. Remove DumpWithoutCrashing() when it is resolved.
+  if (!model->ContainsIndex(active_index)) {
+    if (active_index == TabStripModel::kNoTab) {
+      LOG(ERROR) << "TabStripModel of the browser tyring to attach to has no "
+                    "active tab.";
+    } else {
+      LOG(ERROR)
+          << "TabStripModel of the browser trying to attach to has invalid "
+          << "active index: " << active_index;
+    }
+
+    // Avoid dumping too many times not to impact the performance as this may be
+    // called multiple times for each mouse drag.
+    static bool has_crash_reported = false;
+    if (!has_crash_reported) {
+      base::debug::DumpWithoutCrashing();
+      has_crash_reported = true;
+    }
     return false;
+  }
+
+  if (model->IsTabBlocked(active_index)) {
+    return false;
+  }
 #endif
 
   // We don't allow drops on windows that don't have tabstrips.

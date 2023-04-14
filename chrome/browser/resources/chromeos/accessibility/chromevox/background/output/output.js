@@ -10,7 +10,6 @@ import {AutomationUtil} from '../../../common/automation_util.js';
 import {constants} from '../../../common/constants.js';
 import {Cursor, CURSOR_NODE_INDEX} from '../../../common/cursors/cursor.js';
 import {CursorRange} from '../../../common/cursors/range.js';
-import {LocalStorage} from '../../../common/local_storage.js';
 import {NavBraille} from '../../common/braille/nav_braille.js';
 import {EarconId} from '../../common/earcon_id.js';
 import {EventSourceType} from '../../common/event_source_type.js';
@@ -18,6 +17,7 @@ import {LocaleOutputHelper} from '../../common/locale_output_helper.js';
 import {LogType} from '../../common/log_types.js';
 import {Msgs} from '../../common/msgs.js';
 import {CustomRole} from '../../common/role_type.js';
+import {SettingsManager} from '../../common/settings_manager.js';
 import {Spannable} from '../../common/spannable.js';
 import {QueueMode, TtsCategory, TtsSpeechProperties} from '../../common/tts_types.js';
 import {ValueSelectionSpan, ValueSpan} from '../braille/spans.js';
@@ -769,7 +769,7 @@ export class Output {
    * @private
    */
   ancestry_(node, prevNode, type, buff, formatLog, optionalArgs = {}) {
-    if (LocalStorage.get('useVerboseMode') === false) {
+    if (!SettingsManager.get('useVerboseMode')) {
       return;
     }
 
@@ -866,35 +866,34 @@ export class Output {
         continue;
       }
 
+      const parentRole = roleInfo.inherits || CustomRole.NO_ROLE;
       const rule = new AncestryOutputRule(
-          type, formatNode.role, roleInfo.inherits, formatName);
-      // First, look up the event type's format block.
-      const eventBlock = OutputRule.RULES[rule.event];
+          type, formatNode.role, parentRole, formatName, this.formatAsBraille);
+      if (!rule.defined) {
+        continue;
+      }
 
-      rule.populateOutput(this.formatOptions_.braille);
-      if (eventBlock[rule.role][formatName]) {
-        if (this.formatOptions_.braille) {
-          buff = /** @type {!Array<Spannable>} */ ([]);
-          formatLog.bufferClear();
-        }
+      if (this.formatAsBraille) {
+        buff = /** @type {!Array<Spannable>} */ ([]);
+        formatLog.bufferClear();
+      }
 
-        excludeRoles.add(formatNode.role);
-        formatLog.writeRule(rule.specifier);
-        this.formattedAncestors_.add(formatNode);
-        OutputFormatter.format(this, {
-          node: formatNode,
-          outputFormat: rule.enterFormat,
-          outputBuffer: buff,
-          outputFormatLogger: formatLog,
-          opt_prevNode: prevNode,
-        });
+      excludeRoles.add(formatNode.role);
+      formatLog.writeRule(rule.specifier);
+      this.formattedAncestors_.add(formatNode);
+      OutputFormatter.format(this, {
+        node: formatNode,
+        outputFormat: rule.enterFormat,
+        outputBuffer: buff,
+        outputFormatLogger: formatLog,
+        opt_prevNode: prevNode,
+      });
 
-        if (this.formatOptions_.braille && buff.length) {
-          const nodeSpan = this.mergeBraille_(buff);
-          nodeSpan.setSpan(
-              new outputTypes.OutputNodeSpan(formatNode), 0, nodeSpan.length);
-          originalBuff.push(nodeSpan);
-        }
+      if (this.formatAsBraille && buff.length) {
+        const nodeSpan = this.mergeBraille_(buff);
+        nodeSpan.setSpan(
+            new outputTypes.OutputNodeSpan(formatNode), 0, nodeSpan.length);
+        originalBuff.push(nodeSpan);
       }
     }
   }
@@ -1021,7 +1020,7 @@ export class Output {
       text = range.start.getText().substring(rangeStart, rangeEnd);
     }
 
-    if (LocalStorage.get('languageSwitching')) {
+    if (SettingsManager.get('languageSwitching')) {
       this.assignLocaleAndAppend(text, node, buff, options);
     } else {
       this.append(buff, text, options);
@@ -1057,7 +1056,7 @@ export class Output {
    * @private
    */
   hint_(range, uniqueAncestors, type, buff, formatLog) {
-    if (!this.enableHints_ || LocalStorage.get('useVerboseMode') !== true) {
+    if (!this.enableHints_ || !SettingsManager.get('useVerboseMode')) {
       return;
     }
 

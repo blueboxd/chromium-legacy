@@ -236,6 +236,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
   //   `install_data_index`: Index of the server install data.
   //   `priority`: Priority for processing this update.
   //   `policy_same_version_update`: Whether a same-version update is allowed.
+  //   `do_update_check_only`: Only checks for updates if `true`.
   //   `state_update`: The callback will be invoked every time the update
   //     changes state when the engine starts. It will be called on the
   //     sequence used by the update service, so this callback must not block.
@@ -252,6 +253,7 @@ class UpdateService : public base::RefCountedThreadSafe<UpdateService> {
                       const std::string& install_data_index,
                       Priority priority,
                       PolicySameVersionUpdate policy_same_version_update,
+                      bool do_update_check_only,
                       StateChangeCallback state_update,
                       Callback callback) = 0;
 

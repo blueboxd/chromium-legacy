@@ -9,6 +9,7 @@
 #include "ash/public/ash_interfaces.h"
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/public/cpp/stylus_utils.h"
+#include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
@@ -32,6 +33,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
 #include "ui/display/display_features.h"
 #include "ui/display/display_switches.h"
@@ -46,6 +48,7 @@ using ::chromeos::settings::mojom::kDeviceSectionPath;
 using ::chromeos::settings::mojom::kDisplaySubpagePath;
 using ::chromeos::settings::mojom::kExternalStorageSubpagePath;
 using ::chromeos::settings::mojom::kKeyboardSubpagePath;
+using ::chromeos::settings::mojom::kPerDeviceKeyboardRemapKeysSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceKeyboardSubpagePath;
 using ::chromeos::settings::mojom::kPerDeviceMouseSubpagePath;
 using ::chromeos::settings::mojom::kPerDevicePointingStickSubpagePath;
@@ -567,12 +570,20 @@ bool IsTouchCalibrationAvailable() {
          display::HasExternalTouchscreenDevice();
 }
 
+bool IsDriveFsBulkPinningEnabled() {
+  return ash::features::IsDriveFsBulkPinningEnabled();
+}
+
 bool IsListAllDisplayModesEnabled() {
   return display::features::IsListAllDisplayModesEnabled();
 }
 
 void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString keyboard_strings[] = {
+      {"keyboardBlockMetaFunctionKeyRewrites",
+       IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES},
+      {"keyboardBlockMetaFunctionKeyRewritesDescription",
+       IDS_SETTINGS_KEYBOARD_BLOCK_META_FUNCTION_KEY_REWRITES_DESCRIPTION},
       {"keyboardEnableAutoRepeat", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE},
       {"keyboardKeyAlt", IDS_SETTINGS_KEYBOARD_KEY_LEFT_ALT},
       {"keyboardKeyAssistant", IDS_SETTINGS_KEYBOARD_KEY_ASSISTANT},
@@ -588,6 +599,10 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyboardKeyExternalMeta", IDS_SETTINGS_KEYBOARD_KEY_EXTERNAL_META},
       {"keyboardKeyMeta", IDS_SETTINGS_KEYBOARD_KEY_META},
       {"keyboardSendFunctionKeys", IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS},
+      {"keyboardSendInvertedFunctionKeys",
+       IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS},
+      {"keyboardSendInvertedFunctionKeysDescription",
+       IDS_SETTINGS_KEYBOARD_SEND_INVERTED_FUNCTION_KEYS_DESCRIPTION},
       {"keyboardShowInputSettings", IDS_SETTINGS_KEYBOARD_SHOW_INPUT_SETTINGS},
       // TODO(crbug.com/1097328): Remove this string, as it is unused.
       {"keyboardShowLanguageAndInput",
@@ -600,15 +615,23 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
       {"keyRepeatRateFast", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_FAST},
       {"keyRepeatRateSlow", IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_RATE_SLOW},
       {"perDeviceKeyboardTitle", IDS_SETTINGS_PER_DEVICE_KEYBOARD_TITLE},
+      {"remapKeyboardKeysRowLabel", IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL},
+      {"remapKeyboardKeysDescription",
+       IDS_SETTINGS_KEYBOARD_REMAP_KEYS_DESCRIPTION},
       {"showKeyboardShortcutViewer",
        IDS_SETTINGS_KEYBOARD_SHOW_SHORTCUT_VIEWER},
+      {"keyboardKeyLauncher", IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER},
+      {"keyboardKeySearch", IDS_SETTINGS_KEYBOARD_KEY_SEARCH},
+      {"keyboardRemapRestoreDefaultsLabel",
+       IDS_SETTINGS_KEYBOARD_REMAP_RESTORE_BUTTON_LABEL},
   };
   html_source->AddLocalizedStrings(keyboard_strings);
 
-  html_source->AddLocalizedString("keyboardKeySearch",
-                                  ui::DeviceUsesKeyboardLayout2()
-                                      ? IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER
-                                      : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
+  html_source->AddLocalizedString(
+      "keyboardKeySearch",
+      Shell::Get()->keyboard_capability()->HasLauncherButton()
+          ? IDS_SETTINGS_KEYBOARD_KEY_LAUNCHER
+          : IDS_SETTINGS_KEYBOARD_KEY_SEARCH);
   html_source->AddLocalizedString(
       "keyboardSendFunctionKeysDescription",
       ui::DeviceUsesKeyboardLayout2()
@@ -740,6 +763,9 @@ void AddDeviceDisplayStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("enableTouchCalibrationSetting",
                           IsTouchCalibrationAvailable());
 
+  html_source->AddBoolean("enableDriveFsBulkPinning",
+                          IsDriveFsBulkPinningEnabled());
+
   html_source->AddString("invalidDisplayId",
                          base::NumberToString(display::kInvalidDisplayId));
 
@@ -757,6 +783,7 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
       {"storageExternalStorageListHeader",
        IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER},
       {"storageItemApps", IDS_SETTINGS_STORAGE_ITEM_APPS},
+      {"storageItemOffline", IDS_SETTINGS_STORAGE_ITEM_OFFLINE},
       {"storageItemAvailable", IDS_SETTINGS_STORAGE_ITEM_AVAILABLE},
       {"storageItemBrowsingData", IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA},
       {"storageItemCrostini", IDS_SETTINGS_STORAGE_ITEM_CROSTINI},
@@ -794,9 +821,31 @@ void AddDeviceStorageStrings(content::WebUIDataSource* html_source,
 
 void AddDeviceAudioStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kAudioStrings[] = {
-      {"audioDeviceTitle", IDS_SETTINGS_AUDIO_DEVICE_TITLE},
+      {"audioDeviceBluetoothLabel", IDS_SETTINGS_AUDIO_DEVICE_BLUETOOTH_LABEL},
+      {"audioDeviceFrontMicLabel", IDS_SETTINGS_AUDIO_DEVICE_FRONT_MIC_LABEL},
+      {"audioDeviceHdmiLabel", IDS_SETTINGS_AUDIO_DEVICE_HDMI_LABEL},
+      {"audioDeviceHeadphoneLabel", IDS_SETTINGS_AUDIO_DEVICE_HEADPHONE_LABEL},
+      {"audioDeviceInternalMicLabel",
+       IDS_SETTINGS_AUDIO_DEVICE_INTERNAL_MIC_LABEL},
+      {"audioDeviceInternalSpeakersLabel",
+       IDS_SETTINGS_AUDIO_DEVICE_INTERNAL_SPEAKERS_LABEL},
+      {"audioDeviceMicJackLabel", IDS_SETTINGS_AUDIO_DEVICE_MIC_JACK_LABEL},
+      {"audioDeviceRearMicLabel", IDS_SETTINGS_AUDIO_DEVICE_REAR_MIC_LABEL},
+      {"audioDeviceUsbLabel", IDS_SETTINGS_AUDIO_DEVICE_USB_LABEL},
+      {"audioInputDeviceTitle", IDS_SETTINGS_AUDIO_INPUT_DEVICE_TITLE},
+      {"audioInputGainTitle", IDS_SETTINGS_AUDIO_INPUT_GAIN_TITLE},
+      {"audioInputNoiseCancellationTitle",
+       IDS_SETTINGS_AUDIO_INPUT_NOISE_CANCELLATION_TITLE},
+      {"audioInputTitle", IDS_SETTINGS_AUDIO_INPUT_TITLE},
+      {"audioMutedByPolicyTooltip", IDS_SETTINGS_AUDIO_MUTED_BY_POLICY_TOOLTIP},
+      {"audioMutedExternallyTooltip",
+       IDS_SETTINGS_AUDIO_MUTED_EXTERNALLY_TOOLTIP},
+      {"audioOutputDeviceTitle", IDS_SETTINGS_AUDIO_OUTPUT_DEVICE_TITLE},
       {"audioOutputTitle", IDS_SETTINGS_AUDIO_OUTPUT_TITLE},
       {"audioTitle", IDS_SETTINGS_AUDIO_TITLE},
+      {"audioToggleToMuteTooltip", IDS_SETTINGS_AUDIO_TOGGLE_TO_MUTE_TOOLTIP},
+      {"audioToggleToUnmuteTooltip",
+       IDS_SETTINGS_AUDIO_TOGGLE_TO_UNMUTE_TOOLTIP},
       {"audioVolumeTitle", IDS_SETTINGS_AUDIO_VOLUME_TITLE},
   };
 
@@ -1030,6 +1079,14 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                                        mojom::SearchResultIcon::kKeyboard,
                                        mojom::SearchResultDefaultRank::kMedium,
                                        mojom::kPerDeviceKeyboardSubpagePath);
+
+    generator->RegisterNestedSubpage(
+        IDS_SETTINGS_KEYBOARD_REMAP_KEYS_ROW_LABEL,
+        mojom::Subpage::kPerDeviceKeyboardRemapKeys,
+        mojom::Subpage::kPerDeviceKeyboard, mojom::SearchResultIcon::kKeyboard,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kPerDeviceKeyboardRemapKeysSubpagePath);
+
     // Per-device Mouse.
     generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_TITLE,
                                        mojom::Subpage::kPerDeviceMouse,

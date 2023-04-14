@@ -30,7 +30,7 @@ namespace {
 // We currently wait for the fences serially, but it's possible
 // that merging the fences and waiting on the merged fence fd
 // is more efficient. We should revisit once we have more info.
-ui::DrmOverlayPlaneList WaitForPlaneFences(ui::DrmOverlayPlaneList planes) {
+DrmOverlayPlaneList WaitForPlaneFences(DrmOverlayPlaneList planes) {
   for (const auto& plane : planes) {
     if (plane.gpu_fence)
       plane.gpu_fence->Wait();
@@ -55,7 +55,7 @@ bool HardwareDisplayPlaneManagerLegacy::Commit(CommitRequest commit_request,
 
   bool status = true;
   for (const auto& crtc_request : commit_request) {
-    if (crtc_request.should_enable()) {
+    if (crtc_request.should_enable_crtc()) {
       // Overlays are not supported in legacy hence why we're only looking at
       // the primary plane.
       uint32_t fb_id = DrmOverlayPlane::GetPrimaryPlane(crtc_request.overlays())

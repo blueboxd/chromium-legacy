@@ -49,10 +49,7 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -61,16 +58,13 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
    private:
     TestAutofillManagerWaiter forms_seen_waiter_{
         *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+        {AutofillManagerEvent::kFormsSeen}};
   };
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     ASSERT_TRUE(embedded_test_server()->Start());
     GetWebContents()->SetAccessibilityMode(ui::kAXModeComplete);
-    autofill_manager_injector_ =
-        std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
-            GetWebContents());
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -90,8 +84,7 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
   }
 
   TestAutofillManager* GetAutofillManager() {
-    DCHECK(autofill_manager_injector_);
-    return autofill_manager_injector_->GetForPrimaryMainFrame();
+    return autofill_manager_injector_[GetWebContents()];
   }
 
   void NavigateToAndWaitForForm(const GURL& url) {
@@ -114,8 +107,7 @@ class AutofillAccessibilityWinBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
-      autofill_manager_injector_;
+  TestAutofillManagerInjector<TestAutofillManager> autofill_manager_injector_;
 };
 
 // The test is flaky on Windows. See https://crbug.com/1221273

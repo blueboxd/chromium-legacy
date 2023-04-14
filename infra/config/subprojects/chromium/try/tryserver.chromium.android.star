@@ -5,7 +5,7 @@
 
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
-load("//lib/builders.star", "goma", "os", "reclient")
+load("//lib/builders.star", "os", "reclient")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -17,12 +17,7 @@ try_.defaults.set(
     cores = 8,
     os = os.LINUX_DEFAULT,
     compilator_cores = 32,
-    compilator_goma_jobs = goma.jobs.J300,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     orchestrator_cores = 4,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
@@ -39,7 +34,6 @@ try_.builder(
     mirrors = [
         "ci/android-10-arm64-rel",
     ],
-    goma_backend = None,
 )
 
 try_.builder(
@@ -47,7 +41,6 @@ try_.builder(
     mirrors = [
         "ci/android-11-x86-rel",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -57,7 +50,6 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-12-x64-dbg-tests",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -102,7 +94,6 @@ try_.builder(
     mirrors = [
         "ci/android-13-x64-rel",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -121,6 +112,7 @@ try_.orchestrator_builder(
     ),
     check_for_flakiness = True,
     compilator = "android-arm64-rel-compilator",
+    coverage_test_types = ["unit", "overall"],
     experiments = {
         "chromium_rts.inverted_rts": 100,
     },
@@ -132,27 +124,6 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
 )
 
-try_.orchestrator_builder(
-    name = "android-arm64-rel-inverse-fyi",
-    mirrors = [
-        "ci/Android Release (Nexus 5X)",  # Nexus 5X on Nougat
-        "ci/android-pie-arm64-rel",  # Pixel 1, 2 on Pie
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    check_for_flakiness = True,
-    compilator = "android-arm64-rel-compilator",
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_clang_coverage = True,
-    use_orchestrator_pool = True,
-)
-
 try_.compilator_builder(
     name = "android-arm64-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
@@ -160,19 +131,18 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-try_.builder(
-    name = "android-asan",
-    mirrors = ["ci/android-asan"],
-    goma_backend = None,
-    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
-)
+# TODO(crbug.com/1367523): Reeanble this builder once the reboot issue is resolved.
+# try_.builder(
+#     name = "android-asan",
+#     mirrors = ["ci/android-asan"],
+#     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+# )
 
 try_.builder(
     name = "android-bfcache-rel",
     mirrors = [
         "ci/android-bfcache-rel",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -183,7 +153,6 @@ try_.builder(
     builderless = not settings.is_main,
     cores = 16,
     ssd = True,
-    goma_backend = None,
     main_list_view = "try",
 
     # TODO(crbug.com/1362440): remove this.
@@ -213,7 +182,6 @@ try_.builder(
     mirrors = [
         "ci/android-cronet-arm-dbg",
     ],
-    goma_backend = None,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -230,21 +198,18 @@ try_.builder(
 try_.builder(
     name = "android-cronet-arm64-dbg",
     mirrors = ["ci/android-cronet-arm64-dbg"],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-arm64-rel",
     mirrors = ["ci/android-cronet-arm64-rel"],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-asan-arm-rel",
     mirrors = ["ci/android-cronet-asan-arm-rel"],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -253,14 +218,12 @@ try_.builder(
     mirrors = [
         "ci/android-cronet-x86-dbg",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-cronet-x86-rel",
     mirrors = ["ci/android-cronet-x86-rel"],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -272,7 +235,6 @@ try_.builder(
         "ci/android-cronet-x86-dbg-10-tests",
     ],
     check_for_flakiness = True,
-    goma_backend = None,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     tryjob = try_.job(
@@ -292,7 +254,6 @@ try_.builder(
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-11-tests",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -302,7 +263,6 @@ try_.builder(
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-oreo-tests",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -312,7 +272,6 @@ try_.builder(
         "ci/android-cronet-x86-dbg",
         "ci/android-cronet-x86-dbg-pie-tests",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -322,7 +281,6 @@ try_.builder(
         "ci/android-cronet-x86-rel",
         "ci/android-cronet-x86-rel-kitkat-tests",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -330,7 +288,6 @@ try_.builder(
     name = "android-deterministic-dbg",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-
     # TODO(crbug.com/1362440): remove this.
     omit_python2 = False,
 )
@@ -339,7 +296,6 @@ try_.builder(
     name = "android-deterministic-rel",
     executable = "recipe:swarming/deterministic_build",
     execution_timeout = 6 * time.hour,
-
     # TODO(crbug.com/1362440): remove this.
     omit_python2 = False,
 )
@@ -379,27 +335,6 @@ try_.orchestrator_builder(
     use_java_coverage = True,
 )
 
-try_.orchestrator_builder(
-    name = "android-nougat-x86-rel-inverse-fyi",
-    mirrors = [
-        "ci/android-nougat-x86-rel",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
-    check_for_flakiness = True,
-    compilator = "android-nougat-x86-rel-compilator",
-    coverage_test_types = ["unit", "overall"],
-    experiments = {
-        "chromium_rts.inverted_rts": 100,
-        "chromium_rts.inverted_rts_bail_early": 100,
-    },
-    use_java_coverage = True,
-    use_orchestrator_pool = True,
-)
-
 try_.compilator_builder(
     name = "android-nougat-x86-rel-compilator",
     branch_selector = branches.selector.ANDROID_BRANCHES,
@@ -415,7 +350,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Oreo Phone Tester",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -436,7 +370,6 @@ try_.builder(
     builderless = False,
     cores = 16,
     check_for_flakiness = True,
-    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -459,7 +392,6 @@ try_.builder(
     mirrors = [
         "ci/android-pie-x86-rel",
     ],
-    goma_backend = None,
 )
 
 try_.builder(
@@ -468,7 +400,6 @@ try_.builder(
         "ci/android-x86-rel",
         "ci/android-webview-10-x86-rel-tests",
     ],
-    goma_backend = None,
 )
 
 try_.builder(
@@ -487,14 +418,21 @@ try_.builder(
         "ci/Android x64 Builder (dbg)",
         "ci/android-webview-12-x64-dbg-tests",
     ],
-    goma_backend = None,
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-webview-13-x64-dbg",
+    mirrors = [
+        "ci/Android x64 Builder (dbg)",
+        "ci/android-webview-13-x64-dbg-tests",
+    ],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
 try_.builder(
     name = "android-webview-pie-x86-wpt-fyi-rel",
     mirrors = ["ci/android-webview-pie-x86-wpt-fyi-rel"],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -504,7 +442,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView N (dbg)",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -514,7 +451,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView O (dbg)",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -524,7 +460,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Android WebView P (dbg)",
     ],
-    goma_backend = None,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -544,7 +479,6 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
-    goma_backend = None,
 )
 
 try_.builder(
@@ -552,7 +486,6 @@ try_.builder(
     mirrors = [
         "ci/Android arm64 Builder All Targets (dbg)",
     ],
-    goma_backend = None,
 )
 
 try_.builder(
@@ -577,7 +510,6 @@ try_.builder(
             config = "main_builder",
         ),
     ),
-    goma_backend = None,
 )
 
 try_.builder(
@@ -604,7 +536,6 @@ try_.builder(
     builderless = not settings.is_main,
     cores = 32 if settings.is_main else 16,
     ssd = True,
-    goma_backend = None,
     main_list_view = "try",
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
     tryjob = try_.job(),
@@ -625,7 +556,6 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
-    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -653,7 +583,6 @@ try_.builder(
     ),
     cores = 16,
     ssd = True,
-    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -679,7 +608,6 @@ try_.builder(
         is_compile_only = True,
     ),
     builderless = not settings.is_main,
-    goma_backend = None,
     main_list_view = "try",
     tryjob = try_.job(),
 )
@@ -699,7 +627,6 @@ try_.builder(
         "ci/Android arm64 Builder (dbg)",
         "ci/Nougat Phone Tester",
     ],
-    goma_backend = None,
 )
 
 try_.gpu.optional_tests_builder(
@@ -725,8 +652,6 @@ try_.gpu.optional_tests_builder(
         retry_failed_shards = False,
     ),
     check_for_flakiness = True,
-    goma_backend = None,
-    goma_jobs = goma.jobs.J150,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [

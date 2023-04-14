@@ -145,9 +145,8 @@ void FileAnalyzer::OnFileAnalysisFinished(FileAnalyzer::Results results) {
 void FileAnalyzer::StartExtractZipFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // We give the zip analyzer a weak pointer to this object.  Since the
-  // analyzer is refcounted, it might outlive the request.
-  zip_analyzer_ = new SandboxedZipAnalyzer(
+  // We give the zip analyzer a weak pointer to this object.
+  zip_analyzer_ = SandboxedZipAnalyzer::CreateAnalyzer(
       tmp_path_,
       base::BindOnce(&FileAnalyzer::OnZipAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),
@@ -205,7 +204,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
 
   // We give the rar analyzer a weak pointer to this object.  Since the
   // analyzer is refcounted, it might outlive the request.
-  rar_analyzer_ = new SandboxedRarAnalyzer(
+  rar_analyzer_ = SandboxedRarAnalyzer::CreateAnalyzer(
       tmp_path_,
       base::BindOnce(&FileAnalyzer::OnRarAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),
@@ -263,7 +262,7 @@ void FileAnalyzer::StartExtractDmgFeatures() {
 
   // Directly use 'dmg' extension since download file may not have any
   // extension, but has still been deemed a DMG through file type sniffing.
-  dmg_analyzer_ = new SandboxedDMGAnalyzer(
+  dmg_analyzer_ = SandboxedDMGAnalyzer::CreateAnalyzer(
       tmp_path_,
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
       base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
@@ -332,7 +331,7 @@ void FileAnalyzer::StartExtractDocumentFeatures() {
 
   document_analysis_start_time_ = base::TimeTicks::Now();
 
-  document_analyzer_ = new SandboxedDocumentAnalyzer(
+  document_analyzer_ = SandboxedDocumentAnalyzer::CreateAnalyzer(
       target_path_, tmp_path_,
       base::BindOnce(&FileAnalyzer::OnDocumentAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),
@@ -372,7 +371,7 @@ void FileAnalyzer::OnDocumentAnalysisFinished(
 void FileAnalyzer::StartExtractSevenZipFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  seven_zip_analyzer_ = new SandboxedSevenZipAnalyzer(
+  seven_zip_analyzer_ = SandboxedSevenZipAnalyzer::CreateAnalyzer(
       tmp_path_,
       base::BindOnce(&FileAnalyzer::OnSevenZipAnalysisFinished,
                      weakptr_factory_.GetWeakPtr()),

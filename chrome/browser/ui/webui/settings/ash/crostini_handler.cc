@@ -20,19 +20,19 @@
 #include "chrome/browser/ash/crostini/crostini_shared_devices.h"
 #include "chrome/browser/ash/crostini/crostini_types.mojom.h"
 #include "chrome/browser/ash/crostini/crostini_util.h"
-#include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/guest_os/guest_os_pref_names.h"
 #include "chrome/browser/ash/guest_os/guest_os_session_tracker.h"
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/views/bruschetta/bruschetta_installer_view.h"
+#include "chrome/browser/ui/views/bruschetta/bruschetta_uninstaller_view.h"
+#include "chrome/browser/ui/views/crostini/crostini_uninstaller_view.h"
 #include "chrome/browser/ui/webui/ash/crostini_upgrader/crostini_upgrader_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
-#include "components/user_manager/user_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_ui.h"
@@ -202,6 +202,11 @@ void CrostiniHandler::RegisterMessages() {
         "requestBruschettaInstallerView",
         base::BindRepeating(
             &CrostiniHandler::HandleRequestBruschettaInstallerView,
+            handler_weak_ptr_factory_.GetWeakPtr()));
+    web_ui()->RegisterMessageCallback(
+        "requestBruschettaUninstallerView",
+        base::BindRepeating(
+            &CrostiniHandler::HandleRequestBruschettaUninstallerView,
             handler_weak_ptr_factory_.GetWeakPtr()));
   }
 }
@@ -957,8 +962,15 @@ void CrostiniHandler::HandleSetVmDeviceShared(const base::Value::List& args) {
 void CrostiniHandler::HandleRequestBruschettaInstallerView(
     const base::Value::List& args) {
   AllowJavascript();
-  bruschetta::RunInstaller(Profile::FromWebUI(web_ui()),
-                           bruschetta::GetBruschettaAlphaId());
+  BruschettaInstallerView::Show(Profile::FromWebUI(web_ui()),
+                                bruschetta::GetBruschettaAlphaId());
+}
+
+void CrostiniHandler::HandleRequestBruschettaUninstallerView(
+    const base::Value::List& args) {
+  AllowJavascript();
+  BruschettaUninstallerView::Show(Profile::FromWebUI(web_ui()),
+                                  bruschetta::GetBruschettaAlphaId());
 }
 
 }  // namespace ash::settings

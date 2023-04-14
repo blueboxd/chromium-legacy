@@ -29,7 +29,6 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
@@ -78,6 +77,7 @@ import org.chromium.components.browser_ui.settings.PaddedDividerItemDecoration;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsCategory;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
+import org.chromium.components.browser_ui.util.TraceEventVectorDrawableCompat;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
 import org.chromium.components.browser_ui.widget.displaystyle.ViewResizer;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -132,6 +132,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
     @Nullable
     private UiConfig mUiConfig;
 
+    private Profile mProfile;
+
     @SuppressLint("InlinedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -143,6 +145,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
         ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
+        mProfile = Profile.getLastUsedRegularProfile();
 
         super.onCreate(savedInstanceState);
 
@@ -367,7 +370,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
         // By default, every screen in Settings shows a "Help & feedback" menu item.
         MenuItem help = menu.add(
                 Menu.NONE, R.id.menu_id_general_help, Menu.CATEGORY_SECONDARY, R.string.menu_help);
-        help.setIcon(VectorDrawableCompat.create(
+        help.setIcon(TraceEventVectorDrawableCompat.create(
                 getResources(), R.drawable.ic_help_and_feedback, getTheme()));
         return super.onCreateOptionsMenu(menu);
     }
@@ -392,9 +395,8 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             finish();
             return true;
         } else if (item.getItemId() == R.id.menu_id_general_help) {
-            HelpAndFeedbackLauncherImpl.getInstance().show(this,
-                    getString(R.string.help_context_settings), Profile.getLastUsedRegularProfile(),
-                    null);
+            HelpAndFeedbackLauncherImpl.getInstance().show(
+                    this, getString(R.string.help_context_settings), mProfile, null);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -409,14 +411,16 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
 
     @Override
     public void onAttachFragment(Fragment fragment) {
+        if (fragment instanceof ProfileDependentSetting) {
+            ((ProfileDependentSetting) fragment).setProfile(mProfile);
+        }
         if (fragment instanceof MainSettings) {
             ((MainSettings) fragment)
                     .setModalDialogManagerSupplier(getModalDialogManagerSupplier());
         }
         if (fragment instanceof SiteSettingsPreferenceFragment) {
             ((SiteSettingsPreferenceFragment) fragment)
-                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(
-                            this, Profile.getLastUsedRegularProfile()));
+                    .setSiteSettingsDelegate(new ChromeSiteSettingsDelegate(this, mProfile));
         }
         if (fragment instanceof FragmentSettingsLauncher) {
             FragmentSettingsLauncher fragmentSettingsLauncher = (FragmentSettingsLauncher) fragment;
@@ -450,15 +454,14 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             settings.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof ImageDescriptionsSettings) {
-            Profile profile = Profile.getLastUsedRegularProfile();
             ImageDescriptionsSettings imageFragment = (ImageDescriptionsSettings) fragment;
             Bundle extras = imageFragment.getArguments();
             if (extras != null) {
                 extras.putBoolean(ImageDescriptionsSettings.IMAGE_DESCRIPTIONS,
                         ImageDescriptionsController.getInstance().imageDescriptionsEnabled(
-                                profile));
+                                mProfile));
                 extras.putBoolean(ImageDescriptionsSettings.IMAGE_DESCRIPTIONS_DATA_POLICY,
-                        ImageDescriptionsController.getInstance().onlyOnWifiEnabled(profile));
+                        ImageDescriptionsController.getInstance().onlyOnWifiEnabled(mProfile));
             }
             imageFragment.setDelegate(ImageDescriptionsController.getInstance().getDelegate());
         }
@@ -498,7 +501,11 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
                             LaunchIntentDispatcher::createCustomTabActivityIntent);
         }
         if (fragment instanceof PrivacyGuideFragment) {
-            ((PrivacyGuideFragment) fragment).setBottomSheetController(mBottomSheetController);
+            PrivacyGuideFragment pgFragment = (PrivacyGuideFragment) fragment;
+            pgFragment.setBottomSheetController(mBottomSheetController);
+            pgFragment.setCustomTabIntentHelper(
+                    LaunchIntentDispatcher::createCustomTabActivityIntent);
+            pgFragment.setSettingsLauncher(mSettingsLauncher);
         }
         if (fragment instanceof AccessibilitySettings) {
             ((AccessibilitySettings) fragment)

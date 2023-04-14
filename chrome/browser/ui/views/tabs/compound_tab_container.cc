@@ -53,7 +53,8 @@ class PinnedTabContainerController final : public TabContainerController {
     return base_controller_->NumPinnedTabsInModel();
   }
 
-  void OnDropIndexUpdate(int index, bool drop_before) override {
+  void OnDropIndexUpdate(const absl::optional<int> index,
+                         const bool drop_before) override {
     base_controller_->OnDropIndexUpdate(index, drop_before);
   }
 
@@ -121,9 +122,21 @@ class UnpinnedTabContainerController final : public TabContainerController {
 
   int NumPinnedTabsInModel() const override { return 0; }
 
-  void OnDropIndexUpdate(int index, bool drop_before) override {
-    base_controller_->OnDropIndexUpdate(ContainerToModelIndex(index).value(),
-                                        drop_before);
+  void OnDropIndexUpdate(const absl::optional<int> index,
+                         const bool drop_before) override {
+    // We can't use ContainerIndexToModelIndex here because `index` might be
+    // after the last tab (i.e. the drop would open a new tab at the end of the
+    // tabstrip).
+    absl::optional<int> model_index = absl::nullopt;
+    if (index.has_value() && index > 0) {
+      model_index = index.value() + base_controller_->NumPinnedTabsInModel();
+      // The adjusted index must be either a valid index in the model, or be the
+      // next index after the end of the model.
+      CHECK(base_controller_->IsValidModelIndex(model_index.value()) ||
+            base_controller_->IsValidModelIndex(model_index.value() - 1));
+    }
+
+    base_controller_->OnDropIndexUpdate(model_index, drop_before);
   }
 
   bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override {
@@ -236,7 +249,14 @@ CompoundTabContainer::CompoundTabContainer(
     bounds_animator_.SetAnimationDuration(base::TimeDelta());
 }
 
-CompoundTabContainer::~CompoundTabContainer() = default;
+CompoundTabContainer::~CompoundTabContainer() {
+  // Tabs call back up to the TabStrip during animation end and destruction.
+  // Ensure that happens now so we aren't in a half-destructed state when they
+  // do so.
+  CancelAnimation();
+  RemoveChildViewT(base::to_address(pinned_tab_container_));
+  RemoveChildViewT(base::to_address(unpinned_tab_container_));
+}
 
 void CompoundTabContainer::SetAvailableWidthCallback(
     base::RepeatingCallback<int()> available_width_callback) {
@@ -534,12 +554,21 @@ void CompoundTabContainer::AnimateToIdealBounds() {
   pinned_tab_container_->AnimateToIdealBounds();
   unpinned_tab_container_->AnimateToIdealBounds();
 
+  // Animate the pinning or unpinning tabs too.
   for (views::View* child : children()) {
     Tab* tab = views::AsViewClass<Tab>(child);
     if (!tab)
       continue;
 
-    AnimateTabTo(tab, GetIdealBounds(GetModelIndexOf(tab).value()));
+    const absl::optional<int> model_index = GetModelIndexOf(tab);
+    // The tab may have been closed during a pin/unpin animation, in which case
+    // it a) has no model index and b) is already animating to its correct
+    // bounds because that will have been updated in `UpdateAnimationTarget()`.
+    if (!model_index.has_value()) {
+      continue;
+    }
+
+    AnimateTabTo(tab, GetIdealBounds(model_index.value()));
   }
 }
 
@@ -733,35 +762,85 @@ void CompoundTabContainer::ChildPreferredSizeChanged(views::View* child) {
 
 BrowserRootView::DropIndex CompoundTabContainer::GetDropIndex(
     const ui::DropTargetEvent& event) {
-  // TODO(1346023): Implement text drag and drop.
-  NOTREACHED();
-  return BrowserRootView::DropIndex();
+  TabContainer* sub_drop_target = GetTabContainerForDrop(event.location());
+  CHECK(sub_drop_target);
+  CHECK(sub_drop_target->GetDropTarget(
+      ConvertPointToTarget(this, sub_drop_target, event.location())));
+
+  // Convert to `sub_drop_target`'s local coordinate space.
+  const gfx::Point loc_in_sub_target = ConvertPointToTarget(
+      this, sub_drop_target->GetViewForDrop(), event.location());
+  const ui::DropTargetEvent adjusted_event = ui::DropTargetEvent(
+      event.data(), gfx::PointF(loc_in_sub_target),
+      gfx::PointF(loc_in_sub_target), event.source_operations());
+
+  if (sub_drop_target == base::to_address(pinned_tab_container_)) {
+    // Pinned tab container shares an index and coordinate space, so no
+    // adjustments needed.
+    return sub_drop_target->GetDropIndex(adjusted_event);
+  } else {
+    // For the unpinned container, we need to transform the output to the
+    // correct index space.
+    const BrowserRootView::DropIndex sub_target_index =
+        sub_drop_target->GetDropIndex(adjusted_event);
+    return {sub_target_index.value + NumPinnedTabs(),
+            sub_target_index.drop_before, sub_target_index.drop_in_group};
+  }
 }
 
 BrowserRootView::DropTarget* CompoundTabContainer::GetDropTarget(
     gfx::Point loc_in_local_coords) {
-  NOTREACHED();  // TODO(1346023): Implement text drag and drop.
+  TabContainer* const sub_drop_target =
+      GetTabContainerForDrop(loc_in_local_coords);
 
-  // This might be a starting point for implementation though.
-  TabContainer* const tab_container = GetTabContainerAt(loc_in_local_coords);
-  return tab_container ? tab_container : this;
+  if (sub_drop_target == nullptr ||
+      !sub_drop_target->GetDropTarget(
+          ConvertPointToTarget(this, sub_drop_target, loc_in_local_coords))) {
+    return nullptr;
+  }
+  return this;
 }
 
 views::View* CompoundTabContainer::GetViewForDrop() {
-  // TODO(1346023): Implement text drag and drop.
-  NOTREACHED();
-  return nullptr;
+  return this;
 }
 
 void CompoundTabContainer::HandleDragUpdate(
     const absl::optional<BrowserRootView::DropIndex>& index) {
-  // TODO(1346023): Implement text drag and drop.
-  NOTREACHED();
+  // Update `current_text_drop_target_`.
+  TabContainer* next_drop_target = nullptr;
+  if (index.has_value()) {
+    next_drop_target = base::to_address(index.value().value < NumPinnedTabs()
+                                            ? pinned_tab_container_
+                                            : unpinned_tab_container_);
+  }
+  if (next_drop_target != current_text_drop_target_) {
+    if (current_text_drop_target_) {
+      current_text_drop_target_->HandleDragExited();
+    }
+    current_text_drop_target_ = next_drop_target;
+  }
+
+  if (current_text_drop_target_ == nullptr) {  // I.e. if `index` is nullopt.
+    return;
+  }
+
+  // Forward to `current_text_drop_target_`, adjusting if needed.
+  if (current_text_drop_target_ == base::to_address(pinned_tab_container_)) {
+    pinned_tab_container_->HandleDragUpdate(index);
+  } else {
+    BrowserRootView::DropIndex adjusted_index = {
+        index.value().value - NumPinnedTabs(), index.value().drop_before,
+        index.value().drop_in_group};
+    unpinned_tab_container_->HandleDragUpdate(adjusted_index);
+  }
 }
 
 void CompoundTabContainer::HandleDragExited() {
-  // TODO(1346023): Implement text drag and drop.
-  NOTREACHED();
+  if (current_text_drop_target_) {
+    current_text_drop_target_->HandleDragExited();
+    current_text_drop_target_ = nullptr;
+  }
 }
 
 views::View* CompoundTabContainer::TargetForRect(views::View* root,
@@ -811,8 +890,14 @@ void CompoundTabContainer::TransferTabBetweenContainers(int from_model_index,
                                                         int to_model_index) {
   // If the tab at `from_model_index` is already being transferred, complete
   // all pending transfers before we embark upon this one to avoid conflicts.
-  if (bounds_animator_.IsAnimating(GetTabAtModelIndex(from_model_index)))
-    CompleteAnimationAndLayout();
+  if (bounds_animator_.IsAnimating(GetTabAtModelIndex(from_model_index))) {
+    // We are out of sync with the model right now (because we're handling a
+    // model update), so we need to be careful here. We can complete our
+    // directly managed animations, but we can't ask the sub-containers to do
+    // the same, as their ideal bounds calculations assume the model and
+    // viewmodel are in sync.
+    bounds_animator_.Complete();
+  }
 
   const bool prev_pinned = from_model_index < NumPinnedTabs();
   const bool next_pinned = !prev_pinned;
@@ -882,7 +967,7 @@ gfx::Rect CompoundTabContainer::ConvertUnpinnedContainerIdealBoundsToLocal(
 }
 
 raw_ref<TabContainer> CompoundTabContainer::GetTabContainerFor(
-    TabSlotView* view) {
+    TabSlotView* view) const {
   if (view->GetTabSlotViewType() == TabSlotView::ViewType::kTabGroupHeader)
     return unpinned_tab_container_;
 
@@ -890,8 +975,20 @@ raw_ref<TabContainer> CompoundTabContainer::GetTabContainerFor(
   return tab->data().pinned ? pinned_tab_container_ : unpinned_tab_container_;
 }
 
+TabContainer* CompoundTabContainer::GetTabContainerForDrop(
+    gfx::Point point_in_local_coords) const {
+  const int cutoff_x = (pinned_tab_container_->bounds().right() +
+                        unpinned_tab_container_->bounds().x()) /
+                       2;
+
+  if (point_in_local_coords.x() < cutoff_x) {
+    return base::to_address(pinned_tab_container_);
+  }
+  return base::to_address(unpinned_tab_container_);
+}
+
 TabContainer* CompoundTabContainer::GetTabContainerAt(
-    gfx::Point point_in_local_coords) {
+    gfx::Point point_in_local_coords) const {
   const bool in_pinned =
       pinned_tab_container_->bounds().Contains(point_in_local_coords);
   const bool in_unpinned =
@@ -942,8 +1039,8 @@ gfx::Size CompoundTabContainer::GetCombinedSizeForTabContainerSizes(
                    largest_container.height());
 }
 
-absl::optional<gfx::Rect> CompoundTabContainer::GetVisibleContentRect() {
-  views::ScrollView* scroll_container =
+absl::optional<gfx::Rect> CompoundTabContainer::GetVisibleContentRect() const {
+  const views::ScrollView* const scroll_container =
       views::ScrollView::GetScrollViewForContents(scroll_contents_view_);
   if (!scroll_container)
     return absl::nullopt;

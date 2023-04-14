@@ -109,8 +109,9 @@ ToAuthenticatorMakeCredentialResponse(
       WEBAUTHN_CREDENTIAL_ATTESTATION_VERSION_4) {
     ret.enterprise_attestation_returned = credential_attestation.bEpAtt;
     ret.is_resident_key = credential_attestation.bResidentKey;
-    ret.has_associated_large_blob_key =
-        credential_attestation.bLargeBlobSupported;
+    if (credential_attestation.bLargeBlobSupported) {
+      ret.large_blob_type = LargeBlobSupportType::kKey;
+    }
   }
 
   return ret;
@@ -119,7 +120,7 @@ ToAuthenticatorMakeCredentialResponse(
 absl::optional<AuthenticatorGetAssertionResponse>
 ToAuthenticatorGetAssertionResponse(
     const WEBAUTHN_ASSERTION& assertion,
-    const std::vector<PublicKeyCredentialDescriptor>& allow_list) {
+    const CtapGetAssertionOptions& request_options) {
   auto authenticator_data =
       AuthenticatorData::DecodeAuthenticatorData(base::span<const uint8_t>(
           assertion.pbAuthenticatorData, assertion.cbAuthenticatorData));
@@ -141,6 +142,17 @@ ToAuthenticatorGetAssertionResponse(
   if (assertion.cbUserId > 0) {
     response.user_entity = PublicKeyCredentialUserEntity(std::vector<uint8_t>(
         assertion.pbUserId, assertion.pbUserId + assertion.cbUserId));
+  }
+  if (assertion.dwVersion >= WEBAUTHN_ASSERTION_VERSION_2 &&
+      assertion.dwCredLargeBlobStatus ==
+          WEBAUTHN_CRED_LARGE_BLOB_STATUS_SUCCESS) {
+    if (request_options.large_blob_read) {
+      response.large_blob = std::vector<uint8_t>(
+          assertion.pbCredLargeBlob,
+          assertion.pbCredLargeBlob + assertion.cbCredLargeBlob);
+    } else if (request_options.large_blob_write) {
+      response.large_blob_written = true;
+    }
   }
   if (assertion.dwVersion >= WEBAUTHN_ASSERTION_VERSION_3 &&
       assertion.pHmacSecret) {

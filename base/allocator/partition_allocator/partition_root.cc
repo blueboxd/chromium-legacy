@@ -731,13 +731,24 @@ void PartitionRoot<thread_safe>::DestructForTesting() {
   // this function on PartitionRoots without a thread cache.
   PA_CHECK(!flags.with_thread_cache);
   auto pool_handle = ChoosePool();
+#if BUILDFLAG(ENABLE_PKEYS)
+  // The pages managed by pkey will be free-ed at UninitPKeyForTesting().
+  // Don't invoke FreePages() for the pages.
+  if (pool_handle == internal::kPkeyPoolHandle) {
+    return;
+  }
+  PA_DCHECK(pool_handle < internal::kNumPools);
+#else
+  PA_DCHECK(pool_handle <= internal::kNumPools);
+#endif
+
   auto* curr = first_extent;
   while (curr != nullptr) {
     auto* next = curr->next;
     uintptr_t address = SuperPagesBeginFromExtent(curr);
     size_t size =
         internal::kSuperPageSize * curr->number_of_consecutive_super_pages;
-#if !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if !BUILDFLAG(HAS_64_BIT_POINTERS)
     internal::AddressPoolManager::GetInstance().MarkUnused(pool_handle, address,
                                                            size);
 #endif
@@ -754,7 +765,7 @@ void PartitionRoot<thread_safe>::EnableMac11MallocSizeHackForTesting() {
 }
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !BUILDFLAG(HAS_64_BIT_POINTERS)
 namespace {
 std::atomic<bool> g_reserve_brp_guard_region_called;
 // An address constructed by repeating `kQuarantinedByte` shouldn't never point
@@ -790,7 +801,7 @@ void ReserveBackupRefPtrGuardRegionIfNeeded() {
 }
 }  // namespace
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) &&
-        // !PA_CONFIG(HAS_64_BITS_POINTERS)
+        // !BUILDFLAG(HAS_64_BIT_POINTERS)
 
 template <bool thread_safe>
 void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
@@ -819,12 +830,12 @@ void PartitionRoot<thread_safe>::Init(PartitionOptions opts) {
     // running on the right hardware.
     ::partition_alloc::internal::InitializeMTESupportIfNeeded();
 
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
     // Reserve address space for partition alloc.
     internal::PartitionAddressSpace::Init();
 #endif
 
-#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT) && !BUILDFLAG(HAS_64_BIT_POINTERS)
     ReserveBackupRefPtrGuardRegionIfNeeded();
 #endif
 
@@ -1492,6 +1503,73 @@ void PartitionRoot<thread_safe>::DeleteForTesting(
   partition_root->DestructForTesting();  // IN-TEST
 
   delete partition_root;
+}
+
+template <bool thread_safe>
+void PartitionRoot<thread_safe>::ResetForTesting(bool allow_leaks) {
+  if (flags.with_thread_cache) {
+    ThreadCache::SwapForTesting(nullptr);
+    flags.with_thread_cache = false;
+  }
+
+  ::partition_alloc::internal::ScopedGuard guard(lock_);
+
+#if BUILDFLAG(PA_DCHECK_IS_ON)
+  if (!allow_leaks) {
+    unsigned num_allocated_slots = 0;
+    for (Bucket& bucket : buckets) {
+      if (bucket.active_slot_spans_head !=
+          internal::SlotSpanMetadata<thread_safe>::get_sentinel_slot_span()) {
+        for (internal::SlotSpanMetadata<thread_safe>* slot_span =
+                 bucket.active_slot_spans_head;
+             slot_span; slot_span = slot_span->next_slot_span) {
+          num_allocated_slots += slot_span->num_allocated_slots;
+        }
+      }
+      // Full slot spans are nowhere. Need to see bucket.num_full_slot_spans
+      // to count the number of full slot spans' slots.
+      if (bucket.num_full_slot_spans) {
+        num_allocated_slots +=
+            bucket.num_full_slot_spans * bucket.get_slots_per_span();
+      }
+    }
+    PA_DCHECK(num_allocated_slots == 0);
+
+    // Check for direct-mapped allocations.
+    PA_DCHECK(!direct_map_list);
+  }
+#endif
+
+  DestructForTesting();  // IN-TEST
+
+#if PA_CONFIG(USE_PARTITION_ROOT_ENUMERATOR)
+  if (initialized) {
+    internal::PartitionRootEnumerator::Instance().Unregister(this);
+  }
+#endif  // PA_CONFIG(USE_PARTITION_ROOT_ENUMERATOR)
+
+  for (Bucket& bucket : buckets) {
+    bucket.active_slot_spans_head =
+        SlotSpan::get_sentinel_slot_span_non_const();
+    bucket.empty_slot_spans_head = nullptr;
+    bucket.decommitted_slot_spans_head = nullptr;
+    bucket.num_full_slot_spans = 0;
+  }
+
+  next_super_page = 0;
+  next_partition_page = 0;
+  next_partition_page_end = 0;
+  current_extent = nullptr;
+  first_extent = nullptr;
+
+  direct_map_list = nullptr;
+  for (auto& entity : global_empty_slot_span_ring) {
+    entity = nullptr;
+  }
+
+  global_empty_slot_span_ring_index = 0;
+  global_empty_slot_span_ring_size = internal::kDefaultEmptySlotSpanRingSize;
+  initialized = false;
 }
 
 template <bool thread_safe>

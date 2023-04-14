@@ -138,7 +138,8 @@ class FakeSequencedTaskSource : public SequencedTaskSource {
     running_stack_.push_back(std::move(tasks_.front()));
     tasks_.pop();
     return SelectedTask(running_stack_.back(), TaskExecutionTraceLogger(),
-                        TaskQueue::QueuePriority::kNormalPriority,
+                        static_cast<TaskQueue::QueuePriority>(
+                            TaskQueue::DefaultQueuePriority::kNormalPriority),
                         QueueName::TEST_TQ);
   }
 
@@ -184,6 +185,9 @@ class FakeSequencedTaskSource : public SequencedTaskSource {
 
   bool OnSystemIdle() override { return false; }
 
+  void MaybeEmitTaskDetails(perfetto::EventContext& ctx,
+                            const SelectedTask& selected_task) const override {}
+
  private:
   raw_ptr<TickClock> clock_;
   std::queue<Task> tasks_;
@@ -196,11 +200,13 @@ class FakeSequencedTaskSource : public SequencedTaskSource {
 class ThreadControllerWithMessagePumpTest : public testing::Test {
  public:
   ThreadControllerWithMessagePumpTest()
-      : message_pump_(new testing::StrictMock<MockMessagePump>()),
-        settings_(
+      : settings_(
             SequenceManager::Settings::Builder().SetTickClock(&clock_).Build()),
-        thread_controller_(std::unique_ptr<MessagePump>(message_pump_),
-                           settings_),
+        thread_controller_(
+            std::make_unique<testing::StrictMock<MockMessagePump>>(),
+            settings_),
+        message_pump_(static_cast<MockMessagePump*>(
+            thread_controller_.GetBoundMessagePump())),
         task_source_(&clock_) {
     // SimpleTestTickClock starts at zero, but that also satisfies
     // TimeTicks::is_null() and that throws off some ThreadController state.
@@ -221,10 +227,10 @@ class ThreadControllerWithMessagePumpTest : public testing::Test {
   TimeTicks FromNow(TimeDelta delta) { return clock_.NowTicks() + delta; }
 
  protected:
-  raw_ptr<MockMessagePump> message_pump_;
-  SequenceManager::Settings settings_;
   SimpleTestTickClock clock_;
+  SequenceManager::Settings settings_;
   ThreadControllerForTest thread_controller_;
+  raw_ptr<MockMessagePump> message_pump_;
   FakeSequencedTaskSource task_source_;
 };
 

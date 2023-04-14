@@ -29,11 +29,36 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
     await importModule(
         ['PanelCommand', 'PanelCommandType'],
         '/chromevox/common/panel_command.js');
+    await importModule('MenuManager', '/chromevox/panel/menu_manager.js');
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('LocalStorage', '/common/local_storage.js');
+    await importModule(
+        'SettingsManager', '/chromevox/common/settings_manager.js');
 
     globalThis.Gesture = chrome.accessibilityPrivate.Gesture;
     globalThis.RoleType = chrome.automation.RoleType;
+
+    const panel = this.getPanel().instance;
+    const original = panel.exec_.bind(panel);
+    panel.exec_ = (command) => {
+      original(command);
+      this.onPanelCommandCalled();
+    };
+  }
+
+  onPanelCommandCalled() {
+    if (this.resolvePanelCommandPromise) {
+      this.resolvePanelCommandPromise();
+    }
+  }
+
+  prepareForPanelCommand() {
+    this.panelCommandPromise =
+        new Promise(resolve => this.resolvePanelCommandPromise = resolve);
+  }
+
+  waitForPanelCommand() {
+    return this.panelCommandPromise;
   }
 
   fireMockEvent(key) {
@@ -56,24 +81,16 @@ ChromeVoxPanelTest = class extends ChromeVoxPanelTestBase {
   }
 
   async waitForMenu(menuMsg) {
-    // Menu and menu item updates occur in a different js context, so tests need
-    // to wait until an update has been made. Swap in our hook, wait, then
-    // restore after.
-    const makeAssertions = () => {
-      const menu = this.getPanel().instance.menuManager_.activeMenu_;
-      assertEquals(menuMsg, menu.menuMsg);
-    };
+    const menuManager = this.getPanel().instance.menuManager_;
 
-    return new Promise(resolve => {
-      const Panel = this.getPanel();
-      const original = Panel.instance.activateMenu_.bind(Panel.instance);
-      Panel.instance.activateMenu_ = (menu, activateFirstItem) => {
-        original(menu, activateFirstItem);
-        makeAssertions();
-        Panel.instance.activateMenu_ = original;
-        resolve();
-      };
-    });
+    // Menu and menu item updates occur in a different js context, so tests need
+    // to wait until an update has been made.
+    return new Promise(
+        resolve =>
+            this.addCallbackPostMethod(menuManager, 'activateMenu', () => {
+              assertEquals(menuMsg, menuManager.activeMenu_.menuMsg);
+              resolve();
+            }, () => true));
   }
 
   assertActiveMenuItem(menuMsg, menuItemTitle, opt_menuItemShortcut) {
@@ -220,7 +237,7 @@ AX_TEST_F(
     'ChromeVoxPanelTest', 'InternationalFormControlsMenu', async function() {
       await this.runWithLoadedTree(this.internationalButtonDoc);
       // Turn on language switching and set available voice list.
-      LocalStorage.set('languageSwitching', true);
+      SettingsManager.set('languageSwitching', true);
       LocaleOutputHelper.instance.availableVoices_ =
           [{'lang': 'en-US'}, {'lang': 'es-ES'}];
       CommandHandlerInterface.instance.onCommand('showFormsList');
@@ -326,4 +343,33 @@ AX_TEST_F('ChromeVoxPanelTest', 'PerformDoDefaultAction', async function() {
   this.assertActiveMenuItem('panel_menu_actions', 'Perform default action');
   this.fireMockEvent('Enter')();
   await this.waitForEvent(button, chrome.automation.EventType.CLICKED);
+});
+
+AX_TEST_F('ChromeVoxPanelTest', 'PanVirtualBrailleDisplay', async function() {
+  await this.runWithLoadedTree(this.linksDoc);
+
+  this.prepareForPanelCommand();
+  CommandHandlerInterface.instance.onCommand('toggleBrailleCaptions');
+  this.waitForPanelCommand();
+
+  // Locate the buttons to pan left and pan right in the display.
+  const panelDocument = this.getPanelWindow().document;
+  const panLeftButton = panelDocument.getElementById('braille-pan-left');
+  assertNotNullNorUndefined(panLeftButton);
+  const panRightButton = panelDocument.getElementById('braille-pan-right');
+  assertNotNullNorUndefined(panRightButton);
+
+  // Mock out ChromeVox.braille to confirm that the commands are routed from the
+  // panel context to the background context.
+  let panLeft;
+  let panRight;
+  const panLeftDone = new Promise(resolve => panLeft = resolve);
+  const panRightDone = new Promise(resolve => panRight = resolve);
+  ChromeVox.braille = {panLeft, panRight};
+
+  panLeftButton.click();
+  await panLeftDone;
+
+  panRightButton.click();
+  await panRightDone;
 });

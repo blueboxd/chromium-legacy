@@ -208,9 +208,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-// Export Perfetto symbols in the same way as //base symbols.
-#define PERFETTO_COMPONENT_EXPORT BASE_EXPORT
-
 // Enable legacy trace event macros (e.g., TRACE_EVENT{0,1,2}).
 #define PERFETTO_ENABLE_LEGACY_TRACE_EVENTS 1
 
@@ -245,7 +242,8 @@ WriteDebugAnnotation(protos::pbzero::DebugAnnotation* annotation, ::base::Time);
 }  // namespace perfetto
 
 // Pull in the tracing macro definitions from Perfetto.
-#include "third_party/perfetto/include/perfetto/tracing.h"
+#include "third_party/perfetto/include/perfetto/tracing/track_event.h"
+#include "third_party/perfetto/include/perfetto/tracing/track_event_legacy.h"
 
 namespace perfetto {
 namespace legacy {

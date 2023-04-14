@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">Senden</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2687403674020088961">Alle Cookies blockieren (nicht empfohlen)</translation>
-<translation id="2704606927547763573">Kopiert</translation>
 <translation id="2713106313042589954">Kamera ausschalten</translation>
 <translation id="2717722538473713889">E-Mail-Adressen</translation>
 <translation id="2750481671343847896">Websites dürfen Anmeldungsaufforderungen von Identitätsdiensten anzeigen.</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="780301667611848630">Kein Interesse</translation>
 <translation id="7804248752222191302">Eine Website verwendet deine Kamera</translation>
+<translation id="7807060072011926525">Von Google bereitgestellt</translation>
 <translation id="7835852323729233924">Medien werden wiedergegeben</translation>
 <translation id="783819812427904514">Stummschaltung des Videos aufheben</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
@@ -407,7 +407,7 @@
 <translation id="8514955299594277296">Websites nicht erlauben, Daten auf deinem Gerät zu speichern (nicht empfohlen)</translation>
 <translation id="851751545965956758">Verhindern, dass Websites eine Verbindung zu Geräten herstellen</translation>
 <translation id="8525306231823319788">Vollbildmodus</translation>
-<translation id="8541410041357371550">Diese Website ruft deine Werbethemen von Chrome ab, damit dir relevantere Werbung angezeigt werden kann</translation>
+<translation id="8541410041357371550">Diese Website ruft deine Werbethemen von Chrome ab, damit sie dir relevantere Werbung anzeigen kann</translation>
 <translation id="8564613706851221529">{COUNT,plural, =1{Cookies zugelassen für <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-Website}other{Cookies zugelassen für <ph name="FPS_MEMBERS_COUNT" /> <ph name="FPS_OWNER" />-Websites}}</translation>
 <translation id="857943718398505171">Zugelassen (empfohlen)</translation>
 <translation id="8609465669617005112">Nach oben</translation>

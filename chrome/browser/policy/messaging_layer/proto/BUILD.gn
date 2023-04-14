@@ -14,9 +14,11 @@ proto_library("crd_event_proto") {
   deps = [ ":session_affiliated_user" ]
 }
 
-# Security XDR events definitions.
-# Currently not used in Chromium, only ChromeOS.
-proto_library("security_xdr_events_proto") {
+proto_library("log_upload_event_proto") {
   proto_in_dir = "//"
-  sources = [ "synced/security_xdr_events.proto" ]
+
+  sources = [ "synced/log_upload_event.proto" ]
+
+  import_dirs = [ "//components/reporting/proto/synced" ]
+  deps = [ "//components/reporting/proto:upload_tracker_proto" ]
 }

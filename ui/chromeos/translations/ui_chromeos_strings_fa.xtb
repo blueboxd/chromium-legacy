@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">اتصال اینترنتی مستقیم</translation>
 <translation id="1272293450992660632">مقادیر پین مطابقت ندارند.</translation>
 <translation id="1280820357415527819">درحال جستجوی شبکه‌های دستگاه همراه</translation>
-<translation id="1291603679744561561">سیم‌کارت قفل است</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">‏Google Drive در حال حاضر در دسترس نیست. به محض در دسترس قرار گرفتن Google Drive بارگذاری کردن به صورت خودکار دوباره شروع می‌شود.</translation>
 <translation id="1307931752636661898">‏نمی‌توان فایل‌های Linux را مشاهده کرد</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">‏برای رها کردن فایل‌ها در Parallels Desktop، فایل موردنظر باید به فایل‌های Windows منتقل شود.</translation>
 <translation id="1435838927755162558">‏هم‌رسانی پوشه با Parallels Desktop</translation>
 <translation id="1439919885608649279">شخصی میان گل‌ها</translation>
+<translation id="1458457385801829801">برداشتن <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">اسلوواکی</translation>
 <translation id="1482884275703521657">فنلاندی</translation>
 <translation id="148466539719134488">سوئیسی</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">‏یک پوشه با Bruschetta هم‌رسانی شد</translation>
 <translation id="2578394532502990878">تامیل (آوایی)</translation>
 <translation id="2579959351793446050">اوریه</translation>
+<translation id="2587195714949534472">درحال آماده شدن برای همگام‌سازی <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، سرپرستتان آن را مسدود کرده است، جزئیات</translation>
 <translation id="2614589611416690597">ویدیوی <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">‏دسترسی به Google Drive در حال حاضر ممکن نیست.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">مغولی</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خطا.</translation>
 <translation id="3509680540198371098">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />٪، جزئیات</translation>
+<translation id="3511705761158917664">درحال آماده شدن برای همگام‌سازی <ph name="NUMBER_OF_ITEMS" /> مورد…</translation>
 <translation id="3522708245912499433">پرتغالی</translation>
 <translation id="3524311639100184459">احتیاط: این فایل‌ها موقتی هستند و ممکن است برای آزادسازی فضای دیسک به‌طور خودکار حذف شوند.  <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">پوشه</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">جاگذاری</translation>
 <translation id="3952872973865944257">تلوگو (آوایی)</translation>
+<translation id="3954354850384043518">درحال انجام</translation>
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3971140002794351170">بارگیری نمایه تلفن همراه، شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">انگلیسی (بریتانیا)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">سرورهای نام سفارشی</translation>
 <translation id="4465725236958772856">شبکه <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، تحت‌مدیریت سرپرست، اتصال</translation>
 <translation id="4470564870223067757">مجموعه هانگول ۲</translation>
+<translation id="4474142134969976028">نتیجه منطبقی پیدا نشد</translation>
 <translation id="4477002475007461989">رومانیایی</translation>
 <translation id="4477219268485577442">آوایی بلغاری</translation>
 <translation id="4508265954913339219">فعالسازی انجام نشد</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">‏از نامی استفاده کنید که ‎<ph name="MAX_LENGTH" /> نویسه یا کمتر داشته باشد</translation>
 <translation id="4973970068702235170">فشرده‌سازی انجام نشد، خطای غیرمنتظره: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ژاپنی</translation>
+<translation id="4987699874727873250">انگلیسی (هند)</translation>
 <translation id="4988205478593450158">آیا مطمئنید می‌خواهید «<ph name="FILE_NAME" />» را حذف کنید؟</translation>
 <translation id="498902553138568924">پروانه قرمز</translation>
 <translation id="4992066212339426712">باصدا کردن</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">هیچ تصویری در موارد اخیر وجود ندارد</translation>
 <translation id="7460898608667578234">اوکراینی</translation>
 <translation id="7469894403370665791">اتصال به این شبکه به صورت خودکار</translation>
+<translation id="7481358317100446445">آماده</translation>
 <translation id="7486315294984620427">‏برای رها کردن فایل‌ها در Parallels Desktop، فایل موردنظر باید در فایل‌های Windows کپی شود.</translation>
 <translation id="749452993132003881">هیراگانا</translation>
 <translation id="7495372004724182530">مالایالم (آوایی)</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">‏دسترسی سریع به Google Photos</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="7663224033570512922">هندی</translation>
+<translation id="7665680517722058469">جستجوی دیگری را امتحان کنید</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> مورد به «حذف‌شده‌ها» منتقل شد</translation>
 <translation id="7693909743393669729">با قالب‌بندی درایو همه داده‌های ذخیره‌شده در آن پاک می‌شود و همه پارتیشن‌های موجود برداشته می‌شوند، ازجمله پارتیشن‌هایی که ممکن است نمایان نباشند. این کنش واگردشدنی نیست.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> قالب‌بندی نشد</translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">عربی (نویسه‌گردانی)</translation>
 <translation id="8873014196523807561">برای بازیابی این موارد، آن‌ها را به پوشه جدیدی بکشید. پوشه‌های اصلی مربوط به برخی‌از این موارد حذف شده است.</translation>
 <translation id="8874184842967597500">متصل نیست</translation>
+<translation id="8876368061475701452">در صف</translation>
 <translation id="8900820606136623064">مجارستانی</translation>
 <translation id="8903931173357132290">فارغ‌التحصیل</translation>
 <translation id="8912078710089354287">سگ درحال تکان دادن دم</translation>

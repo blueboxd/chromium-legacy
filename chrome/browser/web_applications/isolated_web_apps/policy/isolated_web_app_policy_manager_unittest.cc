@@ -14,25 +14,16 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_external_install_options.h"
 #include "chrome/browser/web_applications/isolated_web_apps/policy/isolated_web_app_policy_constants.h"
-#include "chrome/browser/web_applications/isolation_data.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/ash/components/login/login_state/login_state.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chromeos/crosapi/mojom/crosapi.mojom.h"
-#include "chromeos/startup/browser_init_params.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 namespace web_app {
 
@@ -168,44 +159,16 @@ std::vector<IsolatedWebAppExternalInstallOptions> GenerateInstallOptions() {
   return options;
 }
 
-void StartManagedGuestSession() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto init_params = crosapi::mojom::BrowserInitParams::New();
-  init_params->session_type = crosapi::mojom::SessionType::kPublicSession;
-  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  ash::LoginState::Initialize();
-  ash::LoginState::Get()->SetLoggedInState(
-      ash::LoginState::LOGGED_IN_ACTIVE,
-      ash::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
-void ShutdownManagedGuestSession() {
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto init_params = crosapi::mojom::BrowserInitParams::New();
-  chromeos::BrowserInitParams::SetInitParamsForTests(std::move(init_params));
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (ash::LoginState::IsInitialized()) {
-    ash::LoginState::Shutdown();
-  }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-}
-
 class TestIwaInstallCommandWrapper
     : public IsolatedWebAppPolicyManager::IwaInstallCommandWrapper {
  public:
   TestIwaInstallCommandWrapper() = default;
   void Install(
-      const IsolationData& isolation_data,
-      const IsolatedWebAppUrlInfo& isolation_info,
+      const IsolatedWebAppLocation& location,
+      const IsolatedWebAppUrlInfo& url_info,
       WebAppCommandScheduler::InstallIsolatedWebAppCallback callback) override {
-    if (isolation_info.web_bundle_id().id() == kWebBundleId1 ||
-        isolation_info.web_bundle_id().id() == kWebBundleId2) {
+    if (url_info.web_bundle_id().id() == kWebBundleId1 ||
+        url_info.web_bundle_id().id() == kWebBundleId2) {
       std::move(callback).Run(InstallIsolatedWebAppCommandSuccess{});
       return;
     }
@@ -245,13 +208,11 @@ class IsolatedWebAppPolicyManagerTest : public ::testing::Test {
                               net::HttpStatusCode::HTTP_NOT_FOUND);
     test_factory_.AddResponse("https://example.com/app8.swbn",
                               "Content of app8");
-    StartManagedGuestSession();
+    test_managed_guest_session_ =
+        std::make_unique<profiles::testing::ScopedTestManagedGuestSession>();
   }
 
-  void TearDown() override {
-    ShutdownManagedGuestSession();
-    test_factory_.ClearResponses();
-  }
+  void TearDown() override { test_factory_.ClearResponses(); }
 
   void AddJsonResponse(base::StringPiece url, base::StringPiece content) {
     network::mojom::URLResponseHeadPtr head =
@@ -268,6 +229,8 @@ class IsolatedWebAppPolicyManagerTest : public ::testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   const std::vector<IsolatedWebAppExternalInstallOptions> all_install_options_ =
       GenerateInstallOptions();
+  std::unique_ptr<profiles::testing::ScopedTestManagedGuestSession>
+      test_managed_guest_session_;
 };
 
 // This test case represents the regular flow of force installing IWA for
@@ -329,7 +292,7 @@ TEST_F(IsolatedWebAppPolicyManagerTest, MgsRegularFlow) {
 
 // If there is no MGS we don't create root directory for the IWAs.
 TEST_F(IsolatedWebAppPolicyManagerTest, RegularUserDirectoryForIwaNotCreated) {
-  ShutdownManagedGuestSession();
+  test_managed_guest_session_.reset();
   auto expected_results =
       std::vector<IsolatedWebAppPolicyManager::EphemeralAppInstallResult>(
           all_install_options_.size(),

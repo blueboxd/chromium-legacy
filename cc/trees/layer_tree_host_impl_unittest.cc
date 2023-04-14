@@ -5761,6 +5761,9 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
   UpdateDrawProperties(host_impl_->active_tree());
   host_impl_->active_tree()->DidBecomeActive();
 
+  bool unification_enabled =
+      base::FeatureList::IsEnabled(features::kScrollUnification);
+
   // Wheel scroll on root scrollbar should process on impl thread.
   {
     InputHandler::ScrollStatus status = GetInputHandler().ScrollBegin(
@@ -5772,15 +5775,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
     GetInputHandler().ScrollEnd();
   }
 
-  // Touch scroll on root scrollbar should process on main thread.
+  // Touch scroll on root scrollbar should process on impl thread
+  // (main thread pre-unification).
   {
     InputHandler::ScrollStatus status = GetInputHandler().ScrollBegin(
         BeginState(gfx::Point(1, 1), gfx::Vector2dF(),
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    EXPECT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
+    EXPECT_EQ(unification_enabled ? ScrollThread::SCROLL_ON_IMPL_THREAD
+                                  : ScrollThread::SCROLL_ON_MAIN_THREAD,
+              status.thread);
+    EXPECT_EQ(unification_enabled
+                  ? MainThreadScrollingReason::kNotScrollingOnMain
+                  : MainThreadScrollingReason::kScrollbarScrolling,
               status.main_thread_scrolling_reasons);
   }
 
@@ -5797,15 +5805,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollHitTestOnScrollbar) {
     GetInputHandler().ScrollEnd();
   }
 
-  // Touch scroll on scrollbar should process on main thread.
+  // Touch scroll on scrollbar should process on impl thread
+  // (main thread pre-unification).
   {
     InputHandler::ScrollStatus status = GetInputHandler().ScrollBegin(
         BeginState(gfx::Point(51, 51), gfx::Vector2dF(),
                    ui::ScrollInputType::kTouchscreen)
             .get(),
         ui::ScrollInputType::kTouchscreen);
-    EXPECT_EQ(ScrollThread::SCROLL_ON_MAIN_THREAD, status.thread);
-    EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
+    EXPECT_EQ(unification_enabled ? ScrollThread::SCROLL_ON_IMPL_THREAD
+                                  : ScrollThread::SCROLL_ON_MAIN_THREAD,
+              status.thread);
+    EXPECT_EQ(unification_enabled
+                  ? MainThreadScrollingReason::kNotScrollingOnMain
+                  : MainThreadScrollingReason::kScrollbarScrolling,
               status.main_thread_scrolling_reasons);
   }
 }
@@ -14289,7 +14302,8 @@ TEST_F(LayerTreeHostImplTest,
         i == 0 ? ScrollUpdateEventMetrics::ScrollUpdateType::kStarted
                : ScrollUpdateEventMetrics::ScrollUpdateType::kContinued,
         /*delta=*/10.0f, base::TimeTicks::Now(),
-        base::TimeTicks::Now() + base::Milliseconds(1)));
+        base::TimeTicks::Now() + base::Milliseconds(1),
+        /*trace_id*/ base::IdType64<class ui::LatencyInfo>(123)));
     host_impl_->active_tree()->AppendEventsMetricsFromMainThread(
         std::move(events_metrics));
 
@@ -14973,15 +14987,22 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, MainThreadFallback) {
   EXPECT_EQ(compositor_threaded_scrolling_result.scroll_delta.y(), 525u);
   EXPECT_FALSE(GetScrollNode(scroll_layer)->main_thread_scrolling_reasons);
 
-  // If the scroll_node has a main_thread_scrolling_reason, the
-  // InputHandlerPointerResult should return a zero offset. This will cause the
-  // main thread to handle the scroll.
+  // Assign a main_thread_scrolling_reason to the scroll node.
   GetScrollNode(scroll_layer)->main_thread_scrolling_reasons =
       MainThreadScrollingReason::kThreadedScrollingDisabled;
   compositor_threaded_scrolling_result = GetInputHandler().MouseDown(
       gfx::PointF(350, 500), /*jump_key_modifier*/ false);
   GetInputHandler().MouseUp(gfx::PointF(350, 500));
-  EXPECT_EQ(compositor_threaded_scrolling_result.scroll_delta.y(), 0u);
+  if (base::FeatureList::IsEnabled(features::kScrollUnification)) {
+    // After unification, a scrollbar layer track click applies the scroll on
+    // the compositor thread even though it has a main thread scrolling reason.
+    EXPECT_EQ(compositor_threaded_scrolling_result.scroll_delta.y(), 525u);
+  } else {
+    // If the scroll_node has a main_thread_scrolling_reason, the
+    // InputHandlerPointerResult should return a zero offset. This will cause
+    // the main thread to handle the scroll.
+    EXPECT_EQ(compositor_threaded_scrolling_result.scroll_delta.y(), 0u);
+  }
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
   host_impl_->ReleaseLayerTreeFrameSink();
@@ -16770,6 +16791,9 @@ class TestRenderFrameMetadataObserver : public RenderFrameMetadataObserver {
       compositor_frame_metadata->send_frame_token_to_embedder = true;
     last_metadata_ = render_frame_metadata;
   }
+#if BUILDFLAG(IS_ANDROID)
+  void DidEndScroll() override {}
+#endif
 
   const absl::optional<RenderFrameMetadata>& last_metadata() const {
     return last_metadata_;

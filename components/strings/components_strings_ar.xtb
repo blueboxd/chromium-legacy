@@ -8,7 +8,6 @@
 <translation id="1011206368273183593">جارٍ تحضير الملفات</translation>
 <translation id="1015730422737071372">تقديم تفاصيل إضافية</translation>
 <translation id="1019413721762100891">غير مفعّل</translation>
-<translation id="1021110881106174305">البطاقات المقبولة</translation>
 <translation id="1021753677514347426">‏تحدث هذه المشكلة بسبب شهادة ثبّتها أنت أو ثبّتها مستخدم آخر على جهازك. من المعروف أن الشهادة تُستخدم لمراقبة الشبكات واعتراضها، ولا يثق Chromium بها. وعلى الرغم من وجود بعض الحالات المشروعة للمراقبة، كما هو الحال في شبكة المدرسة أو الشركة، يريد Chromium التأكد من أنك تدرك حدوث ذلك، حتى لو لم يكن بإمكانك إيقافه. يمكن أن تحدث عملية المراقبة في أي متصفّح أو تطبيق يصل إلى الويب.</translation>
 <translation id="1024111578869940408">يحاكي المخترِقون أحيانًا المواقع الإلكترونية من خلال إجراء تغييرات يصعب رؤيتها على عنوان الويب.</translation>
 <translation id="1028781062521375153">عرض التفاصيل</translation>
@@ -53,6 +52,7 @@
 <translation id="1100782917270858593">‏زر استئناف سجلّ أنشطة البحث والتصفُّح: اضغط على مفتاح Enter لاستئناف سجلّ أنشطة البحث والتصفُّح والاطّلاع على النشاط ذي الصلة في سجلّ Chrome.</translation>
 <translation id="1101672080107056897">خطأ في الإجراء</translation>
 <translation id="1103523840287552314">ترجمة اللغة <ph name="LANGUAGE" /> دائمًا</translation>
+<translation id="1104409666019087579">بعض الحقول المطلوبة فارغة. يُرجى ملء هذه الحقول قبل الحفظ.</translation>
 <translation id="1108464073729874771">A3x4</translation>
 <translation id="1110994991967754504">اختيار إذن لـ <ph name="PERMISSION_NAME" /></translation>
 <translation id="1112828774174131240">تحف ومقتنيات</translation>
@@ -477,6 +477,7 @@
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2093982008204312032">‏يحاول Google Chrome إيقاف استخدام Windows Hello لملء كلمات المرور.</translation>
 <translation id="2094505752054353250">النطاق غير متطابق</translation>
+<translation id="2094704029599359040">معلومات الإصدار</translation>
 <translation id="2099652385553570808">وضع ثلاثة دبابيس يسارًا</translation>
 <translation id="2101225219012730419">الإصدار:</translation>
 <translation id="2102134110707549001">اقتراح كلمة مرور قوية…</translation>
@@ -501,7 +502,6 @@
 <translation id="2148613324460538318">إضافة بطاقة</translation>
 <translation id="2149968176347646218">الاتصال بهذا الموقع الإلكتروني غير آمن</translation>
 <translation id="2153609454945889823">‏هل تريد تثبيت "خدمات Google Play للواقع المعزّز"؟</translation>
-<translation id="2154054054215849342">المزامنة غير متاحة لنطاقك</translation>
 <translation id="2154484045852737596">تعديل البطاقة</translation>
 <translation id="2155260325161282517">5 × 7 بوصة</translation>
 <translation id="2157640075051554492">إشعارات تتبُّع الأسعار</translation>
@@ -524,6 +524,7 @@
 <translation id="2202627062836089804">الجهة الخلفية للبطاقة</translation>
 <translation id="22081806969704220">الدُرج 3</translation>
 <translation id="2210794033760923560">تحميل التقرير</translation>
+<translation id="2212579473415663542">‏تم حفظ هذا العنوان في حسابك على Google (<ph name="ACCOUNT" />)، ويمكنك استخدامه في منتجات Google على أي جهاز.</translation>
 <translation id="2212735316055980242">تعذر العثور على السياسة</translation>
 <translation id="2213606439339815911">جارٍ جلب الإدخالات...</translation>
 <translation id="2213612003795704869">تمت طباعة الصفحة.</translation>
@@ -539,6 +540,7 @@
 <translation id="2241693394036365668">تم تنزيل ملف</translation>
 <translation id="2246264294482514010">10 × 12 بوصة</translation>
 <translation id="2246480341630108201">لم نحصل على موافقة أحد الوالدَين بعد.</translation>
+<translation id="2247789808226901522">انتهت صلاحية البطاقة</translation>
 <translation id="2248949050832152960">‏استخدام WebAuthn</translation>
 <translation id="2250931979407627383">خزم الحواف يسارًا</translation>
 <translation id="225207911366869382">تم تجاهل القيمة لهذه السياسة.</translation>
@@ -708,7 +710,6 @@
 <translation id="2688969097326701645">نعم، متابعة</translation>
 <translation id="2691924980723297736">تحذير متعلق بالأمان</translation>
 <translation id="2692131511336778528">خيال علمي وفانتازيا</translation>
-<translation id="2699302886720511147">البطاقات المقبولة</translation>
 <translation id="2701514975700770343">الوجه للأسفل</translation>
 <translation id="2702801445560668637">قائمة القراءة</translation>
 <translation id="2704283930420550640">القيمة لا تطابق التنسيق.</translation>
@@ -893,7 +894,6 @@
 <translation id="3218181027817787318">نسبي</translation>
 <translation id="3223287115535306850">رمز التحميل الخاص ببدء تشغيل التطبيق</translation>
 <translation id="3223425961342298674">تم رفض طلب الوصول إلى الموقع الجغرافي.</translation>
-<translation id="3225347164936328585">تصفيق</translation>
 <translation id="3225919329040284222">قدم الخادم شهادة لا تتطابق مع التوقعات المضمّنة. تم تضمين هذه التوقعات للحصول على مواقع إلكترونية موثوقة وآمنة جدًا لتوفير الحماية لك.</translation>
 <translation id="3226128629678568754">اضغط على زر إعادة التحميل لإعادة إرسال البيانات المطلوبة لتحميل الصفحة.</translation>
 <translation id="3226387218769101247">الصور المصغرة</translation>
@@ -910,7 +910,6 @@
 <translation id="3249151924975132674">قروض للطلاب وتمويل الدراسة الجامعية</translation>
 <translation id="3249845759089040423">أنيق</translation>
 <translation id="3250640885957938546">إعلان وتسويق</translation>
-<translation id="3251133337102041130">Government Legal</translation>
 <translation id="3252266817569339921">الفرنسية</translation>
 <translation id="3254301855501243548">18 × 22 بوصة</translation>
 <translation id="3256863843508922226">خطط تقاعد</translation>
@@ -951,7 +950,6 @@
 <translation id="3340978935015468852">الإعدادات</translation>
 <translation id="3342018947887487892">لاحقًا، يمكن للموقع الإلكتروني الذي تنتقل إليه أن يطلب هذه المعلومات، إما مواضيع الإعلانات أو الإعلانات المقترَحة من المواقع الإلكترونية التي انتقلت إليها.</translation>
 <translation id="3342366525167526994">فن تجميل الجسد</translation>
-<translation id="3345782426586609320">عينان</translation>
 <translation id="3349952286488694786">SRA2</translation>
 <translation id="3355823806454867987">تغيير إعدادات الخادم الوكيل...</translation>
 <translation id="3359565626472459400">زواج</translation>
@@ -991,7 +989,6 @@
 <translation id="342781501876943858">‏يُوصي Chromium بإعادة تحديد كلمة المرور في حال إعادة استخدامها في مواقع إلكترونية أخرى.</translation>
 <translation id="3428151540071562330">‏إنّ معرّف واحد أو أكثر من معرّفات الموارد المنتظمة (URI) لنموذج خادم DnsOverHttpsTemplates غير صالح وبالتالي لن يتم استخدامه.</translation>
 <translation id="3431216045099978607">اضغط على مفتاح |<ph name="ACCELERATOR" />| للخروج من وضع ملء الشاشة والاطّلاع على عملية التنزيل.</translation>
-<translation id="3431636764301398940">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="3432601291244612633">إغلاق الصفحة</translation>
 <translation id="3435738964857648380">أمن المعلومات</translation>
 <translation id="3438829137925142401">‏استخدام كلمات المرور المحفوظة في حسابك على Google</translation>
@@ -1080,6 +1077,7 @@
 <translation id="3646643500201740985">قياس مستوى أداء إعلان</translation>
 <translation id="3647286794400715637">‏يجب أن يحتوي كل إدخال في سلسلة عناوين URL على عنوان URL واحد (كحد أدني) أو اثنين (كحد أقصى).</translation>
 <translation id="3650584904733503804">تم التحقق بنجاح</translation>
+<translation id="3650594806107685466">للمساعدة في الحفاظ على أمان بطاقتك، أدخِل رمز التحقق من البطاقة المتوفّر على <ph name="SIDE_OF_CARD" />.</translation>
 <translation id="3653033846669030038">متنزهات ترفيهية</translation>
 <translation id="3655241534245626312">الانتقال إلى إعدادات الأذونات</translation>
 <translation id="3655670868607891010">إذا تكرّر هذا الأمر، ننصحك بالاطّلاع على هذه <ph name="HELP_LINK" />.</translation>
@@ -1111,6 +1109,7 @@
 <translation id="3713662424819367124">عطور وروائح عطرة</translation>
 <translation id="3714633008798122362">تقويم الويب</translation>
 <translation id="3714780639079136834">‏تشغيل بيانات شبكة الجوّال أو Wi-Fi</translation>
+<translation id="3715545959749027023">‏عند الإبلاغ عن أي أحداث أمنية من خلال متصفِّح Chrome، يتم إرسال البيانات المتعلّقة بالأحداث إلى مشرفك. يمكن أن تتضمّن هذه البيانات عناوين URL لصفحات تزورها في Chrome، وأسماء ملفات أو بيانات وصفية، وأعطال المتصفِّح أو علامات التبويب، واسم المستخدم الذي تستخدمه لتسجيل الدخول إلى جهازك ومتصفِّح Chrome والتطبيقات المستندة إلى الويب.</translation>
 <translation id="3715597595485130451">‏الاتصال بـ Wi-Fi</translation>
 <translation id="3717027428350673159"><ph name="BEGIN_LINK" />التحقق من إعداد الخادم الوكيل والجدار الناري ونظام أسماء النطاقات<ph name="END_LINK" /></translation>
 <translation id="372429172604983730">تتضمن التطبيقات التي يمكن أن تسبب ذلك الخطأ برنامج مكافحة الفيروسات والجدار الناري وبرنامج تصفية الويب أو برنامج الخادم الوكيل.</translation>
@@ -1122,7 +1121,6 @@
 <translation id="3744111561329211289">المزامنة في الخلفية</translation>
 <translation id="3744286742364977428">‏يتم إرسال الملفات التي تنزِّلها إلى Google Cloud أو جهات خارجية لتحليلها. على سبيل المثال، قد يتم فحص هذه الملفات بحثًا عن بيانات حسّاسة أو برامج ضارة، وقد يتم تخزينها استنادًا إلى سياسات الشركة.</translation>
 <translation id="3744899669254331632">‏لا يمكنك زيارة <ph name="SITE" /> في الوقت الحالي لأن الموقع أرسل اعتمادات مختلطة حيث لا يستطيع Chromium المعالجة. أخطاء الشبكة وهجماتها عادةً ما تكون مؤقتة، لذلك من المحتمل أن تعمل هذه الصفحة في وقت لاحق.</translation>
-<translation id="3745099705178523657">‏بعد التأكيد، ستتم مشاركة تفاصيل البطاقة من حسابك على Google مع هذا الموقع الإلكتروني.</translation>
 <translation id="3748148204939282805">قد يخدعك المهاجمون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> لاتّخاذ إجراءات خطيرة، مثل تثبيت برامج معيّنة أو كشف معلوماتك الشخصية (مثل كلمات المرور أو أرقام الهاتف أو بطاقات الائتمان). <ph name="BEGIN_LEARN_MORE_LINK" />مزيد من المعلومات<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="3748912308089554501">مجال الطيران</translation>
 <translation id="3752543821772132562">تم تجاهل السياسة بسبب عدم ضبط <ph name="POLICY_NAME" />.</translation>
@@ -1140,7 +1138,6 @@
 <translation id="3781428340399460090">وردي برّاق</translation>
 <translation id="3783418713923659662">Mastercard</translation>
 <translation id="3784372983762739446">أجهزة بلوتوث</translation>
-<translation id="3787705759683870569">تنتهي في <ph name="EXPIRATION_MONTH" />/<ph name="EXPIRATION_YEAR" /></translation>
 <translation id="3789155188480882154">الحجم 16</translation>
 <translation id="3789841737615482174">تثبيت</translation>
 <translation id="3792100426446126328">‏<ph name="NAME" /> (<ph name="WIDTH" /> x <ph name="HEIGHT" /> بوصة)</translation>
@@ -1244,7 +1241,6 @@
 <translation id="4088981014127559358">‏طباعة جانب واحد image Y shift</translation>
 <translation id="4089152113577680600">الدُرج 14</translation>
 <translation id="4096237801206588987">11 × 15 بوصة</translation>
-<translation id="4097288585054919042">إيقاف التنبيهات</translation>
 <translation id="4098354747657067197">أنت بصدد الانتقال إلى موقع إلكتروني مخادع</translation>
 <translation id="4099048595830172239">تحظر سياسة المشرف مشاركة الشاشة مع تطبيق <ph name="APPLICATION_TITLE" /> عند عرض محتوى سري:</translation>
 <translation id="4099391883283080991">‏<ph name="CUSTOMIZE_CHROME_FONTS_FOCUSED_FRIENDLY_MATCH_TEXT" />، اضغط على مفتاح Tab ثم مفتاح Enter لتخصيص أحجام الخطوط وأنماطها في Chrome.</translation>
@@ -1322,6 +1318,7 @@
 <translation id="4223404254440398437">تم رفض طلب الوصول إلى الميكروفون.</translation>
 <translation id="4226937834893929579"><ph name="BEGIN_LINK" />تجربة تشغيل بيانات تشخيص الشبكة<ph name="END_LINK" />.</translation>
 <translation id="4230204356098880324">السماح للموقع الإلكتروني بطلب استخدام الكاميرا وتحريكها</translation>
+<translation id="4231448684371260244">‫8 × 13 بوصة</translation>
 <translation id="4235360514405112390">صالح</translation>
 <translation id="4250431568374086873">إن اتصالك بهذا الموقع غير آمن تمامًا</translation>
 <translation id="4250680216510889253">لا</translation>
@@ -1394,7 +1391,6 @@
 <translation id="4393632246160856858">منتجات العناية بالأظافر</translation>
 <translation id="4406883609789734330">النسخ النصي التلقائي</translation>
 <translation id="4406896451731180161">نتائج البحث</translation>
-<translation id="4407755609041463909">حريق</translation>
 <translation id="4408413947728134509"><ph name="NUM_COOKIES" /> من ملفات تعريف الارتباط</translation>
 <translation id="4411435778612100394">أجهزة إلكترونية استهلاكية</translation>
 <translation id="4412074349188076601">تم وضع علامة على هذه الإعدادات تشير إلى أنّها قابلة للتثبيت، إلا أنّه لم يتم تقديم أي نسخة لهذه البنية، لذا لا يمكن تثبيتها.</translation>
@@ -1782,7 +1778,6 @@
 <translation id="5333022057423422993">‏لقد عثر Chrome في عمليّة اختراق للبيانات على كلمة المرور التي استخدمتها للتو. لحماية حساباتك، ننصحك بالتحقّق من كلمات مرورك المحفوظة.</translation>
 <translation id="5334013548165032829">سجلّات النظام التفصيلية</translation>
 <translation id="5334145288572353250">هل تريد حفظ العنوان؟</translation>
-<translation id="5335920952954443287">قلب يخفق</translation>
 <translation id="5337569431717511221">‏زر "ضبط Chrome كمتصفِّح تلقائي": اضغط على مفتاح Enter لضبط Chrome كمتصفِّح تلقائي للنظام.</translation>
 <translation id="5340250774223869109">التطبيق محظور</translation>
 <translation id="534295439873310000">‏أجهزة NFC</translation>
@@ -1790,7 +1785,6 @@
 <translation id="5344579389779391559">قد تُحاول هذه الصفحة تحصيل رسوم منك</translation>
 <translation id="5347645913823149105">‏زر تخصيص الخطوط في Chrome: اضغط على مفتاح Enter لتخصيص أحجام الخطوط وأنماطها في Chrome.</translation>
 <translation id="5355557959165512791">لا يمكنك زيارة <ph name="SITE" /> الآن لأنه تم إبطال شهادته. أخطاء الشبكة والهجمات عليها عادةً ما تكون مؤقتة، لذا ستعمل هذه الصفحة في وقت على الأرجح.</translation>
-<translation id="5356837363448394805">متورّد الخدين</translation>
 <translation id="5357848622083956825">فنون بصرية وتصميم</translation>
 <translation id="536296301121032821">تعذّر تخزين إعدادات السياسة</translation>
 <translation id="5363309033720083897">منفذ تسلسلي سمحَ به مشرفك</translation>
@@ -1804,7 +1798,6 @@
 <translation id="5396631636586785122">خزم الحواف يمينًا</translation>
 <translation id="5398772614898833570">تم حظر الإعلانات</translation>
 <translation id="5400836586163650660">رمادي</translation>
-<translation id="540630185148148480">تفعيل التنبيهات</translation>
 <translation id="540969355065856584">لم يتمكن هذا الخادم من إثبات أنه <ph name="DOMAIN" />؛ بل إن شهادة الأمان الخاصة به غير صالحة حاليًا. وربما يكون السبب في ذلك وجود خطأ في التكوين أو اعترض أحد المهاجمين للاتصال.</translation>
 <translation id="5412040515238827314">تنسيق غير صالح: كان من المتوقّع ظهور قائمة بالأنماط.</translation>
 <translation id="5412236728747081950">‏يتعرّف هذا الموقع الإلكتروني على اهتماماتك من خلال متصفّح Chrome ويعرض لك إعلانات تناسبك أكثر.</translation>
@@ -1865,6 +1858,7 @@
 <translation id="5552137475244467770">‏يتحقَّق Chrome من كلمات مرورك بشكلٍ دوري في البيانات التي تم نشرها على الإنترنت. وأثناء هذه العملية، تكون كلمات المرور وأسماء المستخدمين مشفّرة، ولا يمكن لأي مستخدم آخر الاطِّلاع على هذه البيانات بما في ذلك Google.</translation>
 <translation id="5556459405103347317">إعادة التحميل</translation>
 <translation id="5558125320634132440">تم حظر هذا الموقع الإلكتروني لأنه قد يتضمّن محتوى للكبار</translation>
+<translation id="5559311991468302423">حذف العنوان</translation>
 <translation id="5560088892362098740">تاريخ انتهاء الصلاحية</translation>
 <translation id="55635442646131152">مخطط المستند</translation>
 <translation id="5565613213060953222">فتح علامة تبويب في وضع التصفّح المتخفي</translation>
@@ -1963,7 +1957,6 @@
 <translation id="5808435672482059465">‏عرض سجلّ Chrome</translation>
 <translation id="5808542072418270309">ألعاب محاكاة</translation>
 <translation id="5810442152076338065">يتم ترميز اتصالك بالنطاق <ph name="DOMAIN" /> باستخدام مجموعة ترميز قديمة.</translation>
-<translation id="5812947184178430888">‏عند الإبلاغ عن أي أحداث أمنية من خلال متصفِّح Chrome، يتم إرسال البيانات المتعلّقة بالأحداث إلى مشرفك. ويمكن أن تتضمن هذه البيانات عناوين URL لصفحات تزورها في Chrome، وأسماء ملفات أو بيانات وصفية، واسم المستخدم الذي تستخدمه لتسجيل الدخول إلى جهازك ومتصفِّح Chrome والتطبيقات المستندة إلى الويب.</translation>
 <translation id="5813119285467412249">إعا&amp;دة الإضافة</translation>
 <translation id="5813309815819933152">برامج تلفزيون الواقع</translation>
 <translation id="5813753398265398978">فيزياء</translation>
@@ -1982,6 +1975,7 @@
 <translation id="5866898949289125849">أنت تطّلع على صفحة أدوات المطوّرين.</translation>
 <translation id="5869405914158311789">لا يمكن الوصول إلى الموقع الإلكتروني هذا</translation>
 <translation id="5869522115854928033">كلمات المرور المحفوظة</translation>
+<translation id="5872692522325383488">‏تم حفظ رقم الحساب بصيغة IBAN</translation>
 <translation id="5873013647450402046">يجب تأكيد هويتك للمصرف.</translation>
 <translation id="5877831137320480913">جمال ولياقة بدنية</translation>
 <translation id="5884465125445718607">ظرف صيني رقم 6</translation>
@@ -2028,6 +2022,7 @@
 <translation id="5992691462791905444">‏تصميم الطي على شكل حرف Z</translation>
 <translation id="5992805036496113940">الاطّلاع على المعلومات التي يتم استخدامها لعرض الإعلانات لك</translation>
 <translation id="5995727681868049093">‏إدارة المعلومات والخصوصية والأمان في حسابك على Google</translation>
+<translation id="5996887213716993070">يجب إدخال قيمة في الحقل "<ph name="FIELD" />".</translation>
 <translation id="5997247540087773573">‏استُخدمت كلمة المرور التي أدخلتها للتو في عملية اختراق للبيانات. لتأمين حساباتك، ينصح "مدير كلمات المرور" في Google بتغيير كلمة المرور الآن ثم التحقّق من كلمات المرور المحفوظة.</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> من نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6005765687956866568">تم محو المعلومات التي تم ملؤها تلقائيًا من النموذج.</translation>
@@ -2121,7 +2116,6 @@
 <translation id="6226163402662242066">‏<ph name="MANAGE_CHROME_ACCESSIBILITY_FOCUSED_FRIENDLY_MATCH_TEXT" />، اضغط على مفتاح Tab ثم مفتاح Enter لتخصيص أدوات تسهيل الاستخدام في إعدادات Chrome</translation>
 <translation id="6229649258872345286">سياحة عائلية</translation>
 <translation id="6232271601416750929">مستحضرات تجميل صديقة للبيئة</translation>
-<translation id="6233160458685643793">ابتسامة عريضة</translation>
 <translation id="6234122620015464377">القطع بعد كل مستند</translation>
 <translation id="6236290670123303279">إدارة الإعدادات</translation>
 <translation id="6240447795304464094">‏شعار Google Pay</translation>
@@ -2151,6 +2145,7 @@
 <translation id="6300452962057769623">{0,plural, =0{ستتم إعادة تشغيل جهازك الآن}=1{ستتم إعادة تشغيل جهازك بعد ثانية واحدة}two{ستتم إعادة تشغيل جهازك بعد ثانيتين}few{ستتم إعادة تشغيل جهازك بعد # ثوانٍ}many{ستتم إعادة تشغيل جهازك بعد # ثانية}other{ستتم إعادة تشغيل جهازك بعد # ثانية}}</translation>
 <translation id="6301104306974789820">الحصول على الإشعارات الخاصة بتتبُّع أسعار المنتجات</translation>
 <translation id="6305205051461490394">يتعذر الوصول إلى <ph name="URL" />.</translation>
+<translation id="6306713302480826305">سيتم حذف هذا العنوان من هذا الجهاز والأجهزة الأخرى التي سجّلت الدخول عليها.</translation>
 <translation id="6311165245110979290">البطاقة الافتراضية متوفّرة</translation>
 <translation id="6312113039770857350">صفحة الويب غير متاحة</translation>
 <translation id="6316226860534107313">دراجات سكوتر ودراجات نارية صغيرة</translation>
@@ -2188,7 +2183,6 @@
 <translation id="6391700400718590966">تم إغلاق صفحة عدم تطابق بيانات اعتماد الدفع الآمن.</translation>
 <translation id="6393956493820063117">تحظر سياسة المشرف إمكانية اللصق من <ph name="ORIGIN_NAME" /> إلى هذا المكان.</translation>
 <translation id="6394852772105848029">يريد هذا الموقع الإلكتروني فتح تطبيق <ph name="APP_NAME" />.</translation>
-<translation id="6398277657359595425">بكاء بصوت مرتفع</translation>
 <translation id="6398765197997659313">إنهاء وضع ملء الشاشة</translation>
 <translation id="6401136357288658127">تم إيقاف هذه السياسة. يمكنك استخدام السياسة <ph name="NEW_POLICY" /> بدلاً من ذلك.</translation>
 <translation id="6404511346730675251">تعديل الإشارة المرجعية</translation>
@@ -2288,7 +2282,6 @@
 <translation id="6660413144148052430">الموقع الجغرافي</translation>
 <translation id="6662457027866368246">اللفافة الأولى</translation>
 <translation id="666259744093848177">‏(معالج x86_64 مُترجَم)</translation>
-<translation id="6663846344464066639">يدان مطويتان</translation>
 <translation id="6665553082534466207">عمل ثلاثة ثقوب يمينًا</translation>
 <translation id="6668389483194953109">‏تم العثور على اسم حجم الورقة "custom"، إلا أنّ السمة "custom_size" فارغة أو غير صالحة.</translation>
 <translation id="6671697161687535275">‏هل تريد إزالة اقتراح النموذج من Chromium؟</translation>
@@ -2389,7 +2382,6 @@
 <translation id="6939469646605424232">أعمال تلفزيونية درامية</translation>
 <translation id="6944692733090228304">لقد أدخلتَ كلمة المرور في موقع إلكتروني لا تديره <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. ويُرجى عدم إعادة استخدام كلمة المرور في التطبيقات ومواقع الويب الأخرى لحماية حسابك.</translation>
 <translation id="6945221475159498467">تحديد</translation>
-<translation id="6946722113367118030">تفكير</translation>
 <translation id="6948051842255602737">انتهت اللعبة، والنتيجة التي حققتها هي <ph name="SCORE" />.</translation>
 <translation id="6948701128805548767">لعرض طرق الاستلام ومتطلباته، اختَر عنوانًا</translation>
 <translation id="6948874830249067134">A1x3</translation>
@@ -2465,6 +2457,7 @@
 <translation id="7112327784801341716">إذا لم تظهر معلوماتك الحديثة، يُرجى التواصل مع المصرف الذي تتعامل معه لتعديلها.</translation>
 <translation id="7118618213916969306">‏البحث عن عنوان URL للحافظة، <ph name="SHORT_URL" /></translation>
 <translation id="7119414471315195487">إغلاق علامات التبويب أو البرامج الأخرى</translation>
+<translation id="7124354851782353862">‏أدخِل رمز التحقق من البطاقة (CVC)</translation>
 <translation id="7129355289156517987">‏عند إغلاق كل علامات التبويب في وضع التصفّح المتخفي في متصفّح Chromium، يتم محو نشاطك في علامات التبويب تلك من هذا الجهاز:
           <ph name="BEGIN_LIST" />
             <ph name="LIST_ITEM" />نشاط التصفّح<ph name="END_LIST_ITEM" />
@@ -2580,6 +2573,7 @@
 <translation id="7388594495505979117">{0,plural, =1{ستتم إعادة تشغيل جهازك بعد دقيقة واحدة}zero{ستتم إعادة تشغيل جهازك بعد # دقيقة}two{ستتم إعادة تشغيل جهازك بعد دقيقتين}few{ستتم إعادة تشغيل جهازك بعد # دقائق}many{ستتم إعادة تشغيل جهازك بعد # دقيقة}other{ستتم إعادة تشغيل جهازك بعد # دقيقة}}</translation>
 <translation id="7390545607259442187">التأكد من البطاقة</translation>
 <translation id="7392089738299859607">تعديل العنوان</translation>
+<translation id="739728382607845710">رمز معالج الدفع</translation>
 <translation id="7399802613464275309">التحقّق من الأمان</translation>
 <translation id="7400418766976504921">‏عنوان URL</translation>
 <translation id="7403392780200267761">يمكنك مشاركة علامة التبويب هذه عن طريق مشاركة الرابط وإنشاء رمز استجابة سريعة وبث المحتوى وغير ذلك</translation>
@@ -2711,7 +2705,6 @@
 <translation id="765676359832457558">إخفاء الإعدادات المتقدمة...</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7659327900411729175">‏ظرف Kaku 8</translation>
-<translation id="7659878911471462949">دموع الفرح</translation>
 <translation id="766014026101194726">{0,plural, =1{تحظر سياسة المشرف تحميل هذا الملف}zero{تحظر سياسة المشرف تحميل # ملف}two{تحظر سياسة المشرف تحميل ملفَين}few{تحظر سياسة المشرف تحميل # ملفات}many{تحظر سياسة المشرف تحميل # ملفًا}other{تحظر سياسة المشرف تحميل # ملف}}</translation>
 <translation id="7662298039739062396">يتم التحكّم في الإعداد بواسطة إحدى الإضافات</translation>
 <translation id="7663736086183791259">شهادة <ph name="CERTIFICATE_VALIDITY" /></translation>
@@ -2769,6 +2762,7 @@
 <translation id="7766518757692125295">Skirt</translation>
 <translation id="7773005668374414287">نفس الترتيب والوجه للأعلى</translation>
 <translation id="7785790577395078482">هذا الجهاز اللوحي</translation>
+<translation id="7786368602962652765">هناك حقل مطلوب فارغ. يُرجى ملء الحقل قبل الحفظ.</translation>
 <translation id="7790488044432570133">‏يمكن للمواقع الإلكترونية التي تنتقل إليها أن تطلب من Chrome معلومات تساعدها في قياس أداء الإعلانات التي تعرضها. يسمح Chrome للمواقع الإلكترونية بجمع أنواع محدودة من البيانات، مثل الوقت الذي تم فيه عرض الإعلان لك.</translation>
 <translation id="7791011319128895129">لم يتم إصدارها</translation>
 <translation id="7791196057686275387">حزمة</translation>
@@ -2791,6 +2785,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{لا تتوفَّر تطبيقات}=1{تطبيق واحد (<ph name="EXAMPLE_APP_1" />)}=2{تطبيقان (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />)}few{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}many{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}other{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}}</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="7857116075376571629">‏بعد ذلك، يمكن للموقع الإلكتروني الذي تنتقل إليه أن يطلب من Chrome معرفة المواضيع التي تهمُّك بهدف تخصيص الإعلانات التي تظهر لك. ويشارك Chrome ما يصل إلى 3 مواضيع مع حماية سجلّ تصفّحك وهويتك.</translation>
+<translation id="7860345425589240791">‏أدخِل تاريخ انتهاء صلاحية البطاقة الجديد ورمز التحقق من البطاقة (CVC) المتوفّر على <ph name="SIDE_OF_CARD" />.</translation>
 <translation id="7862185352068345852">هل تريد مغادرة الموقع؟</translation>
 <translation id="7865448901209910068">أفضل سرعة</translation>
 <translation id="7871445724586827387">‏تغيير كلمة مرور حسابك على Google</translation>
@@ -2914,7 +2909,6 @@
 <translation id="8150722005171944719">الملف الموجود على <ph name="URL" /> غير قابل للقراءة. ربما تمت إزالته، أو ربما تكون أذونات الملف هي التي تمنع الدخول.</translation>
 <translation id="8153865548451212769">{0,plural, =1{لا تنصح سياسة المشرف بتنزيل هذا الملف على <ph name="DESTINATION_NAME" />.}zero{لا تنصح سياسة المشرف بتنزيل هذه الملفات على <ph name="DESTINATION_NAME" />.}two{لا تنصح سياسة المشرف بتنزيل هذين الملفَّين على <ph name="DESTINATION_NAME" />.}few{لا تنصح سياسة المشرف بتنزيل هذه الملفات على <ph name="DESTINATION_NAME" />.}many{لا تنصح سياسة المشرف بتنزيل هذه الملفات على <ph name="DESTINATION_NAME" />.}other{لا تنصح سياسة المشرف بتنزيل هذه الملفات على <ph name="DESTINATION_NAME" />.}}</translation>
 <translation id="8163866351304776260">عمل أربعة ثقوب يسارًا</translation>
-<translation id="8175330382720204696">Government Letter</translation>
 <translation id="8175796834047840627">‏يتيح لك Chrome حفظ بطاقاتك في حسابك على Google لأنك سجَّلت الدخول. يمكنك تغيير هذا السلوك في الإعدادات.</translation>
 <translation id="8176440868214972690">أرسل مشرف هذا الجهاز بعض المعلومات، مثل الإعدادات أو السياسات، إلى المواقع الإلكترونية التالية.</translation>
 <translation id="8184538546369750125">استخدام الإعداد التلقائي العمومي (سماح)</translation>
@@ -2963,6 +2957,7 @@
 <translation id="8270242299912238708">‏مستندات PDF</translation>
 <translation id="8275952078857499577">عدم اقتراح ترجمة لهذا الموقع الإلكتروني</translation>
 <translation id="8277900682056760511">جدول بيانات معالج الدفع مفتوح</translation>
+<translation id="827820107214076967">إعادة تحميل السجلّات</translation>
 <translation id="8279611986089885641">‏يجب تفعيل ميزة إشعارات Chrome. يمكنك تفعيلها من خلال <ph name="BEGIN_LINK" /><ph name="NOTIFICATION_SETTINGS" /><ph name="END_LINK" />.</translation>
 <translation id="8280630997017109758">الدُرج 11</translation>
 <translation id="8281886186245836920">التخطّي</translation>
@@ -3043,6 +3038,7 @@
 <translation id="8473863474539038330">العناوين والمزيد</translation>
 <translation id="8474910779563686872">عرض تفاصيل مطوّر البرامج</translation>
 <translation id="8479754468255770962">وضع دبوس أسفل اليسار</translation>
+<translation id="8483229036294884935">‏سيتم حذف هذا العنوان من حسابك على Google، <ph name="ACCOUNT" />.</translation>
 <translation id="8483780878231876732">‏لاستخدام البطاقات من حسابك في Google، يُرجى تسجيل الدخول إلى Chrome</translation>
 <translation id="8488350697529856933">تنطبق على</translation>
 <translation id="8490137692873530638">المكدِّس 10</translation>
@@ -3066,6 +3062,7 @@
 <translation id="8542014550340843547">وضع ثلاثة دبابيس في الأسفل</translation>
 <translation id="8542617028204211143">SRA0</translation>
 <translation id="8543181531796978784">يمكنك <ph name="BEGIN_ERROR_LINK" />الإبلاغ عن اكتشاف مشكلة<ph name="END_ERROR_LINK" /> أو، إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>
+<translation id="8546350655047701518">‏تصدير السجلّات بتنسيق JSON</translation>
 <translation id="854892890027593466">‏ظرف C6/C5</translation>
 <translation id="8553387990086529628">وجهات سياحية</translation>
 <translation id="8554010658308662631">تحميل المزيد</translation>
@@ -3090,7 +3087,6 @@
 <translation id="8620276786115098679">‏ظرف Kaku 7</translation>
 <translation id="8623885649813806493">ما مِن كلمات مرور مطابقة. يمكنك عرض جميع كلمات المرور المحفوظة.</translation>
 <translation id="8624354461147303341">الحصول على الخصومات</translation>
-<translation id="8625384913736129811">حفظ هذه البطاقة إلى هذا الجهاز</translation>
 <translation id="8634957317623797170">54 × 86 ملم</translation>
 <translation id="8637577059508742477">تتم إدارة ملفك الشخصي ومتصفّحك من خلال النطاق <ph name="DOMAIN" /></translation>
 <translation id="8643409044755049933">‏ظرف Kaku 3</translation>
@@ -3139,6 +3135,7 @@
 <translation id="8742371904523228557"><ph name="ONE_TIME_CODE" /> هو الرمز للنطاق <ph name="ORIGIN" /></translation>
 <translation id="874918643257405732">وضع إشارة مرجعية لعلامة التبويب هذه</translation>
 <translation id="8751426954251315517">يُرجى إعادة المحاولة في المرة القادمة.</translation>
+<translation id="8753913772043329557">سجلّات السياسة</translation>
 <translation id="8755125092386286553">A4x9</translation>
 <translation id="8757526089434340176">‏يتوفّر عرض Google Pay.</translation>
 <translation id="8758885506338294482">ألعاب الفيديو التنافسية</translation>
@@ -3200,6 +3197,7 @@
 <translation id="8899807382908246773">الإعلانات المتداخلة</translation>
 <translation id="8903921497873541725">تكبير</translation>
 <translation id="890493561996401738">‏إزالة زر "الاقتراحات"، اضغط على مفتاح Enter لإزالة، <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
+<translation id="8910898109640902752">‫8 × 10 بوصة</translation>
 <translation id="8912362522468806198">‏حساب Google‏</translation>
 <translation id="8913778647360618320">‏زر "إدارة طُرق الدفع"، اضغط على مفتاح Enter لإدارة الدفعات ومعلومات بطاقة الائتمان في إعدادات Chrome.</translation>
 <translation id="8922013791253848639">السماح دائمًا بالإعلانات على هذا الموقع</translation>

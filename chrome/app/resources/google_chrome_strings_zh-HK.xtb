@@ -54,7 +54,6 @@
 <translation id="1874309113135274312">Google Chrome 測試版 (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome 版本過舊</translation>
 <translation id="1919130412786645364">允許登入 Chrome</translation>
-<translation id="1952239763774043237">如要取得日後的 Google Chrome 更新，您將需要 macOS 10.13 或以上版本。此電腦正在使用 macOS 10.12。</translation>
 <translation id="1953553007165777902">正在下載… 剩餘 <ph name="MINUTE" /> 分鐘</translation>
 <translation id="2018528049276128029">每個設定檔都會保存本身專屬的 Chrome 資料，例如書籤、記錄、密碼等</translation>
 <translation id="2018879682492276940">無法安裝，請再試一次。</translation>
@@ -187,6 +186,7 @@
 <translation id="4335235004908507846">Chrome 能確保系統安全，避免發生資料外洩或擴充程式損毀等問題</translation>
 <translation id="4343195214584226067">已將 <ph name="EXTENSION_NAME" /> 加到 Chrome</translation>
 <translation id="4384570495110188418">由於您尚未登入帳戶，因此 Chrome 無法檢查密碼</translation>
+<translation id="4393248995085527349">如要取得日後的 Google Chrome 更新，您將需要 macOS 10.15 或以上版本。此電腦正在使用 macOS 10.13。</translation>
 <translation id="4427306783828095590">強化保護功能可進一步封鎖仿冒詐騙和惡意軟件</translation>
 <translation id="4450664632294415862">Chrome - 網絡登入 - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome 正在執行另一項操作，請稍後再試。</translation>
@@ -216,7 +216,6 @@
 <translation id="4970880042055371251">Chrome OS 版本</translation>
 <translation id="4970947549776831107">由於此檔案類型不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">如要取得日後的 Google Chrome 更新，您將需要 macOS 10.13 或以上版本。此電腦正在使用 OS X 10.11。</translation>
 <translation id="5098668839038261629">開啟時，您亦將會從 Chrome 登出</translation>
 <translation id="5132929315877954718">為您的 Google Chrome 探索各種實用有趣的應用程式、遊戲、擴充功能和主題。</translation>
 <translation id="5139423532931106058">自訂您的 Chrome 設定檔</translation>
@@ -244,6 +243,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{管理員要求您重新啟動 Chrome，以套用此更新}=1{管理員要求您重新啟動 Chrome，以套用此更新。您的無痕式視窗不會重新開啟。}other{管理員要求您重新啟動 Chrome，以套用此更新。您的 # 個無痕式視窗不會重新開啟。}}</translation>
 <translation id="5686916850681061684">自訂及控制 Google Chrome。重要注意事項 - 按這裡瞭解詳情。</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">開啟時，Chrome 會從閒置分頁釋出記憶體，為使用中的分頁和其他應用程式提供更多電腦資源，同時保持 Chrome 的運作速度。閒置分頁會在您使用時自動恢復為「使用中」狀態。</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 將於 1 秒後重新啟動}other{Google Chrome 將於 # 秒後重新啟動}}</translation>
 <translation id="5727531838415286053">如果 Chrome 隨機將您加入啟用的試用功能中，您的瀏覽紀錄會影響系統顯示的廣告，以及以下推測的興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。除非您移除興趣，否則系統會重新整理興趣。</translation>
 <translation id="5736850870166430177">如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能</translation>
@@ -254,10 +254,12 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5895138241574237353">重新啟動</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - 網絡登入</translation>
 <translation id="5924017743176219022">正在連線至互聯網…</translation>
+<translation id="5932997892801542621">在網址列或搜尋框中輸入內容時，Chrome 會將輸入的內容傳送至 Google 雲端硬碟，以便取得項目建議。此功能不會在無痕模式下啟用。</translation>
 <translation id="5940385492829620908">您的網頁、書籤和其他 Chrome 資料在這裡直播。</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5941830788786076944">將 Google Chrome 設為預設瀏覽器</translation>
 <translation id="6003112304606738118">正在下載… 剩餘 <ph name="HOURS" /> 小時</translation>
+<translation id="6010556343189461180">如要取得日後的 Google Chrome 更新，您將需要 macOS 10.15 或以上版本。此電腦正在使用 macOS 10.14。</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome 現在關閉。}=1{Chrome 將於 1 秒後關閉。}other{Chrome 將於 # 秒後關閉。}}</translation>
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6070348360322141662">為提高安全性，Google Chrome 會將您的資料加密</translation>
@@ -323,7 +325,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7410958280246779049">由於此檔案不安全，因此 Chrome 已封鎖此檔案</translation>
 <translation id="7426611252293106642">Google Chrome 不再支援此 Linux 發行版本，因此可能無法正常運作</translation>
 <translation id="7481213027396403996">取得 Chrome 最強大的安全防護</translation>
-<translation id="7486227612705979895">Chrome 會存取您的「雲端硬碟」，然後在網址列提出建議</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> 安裝程式</translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -366,7 +367,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8286862437124483331">Google Chrome 正在嘗試顯示密碼。如果您同意，請輸入您的 Windows 密碼。</translation>
 <translation id="828798499196665338">您的家長已停用 Chrome 的「網站、應用程式和擴充程式權限」設定，因此您無法啟用此<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當機了，要立即重新啟動嗎？</translation>
-<translation id="8341646175450781745">開啟時，Chrome 會從閒置分頁釋出記憶體，為使用中的分頁和其他應用程式提供更多電腦資源，同時保持 Chrome 的運作速度。閒置分頁會在您使用時自動恢復為「使用中」狀態。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" />或<ph name="BEGIN_LINK_2" />提供意見<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">此檔案不安全，因此 Chrome 已封鎖此檔案。</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />我們會如何使用這些資料：<ph name="END_BOLD" />網站可將您的興趣相關資料儲存在 Chrome 中。例如，如果您瀏覽某個網站想購買適合馬拉松的跑步鞋，網站可能會判斷您的興趣為跑馬拉松。如果您日後瀏覽其他網站報名參加比賽，該網站就可以根據您的興趣向您顯示跑步鞋的廣告。</translation>
 <translation id="8370517070665726704">版權所有 <ph name="YEAR" /> Google LLC。保留所有權利。</translation>
@@ -397,6 +397,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8686817260976772516">透過 Chrome 設定檔，您可將所有 Chrome 內容分門別類，例如建立親朋好友專屬的設定檔，或劃分工作和娛樂內容。</translation>
 <translation id="8712767363896337380">即將更新至最新版本！重新啟動 Chrome 即可完成更新程序。</translation>
 <translation id="873133009373065397">Google Chrome 無法偵測或設定預設瀏覽器</translation>
+<translation id="8765470054473112089">在網址列或搜尋框中輸入內容時，Chrome 會將輸入的內容傳送至預設搜尋引擎，以便取得更切合需求的建議。此功能不會在無痕模式下啟用。</translation>
 <translation id="8821043148920470810">如要取得日後的 Google Chrome 更新，您需要使用 Windows 10 或以上版本。此電腦目前版本為 Windows 7。</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="8825634023950448068">為保障您的私隱，我們會自動刪除超過 4 星期的興趣。按瀏覽內容而定，某個主題可能會再次在您的興趣清單中顯示。如果您認為 Chrome 判斷錯誤或不想看到特定廣告，可以移除感興趣的主題。</translation>
@@ -410,7 +411,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8986207147630327271">您即將在此瀏覽器中新增工作設定檔，並只將工作設定檔的控制權授予管理員。</translation>
 <translation id="8989968390305463310">您的瀏覽記錄會影響系統顯示的廣告，以及下列由系統推測的興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。除非您移除興趣，否則系統會重新整理興趣。</translation>
 <translation id="8999208279178790196">{0,plural, =0{有可用的 Chrome 更新}=1{有可用的 Chrome 更新}other{Chrome 更新已發佈 # 天}}</translation>
-<translation id="9003498785844995646">開啟後，Chrome 會限制背景活動和視覺效果 (例如順暢捲動和影片影格速率) 來節省電池電量。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" />或<ph name="BEGIN_LINK_2" />提供意見<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">ChromeOS Flex 系統</translation>
 <translation id="9067395829937117663">Google Chrome 只能在 Windows 7 或以上作業系統中執行。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽數據嗎？</translation>
@@ -421,6 +421,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="93760716455950538">重新啟動 ChromeOS Flex</translation>
 <translation id="940313311831216333">如要透過所有裝置存取 Chrome 資料，請登入並開啟同步處理功能。</translation>
 <translation id="943390475793766444">此檔案可能不安全，因此 Chrome 建議掃瞄檔案。</translation>
+<translation id="963650557422347554">開啟後，Chrome 會限制背景活動和視覺效果 (例如順暢捲動和影片影格速率) 來節省電池電量。</translation>
 <translation id="989369509083708165">Google Chrome 現為您的預設瀏覽器</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> 可以轉換唔同嘅 Chrome 設定檔</translation>
 </translationbundle>

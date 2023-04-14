@@ -47,7 +47,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       media::ChannelLayout layout,
       int number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      media::AudioRendererSink::RenderCallback* callback);
+      media::AudioRendererSink::RenderCallback* webaudio_callback);
 
   // blink::WebAudioDevice implementation.
   void Start() override;
@@ -56,6 +56,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   void Resume() override;
   double SampleRate() override;
   int FramesPerBuffer() override;
+  int MaxChannelCount() override;
 
   // Sets the detect silence flag for SilentSinkSuspender. Invoked by Blink Web
   // Audio.
@@ -73,8 +74,15 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   const media::AudioParameters& get_sink_params_for_testing() {
-    return sink_params_;
+    return current_sink_params_;
   }
+
+  // Create and initialize an instance of AudioRendererSink.
+  void CreateAudioRendererSink();
+
+  // Creates a new sink and return its device status. If the status is OK,
+  // replace the existing sink with the new one.
+  media::OutputDeviceStatus CreateSinkAndGetDeviceStatus() override;
 
  protected:
   // Callback to get output device params (for tests).
@@ -91,7 +99,7 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
       media::ChannelLayout layout,
       int number_of_output_channels,
       const blink::WebAudioLatencyHint& latency_hint,
-      media::AudioRendererSink::RenderCallback* callback,
+      media::AudioRendererSink::RenderCallback* webaudio_callback,
       OutputDeviceParamsCallback device_params_cb,
       CreateSilentSinkCallback create_silent_sink_cb);
 
@@ -100,15 +108,20 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
 
   void SendLogMessage(const std::string& message);
 
-  media::AudioParameters sink_params_;
+  // This is queried from the underlying sink device and then modified according
+  // to the WebAudio renderer's needs.
+  media::AudioParameters current_sink_params_;
+  // This is the unmodified parameters obtained from the underlying sink device.
+  // Used to provide the original hardware capacity.
+  media::AudioParameters original_sink_params_;
 
   // To cache the device identifier for sink creation.
   const blink::WebAudioSinkDescriptor sink_descriptor_;
 
   const blink::WebAudioLatencyHint latency_hint_;
 
-  // Weak reference to the callback into WebKit code.
-  media::AudioRendererSink::RenderCallback* const client_callback_;
+  // The WebAudio renderer's callback; directs to `AudioDestination::Render()`.
+  media::AudioRendererSink::RenderCallback* const webaudio_callback_;
 
   // To avoid the need for locking, ensure the control methods of the
   // blink::WebAudioDevice implementation are called on the same thread.
@@ -132,6 +145,13 @@ class CONTENT_EXPORT RendererWebAudioDeviceImpl
   bool is_rendering_ = false;
 
   CreateSilentSinkCallback create_silent_sink_cb_;
+
+  FRIEND_TEST_ALL_PREFIXES(RendererWebAudioDeviceImplTest,
+                           CreateSinkAndGetDeviceStatus_HealthyDevice);
+  FRIEND_TEST_ALL_PREFIXES(RendererWebAudioDeviceImplTest,
+                           CreateSinkAndGetDeviceStatus_ErrorDevice);
+  FRIEND_TEST_ALL_PREFIXES(RendererWebAudioDeviceImplTest,
+                           CreateSinkAndGetDeviceStatus_SilentSink);
 };
 
 }  // namespace content

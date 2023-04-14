@@ -10,7 +10,6 @@
 <translation id="1131805035311359397">Per comprovar si les teves contrasenyes estan protegides contra violacions de les dades i contra altres problemes de seguretat, <ph name="BEGIN_LINK" />inicia la sessió a Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Quant a Chromium</translation>
 <translation id="1203500561924088507">T'agraïm la instal·lació. Has de reiniciar el navegador abans d'utilitzar <ph name="BUNDLE_NAME" />.</translation>
-<translation id="1231839967188101156">Quan aquesta opció està activada, Chromium allibera memòria de les pestanyes inactives. Així, les pestanyes actives i altres aplicacions disposen de més recursos de l'ordinador i es manté l'agilitat de Chromium. Les pestanyes inactives s'activen de nou automàticament quan hi tornes. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Estalvi de memòria ha fet que Chromium sigui més ràpid</translation>
 <translation id="1315551408014407711">Configura el teu perfil de Chromium nou</translation>
 <translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
@@ -32,6 +31,7 @@
 <translation id="185970820835152459">Pots gestionar els Comptes de Google en què tens la sessió iniciada. Els Comptes de Google s'utilitzen per al navegador Chromium, Play Store, Gmail i més. Si vols afegir un compte per a algú altre, com ara un membre de la família, afegeix una persona nova al teu dispositiu <ph name="DEVICE_TYPE" />. <ph name="LINK_BEGIN" />Més informació<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Els llocs web poden emmagatzemar informació a Chromium sobre els teus interessos. Per exemple, si visites un lloc web per comprar sabatilles per a una marató, és possible que el lloc web defineixi que t'interessa córrer maratons. Més endavant, si visites un altre lloc web per inscriure't a una cursa, aquest altre lloc web et pot mostrar un anunci de sabatilles de curses basant-se en els teus interessos.</translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">Quan escrius a la barra d'adreces o al quadre de cerca, Chromium envia el que escrius a Google Drive per obtenir suggeriments d'elements. Aquesta opció està desactivada en mode d'incògnit.</translation>
 <translation id="1911763535808217981">En desactivar aquesta opció, pots iniciar la sessió en llocs web de Google, com ara Gmail, sense iniciar la sessió a Chromium</translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="193439633299369377">Cal reiniciar Chromium OS per aplicar l'actualització.</translation>
@@ -114,6 +114,7 @@
 <translation id="3567254597502212821">El teu historial de navegació, que és un registre dels llocs web que has visitat amb Chromium en aquest dispositiu.</translation>
 <translation id="3575459661164320785">Hi ha programari nociu a l'ordinador. Chromium el pot suprimir, restaurar la configuració i desactivar les extensions perquè el navegador torni a funcionar amb normalitat.</translation>
 <translation id="3593091352817399191">Ja s'ha iniciat la sessió amb un altre compte. Per continuar amb la teva navegació per separat, Chromium et pot crear un perfil propi.</translation>
+<translation id="363078681319665186">Per obtenir actualitzacions de Chromium en un futur, necessitaràs macOS 10.15 o una versió posterior. Aquest ordinador utilitza macOS 10.13.</translation>
 <translation id="3639635944603682591">Les dades de navegació d'aquesta persona se suprimiran d'aquest dispositiu. Per recuperar-les, inicia la sessió a Chromium com a <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Hi ha una actualització nova de Chromium disponible i s'aplicarà tan aviat com el reiniciïs.}=1{Hi ha una actualització nova de Chromium disponible i s'aplicarà tan aviat com el reiniciïs. La finestra d'incògnit no es tornarà a obrir.}other{Hi ha una actualització nova de Chromium disponible i s'aplicarà tan aviat com el reiniciïs. Les # finestres d'incògnit no es tornaran a obrir.}}</translation>
 <translation id="3651803019964686660">Per enviar un número del dispositiu <ph name="ORIGIN" /> al teu telèfon Android, inicia la sessió a Chromium en tots dos dispositius.</translation>
@@ -121,12 +122,12 @@
 <translation id="3702352323269013324">Més informació sobre la personalització d'anuncis a Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{L'administrador et demana que reiniciïs Chromium per aplicar aquesta actualització}=1{L'administrador et demana que reiniciïs Chromium per aplicar aquesta actualització. La finestra d'incògnit no es tornarà a obrir.}other{L'administrador et demana que reiniciïs Chromium per aplicar aquesta actualització. Les # finestres d'incògnit no es tornaran a obrir.}}</translation>
 <translation id="3713809861844741608">Obre l'enllaç en una pes&amp;tanya nova a Chromium</translation>
-<translation id="3728336900324680424">Chromium accedirà a Drive per fer suggeriments a la barra d'adreces</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="3830894615770080216">Sistema Chromium OS</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" />: Chromium</translation>
 <translation id="386822487697155367">Obtén ajuda per a Chromium OS</translation>
 <translation id="3871664619793219264">Obtén el contingut del teu navegador Chromium del compte <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">Per obtenir actualitzacions de Chromium en un futur, necessitaràs macOS 10.15 o una versió posterior. Aquest ordinador utilitza macOS 10.14.</translation>
 <translation id="388648406173476553">Personalitza i controla Chromium. Cal la teva intervenció. Fes clic per obtenir més informació.</translation>
 <translation id="3889543394854987837">Feu clic al vostre nom per obrir Chromium i començar a navegar.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> ja té la sessió iniciada en aquest perfil de Chromium. Per continuar amb la teva navegació per separat, Chromium et pot crear un perfil propi.</translation>
@@ -216,6 +217,7 @@
 <translation id="6072463441809498330">Fes que Chromium sigui més ràpid</translation>
 <translation id="608006075545470555">Afegeix un perfil de treball a aquest navegador</translation>
 <translation id="6096348254544841612">Personalitza i controla Chromium. Hi ha una actualització disponible.</translation>
+<translation id="6102072151902574948">Quan aquesta opció està activada, Chromium estalvia bateria limitant l'activitat en segon pla i els efectes visuals, com ara el desplaçament suau i els fotogrames per segon dels vídeos.</translation>
 <translation id="6119438414301547735">Permet que l'extensió mostri sol·licituds d'accés a la barra d'eines de Chromium</translation>
 <translation id="6120345080069858279">Chromium desarà aquesta contrasenya al Compte de Google. No caldrà que la recordis.</translation>
 <translation id="6129621093834146363">Chromium ha bloquejat <ph name="FILE_NAME" /> perquè és perillós.</translation>
@@ -276,6 +278,7 @@
 <translation id="6940431691900807093">Després, un lloc web que visitis pot demanar els teus interessos a Chromium per personalitzar els anuncis que veus. Chromium pot compartir un màxim de 3 interessos.</translation>
 <translation id="6964305034639999644">Obre l'enllaç en una finestra d'incò&amp;gnit a Chromium</translation>
 <translation id="6978145336957848883">Les contrasenyes poc segures són fàcils d'endevinar. Deixa que Chromium <ph name="BEGIN_LINK" />creï i recordi contrasenyes segures en nom teu<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Quan aquesta opció està activada, Chromium allibera memòria de les pestanyes inactives. Així, les pestanyes actives i altres aplicacions disposen de més recursos de l'ordinador i es manté l'agilitat de Chromium. Les pestanyes inactives s'activen de nou automàticament quan hi tornes.</translation>
 <translation id="6984667024406244807">Chromium està inactiu</translation>
 <translation id="6985329841647292029">Condicions de Chromium OS</translation>
 <translation id="6990124437352146030">Per visitar aquest lloc web, Chromium necessita permís per accedir al micròfon</translation>
@@ -320,6 +323,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">Ja existeix un perfil de Chromium amb aquest compte en aquest dispositiu</translation>
 <translation id="7845233973568007926">T'agraïm la instal·lació. Has de reiniciar l'equip abans d'utilitzar <ph name="BUNDLE_NAME" />.</translation>
+<translation id="7859018312476869945">Quan escrius a la barra d'adreces o al quadre de cerca, Chromium envia el que escrius al teu motor de cerca predeterminat per obtenir millors suggeriments. Aquesta opció està desactivada en el mode d'incògnit.</translation>
 <translation id="7867198900892795913">Chromium no s'ha pogut actualitzar a la darrera versió, així que no pots gaudir de les noves funcions ni de les correccions de seguretat.</translation>
 <translation id="7872446069773932638">S'està baixant… Queden <ph name="SECONDS" /> segons</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Com pots gestionar les teves dades<ph name="END_BOLD" />: amb la finalitat de protegir la teva privadesa, suprimim automàticament els interessos que tenen més de 4 setmanes. A mesura que continuïs navegant, és possible que torni a aparèixer un interès a la llista. També pots suprimir els interessos que no vulguis que Chromium tingui en compte.</translation>
@@ -347,9 +351,7 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="8493179195440786826">Chromium no està actualitzat</translation>
 <translation id="8550334526674375523">Aquest perfil de treball és completament independent del teu perfil personal.</translation>
 <translation id="8558383651099478961">Els teus pares han desactivat Permisos per a llocs web, aplicacions i extensions en relació amb Chromium. No es permet afegir aquesta <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
-<translation id="8561285221328166383">Per obtenir actualitzacions de Chromium en un futur, necessitaràs macOS 10.13 o una versió posterior. Aquest ordinador utilitza macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium pot comprovar les teves contrasenyes quan inicies la sessió amb el Compte de Google</translation>
-<translation id="8574036838419011058">Quan aquesta opció està activada, Chromium estalvia bateria limitant l'activitat en segon pla i els efectes visuals, com ara el desplaçament suau i els fotogrames per segon dels vídeos. <ph name="BEGIN_LINK" />Més informació<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Com utilitzem aquestes dades<ph name="END_BOLD" />: els llocs web poden emmagatzemar informació a Chromium sobre els teus interessos. Per exemple, si visites un lloc web per comprar sabatilles per a una marató, és possible que el lloc web defineixi que t'interessa córrer maratons. Més endavant, si visites un altre lloc web per inscriure't a una cursa, aquest altre lloc web et pot mostrar un anunci de sabatilles de curses basant-se en els teus interessos.</translation>
 <translation id="8619360774459241877">S'està iniciant Chromium...</translation>
@@ -380,7 +382,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Pot ser que Chromium no funcioni correctament perquè ja no és compatible amb Windows XP ni Windows Vista</translation>
 <translation id="942598560705308788">Certificats gestionats per Chromium</translation>
-<translation id="945990405696787151">Per obtenir actualitzacions de Chromium en un futur, necessitaràs macOS 10.13 o una versió posterior. Aquest ordinador utilitza OS X 10.11.</translation>
 <translation id="965162752251293939">Qui està utilitzant Chromium?</translation>
 <translation id="967427899662692980">Obtén la seguretat més efectiva de Chromium</translation>
 <translation id="9792300276217204">Esborra sempre les dades dels llocs web del dispositiu quan tanquis Chromium</translation>

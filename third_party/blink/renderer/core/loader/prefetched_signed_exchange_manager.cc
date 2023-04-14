@@ -13,16 +13,14 @@
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
-#include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -31,8 +29,12 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
+#include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -47,7 +49,7 @@
 namespace blink {
 
 class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
-    : public WebURLLoader {
+    : public URLLoader {
  public:
   PrefetchedSignedExchangeLoader(
       const WebURLRequest& request,
@@ -73,7 +75,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  void SetURLLoader(std::unique_ptr<WebURLLoader> url_loader) {
+  void SetURLLoader(std::unique_ptr<URLLoader> url_loader) {
     DCHECK(!url_loader_);
     url_loader_ = std::move(url_loader);
     ExecutePendingMethodCalls();
@@ -81,20 +83,20 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
 
   const WebURLRequest& request() const { return request_; }
 
-  // WebURLLoader methods:
+  // URLLoader methods:
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
       scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
-      WebURLLoaderClient* client,
+      URLLoaderClient* client,
       WebURLResponse& response,
       absl::optional<WebURLError>& error,
-      WebData& data,
+      scoped_refptr<SharedBuffer>& data,
       int64_t& encoded_data_length,
       uint64_t& encoded_body_length,
-      WebBlobInfo& downloaded_blob,
+      scoped_refptr<BlobDataHandle>& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override {
     NOTREACHED();
@@ -105,7 +107,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
-      WebURLLoaderClient* client) override {
+      URLLoaderClient* client) override {
     if (url_loader_) {
       url_loader_->LoadAsynchronously(
           std::move(request), std::move(url_request_extra_data),
@@ -157,7 +159,7 @@ class PrefetchedSignedExchangeManager::PrefetchedSignedExchangeLoader
 
   WebURLRequest request_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  std::unique_ptr<WebURLLoader> url_loader_;
+  std::unique_ptr<URLLoader> url_loader_;
   std::queue<base::OnceClosure> pending_method_calls_;
 
   base::WeakPtrFactory<PrefetchedSignedExchangeLoader> weak_ptr_factory_{this};
@@ -222,7 +224,7 @@ void PrefetchedSignedExchangeManager::StartPrefetchedLinkHeaderPreloads() {
   alternative_resources_.reset();
 }
 
-std::unique_ptr<WebURLLoader>
+std::unique_ptr<URLLoader>
 PrefetchedSignedExchangeManager::MaybeCreateURLLoader(
     const WebURLRequest& request) {
   if (started_)
@@ -241,32 +243,35 @@ PrefetchedSignedExchangeManager::MaybeCreateURLLoader(
   return loader;
 }
 
-std::unique_ptr<WebURLLoader>
+std::unique_ptr<URLLoader>
 PrefetchedSignedExchangeManager::CreateDefaultURLLoader(
     const WebURLRequest& request) {
-  return frame_->GetURLLoaderFactory()->CreateURLLoader(
-      request,
-      frame_->GetFrameScheduler()->CreateResourceLoadingTaskRunnerHandle(),
-      frame_->GetFrameScheduler()
-          ->CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle(),
-      /*keep_alive_handle=*/mojo::NullRemote(),
-      WebBackForwardCacheLoaderHelper());
+  return std::make_unique<blink::URLLoaderFactory>(
+             frame_->GetURLLoaderFactory(),
+             LoaderFactoryForFrame::GetCorsExemptHeaderList(),
+             /*terminate_sync_load_event=*/nullptr)
+      ->CreateURLLoader(request, frame_->GetTaskRunner(TaskType::kNetworking),
+                        frame_->GetTaskRunner(TaskType::kNetworkingUnfreezable),
+                        /*keep_alive_handle=*/mojo::NullRemote(),
+                        /*back_forward_cache_loader_helper=*/nullptr);
 }
 
-std::unique_ptr<WebURLLoader>
+std::unique_ptr<URLLoader>
 PrefetchedSignedExchangeManager::CreatePrefetchedSignedExchangeURLLoader(
     const WebURLRequest& request,
     mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
         loader_factory) {
-  return Platform::Current()
-      ->WrapURLLoaderFactory(std::move(loader_factory))
-      ->CreateURLLoader(
-          request,
-          frame_->GetFrameScheduler()->CreateResourceLoadingTaskRunnerHandle(),
-          frame_->GetFrameScheduler()
-              ->CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle(),
-          /*keep_alive_handle=*/mojo::NullRemote(),
-          WebBackForwardCacheLoaderHelper());
+  return std::make_unique<URLLoaderFactory>(
+             base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
+                 CrossVariantMojoRemote<
+                     network::mojom::URLLoaderFactoryInterfaceBase>(
+                     std::move(loader_factory))),
+             LoaderFactoryForFrame::GetCorsExemptHeaderList(),
+             /*terminate_sync_load_event=*/nullptr)
+      ->CreateURLLoader(request, frame_->GetTaskRunner(TaskType::kNetworking),
+                        frame_->GetTaskRunner(TaskType::kNetworkingUnfreezable),
+                        /*keep_alive_handle=*/mojo::NullRemote(),
+                        /*back_forward_cache_loader_helper=*/nullptr);
 }
 
 void PrefetchedSignedExchangeManager::TriggerLoad() {

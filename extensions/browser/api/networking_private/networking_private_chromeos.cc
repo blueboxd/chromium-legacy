@@ -26,6 +26,7 @@
 #include "chromeos/ash/components/network/onc/network_onc_utils.h"
 #include "chromeos/ash/components/network/onc/onc_translator.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
+#include "chromeos/ash/components/network/technology_state_controller.h"
 #include "chromeos/components/onc/onc_signature.h"
 #include "components/onc/onc_constants.h"
 #include "components/proxy_config/proxy_prefs.h"
@@ -43,6 +44,7 @@ using ::ash::NetworkCertificateHandler;
 using ::ash::NetworkHandler;
 using ::ash::NetworkStateHandler;
 using ::ash::NetworkTypePattern;
+using ::ash::TechnologyStateController;
 using extensions::NetworkingPrivateDelegate;
 
 namespace private_api = extensions::api::networking_private;
@@ -51,6 +53,10 @@ namespace {
 
 NetworkStateHandler* GetStateHandler() {
   return NetworkHandler::Get()->network_state_handler();
+}
+
+TechnologyStateController* GetTechnologyStateController() {
+  return NetworkHandler::Get()->technology_state_controller();
 }
 
 ash::ManagedNetworkConfigurationHandler* GetManagedConfigurationHandler() {
@@ -172,31 +178,36 @@ void NetworkHandlerFailureCallback(
 // Returns the string corresponding to |key|. If the property is a managed
 // dictionary, returns the active value. If the property does not exist or
 // has no active value, returns an empty string.
-std::string GetStringFromDictionary(const base::Value& dictionary,
+std::string GetStringFromDictionary(const base::Value::Dict& dictionary,
                                     const std::string& key) {
-  const std::string* result = dictionary.FindStringKey(key);
-  if (result)
+  const std::string* result = dictionary.FindString(key);
+  if (result) {
     return *result;
-  const base::Value* managed = dictionary.FindDictKey(key);
-  if (managed)
-    result = managed->FindStringKey(::onc::kAugmentationActiveSetting);
+  }
+  const base::Value::Dict* managed = dictionary.FindDict(key);
+  if (managed) {
+    result = managed->FindString(::onc::kAugmentationActiveSetting);
+  }
   return result ? *result : std::string();
 }
 
-base::Value* GetThirdPartyVPNDictionary(base::Value* dictionary) {
+base::Value::Dict* GetThirdPartyVPNDictionary(base::Value::Dict* dictionary) {
   const std::string type =
       GetStringFromDictionary(*dictionary, ::onc::network_config::kType);
-  if (type != ::onc::network_config::kVPN)
+  if (type != ::onc::network_config::kVPN) {
     return nullptr;
-  base::Value* vpn_dict = dictionary->FindDictKey(::onc::network_config::kVPN);
-  if (!vpn_dict)
+  }
+  base::Value::Dict* vpn_dict =
+      dictionary->FindDict(::onc::network_config::kVPN);
+  if (!vpn_dict) {
     return nullptr;
+  }
   if (GetStringFromDictionary(*vpn_dict, ::onc::vpn::kType) !=
       ::onc::vpn::kThirdPartyVpn) {
     return nullptr;
   }
-  base::Value* third_party_vpn =
-      dictionary->FindDictKey(::onc::vpn::kThirdPartyVpn);
+  base::Value::Dict* third_party_vpn =
+      dictionary->FindDict(::onc::vpn::kThirdPartyVpn);
   return third_party_vpn;
 }
 
@@ -267,7 +278,7 @@ NetworkingPrivateChromeOS::NetworkingPrivateChromeOS(
     content::BrowserContext* browser_context)
     : browser_context_(browser_context) {}
 
-NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() {}
+NetworkingPrivateChromeOS::~NetworkingPrivateChromeOS() = default;
 
 void NetworkingPrivateChromeOS::GetProperties(const std::string& guid,
                                               PropertiesCallback callback) {
@@ -334,7 +345,7 @@ void NetworkingPrivateChromeOS::GetState(const std::string& guid,
     return;
   }
 
-  base::Value network_properties =
+  base::Value::Dict network_properties =
       ash::network_util::TranslateNetworkStateToONC(network_state);
   AppendThirdPartyProviderName(&network_properties);
 
@@ -343,7 +354,7 @@ void NetworkingPrivateChromeOS::GetState(const std::string& guid,
 
 void NetworkingPrivateChromeOS::SetProperties(
     const std::string& guid,
-    base::Value properties,
+    base::Value::Dict properties,
     bool allow_set_shared_config,
     VoidCallback success_callback,
     FailureCallback failure_callback) {
@@ -378,7 +389,8 @@ void NetworkingPrivateChromeOS::SetProperties(
   NET_LOG(USER) << "networkingPrivate.setProperties for: "
                 << NetworkId(network);
   GetManagedConfigurationHandler()->SetProperties(
-      network->path(), properties, std::move(success_callback),
+      network->path(), base::Value(std::move(properties)),
+      std::move(success_callback),
       base::BindOnce(&NetworkHandlerFailureCallback,
                      std::move(failure_callback)));
 }
@@ -403,8 +415,8 @@ void NetworkingPrivateChromeOS::CreateNetwork(
     return;
   }
 
-  const std::string guid =
-      GetStringFromDictionary(properties, ::onc::network_config::kGUID);
+  const std::string guid = GetStringFromDictionary(
+      properties.GetDict(), ::onc::network_config::kGUID);
   NET_LOG(USER) << "networkingPrivate.CreateNetwork. GUID=" << guid;
   GetManagedConfigurationHandler()->CreateConfiguration(
       user_id_hash, properties,
@@ -493,9 +505,10 @@ void NetworkingPrivateChromeOS::GetNetworks(
                                                    visible_only, limit);
 
   for (auto& value : network_properties_list) {
-    DCHECK(value.is_dict());
-    if (GetThirdPartyVPNDictionary(&value))
-      AppendThirdPartyProviderName(&value);
+    base::Value::Dict& value_dict = value.GetDict();
+    if (GetThirdPartyVPNDictionary(&value_dict)) {
+      AppendThirdPartyProviderName(&value_dict);
+    }
   }
 
   std::move(success_callback).Run(std::move(network_properties_list));
@@ -717,14 +730,15 @@ void NetworkingPrivateChromeOS::GetDeviceStateList(
 
 void NetworkingPrivateChromeOS::GetGlobalPolicy(
     GetGlobalPolicyCallback callback) {
-  base::Value result(base::Value::Type::DICTIONARY);
+  base::Value result(base::Value::Type::DICT);
   const base::Value* global_network_config =
       GetManagedConfigurationHandler()->GetGlobalConfigFromPolicy(
           std::string() /* no username hash, device policy */);
 
-  if (global_network_config)
+  if (global_network_config) {
     result.MergeDictionary(global_network_config);
-  std::move(callback).Run(base::Value::ToUniquePtrValue(std::move(result)));
+  }
+  std::move(callback).Run(std::move(result.GetDict()));
 }
 
 void NetworkingPrivateChromeOS::GetCertificateLists(
@@ -734,18 +748,19 @@ void NetworkingPrivateChromeOS::GetCertificateLists(
       NetworkHandler::Get()
           ->network_certificate_handler()
           ->server_ca_certificates();
-  for (const auto& cert : server_cas)
+  for (const auto& cert : server_cas) {
     result.server_ca_certificates.push_back(GetCertDictionary(cert));
+  }
 
   std::vector<private_api::Certificate> user_cert_list;
   const std::vector<NetworkCertificateHandler::Certificate>& user_certs =
       NetworkHandler::Get()
           ->network_certificate_handler()
           ->client_certificates();
-  for (const auto& cert : user_certs)
+  for (const auto& cert : user_certs) {
     result.user_certificates.push_back(GetCertDictionary(cert));
-  std::move(callback).Run(
-      base::Value::ToUniquePtrValue(base::Value(result.ToValue())));
+  }
+  std::move(callback).Run(result.ToValue());
 }
 
 void NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type,
@@ -753,7 +768,7 @@ void NetworkingPrivateChromeOS::EnableNetworkType(const std::string& type,
   NetworkTypePattern pattern = ash::onc::NetworkTypePatternFromOncType(type);
 
   NET_LOG(USER) << __func__ << ":" << type;
-  GetStateHandler()->SetTechnologyEnabled(
+  GetTechnologyStateController()->SetTechnologiesEnabled(
       pattern, true, ash::network_handler::ErrorCallback());
 
   std::move(callback).Run(true);
@@ -764,7 +779,7 @@ void NetworkingPrivateChromeOS::DisableNetworkType(const std::string& type,
   NetworkTypePattern pattern = ash::onc::NetworkTypePatternFromOncType(type);
 
   NET_LOG(USER) << __func__ << ":" << type;
-  GetStateHandler()->SetTechnologyEnabled(
+  GetTechnologyStateController()->SetTechnologiesEnabled(
       pattern, false, ash::network_handler::ErrorCallback());
 
   std::move(callback).Run(true);
@@ -785,18 +800,20 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const std::string& guid,
     PropertiesCallback callback,
     const std::string& service_path,
-    absl::optional<base::Value> dictionary,
+    absl::optional<base::Value::Dict> dictionary,
     absl::optional<std::string> error) {
-  if (dictionary)
+  if (dictionary) {
     AppendThirdPartyProviderName(&dictionary.value());
+  }
   std::move(callback).Run(std::move(dictionary), std::move(error));
 }
 
 void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
-    base::Value* dictionary) {
-  base::Value* third_party_vpn = GetThirdPartyVPNDictionary(dictionary);
-  if (!third_party_vpn)
+    base::Value::Dict* dictionary) {
+  base::Value::Dict* third_party_vpn = GetThirdPartyVPNDictionary(dictionary);
+  if (!third_party_vpn) {
     return;
+  }
 
   const std::string extension_id = GetStringFromDictionary(
       *third_party_vpn, ::onc::third_party_vpn::kExtensionID);
@@ -806,8 +823,8 @@ void NetworkingPrivateChromeOS::AppendThirdPartyProviderName(
     if (extension->permissions_data()->HasAPIPermission(
             mojom::APIPermissionID::kVpnProvider) &&
         extension->id() == extension_id) {
-      third_party_vpn->SetKey(::onc::third_party_vpn::kProviderName,
-                              base::Value(extension->name()));
+      third_party_vpn->Set(::onc::third_party_vpn::kProviderName,
+                           extension->name());
       break;
     }
   }

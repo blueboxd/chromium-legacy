@@ -21,10 +21,16 @@ BASE_DECLARE_FEATURE(kPageInfoStoreInfo);
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteImprovedBottomSheet);
 #endif
 
+// Shows the new icon for the "About this site" section in Page Info
+BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteNewIcon);
+
 // Enables the "About this site" section in Page Info.
 extern bool IsAboutThisSiteFeatureEnabled(const std::string& locale);
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteEn);
 BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteNonEn);
+
+// Enables the "About this site" section for non-MSBB users.
+BASE_DECLARE_FEATURE(kPageInfoAboutThisSiteNonMsbb);
 
 // Whether we show hard-coded content for some sites like https://example.com.
 extern const base::FeatureParam<bool> kShowSampleContent;

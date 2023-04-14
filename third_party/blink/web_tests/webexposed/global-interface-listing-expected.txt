@@ -1812,7 +1812,6 @@ interface Document : Node
     getter linkColor
     getter links
     getter onabort
-    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -1890,8 +1889,6 @@ interface Document : Node
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprerenderingchange
     getter onprogress
     getter onratechange
@@ -2030,7 +2027,6 @@ interface Document : Node
     setter fullscreenEnabled
     setter linkColor
     setter onabort
-    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -2108,8 +2104,6 @@ interface Document : Node
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprerenderingchange
     setter onprogress
     setter onratechange
@@ -3232,6 +3226,7 @@ interface HTMLDocument : Document
 interface HTMLElement : Element
     attribute @@toStringTag
     getter accessKey
+    getter anchorElement
     getter attributeStyleMap
     getter autocapitalize
     getter autofocus
@@ -3255,7 +3250,6 @@ interface HTMLElement : Element
     getter offsetTop
     getter offsetWidth
     getter onabort
-    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -3325,8 +3319,6 @@ interface HTMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -3377,6 +3369,7 @@ interface HTMLElement : Element
     method showPopover
     method togglePopover
     setter accessKey
+    setter anchorElement
     setter autocapitalize
     setter autofocus
     setter contentEditable
@@ -3392,7 +3385,6 @@ interface HTMLElement : Element
     setter lang
     setter nonce
     setter onabort
-    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -3462,8 +3454,6 @@ interface HTMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -4851,6 +4841,8 @@ interface IdentityProvider
     static method getUserInfo
     static method login
     static method logout
+    static method register
+    static method unregister
     attribute @@toStringTag
     method constructor
 interface IdleDeadline
@@ -5182,6 +5174,7 @@ interface ML
     method createContext
 interface MLContext
     attribute @@toStringTag
+    method compute
     method constructor
 interface MLGraph
     attribute @@toStringTag
@@ -5190,7 +5183,7 @@ interface MLGraphBuilder
     attribute @@toStringTag
     method add
     method averagePool2d
-    method buildAsync
+    method build
     method clamp
     method constant
     method constructor
@@ -5233,7 +5226,6 @@ interface MathMLElement : Element
     getter focusgroup
     getter nonce
     getter onabort
-    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -5303,8 +5295,6 @@ interface MathMLElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -5347,7 +5337,6 @@ interface MathMLElement : Element
     setter focusgroup
     setter nonce
     setter onabort
-    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -5417,8 +5406,6 @@ interface MathMLElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -5679,6 +5666,7 @@ interface MediaStreamTrack : EventTarget
     getter label
     getter muted
     getter oncapturehandlechange
+    getter onconfigurationchange
     getter onended
     getter onmute
     getter onunmute
@@ -5694,6 +5682,7 @@ interface MediaStreamTrack : EventTarget
     setter contentHint
     setter enabled
     setter oncapturehandlechange
+    setter onconfigurationchange
     setter onended
     setter onmute
     setter onunmute
@@ -6738,11 +6727,6 @@ interface PopStateEvent : Event
     attribute @@toStringTag
     getter state
     method constructor
-interface PopoverToggleEvent : Event
-    attribute @@toStringTag
-    getter currentState
-    getter newState
-    method constructor
 interface Presentation
     attribute @@toStringTag
     getter defaultRequest
@@ -7480,7 +7464,6 @@ interface SVGElement : Element
     getter focusgroup
     getter nonce
     getter onabort
-    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -7550,8 +7533,6 @@ interface SVGElement : Element
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onprogress
     getter onratechange
     getter onreset
@@ -7596,7 +7577,6 @@ interface SVGElement : Element
     setter focusgroup
     setter nonce
     setter onabort
-    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -7666,8 +7646,6 @@ interface SVGElement : Element
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onprogress
     setter onratechange
     setter onreset
@@ -9103,6 +9081,11 @@ interface TimeRanges
 interface TimestampTrigger
     attribute @@toStringTag
     getter timestamp
+    method constructor
+interface ToggleEvent : Event
+    attribute @@toStringTag
+    getter newState
+    getter oldState
     method constructor
 interface Touch
     attribute @@toStringTag
@@ -11859,7 +11842,6 @@ namespace console
     getter offscreenBuffering
     getter onabort
     getter onafterprint
-    getter onaftertoggle
     getter onanimationend
     getter onanimationiteration
     getter onanimationstart
@@ -11941,8 +11923,6 @@ namespace console
     getter onpointerover
     getter onpointerrawupdate
     getter onpointerup
-    getter onpopoverhide
-    getter onpopovershow
     getter onpopstate
     getter onprogress
     getter onratechange
@@ -12012,7 +11992,6 @@ namespace console
     getter top
     getter trustedTypes
     getter visualViewport
-    getter webkitStorageInfo
     getter window
     method NodeFilter
     method alert
@@ -12083,7 +12062,6 @@ namespace console
     setter offscreenBuffering
     setter onabort
     setter onafterprint
-    setter onaftertoggle
     setter onanimationend
     setter onanimationiteration
     setter onanimationstart
@@ -12165,8 +12143,6 @@ namespace console
     setter onpointerover
     setter onpointerrawupdate
     setter onpointerup
-    setter onpopoverhide
-    setter onpopovershow
     setter onpopstate
     setter onprogress
     setter onratechange

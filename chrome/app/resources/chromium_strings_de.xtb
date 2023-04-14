@@ -10,7 +10,6 @@
 <translation id="1131805035311359397">Wenn du prüfen möchtest, ob deine Passwörter von Datenpannen und anderen Sicherheitsproblemen betroffen sind, <ph name="BEGIN_LINK" />melde dich in Chromium an<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Über Chromium</translation>
 <translation id="1203500561924088507">Vielen Dank für die Installation. Du musst deinen Browser neu starten, bevor du <ph name="BUNDLE_NAME" /> verwenden kannst.</translation>
-<translation id="1231839967188101156">Wenn diese Option aktiviert ist, gibt Chromium von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chromium bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Dank Arbeitsspeicher-Sparmodus ist Chromium jetzt noch schneller</translation>
 <translation id="1315551408014407711">Neues Chromium-Profil erstellen</translation>
 <translation id="1396446129537741364">Chromium versucht, Passwörter anzuzeigen.</translation>
@@ -114,6 +113,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="3567254597502212821">Dein Browserverlauf, das heißt eine Liste der von dir auf diesem Gerät in Chromium besuchten Websites.</translation>
 <translation id="3575459661164320785">Auf deinem Computer wurde schädliche Software gefunden. Chromium kann diese Software entfernen, deine Einstellungen wiederherstellen und Erweiterungen deaktivieren, sodass dein Browser wieder wie gewohnt funktioniert.</translation>
 <translation id="3593091352817399191">Du bist bereits in einem anderen Konto angemeldet. Wenn du deine Browseraktivitäten getrennt halten möchtest, kann Chromium ein eigenes Profil für dich einrichten.</translation>
+<translation id="363078681319665186">Du benötigst macOS 10.15 oder höher, um zukünftige Chromium-Updates zu erhalten. Auf diesem Computer wird macOS 10.13 ausgeführt.</translation>
 <translation id="3639635944603682591">Die Browserdaten dieser Person werden von diesem Gerät gelöscht. Wenn du die Daten wiederherstellen möchtest, melde dich als <ph name="USER_EMAIL" /> in Chromium an.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald du den Browser neu startest.}=1{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald du den Browser neu startest. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Ein neues Update für Chromium ist verfügbar und wird installiert, sobald du den Browser neu startest. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="3651803019964686660">Wenn du eine Nummer von <ph name="ORIGIN" /> an dein Android-Smartphone senden möchtest, musst du dich auf beiden Geräten in Chromium anmelden.</translation>
@@ -121,12 +121,12 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="3702352323269013324">Weitere Informationen zur Personalisierung von Werbung in Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen}=1{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Laut deinem Administrator solltest du Chromium neu starten, um dieses Update durchzuführen. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="3713809861844741608">Link in neuem Chromium-Tab öffnen</translation>
-<translation id="3728336900324680424">Chromium greift auf Google Drive zu, um in der Adressleiste Vorschläge zu machen</translation>
 <translation id="378917192836375108">In Chromium kannst du auf eine Telefonnummer im Web klicken und diese mit Skype anrufen.</translation>
 <translation id="3830894615770080216">Chromium OS-System</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">Chromium OS-Hilfe</translation>
 <translation id="3871664619793219264">Über <ph name="ACCOUNT_EMAIL" /> auf deine Chromium-Browserinhalte zugreifen</translation>
+<translation id="387966568917439637">Du benötigst macOS 10.15 oder höher, um zukünftige Chromium-Updates zu erhalten. Auf diesem Computer wird macOS 10.14 ausgeführt.</translation>
 <translation id="388648406173476553">Du kannst Chromium anpassen und Einstellungen festlegen. Etwas erfordert deine Aufmerksamkeit – klicke hier, um mehr zu erfahren.</translation>
 <translation id="3889543394854987837">Klicke auf deinen Namen, um Chromium zu öffnen und im Web zu surfen.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> ist bereits in diesem Chromium-Profil angemeldet. Wenn du deine Browsingaktivitäten getrennt halten möchtest, kann Chromium für dich ein eigenes Profil einrichten.</translation>
@@ -216,6 +216,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="6072463441809498330">Chromium noch schneller machen</translation>
 <translation id="608006075545470555">Arbeitsprofil zu diesem Browser hinzufügen</translation>
 <translation id="6096348254544841612">Chromium anpassen und Einstellungen festlegen. Ein Update ist verfügbar.</translation>
+<translation id="6102072151902574948">Wenn die Option aktiviert ist, reduziert Chromium den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden.</translation>
 <translation id="6119438414301547735">Zulassen, dass die Erweiterung Zugriffsanfragen in der Chromium-Symbolleiste anzeigt</translation>
 <translation id="6120345080069858279">Chromium speichert dieses Passwort in deinem Google-Konto. Du musst es dir also nicht merken.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chromium blockiert.</translation>
@@ -275,6 +276,7 @@ Einige Funktionen stehen möglicherweise nicht zur Verfügung. Gib bitte ein and
 <translation id="6940431691900807093">Wenn du eine Website besuchst, kann diese von Chromium dann deine Interessen anfordern, um die dir gezeigte Werbung zu personalisieren. Chromium kann bis zu drei Interessen teilen.</translation>
 <translation id="6964305034639999644">Link in Chromium-Inkognitofenster öffnen</translation>
 <translation id="6978145336957848883">Schwache Passwörter sind einfach zu erraten. Erlaube Chromium, ein <ph name="BEGIN_LINK" />sicheres Passwort für deine Onlinekonten zu erstellen und zu speichern<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Wenn diese Option aktiviert ist, gibt Chromium von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chromium bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst.</translation>
 <translation id="6984667024406244807">Chromium ist inaktiv</translation>
 <translation id="6985329841647292029">Chromium OS-Nutzungsbedingungen</translation>
 <translation id="6990124437352146030">Chromium benötigt für diese Website die Berechtigung, auf dein Mikrofon zuzugreifen</translation>
@@ -319,6 +321,7 @@ Chromium kann deine Einstellungen nicht wiederherstellen.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Ein Chromium-Profil mit diesem Konto ist auf diesem Gerät bereits vorhanden</translation>
 <translation id="7845233973568007926">Vielen Dank für die Installation. Du musst deinen Computer neu starten, bevor du <ph name="BUNDLE_NAME" /> verwenden kannst.</translation>
+<translation id="7859018312476869945">Wenn du etwas in die Adressleiste oder das Suchfeld eingibst, sendet Chromium deine Eingabe an deine Standardsuchmaschine, damit du bessere Vorschläge erhältst. Im Inkognitomodus ist diese Funktion deaktiviert.</translation>
 <translation id="7867198900892795913">Chromium konnte nicht auf die neueste Version aktualisiert werden. In deiner Version fehlen daher einige neue Funktionen und Sicherheitspatches.</translation>
 <translation id="7872446069773932638">Wird heruntergeladen… Noch <ph name="SECONDS" /> Sekunde(n)</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />So kannst du deine Daten verwalten<ph name="END_BOLD" />: Zum Schutz deiner Daten löschen wir automatisch deine Interessen, die älter als vier Wochen sind. Je nach deinen Browsingaktivitäten können die Interessen wieder in der Liste erscheinen. Du kannst jedoch Interessen entfernen, die Chromium nicht berücksichtigen soll.</translation>
@@ -346,9 +349,7 @@ Chromium kann deine Einstellungen nicht wiederherstellen.</translation>
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
 <translation id="8550334526674375523">Dieses Arbeitsprofil wird getrennt von deinem persönlichen Profil verwaltet.</translation>
 <translation id="8558383651099478961">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chromium deaktiviert. Das Hinzufügen dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
-<translation id="8561285221328166383">Du benötigst macOS 10.13 oder höher, um zukünftige Chromium-Updates zu erhalten. Auf diesem Computer wird macOS 10.12 ausgeführt.</translation>
 <translation id="8568283329061645092">Chromium kann deine Passwörter prüfen, wenn du dich mit deinem Google-Konto anmeldest</translation>
-<translation id="8574036838419011058">Wenn die Option aktiviert ist, reduziert Chromium den Akkuverbrauch, indem Hintergrundaktivitäten und visuelle Effekte wie optimiertes Scrollen und Video-Framerates eingeschränkt werden. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />So verwenden wir diese Daten<ph name="END_BOLD" />: Websites können Daten zu deinen Interessen bei Chromium speichern. Wenn du beispielsweise im Internet Schuhe für einen Marathon kaufst, definiert die Website möglicherweise Marathons als eines deiner Interessen. Wenn du dann später eine andere Website besuchst, um dich für ein Wettrennen anzumelden, kann dir auf Grundlage deiner Interessen Werbung zu Laufschuhen angezeigt werden.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>
@@ -379,7 +380,6 @@ Chromium kann deine Einstellungen nicht wiederherstellen.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium funktioniert unter Umständen nicht ordnungsgemäß, da es unter Windows XP und Windows Vista nicht mehr unterstützt wird</translation>
 <translation id="942598560705308788">Von Chromium verwaltete Zertifikate</translation>
-<translation id="945990405696787151">Du benötigst macOS 10.13 oder höher, um zukünftige Chromium-Updates zu erhalten. Auf diesem Computer wird OS X 10.11 ausgeführt.</translation>
 <translation id="965162752251293939">Wer verwendet gerade Chromium?</translation>
 <translation id="967427899662692980">Höchste Sicherheit in Chromium erhalten</translation>
 <translation id="9792300276217204">Beim Schließen von Chromium immer die Websitedaten von deinem Gerät löschen</translation>

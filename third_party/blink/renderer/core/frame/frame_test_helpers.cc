@@ -63,7 +63,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/test/test_web_frame_helper.h"
@@ -86,6 +85,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/widget/input/widget_input_handler_manager.h"
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
@@ -119,7 +119,7 @@ namespace {
 void RunServeAsyncRequestsTask(scoped_refptr<base::TaskRunner> task_runner) {
   // TODO(kinuko,toyoshim): Create a mock factory and use it instead of
   // getting the platform's one. (crbug.com/751425)
-  WebURLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
+  URLLoaderMockFactory::GetSingletonInstance()->ServeAsynchronousRequests();
   if (TestWebFrameClient::IsLoading()) {
     task_runner->PostTask(
         FROM_HERE, WTF::BindOnce(&RunServeAsyncRequestsTask, task_runner));
@@ -187,7 +187,8 @@ void LoadFrameDontWait(WebLocalFrame* frame, const WebURL& url) {
   } else {
     auto params = std::make_unique<WebNavigationParams>();
     params->url = url;
-    params->storage_key = BlinkStorageKey(SecurityOrigin::Create(url));
+    params->storage_key =
+        BlinkStorageKey::CreateFirstParty(SecurityOrigin::Create(url));
     params->navigation_timings.navigation_start = base::TimeTicks::Now();
     params->navigation_timings.fetch_start = base::TimeTicks::Now();
     params->is_browser_initiated = true;
@@ -259,7 +260,7 @@ void FillNavigationParamsResponse(WebNavigationParams* params) {
   // Empty documents and srcdoc will be handled by DocumentLoader.
   if (DocumentLoader::WillLoadUrlAsEmpty(kurl) || kurl.IsAboutSrcdocURL())
     return;
-  WebURLLoaderMockFactory::GetSingletonInstance()->FillNavigationParamsResponse(
+  URLLoaderMockFactory::GetSingletonInstance()->FillNavigationParamsResponse(
       params);
 
   // Parse Content Security Policy response headers into the policy container,
@@ -385,11 +386,11 @@ WebViewHelper::WebViewHelper(
       std::move(create_web_frame_callback);
   if (!create_callback) {
     create_callback =
-        base::BindRepeating(&WebViewHelper::CreateTestWebFrameWidget<>);
+        WTF::BindRepeating(&WebViewHelper::CreateTestWebFrameWidget<>);
   }
   // Due to return type differences we need to bind the RepeatingCallback
   // in a wrapper.
-  create_widget_callback_wrapper_ = base::BindRepeating(
+  create_widget_callback_wrapper_ = WTF::BindRepeating(
       [](const CreateTestWebFrameWidgetCallback& create_test_web_widget,
          base::PassKey<WebLocalFrame> pass_key,
          CrossVariantMojoAssociatedRemote<
@@ -795,6 +796,10 @@ bool TestWebFrameClient::SwapIn(WebFrame* previous_frame) {
   return result;
 }
 
+std::unique_ptr<URLLoader> TestWebFrameClient::CreateURLLoaderForTesting() {
+  return URLLoaderMockFactory::GetSingletonInstance()->CreateURLLoader();
+}
+
 void TestWebFrameClient::BeginNavigation(
     std::unique_ptr<WebNavigationInfo> info) {
   navigation_callback_.Cancel();
@@ -808,8 +813,8 @@ void TestWebFrameClient::BeginNavigation(
     return;
 
   navigation_callback_.Reset(
-      base::BindOnce(&TestWebFrameClient::CommitNavigation,
-                     weak_factory_.GetWeakPtr(), std::move(info)));
+      WTF::BindOnce(&TestWebFrameClient::CommitNavigation,
+                    weak_factory_.GetWeakPtr(), std::move(info)));
   frame_->GetTaskRunner(blink::TaskType::kInternalLoading)
       ->PostTask(FROM_HERE, navigation_callback_.callback());
 }

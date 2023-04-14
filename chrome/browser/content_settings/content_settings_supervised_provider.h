@@ -12,7 +12,9 @@
 #include "components/content_settings/core/browser/content_settings_global_value_map.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 
+namespace supervised_user {
 class SupervisedUserSettingsService;
+}  // namespace supervised_user
 
 namespace content_settings {
 
@@ -20,8 +22,8 @@ namespace content_settings {
 // of a supervised user.
 class SupervisedProvider : public ObservableProvider {
  public:
-  explicit SupervisedProvider(
-      SupervisedUserSettingsService* supervised_user_settings_service);
+  explicit SupervisedProvider(supervised_user::SupervisedUserSettingsService*
+                                  supervised_user_settings_service);
 
   SupervisedProvider(const SupervisedProvider&) = delete;
   SupervisedProvider& operator=(const SupervisedProvider&) = delete;

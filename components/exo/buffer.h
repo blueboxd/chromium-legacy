@@ -17,6 +17,7 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "media/media_buildflags.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -52,6 +53,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
     release_callback_ = release_callback;
   }
 
+  // The client does not need release_callback_ to notify buffer usage.
+  void SkipLegacyRelease();
+
   // Returns if this buffer's contents are vertically inverted.
   bool y_invert() const { return y_invert_; }
 
@@ -65,6 +69,7 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
       std::unique_ptr<gfx::GpuFence> acquire_fence,
       bool secure_output_only,
       viz::TransferableResource* resource,
+      gfx::ColorSpace color_space,
       ProtectedNativePixmapQueryDelegate* protected_native_pixmap_query,
       PerCommitExplicitReleaseCallback per_commit_explicit_release_callback);
 
@@ -210,6 +215,8 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // protocol requires us to send regular buffer release events.
   base::flat_map<uint64_t, BufferRelease> buffer_releases_;
 
+  bool legacy_release_skippable_ = false;
+
 #if BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
   ProtectedBufferState protected_buffer_state_ = ProtectedBufferState::UNKNOWN;
 #endif  // BUILDFLAG(USE_ARC_PROTECTED_MEDIA)
@@ -229,6 +236,7 @@ class SolidColorBuffer : public Buffer {
       std::unique_ptr<gfx::GpuFence> acquire_fence,
       bool secure_output_only,
       viz::TransferableResource* resource,
+      gfx::ColorSpace color_space,
       ProtectedNativePixmapQueryDelegate* protected_native_pixmap_query,
       PerCommitExplicitReleaseCallback per_commit_explicit_release_callback)
       override;

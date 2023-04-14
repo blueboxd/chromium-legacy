@@ -133,11 +133,13 @@
 <translation id="163517899691012366">ปิดเสียงการแจ้งเตือนเมื่อฟีเจอร์ห้ามรบกวนเปิดอยู่</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> อุปกรณ์</translation>
 <translation id="1639239467298939599">กำลังโหลด</translation>
+<translation id="1647986356840967552">หน้าที่แล้ว</translation>
 <translation id="1654477262762802994">เริ่มการค้นหาด้วยเสียง</translation>
 <translation id="1668469839109562275">VPN ในตัว</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> ไม่เชื่อมต่อ</translation>
 <translation id="1677582821739292812">มีคนกำลังดูหน้าจอของคุณอยู่</translation>
+<translation id="1683399938733266832">การใช้งานปัจจุบันของ CPU: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">ตัวจับเวลา <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">ที่อยู่ IPv6: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@
 <translation id="1771761307086386028">เลื่อนไปทางขวา</translation>
 <translation id="1774796056689732716">ปฏิทิน, <ph name="CURRENT_MONTH_YEAR" />, เลือกวันที่ <ph name="DATE" /> อยู่</translation>
 <translation id="1787955149152357925">ปิด</translation>
-<translation id="1797271123677381264">ลืมรหัสผ่าน</translation>
 <translation id="1807246157184219062">สว่าง</translation>
 <translation id="181103072419391116">ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />, จัดการโดยผู้ดูแลระบบ</translation>
 <translation id="1816896987747843206">การดำเนินการนี้ช่วยให้แอปและเว็บไซต์ทั้งหมดที่มีสิทธิ์สามารถเข้าถึงกล้องได้</translation>
@@ -381,6 +382,7 @@
 <translation id="3051189971848907985">กำลังเปลี่ยนชื่อโปรไฟล์ รอสักครู่</translation>
 <translation id="3055162170959710888">วันนี้คุณใช้อุปกรณ์เครื่องนี้ไป <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">ไม่รองรับ</translation>
+<translation id="3068622547379332530">เวอร์ชัน <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">ชั้นวางอยู่ทางซ้าย</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">ขยายเมนู</translation>
@@ -421,9 +423,11 @@
 <translation id="3289674678944039601">กำลังชาร์จผ่านอะแดปเตอร์</translation>
 <translation id="3290356915286466215">ไม่ปลอดภัย</translation>
 <translation id="3294437725009624529">ผู้มาเยือน</translation>
+<translation id="3298690094479023523">ยังคงยืนยัน PIN หรือรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="3307642347673023554">เปลี่ยนเป็นโหมดแล็ปท็อปแล้ว</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> ยังมีสิทธิ์ลงชื่อเข้าใช้ภายหลังได้</translation>
 <translation id="3321628682574733415">รหัสผู้ปกครองไม่ถูกต้อง</translation>
+<translation id="332827762492701193">การแจ้งเตือนซ่อนอยู่</translation>
 <translation id="3339826665088060472">การจับภาพหน้าจอคือเครื่องมือในการถ่ายภาพหน้าจอและบันทึกหน้าจอ</translation>
 <translation id="3340978935015468852">การตั้งค่า</translation>
 <translation id="3341303451326249809">จับภาพหน้าจอแล้ว</translation>
@@ -554,12 +558,14 @@
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="397726367135689299">การชาร์จแบตเตอรี่อาจไม่ทำงานอย่างที่ควร</translation>
 <translation id="3977512764614765090">แบตเตอรี่เหลือ <ph name="PERCENTAGE" />% และกำลังชาร์จ</translation>
+<translation id="3984536049089846927">หน้าถัดไป</translation>
 <translation id="3986082989454912832">ตอบ</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
 <translation id="40062176907008878">การเขียนด้วยลายมือ</translation>
 <translation id="4017989525502048489">ตัวชี้เลเซอร์</translation>
 <translation id="401993194061514265">ตัวทำเครื่องหมายไม่พร้อมใช้งาน เปิด Screencast อีกครั้ง</translation>
 <translation id="4021716437419160885">เลื่อนลง</translation>
+<translation id="4024840464866786680">หากคุณลืม PIN และรหัสผ่าน หรือเปลี่ยนรหัสผ่านของบัญชี Google เมื่อเร็วๆ นี้ ให้ลองกู้คืนผู้ใช้รายนี้</translation>
 <translation id="4028481283645788203">ต้องป้อนรหัสผ่านเพื่อให้มีความปลอดภัยมากขึ้น</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">คุณกำลังแชร์หน้าจอ</translation>
@@ -575,9 +581,10 @@
 <translation id="4123259114412175274">หากต้องการปลดล็อก Chromebook ให้ตรวจสอบว่าบลูทูธของโทรศัพท์เปิดอยู่</translation>
 <translation id="4125970834901680537">สตรีมแอปในโหมดแท็บเล็ตไม่ได้ โปรดลองอีกครั้งในโหมดแล็ปท็อป</translation>
 <translation id="4129129681837227511">หากต้องการดูการแจ้งเตือนในหน้าจอล็อก ให้ปลดล็อกเพื่อเปลี่ยนการตั้งค่า</translation>
-<translation id="4130035430755296270">ลากเมาส์ไปเรื่อยๆ เพื่อดูตัวเลือกเลย์เอาต์เพิ่มเติม</translation>
+<translation id="4131973331381812765">อุณหภูมิ: <ph name="TEMPERATURE" />°C - ความเร็วในปัจจุบัน: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
 <translation id="4136724716305260864">เปิดจนถึงพระอาทิตย์ขึ้น</translation>
 <translation id="4146833061457621061">เปิดเพลง</translation>
+<translation id="4150201353443180367">การแสดงผล</translation>
 <translation id="4165275524535002941">สายสัญญาณอาจไม่รองรับจอแสดงผล</translation>
 <translation id="4177913004758410636">{0,plural, =1{อัปเดตอุปกรณ์ภายใน 1 วัน}other{อัปเดตอุปกรณ์ภายใน # วัน}}</translation>
 <translation id="4181841719683918333">ภาษา</translation>
@@ -699,10 +706,12 @@
 <translation id="4735944890391795473">เดสก์ที่ 12</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4740516757091333363">ลบเดสก์ที่บันทึกไว้ใช่ไหม</translation>
+<translation id="4747410141429390146">โปรดปลดล็อกเพื่อดูการแจ้งเตือน</translation>
 <translation id="4752784485658729358">อนุญาตให้บันทึกเพียง 6 เดสก์ นำออกเพื่อบันทึกเดสก์ใหม่</translation>
 <translation id="4759238208242260848">ดาวน์โหลด</translation>
 <translation id="4762573482154983647">ซ่อนแอป</translation>
 <translation id="4774338217796918551">ใช้ได้อีกครั้งพรุ่งนี้ เวลา <ph name="COME_BACK_TIME" /></translation>
+<translation id="4776584068981882959">ยังคงยืนยันรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="4776917500594043016">รหัสผ่านของ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">Google Assistant ไม่พร้อมใช้งานในเซสชันสาธิต</translation>
@@ -727,6 +736,7 @@
 <translation id="4895488851634969361">แบตเตอรี่เต็ม</translation>
 <translation id="490375751687810070">แนวตั้ง</translation>
 <translation id="490788395437447240">แบตเตอรี่ <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="491504982845934899">เปิดใช้งานหลังจากตั้งค่าอุปกรณ์ <ph name="NETWORK_NAME" /></translation>
 <translation id="4917385247580444890">แรง</translation>
 <translation id="4918086044614829423">ยอมรับ</translation>
 <translation id="4919841137949306064">"<ph name="APP_NAME" />" กำลังใช้กล้อง</translation>
@@ -842,6 +852,7 @@
 <translation id="5536723544185013515">แอปล่าสุด ใช้แป้นลูกศรซ้ายหรือขวาเพื่อเข้าถึงแอปล่าสุดทั้งหมด</translation>
 <translation id="553675580533261935">กำลังออกจากเซสชัน</translation>
 <translation id="5537725057119320332">แคสต์</translation>
+<translation id="5546397813406633847">กู้คืนผู้ใช้</translation>
 <translation id="554893713779400387">สลับการเขียนตามคำบอก</translation>
 <translation id="5558091555391176027">เปิด/ปิดระดับการเข้าถึงสูงของการแชร์ใกล้เคียง</translation>
 <translation id="5560420195677022218">ดูแอปของโทรศัพท์ใน <ph name="DEVICE_TYPE" /></translation>
@@ -858,6 +869,7 @@
 <translation id="5618148318840095371">เราสลับไปใช้เครือข่ายที่ดีกว่า</translation>
 <translation id="5619862035903135339">นโยบายของผู้ดูแลระบบปิดใช้การจับภาพหน้าจอ</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">ยืนยันรหัสผ่านของคุณไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> ส่งคำขอให้คุณดำเนินการ</translation>
 <translation id="5662075790140998213">เดสก์ที่ 10</translation>
@@ -876,6 +888,7 @@
 <translation id="5707775774148071965">อุปกรณ์รองรับอัตราข้อมูลที่สูงกว่าสายสัญญาณ และอาจจำกัดประสิทธิภาพของอุปกรณ์</translation>
 <translation id="5710450975648804523">โหมดห้ามรบกวนเปิดอยู่</translation>
 <translation id="571295407079589142">อินเทอร์เน็ตมือถือปิดอยู่</translation>
+<translation id="5727460725221669831">หากคุณลืมรหัสผ่านหรือเปลี่ยนรหัสผ่านของบัญชี Google เมื่อเร็วๆ นี้ ให้ลองกู้คืนผู้ใช้รายนี้</translation>
 <translation id="573413375004481890">อุปกรณ์นี้รองรับจอแสดงผลทั้งหมดไม่ได้ ระบบจึงยกเลิกการเชื่อมต่อจอแสดงผลจอหนึ่ง</translation>
 <translation id="5740328398383587084">การแชร์ใกล้เคียง</translation>
 <translation id="574392208103952083">ปานกลาง</translation>
@@ -905,6 +918,7 @@
 <translation id="5867606971598166637">ผู้ดูแลระบบกำลังตรวจสอบหน้าจอของคุณ</translation>
 <translation id="5876666360658629066">กรอกรหัสผู้ปกครอง</translation>
 <translation id="5881540930187678962">ตั้งค่าฮับโทรศัพท์ภายหลัง</translation>
+<translation id="5881663018261910378">ปิดอยู่</translation>
 <translation id="5887954372087850114">กำหนดหน้าต่าง <ph name="WINDOW_TITLE" /> ให้กับ <ph name="DESK_TITLE" /> และยกเลิกการกำหนดจากเดสก์อื่นๆ ทั้งหมดแล้ว</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="589817443623831496">การสแกนจุด</translation>
@@ -1319,6 +1333,7 @@
 <translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8131994907636310308">ปิดข้อความโทสต์การจัดเรียง</translation>
 <translation id="8132793192354020517">เชื่อมต่อกับ <ph name="NAME" /></translation>
+<translation id="8138705869659070104">เปิดใช้งานหลังตั้งค่าอุปกรณ์</translation>
 <translation id="813913629614996137">กำลังเริ่มดำเนินการ...</translation>
 <translation id="8142441511840089262">ดับเบิลคลิก</translation>
 <translation id="8142699993796781067">เครือข่ายส่วนบุคคล</translation>

@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/webui/ash/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/network_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
@@ -116,7 +115,6 @@ const test::UIPath kDemoSetupErrorDialogMessage = {kDemoSetupId,
 
 const test::UIPath kArcTosDialog = {kArcTosId, "arcTosDialog"};
 const test::UIPath kArcTosAcceptButton = {kArcTosId, "arcTosAcceptButton"};
-const test::UIPath kArcTosDemoAppsNotice = {kArcTosId, "arcTosMetricsDemoApps"};
 const test::UIPath kArcTosBackButton = {kArcTosId, "arcTosBackButton"};
 const test::UIPath kArcTosNextButton = {kArcTosId, "arcTosNextButton"};
 
@@ -372,36 +370,14 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
     test::LockDemoDeviceInstallAttributes();
     // TODO(b/246012796): If possible, re-enable waiting on the setup screen to
     // be shown
-    if (features::IsOobeConsolidatedConsentEnabled()) {
-      WaitForConsolidatedConsentScreen();
-
-      test::TapConsolidatedConsentAccept();
-    } else {
-      test::WaitForEulaScreen();
-      test::TapEulaAccept();
-
-      WaitForArcTosScreen();
-
-      test::OobeJS().ExpectVisiblePath(kArcTosDemoAppsNotice);
-
-      AcceptArcTos();
-    }
+    WaitForConsolidatedConsentScreen();
+    test::TapConsolidatedConsentAccept();
   }
 
   void AcceptTermsAndExpectDemoSetupFailure() {
-    if (features::IsOobeConsolidatedConsentEnabled()) {
-      WaitForConsolidatedConsentScreen();
-      test::TapConsolidatedConsentAccept();
-    } else {
-      test::WaitForEulaScreen();
-      test::TapEulaAccept();
+    WaitForConsolidatedConsentScreen();
+    test::TapConsolidatedConsentAccept();
 
-      WaitForArcTosScreen();
-
-      test::OobeJS().ExpectVisiblePath(kArcTosDemoAppsNotice);
-
-      AcceptArcTos();
-    }
     // As we expect the error message to stay on the screen, it is safe to
     // wait for it in the usual manner.
     OobeScreenWaiter(DemoSetupScreenView::kScreenId).Wait();
@@ -448,11 +424,11 @@ class DemoSetupArcSupportedTest : public DemoSetupTestBase {
 
   system::ScopedFakeStatisticsProvider statistics_provider_;
 
-  void SelectFranceAndFinishSetup() {
-    // Select France as the Demo Mode country.
+  void PopulateDemoPreferencesAndFinishSetup() {
+    // Select France as the Demo Mode country and test retailer name and store
+    // number.
     test::OobeJS().SelectElementInPath("FR", kDemoPreferencesCountrySelect);
-    test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
-    test::OobeJS().ClickOnPath(kDemoPreferencesNext);
+    ProceedThroughDemoPreferencesScreen();
 
     AcceptTermsAndExpectDemoSetupProgress();
 
@@ -592,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
   test::OobeJS().ExpectEnabledPath(kDemoPreferencesNext);
   test::OobeJS().ExpectElementValue("US", kDemoPreferencesCountrySelect);
 
-  SelectFranceAndFinishSetup();
+  PopulateDemoPreferencesAndFinishSetup();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
@@ -774,11 +750,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, ClickNetworkOnNetworkScreen) {
 
   ProceedThroughDemoPreferencesScreen();
 
-  if (features::IsOobeConsolidatedConsentEnabled()) {
-    test::WaitForConsolidatedConsentScreen();
-  } else {
-    test::WaitForEulaScreen();
-  }
+  test::WaitForConsolidatedConsentScreen();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
@@ -797,11 +769,7 @@ IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest,
 
   ProceedThroughDemoPreferencesScreen();
 
-  if (features::IsOobeConsolidatedConsentEnabled()) {
-    test::WaitForConsolidatedConsentScreen();
-  } else {
-    test::WaitForEulaScreen();
-  }
+  test::WaitForConsolidatedConsentScreen();
 }
 
 IN_PROC_BROWSER_TEST_F(DemoSetupArcSupportedTest, BackOnNetworkScreen) {
@@ -1092,9 +1060,8 @@ IN_PROC_BROWSER_TEST_F(DemoSetupVirtualSetRegionCodeTest,
   // Expect inactive "OK" button when entering the preference screen.
   test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
   test::OobeJS().ExpectElementValue("N/A", kDemoPreferencesCountrySelect);
-  // test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
-  SelectFranceAndFinishSetup();
+  PopulateDemoPreferencesAndFinishSetup();
 }
 
 /**
@@ -1109,24 +1076,22 @@ class DemoSetupRegionCodeNotExistTest : public DemoSetupArcSupportedTest {
   }
 };
 
-// TODO(crbug.com/1320444): Flaky test.
 IN_PROC_BROWSER_TEST_F(DemoSetupRegionCodeNotExistTest,
-                       DISABLED_RegionCodeNotExistPlaceholderIsSet) {
+                       RegionCodeNotExistPlaceholderIsSet) {
   // Simulate successful online setup.
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION);
   enrollment_helper_.ExpectAttestationEnrollmentSuccess();
   SimulateNetworkConnected();
 
-  // TODO(crbug.com/1320412): Re-enable this test
   TriggerDemoModeOnWelcomeScreen();
   UseOnlineModeOnNetworkScreen();
+
   // Expect inactive "OK" button when entering the preference screen.
   test::OobeJS().ExpectDisabledPath(kDemoPreferencesNext);
   test::OobeJS().ExpectElementValue("N/A", kDemoPreferencesCountrySelect);
-  // test::OobeJS().ClickOnPath(kDemoPreferencesNext);
 
-  SelectFranceAndFinishSetup();
+  PopulateDemoPreferencesAndFinishSetup();
 }
 
 /**

@@ -12,10 +12,8 @@
 
 #include "base/check_op.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -28,8 +26,8 @@
 #include "components/policy/core/common/cloud/test/policy_builder.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
-#include "components/policy/core/common/remote_commands/remote_commands_queue.h"
 #include "components/policy/core/common/remote_commands/test_support/echo_remote_command_job.h"
+#include "components/policy/core/common/remote_commands/test_support/remote_command_builders.h"
 #include "components/policy/core/common/remote_commands/test_support/testing_remote_commands_server.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -53,138 +51,6 @@ const int kTestEchoCommandExecutionTimeInSeconds = 1;
 const char kDeviceId[] = "acme-device";
 
 #define EXPECT_NO_CALLS(args...) EXPECT_CALL(args).Times(0)
-
-// Builder class that constructs a |RemoteCommand|.
-class CommandBuilder {
- public:
-  CommandBuilder() = default;
-  CommandBuilder(const CommandBuilder&) = delete;
-  CommandBuilder& operator=(const CommandBuilder&) = delete;
-  CommandBuilder(CommandBuilder&&) = default;
-  CommandBuilder& operator=(CommandBuilder&&) = default;
-  ~CommandBuilder() = default;
-
-  em::RemoteCommand Build() { return result_; }
-
-  CommandBuilder& WithId(int id) {
-    result_.set_command_id(id);
-    return *this;
-  }
-
-  CommandBuilder& WithoutId() {
-    result_.clear_command_id();
-    return *this;
-  }
-
-  CommandBuilder& WithType(em::RemoteCommand::Type type) {
-    result_.set_type(type);
-    return *this;
-  }
-
-  CommandBuilder& WithoutType() {
-    result_.clear_type();
-    return *this;
-  }
-
-  CommandBuilder& WithPayload(const std::string& payload) {
-    result_.set_payload(payload);
-    return *this;
-  }
-
-  CommandBuilder& WithTargetDeviceId(const std::string& value) {
-    result_.set_target_device_id(value);
-    return *this;
-  }
-
- private:
-  em::RemoteCommand result_;
-};
-
-// Helper class that builds enterprise_management::SignedData.
-class SignedDataBuilder {
- public:
-  SignedDataBuilder() = default;
-  SignedDataBuilder(const SignedDataBuilder&) = delete;
-  SignedDataBuilder& operator=(const SignedDataBuilder&) = delete;
-  SignedDataBuilder(SignedDataBuilder&&) = default;
-  SignedDataBuilder& operator=(SignedDataBuilder&&) = default;
-  ~SignedDataBuilder() = default;
-
-  em::SignedData Build() { return BuildSignedData(command_.Build()); }
-
-  SignedDataBuilder& WithCommandId(int id) {
-    command_.WithId(id);
-    return *this;
-  }
-
-  SignedDataBuilder& WithoutCommandId() {
-    command_.WithoutId();
-    return *this;
-  }
-
-  SignedDataBuilder& WithCommandType(em::RemoteCommand::Type type) {
-    command_.WithType(type);
-    return *this;
-  }
-
-  SignedDataBuilder& WithoutCommandType() {
-    command_.WithoutType();
-    return *this;
-  }
-
-  SignedDataBuilder& WithCommandPayload(const std::string& value) {
-    command_.WithPayload(value);
-    return *this;
-  }
-
-  SignedDataBuilder& WithTargetDeviceId(const std::string& value) {
-    command_.WithTargetDeviceId(value);
-    return *this;
-  }
-
-  SignedDataBuilder& WithSignedData(const std::string& value) {
-    signed_data.set_data(value);
-    return *this;
-  }
-
-  SignedDataBuilder& WithSignature(const std::string& value) {
-    signed_data.set_signature(value);
-    return *this;
-  }
-
-  SignedDataBuilder& WithPolicyType(const std::string& value) {
-    policy_data.set_policy_type(value);
-    return *this;
-  }
-
-  SignedDataBuilder& WithPolicyValue(const std::string& value) {
-    policy_data.set_policy_value(value);
-    return *this;
-  }
-
- private:
-  // The signed data defaults to correctly signing the remote command,
-  // unless it was explicitly overwritten during this test.
-  em::SignedData BuildSignedData(const em::RemoteCommand& command) {
-    if (!policy_data.has_policy_type())
-      policy_data.set_policy_type("google/chromeos/remotecommand");
-
-    if (!policy_data.has_policy_value())
-      command.SerializeToString(policy_data.mutable_policy_value());
-
-    if (!signed_data.has_data())
-      policy_data.SerializeToString(signed_data.mutable_data());
-
-    if (!signed_data.has_signature())
-      signed_data.set_signature(SignDataWithTestKey(signed_data.data()));
-
-    return signed_data;
-  }
-
-  CommandBuilder command_;
-  em::PolicyData policy_data;
-  em::SignedData signed_data;
-};
 
 // Future value that waits for the remote command result that is sent to the
 // server.
@@ -346,6 +212,7 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
   void FetchRemoteCommands(
       std::unique_ptr<RemoteCommandJob::UniqueIDType> last_command_id,
       const std::vector<em::RemoteCommandResult>& command_results,
+      em::PolicyFetchRequest::SignatureType signature_type,
       RemoteCommandCallback callback) override {
     std::vector<em::SignedData> commands =
         server_->FetchCommands(std::move(last_command_id), command_results);
@@ -400,9 +267,9 @@ class RemoteCommandsServiceTest
     return *factory_ptr;
   }
 
-  void FetchRemoteCommands() {
+  [[nodiscard]] bool FetchRemoteCommands() {
     // A return value of |true| means the fetch command was successfully issued.
-    EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
+    return remote_commands_service_->FetchRemoteCommands();
   }
 
   // Return a builder for a signed RemoteCommand, with the important fields set
@@ -435,7 +302,7 @@ TEST_P(RemoteCommandsServiceTest,
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
 
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 }
 
@@ -449,7 +316,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldCreateJobWhenRemoteCommandIsFetched) {
           .Build(),
       {});
 
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   FakeJob& job = job_factory.WaitForJob();
   EXPECT_EQ(job.GetType(), em::RemoteCommand_Type_DEVICE_FETCH_STATUS);
@@ -461,7 +328,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldSendJobSuccessToRemoteServer) {
   auto& job_factory = StartServiceWith<FakeJobFactory>();
   ServerResponseFuture response_future;
   server_.IssueCommand(Command().Build(), response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   job_factory.WaitForJob().FinishWithSuccess("<the-payload>");
 
@@ -476,7 +343,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldSendJobFailureToRemoteServer) {
 
   ServerResponseFuture response_future;
   server_.IssueCommand(Command().Build(), response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   job_factory.WaitForJob().FinishWithFailure("<the-failure-payload>");
 
@@ -491,7 +358,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldSendFailureToCreateJobToRemoteServer) {
 
   ServerResponseFuture response_future;
   server_.IssueCommand(Command().Build(), response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   // Fail building of the job
   EXPECT_CALL(job_factory, BuildJobForType).WillOnce(Return(nullptr));
@@ -513,7 +380,7 @@ TEST_P(RemoteCommandsServiceTest,
   ServerResponseFuture second_future;
   server_.IssueCommand(Command().WithCommandPayload("second").Build(),
                        second_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   // Handle both jobs - in order.
   FakeJob& first_job = job_factory.WaitForJob();
@@ -541,7 +408,7 @@ TEST_P(RemoteCommandsServiceTest,
   server_.IssueCommand(Command().WithCommandPayload("first").Build(),
                        first_future.GetCallback());
 
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   // Send the second remote command after the first one is fetched.
   ServerResponseFuture second_future;
@@ -578,7 +445,7 @@ TEST_P(RemoteCommandsServiceTest, NewCommandFollowingFetch) {
       {});
 
   // Attempt to fetch commands.
-  EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
+  EXPECT_TRUE(FetchRemoteCommands());
 
   // The command fetch should be in progress.
   EXPECT_TRUE(remote_commands_service_->IsCommandFetchInProgressForTesting());
@@ -586,7 +453,7 @@ TEST_P(RemoteCommandsServiceTest, NewCommandFollowingFetch) {
   // And a following up fetch request should be enqueued.
   // A return value of |false| means exactly that - another fetch request is in
   // progress, but a follow up request has been enqueued.
-  EXPECT_FALSE(remote_commands_service_->FetchRemoteCommands());
+  EXPECT_FALSE(FetchRemoteCommands());
 
   FakeJob& job = job_factory.WaitForJob();
   EXPECT_EQ(job.GetPayload(), "Command sent in the second fetch");
@@ -601,7 +468,7 @@ TEST_P(RemoteCommandsServiceTest, AckedCallback) {
   // Fetch the command.
   ServerResponseFuture response_future;
   server_.IssueCommand(Command().Build(), response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   // Wait for the job to be created. This means the fetch is completed.
   FakeJob& job = job_factory.WaitForJob();
@@ -628,7 +495,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldRejectCommandWithInvalidSignature) {
 
   server_.IssueCommand(Command().WithSignature("random-signature").Build(),
                        response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
   EXPECT_EQ(response_future.Get().result(),
@@ -641,7 +508,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldRejectCommandWithInvalidSignedData) {
 
   server_.IssueCommand(Command().WithSignedData("random-data").Build(),
                        response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
   EXPECT_EQ(response_future.Get().result(),
@@ -654,7 +521,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldRejectCommandWithInvalidPolicyType) {
 
   server_.IssueCommand(Command().WithPolicyType("random-policy-type").Build(),
                        response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
   EXPECT_EQ(response_future.Get().result(),
@@ -667,7 +534,7 @@ TEST_P(RemoteCommandsServiceTest, ShouldRejectCommandWithInvalidPolicyValue) {
 
   server_.IssueCommand(Command().WithPolicyValue("random-policy-value").Build(),
                        response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
   EXPECT_EQ(response_future.Get().result(),
@@ -681,7 +548,7 @@ TEST_P(RemoteCommandsServiceTest,
 
   server_.IssueCommand(Command().WithTargetDeviceId("wrong-device-id").Build(),
                        response_future.GetCallback());
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
 
   EXPECT_NO_CALLS(job_factory, BuildJobForType);
   EXPECT_EQ(response_future.Get().result(),
@@ -728,7 +595,7 @@ class RemoteCommandsServiceHistogramTest : public RemoteCommandsServiceTest {
 };
 
 TEST_P(RemoteCommandsServiceHistogramTest, WhenNoCommandsNothingRecorded) {
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({});
@@ -738,7 +605,7 @@ TEST_P(RemoteCommandsServiceHistogramTest, WhenNoCommandsNothingRecorded) {
 TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedCommandOfUnknownTypeRecordUnknownType) {
   server_.IssueCommand(Command().WithoutCommandType().Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kUnknownType});
@@ -748,7 +615,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
 TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedCommandWithoutIdRecordInvalid) {
   server_.IssueCommand(Command().WithoutCommandId().Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kInvalid});
@@ -758,11 +625,11 @@ TEST_P(RemoteCommandsServiceHistogramTest,
 TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedExistingCommandRecordDuplicated) {
   server_.IssueCommand(Command().WithCommandId(222).Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   server_.IssueCommand(Command().WithCommandId(222).Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kCommandEchoTest,
@@ -776,7 +643,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
   EXPECT_CALL(job_factory, BuildJobForType).WillOnce(Return(nullptr));
 
   server_.IssueCommand(Command().Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kInvalidScope});
@@ -786,7 +653,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
 TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedInvalidSignatureRecordInvalidSignature) {
   server_.IssueCommand(Command().WithSignature("wrong-signature").Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics(
@@ -798,7 +665,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedInvalidPolicyDataRecordInvalid) {
   server_.IssueCommand(Command().WithPolicyType("random-policy-type").Build(),
                        {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kInvalid});
@@ -809,7 +676,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedInvalidTargetDeviceRecordInvalid) {
   server_.IssueCommand(
       Command().WithTargetDeviceId("invalid-device-id").Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kInvalid});
@@ -819,7 +686,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
 TEST_P(RemoteCommandsServiceHistogramTest,
        WhenReceivedInvalidCommandRecordInvalid) {
   server_.IssueCommand(Command().WithPolicyValue("wrong-value").Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics({MetricReceivedRemoteCommand::kInvalid});
@@ -828,7 +695,7 @@ TEST_P(RemoteCommandsServiceHistogramTest,
 
 TEST_P(RemoteCommandsServiceHistogramTest, WhenReceivedValidCommandRecordType) {
   server_.IssueCommand(Command().Build(), {});
-  FetchRemoteCommands();
+  EXPECT_TRUE(FetchRemoteCommands());
   FlushAllTasks();
 
   ExpectReceivedCommandsMetrics(

@@ -27,6 +27,8 @@ source_set("browser") {
     "user_population.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   public_deps = [ "//google_apis:google_apis" ]
 
   deps = [
@@ -42,6 +44,7 @@ source_set("browser") {
     "//components/safe_browsing/core/browser/hashprefix_realtime:hash_realtime_service",
     "//components/safe_browsing/core/browser/realtime:policy_engine",
     "//components/safe_browsing/core/browser/realtime:url_lookup_service_base",
+    "//components/safe_browsing/core/browser/utils",
     "//components/safe_browsing/core/common:common",
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/safe_browsing/core/common/proto:realtimeapi_proto",
@@ -116,6 +119,8 @@ source_set("verdict_cache_manager") {
     "verdict_cache_manager.h",
   ]
 
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
     "//components/content_settings/core/browser",
@@ -154,6 +159,9 @@ source_set("verdict_cache_manager_unittest") {
 }
 source_set("referrer_chain_provider") {
   sources = [ "referrer_chain_provider.h" ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//components/safe_browsing/core/common/proto:csd_proto",
     "//components/sessions",
@@ -172,6 +180,8 @@ source_set("token_fetcher") {
     "safe_browsing_token_fetch_tracker.h",
     "safe_browsing_token_fetcher.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [ "//base" ]
 }
@@ -210,6 +220,9 @@ source_set("safe_browsing_metrics_collector") {
     "safe_browsing_metrics_collector.cc",
     "safe_browsing_metrics_collector.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
+
   deps = [
     "//base",
     "//components/keyed_service/core",

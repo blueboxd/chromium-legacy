@@ -8,8 +8,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/app_list/app_list_metrics.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "base/functional/callback.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/one_shot_event.h"
@@ -25,7 +23,6 @@
 #include "chrome/browser/apps/app_service/publishers/extension_apps_util.h"
 #include "chrome/browser/ash/app_list/extension_app_utils.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,12 +45,12 @@
 #include "content/public/browser/clear_site_data_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_util.h"
 #include "extensions/browser/ui_util.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "extensions/common/switches.h"
-#include "net/base/url_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "url/url_constants.h"
@@ -71,60 +68,6 @@
 // direct loading the ExtensionIcon".
 
 namespace {
-
-std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
-  switch (source) {
-    case ash::LAUNCH_FROM_APP_LIST:
-      return std::string(extension_urls::kLaunchSourceAppList);
-    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
-      return std::string(extension_urls::kLaunchSourceAppListSearch);
-    default:
-      return std::string();
-  }
-}
-
-ash::ShelfLaunchSource ConvertLaunchSource(apps::LaunchSource launch_source) {
-  switch (launch_source) {
-    case apps::LaunchSource::kUnknown:
-    case apps::LaunchSource::kFromParentalControls:
-      return ash::LAUNCH_FROM_UNKNOWN;
-    case apps::LaunchSource::kFromAppListGrid:
-    case apps::LaunchSource::kFromAppListGridContextMenu:
-      return ash::LAUNCH_FROM_APP_LIST;
-    case apps::LaunchSource::kFromAppListQuery:
-    case apps::LaunchSource::kFromAppListQueryContextMenu:
-    case apps::LaunchSource::kFromAppListRecommendation:
-      return ash::LAUNCH_FROM_APP_LIST_SEARCH;
-    case apps::LaunchSource::kFromShelf:
-      return ash::LAUNCH_FROM_SHELF;
-    case apps::LaunchSource::kFromFileManager:
-    case apps::LaunchSource::kFromLink:
-    case apps::LaunchSource::kFromOmnibox:
-    case apps::LaunchSource::kFromChromeInternal:
-    case apps::LaunchSource::kFromKeyboard:
-    case apps::LaunchSource::kFromOtherApp:
-    case apps::LaunchSource::kFromMenu:
-    case apps::LaunchSource::kFromInstalledNotification:
-    case apps::LaunchSource::kFromTest:
-    case apps::LaunchSource::kFromArc:
-    case apps::LaunchSource::kFromSharesheet:
-    case apps::LaunchSource::kFromReleaseNotesNotification:
-    case apps::LaunchSource::kFromFullRestore:
-    case apps::LaunchSource::kFromSmartTextContextMenu:
-    case apps::LaunchSource::kFromDiscoverTabNotification:
-    case apps::LaunchSource::kFromManagementApi:
-    case apps::LaunchSource::kFromKiosk:
-    case apps::LaunchSource::kFromCommandLine:
-    case apps::LaunchSource::kFromBackgroundMode:
-    case apps::LaunchSource::kFromNewTabPage:
-    case apps::LaunchSource::kFromIntentUrl:
-    case apps::LaunchSource::kFromOsLogin:
-    case apps::LaunchSource::kFromProtocolHandler:
-    case apps::LaunchSource::kFromUrlHandler:
-    case apps::LaunchSource::kFromLockScreen:
-      return ash::LAUNCH_FROM_UNKNOWN;
-  }
-}
 
 apps::InstallReason GetInstallReason(const Profile* profile,
                                      const extensions::Extension* extension) {
@@ -307,6 +250,14 @@ void ExtensionAppsBase::Initialize() {
                                 weak_factory_.GetWeakPtr()));
 }
 
+AppLaunchParams ExtensionAppsBase::ModifyAppLaunchParams(
+    const std::string& app_id,
+    LaunchSource launch_source,
+    AppLaunchParams params) {
+  // Does nothing in this base class.
+  return params;
+}
+
 void ExtensionAppsBase::OnExtensionsReady() {
   std::vector<AppPtr> apps;
   extensions::ExtensionRegistry* registry =
@@ -393,6 +344,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
     case apps::LaunchSource::kFromLockScreen:
+    case apps::LaunchSource::kFromAppHomePage:
       break;
   }
 
@@ -400,20 +352,7 @@ void ExtensionAppsBase::Launch(const std::string& app_id,
   AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
       profile_, extension, event_flags, launch_source,
       window_info ? window_info->display_id : display::kInvalidDisplayId);
-  ash::ShelfLaunchSource source = ConvertLaunchSource(launch_source);
-  if ((source == ash::LAUNCH_FROM_APP_LIST ||
-       source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
-      app_id == extensions::kWebStoreAppId) {
-    // Get the corresponding source string.
-    std::string source_value = GetSourceFromAppListSource(source);
-
-    // Set an override URL to include the source.
-    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-    params.override_url = net::AppendQueryParameter(
-        extension_url, extension_urls::kWebstoreSourceField, source_value);
-  }
-
-  LaunchImpl(std::move(params));
+  LaunchImpl(ModifyAppLaunchParams(app_id, launch_source, std::move(params)));
 }
 
 void ExtensionAppsBase::LaunchAppWithFiles(

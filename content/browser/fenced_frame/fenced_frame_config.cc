@@ -88,6 +88,10 @@ FencedFrameConfig::FencedFrameConfig(
                   mapped_url,
                   VisibilityToEmbedder::kOpaque,
                   VisibilityToContent::kTransparent),
+      deprecated_should_freeze_initial_size_(absl::in_place,
+                                             true,
+                                             VisibilityToEmbedder::kTransparent,
+                                             VisibilityToContent::kOpaque),
       shared_storage_budget_metadata_(absl::in_place,
                                       shared_storage_budget_metadata,
                                       VisibilityToEmbedder::kOpaque,
@@ -246,6 +250,11 @@ FencedFrameProperties::RedactFor(FencedFrameEntity entity) const {
   redacted_properties.mode_ = mode_;
 
   return redacted_properties;
+}
+
+void FencedFrameProperties::UpdateMappedURL(GURL url) {
+  CHECK(mapped_url_.has_value());
+  mapped_url_->value_ = url;
 }
 
 }  // namespace content

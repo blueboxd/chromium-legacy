@@ -54,10 +54,17 @@ export class XfTreeItem extends XfBase {
 
   /**
    * The icon of the tree item, will be displayed before the label text.
-   * The icon value should come from `XfIcon.types`, it will be passed as
-   * `type` to a <xf-icon> widget to render an icon element.
+   * The icon value should come from `constants.ICON_TYPES`, it will be passed
+   * as `type` to a <xf-icon> widget to render an icon element.
    */
   @property({type: String, reflect: true}) icon = '';
+  /**
+   * The icon set is an object which contains multiple base64 image data, it
+   * will be passed as `iconSet` property to `<xf-icon>` widget.
+   * Note: `icon` will be ignored if `iconSet` is provided.
+   */
+  @property({attribute: false})
+  iconSet: chrome.fileManagerPrivate.IconSet|null = null;
   /** The label text of the tree item. */
   @property({type: String, reflect: true}) label = '';
 
@@ -202,7 +209,8 @@ export class XfTreeItem extends XfBase {
           <span class="expand-icon"></span>
           <xf-icon
             class="tree-label-icon"
-            type=${this.icon}
+            type=${ifDefined(this.iconSet ? undefined : this.icon)}
+            .iconSet=${this.iconSet}
           ></xf-icon>
           ${this.renderTreeLabel()}
           <slot name="trailingIcon"></slot>
@@ -271,14 +279,14 @@ export class XfTreeItem extends XfBase {
           !newItems.has(this.tree.selectedItem)) {
         // If the currently selected item exists in `oldItems` but not in
         // `newItems`, it means it's being removed from the children slot,
-        // we need to select the parent node of the removed item (i.e. `this`).
-        this.selected = true;
-        updateScheduled = true;
+        // we need to mark the selected item to null.
+        this.tree.selectedItem = null;
       }
     }
 
     if (!updateScheduled) {
-      // Explicitly trigger an update because render() relies on hasChildren().
+      // Explicitly trigger an update because render() relies on hasChildren(),
+      // which relies on `this.items_`.
       this.requestUpdate();
     }
   }

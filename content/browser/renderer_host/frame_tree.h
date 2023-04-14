@@ -173,6 +173,17 @@ class CONTENT_EXPORT FrameTree {
     // FrameTreeNode::kFrameTreeNodeInvalidId.
     virtual int GetOuterDelegateFrameTreeNodeId() = 0;
 
+    // If the FrameTree using this delegate is an inner/nested FrameTree that
+    // has not yet been attached to an outer FrameTreeNode, returns the parent
+    // RenderFrameHost of the intended outer FrameTreeNode to which the inner
+    // frame tree will be attached. This is usually the RenderFrameHost that is
+    // the outer document once attachment occurs, however in the case of some
+    // kinds of GuestView, the outer document may end up being a same-origin
+    // subframe of the RenderFrameHost returned by this method (see the
+    // `testNewWindowAttachInSubFrame` webview test for an example of this).
+    // Otherwise, returns null.
+    virtual RenderFrameHostImpl* GetProspectiveOuterDocument() = 0;
+
     // Returns if this FrameTree represents a portal.
     virtual bool IsPortal() = 0;
 
@@ -273,19 +284,10 @@ class CONTENT_EXPORT FrameTree {
   }
   PageDelegate* page_delegate() { return page_delegate_; }
 
-  using RenderViewHostMapId = base::IdType32<class RenderViewHostMap>;
-
-  // A map to store RenderViewHosts, keyed by SiteInstanceGroup ID.
-  // This map does not cover all RenderViewHosts in a FrameTree. See
-  // `speculative_render_view_host_`.
-  using RenderViewHostMap = std::unordered_map<RenderViewHostMapId,
-                                               RenderViewHostImpl*,
-                                               RenderViewHostMapId::Hasher>;
-  // TODO(yangsharon, crbug.com/1336305): Change this to ForEachRenderViewHost
-  // to include `speculative_render_view_host_`.
-  const RenderViewHostMap& render_view_hosts() const {
-    return render_view_host_map_;
-  }
+  // Iterate over all RenderViewHosts, including speculative RenderViewHosts.
+  // See `speculative_render_view_host_` for more details.
+  void ForEachRenderViewHost(
+      base::FunctionRef<void(RenderViewHostImpl*)> on_host);
 
   // Speculative RenderViewHost accessors.
   RenderViewHostImpl* speculative_render_view_host() const {
@@ -429,6 +431,8 @@ class CONTENT_EXPORT FrameTree {
   // Note that this will never return `speculative_render_view_host_`. If that
   // is needed, call `speculative_render_view_host()` instead.
   scoped_refptr<RenderViewHostImpl> GetRenderViewHost(SiteInstanceGroup* group);
+
+  using RenderViewHostMapId = base::IdType32<class RenderViewHostMap>;
 
   // Returns the ID used for the RenderViewHost associated with
   // |site_instance_group|.
@@ -598,6 +602,12 @@ class CONTENT_EXPORT FrameTree {
   // the frame.
   Navigator navigator_;
 
+  // A map to store RenderViewHosts, keyed by SiteInstanceGroup ID.
+  // This map does not cover all RenderViewHosts in a FrameTree. See
+  // `speculative_render_view_host_`.
+  using RenderViewHostMap = std::unordered_map<RenderViewHostMapId,
+                                               RenderViewHostImpl*,
+                                               RenderViewHostMapId::Hasher>;
   // Map of RenderViewHostMapId to RenderViewHost. This allows us to look up the
   // RenderViewHost for a given SiteInstance when creating RenderFrameHosts.
   // Each RenderViewHost maintains a refcount and is deleted when there are no

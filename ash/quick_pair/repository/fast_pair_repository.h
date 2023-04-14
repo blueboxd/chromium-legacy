@@ -20,10 +20,6 @@ class DeviceImageInfo;
 }  // namespace bluetooth_config
 }  // namespace chromeos
 
-namespace device {
-class BluetoothDevice;
-}  // namespace device
-
 namespace ash {
 namespace quick_pair {
 
@@ -75,15 +71,17 @@ class FastPairRepository {
   virtual bool IsAccountKeyPairedLocally(
       const std::vector<uint8_t>& account_key) = 0;
 
-  // Stores the given |account_key| for a |device| on the server.
-  virtual void AssociateAccountKey(scoped_refptr<Device> device,
-                                   const std::vector<uint8_t>& account_key) = 0;
+  // Stores the given |account_key| for a |device| on the Footprints server.
+  virtual void WriteAccountAssociationToFootprints(
+      scoped_refptr<Device> device,
+      const std::vector<uint8_t>& account_key) = 0;
 
   // Stores the account_key for a |device| locally in the SavedDeviceRegistry,
   // skipping the step where we send a request to the server. The account key
   // should be stored in the additional data field of the device, fails
   // otherwise.
-  virtual bool AssociateAccountKeyLocally(scoped_refptr<Device> device) = 0;
+  virtual bool WriteAccountAssociationToLocalRegistry(
+      scoped_refptr<Device> device) = 0;
 
   // Deletes the associated data for device with a given |mac_address|.
   // Returns true if a delete will be processed for this device, false
@@ -115,13 +113,13 @@ class FastPairRepository {
   // disk, if model ID is not already persisted.
   virtual bool PersistDeviceImages(scoped_refptr<Device> device) = 0;
 
-  // Evicts the images and device ID belonging to |device| from
-  // disk, if model ID is not in use by other device IDs.
-  virtual bool EvictDeviceImages(const device::BluetoothDevice* device) = 0;
+  // Evicts the images and mac address record for |mac_address| from
+  // disk, if model ID is not in use by other mac addresses.
+  virtual bool EvictDeviceImages(const std::string& mac_address) = 0;
 
-  // Returns device images belonging to |device_id|, if found.
+  // Returns device images belonging to |mac_address|, if found.
   virtual absl::optional<bluetooth_config::DeviceImageInfo> GetImagesForDevice(
-      const std::string& device_id) = 0;
+      const std::string& mac_address) = 0;
 
   // Fetches the opt in status from Footprints to determine the status for
   // saving a user's devices to their account, which is synced all across a

@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Prozor za ažuriranje firmvera za spoljne uređaje je otvoren. Dostupnih ažuriranja: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">Pronađite članke pomoći i odgovore na česta pitanja o Chromebook-u</translation>
+<translation id="1167755866710282443">Otvorite meni da biste prilagodili tastere. Prevucite meni da biste ga premestili.</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> upravlja ovim <ph name="DEVICE_TYPE" /> uređajem.</translation>
 <translation id="1175951029573070619">Prosečan (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ukloni</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Izaberite album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB tačped</translation>
 <translation id="4117637339509843559">Tamni režim</translation>
+<translation id="4130035430755296270">Nastavite da prelazite kursorom za još opcija izgleda</translation>
 <translation id="4131410914670010031">Crno-belo</translation>
 <translation id="4145784616224233563">HTTP zaštitni zid</translation>
 <translation id="4147897805161313378">Google slike</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS razrešavanje</translation>
 <translation id="4848429997038228357">U TOKU</translation>
 <translation id="4854586501323951986">Ugrađeni dodirni ekran</translation>
+<translation id="4855250849489639581">Prevucite nadole za još opcija izgleda</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Preostaje {0} pokušaj}one{<ph name="ERROR_MESSAGE" /> Preostaje {0} pokušaj}few{<ph name="ERROR_MESSAGE" /> Preostaju {0} pokušaja}other{<ph name="ERROR_MESSAGE" /> Preostaje {0} pokušaja}}</translation>
 <translation id="4873827928179867585">Algoritam potvrde identiteta</translation>
 <translation id="4880328057631981605">Naziv pristupne tačke</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 slika</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> upravlja ovim <ph name="DEVICE_TYPE" /> uređajem. Administratori mogu da konfigurišu uređaj daljinski.</translation>
 <translation id="7180611975245234373">Osveži</translation>
+<translation id="7180865173735832675">Prilagodi</translation>
 <translation id="7212734716605298123">Ažuriranja firmvera za eksterne uređaje</translation>
 <translation id="7216409898977639127">Mobilni operater</translation>
 <translation id="725133483556299729">Izaberite imejl</translation>

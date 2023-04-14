@@ -14,6 +14,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
+#include "content/browser/file_system_access/features.h"
 #include "content/browser/file_system_access/file_system_access_access_handle_host_impl.h"
 #include "content/browser/file_system_access/file_system_access_error.h"
 #include "content/browser/file_system_access/file_system_access_handle_base.h"
@@ -41,6 +42,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include <windows.h>
+#endif
+
+#if BUILDFLAG(IS_MAC)
+#include <sys/clonefile.h>
 #endif
 
 using blink::mojom::FileSystemAccessStatus;
@@ -84,6 +89,18 @@ bool HasWritePermission(const base::FilePath& path) {
 
   return true;
 }
+
+#if BUILDFLAG(IS_MAC)
+// Creates a copy-on-write file at `swap_url`, which must not exist. Must be
+// called on a sequence which allows blocking.
+base::File::Error CreateCowSwapFile(const storage::FileSystemURL& source_url,
+                                    const storage::FileSystemURL& swap_url) {
+  return clonefile(source_url.path().value().c_str(),
+                   swap_url.path().value().c_str(), /*flags=*/0) == 0
+             ? base::File::Error::FILE_OK
+             : base::File::Error::FILE_ERROR_FAILED;
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 }  // namespace
 
@@ -495,7 +512,7 @@ void FileSystemAccessFileHandleImpl::DidVerifyHasWritePermissions(
 
   // We first attempt to create the swap file, even if we might do a
   // subsequent operation to copy a file to the same path if
-  // keep_existing_data is set. This file creation has to be `exclusive`,
+  // `keep_existing_data` is set. This file creation has to be `exclusive`,
   // meaning, it will fail if a file already exists. Using the filesystem for
   // synchronization, a successful creation of the file ensures that this File
   // Writer creation request owns the file and eliminates possible race
@@ -557,6 +574,31 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
   storage::FileSystemURL swap_url = GetSwapURL(swap_path);
   DCHECK(swap_url.is_valid());
 
+#if BUILDFLAG(IS_MAC)
+  // TODO(https://crbug.com/1413443): Expand use of copy-on-write swap files to
+  // other file systems which support it.
+  if (CanUseCowSwapFile() && keep_existing_data) {
+    CreateClonedSwapFile(count, swap_url, auto_close, std::move(lock),
+                         std::move(callback));
+    return;
+  }
+#endif  // BUILDFLAG(IS_MAC)
+
+  CreateEmptySwapFile(count, swap_url, keep_existing_data, auto_close,
+                      std::move(lock), std::move(callback));
+}
+
+void FileSystemAccessFileHandleImpl::CreateEmptySwapFile(
+    int count,
+    const storage::FileSystemURL& swap_url,
+    bool keep_existing_data,
+    bool auto_close,
+    scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+    CreateFileWriterCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(count >= 0);
+  DCHECK(max_swap_files_ >= 0);
+
   manager()->DoFileSystemOperation(
       FROM_HERE, &FileSystemOperationRunner::CreateFile,
       base::BindOnce(&FileSystemAccessFileHandleImpl::DidCreateSwapFile,
@@ -566,6 +608,97 @@ void FileSystemAccessFileHandleImpl::CreateSwapFile(
       swap_url,
       /*exclusive=*/true);
 }
+
+#if BUILDFLAG(IS_MAC)
+void FileSystemAccessFileHandleImpl::CreateClonedSwapFile(
+    int count,
+    const storage::FileSystemURL& swap_url,
+    bool auto_close,
+    scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+    CreateFileWriterCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(count >= 0);
+  DCHECK(max_swap_files_ >= 0);
+  DCHECK(CanUseCowSwapFile());
+
+  did_attempt_swap_file_cloning_for_testing_ = true;
+
+  manager()->DoFileSystemOperation(
+      FROM_HERE, &FileSystemOperationRunner::FileExists,
+      base::BindOnce(&FileSystemAccessFileHandleImpl::DoCloneSwapFile,
+                     weak_factory_.GetWeakPtr(), count, swap_url, auto_close,
+                     std::move(lock), std::move(callback)),
+      swap_url);
+}
+
+void FileSystemAccessFileHandleImpl::DoCloneSwapFile(
+    int count,
+    const storage::FileSystemURL& swap_url,
+    bool auto_close,
+    scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+    CreateFileWriterCallback callback,
+    base::File::Error result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(CanUseCowSwapFile());
+
+  if (result != base::File::FILE_ERROR_NOT_FOUND) {
+    // File already exists. We need to find an unused filename.
+    CreateSwapFile(count + 1, /*keep_existing_data=*/true, auto_close,
+                   std::move(lock), std::move(callback));
+    return;
+  }
+
+  // We need an usused file name, or else creation of the copy-on-write file
+  // will fail.
+  DCHECK_EQ(result, base::File::Error::FILE_ERROR_NOT_FOUND);
+
+  auto after_clone_callback =
+      base::BindOnce(&FileSystemAccessFileHandleImpl::DidCloneSwapFile,
+                     weak_factory_.GetWeakPtr(), count, swap_url, auto_close,
+                     std::move(lock), std::move(callback));
+
+  if (swap_file_cloning_will_fail_for_testing_) {
+    std::move(after_clone_callback).Run(base::File::Error::FILE_ERROR_FAILED);
+    return;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock()},
+      base::BindOnce(&CreateCowSwapFile, url(), swap_url),
+      std::move(after_clone_callback));
+}
+
+void FileSystemAccessFileHandleImpl::DidCloneSwapFile(
+    int count,
+    const storage::FileSystemURL& swap_url,
+    bool auto_close,
+    scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+    CreateFileWriterCallback callback,
+    base::File::Error result) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(CanUseCowSwapFile());
+
+  if (result != base::File::FILE_OK) {
+    // Cloning could fail if the file's underlying file system does not support
+    // copy-on-write, such as when accessing FAT formatted external USB drives
+    // (which do not support copy-on-write) from a Mac (which otherwise does).
+    // In that case, fall back on the create + copy technique.
+    CreateEmptySwapFile(count, swap_url, /*keep_existing_data=*/true,
+                        auto_close, std::move(lock), std::move(callback));
+    return;
+  }
+
+  did_create_cloned_swap_file_for_testing_ = true;
+
+  std::move(callback).Run(
+      file_system_access_error::Ok(),
+      manager()->CreateFileWriter(
+          context(), url(), swap_url, std::move(lock),
+          FileSystemAccessManagerImpl::SharedHandleState(
+              handle_state().read_grant, handle_state().write_grant),
+          auto_close));
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 void FileSystemAccessFileHandleImpl::DidCreateSwapFile(
     int count,
@@ -650,6 +783,13 @@ void FileSystemAccessFileHandleImpl::GetUniqueId(GetUniqueIdCallback callback) {
   DCHECK(id.is_valid());
   std::move(callback).Run(id.AsLowercaseString());
 }
+
+#if BUILDFLAG(IS_MAC)
+bool FileSystemAccessFileHandleImpl::CanUseCowSwapFile() const {
+  return base::FeatureList::IsEnabled(features::kFileSystemAccessCowSwapFile) &&
+         url().type() == storage::kFileSystemTypeLocal;
+}
+#endif  // BUILDFLAG(IS_MAC)
 
 base::WeakPtr<FileSystemAccessHandleBase>
 FileSystemAccessFileHandleImpl::AsWeakPtr() {

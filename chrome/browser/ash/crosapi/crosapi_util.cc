@@ -571,10 +571,10 @@ void InjectBrowserInitParams(
   params->use_cups_for_printing = GetUseCupsForPrinting();
   params->use_floss_bluetooth = floss::features::IsFlossEnabled();
 
-  params->enable_float_window =
-      base::FeatureList::IsEnabled(chromeos::wm::features::kFloatWindow);
-  params->enable_partial_split =
-      base::FeatureList::IsEnabled(chromeos::wm::features::kPartialSplit);
+  params->enable_window_layout_menu =
+      base::FeatureList::IsEnabled(chromeos::wm::features::kWindowLayoutMenu);
+  // TODO(b/267528378): Remove this after M114.
+  params->enable_partial_split_deprecated = true;
 
   params->is_cloud_gaming_device =
       chromeos::features::IsCloudGamingDeviceEnabled();
@@ -803,6 +803,13 @@ mojom::DeviceSettingsPtr GetDeviceSettings() {
         result->report_device_network_telemetry_collection_rate_ms =
             crosapi::mojom::NullableInt64::New(
                 report_device_network_telemetry_collection_rate_ms);
+      }
+
+      std::string device_variations_restrict_parameter;
+      if (cros_settings->GetString(ash::kVariationsRestrictParameter,
+                                   &device_variations_restrict_parameter)) {
+        result->device_variations_restrict_parameter =
+            device_variations_restrict_parameter;
       }
     } else {
       LOG(WARNING) << "Unexpected crossettings trusted values status: "

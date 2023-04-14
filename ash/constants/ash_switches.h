@@ -95,6 +95,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kChildWallpaperSmall[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCrosRegion[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeRecoveryReauthUrl[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kCryptohomeRecoveryUseTestEnvironment[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kCryptohomeUseAuthSession[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kCryptohomeUseOldEncryptionForTesting[];
@@ -214,6 +216,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kInstallLogFastUploadForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kInstallSystemExtension[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kKioskSplashScreenMinTimeSeconds[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosAvailabilityIgnore[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromeAdditionalArgs[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -221,6 +225,8 @@ extern const char kLacrosChromeAdditionalArgsFile[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromeAdditionalEnv[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosChromePath[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLacrosMojoSocketForTesting[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kLacrosSelectionPolicyIgnore[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLaunchRma[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginManager[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kLoginProfile[];
@@ -255,7 +261,9 @@ extern const char kOobeTimezoneOverrideForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kOobeTriggerSyncTimeoutForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kForceHiddenNetworkMigration[];
+extern const char kHiddenNetworkMigrationInterval[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kHiddenNetworkMigrationAge[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kProfileRequiresPolicy[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kPublicAccountsSamlAclUrl[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kQsAddFakeBluetoothDevices[];
@@ -275,6 +283,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipForceOnlineSignInForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kSkipReorderNudgeShowThresholdDurationForTest[];
+COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kSwCursorOnWideDisplays[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kStabilizeTimeDependentViewForTests[];
 COMPONENT_EXPORT(ASH_CONSTANTS)

@@ -444,7 +444,7 @@ const CGFloat kSymbolSize = 16;
       [[TableViewTextItem alloc] initWithType:ItemTypeUpdateModalDescription];
   descriptionItem.text = self.updateModalDescription;
   descriptionItem.textFont =
-      [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
+      [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   descriptionItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
   return descriptionItem;
 }
@@ -456,7 +456,8 @@ const CGFloat kSymbolSize = 16;
       return DefaultSymbolTemplateWithPointSize(kPersonFillSymbol, kSymbolSize);
     case AutofillUITypeAddressHomeAddress:
     case AutofillUITypeProfileHomeAddressStreet:
-      return DefaultSymbolTemplateWithPointSize(kPinFillSymbol, kSymbolSize);
+      return CustomSymbolTemplateWithPointSize(kLocationFillSymbol,
+                                               kSymbolSize);
     case AutofillUITypeProfileEmailAddress:
       return DefaultSymbolTemplateWithPointSize(kMailFillSymbol, kSymbolSize);
     case AutofillUITypeProfileHomePhoneWholeNumber:

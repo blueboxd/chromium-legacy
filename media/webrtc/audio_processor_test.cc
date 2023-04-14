@@ -180,8 +180,8 @@ class AudioProcessorTest : public ::testing::Test {
     EXPECT_EQ(config.noise_suppression.level,
               webrtc::AudioProcessing::Config::NoiseSuppression::kHigh);
 
-#if BUILDFLAG(IS_ANDROID)
-    // Android uses echo cancellation optimized for mobiles, and does not
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+    // Android and iOS use echo cancellation optimized for mobiles, and does not
     // support keytap suppression.
     EXPECT_TRUE(config.echo_canceller.mobile_mode);
     EXPECT_FALSE(config.transient_suppression.enabled);
@@ -366,7 +366,15 @@ TEST_P(AudioProcessorTestMultichannelAndFormat, TestStereoAudio) {
   }
 
   // Test without and with audio processing enabled.
-  for (bool use_apm : {false, true}) {
+  constexpr bool kUseApmValues[] =
+#if BUILDFLAG(IS_IOS)
+      // TODO(https://crbug.com/1417474): `false` fails on ios-blink platform
+      // due to a special case for iOS in settings.NeedWebrtcAudioProcessing()
+      {true};
+#else
+      {false, true};
+#endif
+  for (bool use_apm : kUseApmValues) {
     // No need to test stereo with APM if disabled.
     if (use_apm && !use_multichannel_processing) {
       continue;
@@ -783,8 +791,15 @@ TEST_P(ApmTellsIfPlayoutReferenceIsNeededParametrizedTest,
 }
 
 // Checks that, with echo cancellation, APM always needs the playout reference.
+#if BUILDFLAG(IS_IOS)
+#define MAYBE_NeedsPlayoutReference DISABLED_NeedsPlayoutReference
+#else
+#define MAYBE_NeedsPlayoutReference NeedsPlayoutReference
+#endif
+// TODO: This test is disabled for ios-blink platform as per the discussion on
+// bug https://crbug.com/1417474
 TEST_P(ApmTellsIfPlayoutReferenceIsNeededParametrizedTest,
-       NeedsPlayoutReference) {
+       MAYBE_NeedsPlayoutReference) {
   AudioProcessingSettings settings;
   DisableDefaultSettings(settings);
   settings.echo_cancellation = true;

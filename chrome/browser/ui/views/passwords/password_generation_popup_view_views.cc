@@ -25,6 +25,7 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/color/color_id.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -34,6 +35,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -85,8 +87,8 @@ std::unique_ptr<views::View> CreatePasswordStrengthView(
       views::BoxLayout::CrossAxisAlignment::kCenter);
 
   // Add space between the icon and the password strength string.
-  AddSpacerWithSize(autofill::AutofillPopupBaseView::GetHorizontalPadding(),
-                    false, password_strength_view.get());
+  AddSpacerWithSize(autofill::PopupBaseView::GetHorizontalPadding(), false,
+                    password_strength_view.get());
 
   auto* password_strength_label =
       password_strength_view->AddChildView(std::make_unique<views::Label>(
@@ -135,12 +137,12 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     password_label_->SetText(password);
   }
 
-  void UpdateBackground(SkColor color) {
-    SetBackground(views::CreateSolidBackground(color));
+  void UpdateBackground(ui::ColorId color) {
+    SetBackground(views::CreateThemedSolidBackground(color));
     // Setting a background color on the labels may change the text color to
     // improve contrast.
-    password_label_->SetBackgroundColor(color);
-    suggestion_label_->SetBackgroundColor(color);
+    password_label_->SetBackgroundColorId(color);
+    suggestion_label_->SetBackgroundColorId(color);
   }
 
   void reset_controller() { controller_ = nullptr; }
@@ -174,7 +176,7 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::Init(
   AddChildView(
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
           GooglePasswordManagerVectorIcon(), ui::kColorIcon, kIconSize)));
-  AddSpacerWithSize(AutofillPopupBaseView::GetHorizontalPadding(),
+  AddSpacerWithSize(PopupBaseView::GetHorizontalPadding(),
                     /*resize=*/false, this);
 
   suggestion_label_ = AddChildView(std::make_unique<views::Label>(
@@ -247,8 +249,7 @@ END_METADATA
 PasswordGenerationPopupViewViews::PasswordGenerationPopupViewViews(
     base::WeakPtr<PasswordGenerationPopupController> controller,
     views::Widget* parent_widget)
-    : AutofillPopupBaseView(controller, parent_widget),
-      controller_(controller) {
+    : PopupBaseView(controller, parent_widget), controller_(controller) {
   CreateLayoutAndChildren();
 }
 
@@ -269,9 +270,8 @@ void PasswordGenerationPopupViewViews::Hide() {
 }
 
 void PasswordGenerationPopupViewViews::UpdateState() {
-  RemoveAllChildViews();
   password_view_ = nullptr;
-  help_styled_label_ = nullptr;
+  RemoveAllChildViews();
   CreateLayoutAndChildren();
 }
 
@@ -289,19 +289,23 @@ bool PasswordGenerationPopupViewViews::UpdateBoundsAndRedrawPopup() {
 void PasswordGenerationPopupViewViews::PasswordSelectionUpdated() {
   DCHECK(FullPopupVisible());
 
-  if (controller_->password_selected())
-    NotifyAXSelection(this->password_view_);
+  if (controller_->password_selected()) {
+    DCHECK(this->password_view_);
+    NotifyAXSelection(*this->password_view_);
+  }
 
   if (!GetWidget())
     return;
 
   password_view_->UpdateBackground(controller_->password_selected()
-                                       ? GetSelectedBackgroundColor()
-                                       : GetBackgroundColor());
+                                       ? ui::kColorDropdownBackgroundSelected
+                                       : ui::kColorDropdownBackground);
   SchedulePaint();
 }
 
 void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
+  SetBackground(
+      views::CreateThemedSolidBackground(ui::kColorDropdownBackground));
   if (controller_->IsStateMinimized()) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
     auto warning_icon = std::make_unique<views::ImageView>();
@@ -312,10 +316,9 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
     return;
   }
 
-  // Add 1px distance between views for the separator.
   views::BoxLayout* box_layout =
       SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kVertical, gfx::Insets(), 1));
+          views::BoxLayout::Orientation::kVertical));
   box_layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStretch);
 
@@ -329,17 +332,20 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
     auto* password_strength_view = AddChildView(CreatePasswordStrengthView(
         l10n_util::GetStringUTF16(IDS_PASSWORD_WEAKNESS_INDICATOR)));
     password_strength_view->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
-                          kHorizontalMargin)));
+        gfx::Insets::VH(kVerticalPadding, kHorizontalMargin)));
   }
 
-  password_view_ = new GeneratedPasswordBox();
-  password_view_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
-                        kHorizontalMargin)));
-  password_view_->Init(controller_);
-  AddChildView(password_view_.get());
+  auto password_view = std::make_unique<GeneratedPasswordBox>();
+  password_view->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::VH(kVerticalPadding, kHorizontalMargin)));
+  password_view->Init(controller_);
+  password_view_ = AddChildView(std::move(password_view));
   PasswordSelectionUpdated();
+
+  AddChildView(views::Builder<views::Separator>()
+                   .SetOrientation(views::Separator::Orientation::kHorizontal)
+                   .SetColorId(ui::kColorMenuSeparator)
+                   .Build());
 
   base::RepeatingClosure open_password_manager_closure = base::BindRepeating(
       [](PasswordGenerationPopupViewViews* view) {
@@ -349,57 +355,28 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
       },
       base::Unretained(this));
 
-  help_styled_label_ = AddChildView(CreateGooglePasswordManagerLabel(
-      /*text_message_id=*/
-      IDS_PASSWORD_GENERATION_PROMPT_GOOGLE_PASSWORD_MANAGER,
-      /*link_message_id=*/
-      IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
-      controller_->GetPrimaryAccountEmail(), open_password_manager_closure));
+  views::StyledLabel* help_label =
+      AddChildView(CreateGooglePasswordManagerLabel(
+          /*text_message_id=*/
+          IDS_PASSWORD_GENERATION_PROMPT_GOOGLE_PASSWORD_MANAGER,
+          /*link_message_id=*/
+          IDS_PASSWORD_BUBBLES_PASSWORD_MANAGER_LINK_TEXT_SYNCED_TO_ACCOUNT,
+          controller_->GetPrimaryAccountEmail(),
+          open_password_manager_closure));
 
-  help_styled_label_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::TLBR(kVerticalPadding, kHorizontalMargin, kVerticalPadding,
-                        kHorizontalMargin)));
+  help_label->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets::VH(kVerticalPadding, kHorizontalMargin)));
+  help_label->SetDisplayedOnBackgroundColor(ui::kColorBubbleFooterBackground);
 }
 
 bool PasswordGenerationPopupViewViews::FullPopupVisible() const {
   return password_view_;
 }
 
-void PasswordGenerationPopupViewViews::OnThemeChanged() {
-  autofill::AutofillPopupBaseView::OnThemeChanged();
-  SetBackground(views::CreateSolidBackground(GetBackgroundColor()));
-  if (FullPopupVisible()) {
-    password_view_->UpdateBackground(controller_->password_selected()
-                                         ? GetSelectedBackgroundColor()
-                                         : GetBackgroundColor());
-  }
-  if (help_styled_label_) {
-    help_styled_label_->SetDisplayedOnBackgroundColor(
-        GetFooterBackgroundColor());
-  }
-}
-
-void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
-  if (!controller_)
-    return;
-
-  // Draw border and background.
-  views::View::OnPaint(canvas);
-
-  // Divider line needs to be drawn after OnPaint() otherwise the background
-  // will overwrite the divider.
-  if (FullPopupVisible()) {
-    gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
-                             password_view_->width(), 1);
-    canvas->FillRect(divider_bounds,
-                     GetColorProvider()->GetColor(GetSeparatorColorId()));
-  }
-}
-
 void PasswordGenerationPopupViewViews::GetAccessibleNodeData(
     ui::AXNodeData* node_data) {
   // TODO(crbug.com/1404297): kListBox is used for the same reason as in
-  // AutofillPopupViewNativeViews. See crrev.com/c/2545285 for details.
+  // `autofill::PopupViewViews`. See crrev.com/c/2545285 for details.
   // Consider using a more appropriate role (e.g. kMenuListPopup or similar).
   node_data->role = ax::mojom::Role::kListBox;
 
@@ -436,6 +413,5 @@ PasswordGenerationPopupView* PasswordGenerationPopupView::Create(
   return new PasswordGenerationPopupViewViews(controller, observing_widget);
 }
 
-BEGIN_METADATA(PasswordGenerationPopupViewViews,
-               autofill::AutofillPopupBaseView)
+BEGIN_METADATA(PasswordGenerationPopupViewViews, autofill::PopupBaseView)
 END_METADATA

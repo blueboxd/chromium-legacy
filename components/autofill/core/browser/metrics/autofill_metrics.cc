@@ -118,82 +118,6 @@ enum FieldTypeGroupForMetrics {
   NUM_FIELD_TYPE_GROUPS_FOR_METRICS
 };
 
-// Converts a server field type that can be edited in the settings to an enum
-// used for metrics.
-AutofillMetrics::SettingsVisibleFieldTypeForMetrics
-ConvertSettingsVisibleFieldTypeForMetrics(ServerFieldType field_type) {
-  switch (field_type) {
-    case ServerFieldType::NAME_FULL:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kName;
-
-    case ServerFieldType::EMAIL_ADDRESS:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kEmailAddress;
-
-    case ServerFieldType::PHONE_HOME_WHOLE_NUMBER:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kPhoneNumber;
-
-    case ServerFieldType::ADDRESS_HOME_CITY:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity;
-
-    case ServerFieldType::ADDRESS_HOME_COUNTRY:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCountry;
-
-    case ServerFieldType::ADDRESS_HOME_ZIP:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip;
-
-    case ServerFieldType::ADDRESS_HOME_STATE:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kState;
-
-    case ServerFieldType::ADDRESS_HOME_STREET_ADDRESS:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
-          kStreetAddress;
-
-    case ServerFieldType::ADDRESS_HOME_DEPENDENT_LOCALITY:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
-          kDependentLocality;
-
-    case ServerFieldType::NAME_HONORIFIC_PREFIX:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::
-          kHonorificPrefix;
-
-    case ServerFieldType::COMPANY_NAME:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCompany;
-
-    default:
-      return AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kUndefined;
-  }
-}
-
-const char* GetSaveAndUpdatePromptDecisionMetricsSuffix(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  switch (decision) {
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kUndefined:
-      return ".Undefined";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kUserNotAsked:
-      return ".UserNotAsked";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kAccepted:
-      return ".Accepted";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kDeclined:
-      return ".Declined";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kEditAccepted:
-      return ".EditAccepted";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kEditDeclined:
-      return ".EditDeclined";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kNever:
-      return ".Never";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kIgnored:
-      return ".Ignored";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kMessageTimeout:
-      return ".MessageTimeout";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kMessageDeclined:
-      return ".MessageDeclined";
-    case AutofillClient::SaveAddressProfileOfferUserDecision::kAutoDeclined:
-      return ".AutoDeclined";
-  }
-  NOTREACHED();
-  return "";
-}
-
 }  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
@@ -216,7 +140,7 @@ const char* GetSaveAndUpdatePromptDecisionMetricsSuffix(
 // }.
 //
 // Clients must ensure that |field_type| is one of the types Chrome supports
-// natively, e.g. |field_type| must not be a billng address.
+// natively, e.g. |field_type| must not be a billing address.
 // NOTE: This is defined outside of the anonymous namespace so that it can be
 // accessed from the unit test file. It is not exposed in the header file,
 // however, because it is not intended for consumption outside of the metrics
@@ -448,7 +372,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
 }
 
 // This function encodes the integer value of a |ServerFieldType| and the
-// metric value of an |AutofilledFieldUserEdtingStatus| into a 16 bit integer.
+// metric value of an |AutofilledFieldUserEditingStatus| into a 16 bit integer.
 // The lower four bits are used to encode the editing status and the higher
 // 12 bits are used to encode the field type.
 int GetFieldTypeUserEditStatusMetric(
@@ -549,7 +473,7 @@ ServerFieldType GetActualFieldType(const ServerFieldTypeSet& possible_types,
 
 // Check if the value of |field| is same as one of the previously autofilled
 // values. This indicates a bad rationalization if |field| has
-// only_fill_when_focued set to true.
+// only_fill_when_focused set to true.
 bool DuplicatedFilling(const FormStructure& form, const AutofillField& field) {
   for (const auto& form_field : form) {
     if (field.value == form_field->value && form_field->is_autofilled)
@@ -1545,37 +1469,6 @@ void AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
 }
 
 // static
-void AutofillMetrics::LogStoredProfileCountStatistics(
-    size_t num_profiles,
-    size_t num_disused_profiles,
-    size_t num_countryless_profiles) {
-  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredProfileCount", num_profiles);
-
-  // For users without any profiles do not record the other metrics.
-  if (num_profiles == 0)
-    return;
-
-  DCHECK_LE(num_disused_profiles, num_profiles);
-  size_t num_used_profiles = num_profiles - num_disused_profiles;
-
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredProfileUsedCount",
-                            num_used_profiles);
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.StoredProfileDisusedCount",
-                            num_disused_profiles);
-  UMA_HISTOGRAM_COUNTS_1M("Autofill.StoredProfileWithoutCountryCount",
-                          num_countryless_profiles);
-
-  int use_percentage = (100 * num_used_profiles) / num_profiles;
-  UMA_HISTOGRAM_PERCENTAGE("Autofill.StoredProfileUsedPercentage",
-                           use_percentage);
-}
-
-// static
-void AutofillMetrics::LogStoredProfileDaysSinceLastUse(size_t days) {
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.StoredProfile", days);
-}
-
-// static
 void AutofillMetrics::LogStoredCreditCardMetrics(
     const std::vector<std::unique_ptr<CreditCard>>& local_cards,
     const std::vector<std::unique_ptr<CreditCard>>& server_cards,
@@ -1927,12 +1820,6 @@ void AutofillMetrics::LogAutofillPerfectFilling(bool is_address,
     UMA_HISTOGRAM_BOOLEAN("Autofill.PerfectFilling.CreditCards",
                           perfect_filling);
   }
-}
-
-void AutofillMetrics::LogTouchToFillCreditCardPerfectFilling(
-    bool perfect_filling) {
-  base::UmaHistogramBoolean("Autofill.TouchToFill.CreditCard.PerfectFilling",
-                            perfect_filling);
 }
 
 AutofillMetrics::CreditCardSeamlessness::CreditCardSeamlessness(
@@ -2293,26 +2180,6 @@ void AutofillMetrics::LogDeveloperEngagementUkm(
       .Record(ukm_recorder);
 }
 
-// static
-void AutofillMetrics::LogAddressProfileImportUkm(
-    ukm::UkmRecorder* ukm_recorder,
-    ukm::SourceId source_id,
-    AutofillProfileImportType import_type,
-    AutofillClient::SaveAddressProfileOfferUserDecision user_decision,
-    const ProfileImportMetadata& profile_import_metadata,
-    size_t num_edited_fields) {
-  ukm::builders::Autofill_AddressProfileImport(source_id)
-      .SetAutocompleteUnrecognizedImport(
-          profile_import_metadata
-              .did_import_from_unrecognized_autocomplete_field)
-      .SetImportType(static_cast<int64_t>(import_type))
-      .SetNumberOfEditedFields(num_edited_fields)
-      .SetPhoneNumberStatus(
-          static_cast<int64_t>(profile_import_metadata.phone_import_status))
-      .SetUserDecision(static_cast<int64_t>(user_decision))
-      .Record(ukm_recorder);
-}
-
 AutofillMetrics::FormInteractionsUkmLogger::FormInteractionsUkmLogger(
     ukm::UkmRecorder* ukm_recorder,
     const ukm::SourceId source_id)
@@ -2547,12 +2414,22 @@ void AutofillMetrics::FormInteractionsUkmLogger::
   // that a manual override defines the server type.
   bool server_type_is_override = false;
 
+  // The final field type from the list of |autofill::ServerFieldType| that we
+  // choose after rationalization, which is used to determine
+  // the autofill suggestion when the user triggers autofilling.
+  ServerFieldType overall_type = NO_SERVER_DATA;
+  // The sections are mapped to consecutive natural numbers starting at 1,
+  // numbered according to the ordering of their first fields.
+  size_t section_id = 0;
+  bool type_changed_by_rationalization = false;
+
   bool had_heuristic_type = false;
   bool had_html_type = false;
   bool had_server_type = false;
+  bool had_rationalization_event = false;
 
   for (const auto& log_event : field_log_events) {
-    static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 8,
+    static_assert(absl::variant_size<AutofillField::FieldLogEventType>() == 9,
                   "When adding new variants check that this function does not "
                   "need to be updated.");
     if (auto* event =
@@ -2568,7 +2445,12 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       }
     }
 
-    if (absl::holds_alternative<TriggerFillFieldLogEvent>(log_event)) {
+    if (auto* event = absl::get_if<TriggerFillFieldLogEvent>(&log_event)) {
+      // Ignore events which are not address or credit card fill events.
+      if (event->data_type != FillDataType::kAutofillProfile &&
+          event->data_type != FillDataType::kCreditCard) {
+        continue;
+      }
       suggestion_was_accepted = OptionalBoolean::kTrue;
     }
 
@@ -2643,6 +2525,13 @@ void AutofillMetrics::FormInteractionsUkmLogger::
       rank_in_field_signature_group = event->rank_in_field_signature_group;
       had_server_type = true;
     }
+
+    if (auto* event = absl::get_if<RationalizationFieldLogEvent>(&log_event)) {
+      overall_type = event->field_type;
+      section_id = event->section_id;
+      type_changed_by_rationalization = event->type_changed;
+      had_rationalization_event = true;
+    }
   }
 
   if (had_value_after_filling != OptionalBoolean::kUndefined ||
@@ -2714,10 +2603,57 @@ void AutofillMetrics::FormInteractionsUkmLogger::
         .SetServerTypeIsOverride(server_type_is_override);
   }
 
+  if (had_rationalization_event) {
+    builder.SetOverallType(overall_type)
+        .SetSectionId(section_id)
+        .SetTypeChangedByRationalization(type_changed_by_rationalization);
+  }
+
   if (rank_in_field_signature_group) {
     builder.SetRankInFieldSignatureGroup(rank_in_field_signature_group);
   }
 
+  builder.Record(ukm_recorder_);
+}
+
+void AutofillMetrics::FormInteractionsUkmLogger::
+    LogAutofillFormSummaryAtFormRemove(
+        const FormStructure& form_structure,
+        FormEventSet form_events,
+        bool is_in_any_main_frame,
+        const base::TimeTicks& initial_interaction_timestamp,
+        const base::TimeTicks& form_submitted_timestamp) {
+  if (!CanLog()) {
+    return;
+  }
+
+  ukm::builders::Autofill2_FormSummary builder(source_id_);
+  builder
+      .SetFormSessionIdentifier(
+          AutofillMetrics::FormGlobalIdToHash64Bit(form_structure.global_id()))
+      .SetFormSignature(HashFormSignature(form_structure.form_signature()))
+      .SetAutofillFormEvents(form_events.to_uint64())
+      .SetIsInMainframe(is_in_any_main_frame)
+      .SetWasSubmitted(!form_submitted_timestamp.is_null())
+      .SetSampleRate(1);
+
+  if (!form_submitted_timestamp.is_null() &&
+      !form_structure.form_parsed_timestamp().is_null() &&
+      form_submitted_timestamp > form_structure.form_parsed_timestamp()) {
+    builder.SetMillisecondsFromFormParsedUntilSubmission(
+        ukm::GetSemanticBucketMinForDurationTiming(
+            (form_submitted_timestamp - form_structure.form_parsed_timestamp())
+                .InMilliseconds()));
+  }
+
+  if (!form_submitted_timestamp.is_null() &&
+      !initial_interaction_timestamp.is_null() &&
+      form_submitted_timestamp > initial_interaction_timestamp) {
+    builder.SetMillisecondsFromFirstInteratctionUntilSubmission(
+        ukm::GetSemanticBucketMinForDurationTiming(
+            (form_submitted_timestamp - initial_interaction_timestamp)
+                .InMilliseconds()));
+  }
   builder.Record(ukm_recorder_);
 }
 
@@ -2846,7 +2782,8 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
     bool edited_autofilled_field,
     bool suggestion_filled,
     const FormInteractionCounts& form_interaction_counts,
-    const FormInteractionsFlowId& flow_id) {
+    const FormInteractionsFlowId& flow_id,
+    absl::optional<int64_t> fast_checkout_run_id) {
   if (!CanLog())
     return;
 
@@ -2858,7 +2795,9 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogKeyMetrics(
       .SetFormElementUserModifications(
           form_interaction_counts.form_element_user_modifications)
       .SetFlowId(flow_id.value());
-
+  if (fast_checkout_run_id) {
+    builder.SetFastCheckoutRunId(fast_checkout_run_id.value());
+  }
   if (suggestions_shown)
     builder.SetFillingAcceptance(suggestion_filled);
 
@@ -2914,35 +2853,6 @@ AutofillMetrics::UkmTimestampPin::UkmTimestampPin(
 AutofillMetrics::UkmTimestampPin::~UkmTimestampPin() {
   DCHECK(logger_->has_pinned_timestamp());
   logger_->set_pinned_timestamp(base::TimeTicks());
-}
-
-// static
-void AutofillMetrics::LogAddressFormImportRequirementMetric(
-    AutofillMetrics::AddressProfileImportRequirementMetric metric) {
-  base::UmaHistogramEnumeration("Autofill.AddressProfileImportRequirements",
-                                metric);
-}
-
-// static
-void AutofillMetrics::
-    LogAddressFormImportCountrySpecificFieldRequirementsMetric(
-        bool is_zip_missing,
-        bool is_state_missing,
-        bool is_city_missing,
-        bool is_line1_missing) {
-  const auto metric = static_cast<
-      AutofillMetrics::
-          AddressProfileImportCountrySpecificFieldRequirementsMetric>(
-      (is_zip_missing ? 0b1 : 0) | (is_state_missing ? 0b10 : 0) |
-      (is_city_missing ? 0b100 : 0) | (is_line1_missing ? 0b1000 : 0));
-  base::UmaHistogramEnumeration(
-      "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
-}
-
-// static
-void AutofillMetrics::LogAddressFormImportStatusMetric(
-    AutofillMetrics::AddressProfileImportStatusMetric metric) {
-  base::UmaHistogramEnumeration("Autofill.AddressProfileImportStatus", metric);
 }
 
 // static
@@ -3007,136 +2917,6 @@ void AutofillMetrics::
       "NumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission."
       "Corrected",
       number_of_corrected_fields, 50);
-}
-
-void AutofillMetrics::LogProfileImportType(
-    AutofillProfileImportType import_type) {
-  base::UmaHistogramEnumeration("Autofill.ProfileImport.ProfileImportType",
-                                import_type);
-}
-
-void AutofillMetrics::LogSilentUpdatesProfileImportType(
-    AutofillProfileImportType import_type) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.SilentUpdatesProfileImportType", import_type);
-}
-
-void AutofillMetrics::LogNewProfileImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration("Autofill.ProfileImport.NewProfileDecision",
-                                decision);
-}
-
-void AutofillMetrics::LogNewProfileWithIgnoredCountryImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.NewProfileWithIgnoredCountryDecision", decision);
-}
-
-void AutofillMetrics::LogNewProfileNumberOfAutocompleteUnrecognizedFields(
-    int count) {
-  base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport.NewProfileNumberOfAutocompleteUnrecognizedFields",
-      count, /*exclusive_max=*/20);
-}
-
-void AutofillMetrics::LogNewProfileEditedType(ServerFieldType edited_type) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.NewProfileEditedType",
-      ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
-}
-
-void AutofillMetrics::LogNewProfileNumberOfEditedFields(
-    int number_of_edited_fields) {
-  base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport.NewProfileNumberOfEditedFields",
-      number_of_edited_fields, /*exclusive_max=*/15);
-}
-
-void AutofillMetrics::LogProfileUpdateImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration("Autofill.ProfileImport.UpdateProfileDecision",
-                                decision);
-}
-
-void AutofillMetrics::LogProfileUpdateWithIgnoredCountryImportDecision(
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileWithIgnoredCountryDecision",
-      decision);
-}
-
-void AutofillMetrics::LogProfileUpdateNumberOfAutocompleteUnrecognizedFields(
-    int count) {
-  base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport."
-      "UpdateProfileNumberOfAutocompleteUnrecognizedFields",
-      count, /*exclusive_max=*/20);
-}
-
-void AutofillMetrics::LogProfileUpdateAffectedType(
-    ServerFieldType affected_type,
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  // Record the decision-specific metric.
-  base::UmaHistogramEnumeration(
-      base::StrCat({"Autofill.ProfileImport.UpdateProfileAffectedType",
-                    GetSaveAndUpdatePromptDecisionMetricsSuffix(decision)}),
-      ConvertSettingsVisibleFieldTypeForMetrics(affected_type));
-
-  // But also collect an histogram for any decision.
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileAffectedType.Any",
-      ConvertSettingsVisibleFieldTypeForMetrics(affected_type));
-}
-
-void AutofillMetrics::LogProfileUpdateEditedType(ServerFieldType edited_type) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.UpdateProfileEditedType",
-      ConvertSettingsVisibleFieldTypeForMetrics(edited_type));
-}
-
-void AutofillMetrics::LogUpdateProfileNumberOfEditedFields(
-    int number_of_edited_fields) {
-  base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport.UpdateProfileNumberOfEditedFields",
-      number_of_edited_fields, /*exclusive_max=*/15);
-}
-
-void AutofillMetrics::LogUpdateProfileNumberOfAffectedFields(
-    int number_of_edited_fields,
-    AutofillClient::SaveAddressProfileOfferUserDecision decision) {
-  // Record the decision-specific metric.
-  base::UmaHistogramExactLinear(
-      base::StrCat(
-          {"Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields",
-           GetSaveAndUpdatePromptDecisionMetricsSuffix(decision)}),
-      number_of_edited_fields, /*exclusive_max=*/15);
-
-  // But also collect an histogram for any decision.
-  base::UmaHistogramExactLinear(
-      "Autofill.ProfileImport.UpdateProfileNumberOfAffectedFields.Any",
-      number_of_edited_fields, /*exclusive_max=*/15);
-}
-
-// static
-void AutofillMetrics::LogRemovedSettingInaccessibleFields(bool did_remove) {
-  base::UmaHistogramBoolean(
-      "Autofill.ProfileImport.InaccessibleFieldsRemoved.Total", did_remove);
-}
-
-// static
-void AutofillMetrics::LogRemovedSettingInaccessibleField(
-    ServerFieldType field) {
-  base::UmaHistogramEnumeration(
-      "Autofill.ProfileImport.InaccessibleFieldsRemoved.ByFieldType",
-      ConvertSettingsVisibleFieldTypeForMetrics(field));
-}
-
-// static
-void AutofillMetrics::LogPhoneNumberImportParsingResult(
-    bool parsed_successfully) {
-  base::UmaHistogramBoolean("Autofill.ProfileImport.PhoneNumberParsed",
-                            parsed_successfully);
 }
 
 // static

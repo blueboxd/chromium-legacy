@@ -11,8 +11,8 @@
 
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
-#include "chrome/browser/web_applications/isolation_data.h"
+#include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/web_app_chromeos_data.h"
@@ -30,6 +30,10 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
+#endif
 
 namespace web_app {
 
@@ -102,7 +106,9 @@ class WebApp {
     ClientData(const ClientData& client_data);
     base::Value AsDebugValue() const;
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     absl::optional<ash::SystemWebAppData> system_web_app_data;
+#endif
   };
 
   const ClientData& client_data() const { return client_data_; }
@@ -192,6 +198,10 @@ class WebApp {
 
   const apps::UrlHandlers& url_handlers() const { return url_handlers_; }
 
+  const std::vector<ScopeExtensionInfo>& scope_extensions() const {
+    return scope_extensions_;
+  }
+
   RunOnOsLoginMode run_on_os_login_mode() const {
     return run_on_os_login_mode_;
   }
@@ -248,8 +258,6 @@ class WebApp {
   const absl::optional<std::string>& manifest_id() const {
     return manifest_id_;
   }
-
-  bool IsStorageIsolated() const { return is_storage_isolated_; }
 
   const absl::optional<LaunchHandler>& launch_handler() const {
     return launch_handler_;
@@ -309,6 +317,20 @@ class WebApp {
 
   // If present, signals that this app is an Isolated Web App, and contains
   // IWA-specific information like bundle location.
+  struct IsolationData {
+    explicit IsolationData(IsolatedWebAppLocation location);
+    ~IsolationData();
+    IsolationData(const IsolationData&);
+    IsolationData& operator=(const IsolationData&);
+    IsolationData(IsolationData&&);
+    IsolationData& operator=(IsolationData&&);
+
+    bool operator==(const IsolationData&) const;
+    bool operator!=(const IsolationData&) const;
+    base::Value AsDebugValue() const;
+
+    IsolatedWebAppLocation location;
+  };
   const absl::optional<IsolationData>& isolation_data() const {
     return isolation_data_;
   }
@@ -374,6 +396,7 @@ class WebApp {
   void SetDisallowedLaunchProtocols(
       base::flat_set<std::string> disallowed_launch_protocols);
   void SetUrlHandlers(apps::UrlHandlers url_handlers);
+  void SetScopeExtensions(std::vector<ScopeExtensionInfo> scope_extensions);
   void SetLockScreenStartUrl(const GURL& lock_screen_start_url);
   void SetNoteTakingNewNoteUrl(const GURL& note_taking_new_note_url);
   void SetLastBadgingTime(const base::Time& time);
@@ -387,7 +410,6 @@ class WebApp {
   void SetManifestUrl(const GURL& manifest_url);
   void SetManifestId(const absl::optional<std::string>& manifest_id);
   void SetWindowControlsOverlayEnabled(bool enabled);
-  void SetStorageIsolated(bool is_storage_isolated);
   void SetLaunchHandler(absl::optional<LaunchHandler> launch_handler);
   void SetParentAppId(const absl::optional<AppId>& parent_app_id);
   void SetPermissionsPolicy(blink::ParsedPermissionsPolicy permissions_policy);
@@ -426,6 +448,10 @@ class WebApp {
   // For logging and debug purposes.
   bool operator==(const WebApp&) const;
   bool operator!=(const WebApp&) const;
+  // Used by the WebAppTest suite to cover only platform agnostic fields to
+  // avoid needing multiple platform specific expectation files per test.
+  // Otherwise, the same as AsDebugValue().
+  base::Value AsDebugValueWithOnlyPlatformAgnosticFields() const;
   base::Value AsDebugValue() const;
 
  private:
@@ -474,6 +500,7 @@ class WebApp {
   base::flat_set<std::string> disallowed_launch_protocols_;
   // TODO(crbug.com/1072058): No longer aiming to ship, remove.
   apps::UrlHandlers url_handlers_;
+  std::vector<ScopeExtensionInfo> scope_extensions_;
   GURL lock_screen_start_url_;
   GURL note_taking_new_note_url_;
   base::Time last_badging_time_;
@@ -502,7 +529,6 @@ class WebApp {
   OsIntegrationState file_handler_os_integration_state_ =
       OsIntegrationState::kDisabled;
   bool window_controls_overlay_enabled_ = false;
-  bool is_storage_isolated_ = false;
   absl::optional<LaunchHandler> launch_handler_;
   absl::optional<AppId> parent_app_id_;
   blink::ParsedPermissionsPolicy permissions_policy_;

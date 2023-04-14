@@ -68,10 +68,7 @@ public abstract class BookmarkRow
     public BookmarkRow(Context context, AttributeSet attrs) {
         super(context, attrs);
         if (BookmarkFeatures.isBookmarksVisualRefreshEnabled()) {
-            enableVisualRefresh(getResources().getDimensionPixelSize(
-                    BookmarkFeatures.isCompactBookmarksVisualRefreshEnabled()
-                            ? R.dimen.list_item_v2_start_icon_width_compact
-                            : R.dimen.list_item_v2_start_icon_width));
+            enableVisualRefresh();
         }
     }
 
@@ -184,10 +181,8 @@ public abstract class BookmarkRow
             }
             listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
             listItems.add(buildMenuListItem(R.string.bookmark_item_delete, 0, 0));
-            if (ReadingListFeatures.shouldAllowBookmarkTypeSwapping()) {
-                listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
-                listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0));
-            }
+            listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));
+            listItems.add(buildMenuListItem(R.string.bookmark_item_move, 0, 0));
         } else {
             listItems.add(buildMenuListItem(R.string.bookmark_item_select, 0, 0));
             listItems.add(buildMenuListItem(R.string.bookmark_item_edit, 0, 0));

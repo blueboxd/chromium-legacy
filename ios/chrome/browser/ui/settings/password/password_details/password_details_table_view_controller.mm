@@ -11,6 +11,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/common/password_manager_features.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -26,6 +27,8 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller+private.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_multi_line_text_edit_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_multi_line_text_edit_item_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_edit_item_delegate.h"
@@ -71,6 +74,10 @@ bool IsPasswordGroupingEnabled() {
       password_manager::features::kPasswordsGrouping);
 }
 
+bool IsPasswordNotesWithBackupEnabled() {
+  return base::FeatureList::IsEnabled(syncer::kPasswordNotesWithBackup);
+}
+
 // Size of the symbols.
 const CGFloat kSymbolSize = 15;
 const CGFloat kCompromisedPasswordSymbolSize = 22;
@@ -89,12 +96,16 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
 // The text item related to the password value.
 @property(nonatomic, strong) TableViewTextEditItem* passwordTextItem;
 
+// The text item related to the password note.
+@property(nonatomic, strong) TableViewMultiLineTextEditItem* passwordNoteItem;
+
 @end
 @implementation PasswordDetailsInfoItem
 @end
 
 @interface PasswordDetailsTableViewController () <
-    TableViewTextEditItemDelegate> {
+    TableViewTextEditItemDelegate,
+    TableViewMultiLineTextEditItemDelegate> {
   // Index of the password the user wants to reveal.
   NSInteger _passwordIndexToReveal;
 
@@ -314,6 +325,17 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   return item;
 }
 
+- (TableViewMultiLineTextEditItem*)noteItemForPasswordDetails:
+    (PasswordDetails*)passwordDetails {
+  TableViewMultiLineTextEditItem* item = [[TableViewMultiLineTextEditItem alloc]
+      initWithType:PasswordDetailsItemTypeNote];
+  item.label = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_NOTE);
+  item.text = passwordDetails.note;
+  item.editingEnabled = self.tableView.editing;
+  item.delegate = self;
+  return item;
+}
+
 - (TableViewTextEditItem*)federationItemForPasswordDetails:
     (PasswordDetails*)passwordDetails {
   TableViewTextEditItem* item = [[TableViewTextEditItem alloc]
@@ -508,10 +530,6 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
       [textFieldCell.identifyingIconButton setTag:indexPath.section];
       break;
     }
-    case PasswordDetailsItemTypeWebsite:
-    case PasswordDetailsItemTypeFederation:
-    case PasswordDetailsItemTypeChangePasswordButton:
-      break;
     case PasswordDetailsItemTypeChangePasswordRecommendation: {
       cell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
@@ -525,6 +543,11 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
       [tableViewTextButtonCell.button setTag:indexPath.section];
       break;
     }
+    case PasswordDetailsItemTypeNote:
+    case PasswordDetailsItemTypeWebsite:
+    case PasswordDetailsItemTypeFederation:
+    case PasswordDetailsItemTypeChangePasswordButton:
+      break;
   }
   return cell;
 }
@@ -537,6 +560,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     case PasswordDetailsItemTypeFederation:
     case PasswordDetailsItemTypeUsername:
     case PasswordDetailsItemTypePassword:
+    case PasswordDetailsItemTypeNote:
       return YES;
   }
   return NO;
@@ -585,6 +609,14 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
     [self checkIfValidPasswords];
   }
   [self reconfigureCellsForItems:@[ tableViewItem ]];
+}
+
+#pragma mark - TableViewMultiLineTextEditItemDelegate
+
+- (void)textViewItemDidChange:(TableViewMultiLineTextEditItem*)tableViewItem {
+  // Refresh the cells' height.
+  [self.tableView beginUpdates];
+  [self.tableView endUpdates];
 }
 
 #pragma mark - SettingsRootTableViewController
@@ -758,6 +790,7 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   switch (static_cast<PasswordDetailsItemType>(itemType)) {
     case PasswordDetailsItemTypeUsername:
     case PasswordDetailsItemTypePassword:
+    case PasswordDetailsItemTypeNote:
       return YES;
     case PasswordDetailsItemTypeWebsite:
     case PasswordDetailsItemTypeFederation:
@@ -852,7 +885,11 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
                                 .passwordTextItem.textFieldValue] ||
         ![self.passwords[i].username
             isEqualToString:self.passwordDetailsInfoItems[i]
-                                .usernameTextItem.textFieldValue]) {
+                                .usernameTextItem.textFieldValue] ||
+        (IsPasswordNotesWithBackupEnabled() &&
+         ![self.passwords[i].note
+             isEqualToString:self.passwordDetailsInfoItems[i]
+                                 .passwordNoteItem.text])) {
       return YES;
     }
   }
@@ -920,6 +957,13 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
           [self passwordItemForPasswordDetails:passwordDetails];
       [model addItem:passwordItem.passwordTextItem
           toSectionWithIdentifier:sectionForPassword];
+
+      if (IsPasswordNotesWithBackupEnabled()) {
+        passwordItem.passwordNoteItem =
+            [self noteItemForPasswordDetails:passwordDetails];
+        [model addItem:passwordItem.passwordNoteItem
+            toSectionWithIdentifier:sectionForPassword];
+      }
 
       if (passwordDetails.isCompromised) {
         [model addItem:[self changePasswordRecommendationItem]
@@ -1176,14 +1220,20 @@ const CGFloat kCompromisedPasswordSymbolSize = 22;
   for (NSUInteger i = 0; i < self.passwordDetailsInfoItems.count; i++) {
     NSString* oldUsername = self.passwords[i].username;
     NSString* oldPassword = self.passwords[i].password;
+    NSString* oldNote = self.passwords[i].note;
     self.passwords[i].username =
         self.passwordDetailsInfoItems[i].usernameTextItem.textFieldValue;
     self.passwords[i].password =
         self.passwordDetailsInfoItems[i].passwordTextItem.textFieldValue;
+    if (IsPasswordNotesWithBackupEnabled()) {
+      self.passwords[i].note =
+          self.passwordDetailsInfoItems[i].passwordNoteItem.text;
+    }
     [self.delegate passwordDetailsViewController:self
                           didEditPasswordDetails:self.passwords[i]
                                  withOldUsername:oldUsername
-                                  andOldPassword:oldPassword];
+                                     oldPassword:oldPassword
+                                         oldNote:oldNote];
     if (self.passwords[i].compromised) {
       UmaHistogramEnumeration("PasswordManager.BulkCheck.UserAction",
                               PasswordCheckInteraction::kEditPassword);

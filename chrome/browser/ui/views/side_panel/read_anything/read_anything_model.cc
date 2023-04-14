@@ -12,6 +12,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/grit/component_extension_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,7 +22,8 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-using read_anything::mojom::Spacing;
+using read_anything::mojom::LetterSpacing;
+using read_anything::mojom::LineSpacing;
 
 ReadAnythingModel::ReadAnythingModel()
     : font_name_(kReadAnythingDefaultFontName),
@@ -37,8 +39,8 @@ ReadAnythingModel::~ReadAnythingModel() = default;
 void ReadAnythingModel::Init(const std::string& font_name,
                              double font_scale,
                              read_anything::mojom::Colors colors,
-                             Spacing line_spacing,
-                             Spacing letter_spacing) {
+                             LineSpacing line_spacing,
+                             LetterSpacing letter_spacing) {
   // If this profile has previously selected choices that were saved to
   // prefs, check they are still a valid, and then assign if so.
   if (font_model_->IsValidFontName(font_name)) {
@@ -52,12 +54,18 @@ void ReadAnythingModel::Init(const std::string& font_name,
     colors_model_->SetSelectedIndex(colors_index);
   }
 
-  size_t line_spacing_index = static_cast<size_t>(line_spacing);
+  // LineSpacing contains a deprecated value, so it doesn't correspond exactly
+  // to drop-down indices.
+  size_t line_spacing_index =
+      line_spacing_model_->GetIndexForLineSpacing(line_spacing);
   if (line_spacing_model_->IsValidIndex(line_spacing_index)) {
     line_spacing_model_->SetSelectedIndex(line_spacing_index);
   }
 
-  size_t letter_spacing_index = static_cast<size_t>(letter_spacing);
+  // LetterSpacing contains a deprecated value, so it doesn't correspond exactly
+  // to drop-down indices.
+  size_t letter_spacing_index =
+      letter_spacing_model_->GetIndexForLetterSpacing(letter_spacing);
   if (letter_spacing_model_->IsValidIndex(letter_spacing_index)) {
     letter_spacing_model_->SetSelectedIndex(letter_spacing_index);
   }
@@ -67,6 +75,7 @@ void ReadAnythingModel::Init(const std::string& font_name,
   auto& initial_colors = colors_model_->GetColorsAt(colors_combobox_index_);
   foreground_color_id_ = initial_colors.foreground_color_id;
   background_color_id_ = initial_colors.background_color_id;
+  separator_color_id_ = initial_colors.separator_color_id;
 
   line_spacing_ = line_spacing_model_->GetLineSpacingAt(
       line_spacing_model_->GetSelectedIndex().value());
@@ -100,6 +109,7 @@ void ReadAnythingModel::SetSelectedColorsByIndex(size_t new_index) {
   auto& new_colors = colors_model_->GetColorsAt(new_index);
   foreground_color_id_ = new_colors.foreground_color_id;
   background_color_id_ = new_colors.background_color_id;
+  separator_color_id_ = new_colors.separator_color_id;
 
   NotifyThemeChanged();
 }
@@ -127,9 +137,11 @@ void ReadAnythingModel::AccessibilityEventReceived(
   }
 }
 
-void ReadAnythingModel::OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
+void ReadAnythingModel::OnActiveAXTreeIDChanged(
+    const ui::AXTreeID& tree_id,
+    const ukm::SourceId& ukm_source_id) {
   for (Observer& obs : observers_) {
-    obs.OnActiveAXTreeIDChanged(tree_id);
+    obs.OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
   }
 }
 
@@ -166,9 +178,9 @@ void ReadAnythingModel::IncreaseTextSize() {
 
 void ReadAnythingModel::NotifyThemeChanged() {
   for (Observer& obs : observers_) {
-    obs.OnReadAnythingThemeChanged(font_name_, font_scale_,
-                                   foreground_color_id_, background_color_id_,
-                                   line_spacing_, letter_spacing_);
+    obs.OnReadAnythingThemeChanged(
+        font_name_, font_scale_, foreground_color_id_, background_color_id_,
+        separator_color_id_, line_spacing_, letter_spacing_);
   }
 }
 
@@ -233,7 +245,7 @@ std::string ReadAnythingFontModel::GetFontNameAt(size_t index) {
 // E.g. User chooses 'Serif', this method returns 'Serif, Arial, 18px'.
 std::string ReadAnythingFontModel::GetLabelFontListAt(size_t index) {
   std::string font_label = base::UTF16ToUTF8(GetDropDownTextAt(index));
-  base::StringAppendF(&font_label, "%s", ", Arial, 18px");
+  base::StringAppendF(&font_label, "%s", kReadAnythingDefaultFontSyle);
   return font_label;
 }
 
@@ -245,25 +257,26 @@ ReadAnythingFontModel::~ReadAnythingFontModel() = default;
 
 ReadAnythingColorsModel::ReadAnythingColorsModel() {
   // Define the possible sets of colors available to the user.
-  ColorInfo kDefaultColors = {u"Default", IDS_READ_ANYTHING_DEFAULT_PNG,
-                              ui::kColorReadAnythingForeground,
-                              ui::kColorReadAnythingBackground};
+  ColorInfo kDefaultColors = {
+      u"Default", IDS_READ_ANYTHING_DEFAULT_PNG, kColorReadAnythingForeground,
+      kColorReadAnythingBackground, kColorReadAnythingSeparator};
 
-  ColorInfo kLightColors = {u"Light", IDS_READ_ANYTHING_LIGHT_PNG,
-                            ui::kColorReadAnythingForegroundLight,
-                            ui::kColorReadAnythingBackgroundLight};
+  ColorInfo kLightColors = {
+      u"Light", IDS_READ_ANYTHING_LIGHT_PNG, kColorReadAnythingForegroundLight,
+      kColorReadAnythingBackgroundLight, kColorReadAnythingSeparatorLight};
 
-  ColorInfo kDarkColors = {u"Dark", IDS_READ_ANYTHING_DARK_PNG,
-                           ui::kColorReadAnythingForegroundDark,
-                           ui::kColorReadAnythingBackgroundDark};
+  ColorInfo kDarkColors = {
+      u"Dark", IDS_READ_ANYTHING_DARK_PNG, kColorReadAnythingForegroundDark,
+      kColorReadAnythingBackgroundDark, kColorReadAnythingSeparatorDark};
 
   ColorInfo kYellowColors = {u"Yellow", IDS_READ_ANYTHING_YELLOW_PNG,
-                             ui::kColorReadAnythingForegroundYellow,
-                             ui::kColorReadAnythingBackgroundYellow};
+                             kColorReadAnythingForegroundYellow,
+                             kColorReadAnythingBackgroundYellow,
+                             kColorReadAnythingSeparatorYellow};
 
-  ColorInfo kBlueColors = {u"Blue", IDS_READ_ANYTHING_BLUE_PNG,
-                           ui::kColorReadAnythingForegroundBlue,
-                           ui::kColorReadAnythingBackgroundBlue};
+  ColorInfo kBlueColors = {
+      u"Blue", IDS_READ_ANYTHING_BLUE_PNG, kColorReadAnythingForegroundBlue,
+      kColorReadAnythingBackgroundBlue, kColorReadAnythingSeparatorBlue};
 
   colors_choices_.emplace_back(kDefaultColors);
   colors_choices_.emplace_back(kLightColors);
@@ -307,15 +320,30 @@ ReadAnythingColorsModel::~ReadAnythingColorsModel() = default;
 
 ReadAnythingLineSpacingModel::ReadAnythingLineSpacingModel() {
   // Define the line spacing options available to the user.
-  lines_choices_.emplace_back(Spacing::kTight);
-  lines_choices_.emplace_back(Spacing::kDefault);
-  lines_choices_.emplace_back(Spacing::kLoose);
-  lines_choices_.emplace_back(Spacing::kVeryLoose);
+  LineSpacingInfo kStandard = {
+      LineSpacing::kStandard,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_STANDARD),
+      kReadAnythingLineSpacingStandardIcon};
+  LineSpacingInfo kLoose = {
+      LineSpacing::kLoose,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_LOOSE),
+      kReadAnythingLineSpacingLooseIcon};
+  LineSpacingInfo kVeryLoose = {
+      LineSpacing::kVeryLoose,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_VERY_LOOSE),
+      kReadAnythingLineSpacingVeryLooseIcon};
+
+  lines_choices_.emplace_back(kStandard);
+  lines_choices_.emplace_back(kLoose);
+  lines_choices_.emplace_back(kVeryLoose);
   lines_choices_.shrink_to_fit();
 
-  for (auto& line_spacing : lines_choices_) {
-    AddCheckItem(static_cast<int>(line_spacing),
-                 GetLineSpacingName(line_spacing));
+  for (std::vector<LetterSpacing>::size_type i = 0; i < lines_choices_.size();
+       i++) {
+    AddCheckItem(i, lines_choices_[i].name);
+    SetIcon(i,
+            ui::ImageModel::FromVectorIcon(lines_choices_[i].icon_asset,
+                                           ui::kColorIcon, kSpacingIconSize));
   }
 }
 
@@ -323,22 +351,22 @@ bool ReadAnythingLineSpacingModel::IsValidIndex(size_t index) {
   return index < lines_choices_.size();
 }
 
-Spacing ReadAnythingLineSpacingModel::GetLineSpacingAt(size_t index) {
-  return lines_choices_[index];
+size_t ReadAnythingLineSpacingModel::GetIndexForLineSpacing(
+    LineSpacing line_spacing) {
+  switch (line_spacing) {
+    // If we read the deprecated value, choose the closest option.
+    case LineSpacing::kTightDeprecated:
+    case LineSpacing::kStandard:
+      return 0;
+    case LineSpacing::kLoose:
+      return 1;
+    case LineSpacing::kVeryLoose:
+      return 2;
+  }
 }
 
-std::u16string ReadAnythingLineSpacingModel::GetLineSpacingName(
-    Spacing line_spacing) const {
-  switch (line_spacing) {
-    case Spacing::kTight:
-      return u"Tight";
-    case Spacing::kDefault:
-      return u"Default";
-    case Spacing::kLoose:
-      return u"Loose";
-    case Spacing::kVeryLoose:
-      return u"Very Loose";
-  }
+LineSpacing ReadAnythingLineSpacingModel::GetLineSpacingAt(size_t index) {
+  return lines_choices_[index].enum_value;
 }
 
 ReadAnythingLineSpacingModel::~ReadAnythingLineSpacingModel() = default;
@@ -347,44 +375,53 @@ ReadAnythingLineSpacingModel::~ReadAnythingLineSpacingModel() = default;
 // ReadAnythingLetterSpacingModel
 ///////////////////////////////////////////////////////////////////////////////
 ReadAnythingLetterSpacingModel::ReadAnythingLetterSpacingModel() {
-  choices_.emplace_back(Spacing::kTight);
-  choices_.emplace_back(Spacing::kDefault);
-  choices_.emplace_back(Spacing::kLoose);
-  choices_.emplace_back(Spacing::kVeryLoose);
-  choices_.shrink_to_fit();
+  LetterSpacingInfo kStandard = {
+      LetterSpacing::kStandard,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_STANDARD),
+      kReadAnythingLetterSpacingStandardIcon};
+  LetterSpacingInfo kWide = {
+      LetterSpacing::kWide,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_WIDE),
+      kReadAnythingLetterSpacingWideIcon};
+  LetterSpacingInfo kVeryWide = {
+      LetterSpacing::kVeryWide,
+      l10n_util::GetStringUTF16(IDS_READ_ANYTHING_SPACING_COMBOBOX_VERY_WIDE),
+      kReadAnythingLetterSpacingVeryWideIcon};
 
-  for (auto& letter_spacing : choices_) {
-    AddCheckItem(static_cast<int>(letter_spacing),
-                 GetLetterSpacingName(letter_spacing));
+  letters_choices_.emplace_back(kStandard);
+  letters_choices_.emplace_back(kWide);
+  letters_choices_.emplace_back(kVeryWide);
+  letters_choices_.shrink_to_fit();
+
+  for (std::vector<LetterSpacing>::size_type i = 0; i < letters_choices_.size();
+       i++) {
+    AddCheckItem(i, letters_choices_[i].name);
+    SetIcon(i,
+            ui::ImageModel::FromVectorIcon(letters_choices_[i].icon_asset,
+                                           ui::kColorIcon, kSpacingIconSize));
   }
 }
 
 bool ReadAnythingLetterSpacingModel::IsValidIndex(size_t index) {
-  return index < choices_.size();
+  return index < letters_choices_.size();
 }
 
-Spacing ReadAnythingLetterSpacingModel::GetLetterSpacingAt(size_t index) {
-  return choices_[index];
-}
-
-// TODO (crbug.com/1266555): Change to translatable messages
-std::u16string ReadAnythingLetterSpacingModel::GetLetterSpacingName(
-    Spacing letter_spacing) const {
-  int label;
+size_t ReadAnythingLetterSpacingModel::GetIndexForLetterSpacing(
+    LetterSpacing letter_spacing) {
   switch (letter_spacing) {
-    case Spacing::kTight:
-      label = IDS_READ_ANYTHING_SPACING_COMBOBOX_TIGHT;
-      break;
-    case Spacing::kDefault:
-      label = IDS_READ_ANYTHING_SPACING_COMBOBOX_DEFAULT;
-      break;
-    case Spacing::kLoose:
-      label = IDS_READ_ANYTHING_SPACING_COMBOBOX_LOOSE;
-      break;
-    case Spacing::kVeryLoose:
-      label = IDS_READ_ANYTHING_SPACING_COMBOBOX_VERY_LOOSE;
+    // If we read the deprecated value, choose the closest option.
+    case LetterSpacing::kTightDeprecated:
+    case LetterSpacing::kStandard:
+      return 0;
+    case LetterSpacing::kWide:
+      return 1;
+    case LetterSpacing::kVeryWide:
+      return 2;
   }
-  return l10n_util::GetStringUTF16(label);
+}
+
+LetterSpacing ReadAnythingLetterSpacingModel::GetLetterSpacingAt(size_t index) {
+  return letters_choices_[index].enum_value;
 }
 
 ReadAnythingLetterSpacingModel::~ReadAnythingLetterSpacingModel() = default;

@@ -105,7 +105,7 @@ TEST_F(WebCryptoAesCbcTest, InputTooLarge) {
   // Pretend the input is large. Don't pass data pointer as NULL in case that
   // is special cased; the implementation shouldn't actually dereference the
   // data.
-  base::span<const uint8_t> input(iv.data(), INT_MAX - 3);
+  base::span<const uint8_t> input(iv.data(), size_t{INT_MAX} - 3);
 
   EXPECT_EQ(
       Status::ErrorDataTooLarge(),
@@ -488,8 +488,7 @@ TEST_F(WebCryptoAesCbcTest, ImportKeyJwkKeyOpsEncryptDecrypt) {
   base::Value::Dict dict;
   dict.Set("kty", "oct");
   dict.Set("k", "GADWrMRHwQfoNaXU5fZvTg");
-  base::Value* key_ops =
-      dict.Set("key_ops", base::Value(base::Value::Type::LIST));
+  base::Value::List* key_ops = dict.EnsureList("key_ops");
 
   key_ops->Append("encrypt");
 

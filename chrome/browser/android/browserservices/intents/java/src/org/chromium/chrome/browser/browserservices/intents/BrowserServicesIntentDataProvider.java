@@ -82,6 +82,17 @@ public abstract class BrowserServicesIntentDataProvider {
      */
     public static final int ACTIVITY_HEIGHT_FIXED = 2;
 
+    @IntDef({ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT, ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE,
+            ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW,
+            ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SideSheetDecorationType {}
+    public static final int ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT = 0;
+    public static final int ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE = 1;
+    public static final int ACTIVITY_SIDE_SHEET_DECORATION_TYPE_SHADOW = 2;
+    public static final int ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER = 3;
+    public static final int ACTIVITY_SIDE_SHEET_DECORATION_TYPE_MAX = 3;
+
     /**
      * @return The type of the Activity;
      */
@@ -231,6 +242,15 @@ public abstract class BrowserServicesIntentDataProvider {
      */
     @Nullable
     public PendingIntent getRemoteViewsPendingIntent() {
+        return null;
+    }
+
+    /**
+     * @return The {@link PendingIntent} that is sent when the user swipes up from the secondary
+     *         (bottom) toolbar.
+     */
+    @Nullable
+    public PendingIntent getSecondaryToolbarSwipeUpPendingIntent() {
         return null;
     }
 
@@ -474,18 +494,56 @@ public abstract class BrowserServicesIntentDataProvider {
     }
 
     /**
-     * @return Whether the intent is for partial-height custom tabs.
+     * @return Whether the intent is for partial custom tabs bottom sheet.
      */
     public boolean isPartialHeightCustomTab() {
         return false;
     }
 
     /**
-     * @return The value in pixels  of the initial height of the Activity. It will return 0 if there
+     * @return Whether the intent is for partial custom tabs side sheet.
+     */
+    public boolean isPartialWidthCustomTab() {
+        return false;
+    }
+
+    /**
+     * @return Whether the intent is partial custom tabs side sheet or bottom sheet.
+     */
+
+    public boolean isPartialCustomTab() {
+        return false;
+    }
+
+    /**
+     * @return The value in pixels of the initial height of the Activity. It will return 0 if there
      *         is no value set.
      */
     public @Px int getInitialActivityHeight() {
         return 0;
+    }
+
+    /**
+     * @return The value in pixels of the initial width of the Activity. It will return 0 if there
+     *          is no value set.
+     */
+    public @Px int getInitialActivityWidth() {
+        return 0;
+    }
+
+    /**
+     * @return The value in pixels of the breakpoint where Side Sheets behave as Bottom Sheets.
+     *          It will return 0 if there is no value set.
+     */
+    public int getActivityBreakPoint() {
+        return 0;
+    }
+
+    /**
+     * @return An int representing the side sheet decoration type for the Activity.
+     */
+    public int getActivitySideSheetDecorationType() {
+        return ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DEFAULT;
     }
 
     /**
@@ -522,4 +580,11 @@ public abstract class BrowserServicesIntentDataProvider {
      * background application
      */
     public boolean canInteractWithBackground() { return false; }
+
+    /**
+     * Return false since by default side panel does not show maximize button.
+     */
+    public boolean showSideSheetMaximizeButton() {
+        return false;
+    }
 }

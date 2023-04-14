@@ -23,6 +23,7 @@
 #include "cc/test/pixel_test_utils.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_icon/app_icon_test_util.h"
+#include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/apps/app_service/app_icon/app_icon_decoder.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/apps/icon_standardizer.h"
 #include "chrome/browser/ash/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ash/app_list/md_icon_normalizer.h"
 #include "chrome/browser/ash/arc/icon_decode_request.h"
@@ -64,33 +64,21 @@ class AppIconFactoryTest : public testing::Test {
 
   void SetUp() override { ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir()); }
 
-  void RunLoadIconFromFileWithFallback(apps::IconValuePtr fallback_response,
-                                       bool* callback_called,
-                                       bool* fallback_called,
+  bool RunLoadIconFromFileWithFallback(apps::IconValuePtr fallback_response,
                                        apps::IconValuePtr* result) {
-    *callback_called = false;
-    *fallback_called = false;
+    bool fallback_called = false;
 
+    base::test::TestFuture<apps::IconValuePtr> success_future;
     apps::LoadIconFromFileWithFallback(
         apps::IconType::kUncompressed, 200, GetPath(), apps::IconEffects::kNone,
-        base::BindOnce(
-            [](bool* called, apps::IconValuePtr* result, base::OnceClosure quit,
-               apps::IconValuePtr icon) {
-              *called = true;
-              *result = std::move(icon);
-              std::move(quit).Run();
-            },
-            base::Unretained(callback_called), base::Unretained(result),
-            run_loop_.QuitClosure()),
-        base::BindOnce(
-            [](bool* called, apps::IconValuePtr response,
-               apps::LoadIconCallback callback) {
-              *called = true;
-              std::move(callback).Run(std::move(response));
-            },
-            base::Unretained(fallback_called), std::move(fallback_response)));
+        success_future.GetCallback(),
+        base::BindLambdaForTesting([&](apps::LoadIconCallback callback) {
+          fallback_called = true;
+          std::move(callback).Run(std::move(fallback_response));
+        }));
 
-    run_loop_.Run();
+    *result = success_future.Take();
+    return fallback_called;
   }
 
   std::string GetPngData(const std::string file_name) {
@@ -113,18 +101,10 @@ class AppIconFactoryTest : public testing::Test {
                                      apps::IconType icon_type,
                                      apps::IconEffects icon_effects,
                                      apps::IconValuePtr& output_icon) {
-    apps::LoadIconFromCompressedData(
-        icon_type, kSizeInDip, icon_effects, png_data_as_string,
-        base::BindOnce(
-            [](apps::IconValuePtr* result,
-               base::OnceClosure load_app_icon_callback,
-               apps::IconValuePtr icon) {
-              *result = std::move(icon);
-              std::move(load_app_icon_callback).Run();
-            },
-            &output_icon, run_loop_.QuitClosure()));
-    run_loop_.Run();
-
+    base::test::TestFuture<apps::IconValuePtr> future;
+    apps::LoadIconFromCompressedData(icon_type, kSizeInDip, icon_effects,
+                                     png_data_as_string, future.GetCallback());
+    output_icon = future.Take();
     ASSERT_TRUE(output_icon);
     ASSERT_EQ(icon_type, output_icon->icon_type);
     ASSERT_FALSE(output_icon->is_placeholder_icon);
@@ -144,25 +124,19 @@ class AppIconFactoryTest : public testing::Test {
 
     output_image_skia = gfx::ImageSkia::CreateFromBitmap(decoded, scale);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
     output_image_skia = apps::CreateStandardIconImage(output_image_skia);
-#endif
     EnsureRepresentationsLoaded(output_image_skia);
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   apps::IconValuePtr RunLoadIconFromResource(apps::IconType icon_type,
                                              apps::IconEffects icon_effects) {
-    bool is_placeholder_icon = false;
-    apps::IconValuePtr icon_value;
-    apps::LoadIconFromResource(
-        icon_type, kSizeInDip, IDR_LOGO_CROSTINI_DEFAULT, is_placeholder_icon,
-        icon_effects, base::BindLambdaForTesting([&](apps::IconValuePtr icon) {
-          icon_value = std::move(icon);
-          run_loop_.Quit();
-        }));
-    run_loop_.Run();
-    return icon_value;
+    base::test::TestFuture<apps::IconValuePtr> future;
+    apps::LoadIconFromResource(icon_type, kSizeInDip, IDR_LOGO_CROSTINI_DEFAULT,
+                               /*is_placeholder_icon=*/false, icon_effects,
+                               future.GetCallback());
+    auto icon = future.Take();
+    return icon;
   }
 
   void GenerateCrostiniPenguinIcon(gfx::ImageSkia& output_image_skia) {
@@ -197,7 +171,6 @@ class AppIconFactoryTest : public testing::Test {
  protected:
   content::BrowserTaskEnvironment task_env_{};
   base::ScopedTempDir tmp_dir_{};
-  base::RunLoop run_loop_{};
 };
 
 TEST_F(AppIconFactoryTest, LoadFromFileSuccess) {
@@ -208,10 +181,8 @@ TEST_F(AppIconFactoryTest, LoadFromFileSuccess) {
 
   auto fallback_response = std::make_unique<apps::IconValue>();
   auto result = std::make_unique<apps::IconValue>();
-  bool callback_called, fallback_called;
-  RunLoadIconFromFileWithFallback(std::move(fallback_response),
-                                  &callback_called, &fallback_called, &result);
-  EXPECT_TRUE(callback_called);
+  bool fallback_called =
+      RunLoadIconFromFileWithFallback(std::move(fallback_response), &result);
   EXPECT_FALSE(fallback_called);
   ASSERT_TRUE(result);
 
@@ -229,10 +200,8 @@ TEST_F(AppIconFactoryTest, LoadFromFileFallback) {
   fallback_response->uncompressed = expect_image;
 
   auto result = std::make_unique<apps::IconValue>();
-  bool callback_called, fallback_called;
-  RunLoadIconFromFileWithFallback(std::move(fallback_response),
-                                  &callback_called, &fallback_called, &result);
-  EXPECT_TRUE(callback_called);
+  bool fallback_called =
+      RunLoadIconFromFileWithFallback(std::move(fallback_response), &result);
   EXPECT_TRUE(fallback_called);
   ASSERT_TRUE(result);
   EXPECT_TRUE(result->uncompressed.BackedBySameObjectAs(expect_image));
@@ -241,34 +210,27 @@ TEST_F(AppIconFactoryTest, LoadFromFileFallback) {
 TEST_F(AppIconFactoryTest, LoadFromFileFallbackFailure) {
   auto fallback_response = std::make_unique<apps::IconValue>();
   auto result = std::make_unique<apps::IconValue>();
-  bool callback_called, fallback_called;
-  RunLoadIconFromFileWithFallback(std::move(fallback_response),
-                                  &callback_called, &fallback_called, &result);
-  EXPECT_TRUE(callback_called);
+  bool fallback_called =
+      RunLoadIconFromFileWithFallback(std::move(fallback_response), &result);
   EXPECT_TRUE(fallback_called);
   ASSERT_TRUE(result);
 }
 
 TEST_F(AppIconFactoryTest, LoadFromFileFallbackDoesNotReturn) {
-  auto result = std::make_unique<apps::IconValue>();
-  bool callback_called = false, fallback_called = false;
+  base::test::TestFuture<apps::IconValuePtr> success_future;
 
+  bool fallback_called = false;
   apps::LoadIconFromFileWithFallback(
-      apps::IconType::kUncompressed, 200, GetPath(), apps::IconEffects::kNone,
-      base::BindLambdaForTesting([&](apps::IconValuePtr icon) {
-        callback_called = true;
-        result = std::move(icon);
-        run_loop_.Quit();
-      }),
-      base::BindLambdaForTesting([&](apps::LoadIconCallback callback) {
-        fallback_called = true;
+      apps::IconType::kUncompressed, /*size_hint_in_dip=*/200, GetPath(),
+      apps::IconEffects::kNone, success_future.GetCallback(),
+      base::BindLambdaForTesting([&](apps::LoadIconCallback) {
         // Drop the callback here, like a buggy fallback might.
+        fallback_called = true;
       }));
 
-  run_loop_.Run();
-
-  EXPECT_TRUE(callback_called);
+  EXPECT_TRUE(success_future.Wait());
   EXPECT_TRUE(fallback_called);
+  auto result = success_future.Take();
   ASSERT_TRUE(result);
 }
 
@@ -336,21 +298,11 @@ TEST_F(AppIconFactoryTest, ArcNonAdaptiveIconToImageSkia) {
                            png_data_as_string.end()),
       std::vector<uint8_t>(), std::vector<uint8_t>());
 
-  bool callback_called = false;
-  apps::ArcRawIconPngDataToImageSkia(
-      std::move(icon), 100,
-      base::BindOnce(
-          [](bool* called, base::OnceClosure quit,
-             const gfx::ImageSkia& image) {
-            if (!image.isNull()) {
-              *called = true;
-            }
-            std::move(quit).Run();
-          },
-          base::Unretained(&callback_called), run_loop_.QuitClosure()));
-
-  run_loop_.Run();
-  EXPECT_TRUE(callback_called);
+  base::test::TestFuture<const gfx::ImageSkia&> future;
+  apps::ArcRawIconPngDataToImageSkia(std::move(icon), 100,
+                                     future.GetCallback());
+  auto image = future.Take();
+  EXPECT_TRUE(!image.isNull());
 }
 
 TEST_F(AppIconFactoryTest, ArcAdaptiveIconToImageSkia) {
@@ -364,21 +316,11 @@ TEST_F(AppIconFactoryTest, ArcAdaptiveIconToImageSkia) {
       std::vector<uint8_t>(png_data_as_string.begin(),
                            png_data_as_string.end()));
 
-  bool callback_called = false;
-  apps::ArcRawIconPngDataToImageSkia(
-      std::move(icon), 100,
-      base::BindOnce(
-          [](bool* called, base::OnceClosure quit,
-             const gfx::ImageSkia& image) {
-            if (!image.isNull()) {
-              *called = true;
-            }
-            std::move(quit).Run();
-          },
-          base::Unretained(&callback_called), run_loop_.QuitClosure()));
-
-  run_loop_.Run();
-  EXPECT_TRUE(callback_called);
+  base::test::TestFuture<const gfx::ImageSkia&> future;
+  apps::ArcRawIconPngDataToImageSkia(std::move(icon), 100,
+                                     future.GetCallback());
+  auto image = future.Take();
+  EXPECT_TRUE(!image.isNull());
 }
 
 TEST_F(AppIconFactoryTest, ArcActivityIconsToImageSkias) {
@@ -415,24 +357,10 @@ TEST_F(AppIconFactoryTest, ArcActivityIconsToImageSkias) {
           std::vector<uint8_t>(png_data_as_string.begin(),
                                png_data_as_string.end()))));
 
-  std::vector<gfx::ImageSkia> result;
-  bool callback_called = false;
-  apps::ArcActivityIconsToImageSkias(
-      icons, base::BindOnce(
-                 [](bool* called, std::vector<gfx::ImageSkia>* result,
-                    base::OnceClosure quit,
-                    const std::vector<gfx::ImageSkia>& images) {
-                   *called = true;
-                   for (auto image : images) {
-                     result->emplace_back(image);
-                   }
-                   std::move(quit).Run();
-                 },
-                 base::Unretained(&callback_called), base::Unretained(&result),
-                 run_loop_.QuitClosure()));
-  run_loop_.Run();
+  base::test::TestFuture<const std::vector<gfx::ImageSkia>&> future;
+  apps::ArcActivityIconsToImageSkias(icons, future.GetCallback());
 
-  EXPECT_TRUE(callback_called);
+  auto result = future.Take();
   EXPECT_EQ(4U, result.size());
   EXPECT_TRUE(result[0].isNull());
   EXPECT_FALSE(result[1].isNull());

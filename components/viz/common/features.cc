@@ -33,10 +33,6 @@ const char kDynamicSchedulerPercentile[] = "percentile";
 
 namespace features {
 
-BASE_FEATURE(kEnableOverlayPrioritization,
-             "EnableOverlayPrioritization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUseMultipleOverlays,
              "UseMultipleOverlays",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -157,7 +153,7 @@ BASE_FEATURE(kDynamicSchedulerForClients,
              "DynamicSchedulerForClients",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 BASE_FEATURE(kMacCAOverlayQuad,
              "MacCAOverlayQuads",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -222,31 +218,23 @@ BASE_FEATURE(kRendererAllocatesImages,
 #endif
 );
 
-// On all platforms when attempting to evict a FrameTree, the active
-// viz::Surface can be not included. This feature ensures that the we always add
-// the active viz::Surface to the eviction list.
-//
-// Furthermore, by default on Android, when a client is being evicted, it only
-// evicts itself. This differs from Destkop platforms which evict the entire
-// FrameTree along with the topmost viz::Surface. When this feature is enabled,
-// Android will begin also evicting the entire FrameTree.
+#if BUILDFLAG(IS_ANDROID)
+// By default on Android, when a client is being evicted, it only evicts itself.
+// This differs from Destkop platforms which evict the entire FrameTree along
+// with the topmost viz::Surface. When this feature is enabled, Android will
+// begin also evicting the entire FrameTree.
 BASE_FEATURE(kEvictSubtree, "EvictSubtree", base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsOverlayPrioritizationEnabled() {
-  return base::FeatureList::IsEnabled(kEnableOverlayPrioritization);
-}
+#endif
+// If enabled, CompositorFrameSinkClient::OnBeginFrame is also treated as the
+// DidReceiveCompositorFrameAck. Both in providing the Ack for the previous
+// frame, and in returning resources. While enabled the separate Ack and
+// ReclaimResources signals will not be sent.
+BASE_FEATURE(kOnBeginFrameAcks,
+             "OnBeginFrameAcks",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsDelegatedCompositingEnabled() {
   return base::FeatureList::IsEnabled(kDelegatedCompositing);
-}
-
-// If a synchronous IPC should used when destroying windows. This exists to test
-// the impact of removing the sync IPC.
-bool IsSyncWindowDestructionEnabled() {
-  static BASE_FEATURE(kSyncWindowDestruction, "SyncWindowDestruction",
-                      base::FEATURE_ENABLED_BY_DEFAULT);
-
-  return base::FeatureList::IsEnabled(kSyncWindowDestruction);
 }
 
 bool IsSimpleFrameRateThrottlingEnabled() {
@@ -367,10 +355,6 @@ absl::optional<double> IsDynamicSchedulerEnabledForClients() {
 }
 
 int MaxOverlaysConsidered() {
-  if (!IsOverlayPrioritizationEnabled()) {
-    return 1;
-  }
-
   if (!base::FeatureList::IsEnabled(kUseMultipleOverlays)) {
     return 1;
   }
@@ -389,6 +373,10 @@ bool ShouldOverrideThrottledFrameRateParams() {
 
 bool ShouldRendererAllocateImages() {
   return base::FeatureList::IsEnabled(kRendererAllocatesImages);
+}
+
+bool IsOnBeginFrameAcksEnabled() {
+  return base::FeatureList::IsEnabled(features::kOnBeginFrameAcks);
 }
 
 }  // namespace features

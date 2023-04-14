@@ -158,15 +158,15 @@ void UserNetworkConfigurationUpdaterAsh::ApplyNetworkPolicy(
 
   // Call on UserSessionManager to send the user's password to session manager
   // if the password substitution variable exists in the ONC.
-  base::Value network_configs_onc_value(std::move(network_configs_onc));
   bool save_password =
-      ash::onc::HasUserPasswordSubsitutionVariable(&network_configs_onc_value);
+      ash::onc::HasUserPasswordSubstitutionVariable(network_configs_onc);
   ash::UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
       ash::UserSessionManager::PasswordConsumingService::kNetwork,
       save_password);
 
   network_config_handler_->SetPolicy(
-      onc_source_, user_->username_hash(), network_configs_onc_value,
+      onc_source_, user_->username_hash(),
+      base::Value(std::move(network_configs_onc)),
       base::Value(std::move(global_network_config)));
 }
 
@@ -180,15 +180,13 @@ void UserNetworkConfigurationUpdaterAsh::OnProfileInitializationComplete(
   // pass the `NssCertDatabaseGetter` to the `CertificateImporterImpl`.
   content::GetIOThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &GetNssCertDatabaseOnIOThread,
-          NssServiceFactory::GetForContext(profile)
-              ->CreateNSSCertDatabaseGetterForIOThread(),
-          base::BindPostTask(
-              base::SequencedTaskRunner::GetCurrentDefault(),
-              base::BindOnce(&UserNetworkConfigurationUpdaterAsh::
-                                 CreateAndSetClientCertificateImporter,
-                             weak_factory_.GetWeakPtr()))));
+      base::BindOnce(&GetNssCertDatabaseOnIOThread,
+                     NssServiceFactory::GetForContext(profile)
+                         ->CreateNSSCertDatabaseGetterForIOThread(),
+                     base::BindPostTaskToCurrentDefault(base::BindOnce(
+                         &UserNetworkConfigurationUpdaterAsh::
+                             CreateAndSetClientCertificateImporter,
+                         weak_factory_.GetWeakPtr()))));
 }
 
 void UserNetworkConfigurationUpdaterAsh::CreateAndSetClientCertificateImporter(

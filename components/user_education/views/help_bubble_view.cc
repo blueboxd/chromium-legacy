@@ -68,6 +68,8 @@ namespace user_education {
 
 namespace {
 
+// Minimum width of the bubble.
+constexpr int kBubbleMinWidthDip = 200;
 // Maximum width of the bubble. Longer strings will cause wrapping.
 constexpr int kBubbleMaxWidthDip = 340;
 
@@ -146,7 +148,7 @@ class MdIPHBubbleButton : public views::MdTextButton {
             : delegate_->GetHelpBubbleButtonBorderColorId());
     SetBackground(CreateBackgroundFromPainter(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
-            background_color, stroke_color, GetCornerRadius())));
+            background_color, stroke_color, GetCornerRadiusValue())));
   }
 
   void OnThemeChanged() override {
@@ -699,6 +701,11 @@ gfx::Size HelpBubbleView::CalculatePreferredSize() const {
   // Wrap if the width is larger than |kBubbleMaxWidthDip|.
   if (layout_manager_preferred_size.width() > kBubbleMaxWidthDip) {
     return gfx::Size(kBubbleMaxWidthDip, GetHeightForWidth(kBubbleMaxWidthDip));
+  }
+
+  if (layout_manager_preferred_size.width() < kBubbleMinWidthDip) {
+    return gfx::Size(kBubbleMinWidthDip,
+                     layout_manager_preferred_size.height());
   }
 
   return layout_manager_preferred_size;

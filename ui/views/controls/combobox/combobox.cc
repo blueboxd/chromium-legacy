@@ -39,6 +39,7 @@
 #include "ui/views/controls/combobox/empty_combobox_model.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/focusable_border.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/prefix_selector.h"
@@ -52,6 +53,13 @@
 namespace views {
 
 namespace {
+
+constexpr int kBorderThickness = 1;
+
+float GetCornerRadius() {
+  return LayoutProvider::Get()->GetCornerRadiusMetric(
+      ShapeContextTokens::kComboboxRadius);
+}
 
 SkColor GetTextColorForEnableState(const Combobox& combobox, bool enabled) {
   const int style = enabled ? style::STYLE_PRIMARY : style::STYLE_DISABLED;
@@ -83,7 +91,7 @@ class TransparentButton : public Button {
     InkDrop::Get(this)->SetCreateRippleCallback(base::BindRepeating(
         [](Button* host) -> std::unique_ptr<views::InkDropRipple> {
           return std::make_unique<views::FloodFillInkDropRipple>(
-              host->size(),
+              InkDrop::Get(host), host->size(),
               InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               host->GetColorProvider()->GetColor(ui::kColorLabelForeground),
               InkDrop::Get(host)->GetVisibleOpacity());
@@ -145,7 +153,10 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #endif
 
-  SetBackgroundColorId(ui::kColorTextfieldBackground);
+  SetBackgroundColorId(features::IsChromeRefresh2023()
+                           ? ui::kColorComboboxBackground
+                           : ui::kColorTextfieldBackground);
+
   UpdateBorder();
 
   arrow_button_ =
@@ -156,6 +167,16 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
     // TODO(crbug.com/1400024): This setter should be removed and the behavior
     // made default when ChromeRefresh2023 is finalized.
     SetEventHighlighting(true);
+    enabled_changed_subscription_ =
+        AddEnabledChangedCallback(base::BindRepeating(
+            [](Combobox* combobox) {
+              combobox->SetBackgroundColorId(
+                  combobox->GetEnabled()
+                      ? ui::kColorComboboxBackground
+                      : ui::kColorComboboxBackgroundDisabled);
+              combobox->UpdateBorder();
+            },
+            base::Unretained(this)));
   }
 
   // A layer is applied to make sure that canvas bounds are snapped to pixel
@@ -163,6 +184,10 @@ Combobox::Combobox(ui::ComboboxModel* model, int text_context, int text_style)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  if (features::IsChromeRefresh2023()) {
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                  GetCornerRadius());
+  }
   FocusRing::Install(this);
 }
 
@@ -264,10 +289,7 @@ void Combobox::SetBorderColorId(ui::ColorId color_id) {
 }
 
 void Combobox::SetBackgroundColorId(ui::ColorId color_id) {
-  SetBackground(CreateThemedRoundedRectBackground(
-      color_id, features::IsChromeRefresh2023()
-                    ? FocusableBorder::kChromeRefresh2023CornerRadiusDp
-                    : FocusableBorder::kCornerRadiusDp));
+  SetBackground(CreateThemedRoundedRectBackground(color_id, GetCornerRadius()));
 }
 
 void Combobox::SetForegroundColorId(ui::ColorId color_id) {
@@ -531,12 +553,23 @@ const std::unique_ptr<ui::ComboboxModel>& Combobox::GetOwnedModel() const {
 }
 
 void Combobox::UpdateBorder() {
-  std::unique_ptr<FocusableBorder> border(new FocusableBorder());
-  if (border_color_id_.has_value())
-    border->SetColorId(border_color_id_.value());
-  if (invalid_)
-    border->SetColorId(ui::kColorAlertHighSeverity);
-  SetBorder(std::move(border));
+  if (features::IsChromeRefresh2023()) {
+    if (!GetEnabled()) {
+      SetBorder(nullptr);
+      return;
+    }
+    SetBorder(CreateThemedRoundedRectBorder(
+        kBorderThickness, GetCornerRadius(),
+        invalid_
+            ? ui::kColorAlertHighSeverity
+            : border_color_id_.value_or(ui::kColorFocusableBorderUnfocused)));
+  } else {
+    auto border = std::make_unique<FocusableBorder>();
+    border->SetColorId(invalid_ ? ui::kColorAlertHighSeverity
+                                : border_color_id_.value_or(
+                                      ui::kColorFocusableBorderUnfocused));
+    SetBorder(std::move(border));
+  }
 }
 
 void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {

@@ -21,39 +21,47 @@
 
   /* Buttons */
   iron-selector {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(4, minmax(0,1fr));
     margin: 16px 0;
   }
 
   cr-button {
-    /* TODO(b/254487168): Replace the background color with one that makes more
-       sense. Neutral95. */
-    background-color: var(--cros-sys-input_field_dark);
+    background-color: var(--cros-sys-app_base_shaded);
     border: none;
     border-radius: 16px;
+    display: grid;
     height: 76px;
+    justify-items: center;
     padding: 0;
-    width: 76px;
   }
 
-  /* TODO(b/254478525) Replace with an icon button component. */
-  cr-button[aria-checked='true']::before {
-    background-color: var(--cros-button-background-color-primary);
-    border-radius: 50%;
-    color: var(--cros-button-icon-color-primary);
-    content: '✓';
-    font-size: 16px;
-    height: 32px;
-    line-height: 32px;
+  .container {
+    height: 48px;
+    position: relative;
+    width: 48px;
+  }
+
+  iron-icon[icon='personalization:circle_checkmark'] {
+    display: none;
+  }
+
+  cr-button[aria-checked='true'] iron-icon[icon='personalization:circle_checkmark'] {
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+    bottom: -4px;
+    display: block;
     position: absolute;
-    text-align: center;
-    width: 32px;
+    right: -4px;
   }
 
   color-scheme-icon-svg,
   svg {
+    grid-column: 1;
+    grid-row: 1;
     height: 48px;
+    position: relative;
     width: 48px;
   }
 </style>
@@ -82,7 +90,10 @@
           on-click="onClickColorSchemeButton_"
           data-color-scheme-id$="[[colorScheme.scheme]]"
           aria-checked$="[[getColorSchemeAriaChecked_(colorScheme.scheme, colorSchemeSelected_)]]">
-        <color-scheme-icon-svg scheme="[[colorScheme]]"></color-scheme-icon-svg>
+        <div class="container">
+          <color-scheme-icon-svg scheme="[[colorScheme]]"></color-scheme-icon-svg>
+          <iron-icon class="checkmark" icon="personalization:circle_checkmark"></iron-icon>
+        </div>
       </cr-button>
     </template>
   </iron-selector>
@@ -97,9 +108,12 @@
           on-click="onClickStaticColorButton_"
           aria-checked$="[[getStaticColorAriaChecked_(staticColor, staticColorSelected_)]]"
           data-static-color$="[[staticColor]]">
-        <svg>
-          <circle style$="fill: [[staticColor]]" cx="24" cy="24" r="24"></circle>
-        </svg>
+        <div class="container">
+          <svg>
+            <circle style$="fill: [[staticColor]]" cx="24" cy="24" r="24"></circle>
+          </svg>
+          <iron-icon icon="personalization:circle_checkmark"></iron-icon>
+        </div>
       </cr-button>
     </template>
   </iron-selector>

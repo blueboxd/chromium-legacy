@@ -107,7 +107,8 @@ GURL AddServiceWorker(const std::string& origin,
   blink::mojom::ServiceWorkerRegistrationOptions options(
       scope_url, blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kImports);
-  blink::StorageKey key(url::Origin::Create(options.scope));
+  const blink::StorageKey key =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(options.scope));
   service_worker_context->RegisterServiceWorker(
       js_url, key, options, base::BindOnce(&AddServiceWorkerCallback));
 
@@ -129,7 +130,7 @@ std::vector<StorageUsageInfo> GetServiceWorkers(
   std::vector<StorageUsageInfo> service_workers;
   base::RunLoop run_loop;
 
-  service_worker_context->GetAllOriginsInfo(
+  service_worker_context->GetAllStorageKeysInfo(
       base::BindOnce(&GetServiceWorkersCallback, run_loop.QuitClosure(),
                      base::Unretained(&service_workers)));
   run_loop.Run();
@@ -163,7 +164,7 @@ void SetResponseContent(const GURL& url,
 
 void SetUpMockCertVerifier(int32_t default_result) {
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  GetNetworkService()->BindTestInterface(
+  GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);

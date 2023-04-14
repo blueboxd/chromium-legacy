@@ -24,6 +24,7 @@
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 
 namespace {
@@ -94,7 +95,7 @@ class NetworkConnectionTrackerBrowserTest : public InProcessBrowserTest {
   void SimulateNetworkChange(network::mojom::ConnectionType type) {
     if (!content::IsInProcessNetworkService()) {
       mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-      content::GetNetworkService()->BindTestInterface(
+      content::GetNetworkService()->BindTestInterfaceForTesting(
           network_service_test.BindNewPipeAndPassReceiver());
       base::RunLoop run_loop;
       network_service_test->SimulateNetworkChange(

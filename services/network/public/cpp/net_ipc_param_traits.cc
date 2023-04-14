@@ -7,6 +7,7 @@
 #include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "ipc/ipc_platform_file.h"
+#include "net/cert/cert_verify_result.h"
 #include "net/http/http_util.h"
 
 namespace IPC {
@@ -42,7 +43,6 @@ void ParamTraits<net::CertVerifyResult>::Write(base::Pickle* m,
   WriteParam(m, p.verified_cert);
   WriteParam(m, p.cert_status);
   WriteParam(m, p.has_sha1);
-  WriteParam(m, p.has_sha1_leaf);
   WriteParam(m, p.public_key_hashes);
   WriteParam(m, p.is_issued_by_known_root);
   WriteParam(m, p.is_issued_by_additional_trust_anchor);
@@ -57,7 +57,6 @@ bool ParamTraits<net::CertVerifyResult>::Read(const base::Pickle* m,
   return ReadParam(m, iter, &r->verified_cert) &&
          ReadParam(m, iter, &r->cert_status) &&
          ReadParam(m, iter, &r->has_sha1) &&
-         ReadParam(m, iter, &r->has_sha1_leaf) &&
          ReadParam(m, iter, &r->public_key_hashes) &&
          ReadParam(m, iter, &r->is_issued_by_known_root) &&
          ReadParam(m, iter, &r->is_issued_by_additional_trust_anchor) &&

@@ -8,12 +8,13 @@
 #include <string>
 #include <utility>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/test/ambient_ash_test_base.h"
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/ambient_view_ids.h"
 #include "ash/assistant/assistant_interaction_controller_impl.h"
 #include "ash/assistant/model/assistant_interaction_model.h"
-#include "ash/constants/ambient_animation_theme.h"
+#include "ash/constants/ambient_theme.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
@@ -33,6 +34,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_run_loop_timeout.h"
 #include "base/time/time.h"
@@ -141,9 +143,12 @@ class AmbientControllerTest : public AmbientAshTestBase {
   }
 
   base::test::ScopedFeatureList feature_list_;
+
+ protected:
+  base::UserActionTester user_action_tester_;
 };
 
-// Tests for behavior that are agnostic to the AmbientAnimationTheme selected by
+// Tests for behavior that are agnostic to the AmbientTheme selected by
 // the user should use this test harness.
 //
 // Currently there are test cases that actually fall under this category but
@@ -152,11 +157,11 @@ class AmbientControllerTest : public AmbientAshTestBase {
 // cases).
 class AmbientControllerTestForAnyTheme
     : public AmbientControllerTest,
-      public ::testing::WithParamInterface<AmbientAnimationTheme> {
+      public ::testing::WithParamInterface<AmbientTheme> {
  protected:
   void SetUp() override {
     AmbientControllerTest::SetUp();
-    SetAmbientAnimationTheme(GetParam());
+    SetAmbientTheme(GetParam());
   }
 };
 
@@ -166,10 +171,10 @@ INSTANTIATE_TEST_SUITE_P(
     // Only one lottie-animated theme is sufficient here. The main goal here is
     // to make sure that fundamental behavior holds for both the slideshow and
     // lottie-animated codepaths.
-    testing::Values(AmbientAnimationTheme::kSlideshow
+    testing::Values(AmbientTheme::kSlideshow
 #if BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
                     ,
-                    AmbientAnimationTheme::kFeelTheBreeze
+                    AmbientTheme::kFeelTheBreeze
 #endif  // BUILDFLAG(HAS_ASH_AMBIENT_ANIMATION_RESOURCES)
                     ));
 
@@ -1051,7 +1056,7 @@ TEST_P(AmbientControllerTestForAnyTheme, ShowsOnMultipleDisplays) {
   EXPECT_EQ(screen->GetNumDisplays(), 2);
   EXPECT_EQ(GetContainerViews().size(), 2u);
   AmbientViewID expected_child_view_id =
-      GetParam() == AmbientAnimationTheme::kSlideshow
+      GetParam() == AmbientTheme::kSlideshow
           ? AmbientViewID::kAmbientPhotoView
           : AmbientViewID::kAmbientAnimationView;
   EXPECT_TRUE(GetContainerViews().front()->GetViewByID(expected_child_view_id));
@@ -1264,7 +1269,7 @@ TEST_P(AmbientControllerTestForAnyTheme,
 
 TEST_F(AmbientControllerTest,
        ANIMATION_TEST_WITH_RESOURCES(RendersCorrectView)) {
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kFeelTheBreeze);
+  SetAmbientTheme(AmbientTheme::kFeelTheBreeze);
 
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1277,7 +1282,7 @@ TEST_F(AmbientControllerTest,
       GetContainerView()->GetViewByID(AmbientViewID::kAmbientAnimationView));
 
   UnlockScreen();
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
 
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1290,7 +1295,7 @@ TEST_F(AmbientControllerTest,
       GetContainerView()->GetViewByID(AmbientViewID::kAmbientAnimationView));
 
   UnlockScreen();
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kFeelTheBreeze);
+  SetAmbientTheme(AmbientTheme::kFeelTheBreeze);
 
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1305,7 +1310,7 @@ TEST_F(AmbientControllerTest,
 
 TEST_F(AmbientControllerTest,
        ANIMATION_TEST_WITH_RESOURCES(ClearsCacheWhenSwitchingThemes)) {
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
 
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1315,7 +1320,7 @@ TEST_F(AmbientControllerTest,
   ASSERT_FALSE(GetCachedFiles().empty());
 
   UnlockScreen();
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kFeelTheBreeze);
+  SetAmbientTheme(AmbientTheme::kFeelTheBreeze);
 
   // Mimic a network outage where no photos can be downloaded. Since the cache
   // should have been cleared when we switched ambient animation themes, the
@@ -1406,7 +1411,7 @@ TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTime) {
 
 TEST_F(AmbientControllerTest,
        ANIMATION_TEST_WITH_RESOURCES(MetricsStartupTimeSuspendAfterTimeMax)) {
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   base::HistogramTester histogram_tester;
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1424,7 +1429,7 @@ TEST_F(AmbientControllerTest,
 
 TEST_F(AmbientControllerTest,
        ANIMATION_TEST_WITH_RESOURCES(MetricsStartupTimeScreenOffAfterTimeMax)) {
-  SetAmbientAnimationTheme(AmbientAnimationTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   base::HistogramTester histogram_tester;
   LockScreen();
   FastForwardToLockScreenTimeout();
@@ -1457,11 +1462,15 @@ TEST_P(AmbientControllerTestForAnyTheme, MetricsStartupTimeFailedToStart) {
 }
 
 TEST_F(AmbientControllerTest, ShouldStartScreenSaverPreview) {
+  ASSERT_EQ(0,
+            user_action_tester_.GetActionCount(kScreenSaverPreviewUserAction));
   ambient_controller()->StartScreenSaverPreview();
   FastForwardToLockScreenTimeout();
   FastForwardTiny();
   EXPECT_TRUE(ambient_controller()->IsShown());
   EXPECT_FALSE(IsLocked());
+  EXPECT_EQ(1,
+            user_action_tester_.GetActionCount(kScreenSaverPreviewUserAction));
 }
 
 TEST_F(AmbientControllerTest,
@@ -1514,6 +1523,19 @@ TEST_F(AmbientControllerTest, ShouldDismissScreenSaverPreviewOnMouseClick) {
   EXPECT_TRUE(ambient_controller()->IsShown());
 
   GetEventGenerator()->ClickRightButton();
+  EXPECT_FALSE(ambient_controller()->IsShown());
+}
+
+TEST_F(AmbientControllerTest, MaybeDismissUIOnMouseMove) {
+  ambient_controller()->StartScreenSaverPreview();
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 5), /*count=*/2);
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  task_environment()->FastForwardBy(kDismissPreviewOnMouseMoveDelay);
+  FastForwardTiny();
+  GetEventGenerator()->MoveMouseTo(gfx::Point(5, 5), /*count=*/2);
   EXPECT_FALSE(ambient_controller()->IsShown());
 }
 

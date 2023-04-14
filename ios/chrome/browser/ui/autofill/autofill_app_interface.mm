@@ -148,7 +148,8 @@ void ClearPasswordStore() {
 }
 
 // Saves an example profile in the store.
-void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
+void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager,
+                        bool isAccountProfile) {
   autofill::AutofillProfile profile = autofill::test::GetFullProfile();
   // If the test profile is already in the store, adding it will be a no-op.
   // In that case, early return.
@@ -159,6 +160,9 @@ void AddAutofillProfile(autofill::PersonalDataManager* personalDataManager) {
   }
   size_t profileCount = personalDataManager->GetProfiles().size();
 
+  if (isAccountProfile) {
+    profile.set_source_for_testing(autofill::AutofillProfile::Source::kAccount);
+  }
   personalDataManager->AddProfile(profile);
 
   ConditionBlock conditionBlock = ^bool {
@@ -192,7 +196,7 @@ class SaveCardInfobarEGTestHelper
   static CreditCardSaveManager* GetCreditCardSaveManager() {
     web::WebState* web_state = chrome_test_util::GetCurrentWebState();
     web::WebFrame* main_frame =
-        web_state->GetWebFramesManager()->GetMainWebFrame();
+        web_state->GetPageWorldWebFramesManager()->GetMainWebFrame();
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
         ->client()
@@ -204,7 +208,7 @@ class SaveCardInfobarEGTestHelper
   static payments::PaymentsClient* GetPaymentsClient() {
     web::WebState* web_state = chrome_test_util::GetCurrentWebState();
     web::WebFrame* main_frame =
-        web_state->GetWebFramesManager()->GetMainWebFrame();
+        web_state->GetPageWorldWebFramesManager()->GetMainWebFrame();
     DCHECK(web_state);
     return AutofillDriverIOS::FromWebStateAndWebFrame(web_state, main_frame)
         ->autofill_manager()
@@ -376,7 +380,11 @@ class SaveCardInfobarEGTestHelper
 }
 
 + (void)saveExampleProfile {
-  AddAutofillProfile([self personalDataManager]);
+  AddAutofillProfile([self personalDataManager], false);
+}
+
++ (void)saveExampleAccountProfile {
+  AddAutofillProfile([self personalDataManager], true);
 }
 
 + (NSString*)exampleProfileName {

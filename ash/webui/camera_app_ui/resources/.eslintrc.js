@@ -361,7 +361,6 @@ const googleRules = {
   // 'template-curly-spacing': 'off',
   'yield-star-spacing': ['error', 'after'],
 };
-/* eslint-enable @typescript-eslint/naming-convention */
 
 // https://github.com/eslint/eslint/issues/8769
 // Hack node module system so that eslint-plugin-cca resolves to local module.
@@ -680,6 +679,9 @@ module.exports = {
 
     'comma-dangle': 'off',
     '@typescript-eslint/comma-dangle': ['error', 'always-multiline'],
+
+    'func-call-spacing': 'off',
+    '@typescript-eslint/func-call-spacing': 'error',
 
     '@typescript-eslint/lines-between-class-members': 'error',
 

@@ -14,13 +14,13 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_types.h"
 
 class Browser;
 class GURL;
 class OldLaunchModeRecorder;
 class PrefRegistrySimple;
+class Profile;
 
 namespace base {
 class CommandLine;
@@ -36,13 +36,17 @@ FORWARD_DECLARE_TEST(WebAppEngagementBrowserTest, CommandLineWindowByAppId);
 }  // namespace web_app
 
 // Indicates how Chrome should start up the first profile.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class StartupProfileMode {
   // Regular startup with a browser window.
-  kBrowserWindow,
+  kBrowserWindow = 0,
   // Profile picker window should be shown on startup.
-  kProfilePicker,
+  kProfilePicker = 1,
   // Chrome cannot start because no profiles are available.
-  kError
+  kError = 2,
+
+  kMaxValue = kError,
 };
 
 // Bundles the startup profile path together with a StartupProfileMode.

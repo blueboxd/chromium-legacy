@@ -5,13 +5,13 @@
 #include "components/autofill/core/browser/form_data_importer_utils.h"
 
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
-#include "components/autofill/core/browser/logging/log_manager.h"
-#include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/profile_import_metrics.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_internals/log_message.h"
 
@@ -20,7 +20,7 @@ namespace autofill {
 namespace {
 
 using AddressImportRequirement =
-    AutofillMetrics::AddressProfileImportRequirementMetric;
+    autofill_metrics::AddressProfileImportRequirementMetric;
 
 bool IsOriginPartOfDeletionInfo(const absl::optional<url::Origin>& origin,
                                 const history::DeletionInfo& deletion_info) {
@@ -43,72 +43,87 @@ bool IsMinimumAddress(const AutofillProfile& profile,
   // Validates the `profile` by testing that it has information for at least one
   // of the `types`. If `required` is false, it is considered trivially valid.
   // Logs the profile's validity to UMA and autofill-internals.
-  auto ValidateAndLog = [&](bool required,
-                            const std::vector<ServerFieldType>& types,
-                            AddressImportRequirement valid,
-                            AddressImportRequirement invalid) {
-    if (!required || base::ranges::any_of(types, [&](ServerFieldType type) {
-          return profile.HasRawInfo(type);
-        })) {
-      AutofillMetrics::LogAddressFormImportRequirementMetric(valid);
-      return true;
-    }
-    AutofillMetrics::LogAddressFormImportRequirementMetric(invalid);
-    LOG_AF(import_log_buffer) << LogMessage::kImportAddressProfileFromFormFailed
-                              << "Missing required " <<
-        [&] {
-          std::vector<base::StringPiece> type_names;
-          for (auto& type : types)
-            type_names.push_back(FieldTypeToStringPiece(type));
-          return base::JoinString(type_names, " or ");
-        }() << "." << CTag{};
-    return false;
-  };
+  auto ValidateAndLog =
+      [&](bool required, const std::vector<ServerFieldType>& types,
+          AddressImportRequirement valid, AddressImportRequirement invalid) {
+        const bool is_valid =
+            !required || base::ranges::any_of(types, [&](ServerFieldType type) {
+              return profile.HasRawInfo(type);
+            });
+        if (!is_valid) {
+          LOG_AF(import_log_buffer)
+              << LogMessage::kImportAddressProfileFromFormFailed
+              << "Missing required " <<
+              [&] {
+                std::vector<base::StringPiece> type_names;
+                for (auto& type : types) {
+                  type_names.push_back(FieldTypeToStringPiece(type));
+                }
+                return base::JoinString(type_names, " or ");
+              }()
+              << "." << CTag{};
+        }
+        if (collect_metrics) {
+          autofill_metrics::LogAddressFormImportRequirementMetric(
+              is_valid ? valid : invalid);
+        }
+        return is_valid;
+      };
 
   AutofillCountry country(predicted_country_code, app_locale);
   // Include the details of the country to the log.
   LOG_AF(import_log_buffer) << country;
 
-  bool is_line1_missing = !ValidateAndLog(
+  const bool is_line1_missing = !ValidateAndLog(
       country.requires_line1(), {ADDRESS_HOME_LINE1, ADDRESS_HOME_STREET_NAME},
-      AddressImportRequirement::LINE1_REQUIREMENT_FULFILLED,
-      AddressImportRequirement::LINE1_REQUIREMENT_VIOLATED);
+      AddressImportRequirement::kLine1RequirementFulfilled,
+      AddressImportRequirement::kLine1RequirementViolated);
 
-  bool is_city_missing =
+  const bool is_city_missing =
       !ValidateAndLog(country.requires_city(), {ADDRESS_HOME_CITY},
-                      AddressImportRequirement::CITY_REQUIREMENT_FULFILLED,
-                      AddressImportRequirement::CITY_REQUIREMENT_VIOLATED);
+                      AddressImportRequirement::kCityRequirementFulfilled,
+                      AddressImportRequirement::kCityRequirementViolated);
 
-  bool is_state_missing =
+  const bool is_state_missing =
       !ValidateAndLog(country.requires_state(), {ADDRESS_HOME_STATE},
-                      AddressImportRequirement::STATE_REQUIREMENT_FULFILLED,
-                      AddressImportRequirement::STATE_REQUIREMENT_VIOLATED);
+                      AddressImportRequirement::kStateRequirementFulfilled,
+                      AddressImportRequirement::kStateRequirementViolated);
 
-  bool is_zip_missing =
+  const bool is_zip_missing =
       !ValidateAndLog(country.requires_zip(), {ADDRESS_HOME_ZIP},
-                      AddressImportRequirement::ZIP_REQUIREMENT_FULFILLED,
-                      AddressImportRequirement::ZIP_REQUIREMENT_VIOLATED);
+                      AddressImportRequirement::kZipRequirementFulfilled,
+                      AddressImportRequirement::kZipRequirementViolated);
 
-  bool is_zip_or_state_requirement_violated = !ValidateAndLog(
+  const bool is_zip_or_state_requirement_violated = !ValidateAndLog(
       country.requires_zip_or_state(), {ADDRESS_HOME_ZIP, ADDRESS_HOME_STATE},
-      AddressImportRequirement::ZIP_OR_STATE_REQUIREMENT_FULFILLED,
-      AddressImportRequirement::ZIP_OR_STATE_REQUIREMENT_VIOLATED);
+      AddressImportRequirement::kZipOrStateRequirementFulfilled,
+      AddressImportRequirement::kZipOrStateRequirementViolated);
 
-  bool is_line1_or_house_number_violated = !ValidateAndLog(
+  const bool is_line1_or_house_number_violated = !ValidateAndLog(
       country.requires_line1_or_house_number(),
       {ADDRESS_HOME_LINE1, ADDRESS_HOME_HOUSE_NUMBER},
-      AddressImportRequirement::LINE1_OR_HOUSE_NUMBER_REQUIREMENT_FULFILLED,
-      AddressImportRequirement::LINE1_OR_HOUSE_NUMBER_REQUIREMENT_VIOLATED);
+      AddressImportRequirement::kLine1OrHouseNumberRequirementFulfilled,
+      AddressImportRequirement::kLine1OrHouseNumberRequirementViolated);
 
-  if (collect_metrics) {
-    AutofillMetrics::LogAddressFormImportCountrySpecificFieldRequirementsMetric(
-        is_zip_missing, is_state_missing, is_city_missing, is_line1_missing);
+  bool is_minimum_address =
+      !(is_line1_missing || is_city_missing || is_state_missing ||
+        is_zip_missing || is_zip_or_state_requirement_violated ||
+        is_line1_or_house_number_violated);
+  if (is_minimum_address &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillRequireNameForProfileImport)) {
+    is_minimum_address &= ValidateAndLog(
+        /*required=*/true, {NAME_FULL},
+        AddressImportRequirement::kNameRequirementFulfilled,
+        AddressImportRequirement::kNameRequirementViolated);
   }
-
-  // Return true if all requirements are fulfilled.
-  return !(is_line1_missing || is_city_missing || is_state_missing ||
-           is_zip_missing || is_zip_or_state_requirement_violated ||
-           is_line1_or_house_number_violated);
+  if (collect_metrics) {
+    autofill_metrics::
+        LogAddressFormImportCountrySpecificFieldRequirementsMetric(
+            is_zip_missing, is_state_missing, is_city_missing,
+            is_line1_missing);
+  }
+  return is_minimum_address;
 }
 
 bool IsValidLearnableProfile(const AutofillProfile& profile,
@@ -118,13 +133,13 @@ bool IsValidLearnableProfile(const AutofillProfile& profile,
                             AddressImportRequirement valid,
                             AddressImportRequirement invalid) {
     if (profile.IsPresentButInvalid(type)) {
-      AutofillMetrics::LogAddressFormImportRequirementMetric(invalid);
+      autofill_metrics::LogAddressFormImportRequirementMetric(invalid);
       LOG_AF(import_log_buffer)
           << LogMessage::kImportAddressProfileFromFormFailed << "Invalid "
           << FieldTypeToStringPiece(type) << "." << CTag{};
       return false;
     } else {
-      AutofillMetrics::LogAddressFormImportRequirementMetric(valid);
+      autofill_metrics::LogAddressFormImportRequirementMetric(valid);
       return true;
     }
   };
@@ -132,19 +147,17 @@ bool IsValidLearnableProfile(const AutofillProfile& profile,
   // Reject profiles with invalid `EMAIL_ADDRESS`, `ADDRESS_HOME_STATE` or
   // `ADDRESS_HOME_ZIP` entries and collect metrics on their validity.
   bool all_requirements_satisfied = ValidateAndLog(
-      EMAIL_ADDRESS,
-      AddressImportRequirement::EMAIL_VALID_REQUIREMENT_FULFILLED,
-      AddressImportRequirement::EMAIL_VALID_REQUIREMENT_VIOLATED);
-
-  all_requirements_satisfied &= ValidateAndLog(
-      ADDRESS_HOME_STATE,
-      AddressImportRequirement::STATE_VALID_REQUIREMENT_FULFILLED,
-      AddressImportRequirement::STATE_VALID_REQUIREMENT_VIOLATED);
+      EMAIL_ADDRESS, AddressImportRequirement::kEmailValidRequirementFulfilled,
+      AddressImportRequirement::kEmailValidRequirementViolated);
 
   all_requirements_satisfied &=
-      ValidateAndLog(ADDRESS_HOME_ZIP,
-                     AddressImportRequirement::ZIP_VALID_REQUIREMENT_FULFILLED,
-                     AddressImportRequirement::ZIP_VALID_REQUIREMENT_VIOLATED);
+      ValidateAndLog(ADDRESS_HOME_STATE,
+                     AddressImportRequirement::kStateValidRequirementFulfilled,
+                     AddressImportRequirement::kStateValidRequirementViolated);
+
+  all_requirements_satisfied &= ValidateAndLog(
+      ADDRESS_HOME_ZIP, AddressImportRequirement::kZipValidRequirementFulfilled,
+      AddressImportRequirement::kZipValidRequirementViolated);
 
   return all_requirements_satisfied;
 }
@@ -296,7 +309,7 @@ bool MultiStepImportMerger::MergeableByRemovingIncorrectlyComplementedCountry(
   }
   // Even after removing the disagreeing country code, merging still failed.
   // Reset the profile back to it's original state. Otherwise we might end up
-  // importing a countryless profile.
+  // importing a country-less profile.
   complemented_profile.SetInfoWithVerificationStatus(
       AutofillType(ADDRESS_HOME_COUNTRY), complemented_country, app_locale_,
       VerificationStatus::kObserved);

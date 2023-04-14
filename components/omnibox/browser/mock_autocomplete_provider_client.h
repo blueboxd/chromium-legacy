@@ -27,6 +27,8 @@
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+class AutocompleteScoringModelService;
+
 struct AutocompleteMatch;
 
 class MockAutocompleteProviderClient
@@ -110,11 +112,18 @@ class MockAutocompleteProviderClient
     return identity_manager_;
   }
 
+  AutocompleteScoringModelService* GetAutocompleteScoringModelService()
+      const override {
+    return nullptr;
+  }
+
   MOCK_CONST_METHOD0(GetAcceptLanguages, std::string());
   MOCK_CONST_METHOD0(GetEmbedderRepresentationOfAboutScheme, std::string());
   MOCK_METHOD0(GetBuiltinURLs, std::vector<std::u16string>());
   MOCK_METHOD0(GetBuiltinsToProvideAsUserTypes, std::vector<std::u16string>());
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
+  MOCK_CONST_METHOD0(IsIncognitoProfile, bool());
+  MOCK_CONST_METHOD0(IsGuestSession, bool());
   MOCK_CONST_METHOD0(SearchSuggestEnabled, bool());
   MOCK_CONST_METHOD0(IsPersonalizedUrlDataCollectionActive, bool());
   MOCK_CONST_METHOD0(IsAuthenticated, bool());

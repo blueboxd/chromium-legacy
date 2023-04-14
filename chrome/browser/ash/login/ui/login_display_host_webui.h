@@ -95,8 +95,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void ShowEnableConsumerKioskScreen() override;
   bool HasUserPods() override;
   void VerifyOwnerForKiosk(base::OnceClosure) override;
-  void ShowPasswordChangedDialog(const AccountId& account_id,
-                                 bool show_password_error) override;
+  void ShowPasswordChangedDialogLegacy(const AccountId& account_id,
+                                       bool show_password_error) override;
   void StartCryptohomeRecovery(
       std::unique_ptr<UserContext> user_context) override;
   void StartBrowserDataMigration() override;
@@ -107,6 +107,9 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
                                     int* value) const final;
   bool IsWebUIStarted() const final;
+
+  // LoginDisplayHostCommon:
+  bool HandleAccelerator(LoginAcceleratorAction action) final;
 
   // session_manager::SessionManagerObserver:
   void OnNetworkErrorScreenShown() override;
@@ -159,13 +162,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   bool IsOobeUIDialogVisible() const override;
 
  private:
-  // Way to restore if renderer have crashed.
-  enum RestorePath {
-    RESTORE_UNKNOWN,
-    RESTORE_WIZARD,
-    RESTORE_SIGN_IN,
-  };
-
   // Type of animations to run after the login screen.
   enum FinalizeAnimationType {
     ANIMATION_NONE,       // No animation.
@@ -221,9 +217,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // OOBE and some screens (camera, recovery) controller.
   std::unique_ptr<WizardController> wizard_controller_;
 
-  // Whether progress bar is shown on the OOBE page.
-  bool oobe_progress_bar_visible_ = false;
-
   // Container of the screen we are displaying.
   views::Widget* login_window_ = nullptr;
 
@@ -243,9 +236,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // How many times renderer has crashed.
   int crash_count_ = 0;
-
-  // Way to restore if renderer have crashed.
-  RestorePath restore_path_ = RESTORE_UNKNOWN;
 
   // Stored parameters for StartWizard, required to restore in case of crash.
   OobeScreenId first_screen_ = ash::OOBE_SCREEN_UNKNOWN;

@@ -24,6 +24,7 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/window_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
+#include "components/desks_storage/core/desk_storage_metrics_util.h"
 #include "components/desks_storage/core/desk_template_conversion.h"
 #include "components/desks_storage/core/desk_template_util.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
@@ -329,6 +330,12 @@ void DeskSyncBridge::AddOrUpdateEntry(std::unique_ptr<DeskTemplate> new_entry,
     return;
   }
 
+  if (!new_entry) {
+    std::move(callback).Run(AddOrUpdateEntryStatus::kInvalidArgument,
+                            std::move(new_entry));
+    return;
+  }
+
   base::GUID uuid = new_entry->uuid();
   if (!uuid.is_valid()) {
     std::move(callback).Run(AddOrUpdateEntryStatus::kInvalidArgument,
@@ -351,6 +358,8 @@ void DeskSyncBridge::AddOrUpdateEntry(std::unique_ptr<DeskTemplate> new_entry,
   auto sync_proto = desk_template_conversion::ToSyncProto(
       entry.get(),
       apps::AppRegistryCacheWrapper::Get().GetAppRegistryCache(account_id_));
+  RecordSavedDeskTemplateSizeHistogram(new_entry->type(),
+                                       sync_proto.ByteSizeLong());
   if (sync_proto.ByteSizeLong() > kMaxTemplateSize) {
     std::move(callback).Run(AddOrUpdateEntryStatus::kEntryTooLarge,
                             std::move(new_entry));

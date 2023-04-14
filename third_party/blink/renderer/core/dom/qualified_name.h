@@ -46,6 +46,7 @@ struct QualifiedNameData {
   bool is_static_;
 };
 
+CORE_EXPORT extern const class QualifiedName& g_any_name;
 CORE_EXPORT extern const class QualifiedName& g_null_name;
 
 class CORE_EXPORT QualifiedName {
@@ -146,6 +147,10 @@ class CORE_EXPORT QualifiedName {
 
   const AtomicString& LocalNameUpperSlow() const;
 
+  // Returns true if this is a built-in name. That is, one of the names defined
+  // at build time (such as <img>).
+  bool IsDefinedName() const { return impl_ && impl_->is_static_; }
+
   String ToString() const;
 
   QualifiedNameImpl* Impl() const { return impl_.get(); }
@@ -175,7 +180,6 @@ class CORE_EXPORT QualifiedName {
   scoped_refptr<QualifiedNameImpl> impl_;
 };
 
-extern const QualifiedName& g_any_name;
 inline const QualifiedName& AnyQName() {
   return g_any_name;
 }

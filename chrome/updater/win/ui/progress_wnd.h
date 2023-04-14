@@ -12,15 +12,13 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "base/threading/thread_checker.h"
-#include "base/win/atl.h"
+#include "base/sequence_checker.h"
 #include "chrome/updater/win/install_progress_observer.h"
 #include "chrome/updater/win/ui/complete_wnd.h"
 #include "chrome/updater/win/ui/owner_draw_controls.h"
 #include "chrome/updater/win/ui/resources/resources.grh"
 
-namespace updater {
-namespace ui {
+namespace updater::ui {
 
 // Used to communicate between InstallStoppedWnd and ProgressWnd.
 inline constexpr unsigned int WM_INSTALL_STOPPED = WM_APP;
@@ -86,7 +84,7 @@ class InstallStoppedWnd : public CAxDialogImpl<InstallStoppedWnd>,
                     LPARAM lparam,
                     BOOL& handled);  // NOLINT
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   raw_ptr<WTL::CMessageLoop> message_loop_ = nullptr;
   HWND parent_ = nullptr;
@@ -189,7 +187,7 @@ class ProgressWnd : public CompleteWnd, public InstallProgressObserver {
     STATE_END,
   };
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   States cur_state_ = States::STATE_INIT;
 
@@ -210,7 +208,6 @@ class ProgressWnd : public CompleteWnd, public InstallProgressObserver {
   static constexpr int kMarqueeModeUpdatesMs = 75;
 };
 
-}  // namespace ui
-}  // namespace updater
+}  // namespace updater::ui
 
 #endif  // CHROME_UPDATER_WIN_UI_PROGRESS_WND_H_

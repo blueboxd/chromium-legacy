@@ -9,11 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/functional/callback_forward.h"
-#include "base/memory/ref_counted.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
-#include "chrome/browser/ash/cert_provisioning/cert_provisioning_scheduler.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
@@ -21,6 +18,7 @@
 namespace reporting {
 class MetricReportingManager;
 class UserAddedRemovedReporter;
+class OsUpdatesReporter;
 }  // namespace reporting
 
 namespace ash {
@@ -101,11 +99,6 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   // Returns the mode for using zero-touch enrollment.
   static ZeroTouchEnrollmentMode GetZeroTouchEnrollmentMode();
 
-  // Returns the robot 'email address' associated with the device robot
-  // account (sometimes called a service account) associated with this device
-  // during enterprise enrollment.
-  std::string GetRobotAccountId();
-
   // Starts the connection via |client_to_connect|.
   void StartConnection(std::unique_ptr<CloudPolicyClient> client_to_connect,
                        ash::InstallAttributes* install_attributes);
@@ -170,6 +163,10 @@ class DeviceCloudPolicyManagerAsh : public CloudPolicyManager {
   // Object that reports user lock/unlock events to the server, protected for
   // testing.
   std::unique_ptr<ash::reporting::LockUnlockReporter> lock_unlock_reporter_;
+
+  // Object that handles reporting of ChromeOS updates, protected for
+  // testing.
+  std::unique_ptr<reporting::OsUpdatesReporter> os_updates_reporter_;
 
  private:
   // Saves the state keys received from |session_manager_client_|.

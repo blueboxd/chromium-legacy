@@ -192,12 +192,12 @@ android_resources("java_resources") {
     "java/res/layout/downloads_empty_view.xml",
     "java/res/layout/list_selection_handle_view.xml",
     "java/res/menu/download_manager_menu.xml",
-    "java/res/values-sw600dp-v17/dimens.xml",
-    "java/res/values-v17/attrs.xml",
-    "java/res/values-v17/dimens.xml",
-    "java/res/values-v17/ids.xml",
-    "java/res/values-v17/styles.xml",
+    "java/res/values-sw600dp/dimens.xml",
+    "java/res/values/attrs.xml",
+    "java/res/values/dimens.xml",
     "java/res/values/drawables.xml",
+    "java/res/values/ids.xml",
+    "java/res/values/styles.xml",
   ]
 
   deps = [
@@ -252,6 +252,8 @@ android_library("unit_device_javatests") {
     ":java_resources",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//chrome/android:chrome_java",
+    "//chrome/browser/back_press/android:java",
     "//chrome/browser/download/android:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
@@ -272,6 +274,7 @@ android_library("unit_device_javatests") {
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/androidx:androidx_activity_activity_java",
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_appcompat_appcompat_resources_java",
@@ -302,6 +305,7 @@ robolectric_library("junit") {
     "java/src/org/chromium/chrome/browser/download/home/list/DateOrderedListMutatorTest.java",
     "java/src/org/chromium/chrome/browser/download/home/list/ItemUtilsTest.java",
     "java/src/org/chromium/chrome/browser/download/home/list/ShareUtilsTest.java",
+    "java/src/org/chromium/chrome/browser/download/home/list/UiUtilsTest.java",
   ]
 
   deps = [
@@ -314,6 +318,7 @@ robolectric_library("junit") {
     "//components/browser_ui/util/android:java",
     "//components/offline_items_collection/core:core_java",
     "//components/url_formatter/android:url_formatter_java",
+    "//content/public/test/android:content_java_test_support",
     "//third_party/androidx:androidx_core_core_java",
     "//third_party/junit:junit",
     "//third_party/mockito:mockito_java",

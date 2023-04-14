@@ -46,6 +46,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_highlight_controller.h"
 #include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_item_view.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_test_base.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -400,13 +401,6 @@ class SavedDeskTest : public OverviewTestBase {
     Shell::Get()
         ->overview_controller()
         ->set_disable_app_id_check_for_saved_desks(disabled);
-  }
-
-  SkBitmap GetFocusRingBitmap(views::FocusRing* focus_ring) {
-    gfx::Canvas canvas(focus_ring->size(), /*image_scale=*/1.0f,
-                       /*is_opaque=*/false);
-    focus_ring->OnPaint(&canvas);
-    return canvas.GetBitmap();
   }
 
   SkBitmap GetBitmapWithInnerRoundedRect(gfx::Size size,
@@ -957,7 +951,7 @@ TEST_F(SavedDeskTest, SaveDeskButtonContainerAligned) {
 }
 
 // Tests that the color of save desk button focus ring is as expected.
-TEST_F(SavedDeskTest, SaveDeskButtonFocusRingColor) {
+TEST_F(SavedDeskTest, SaveDeskButtonHighlight) {
   // Create a test window in the current desk.
   auto test_window = CreateAppWindow();
 
@@ -967,45 +961,24 @@ TEST_F(SavedDeskTest, SaveDeskButtonFocusRingColor) {
       GetSaveDeskAsTemplateButtonForRoot(root_window);
   auto* save_for_later_button = GetSaveDeskForLaterButtonForRoot(root_window);
 
-  // Verify the focus ring of the given button is as expected.
-  auto verify_button_focus_ring_color = [this](SavedDeskSaveDeskButton* button,
-                                               bool highlighted) {
-    EXPECT_EQ(cc::ExactPixelComparator().Compare(
-                  GetFocusRingBitmap(views::FocusRing::Get(button)),
-                  GetBitmapWithInnerRoundedRect(
-                      views::FocusRing::Get(button)->size(),
-                      /*stroke_width=*/2,
-                      ColorProvider::Get()->GetControlsLayerColor(
-                          ColorProvider::ControlsLayerType::kFocusRingColor))),
-              highlighted);
-  };
-
   // Both buttons are not highlighted.
   ASSERT_FALSE(save_as_template_button->IsViewHighlighted());
   ASSERT_FALSE(save_for_later_button->IsViewHighlighted());
-  verify_button_focus_ring_color(save_as_template_button, false);
-  verify_button_focus_ring_color(save_for_later_button, false);
 
   // Reverse tab, then save desk for later button is highlighted.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ASSERT_FALSE(save_as_template_button->IsViewHighlighted());
   ASSERT_TRUE(save_for_later_button->IsViewHighlighted());
-  verify_button_focus_ring_color(save_as_template_button, false);
-  verify_button_focus_ring_color(save_for_later_button, true);
 
   // Reverse tab, then save desk as template button is highlighted.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ASSERT_TRUE(save_as_template_button->IsViewHighlighted());
   ASSERT_FALSE(save_for_later_button->IsViewHighlighted());
-  verify_button_focus_ring_color(save_as_template_button, true);
-  verify_button_focus_ring_color(save_for_later_button, false);
 
   // Reverse tab, then both buttons are not highlighted.
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   ASSERT_FALSE(save_as_template_button->IsViewHighlighted());
   ASSERT_FALSE(save_for_later_button->IsViewHighlighted());
-  verify_button_focus_ring_color(save_as_template_button, false);
-  verify_button_focus_ring_color(save_for_later_button, false);
 }
 
 // Tests that the save desk as template button and save for later button are
@@ -4198,6 +4171,31 @@ TEST_F(SavedDeskTest,
   EXPECT_TRUE(overview_grid->IsSaveDeskButtonContainerVisible());
 }
 
+// Tests that there are no overview item windows on theme change.
+TEST_F(SavedDeskTest, NoOverviewItemWindowOnThemeChange) {
+  // Add a saved desk entry.
+  AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now(),
+           DeskTemplateType::kTemplate);
+
+  // Create a test window.
+  auto window = CreateAppWindow();
+
+  // Enter overview and ensure overview item window is visible.
+  ToggleOverview();
+  auto* overview_item = GetOverviewItemForWindow(window.get());
+  EXPECT_EQ(window.get(), overview_item->GetWindow());
+  EXPECT_TRUE(overview_item->item_widget()->IsVisible());
+
+  // Enter library and ensure overview item window is *not* visible.
+  ShowSavedDeskLibrary();
+  WaitForSavedDeskLibrary();
+  EXPECT_FALSE(overview_item->item_widget()->IsVisible());
+
+  // Simulate theme change and ensure overview item window is *not* visible.
+  overview_item->item_widget()->ThemeChanged();
+  EXPECT_FALSE(overview_item->item_widget()->IsVisible());
+}
+
 using DeskSaveAndRecallTest = SavedDeskTest;
 
 TEST_F(DeskSaveAndRecallTest, SaveDeskForLater) {
@@ -4588,35 +4586,4 @@ TEST_F(SavedDeskTest, SpamClickSaveDeskButtons) {
       GetItemViewsFromDeskLibrary(overview_grid2);
   EXPECT_EQ(2u, GetItemViewsFromDeskLibrary(overview_grid2).size());
 }
-
-// This tests that unknown desk types added into the desk model do not affect
-// the UI.  This is done by adding a template in the normal way and then
-// injecting an unknown type template into the storage model.  The result should
-// be that the saved desk library only shows the normal template.
-TEST_F(SavedDeskTest, UiIgnoresUnknownDeskTypes) {
-  // Add a window.
-  auto test_window = CreateAppWindow();
-
-  // Enter overview.
-  ToggleOverview();
-  ASSERT_TRUE(GetOverviewSession());
-
-  // Save a normal template here.
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  SavedDeskSaveDeskButton* save_template_button =
-      GetSaveDeskAsTemplateButtonForRoot(root);
-  ASSERT_TRUE(save_template_button);
-  ClickOnView(save_template_button);
-  WaitForSavedDeskUI();
-  WaitForSavedDeskLibrary();
-
-  // Add unknown type into model.
-  AddEntry(base::GUID::GenerateRandomV4(), "Unknown desk type name\n",
-           base::Time::Now(), DeskTemplateType::kUnknown);
-
-  // Ensure only the normal template appears in the overview grid.
-  OverviewGrid* overview_grid = GetOverviewGridList().front().get();
-  EXPECT_EQ(1u, GetItemViewsFromDeskLibrary(overview_grid).size());
-}
-
 }  // namespace ash

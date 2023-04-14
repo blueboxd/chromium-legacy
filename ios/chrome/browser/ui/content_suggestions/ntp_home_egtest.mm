@@ -104,6 +104,14 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                               descriptionBlock:describe];
 }
+
+// Returns a matcher which is true if the view is not practically visible.
+// Sometimes grey_notVisible() fails because the view is 0.0000XYZ percent
+// visible, but not actually zero, probably due to some sort of floating
+// point calculation.
+id<GREYMatcher> notPracticallyVisible() {
+  return grey_not(grey_minimumVisiblePercent(0.01));
+}
 }
 
 // Test case for the NTP home UI. More precisely, this tests the positions of
@@ -142,10 +150,13 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
   AppLaunchConfiguration config = [super appConfigurationForTestCase];
   config.additional_args.push_back(std::string("--") +
                                    switches::kEnableDiscoverFeed);
+  // Show doodle to make sure tests cover async callback logic updating logo.
+  config.additional_args.push_back(
+      std::string("-google-doodle-url=https://www.gstatic.com/chrome/ntp/"
+                  "doodle_test/ddljson_android0.json"));
   config.features_disabled.push_back(kEnableFeedAblation);
   // TODO(crbug.com/1403077): Scrolling issues when promo is enabled.
   config.features_disabled.push_back(kEnableDiscoverFeedTopSyncPromo);
-  config.features_enabled.push_back(kContentSuggestionsUIModuleRefresh);
   return config;
 }
 
@@ -450,16 +461,11 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 // defocuses the omnibox works.
 - (void)testDefocusOmniboxTapWorks {
   [self focusFakebox];
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    // Tap on a space in the collectionView that is not a Feed card.
-    [[EarlGrey selectElementWithMatcher:
-                   grey_accessibilityID(
-                       ntp_home::DiscoverHeaderTitleAccessibilityID())]
-        performAction:grey_tap()];
-  } else {
-    [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-        performAction:grey_tap()];
-  }
+  // Tap on a space in the collectionView that is not a Feed card.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_accessibilityID(ntp_home::DiscoverHeaderTitleAccessibilityID())]
+      performAction:grey_tap()];
 
   [ChromeEarlGreyUI waitForAppToIdle];
   // Check the fake omnibox is displayed again at the same position.
@@ -504,7 +510,8 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the trending queries module header is visible and all four
 // trending queries are interactable.
-- (void)testTrendingQueries {
+// Re-enable this test if trending queries is re-launched as a stable LE.
+- (void)DISABLED_testTrendingQueries {
   AppLaunchConfiguration config = self.appConfigurationForTestCase;
   config.features_enabled.push_back(kTrendingQueriesModule);
   config.variations_enabled = {3350760};
@@ -531,24 +538,22 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests that the position of the collection view is restored when navigating
 // back to the NTP.
-// TODO(crbug.com/1364725): Re-enable test after fixing the test failure.
-- (void)DISABLED_testPositionRestored {
-  [self addMostVisitedTile];
-
+- (void)testPositionRestored {
   // Scroll to have a position to restored.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   // Save the position before navigating.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
   CGFloat previousPosition = collectionView.contentOffset.y;
 
   // Navigate and come back.
-  [[EarlGrey selectElementWithMatcher:
-                 grey_allOf(chrome_test_util::StaticTextWithAccessibilityLabel(
-                                base::SysUTF8ToNSString(kPageTitle)),
-                            grey_sufficientlyVisible(), nil)]
-      performAction:grey_tap()];
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+
+  [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
   [ChromeEarlGrey goBack];
 
@@ -591,15 +596,16 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 }
 
 // Tests that when navigating back to the NTP while having the omnibox focused
-// does not consider the shifting offset, since the omnibox was already pinned
-// before focusing.
-// TODO(crbug.com/1364725): Fix small jump when focusing pinned omnibox.
-- (void)DISABLED_testPositionRestoredWithoutShiftingOffset {
-  [self addMostVisitedTile];
-
+// does not consider the shifting offset in the instance the omnibox was already
+// pinned to the top of the page before focusing.
+- (void)testPositionRestoredWithoutShiftingOffset {
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    EARL_GREY_TEST_SKIPPED(
+        @"Pinning Fake Omnibox to top of surface is only on iphone");
+  }
   // Scroll enough to naturally pin the omnibox to the top.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_scrollToContentEdge(kGREYContentEdgeTop)];
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 
   // Save the position before navigating.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
@@ -613,10 +619,12 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
                   @"Focusing the omnibox changed the scroll position.");
 
   // Navigate and come back.
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     base::SysUTF8ToNSString(kPageTitle))]
-      performAction:grey_tap()];
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+
+  [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
   [ChromeEarlGrey goBack];
 
@@ -916,7 +924,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
   // Ensures that logo/doodle is no longer visible when scrolled down.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPLogo()]
-      assertWithMatcher:grey_notVisible()];
+      assertWithMatcher:notPracticallyVisible()];
 }
 
 // Test to ensure that initial position and content are maintained when rotating
@@ -1081,8 +1089,7 @@ id<GREYMatcher> OmniboxWidthBetween(CGFloat width, CGFloat margin) {
 
 // Tests the "new search" menu item from the new tab menu after disabling the
 // feed.
-// TODO(crbug.com/1408823): This test is flaky.
-- (void)FLAKY_testNewSearchFromNewTabMenuAfterTogglingFeed {
+- (void)testNewSearchFromNewTabMenuAfterTogglingFeed {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"New Search is only available in phone layout.");
   }

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/extensions/extension_install_ui_default.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/views/controls/hover_button.h"
@@ -80,8 +81,7 @@ class ExtensionsMenuViewInteractiveUITest : public ExtensionsToolbarUITest {
       LoadTestExtension("extensions/uitest/window_open");
 
       // Without the uninstall dialog the icon should now be invisible.
-      EXPECT_FALSE(container->IsActionVisibleOnToolbar(
-          container->GetActionForId(extensions()[0]->id())));
+      EXPECT_FALSE(container->IsActionVisibleOnToolbar(extensions()[0]->id()));
       EXPECT_FALSE(
           container->GetViewForId(extensions()[0]->id())->GetVisible());
 
@@ -130,8 +130,7 @@ class ExtensionsMenuViewInteractiveUITest : public ExtensionsToolbarUITest {
                ui_test_name_ == "InstallDialog") {
       ExtensionsToolbarContainer* const container =
           GetExtensionsToolbarContainer();
-      EXPECT_TRUE(container->IsActionVisibleOnToolbar(
-          container->GetActionForId(extensions()[0]->id())));
+      EXPECT_TRUE(container->IsActionVisibleOnToolbar(extensions()[0]->id()));
       EXPECT_TRUE(container->GetViewForId(extensions()[0]->id())->GetVisible());
     }
 
@@ -195,8 +194,7 @@ class ExtensionsMenuViewInteractiveUITest : public ExtensionsToolbarUITest {
                              ->GetInstalledExtension(extensions()[0]->id()));
       // Without the uninstall dialog present the icon should now be
       // invisible.
-      EXPECT_FALSE(container->IsActionVisibleOnToolbar(
-          container->GetActionForId(extensions()[0]->id())));
+      EXPECT_FALSE(container->IsActionVisibleOnToolbar(extensions()[0]->id()));
       EXPECT_FALSE(
           container->GetViewForId(extensions()[0]->id())->GetVisible());
     }

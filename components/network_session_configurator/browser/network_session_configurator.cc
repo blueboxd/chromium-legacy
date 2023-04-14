@@ -295,14 +295,6 @@ bool ShouldQuicEstimateInitialRtt(
       GetVariationParam(quic_trial_params, "estimate_initial_rtt"), "true");
 }
 
-bool ShouldQuicHeadersIncludeH2StreamDependencies(
-    const VariationParameters& quic_trial_params) {
-  return base::EqualsCaseInsensitiveASCII(
-      GetVariationParam(quic_trial_params,
-                        "headers_include_h2_stream_dependency"),
-      "true");
-}
-
 bool ShouldQuicMigrateSessionsOnNetworkChangeV2(
     const VariationParameters& quic_trial_params) {
   return base::EqualsCaseInsensitiveASCII(
@@ -481,27 +473,20 @@ quic::ParsedQuicVersionVector GetQuicVersions(
       GetVariationParam(quic_trial_params, "quic_version");
   quic::ParsedQuicVersionVector trial_versions =
       quic::ParseQuicVersionVectorString(trial_versions_str);
-  const bool obsolete_versions_allowed = base::EqualsCaseInsensitiveASCII(
-      GetVariationParam(quic_trial_params, "obsolete_versions_allowed2"),
-      "true");
-  if (!obsolete_versions_allowed) {
-    quic::ParsedQuicVersionVector filtered_versions;
-    quic::ParsedQuicVersionVector obsolete_versions =
-        net::ObsoleteQuicVersions();
-    bool found_obsolete_version = false;
-    for (const quic::ParsedQuicVersion& version : trial_versions) {
-      if (!base::Contains(obsolete_versions, version)) {
-        filtered_versions.push_back(version);
-      } else {
-        found_obsolete_version = true;
-      }
+  quic::ParsedQuicVersionVector filtered_versions;
+  quic::ParsedQuicVersionVector obsolete_versions = net::ObsoleteQuicVersions();
+  bool found_obsolete_version = false;
+  for (const quic::ParsedQuicVersion& version : trial_versions) {
+    if (!base::Contains(obsolete_versions, version)) {
+      filtered_versions.push_back(version);
+    } else {
+      found_obsolete_version = true;
     }
-    if (found_obsolete_version) {
-      UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.FinchObsoleteVersion", true);
-    }
-    trial_versions = filtered_versions;
   }
-  return trial_versions;
+  if (found_obsolete_version) {
+    UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.FinchObsoleteVersion", true);
+  }
+  return filtered_versions;
 }
 
 bool ShouldEnableServerPushCancelation(
@@ -612,8 +597,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     }
     quic_params->estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
-    quic_params->headers_include_h2_stream_dependency =
-        ShouldQuicHeadersIncludeH2StreamDependencies(quic_trial_params);
     quic_params->migrate_sessions_on_network_change_v2 =
         ShouldQuicMigrateSessionsOnNetworkChangeV2(quic_trial_params);
     quic_params->migrate_sessions_early_v2 =

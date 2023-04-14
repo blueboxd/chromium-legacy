@@ -27,6 +27,7 @@
 #include "chromeos/ash/services/assistant/public/cpp/features.h"
 #include "chromeos/ash/services/assistant/public/cpp/switches.h"
 #include "content/public/test/browser_test.h"
+#include "sandbox/policy/switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
@@ -192,18 +193,29 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest,
                                    public testing::WithParamInterface<bool> {
  public:
   AssistantTimersBrowserTest() {
+    // Disable V2 feature because LibAssistant V2 binary does not run on linux
+    // bot.
     if (GetParam()) {
       feature_list_.InitWithFeatures(
           /*enabled_features=*/{features::kEnableLibAssistantDlc},
-          /*disabled_features=*/{features::kEnableLibAssistantSandbox});
+          /*disabled_features=*/{features::kEnableLibAssistantV2});
     } else {
-      feature_list_.InitAndDisableFeature(features::kEnableLibAssistantSandbox);
+      feature_list_.InitWithFeatures(
+          /*enabled_features=*/{},
+          /*disabled_features=*/{features::kEnableLibAssistantDlc,
+                                 features::kEnableLibAssistantV2});
     }
 
     // Do not log to file in test. Otherwise multiple tests may create/delete
     // the log file at the same time. See http://crbug.com/1307868.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisableLibAssistantLogfile);
+
+    // In browser tests, the fake_s3_server uses gRPC framework, which is not
+    // allowed in the sandbox by default. Instead of enabling and setting up the
+    // gRPC policy, we do not enable sandbox in the tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        sandbox::policy::switches::kNoSandbox);
   }
 
   AssistantTimersBrowserTest(const AssistantTimersBrowserTest&) = delete;

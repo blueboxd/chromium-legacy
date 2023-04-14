@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">İleri</translation>
 <translation id="1209796539517632982">Otomatik ad sunucuları</translation>
 <translation id="1210831758834677569">Laoca</translation>
+<translation id="1221555006497674479"><ph name="TOTAL_SPACE" /> olan ortak Drive depolama alanınızda %<ph name="REMAINING_PERCENTAGE" /> oranından daha az depolama alanı kaldı.</translation>
 <translation id="1243314992276662751">Yükle</translation>
 <translation id="1249250836236328755">Tür</translation>
 <translation id="1254593899333212300">Doğrudan İnternet bağlantısı</translation>
 <translation id="1272293450992660632">PIN değerleri eşleşmiyor.</translation>
 <translation id="1280820357415527819">Mobil ağlar aranıyor</translation>
-<translation id="1291603679744561561">SIM Kilitlendi</translation>
 <translation id="1293556467332435079">Dosyalar</translation>
 <translation id="1297922636971898492">Google Drive şu anda kullanılamıyor. Google Drive tekrar kullanılabilir olduğunda yükleme işlemi otomatik olarak yeniden başlayacak.</translation>
 <translation id="1307931752636661898">Linux dosyaları görüntülenemiyor</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Dosyaları Parallels Desktop'a bırakabilmek için Windows dosyalarına taşımak gerekir.</translation>
 <translation id="1435838927755162558">Parallels Desktop ile klasör paylaşın</translation>
 <translation id="1439919885608649279">Çiçek tutan bir kişi</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> dosya sistemini çıkarma</translation>
 <translation id="1471718551822868769">Slovakça</translation>
 <translation id="1482884275703521657">Fince</translation>
 <translation id="148466539719134488">İsviçre dili</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">Çince Pinyin</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> dosya çevrimdışı kullanılabilir hale getiriliyor</translation>
 <translation id="164969095109328410">Chrome cihaz</translation>
+<translation id="1661207570040737402">Google Workspace ortak Drive depolama alanınızın tamamını kullandınız.</translation>
 <translation id="1661867754829461514">PIN eksik</translation>
 <translation id="166439687370499867">Paylaşılan ağ yapılandırmalarının değiştirilmesine izin verilmez</translation>
 <translation id="1665611772925418501">Dosya değiştirilemedi.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">1 klasör Bruschetta ile paylaşıldı</translation>
 <translation id="2578394532502990878">Tamilce Fonetik</translation>
 <translation id="2579959351793446050">Oriya</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> dosyası senkronize edilmeye hazırlanıyor...</translation>
 <translation id="2602810353103180630">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Sinyal Gücü %<ph name="SIGNAL_STRENGTH" />, Yöneticiniz tarafından engellenmiş, Ayrıntılar</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
 <translation id="2620090360073999360">Google Drive'a şu anda erişilemiyor.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">Moğolca</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> hata.</translation>
 <translation id="3509680540198371098">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Ayrıntılar</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> öğe senkronize edilmeye hazırlanıyor...</translation>
 <translation id="3522708245912499433">Portekizce</translation>
 <translation id="3524311639100184459">Dikkat: Bu dosyalar geçicidir ve disk alanından kazanmak için otomatik olarak silinebilir.  <ph name="BEGIN_LINK" />Daha Fazla Bilgi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Klasör</translation>
@@ -347,6 +351,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Yapıştır</translation>
 <translation id="3952872973865944257">Telugu Fonetik</translation>
+<translation id="3954354850384043518">Devam ediyor</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3971140002794351170">Mobil profili indir, <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> ağı</translation>
 <translation id="3973925058222872294">İngilizce (BK)</translation>
@@ -406,6 +411,7 @@
 <translation id="4462159676511157176">Özel ad sunucuları</translation>
 <translation id="4465725236958772856">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Yöneticiniz tarafından yönetiliyor, Bağlan</translation>
 <translation id="4470564870223067757">Hangul 2 Grubu</translation>
+<translation id="4474142134969976028">Eşleşen sonuç yok</translation>
 <translation id="4477002475007461989">Romence</translation>
 <translation id="4477219268485577442">Bulgarca fonetik</translation>
 <translation id="4508265954913339219">Etkinleştirme başarısız oldu</translation>
@@ -477,6 +483,7 @@
 <translation id="4973523518332075481">En fazla <ph name="MAX_LENGTH" /> karakterden oluşan bir ad kullanın</translation>
 <translation id="4973970068702235170">Sıkıştırma işlemi başarısız oldu, beklenmedik hata oluştu: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japonca</translation>
+<translation id="4987699874727873250">İngilizce (Hindistan)</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />" adlı dosyayı silmek istediğinizden emin misiniz?</translation>
 <translation id="498902553138568924">Kırmızı kelebek</translation>
 <translation id="4992066212339426712">Sesi aç</translation>
@@ -786,6 +793,7 @@
 <translation id="7458955835361612701">Yakın tarihli resim yok</translation>
 <translation id="7460898608667578234">Ukraynaca</translation>
 <translation id="7469894403370665791">Bu ağa otomatik olarak bağlan</translation>
+<translation id="7481358317100446445">Hazır</translation>
 <translation id="7486315294984620427">Dosyaları Parallels Desktop'a bırakabilmek için Windows dosyalarına kopyalamak gerekir.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam dili Fonetik</translation>
@@ -811,6 +819,7 @@
 <translation id="7655441028674523381">Google Fotoğraflar'a kolayca erişin</translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7663224033570512922">Hintçe</translation>
+<translation id="7665680517722058469">Başka bir arama yapmayı deneyin</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> öğe çöp kutusuna taşındı</translation>
 <translation id="7693909743393669729">Bir sürücünün biçimlendirilmesi sürücüde depolanan tüm verileri siler ve görünür olmayan bölümler de dahil olmak üzere tüm mevcut bölümleri kaldırır. Bu işlem geri alınamaz.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> biçimlendirilemedi</translation>
@@ -967,6 +976,7 @@
 <translation id="8866284467018526531">Arapça Harf Çevirisi</translation>
 <translation id="8873014196523807561">Bu öğeleri geri yüklemek için yeni bir klasöre sürükleyin. Bu öğelerden bazılarının bulunduğu orijinal klasörler silindi.</translation>
 <translation id="8874184842967597500">Bağlı değil</translation>
+<translation id="8876368061475701452">Sıraya alındı</translation>
 <translation id="8900820606136623064">Macarca</translation>
 <translation id="8903931173357132290">Mezun</translation>
 <translation id="8912078710089354287">Kuyruğunu sallayan bir köpek</translation>

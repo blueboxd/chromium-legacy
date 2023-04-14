@@ -6,7 +6,10 @@ module attribution_internals.mojom;
 
 import "components/attribution_reporting/registration.mojom";
 import "components/attribution_reporting/source_registration_error.mojom";
+import "components/attribution_reporting/source_type.mojom";
 import "content/browser/attribution_reporting/attribution_reporting.mojom";
+import "content/browser/attribution_reporting/store_source_result.mojom";
+import "services/network/public/mojom/attribution.mojom";
 import "services/network/public/mojom/schemeful_site.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
@@ -97,11 +100,6 @@ struct WebUIDebugReport {
   DebugReportStatus status;
 };
 
-union SourceDebugKey {
-  uint64 debug_key;
-  uint64 cleared_debug_key;
-};
-
 // Struct representing a stored attribution source that will be displayed by WebUI.
 struct WebUISource {
   uint64 source_event_id;
@@ -114,7 +112,7 @@ struct WebUISource {
   double aggregatable_report_window_time;
   attribution_reporting.mojom.SourceType source_type;
   int64 priority;
-  SourceDebugKey? debug_key;
+  attribution_reporting.mojom.DebugKey? debug_key;
   array<uint64> dedup_keys;
   map<string, array<string>> filter_data;
   // The value is a hex-encoded unsigned 128-bit integer.
@@ -122,41 +120,30 @@ struct WebUISource {
   uint64 aggregatable_budget_consumed;
   array<uint64> aggregatable_dedup_keys;
 
-  enum DebugReporting {
-    kDisabled,
-    kEnabled,
-    kNotApplicable,
-  };
-  DebugReporting debug_reporting_enabled;
-
-  // Union of `StorableSource::Result` and `StoredSource::AttributionLogic`.
   enum Attributability {
     kAttributable,
     // The source was dropped due to `CommonSourceInfo::AttributionLogic::kNever`.
-    kNoised,
+    kNoisedNever,
+    // The source was dropped due to `CommonSourceInfo::AttributionLogic::kFalsely`.
+    kNoisedFalsely,
     kReachedEventLevelAttributionLimit,
-    kInternalError,
-    kInsufficientSourceCapacity,
-    kInsufficientUniqueDestinationCapacity,
-    kExcessiveReportingOrigins,
-    kProhibitedByBrowserPolicy,
   };
   Attributability attributability;
 };
 
-struct TriggerDebugKey {
-  uint64 value;
-};
-
-struct WebUITrigger {
-  double trigger_time;
-  url.mojom.Origin destination_origin;
+struct WebUIRegistration {
+  double time;
+  url.mojom.Origin context_origin;
   url.mojom.Origin reporting_origin;
   // String instead of mojo_base.mojom.DictionaryValue because the value is
   // simply displayed in the UI, never inspected.
   string registration_json;
-  TriggerDebugKey? cleared_debug_key;
-  attribution_reporting.mojom.TriggerAttestation? attestation;
+  attribution_reporting.mojom.DebugKey? cleared_debug_key;
+};
+
+struct WebUITrigger {
+  WebUIRegistration registration;
+  network.mojom.TriggerAttestation? attestation;
 
   enum Status {
     // Shared statuses:
@@ -187,14 +174,15 @@ struct WebUITrigger {
   Status aggregatable_status;
 };
 
-// Struct containing reason for a source registration failure to be displayed
-// as a log by WebUI
-struct FailedSourceRegistration {
-  double time;
-  string header_value;
-  url.mojom.Origin source_origin;
-  url.mojom.Origin reporting_origin;
-  attribution_reporting.mojom.SourceRegistrationError error;
+union SourceStatus {
+  attribution_reporting.mojom.StoreSourceResult store_source_result;
+  attribution_reporting.mojom.SourceRegistrationError json_error;
+};
+
+struct WebUISourceRegistration {
+  WebUIRegistration registration;
+  attribution_reporting.mojom.SourceType type;
+  SourceStatus status;
 };
 
 // Observer for events relevant to the attribution internals WebUI.
@@ -207,8 +195,8 @@ interface Observer {
   // should call `Handler::GetReports()`.
   OnReportsChanged(attribution_reporting.mojom.ReportType report_type);
 
-  // Called when a source-registration attempt fails.
-  OnSourceRejected(WebUISource source);
+  // Called when a source is registered, regardless of success or failure.
+  OnSourceHandled(WebUISourceRegistration source);
 
   // Called when a report is sent, regardless of success.
   OnReportSent(WebUIReport report);
@@ -222,9 +210,6 @@ interface Observer {
 
   // Called when a trigger is registered, regardless of success or failure.
   OnTriggerHandled(WebUITrigger trigger);
-
-  // Called when the source header registration JSON parser fails.
-  OnFailedSourceRegistration(FailedSourceRegistration failure);
 };
 
 // Mojo interface for the attribution internals WebUI to communicate with the
@@ -250,7 +235,11 @@ interface Handler {
   // Deletes all persisted data for the attribution reporting API, returning when the
   // operation has been completed.
   ClearStorage() => ();
+};
 
-  // Registers an observer to be notified of attribution reporting events.
-  AddObserver(pending_remote<Observer> observer) => (bool success);
+// Factory for Observer and Handler.
+interface Factory {
+  // Binds the observer and handler.
+  Create(pending_remote<Observer> observer,
+         pending_receiver<Handler> handler);
 };

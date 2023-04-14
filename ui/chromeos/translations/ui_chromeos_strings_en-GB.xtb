@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Next</translation>
 <translation id="1209796539517632982">Automatic name servers</translation>
 <translation id="1210831758834677569">Lao</translation>
+<translation id="1221555006497674479">Storage low <ph name="REMAINING_PERCENTAGE" />% left of your <ph name="TOTAL_SPACE" /> shared drive storage.</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="1249250836236328755">Genre</translation>
 <translation id="1254593899333212300">Direct Internet connection</translation>
 <translation id="1272293450992660632">PIN values do not match.</translation>
 <translation id="1280820357415527819">Searching for mobile networks</translation>
-<translation id="1291603679744561561">SIM locked</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google Drive is not available right now. Uploading will automatically restart once Google Drive is back.</translation>
 <translation id="1307931752636661898">Unable to view Linux files</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">To drop files in Parallels Desktop, the file must be moved to Windows files.</translation>
 <translation id="1435838927755162558">Share folder with Parallels Desktop</translation>
 <translation id="1439919885608649279">Person with flowers</translation>
+<translation id="1458457385801829801">Eject <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Slovak</translation>
 <translation id="1482884275703521657">Finnish</translation>
 <translation id="148466539719134488">Swiss</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">Chinese Pinyin</translation>
 <translation id="1646019627374511909">Making <ph name="NUMBER_OF_ITEMS" /> files available offline</translation>
 <translation id="164969095109328410">Chrome device</translation>
+<translation id="1661207570040737402">You’ve used all of your shared drive Google Workspace storage.</translation>
 <translation id="1661867754829461514">PIN missing</translation>
 <translation id="166439687370499867">Changing shared network configurations is not allowed</translation>
 <translation id="1665611772925418501">The file could not be modified.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">One folder shared with Bruschetta</translation>
 <translation id="2578394532502990878">Tamil phonetic</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2587195714949534472">Preparing to sync <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, blocked by your administrator. Details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
 <translation id="2620090360073999360">Google Drive cannot be reached at this time.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">Mongolian</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errors.</translation>
 <translation id="3509680540198371098">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, details</translation>
+<translation id="3511705761158917664">Preparing to sync <ph name="NUMBER_OF_ITEMS" /> items…</translation>
 <translation id="3522708245912499433">Portuguese</translation>
 <translation id="3524311639100184459">Caution: These files are temporary and may be automatically deleted to free up disk space.  <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -347,10 +351,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Paste</translation>
 <translation id="3952872973865944257">Telugu phonetic</translation>
+<translation id="3954354850384043518">In progress</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Download mobile profile, network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">English (UK)</translation>
 <translation id="3975895378829046965">Bangla phonetic</translation>
+<translation id="3999574733850440202">Recently opened Microsoft files have moved to OneDrive</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4017788180641807848">English (US) with Workman keyboard</translation>
 <translation id="4019998208269143058">Pin to quick files</translation>
@@ -406,6 +412,7 @@
 <translation id="4462159676511157176">Custom name servers</translation>
 <translation id="4465725236958772856">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, managed by your administrator, connect</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">No matching results</translation>
 <translation id="4477002475007461989">Romanian</translation>
 <translation id="4477219268485577442">Bulgarian phonetic</translation>
 <translation id="4508265954913339219">Activation failed</translation>
@@ -477,6 +484,7 @@
 <translation id="4973523518332075481">Use a name that's <ph name="MAX_LENGTH" /> characters or less</translation>
 <translation id="4973970068702235170">Zipping failed, unexpected error: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japanese</translation>
+<translation id="4987699874727873250">English (India)</translation>
 <translation id="4988205478593450158">Are you sure that you want to delete '<ph name="FILE_NAME" />'?</translation>
 <translation id="498902553138568924">Red butterfly</translation>
 <translation id="4992066212339426712">Unmute</translation>
@@ -786,6 +794,7 @@
 <translation id="7458955835361612701">No recent images</translation>
 <translation id="7460898608667578234">Ukrainian</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
+<translation id="7481358317100446445">Ready</translation>
 <translation id="7486315294984620427">To drop files in Parallels Desktop, the file must be copied to Windows files.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam phonetic</translation>
@@ -811,6 +820,7 @@
 <translation id="7655441028674523381">Easily access Google Photos</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Try another search</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> items moved to the bin</translation>
 <translation id="7693909743393669729">Formatting a drive will erase all data stored on it and remove all existing partitions, including partitions that may not be visible. This action cannot be undone.</translation>
 <translation id="7695430100978772476">Could not format <ph name="DRIVE_NAME" /></translation>
@@ -898,6 +908,7 @@
 <translation id="8300849813060516376">OTASP failed</translation>
 <translation id="8312871300878166382">Paste into folder</translation>
 <translation id="8329978297633540474">Plain text</translation>
+<translation id="8332007959299458842">Recently opened Microsoft files have moved to Google Drive</translation>
 <translation id="8335587457941836791">Unpin from shelf</translation>
 <translation id="8335837413233998004">Belarusian</translation>
 <translation id="8336153091935557858">Yesterday <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -967,6 +978,7 @@
 <translation id="8866284467018526531">Arabic transliteration</translation>
 <translation id="8873014196523807561">To restore these items, drag them to a new folder. The original folders for some of these items have been deleted.</translation>
 <translation id="8874184842967597500">Not connected</translation>
+<translation id="8876368061475701452">Queued</translation>
 <translation id="8900820606136623064">Hungarian</translation>
 <translation id="8903931173357132290">Graduate</translation>
 <translation id="8912078710089354287">Dog wagging tail</translation>

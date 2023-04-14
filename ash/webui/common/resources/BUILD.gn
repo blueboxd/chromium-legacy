@@ -284,6 +284,8 @@ generate_grd("build_grdp") {
     "cellular_setup/final_page_success_dark.svg",
     "cellular_setup/default_esim_profile.svg",
     "cellular_setup/default_esim_profile_dark.svg",
+    "cellular_setup/spinner.json",
+    "cellular_setup/spinner_dark.json",
     "multidevice_setup/all_set_1x_dark.svg",
     "multidevice_setup/all_set_1x_light.svg",
     "multidevice_setup/all_set_2x_dark.svg",
@@ -374,7 +376,11 @@ ts_definitions("generate_definitions") {
   root_dir = "$target_gen_dir/$preprocessed_dir"
   out_dir = "$target_gen_dir/$preprocessed_dir"
   js_files = generate_definitions_js_files
-  deps = [ "//ui/webui/resources:library" ]
+  deps = [
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
+    "//ui/webui/resources/mojo:library",
+  ]
   extra_deps = [
     ":copy_checked_in_dts_files",
     ":copy_generated_dts_files",

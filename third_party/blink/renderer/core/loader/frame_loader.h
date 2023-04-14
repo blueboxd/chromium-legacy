@@ -171,9 +171,6 @@ class CORE_EXPORT FrameLoader final {
       const FetchClientSettingsObject* fetch_client_settings_object,
       LocalDOMWindow* window_for_logging,
       mojom::RequestContextFrameType) const;
-  void ReportLegacyTLSVersion(const KURL& url,
-                              bool is_subresource,
-                              bool is_ad_resource);
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -294,7 +291,7 @@ class CORE_EXPORT FrameLoader final {
 
   LocalFrameClient* Client() const;
 
-  String ApplyUserAgentOverrideAndLog(const String& user_agent) const;
+  String ApplyUserAgentOverride(const String& user_agent) const;
 
   // This struct holds information about a navigation, which is being
   // initiated by the client through the browser process, until the navigation

@@ -225,6 +225,11 @@ class StoragePartitionRemovalTestStoragePartition
     std::move(callback).Run();
   }
 
+  void ClearDataForAllBuckets(const blink::StorageKey& storage_key,
+                              base::OnceClosure callback) override {
+    std::move(callback).Run();
+  }
+
  private:
   std::vector<StoragePartitionRemovalData> storage_partition_removal_data_;
   network::TestNetworkContext network_context_;
@@ -573,11 +578,15 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveCookiesDomainPreserveList) {
   ASSERT_TRUE(removal_data.filter_builder);
   StoragePartition::StorageKeyMatcherFunction storage_key_matcher =
       removal_data.filter_builder->BuildStorageKeyFilter();
-  EXPECT_FALSE(storage_key_matcher.Run(blink::StorageKey(kTestOrigin1)));
-  EXPECT_TRUE(storage_key_matcher.Run(blink::StorageKey(kTestOrigin2)));
-  EXPECT_FALSE(storage_key_matcher.Run(blink::StorageKey(kTestOrigin3)));
+  EXPECT_FALSE(storage_key_matcher.Run(
+      blink::StorageKey::CreateFirstParty(kTestOrigin1)));
+  EXPECT_TRUE(storage_key_matcher.Run(
+      blink::StorageKey::CreateFirstParty(kTestOrigin2)));
+  EXPECT_FALSE(storage_key_matcher.Run(
+      blink::StorageKey::CreateFirstParty(kTestOrigin3)));
   // Even though it's a different origin, it's the same domain.
-  EXPECT_FALSE(storage_key_matcher.Run(blink::StorageKey(kTestOrigin3Secure)));
+  EXPECT_FALSE(storage_key_matcher.Run(
+      blink::StorageKey::CreateFirstParty(kTestOrigin3Secure)));
 
   EXPECT_FALSE(FilterMatchesCookie(removal_data.cookie_deletion_filter,
                                    CreateCookieWithHost(kTestOrigin1)));
@@ -618,7 +627,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveUnprotectedLocalStorageForever) {
 
   // Check storage key policy matcher.
   EXPECT_FALSE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));
@@ -660,7 +669,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveProtectedLocalStorageForever) {
   // Check storage key policy matcher all http origin will match since we
   // specified both protected and unprotected.
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));
@@ -958,7 +967,7 @@ TEST_F(BrowsingDataRemoverImplTest,
   StoragePartition::StorageKeyMatcherFunction storage_key_matcher =
       removal_data.filter_builder->BuildStorageKeyFilter();
   EXPECT_TRUE(storage_key_matcher.Run(
-      blink::StorageKey(url::Origin::Create(kTestUrl))));
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestUrl))));
   EXPECT_FALSE(storage_key_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com")));
   EXPECT_FALSE(storage_key_matcher.Run(
@@ -1078,7 +1087,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedUnprotectedOrigins) {
 
   // Check StorageKeyPolicyMatcherFunction.
   EXPECT_FALSE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));
@@ -1134,9 +1143,10 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedSpecificOrigin) {
 
   // Check StorageKeyPolicyMatcherFunction.
   EXPECT_TRUE(storage_key_matcher.Run(
-      blink::StorageKey(url::Origin::Create(kTestUrl))));
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestUrl))));
   EXPECT_FALSE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(url::Origin::Create(kTestUrl)), mock_policy()));
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestUrl)),
+      mock_policy()));
   // Since we use the matcher function to validate origins now, this should
   // return false for the origins we're not trying to clear.
   EXPECT_FALSE(storage_key_matcher.Run(
@@ -1189,7 +1199,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveQuotaManagedProtectedOrigins) {
   // Check StorageKeyPolicyMatcherFunction, `kTestOrigin` would match mask since
   // we would have 'protected' specified in origin_type_mask.
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));
@@ -1829,20 +1839,50 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveStorageBucketsAndReply) {
 
    public:
     void RemoveBuckets() {
-      auto storage_key =
-          blink::StorageKey::CreateFromStringForTesting("https://example.com");
-
-      std::set<std::string> buckets{"drafts"};
-      StoragePartitionRemovalTestStoragePartition storage_partition;
       TestBrowserContext browser_context;
       BrowsingDataRemoverImpl remover =
           BrowsingDataRemoverImpl(&browser_context);
+
+      StoragePartitionRemovalTestStoragePartition storage_partition;
+      std::set<std::string> buckets{"drafts"};
+      auto storage_key =
+          blink::StorageKey::CreateFromStringForTesting("https://example.com");
 
       remover.OverrideStoragePartitionForTesting(&storage_partition);
       remover.RemoveStorageBucketsAndReply(
           storage_key, buckets,
           base::BindOnce(&TestObserver::OnBrowsingDataRemoverDone,
                          base::Unretained(this), 0));
+    }
+
+   public:
+    ~TestObserver() override = default;
+  };
+
+  TestObserver observer;
+  observer.RemoveBuckets();
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveAllStorageBucketsAndReply) {
+  class TestObserver : public BrowsingDataRemover::Observer {
+    void OnBrowsingDataRemoverDone(uint64_t failed_data_types) override {
+      EXPECT_EQ(failed_data_types, 0U);
+    }
+
+   public:
+    void RemoveBuckets() {
+      TestBrowserContext browser_context;
+      BrowsingDataRemoverImpl remover =
+          BrowsingDataRemoverImpl(&browser_context);
+
+      StoragePartitionRemovalTestStoragePartition storage_partition;
+      auto storage_key =
+          blink::StorageKey::CreateFromStringForTesting("https://example.com");
+
+      remover.OverrideStoragePartitionForTesting(&storage_partition);
+      remover.RemoveAllStorageBucketsAndReply(
+          storage_key, base::BindOnce(&TestObserver::OnBrowsingDataRemoverDone,
+                                      base::Unretained(this), 0));
     }
 
    public:
@@ -1892,7 +1932,7 @@ TEST_F(BrowsingDataRemoverImplSharedStorageTest,
 
   // Check storage key policy matcher.
   EXPECT_FALSE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));
@@ -1935,7 +1975,7 @@ TEST_F(BrowsingDataRemoverImplSharedStorageTest,
   // Check storage key policy matcher all http origin will match since we
   // specified both protected and unprotected.
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
-      blink::StorageKey(kTestOrigin), mock_policy()));
+      blink::StorageKey::CreateFirstParty(kTestOrigin), mock_policy()));
   EXPECT_TRUE(removal_data.storage_key_policy_matcher.Run(
       blink::StorageKey::CreateFromStringForTesting("http://host2.com"),
       mock_policy()));

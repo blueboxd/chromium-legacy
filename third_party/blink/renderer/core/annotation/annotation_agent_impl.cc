@@ -129,11 +129,7 @@ void AnnotationAgentImpl::ScrollIntoView() const {
 
   EphemeralRangeInFlatTree range = attached_range_->ToEphemeralRange();
 
-  // TODO(bokan): This should be checked in IsAttached.
-  bool range_has_nodes = range.Nodes().begin() != range.Nodes().end();
-  if (!range_has_nodes) {
-    return;
-  }
+  DCHECK(range.Nodes().begin() != range.Nodes().end());
 
   Node& first_node = *range.Nodes().begin();
 
@@ -141,9 +137,15 @@ void AnnotationAgentImpl::ScrollIntoView() const {
   document.EnsurePaintLocationDataValidForNode(
       &first_node, DocumentUpdateReason::kFindInPage);
 
-  // TODO(bokan): Bring in all the autoexpand details and BeforeMatch logic
-  // from TextFragmentAnchor.
-  DCHECK(first_node.GetLayoutObject());
+  // TODO(bokan): Text can be attached without having a LayoutObject since it
+  // may be inside an unexpanded <details> element or inside a
+  // `content-visibility: auto` subtree. In those cases we should make sure we
+  // expand/make-visible the node. This is implemented in TextFragmentAnchor
+  // but that doesn't cover all cases we can get here so we should migrate that
+  // code here.
+  if (!first_node.GetLayoutObject()) {
+    return;
+  }
 
   // Set the bounding box height to zero because we want to center the top of
   // the text range.

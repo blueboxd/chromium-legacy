@@ -11,8 +11,7 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_layout_manager.h"
 
-namespace display {
-namespace test {
+namespace display::test {
 
 class TestDisplayLayoutManager : public DisplayLayoutManager {
  public:
@@ -44,6 +43,7 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
       MultipleDisplayState new_display_state,
       chromeos::DisplayPowerState new_power_state,
       RefreshRateThrottleState new_throttle_state,
+      bool new_vrr_enabled_state,
       std::vector<DisplayConfigureRequest>* requests) const override;
   std::vector<DisplaySnapshot*> GetDisplayStates() const override;
   bool IsMirroring() const override;
@@ -53,7 +53,6 @@ class TestDisplayLayoutManager : public DisplayLayoutManager {
   MultipleDisplayState display_state_;
 };
 
-}  // namespace test
-}  // namespace display
+}  // namespace display::test
 
 #endif  // UI_DISPLAY_MANAGER_TEST_TEST_DISPLAY_LAYOUT_MANAGER_H_

@@ -114,7 +114,7 @@ from which the template will be imported.
 
 `chrome/browser/resources/hello_world/BUILD.gn`
 ```py
-import("//chrome/browser/resources/tools/build_webui.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 
 build_webui("build") {
   grd_prefix = "hello_world"
@@ -129,7 +129,7 @@ build_webui("build") {
 
   ts_deps = [
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
+    "//ui/webui/resources/js:build_ts",
   ]
 }
 ```
@@ -159,7 +159,7 @@ group("resources") {
 Add an entry to resource_ids.spec
 
 This file is for automatically generating resource ids. Ensure that your entry
-has a unique ID and preserves numerical ordering.
+has a unique ID and preserves numerical ordering. If you see an error like "ValueError: Cannot jump to unvisited", please check the numeric order of your resource ids.
 
 `tools/gritsettings/resource_ids.spec`
 
@@ -228,7 +228,7 @@ class HelloWorldUI : public content::WebUIController {
 
 `chrome/browser/ui/webui/hello_world/hello_world_ui.cc`
 ```c++
-#include "chrome/browser/ui/webui/hello_world_ui.h"
+#include "chrome/browser/ui/webui/hello_world/hello_world_ui.h"
 
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -251,7 +251,7 @@ HelloWorldUI::HelloWorldUI(content::WebUI* web_ui)
   webui::SetupWebUIDataSource(
       source,
       base::make_span(kHelloWorldResources, kHelloWorldResourcesSize),
-      IDR_HELLO_WORLD_HELLO_WORLD_CONTAINER_HTML);
+      IDR_HELLO_WORLD_HELLO_WORLD_HTML);
 
   // As a demonstration of passing a variable for JS to use we pass in some
   // a simple message.

@@ -122,6 +122,8 @@ class ModelTypeSyncBridge {
   //
   // If a model type was never launched pre-USS, then method does not need to be
   // different from GetStorageKey(). Only the hash of this value is kept.
+  //
+  // IsEntityDataValid() is guaranteed to hold for the |entity_data|.
   virtual std::string GetClientTag(const EntityData& entity_data) = 0;
 
   // Must not be called unless SupportsGetStorageKey() returns true.
@@ -135,6 +137,8 @@ class ModelTypeSyncBridge {
   // type should strive to keep these keys as small as possible.
   // Returning an empty string means the remote creation should be ignored (i.e.
   // it contains invalid data).
+  //
+  // IsEntityDataValid() is guaranteed to hold for the |entity_data|.
   virtual std::string GetStorageKey(const EntityData& entity_data) = 0;
 
   // Whether or not the bridge is capable of producing a client tag from
@@ -171,11 +175,12 @@ class ModelTypeSyncBridge {
       const EntityData& remote_data) const;
 
   // Similar to ApplySyncChanges() but called by the processor when sync
-  // is in the process of being stopped. If |delete_metadata_change_list| is not
-  // null, it indicates that sync metadata must be deleted (i.e. the datatype
-  // was disabled), and |*delete_metadata_change_list| contains a change list to
-  // remove all metadata that the processor knows about (the bridge may decide
-  // to implement deletion by other means).
+  // is in the process of being stopped, or if metadata needs to cleared. If
+  // |delete_metadata_change_list| is not null, it indicates that sync metadata
+  // must be deleted (i.e. the datatype was disabled), and
+  // |*delete_metadata_change_list| contains a change list to remove all
+  // metadata that the processor knows about (the bridge may decide to implement
+  // deletion by other means).
   virtual void ApplyStopSyncChanges(
       std::unique_ptr<MetadataChangeList> delete_metadata_change_list);
 

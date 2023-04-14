@@ -107,6 +107,7 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/cpp/parsed_headers.h"
+#include "services/network/public/cpp/simple_host_resolver.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/reporting_service.mojom.h"
@@ -776,7 +777,8 @@ void NetworkContext::OnComputedFirstPartySetMetadata(
       std::make_unique<RestrictedCookieManager>(
           role, url_request_context_->cookie_store(),
           cookie_manager_->cookie_settings(), origin, isolation_info,
-          std::move(cookie_observer), std::move(first_party_set_metadata)),
+          std::move(cookie_observer), std::move(first_party_set_metadata),
+          network_service_->metrics_updater()),
       std::move(receiver));
 }
 
@@ -1474,9 +1476,11 @@ void NetworkContext::CreateRestrictedUDPSocket(
     mojo::PendingReceiver<mojom::RestrictedUDPSocket> receiver,
     mojo::PendingRemote<mojom::UDPSocketListener> listener,
     CreateRestrictedUDPSocketCallback callback) {
+  // SimpleHostResolver is transitively owned by |this|.
   socket_factory_->CreateRestrictedUDPSocket(
       addr, mode, traffic_annotation, std::move(options), std::move(receiver),
-      std::move(listener), std::move(callback));
+      std::move(listener), SimpleHostResolver::Create(this),
+      std::move(callback));
 }
 
 void NetworkContext::CreateTCPServerSocket(

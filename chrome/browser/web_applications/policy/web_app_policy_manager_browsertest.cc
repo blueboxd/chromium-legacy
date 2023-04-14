@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
+#include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/test_future.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
@@ -32,6 +35,13 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/testing_profile.h"
+#include "components/user_manager/user_names.h"
+#endif
+
 namespace web_app {
 
 namespace {
@@ -47,39 +57,38 @@ constexpr char kInstallUrl[] = "https://example.com/install";
 constexpr char kStartUrl[] = "https://example.com/start/?u=1";
 constexpr char kManifestUrl[] = "https://example.com/install/manifest.json";
 
-base::Value GetForceInstalledAppItem() {
-  base::Value item(base::Value::Type::DICTIONARY);
-  item.SetKey(kUrlKey, base::Value(kInstallUrl));
-  item.SetKey(kDefaultLaunchContainerKey,
-              base::Value(kDefaultLaunchContainerWindowValue));
+base::Value::Dict GetForceInstalledAppItem() {
+  base::Value::Dict item;
+  item.Set(kUrlKey, kInstallUrl);
+  item.Set(kDefaultLaunchContainerKey, kDefaultLaunchContainerWindowValue);
   return item;
 }
 
-base::Value GetCustomAppNameItem() {
-  base::Value item = GetForceInstalledAppItem();
-  item.SetKey(kCustomNameKey, base::Value(kDefaultCustomName));
+base::Value::Dict GetCustomAppNameItem() {
+  base::Value::Dict item = GetForceInstalledAppItem();
+  item.Set(kCustomNameKey, kDefaultCustomName);
   return item;
 }
 
-base::Value GetCustomAppIconItem() {
-  base::Value item = GetForceInstalledAppItem();
-  base::Value sub_item(base::Value::Type::DICTIONARY);
-  sub_item.SetKey(kCustomIconURLKey, base::Value(kDefaultCustomIconUrl));
-  sub_item.SetKey(kCustomIconHashKey, base::Value(kDefaultCustomIconHash));
-  item.SetKey(kCustomIconKey, std::move(sub_item));
+base::Value::Dict GetCustomAppIconItem() {
+  base::Value::Dict item = GetForceInstalledAppItem();
+  base::Value::Dict sub_item;
+  sub_item.Set(kCustomIconURLKey, kDefaultCustomIconUrl);
+  sub_item.Set(kCustomIconHashKey, kDefaultCustomIconHash);
+  item.Set(kCustomIconKey, std::move(sub_item));
   return item;
 }
 
-base::Value GetCustomAppIconAndNameItem() {
-  base::Value item = GetCustomAppIconItem();
-  item.SetKey(kCustomNameKey, base::Value(kDefaultCustomName));
+base::Value::Dict GetCustomAppIconAndNameItem() {
+  base::Value::Dict item = GetCustomAppIconItem();
+  item.Set(kCustomNameKey, kDefaultCustomName);
   return item;
 }
 
 }  // namespace
 
 class WebAppPolicyManagerBrowserTest
-    : public InProcessBrowserTest,
+    : public WebAppControllerBrowserTest,
       public testing::WithParamInterface<test::ExternalPrefMigrationTestCases> {
  public:
   WebAppPolicyManagerBrowserTest() {
@@ -112,7 +121,7 @@ class WebAppPolicyManagerBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+    WebAppControllerBrowserTest::SetUpOnMainThread();
     externally_installed_app_prefs_ =
         std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
   }
@@ -120,7 +129,7 @@ class WebAppPolicyManagerBrowserTest
   void TearDown() override {
     externally_installed_app_prefs_.reset();
 
-    InProcessBrowserTest::TearDown();
+    WebAppControllerBrowserTest::TearDown();
   }
 
   Profile* profile() { return browser()->profile(); }
@@ -213,8 +222,14 @@ IN_PROC_BROWSER_TEST_P(WebAppPolicyManagerBrowserTest, DontOverrideManifest) {
 // specified in manifest. Next time we navigate to kStartUrl, but we still
 // need to override the manifest even though the policy key is kInstallUrl.
 // This is done by matching the AppId.
+// TODO(crbug.com/1415979): Flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_MismatchedInstallAndStartUrl DISABLED_MismatchedInstallAndStartUrl
+#else
+#define MAYBE_MismatchedInstallAndStartUrl MismatchedInstallAndStartUrl
+#endif
 IN_PROC_BROWSER_TEST_P(WebAppPolicyManagerBrowserTest,
-                       MismatchedInstallAndStartUrl) {
+                       MAYBE_MismatchedInstallAndStartUrl) {
   WebAppPolicyManager& policy_manager =
       WebAppProvider::GetForTest(profile())->policy_manager();
 
@@ -303,5 +318,64 @@ INSTANTIATE_TEST_SUITE_P(
         test::ExternalPrefMigrationTestCases::kEnableMigrationReadPref,
         test::ExternalPrefMigrationTestCases::kEnableMigrationReadDB),
     test::GetExternalPrefMigrationTestName);
+
+class WebAppPolicyManagerGuestModeTest : public InProcessBrowserTest {
+ public:
+  WebAppPolicyManagerGuestModeTest() = default;
+  WebAppPolicyManagerGuestModeTest(const WebAppPolicyManagerGuestModeTest&) =
+      delete;
+  WebAppPolicyManagerGuestModeTest& operator=(
+      const WebAppPolicyManagerGuestModeTest&) = delete;
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    command_line->AppendSwitch(ash::switches::kGuestSession);
+    command_line->AppendSwitchASCII(ash::switches::kLoginUser,
+                                    user_manager::kGuestUserName);
+    command_line->AppendSwitchASCII(ash::switches::kLoginProfile,
+                                    TestingProfile::kTestUserProfileDir);
+    command_line->AppendSwitch(switches::kIncognito);
+#endif
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppPolicyManagerGuestModeTest,
+                       DoNotCreateAppsOnGuestMode) {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  test::ScopedSkipMainProfileCheck skip_main_profile_check;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+  base::Value::List app_list;
+  app_list.Append(GetForceInstalledAppItem());
+
+  Profile* test_profile = browser()->profile();
+  WebAppProvider* test_provider = WebAppProvider::GetForTest(test_profile);
+
+  base::test::TestFuture<void> future;
+  test_provider->policy_manager()
+      .SetOnAppsSynchronizedCompletedCallbackForTesting(future.GetCallback());
+  test_profile->GetPrefs()->SetList(prefs::kWebAppInstallForceList,
+                                    std::move(app_list));
+  EXPECT_TRUE(future.Wait());
+
+  const AppId& app_id =
+      GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(kInstallUrl));
+
+  // This test should pass on all platforms, including on a ChromeOS
+  // guest session.
+  EXPECT_TRUE(test_provider->registrar_unsafe().IsInstalled(app_id));
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  // This waits until ExternallyManagedAppManager::SynchronizeInstalledApps()
+  // has finished running, hence we know that for guest mode, the app was not
+  // installed.
+  Profile* guest_profile = CreateGuestBrowser()->profile();
+  WebAppProvider* guest_provider = WebAppProvider::GetForTest(guest_profile);
+  DCHECK(guest_provider);
+  test::WaitUntilWebAppProviderAndSubsystemsReady(guest_provider);
+  EXPECT_FALSE(guest_provider->registrar_unsafe().IsInstalled(app_id));
+#endif
+}
 
 }  // namespace web_app

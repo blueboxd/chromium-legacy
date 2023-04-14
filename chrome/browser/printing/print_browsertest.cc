@@ -214,6 +214,9 @@ class BrowserPrintingContextFactoryForTest
     auto context = MakeDefaultTestPrintingContext(delegate, skip_system_calls,
                                                   printer_name_);
 
+    if (cancels_in_new_document_) {
+      context->SetNewDocumentCancels();
+    }
     if (failed_error_for_new_document_)
       context->SetNewDocumentFails();
     if (access_denied_errors_for_new_document_)
@@ -247,6 +250,10 @@ class BrowserPrintingContextFactoryForTest
 
   void SetPrinterNameForSubsequentContexts(const std::string& printer_name) {
     printer_name_ = printer_name;
+  }
+
+  void SetCancelErrorOnNewDocument(bool cause_errors) {
+    cancels_in_new_document_ = cause_errors;
   }
 
   void SetFailedErrorOnNewDocument(bool cause_errors) {
@@ -291,6 +298,7 @@ class BrowserPrintingContextFactoryForTest
 
  private:
   std::string printer_name_;
+  bool cancels_in_new_document_ = false;
   bool failed_error_for_new_document_ = false;
   bool access_denied_errors_for_new_document_ = false;
 #if BUILDFLAG(IS_WIN)
@@ -638,7 +646,6 @@ class TestPrintViewManager : public PrintViewManager {
     print_now_result_ = PrintViewManager::PrintNow(rfh);
     return *print_now_result_;
   }
-  void ShowInvalidPrinterSettingsError() override { ShowPrintErrorDialog(); }
   bool CreateNewPrintJob(std::unique_ptr<PrinterQuery> query) override {
     if (!PrintViewManager::CreateNewPrintJob(std::move(query)))
       return false;
@@ -831,6 +838,8 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
     ASSERT_TRUE(web_contents());
     ASSERT_TRUE(params);
     EXPECT_TRUE(params->content->metafile_data_region.IsValid());
+    EXPECT_EQ(data.url,
+              web_contents()->GetOutermostWebContents()->GetLastCommittedURL());
 
     PrintViewManager::OnGotSnapshotCallback(
         std::move(callback), std::move(data), rfh_id, std::move(params));
@@ -854,6 +863,8 @@ class TestPrintViewManagerForContentAnalysis : public TestPrintViewManager {
     EXPECT_EQ(data.settings.block_until_verdict,
               enterprise_connectors::BlockUntilVerdict::kBlock);
     EXPECT_TRUE(data.settings.block_large_files);
+    EXPECT_EQ(data.url,
+              web_contents()->GetOutermostWebContents()->GetLastCommittedURL());
 
     // The snapshot should be valid and populated.
     EXPECT_TRUE(LooksLikePdf(page_region.Map().GetMemoryAsSpan<char>()));
@@ -2408,11 +2419,13 @@ class TestPrintJobWorkerOop : public PrintJobWorkerOop {
       std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
       std::unique_ptr<PrintingContext> printing_context,
       PrintJob* print_job,
+      mojom::PrintTargetType print_target_type,
       bool simulate_spooling_memory_errors,
       TestPrintJobWorkerOop::PrintCallbacks* callbacks)
       : PrintJobWorkerOop(std::move(printing_context_delegate),
                           std::move(printing_context),
                           print_job,
+                          print_target_type,
                           simulate_spooling_memory_errors),
         callbacks_(callbacks) {}
   TestPrintJobWorkerOop(const TestPrintJobWorkerOop&) = delete;
@@ -2500,11 +2513,12 @@ class TestPrinterQueryOop : public PrinterQueryOop {
   }
 #endif  // BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
 
-  std::unique_ptr<PrintJobWorker> TransferContextToNewWorker(
+  std::unique_ptr<PrintJobWorkerOop> CreatePrintJobWorker(
       PrintJob* print_job) override {
     return std::make_unique<TestPrintJobWorkerOop>(
         std::move(printing_context_delegate_), std::move(printing_context_),
-        print_job, simulate_spooling_memory_errors_, callbacks_);
+        print_job, print_target_type(), simulate_spooling_memory_errors_,
+        callbacks_);
   }
 
   bool simulate_spooling_memory_errors_;
@@ -2723,6 +2737,11 @@ class SystemAccessProcessPrintBrowserTestBase
     test_printing_context_factory()->SetCancelErrorOnAskUserForSettings();
   }
 #endif
+
+  void PrimeForCancelInNewDocument() {
+    test_printing_context_factory()->SetCancelErrorOnNewDocument(
+        /*cause_errors=*/true);
+  }
 
   void PrimeForErrorsInNewDocument() {
     test_printing_context_factory()->SetFailedErrorOnNewDocument(
@@ -3228,6 +3247,48 @@ IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
   // No tracking of cancel for in-browser tests, only for OOP.
   if (GetParam() != PrintBackendFeatureVariation::kInBrowserProcess)
     EXPECT_EQ(cancel_count(), 1);
+  EXPECT_EQ(print_job_destruction_count(), 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SystemAccessProcessPrintBrowserTest,
+                       StartPrintingCanceled) {
+  AddPrinter("printer1");
+  SetPrinterNameForSubsequentContexts("printer1");
+  PrimeForCancelInNewDocument();
+
+  ASSERT_TRUE(embedded_test_server()->Started());
+  GURL url(embedded_test_server()->GetURL("/printing/test3.html"));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  SetUpPrintViewManager(web_contents);
+
+  if (GetParam() == PrintBackendFeatureVariation::kInBrowserProcess) {
+    // A print job is started, but results in a cancel.  There are no callbacks
+    // to notice the start job.  The expected events for this are:
+    // 1.  Wait for the one print job to be destroyed, to ensure printing
+    //     finished cleanly before completing the test.
+    SetNumExpectedMessages(/*num=*/1);
+  } else {
+    // The expected events for this are:
+    // 1.  A print job is started, but results in a cancel.
+    // 2.  The print job is canceled.
+    // 3.  Wait for the one print job to be destroyed, to ensure printing
+    //     finished cleanly before completing the test.
+    SetNumExpectedMessages(/*num=*/3);
+  }
+
+  PrintAfterPreviewIsReadyAndLoaded();
+
+  // No tracking of start printing or cancel callbacks for in-browser tests,
+  // only for OOP.
+  if (GetParam() != PrintBackendFeatureVariation::kInBrowserProcess) {
+    EXPECT_EQ(start_printing_result(), mojom::ResultCode::kCanceled);
+    EXPECT_EQ(cancel_count(), 1);
+  }
+  EXPECT_EQ(error_dialog_shown_count(), 0u);
   EXPECT_EQ(print_job_destruction_count(), 1);
 }
 

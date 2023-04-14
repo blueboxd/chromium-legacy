@@ -71,11 +71,11 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 // the SimpleURLLoader which will be used to report the result of an in-browser
 // interest group based ad auction to an auction participant.
 std::unique_ptr<network::SimpleURLLoader> BuildSimpleUrlLoader(
-    const GURL& url,
+    GURL url,
     const url::Origin& frame_origin,
-    network::mojom::ClientSecurityStatePtr client_security_state) {
+    const network::mojom::ClientSecurityState& client_security_state) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = url;
+  resource_request->url = std::move(url);
   resource_request->redirect_mode = network::mojom::RedirectMode::kError;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->request_initiator = frame_origin;
@@ -83,7 +83,7 @@ std::unique_ptr<network::SimpleURLLoader> BuildSimpleUrlLoader(
   resource_request->trusted_params->isolation_info =
       net::IsolationInfo::CreateTransient();
   resource_request->trusted_params->client_security_state =
-      std::move(client_security_state);
+      client_security_state.Clone();
   auto simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
   simple_url_loader->SetTimeoutDuration(base::Seconds(30));
@@ -192,8 +192,8 @@ void InterestGroupManagerImpl::CheckPermissionsAndLeaveInterestGroup(
 
 void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
                                                  const GURL& joining_url) {
-  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kJoin,
-                              group.owner.Serialize(), group.name);
+  NotifyInterestGroupAccessed(InterestGroupObserver::kJoin, group.owner,
+                              group.name);
   blink::InterestGroupKey group_key(group.owner, group.name);
   impl_.AsyncCall(&InterestGroupStorage::JoinInterestGroup)
       .WithArgs(std::move(group), std::move(joining_url));
@@ -209,8 +209,8 @@ void InterestGroupManagerImpl::JoinInterestGroup(blink::InterestGroup group,
 void InterestGroupManagerImpl::LeaveInterestGroup(
     const blink::InterestGroupKey& group_key,
     const ::url::Origin& main_frame) {
-  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kLeave,
-                              group_key.owner.Serialize(), group_key.name);
+  NotifyInterestGroupAccessed(InterestGroupObserver::kLeave, group_key.owner,
+                              group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::LeaveInterestGroup)
       .WithArgs(group_key, main_frame);
 }
@@ -231,9 +231,12 @@ void InterestGroupManagerImpl::UpdateInterestGroupsOfOwners(
 
 void InterestGroupManagerImpl::RecordInterestGroupBids(
     const blink::InterestGroupSet& group_keys) {
+  if (group_keys.empty()) {
+    return;
+  }
   for (const auto& group_key : group_keys) {
-    NotifyInterestGroupAccessed(InterestGroupObserverInterface::kBid,
-                                group_key.owner.Serialize(), group_key.name);
+    NotifyInterestGroupAccessed(InterestGroupObserver::kBid, group_key.owner,
+                                group_key.name);
   }
   impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupBids)
       .WithArgs(group_keys);
@@ -242,8 +245,8 @@ void InterestGroupManagerImpl::RecordInterestGroupBids(
 void InterestGroupManagerImpl::RecordInterestGroupWin(
     const blink::InterestGroupKey& group_key,
     const std::string& ad_json) {
-  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kWin,
-                              group_key.owner.Serialize(), group_key.name);
+  NotifyInterestGroupAccessed(InterestGroupObserver::kWin, group_key.owner,
+                              group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::RecordInterestGroupWin)
       .WithArgs(group_key, std::move(ad_json));
 }
@@ -305,9 +308,9 @@ void InterestGroupManagerImpl::GetLastMaintenanceTimeForTesting(
 
 void InterestGroupManagerImpl::EnqueueReports(
     ReportType report_type,
-    const std::vector<GURL>& report_urls,
+    std::vector<GURL> report_urls,
     const url::Origin& frame_origin,
-    network::mojom::ClientSecurityState& client_security_state,
+    const network::mojom::ClientSecurityState& client_security_state,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   if (report_urls.empty()) {
     return;
@@ -334,13 +337,13 @@ void InterestGroupManagerImpl::EnqueueReports(
       break;
   }
 
-  for (const GURL& report_url : report_urls) {
+  for (GURL& report_url : report_urls) {
     auto report_request = std::make_unique<ReportRequest>();
+    report_request->request_url_size_bytes = report_url.spec().size();
     report_request->simple_url_loader = BuildSimpleUrlLoader(
-        report_url, frame_origin, client_security_state.Clone());
+        std::move(report_url), frame_origin, client_security_state);
     report_request->name = report_type_name;
     report_request->url_loader_factory = url_loader_factory;
-    report_request->request_url_size_bytes = report_url.spec().size();
     report_requests_.emplace_back(std::move(report_request));
   }
 
@@ -444,8 +447,8 @@ void InterestGroupManagerImpl::UpdateInterestGroup(
     const blink::InterestGroupKey& group_key,
     InterestGroupUpdate update,
     base::OnceCallback<void(bool)> callback) {
-  NotifyInterestGroupAccessed(InterestGroupObserverInterface::kUpdate,
-                              group_key.owner.Serialize(), group_key.name);
+  NotifyInterestGroupAccessed(InterestGroupObserver::kUpdate, group_key.owner,
+                              group_key.name);
   impl_.AsyncCall(&InterestGroupStorage::UpdateInterestGroup)
       .WithArgs(group_key, std::move(update))
       .Then(std::move(callback));
@@ -462,22 +465,22 @@ void InterestGroupManagerImpl::OnGetInterestGroupsComplete(
     base::OnceCallback<void(std::vector<StorageInterestGroup>)> callback,
     std::vector<StorageInterestGroup> groups) {
   for (const auto& group : groups) {
-    NotifyInterestGroupAccessed(InterestGroupObserverInterface::kLoaded,
-                                group.interest_group.owner.Serialize(),
+    NotifyInterestGroupAccessed(InterestGroupObserver::kLoaded,
+                                group.interest_group.owner,
                                 group.interest_group.name);
   }
   std::move(callback).Run(std::move(groups));
 }
 
 void InterestGroupManagerImpl::NotifyInterestGroupAccessed(
-    InterestGroupObserverInterface::AccessType type,
-    const std::string& owner_origin,
+    InterestGroupObserver::AccessType type,
+    const url::Origin& owner_origin,
     const std::string& name) {
   // Don't bother getting the time if there are no observers.
   if (observers_.empty())
     return;
   base::Time now = base::Time::Now();
-  for (InterestGroupObserverInterface& observer : observers_) {
+  for (InterestGroupObserver& observer : observers_) {
     observer.OnInterestGroupAccessed(now, type, owner_origin, name);
   }
 }

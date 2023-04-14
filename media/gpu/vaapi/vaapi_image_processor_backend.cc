@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "media/gpu/chromeos/fourcc.h"
@@ -29,8 +30,8 @@
 
 namespace media {
 
-#if BUILDFLAG(IS_CHROMEOS)
 namespace {
+
 bool IsSupported(const ImageProcessorBackend::PortConfig& config) {
   if (!config.fourcc.ToVAFourCC())
     return false;
@@ -58,7 +59,6 @@ bool IsSupported(const ImageProcessorBackend::PortConfig& config) {
 }
 
 }  // namespace
-#endif
 
 // static
 std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
@@ -69,10 +69,6 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
     ErrorCB error_cb) {
   DCHECK_EQ(output_mode, OutputMode::IMPORT)
       << "Only OutputMode::IMPORT supported";
-// VaapiImageProcessorBackend supports ChromeOS only.
-#if !BUILDFLAG(IS_CHROMEOS)
-  return nullptr;
-#else
   if (!IsSupported(input_config) || !IsSupported(output_config))
     return nullptr;
 
@@ -124,7 +120,6 @@ std::unique_ptr<ImageProcessorBackend> VaapiImageProcessorBackend::Create(
   return base::WrapUnique<ImageProcessorBackend>(new VaapiImageProcessorBackend(
       input_config, output_config, OutputMode::IMPORT, relative_rotation,
       std::move(error_cb)));
-#endif
 }
 
 VaapiImageProcessorBackend::VaapiImageProcessorBackend(
@@ -198,6 +193,9 @@ void VaapiImageProcessorBackend::Process(scoped_refptr<VideoFrame> input_frame,
                                          FrameReadyCB cb) {
   DVLOGF(4);
   DCHECK_CALLED_ON_VALID_SEQUENCE(backend_sequence_checker_);
+  TRACE_EVENT2("media", "VaapiImageProcessorBackend::Process", "input_frame",
+               input_frame->AsHumanReadableString(), "output_frame",
+               output_frame->AsHumanReadableString());
 
   if (!vaapi_wrapper_) {
     // Note that EncryptionScheme::kUnencrypted is fine even for the use case

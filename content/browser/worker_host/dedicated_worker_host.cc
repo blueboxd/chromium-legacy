@@ -536,6 +536,7 @@ DedicatedWorkerHost::CreateNetworkFactoryForSubresources(
               blink::mojom::PermissionsPolicyFeature::kTrustTokenRedemption)
               ? network::mojom::TrustTokenRedemptionPolicy::kPotentiallyPermit
               : network::mojom::TrustTokenRedemptionPolicy::kForbid,
+          ancestor_render_frame_host->GetCookieSettingOverrides(),
           "DedicatedWorkerHost::CreateNetworkFactoryForSubresources");
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       worker_process_host_->GetBrowserContext(),
@@ -881,7 +882,7 @@ void DedicatedWorkerHost::MaybeCountWebFeature(const GURL& script_url) {
         return;
 
       service_worker_context->GetRegistrationsForStorageKey(
-          blink::StorageKey(
+          blink::StorageKey::CreateFirstParty(
               ancestor_render_frame_host->GetLastCommittedOrigin()),
           base::BindOnce(&DedicatedWorkerHost::ContinueOnMaybeCountWebFeature,
                          weak_factory_.GetWeakPtr(), script_url,

@@ -72,6 +72,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
@@ -108,9 +109,9 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_sync_model_type_controller.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
@@ -136,7 +137,6 @@
 #include "ash/components/arc/arc_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ash/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ash/app_list/arc/arc_package_sync_model_type_controller.h"

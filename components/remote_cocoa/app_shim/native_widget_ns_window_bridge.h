@@ -298,7 +298,11 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void UpdateWindowGeometry();
 
   // Move `child_windows_` to `target`.
-  void MoveChildrenTo(NativeWidgetNSWindowBridge* target);
+  // Optionally set `anchored_only` to true, which will only move children that
+  // are anchored to the target window. Currently only BubbleWidgets with a
+  // BubbleDialogDelegate are supported.
+  void MoveChildrenTo(NativeWidgetNSWindowBridge* target,
+                      bool anchored_only = false);
 
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
@@ -437,6 +441,11 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
 
   mojo::AssociatedReceiver<remote_cocoa::mojom::NativeWidgetNSWindow>
       bridge_mojo_receiver_{this};
+
+  // Keep track of ImmersiveFullscreenRevealLock() and
+  // ImmersiveFullscreenRevealUnlock() calls so locks can persist across
+  // immersive_mode_controller_ resets.
+  int immersive_fullscreen_reveal_lock_count_ = 0;
 
   ui::WeakPtrNSObjectFactory<NativeWidgetNSWindowBridge> ns_weak_factory_;
 };

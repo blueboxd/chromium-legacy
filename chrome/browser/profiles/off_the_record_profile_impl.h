@@ -129,6 +129,8 @@ class OffTheRecordProfileImpl : public Profile {
   GetFederatedIdentityPermissionContext() override;
   content::FederatedIdentityApiPermissionContextDelegate*
   GetFederatedIdentityApiPermissionContext() override;
+  content::FederatedIdentityAutoReauthnPermissionContextDelegate*
+  GetFederatedIdentityAutoReauthnPermissionContext() override;
   content::KAnonymityServiceDelegate* GetKAnonymityServiceDelegate() override;
 
  protected:

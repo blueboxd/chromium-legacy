@@ -7,7 +7,6 @@
 #include <math.h>
 
 #include "third_party/blink/renderer/core/layout/anchor_scroll_data.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -1790,16 +1789,16 @@ NGOutOfFlowLayoutPart::TryCalculateOffset(
         node_info.node.GetLayoutBox()->Container();
     DCHECK(css_containing_block);
     anchor_evaluator_storage.emplace(
-        *anchor_queries, implicit_anchor, *css_containing_block,
-        container_converter, candidate_writing_direction,
+        *anchor_queries, candidate_style.AnchorDefault(), implicit_anchor,
+        *css_containing_block, container_converter, candidate_writing_direction,
         container_converter.ToPhysical(node_info.container_info.rect).offset,
         node_info.node.IsInTopLayer());
   } else if (const NGLogicalAnchorQuery* anchor_query =
                  container_builder_->AnchorQuery()) {
     // Otherwise the |container_builder_| is the containing block.
     anchor_evaluator_storage.emplace(
-        *anchor_query, implicit_anchor, container_converter,
-        candidate_writing_direction,
+        *anchor_query, candidate_style.AnchorDefault(), implicit_anchor,
+        container_converter, candidate_writing_direction,
         container_converter.ToPhysical(node_info.container_info.rect).offset,
         node_info.node.IsInTopLayer());
   } else {
@@ -2058,7 +2057,6 @@ const NGLayoutResult* NGOutOfFlowLayoutPart::GenerateFragment(
         ConstraintSpace(), node, block_offset, &builder, /* is_new_fc */ true,
         /* requires_content_before_breaking */ false);
   }
-  DeferredShapingMinimumTopScope minimum_top_scope(node, block_offset);
   NGConstraintSpace space = builder.ToConstraintSpace();
 
   if (is_repeatable)

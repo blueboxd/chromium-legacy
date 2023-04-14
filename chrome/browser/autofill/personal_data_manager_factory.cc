@@ -13,7 +13,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/sync/base/command_line_switches.h"
@@ -73,19 +73,30 @@ KeyedService* PersonalDataManagerFactory::BuildPersonalDataManager(
   PersonalDataManager* service =
       new PersonalDataManager(g_browser_process->GetApplicationLocale(),
                               GetCountryCodeFromVariations());
+
+  // WebDataServiceFactory redirects to the original profile.
   auto local_storage = WebDataServiceFactory::GetAutofillWebDataForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   auto account_storage = WebDataServiceFactory::GetAutofillWebDataForAccount(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
+
+  // The HistoryServiceFactory redirects to the original profile.
   auto* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
+
+  // This is null for OTR profiles.
   auto* strike_database = StrikeDatabaseFactory::GetForProfile(profile);
+
+  // The AutofillImageFetcherFactory redirects to the original profile.
   auto* image_fetcher = AutofillImageFetcherFactory::GetForProfile(profile);
 
+  // This is null for OTR profiles.
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
+
   service->Init(local_storage, account_storage, profile->GetPrefs(),
-                g_browser_process->local_state(),
-                IdentityManagerFactory::GetForProfile(profile), history_service,
-                strike_database, image_fetcher, profile->IsOffTheRecord());
+                g_browser_process->local_state(), identity_manager,
+                history_service, strike_database, image_fetcher,
+                profile->IsOffTheRecord());
 
   if (!syncer::IsSyncAllowedByFlag())
     service->OnSyncServiceInitialized(nullptr);

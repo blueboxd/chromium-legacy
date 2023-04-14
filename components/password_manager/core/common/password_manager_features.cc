@@ -51,11 +51,15 @@ BASE_FEATURE(kEnablePasswordGenerationForClearTextFields,
              "EnablePasswordGenerationForClearTextFields",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// By default, Password Manager is disabled in fenced frames for now.
+// By default, Password Manager is enabled in fenced frames as part of
+// FencedFramesAPIChanges blink experiment.
+// This flag can be used via Finch to disable PasswordManager in the
+// FencedFramesAPIChanges blink experiment without affecting the other
+// features included in the experiment.
 // TODO(crbug.com/1294378): Remove once launched.
 BASE_FEATURE(kEnablePasswordManagerWithinFencedFrame,
              "EnablePasswordManagerWithinFencedFrame",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables filling password on a website when there is saved password on
 // affiliated website.
@@ -109,15 +113,13 @@ BASE_FEATURE(kIOSShowPasswordStorageInSaveInfobar,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // IS_IOS
 
-// Enables (un)muting compromised passwords from bulk leak check in settings.
-BASE_FEATURE(kMuteCompromisedPasswords,
-             "MuteCompromisedPasswords",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
+// Enables memory mapping the word lists used in the zxcvbn library employed
+// for the password weakness check.
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
+BASE_FEATURE(kMemoryMapWeaknessCheckDictionaries,
+             "kMemoryMapWeaknessCheckDictionaries",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
-);
 
 // Enables new regex for OTP fields.
 BASE_FEATURE(kNewRegexForOtpFields,
@@ -152,6 +154,12 @@ BASE_FEATURE(kPasswordImport,
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 BASE_FEATURE(kPasswordManagerRedesign,
              "PasswordManagerRedesign",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+BASE_FEATURE(kPasswordsImportM2,
+             "PasswordsImportM2",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

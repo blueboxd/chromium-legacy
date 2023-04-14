@@ -304,9 +304,10 @@ bool Router::AcceptRouteClosureFrom(const OperationContext& context,
       }
 
       if (!inward_edge_ && !bridge_) {
-        status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
+        is_peer_closed_ = true;
         if (inbound_parcels_.IsSequenceFullyConsumed()) {
-          status_.flags |= IPCZ_PORTAL_STATUS_DEAD;
+          status_.flags |=
+              IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
         }
         status_.num_remote_bytes = 0;
         status_.num_remote_parcels = 0;
@@ -360,9 +361,10 @@ bool Router::AcceptRouteDisconnectedFrom(const OperationContext& context,
       forwarding_links.push_back(bridge_->ReleaseDecayingLink());
     } else {
       // Terminal routers may have trap events to fire.
-      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
+      is_peer_closed_ = true;
       if (inbound_parcels_.IsSequenceFullyConsumed()) {
-        status_.flags |= IPCZ_PORTAL_STATUS_DEAD;
+        status_.flags |=
+            IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
       }
       status_.num_remote_parcels = 0;
       status_.num_remote_bytes = 0;
@@ -433,7 +435,9 @@ IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
       const bool ok = inbound_parcels_.Pop(consumed_parcel);
       ABSL_ASSERT(ok);
     } else {
-      memcpy(data, p.data_view().data(), data_size);
+      if (data_size > 0) {
+        memcpy(data, p.data_view().data(), data_size);
+      }
       if (consuming_whole_parcel) {
         const bool ok = inbound_parcels_.Pop(consumed_parcel);
         ABSL_ASSERT(ok);
@@ -449,7 +453,7 @@ IpczResult Router::GetNextInboundParcel(IpczGetFlags flags,
     status_.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
     status_.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
     if (inbound_parcels_.IsSequenceFullyConsumed()) {
-      status_.flags |= IPCZ_PORTAL_STATUS_DEAD;
+      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
     }
     traps_.UpdatePortalStatus(context, status_,
                               TrapSet::UpdateReason::kLocalParcelConsumed,
@@ -520,7 +524,7 @@ IpczResult Router::CommitGetNextIncomingParcel(
     status_.num_local_parcels = inbound_parcels_.GetNumAvailableElements();
     status_.num_local_bytes = inbound_parcels_.GetTotalAvailableElementSize();
     if (inbound_parcels_.IsSequenceFullyConsumed()) {
-      status_.flags |= IPCZ_PORTAL_STATUS_DEAD;
+      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
     }
     traps_.UpdatePortalStatus(context, status_,
                               TrapSet::UpdateReason::kLocalParcelConsumed,
@@ -594,7 +598,7 @@ Ref<Router> Router::Deserialize(const RouterDescriptor& descriptor,
         descriptor.next_incoming_sequence_number,
         descriptor.num_bytes_consumed);
     if (descriptor.peer_closed) {
-      router->status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
+      router->is_peer_closed_ = true;
       router->status_.num_remote_parcels = 0;
       router->status_.num_remote_bytes = 0;
       if (!router->inbound_parcels_.SetFinalSequenceLength(
@@ -602,7 +606,8 @@ Ref<Router> Router::Deserialize(const RouterDescriptor& descriptor,
         return nullptr;
       }
       if (router->inbound_parcels_.IsSequenceFullyConsumed()) {
-        router->status_.flags |= IPCZ_PORTAL_STATUS_DEAD;
+        router->status_.flags |=
+            IPCZ_PORTAL_STATUS_PEER_CLOSED | IPCZ_PORTAL_STATUS_DEAD;
       }
     }
 
@@ -822,7 +827,7 @@ void Router::SerializeNewRouterAndConfigureProxy(
   // which can only happen after `descriptor` is transmitted.
   inward_edge_.emplace();
 
-  if (status_.flags & IPCZ_PORTAL_STATUS_PEER_CLOSED) {
+  if (is_peer_closed_) {
     descriptor.peer_closed = true;
     descriptor.closed_peer_sequence_length =
         *inbound_parcels_.final_sequence_length();
@@ -1307,6 +1312,7 @@ void Router::Flush(const OperationContext& context, FlushBehavior behavior) {
   bool outward_link_decayed = false;
   bool dropped_last_decaying_link = false;
   ParcelsToFlush parcels_to_flush;
+  TrapEventDispatcher dispatcher;
   {
     absl::MutexLock lock(&mutex_);
 
@@ -1368,6 +1374,17 @@ void Router::Flush(const OperationContext& context, FlushBehavior behavior) {
                        inbound_parcels_.current_sequence_number(),
                        outbound_parcels_.current_sequence_number())) {
       bridge_.reset();
+    }
+
+    if (is_peer_closed_ &&
+        (status_.flags & IPCZ_PORTAL_STATUS_PEER_CLOSED) == 0 &&
+        !inbound_parcels_.ExpectsMoreElements()) {
+      // Set the PEER_CLOSED bit and trigger any relevant traps, if and only if
+      // the peer is actually closed and there are no more inbound parcels in
+      // flight towards us.
+      status_.flags |= IPCZ_PORTAL_STATUS_PEER_CLOSED;
+      traps_.UpdatePortalStatus(context, status_,
+                                TrapSet::UpdateReason::kPeerClosed, dispatcher);
     }
 
     // If we're dropping the last of our decaying links, our outward link may

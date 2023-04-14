@@ -10,6 +10,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/sync/sync_service_factory.h"
@@ -58,22 +59,22 @@ SyncStatusLabels GetStatusForUnrecoverableError(
 // information about the sync status.
 SyncStatusLabels GetStatusForAuthError(
     const GoogleServiceAuthError& auth_error) {
+  DCHECK(auth_error.IsPersistentError());
+
   switch (auth_error.state()) {
     case GoogleServiceAuthError::NONE:
+    // Transient errors are unreachable.
+    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
+    case GoogleServiceAuthError::CONNECTION_FAILED:
+    case GoogleServiceAuthError::REQUEST_CANCELED:
       NOTREACHED();
       break;
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return {SyncStatusMessageType::kSyncError, IDS_SYNC_SERVICE_UNAVAILABLE,
-              IDS_SETTINGS_EMPTY_STRING, SyncStatusActionType::kNoAction};
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-      // Note that there is little the user can do if the server is not
-      // reachable. Since attempting to re-connect is done automatically by
-      // the Syncer, we do not show the (re)login link.
-      return {SyncStatusMessageType::kSyncError, IDS_SYNC_SERVER_IS_UNREACHABLE,
-              IDS_SETTINGS_EMPTY_STRING, SyncStatusActionType::kNoAction};
     case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
     case GoogleServiceAuthError::SERVICE_ERROR:
-    default:
+    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
+    case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
+    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
+    case GoogleServiceAuthError::NUM_STATES:
       return {SyncStatusMessageType::kSyncError, IDS_SYNC_RELOGIN_ERROR,
               IDS_SYNC_RELOGIN_BUTTON, SyncStatusActionType::kReauthenticate};
   }
@@ -87,6 +88,7 @@ SyncStatusLabels GetSyncStatusLabelsImpl(
     bool is_user_clear_primary_account_allowed,
     const GoogleServiceAuthError& auth_error) {
   DCHECK(service);
+  DCHECK(!auth_error.IsTransientError());
 
   if (!service->HasSyncConsent()) {
     return {SyncStatusMessageType::kPreSynced, IDS_SETTINGS_EMPTY_STRING,
@@ -244,11 +246,13 @@ SyncStatusLabels GetSyncStatusLabels(
 
 SyncStatusLabels GetSyncStatusLabels(Profile* profile) {
   DCHECK(profile);
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
   return GetSyncStatusLabels(
-      SyncServiceFactory::GetForProfile(profile),
-      IdentityManagerFactory::GetForProfile(profile),
-      signin_util::UserSignoutSetting::GetForProfile(profile)
-          ->IsClearPrimaryAccountAllowed());
+      SyncServiceFactory::GetForProfile(profile), identity_manager,
+      ChromeSigninClientFactory::GetForProfile(profile)
+          ->IsClearPrimaryAccountAllowed(identity_manager->HasPrimaryAccount(
+              signin::ConsentLevel::kSync)));
 }
 
 SyncStatusMessageType GetSyncStatusMessageType(Profile* profile) {
@@ -274,17 +278,18 @@ absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType(Profile* profile) {
   // RequiresClientUpgrade() is unrecoverable, but is treated separately below.
   if (service->HasUnrecoverableError() && !service->RequiresClientUpgrade()) {
     // Display different messages and buttons for managed accounts.
-    if (!signin_util::UserSignoutSetting::GetForProfile(profile)
-             ->IsClearPrimaryAccountAllowed()) {
+    if (!ChromeSigninClientFactory::GetForProfile(profile)
+             ->IsClearPrimaryAccountAllowed(
+                 IdentityManagerFactory::GetForProfile(profile)
+                     ->HasPrimaryAccount(signin::ConsentLevel::kSync))) {
       return AvatarSyncErrorType::kManagedUserUnrecoverableError;
     }
     return AvatarSyncErrorType::kUnrecoverableError;
   }
 
-  // TODO(crbug.com/1156584): This should simply check SyncService::
-  // GetTransportState() is PAUSED. This needs enlarging the PAUSED state first.
-  if (service->GetAuthError().IsPersistentError()) {
-    return AvatarSyncErrorType::kAuthError;
+  if (service->GetTransportState() ==
+      syncer::SyncService::TransportState::PAUSED) {
+    return AvatarSyncErrorType::kSyncPaused;
   }
 
   if (service->RequiresClientUpgrade()) {
@@ -311,7 +316,7 @@ absl::optional<AvatarSyncErrorType> GetAvatarSyncErrorType(Profile* profile) {
 std::u16string GetAvatarSyncErrorDescription(AvatarSyncErrorType error,
                                              bool is_sync_feature_enabled) {
   switch (error) {
-    case AvatarSyncErrorType::kAuthError:
+    case AvatarSyncErrorType::kSyncPaused:
       return l10n_util::GetStringUTF16(IDS_PROFILES_DICE_SYNC_PAUSED_TITLE);
     case AvatarSyncErrorType::kTrustedVaultKeyMissingForPasswordsError:
       return l10n_util::GetStringUTF16(

@@ -132,6 +132,8 @@ class CORE_EXPORT PaintTimingDetector
   struct LargestContentfulPaintDetails {
     base::TimeTicks largest_image_paint_time_;
     uint64_t largest_image_paint_size_ = 0;
+    base::TimeTicks largest_image_load_start_;
+    base::TimeTicks largest_image_load_end_;
     blink::LargestContentfulPaintType largest_contentful_paint_type_ =
         blink::LargestContentfulPaintType::kNone;
     double largest_contentful_paint_image_bpp_ = 0.0;
@@ -199,7 +201,7 @@ class CORE_EXPORT PaintTimingDetector
     DCHECK(image_paint_timing_detector_);
     return *image_paint_timing_detector_;
   }
-  void StartRecordingLCP();
+  void RestartRecordingLCP();
 
   LargestContentfulPaintCalculator* GetLargestContentfulPaintCalculator();
 
@@ -227,6 +229,14 @@ class CORE_EXPORT PaintTimingDetector
   LargestContentfulPaintImageRequestPriorityForMetrics() const {
     return lcp_details_for_ukm_
         .largest_contentful_paint_image_request_priority_;
+  }
+
+  base::TimeTicks LargestImageLoadStartForMetrics() const {
+    return lcp_details_for_ukm_.largest_image_load_start_;
+  }
+
+  base::TimeTicks LargestImageLoadEndForMetrics() const {
+    return lcp_details_for_ukm_.largest_image_load_end_;
   }
 
   base::TimeTicks LargestContentfulPaintForMetrics() const {
@@ -277,6 +287,7 @@ class CORE_EXPORT PaintTimingDetector
   LargestContentfulPaintDetails lcp_details_;
   LargestContentfulPaintDetails lcp_details_for_ukm_;
   bool record_lcp_to_ukm_ = true;
+  bool lcp_was_restarted_ = false;
 };
 
 // Largest Text Paint and Text Element Timing aggregate text nodes by these

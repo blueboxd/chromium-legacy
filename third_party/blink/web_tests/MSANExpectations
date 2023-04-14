@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Mac13 Mac13-arm64 Win Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -35,13 +35,11 @@ crbug.com/555703 [ Linux ] virtual/media-gpu-accelerated/* [ Skip ]
 # These tests are just a tad bit too slow on MSAN bots and time out. Setting
 # them as "Slow" doesn't seem to help the problem (see discussion on bug), so
 # marking them as "Timeout" while crbug.com/729136 is worked out.
-crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
 crbug.com/1400717 [ Linux ] webexposed/element-instance-property-listing.html [ Timeout ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidations.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-style/timeline-style-recalc-with-invalidator-invalidations.js [ Pass Timeout ]
-crbug.com/760543 [ Linux ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Pass Timeout ]
 crbug.com/760543 [ Linux ] http/tests/devtools/oopif/oopif-performance-cpu-profiles.js [ Pass Timeout ]
 
 # Memory allocation hooks are disabled on ASAN/MSAN
@@ -60,8 +58,6 @@ crbug.com/856601 [ Linux ] fast/js/toString-stack-overflow.html [ Pass Timeout ]
 # Sheriff 2019-02-13
 crbug.com/931660 [ Linux ] fast/history/replacestate-nocrash.html [ Pass Timeout ]
 
-# Time out on MSAN
-crbug.com/856601 [ Linux ] webaudio/Analyser/realtimeanalyser-freq-data.html [ Pass Timeout ]
 
 # Sheriff 2019-11-11
 

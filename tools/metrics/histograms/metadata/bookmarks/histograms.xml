@@ -59,7 +59,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BookmarkManager.ResultsRenderedTime" units="ms"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>johntlee@chromium.org</owner>
   <owner>dbeam@chromium.org</owner>
   <summary>
@@ -83,7 +83,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.AverageNodeSize" units="Bytes"
-    expires_after="2023-06-08">
+    expires_after="2023-08-08">
   <owner>wylieb@chromium.org</owner>
   <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -119,7 +119,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.BookmarksBar.DragDropType"
-    enum="BookmarkBarDragDropType" expires_after="2023-06-04">
+    enum="BookmarkBarDragDropType" expires_after="2023-08-08">
   <owner>dfried@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
   <summary>
@@ -327,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.EditLocation" enum="BookmarkLaunchLocation"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>dfried@chromium.org</owner>
   <owner>mickeyburks@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -355,14 +355,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.EntryPoint" enum="BookmarksEntryPoint"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>ianwen@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>How users add a new bookmark.</summary>
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.AnyTermApproach.Used"
-    enum="Boolean" expires_after="2023-06-18">
+    enum="Boolean" expires_after="2023-08-20">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -405,7 +405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.GetResultsMatching.Terms.TermLength"
-    units="characters" expires_after="2023-06-18">
+    units="characters" expires_after="2023-08-20">
   <owner>manukh@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -753,6 +753,39 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram
+    name="Bookmarks.MultipleOpened.OpenBookmarkTimeInterval2.{BookmarkType}"
+    units="ms" expires_after="2023-06-25">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Records the time interval between the time the bookmark was added/opened.
+
+    Recorded when multi-selection is opened from the bookmark manager. Possible
+    that the selection is only 1 bookmark.
+  </summary>
+  <token key="BookmarkType">
+    <variant name="Normal" summary="a normal bookmark."/>
+    <variant name="Partner" summary="a partner bookmark."/>
+    <variant name="ReadingList" summary="a reading list article."/>
+  </token>
+</histogram>
+
+<histogram name="Bookmarks.MultipleOpened.OpenBookmarkType" enum="BookmarkType"
+    expires_after="2023-06-25">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Logs whether the bookmark entry is a user bookmark or a partner bookmark
+    when it is opened.
+
+    Recorded when multi-selection is opened from the bookmark manager. Possible
+    that the selection is only 1 bookmark.
+  </summary>
+</histogram>
+
 <histogram name="Bookmarks.OnFaviconsChangedIconURL" enum="BooleanHit"
     expires_after="M77">
   <owner>pkotwicz@chromium.org</owner>
@@ -768,7 +801,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.OpenBookmarkManager.PerProfileType"
-    enum="BrowserProfileType" expires_after="2023-06-04">
+    enum="BrowserProfileType" expires_after="2023-08-08">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -781,8 +814,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.OpenBookmarkTimeInterval2.{BookmarkType}" units="ms"
-    expires_after="2022-02-15">
-  <owner>dtrainor@chromium.org</owner>
+    expires_after="2023-06-25">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
     A new version of Bookmarks.OpenBookmarkTimeInterval.{BookmarkType}, to rule
@@ -797,7 +831,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Bookmarks.OpenBookmarkType" enum="BookmarkType"
     expires_after="2023-06-25">
-  <owner>wychen@chromium.org</owner>
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
     Logs whether the bookmark entry is a user bookmark or a partner bookmark
@@ -866,7 +901,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.RemovedLocation" enum="BookmarkLaunchLocation"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>dfried@chromium.org</owner>
   <owner>mickeyburks@chromium.org</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>
@@ -983,7 +1018,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.Times.OnProfileLoad.TimeSinceAdded3" units="days"
-    expires_after="2023-06-08">
+    expires_after="2023-08-08">
   <owner>wylieb@chromium.org</owner>
   <owner>chrome-collections@google.com</owner>
   <component>UI&gt;Browser&gt;Bookmarks</component>

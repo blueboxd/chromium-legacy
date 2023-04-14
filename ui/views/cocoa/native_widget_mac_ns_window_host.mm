@@ -38,6 +38,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/native_theme/native_theme_mac.h"
+#include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/cocoa/text_input_host.h"
 #include "ui/views/cocoa/tooltip_manager_mac.h"
 #include "ui/views/controls/label.h"
@@ -45,6 +46,7 @@
 #include "ui/views/controls/menu/menu_controller.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/native_widget_mac.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/dialog_delegate.h"
 #include "ui/views/word_lookup_client.h"
@@ -187,7 +189,7 @@ class BridgedNativeWidgetHostDummy
   void GetRootViewAccessibilityToken(
       GetRootViewAccessibilityTokenCallback callback) override {
     std::vector<uint8_t> token;
-    base::ProcessId pid = base::kNullProcessId;
+    int64_t pid = 0;
     std::move(callback).Run(pid, token);
   }
   void ValidateUserInterfaceItem(
@@ -215,6 +217,12 @@ class BridgedNativeWidgetHostDummy
                          HandleAcceleratorCallback callback) override {
     bool was_handled = false;
     std::move(callback).Run(was_handled);
+  }
+  void BubbleAnchorViewContainedInWidget(
+      uint64_t widget_id,
+      BubbleAnchorViewContainedInWidgetCallback callback) override {
+    bool contained = false;
+    std::move(callback).Run(contained);
   }
 };
 
@@ -477,10 +485,6 @@ void NativeWidgetMacNSWindowHost::InitWindow(
   UpdateLocalWindowFrame(initial_bounds_in_screen);
   GetNSWindowMojo()->SetInitialBounds(initial_bounds_in_screen,
                                       widget->GetMinimumSize());
-
-  // TODO(ccameron): Correctly set these based |in_process_ns_window_|.
-  window_bounds_in_screen_ = initial_bounds_in_screen;
-  content_bounds_in_screen_ = initial_bounds_in_screen;
 
   // Widgets for UI controls (usually layered above web contents) start visible.
   if (widget_type_ == Widget::InitParams::TYPE_CONTROL)
@@ -1341,11 +1345,10 @@ void NativeWidgetMacNSWindowHost::SetRemoteAccessibilityTokens(
   [remote_view_accessible_ setWindowUIElement:remote_window_accessible_.get()];
   [remote_view_accessible_
       setTopLevelUIElement:remote_window_accessible_.get()];
-  [NSAccessibilityRemoteUIElement setRemoteUIApp:YES];
 }
 
 bool NativeWidgetMacNSWindowHost::GetRootViewAccessibilityToken(
-    base::ProcessId* pid,
+    int64_t* pid,
     std::vector<uint8_t>* token) {
   *pid = getpid();
   id element_id = GetNativeViewAccessible();
@@ -1393,6 +1396,38 @@ bool NativeWidgetMacNSWindowHost::HandleAccelerator(
     }
     *was_handled = widget->GetFocusManager()->ProcessAccelerator(accelerator);
   }
+  return true;
+}
+
+bool NativeWidgetMacNSWindowHost::BubbleAnchorViewContainedInWidget(
+    uint64_t widget_id,
+    bool* contained) {
+  *contained = false;
+  NativeWidgetMacNSWindowHost* window_host = GetFromId(widget_id);
+  if (!window_host) {
+    return true;
+  }
+  views::Widget* target_widget = window_host->native_widget_mac()->GetWidget();
+  if (!target_widget) {
+    return true;
+  }
+  views::WidgetDelegate* widget_delegate =
+      native_widget_mac()->GetWidget()->widget_delegate();
+  if (!widget_delegate) {
+    return true;
+  }
+  views::BubbleDialogDelegate* bubble_dialog =
+      widget_delegate->AsBubbleDialogDelegate();
+  if (!bubble_dialog) {
+    return true;
+  }
+
+  views::View* anchor_view = bubble_dialog->GetAnchorView();
+  if (anchor_view && target_widget->GetContentsView()->Contains(anchor_view)) {
+    *contained = true;
+    return true;
+  }
+
   return true;
 }
 
@@ -1525,7 +1560,7 @@ void NativeWidgetMacNSWindowHost::GetWindowFrameTitlebarHeight(
 void NativeWidgetMacNSWindowHost::GetRootViewAccessibilityToken(
     GetRootViewAccessibilityTokenCallback callback) {
   std::vector<uint8_t> token;
-  base::ProcessId pid;
+  int64_t pid;
   GetRootViewAccessibilityToken(&pid, &token);
   std::move(callback).Run(pid, token);
 }
@@ -1567,6 +1602,14 @@ void NativeWidgetMacNSWindowHost::HandleAccelerator(
   bool was_handled = false;
   HandleAccelerator(accelerator, require_priority_handler, &was_handled);
   std::move(callback).Run(was_handled);
+}
+
+void NativeWidgetMacNSWindowHost::BubbleAnchorViewContainedInWidget(
+    uint64_t widget_id,
+    BubbleAnchorViewContainedInWidgetCallback callback) {
+  bool contained = false;
+  BubbleAnchorViewContainedInWidget(widget_id, &contained);
+  std::move(callback).Run(contained);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

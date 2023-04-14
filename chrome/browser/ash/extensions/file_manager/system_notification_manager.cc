@@ -13,7 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ash/drive/drivefs_native_message_host.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/drivefs_event_router.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
@@ -79,14 +79,33 @@ std::u16string GetIOTaskMessage(Profile* profile,
   int single_file_message_id;
   int multiple_file_message_id;
 
+  // Display special copy to help users understand that pasting files to "My
+  // Drive" does not mean that they are immediately synced.
+  auto* drive_integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  bool is_destination_drive =
+      drive_integration_service &&
+      drive_integration_service->GetMountPointPath().IsParent(
+          status.destination_folder.path());
+
   switch (status.type) {
     case OperationType::kCopy:
-      single_file_message_id = IDS_FILE_BROWSER_COPY_FILE_NAME;
-      multiple_file_message_id = IDS_FILE_BROWSER_COPY_ITEMS_REMAINING;
+      if (is_destination_drive) {
+        single_file_message_id = IDS_FILE_BROWSER_PREPARING_FILE_NAME_MY_DRIVE;
+        multiple_file_message_id = IDS_FILE_BROWSER_PREPARING_ITEMS_MY_DRIVE;
+      } else {
+        single_file_message_id = IDS_FILE_BROWSER_COPY_FILE_NAME;
+        multiple_file_message_id = IDS_FILE_BROWSER_COPY_ITEMS_REMAINING;
+      }
       break;
     case OperationType::kMove:
-      single_file_message_id = IDS_FILE_BROWSER_MOVE_FILE_NAME;
-      multiple_file_message_id = IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING;
+      if (is_destination_drive) {
+        single_file_message_id = IDS_FILE_BROWSER_PREPARING_FILE_NAME_MY_DRIVE;
+        multiple_file_message_id = IDS_FILE_BROWSER_PREPARING_ITEMS_MY_DRIVE;
+      } else {
+        single_file_message_id = IDS_FILE_BROWSER_MOVE_FILE_NAME;
+        multiple_file_message_id = IDS_FILE_BROWSER_MOVE_ITEMS_REMAINING;
+      }
       break;
     case OperationType::kDelete:
       single_file_message_id = IDS_FILE_BROWSER_DELETE_FILE_NAME;
@@ -235,36 +254,85 @@ SystemNotificationManager::CreateIOTaskProgressNotification(
     const std::string& notification_id,
     const std::u16string& title,
     const std::u16string& message,
+    const bool paused,
     int progress) {
   message_center::RichNotificationData rich_data;
   rich_data.progress = progress;
   rich_data.progress_status = message;
 
+  // Button click delegate to handle the state::PAUSED IOTask case, where the
+  // user [X] closes this system notification, but did not press its buttons.
+  // In that case, default behavior is to auto-click button 1.
+  // TODO(b/255264604): ask UX here, which button should be the default?
+  class IOTaskProgressNotificationClickDelegate
+      : public message_center::HandleNotificationClickDelegate {
+   public:
+    IOTaskProgressNotificationClickDelegate(const ButtonClickCallback& callback,
+                                            bool paused)
+        : message_center::HandleNotificationClickDelegate(callback),
+          paused_(paused) {}
+
+    void Close(bool by_user) override {
+      if (paused_ && by_user) {  // Click button at index 1.
+        message_center::HandleNotificationClickDelegate::Click(1, {});
+      }
+    }
+
+   protected:
+    ~IOTaskProgressNotificationClickDelegate() override = default;
+
+   private:
+    bool paused_;  // True if the IOTask is in state::PAUSED.
+  };
+
+  auto notification_click_handler = base::BindRepeating(
+      &SystemNotificationManager::HandleIOTaskProgressNotificationClick,
+      weak_ptr_factory_.GetWeakPtr(), task_id, notification_id, paused);
+
   auto notification = ash::CreateSystemNotificationPtr(
       message_center::NOTIFICATION_TYPE_PROGRESS, notification_id, title,
       message, app_name_, GURL(), message_center::NotifierId(), rich_data,
-      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-          base::BindRepeating(&SystemNotificationManager::CancelTaskId,
-                              weak_ptr_factory_.GetWeakPtr(), task_id,
-                              notification_id)),
+      base::MakeRefCounted<IOTaskProgressNotificationClickDelegate>(
+          std::move(notification_click_handler), paused),
       ash::kFolderIcon, message_center::SystemNotificationWarningLevel::NORMAL);
 
-  // Add the cancel button:
-  notification->set_buttons({message_center::ButtonInfo(
-      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_CANCEL_LABEL))});
+  std::vector<message_center::ButtonInfo> notification_buttons;
+
+  // Add "Cancel" button.
+  notification_buttons.emplace_back(message_center::ButtonInfo(
+      l10n_util::GetStringUTF16(IDS_FILE_BROWSER_CANCEL_LABEL)));
+
+  if (paused) {  // For paused tasks, add "Open Files app" button.
+    notification_buttons.emplace_back(
+        message_center::ButtonInfo(l10n_util::GetStringUTF16(
+            IDS_REMOVABLE_DEVICE_NAVIGATION_BUTTON_LABEL)));
+  }
+
+  notification->set_buttons(notification_buttons);
   return notification;
 }
 
-void SystemNotificationManager::CancelTaskId(
+void SystemNotificationManager::HandleIOTaskProgressNotificationClick(
     file_manager::io_task::IOTaskId task_id,
     const std::string& notification_id,
+    const bool paused,
     absl::optional<int> button_index) {
-  if (button_index) {
+  if (!button_index) {
+    return;
+  }
+
+  if (button_index == 0) {
     if (io_task_controller_) {
       io_task_controller_->Cancel(task_id);
     } else {
       LOG(ERROR) << "No TaskController, can't cancel task_id: " << task_id;
     }
+  }
+
+  if (paused && button_index == 1) {
+    platform_util::ShowItemInFolder(
+        profile_, file_manager::util::GetMyFilesFolderForProfile(profile_));
+    Dismiss(notification_id);
   }
 }
 
@@ -598,24 +666,37 @@ void SystemNotificationManager::HandleIOTaskProgress(
   std::string id = base::StrCat(
       {kSwaFileOperationPrefix, base::NumberToString(status.task_id)});
 
-  // If there are any SWA windows open, we remove the progress in system
-  // notification.
+  // If there are any SWA windows open, remove the IOTask progress from system
+  // notifications.
   if (!status.show_notification || DoFilesSwaWindowsExist()) {
-    GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
-                                           id);
+    Dismiss(id);
     return;
   }
 
+  // If the IOTask state has completed, remove the IOTask progress from system
+  // notifications.
   if (status.IsCompleted()) {
-    GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
-                                           id);
+    Dismiss(id);
     return;
   }
 
-  // From here state is kQueued or kInProgress:
-  std::u16string title = l10n_util::GetStringUTF16(IDS_FILEMANAGER_APP_NAME);
+  // From here state is kQueued, kInProgress, or kPaused.
+  const bool paused = status.IsPaused();
 
-  std::u16string message = GetIOTaskMessage(profile_, status);
+  std::u16string title;
+  std::u16string message;
+  if (!paused) {
+    title = app_name_;
+    message = GetIOTaskMessage(profile_, status);
+  } else {
+    title = GetIOTaskMessage(profile_, status);
+    int message_id = IDS_FILE_BROWSER_CONFLICT_DIALOG_MESSAGE;
+    if (status.pause_params.conflict_is_directory) {
+      message_id = IDS_FILE_BROWSER_CONFLICT_DIALOG_FOLDER_MESSAGE;
+    }
+    auto& item_name = status.pause_params.conflict_name;
+    message = GetStringFUTF16(message_id, base::UTF8ToUTF16(item_name));
+  }
 
   int progress = 0;
   if (status.total_bytes > 0) {
@@ -624,7 +705,7 @@ void SystemNotificationManager::HandleIOTaskProgress(
 
   std::unique_ptr<message_center::Notification> notification =
       CreateIOTaskProgressNotification(status.task_id, id, title, message,
-                                       progress);
+                                       paused, progress);
 
   GetNotificationDisplayService()->Display(NotificationHandler::Type::TRANSIENT,
                                            *notification,

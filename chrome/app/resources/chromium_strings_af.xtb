@@ -12,7 +12,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1131805035311359397"><ph name="BEGIN_LINK" />Meld by Chromium aan<ph name="END_LINK" /> om te kyk of jou wagwoorde teen dataskendings en ander sekuriteitkwessies beveilig word.</translation>
 <translation id="1185134272377778587">Meer oor Chromium</translation>
 <translation id="1203500561924088507">Dankie dat jy geïnstalleer het. Jy moet jou blaaier herbegin voordat jy <ph name="BUNDLE_NAME" /> gebruik.</translation>
-<translation id="1231839967188101156">Wanneer dit aan is, maak Chromium geheue uit onaktiewe oortjies beskikbaar. Dit gee aktiewe oortjies en ander programme meer rekenaarhulpbronne en hou Chromium vinnig. Jou onaktiewe oortjies word outomaties weer aktief wanneer jy na hulle toe teruggaan. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Geheuebespaarder het Chromium vinniger gemaak</translation>
 <translation id="1315551408014407711">Stel jou nuwe Chromium-profiel op</translation>
 <translation id="1396446129537741364">Chromium probeer tans om wagwoorde te wys.</translation>
@@ -34,6 +33,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="185970820835152459">Jy kan jou aangemelde Google-rekeninge bestuur. Jou Google-rekeninge word gebruik vir Chromium-blaaier, Play Winkel, Gmail en meer. As jy 'n rekening vir iemand anders, soos 'n gesinslid, wil byvoeg, kan jy 'n nuwe persoon eerder by jou <ph name="DEVICE_TYPE" /> voeg. <ph name="LINK_BEGIN" />Kom meer te wete<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Werwe kan inligting oor jou belangstellings in Chromium stoor. As jy byvoorbeeld ’n werf besoek om skoene vir ’n marathon te koop, kan die werf jou belangstelling definieer as iemand wat marathons hardloop. As jy later ’n ander werf besoek om vir ’n wedloop te registreer, kan daardie werf vir jou ’n advertensie vir drafskoene op grond van jou belangstellings wys.</translation>
 <translation id="1881322772814446296">Jy meld tans met 'n bestuurde rekening aan en gee sy administrateur beheer oor jou Chromium-profiel. Jou Chromium-data, soos jou programme, boekmerke, geskiedenis, wagwoorde en ander instellings sal permanent aan <ph name="USER_NAME" /> gekoppel word. Jy sal hierdie data via die Google-rekening se kontroleskerm kan uitvee, maar jy sal nie hierdie data met 'n ander rekening kan assosieer nie. Jy het die opsie om 'n nuwe profiel te skep om jou bestaande Chromium-data apart te hou. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">Wanneer jy iets in die adresbalk of soekkassie tik, stuur Chromium wat jy tik na Google Drive toe om itemvoorstelle te kry. Dit is af in Incognito.</translation>
 <translation id="1911763535808217981">Deur dit af te skakel, kan jy by Google-werwe soos Gmail aanmeld sonder om by Chromium aan te meld</translation>
 <translation id="1929939181775079593">Chromium reageer nie. Herbegin nou?</translation>
 <translation id="193439633299369377">Chromium-bedryfstelsel moet herbegin word om die opdatering toe te pas.</translation>
@@ -116,6 +116,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="3567254597502212821">Jou blaaigeskiedenis, ’n rekord van werwe wat jy besoek het deur Chromium op hierdie toestel te gebruik.</translation>
 <translation id="3575459661164320785">Daar is skadelike sagteware op jou rekenaar. Chromium kan dit verwyder, jou instellings teruglaai en uitbreidings deaktiveer om jou blaaier weer normaal te laat werk.</translation>
 <translation id="3593091352817399191">’n Ander rekening is reeds aangemeld. Chromium kan jou eie profiel vir jou skep om jou blaaidata apart te hou.</translation>
+<translation id="363078681319665186">Jy het macOS 10.15 of nuwer nodig om in die toekoms Chromium-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.13.</translation>
 <translation id="3639635944603682591">Hierdie persoon se blaaierdata sal van hierdie toestel af uitgevee word. Meld as <ph name="USER_EMAIL" /> by Chromium aan om die data te herwin.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{'n Nuwe opdatering vir Chromium is beskikbaar en sal toegepas word sodra jy herbegin.}=1{'n Nuwe opdatering vir Chromium is beskikbaar en sal toegepas word sodra jy herbegin. Jou incognitovenster sal nie weer oopgemaak word nie.}other{'n Nuwe opdatering vir Chromium is beskikbaar en sal toegepas word sodra jy herbegin. Jou # incognitovensters sal nie weer oopgemaak word nie.}}</translation>
 <translation id="3651803019964686660">Meld op albei toestelle by Chromium aan om 'n nommer van <ph name="ORIGIN" /> af na jou Android-foon te stuur.</translation>
@@ -123,12 +124,12 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="3702352323269013324">Kom meer te wete oor personalisering in Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Jou administrateur vra dat jy Chromium herbegin om hierdie opdatering toe te pas}=1{Jou administrateur vra dat jy Chromium herbegin om hierdie opdatering toe te pas. Jou incognitovenster sal nie weer oopgemaak word nie.}other{Jou administrateur vra dat jy Chromium herbegin om hierdie opdatering toe te pas. Jou # incognitovensters sal nie weer oopgemaak word nie.}}</translation>
 <translation id="3713809861844741608">Maak skakel in 'n nuwe Chromium-oortjie oop</translation>
-<translation id="3728336900324680424">Chromium sal by jou Drive ingaan om voorstelle in die adresbalk te maak</translation>
 <translation id="378917192836375108">Met Chromium kan jy 'n telefoonnommer op die web klik en dit met Skype bel!</translation>
 <translation id="3830894615770080216">Chromium-bedryfstelsel</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="386822487697155367">Kry hulp met Chromium-bedryfstelsel</translation>
 <translation id="3871664619793219264">Kry jou Chromium-blaaiergoed van <ph name="ACCOUNT_EMAIL" /> af</translation>
+<translation id="387966568917439637">Jy het macOS 10.15 of nuwer nodig om in die toekoms Chromium-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.14.</translation>
 <translation id="388648406173476553">Pasmaak en beheer Chromium. Iets verg jou aandag – klik vir besonderhede.</translation>
 <translation id="3889543394854987837">Klik jou naam om Chromium oop te maak en te begin blaai.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> is reeds by hierdie Chromium-profiel aangemeld. Chromium kan jou eie profiel vir jou skep om jou blaaidata apart te hou.</translation>
@@ -218,6 +219,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="6072463441809498330">Maak Chromium vinniger</translation>
 <translation id="608006075545470555">Voeg werkprofiel by hierdie blaaier</translation>
 <translation id="6096348254544841612">Pasmaak en beheer Chromium. Opdatering is beskikbaar.</translation>
+<translation id="6102072151902574948">Wanneer dit aan is, bespaar Chromium batterykrag deur agtergrondaktiwiteit en visuele effekte, soos gladde rollees en videoraamtempo’s, te beperk.</translation>
 <translation id="6119438414301547735">Laat uitbreiding toe om toegangversoeke op die Chromium-nutsbalk te wys</translation>
 <translation id="6120345080069858279">Chromium sal hierdie wagwoord in jou Google-rekening stoor. Jy sal dit nie hoef te onthou nie.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is gevaarlik en daarom het Chromium dit geblokkeer.</translation>
@@ -278,6 +280,7 @@ Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielg
 <translation id="6940431691900807093">Later kan ’n werf wat jy besoek Chromium vra om jou belangstellings te sien om die advertensies wat jy sien, te personaliseer. Chromium kan tot 3 belangstellings deel.</translation>
 <translation id="6964305034639999644">Maak skakel in 'n incognitovenster in Chromium oop</translation>
 <translation id="6978145336957848883">Swak wagwoorde is maklik om te raai. Laat Chromium <ph name="BEGIN_LINK" />sterk wagwoorde vir jou skep en onthou<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Wanneer dit aan is, maak Chromium geheue uit onaktiewe oortjies beskikbaar. Dit gee aktiewe oortjies en ander apps meer rekenaarhulpbronne en hou Chromium vinnig. Jou onaktiewe oortjies word outomaties weer aktief wanneer jy na hulle toe teruggaan.</translation>
 <translation id="6984667024406244807">Chromium is onaktief</translation>
 <translation id="6985329841647292029">Chromium-bedryfstel se bepalings</translation>
 <translation id="6990124437352146030">Chromium het toestemming nodig om toegang te kry tot jou mikrofoon vir hierdie werf</translation>
@@ -322,6 +325,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">'n Chromium-profiel met hierdie rekening bestaan reeds op hierdie toestel</translation>
 <translation id="7845233973568007926">Dankie dat jy geïnstalleer het. Jy moet jou rekenaar herbegin voordat jy <ph name="BUNDLE_NAME" /> gebruik.</translation>
+<translation id="7859018312476869945">Wanneer jy iets in die adresbalk of soekkassie tik, stuur Chromium wat jy tik na jou versteksoekenjin toe om beter voorstelle te kry. Dit is af in Incognito.</translation>
 <translation id="7867198900892795913">Chromium kon nie na die nuutste weergawe opdateer nie en daarom het jy nie nuwe kenmerke en sekuriteitregstellings nie.</translation>
 <translation id="7872446069773932638">Laai tans af … <ph name="SECONDS" /> sekonde(s) oor.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Hoe jy jou data kan bestuur:<ph name="END_BOLD" /> Ons vee outomaties jou belangstellings uit wat ouer as 4 weke is om jou privaatheid te beskerm. Terwyl jy aanhou blaai, kan ’n belangstelling weer op die lys verskyn. Of jy kan belangstellings verwyder wat jy wil hê Chromium moenie oorweeg nie.</translation>
@@ -349,9 +353,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
 <translation id="8550334526674375523">Hierdie werkprofiel is heeltemal apart van jou persoonlike profiel.</translation>
 <translation id="8558383651099478961">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chromium afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie bygevoeg word nie.</translation>
-<translation id="8561285221328166383">Jy het macOS 10.13 of nuwer nodig om in die toekoms Chromium-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld</translation>
-<translation id="8574036838419011058">Wanneer dit aan is, bespaar Chromium batterykrag deur agtergrondaktiwiteit en visuele effekte, soos gladde rollees en videoraamtempo's, te beperk. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Kopiereg <ph name="YEAR" /> Die Chromium-outeurs. Alle regte voorbehou.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Hoe ons hierdie data gebruik:<ph name="END_BOLD" /> Werwe kan inligting oor jou belangstellings in Chromium stoor. As jy byvoorbeeld ’n werf besoek om skoene vir ’n marathon te koop, kan die werf jou belangstelling definieer as iemand wat marathons hardloop. As jy later ’n ander werf besoek om vir ’n wedloop te registreer, kan daardie werf vir jou ’n advertensie vir drafskoene op grond van jou belangstellings wys.</translation>
 <translation id="8619360774459241877">Begin tans Chromium …</translation>
@@ -382,7 +384,6 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium sal dalk nie reg werk nie omdat dit nie meer in Windows XP en Windows Vista gesteun word nie</translation>
 <translation id="942598560705308788">Sertifikate wat deur Chromium bestuur word</translation>
-<translation id="945990405696787151">Jy het macOS 10.13 of nuwer nodig om in die toekoms Chromium-opdaterings te kry. Hierdie rekenaar gebruik OS X 10.11.</translation>
 <translation id="965162752251293939">Wie gebruik tans Chromium?</translation>
 <translation id="967427899662692980">Kry Chromium se sterkste sekuriteit</translation>
 <translation id="9792300276217204">Vee altyd werfdata op jou toestel uit wanneer jy Chromium toemaak</translation>

@@ -55,6 +55,7 @@
 #include "chrome/browser/extensions/omaha_attributes_handler.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/permissions_updater.h"
+#include "chrome/browser/extensions/profile_util.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/extensions/updater/chrome_extension_downloader_factory.h"
@@ -62,6 +63,7 @@
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/lifetime/termination_notification.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -340,14 +342,16 @@ void ExtensionService::OnExternalProviderUpdateComplete(
   external_install_manager_->UpdateExternalExtensionAlert();
 }
 
-ExtensionService::ExtensionService(Profile* profile,
-                                   const base::CommandLine* command_line,
-                                   const base::FilePath& install_directory,
-                                   ExtensionPrefs* extension_prefs,
-                                   Blocklist* blocklist,
-                                   bool autoupdate_enabled,
-                                   bool extensions_enabled,
-                                   base::OneShotEvent* ready)
+ExtensionService::ExtensionService(
+    Profile* profile,
+    const base::CommandLine* command_line,
+    const base::FilePath& install_directory,
+    const base::FilePath& unpacked_install_directory,
+    ExtensionPrefs* extension_prefs,
+    Blocklist* blocklist,
+    bool autoupdate_enabled,
+    bool extensions_enabled,
+    base::OneShotEvent* ready)
     : Blocklist::Observer(blocklist),
       command_line_(command_line),
       profile_(profile),
@@ -364,6 +368,7 @@ ExtensionService::ExtensionService(Profile* profile,
       registry_(ExtensionRegistry::Get(profile)),
       pending_extension_manager_(profile),
       install_directory_(install_directory),
+      unpacked_install_directory_(unpacked_install_directory),
       extensions_enabled_(extensions_enabled),
       ready_(ready),
       shared_module_service_(new SharedModuleService(profile_)),
@@ -540,11 +545,10 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
   TRACE_EVENT0("browser,startup",
                "ExtensionService::MaybeFinishShutdownDelayed");
 
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> delayed_info(
-      extension_prefs_->GetAllDelayedInstallInfo());
-  for (size_t i = 0; i < delayed_info->size(); ++i) {
-    ExtensionInfo* info = delayed_info->at(i).get();
-    scoped_refptr<const Extension> extension(nullptr);
+  const ExtensionPrefs::ExtensionsInfo delayed_info =
+      extension_prefs_->GetAllDelayedInstallInfo();
+  for (const auto& info : delayed_info) {
+    scoped_refptr<const Extension> extension;
     if (info->extension_manifest) {
       std::string error;
       extension = Extension::Create(
@@ -552,8 +556,9 @@ void ExtensionService::MaybeFinishShutdownDelayed() {
           *info->extension_manifest,
           extension_prefs_->GetDelayedInstallCreationFlags(info->extension_id),
           info->extension_id, &error);
-      if (extension.get())
+      if (extension.get()) {
         delayed_installs_.Insert(extension);
+      }
     }
   }
   MaybeFinishDelayedInstallations();
@@ -1076,7 +1081,8 @@ void ExtensionService::GrantPermissions(const Extension* extension) {
 // static
 void ExtensionService::RecordPermissionMessagesHistogram(
     const Extension* extension,
-    const char* histogram_basename) {
+    const char* histogram_basename,
+    bool log_user_profile_histograms) {
   PermissionIDSet permissions =
       PermissionMessageProvider::Get()->GetAllPermissionIDs(
           extension->permissions_data()->active_permissions(),
@@ -1089,6 +1095,19 @@ void ExtensionService::RecordPermissionMessagesHistogram(
       base::StringPrintf("Extensions.Permissions_%s3", histogram_basename);
   for (const PermissionID& id : permissions)
     base::UmaHistogramEnumeration(permissions_histogram_name, id.id());
+
+  if (log_user_profile_histograms) {
+    base::UmaHistogramBoolean(
+        base::StringPrintf("Extensions.HasPermissions_%s4", histogram_basename),
+        !permissions.empty());
+
+    std::string permissions_histogram_name_incremented =
+        base::StringPrintf("Extensions.Permissions_%s4", histogram_basename);
+    for (const PermissionID& id : permissions) {
+      base::UmaHistogramEnumeration(permissions_histogram_name_incremented,
+                                    id.id());
+    }
+  }
 }
 
 // TODO(michaelpg): Group with other ExtensionRegistrar::Delegate overrides
@@ -1352,12 +1371,12 @@ void ExtensionService::OnAllExternalProvidersReady() {
   }
 
   // Uninstall all the unclaimed extensions.
-  std::unique_ptr<ExtensionPrefs::ExtensionsInfo> extensions_info(
-      extension_prefs_->GetInstalledExtensionsInfo());
-  for (size_t i = 0; i < extensions_info->size(); ++i) {
-    ExtensionInfo* info = extensions_info->at(i).get();
-    if (Manifest::IsExternalLocation(info->extension_location))
+  ExtensionPrefs::ExtensionsInfo extensions_info =
+      extension_prefs_->GetInstalledExtensionsInfo();
+  for (const auto& info : extensions_info) {
+    if (Manifest::IsExternalLocation(info->extension_location)) {
       CheckExternalUninstall(info->extension_id);
+    }
   }
 
   error_controller_->ShowErrorIfNeeded();
@@ -1681,12 +1700,30 @@ void ExtensionService::OnExtensionInstalled(
                               extension->location());
   }
 
+  bool is_user_profile =
+      extensions::profile_util::ProfileCanUseNonComponentExtensions(profile_);
+
   if (!registry_->GetInstalledExtension(extension->id())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType", extension->GetType(),
                               100);
+    if (is_user_profile) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType.User",
+                                extension->GetType(), 100);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallType.NonUser",
+                                extension->GetType(), 100);
+    }
     UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource",
                               extension->location());
-    RecordPermissionMessagesHistogram(extension, "Install");
+    if (is_user_profile) {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource.User",
+                                extension->GetType(), 100);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION("Extensions.InstallSource.NonUser",
+                                extension->GetType(), 100);
+    }
+    // TODO(crbug.com/1383740): Address Install metrics below in a follow-up CL.
+    RecordPermissionMessagesHistogram(extension, "Install", is_user_profile);
   }
 
   const Extension::State initial_state =

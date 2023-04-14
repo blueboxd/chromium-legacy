@@ -133,11 +133,13 @@
 <translation id="163517899691012366">Коли ввімкнено режим "Не турбувати", сповіщення надходять без звуку</translation>
 <translation id="1637505162081889933">Пристроїв: <ph name="NUM_DEVICES" /></translation>
 <translation id="1639239467298939599">Завантаження</translation>
+<translation id="1647986356840967552">Попередня сторінка</translation>
 <translation id="1654477262762802994">Ввести голосовий запит</translation>
 <translation id="1668469839109562275">Вбудована мережа VPN</translation>
 <translation id="1677472565718498478">Залишилося <ph name="TIME" /></translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> не підключено.</translation>
 <translation id="1677582821739292812">Хтось дивиться на ваш екран</translation>
+<translation id="1683399938733266832">Поточне використання ЦП: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Таймер на <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Адреса IPv6: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@
 <translation id="1771761307086386028">Прокрутити праворуч</translation>
 <translation id="1774796056689732716">Календар, <ph name="CURRENT_MONTH_YEAR" />, зараз вибрано <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">Вимкнено</translation>
-<translation id="1797271123677381264">Не пам’ятаю пароль</translation>
 <translation id="1807246157184219062">Світла</translation>
 <translation id="181103072419391116">Рівень сигналу – <ph name="SIGNAL_STRENGTH" />. Мережею керує адміністратор</translation>
 <translation id="1816896987747843206">Буде надано доступ до камери для всіх додатків і веб-сайтів, де потрібен відповідний дозвіл</translation>
@@ -381,6 +382,7 @@
 <translation id="3051189971848907985">Профіль перейменовується. Зачекайте кілька хвилин.</translation>
 <translation id="3055162170959710888">Сьогодні цей пристрій працював <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">Не підтримується</translation>
+<translation id="3068622547379332530">Версія <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />), <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Полицю розташовано ліворуч</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Розгорнути меню</translation>
@@ -421,9 +423,11 @@
 <translation id="3289674678944039601">Заряджання через адаптер</translation>
 <translation id="3290356915286466215">Не захищено</translation>
 <translation id="3294437725009624529">Гість</translation>
+<translation id="3298690094479023523">PIN-код або пароль усе ще не вдається підтвердити. Повторіть спробу.</translation>
 <translation id="3307642347673023554">Увімкнено режим ноутбука</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> усе одно зможе ввійти в обліковий запис.</translation>
 <translation id="3321628682574733415">Неправильний код доступу батьків</translation>
+<translation id="332827762492701193">Сповіщення сховано</translation>
 <translation id="3339826665088060472">Запис екрана, інструменти для знімків екрана та запису відео з екрана</translation>
 <translation id="3340978935015468852">налаштування</translation>
 <translation id="3341303451326249809">Знімок екрана зроблено</translation>
@@ -554,12 +558,14 @@
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="397726367135689299">Джерело для заряджання акумулятора ненадійне.</translation>
 <translation id="3977512764614765090">Акумулятор заряджений на <ph name="PERCENTAGE" />% і продовжує заряджатися.</translation>
+<translation id="3984536049089846927">Наступна сторінка</translation>
 <translation id="3986082989454912832">Відповісти</translation>
 <translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
 <translation id="40062176907008878">Рукописне введення</translation>
 <translation id="4017989525502048489">Лазерний вказівник</translation>
 <translation id="401993194061514265">Маркер недоступний. Ще раз відкрийте додаток Запис екрана.</translation>
 <translation id="4021716437419160885">Прокрутити вниз</translation>
+<translation id="4024840464866786680">Якщо ви забули PIN-код чи пароль облікового запису Google або нещодавно змінили пароль, спробуйте відновити його.</translation>
 <translation id="4028481283645788203">Для додаткового захисту потрібно ввести пароль</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Ви ділитеся екраном</translation>
@@ -575,9 +581,10 @@
 <translation id="4123259114412175274">Щоб розблокувати Chromebook, переконайтеся, що на телефоні ввімкнено Bluetooth</translation>
 <translation id="4125970834901680537">Не можна транслювати додатки в режимі планшета. Повторіть спробу в режимі ноутбука.</translation>
 <translation id="4129129681837227511">Щоб переглядати сповіщення на заблокованому екрані, розблокуйте його й змініть налаштування</translation>
-<translation id="4130035430755296270">Продовжуйте наводити курсор на варіанти макета</translation>
+<translation id="4131973331381812765">Температура: <ph name="TEMPERATURE" /> °C – поточна швидкість: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> ГГц</translation>
 <translation id="4136724716305260864">Увімкнено до сходу сонця</translation>
 <translation id="4146833061457621061">Увімкни музику</translation>
+<translation id="4150201353443180367">Екран</translation>
 <translation id="4165275524535002941">Кабель може не підтримувати дисплеї</translation>
 <translation id="4177913004758410636">{0,plural, =1{Оновіть пристрій протягом дня}one{Оновіть пристрій протягом # дня}few{Оновіть пристрій протягом # днів}many{Оновіть пристрій протягом # днів}other{Оновіть пристрій протягом # дня}}</translation>
 <translation id="4181841719683918333">Мови</translation>
@@ -699,10 +706,12 @@
 <translation id="4735944890391795473">Робочий стіл 12</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="4740516757091333363">Видалити збережений робочий стіл?</translation>
+<translation id="4747410141429390146">Розблокуйте, щоб переглянути сповіщення</translation>
 <translation id="4752784485658729358">Можна зберегти щонайбільше 6 робочих столів. Щоб зберегти новий робочий стіл, видаліть наявний.</translation>
 <translation id="4759238208242260848">Завантаження</translation>
 <translation id="4762573482154983647">Приховати додатки</translation>
 <translation id="4774338217796918551">Поверніться завтра о <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Пароль усе ще не вдається підтвердити. Повторіть спробу.</translation>
 <translation id="4776917500594043016">Пароль користувача  <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Маркет</translation>
 <translation id="4778095205580009397">Google Асистент недоступний у демонстраційному сеансі.</translation>
@@ -727,6 +736,7 @@
 <translation id="4895488851634969361">Акумулятор заряджений.</translation>
 <translation id="490375751687810070">Вертикально</translation>
 <translation id="490788395437447240">Заряд акумулятора – <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="491504982845934899">Щоб активувати мережу <ph name="NETWORK_NAME" />, потрібно налаштувати пристрій</translation>
 <translation id="4917385247580444890">Потужний</translation>
 <translation id="4918086044614829423">Прийняти</translation>
 <translation id="4919841137949306064">Додаток <ph name="APP_NAME" /> використовує вашу камеру</translation>
@@ -842,6 +852,7 @@
 <translation id="5536723544185013515">Нещодавні додатки: щоб перейти до нещодавніх додатків, використовуйте клавіші зі стрілками вліво або вправо</translation>
 <translation id="553675580533261935">Завершення сеансу</translation>
 <translation id="5537725057119320332">Трансляція</translation>
+<translation id="5546397813406633847">Відновити пароль</translation>
 <translation id="554893713779400387">Перемкнути диктування</translation>
 <translation id="5558091555391176027">Перемикач режиму високої видимості для функції "Передавання поблизу"</translation>
 <translation id="5560420195677022218">Переглядайте додатки на пристрої <ph name="DEVICE_TYPE" /></translation>
@@ -858,6 +869,7 @@
 <translation id="5618148318840095371">Установлено підключення до кращої мережі</translation>
 <translation id="5619862035903135339">Адміністратор заборонив запис екрана</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">Не вдалося підтвердити пароль. Повторіть спробу.</translation>
 <translation id="5648021990716966815">Гніздо для мікрофона</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" />: потрібно переглянути.</translation>
 <translation id="5662075790140998213">Робочий стіл 10</translation>
@@ -876,6 +888,7 @@
 <translation id="5707775774148071965">Швидкість передачі даних для пристрою вища, ніж для кабелю. Продуктивність пристрою може бути обмежено.</translation>
 <translation id="5710450975648804523">Режим "Не турбувати" ввімкнено</translation>
 <translation id="571295407079589142">Мобільний Інтернет вимкнено</translation>
+<translation id="5727460725221669831">Якщо ви забули або нещодавно змінили пароль облікового запису Google, спробуйте відновити його.</translation>
 <translation id="573413375004481890">Цей пристрій не може підтримувати всі екрани, тому один із них відключено</translation>
 <translation id="5740328398383587084">Обмін поблизу</translation>
 <translation id="574392208103952083">Середній</translation>
@@ -905,6 +918,7 @@
 <translation id="5867606971598166637">Системний адміністратор записує ваші екрани</translation>
 <translation id="5876666360658629066">Введіть батьківський код</translation>
 <translation id="5881540930187678962">Налаштуйте функцію "Керування телефоном" пізніше</translation>
+<translation id="5881663018261910378">Вимкнено</translation>
 <translation id="5887954372087850114">Вікно "<ph name="WINDOW_TITLE" />" призначено робочому столу "<ph name="DESK_TITLE" />". Його призначення для всіх інших робочих столів скасовано</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
 <translation id="589817443623831496">Точкове сканування</translation>
@@ -1319,6 +1333,7 @@
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8131994907636310308">Закрити підказку сортування</translation>
 <translation id="8132793192354020517">З'єднано з <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Потрібно налаштувати пристрій</translation>
 <translation id="813913629614996137">Ініціалізація...</translation>
 <translation id="8142441511840089262">Двічі натиснути</translation>
 <translation id="8142699993796781067">Приватна мережа</translation>

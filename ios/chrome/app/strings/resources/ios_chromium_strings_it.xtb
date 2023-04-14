@@ -11,7 +11,6 @@
 <translation id="1472013873724362412">Il tuo account non funziona su Chromium. Contatta l'amministratore di dominio o utilizza un normale Account Google per accedere.</translation>
 <translation id="1507010443238049608">Contribuisci a migliorare le funzionalità e le prestazioni di Chromium</translation>
 <translation id="1531155317299575425">Vengono mostrate richieste di accesso a Chromium.</translation>
-<translation id="1584569488888892906">Chromium è semplice, sicuro e più veloce che mai</translation>
 <translation id="1617663976202781617">Dati dalla Sincronizzazione Chromium</translation>
 <translation id="1722370509450468186">La password verrà salvata nel tuo Account (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Dati di Chromium cancellati</translation>
@@ -61,10 +60,12 @@
 <translation id="4985291216379576555">Offline. Chromium non può controllare la disponibilità di aggiornamenti.</translation>
 <translation id="4996471330284142407">Aumenta la tua produttività grazie a Chromium, che ti offre semplicità, sicurezza e velocità senza precedenti.</translation>
 <translation id="4999538639245140991">Dal momento che stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />, i dati di Chromium verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
+<translation id="5048795749726991615">Usa la funzionalità Compilazione automatica di Chromium per recuperare facilmente le tue password salvate nelle altre app</translation>
 <translation id="5171868502429358653">Accedi a Chromium</translation>
 <translation id="5224391634244552924">Nessuna password salvata. Chromium può controllare le password quando le salvi.</translation>
 <translation id="5308226104666789935">Chromium non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="5396916991083608703">Impostare Chromium come browser predefinito?</translation>
+<translation id="5453478652154926037">Chromium non può controllare le tue password.</translation>
 <translation id="5521125884468363740">Esegui l'accesso su tutti i dispositivi su cui utilizzi Chromium e attiva la sincronizzazione per visualizzare le tue schede</translation>
 <translation id="5522297504975449419">Alcune funzionalità di Chromium non saranno più disponibili.</translation>
 <translation id="5573014823074921752">Suggerimento per Chromium. Per vedere più opzioni sulla scheda, tocca e tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
@@ -88,8 +89,8 @@
 <translation id="7018284295775193585">Impossibile aggiornare Chromium</translation>
 <translation id="7045244423563602563">Personalizza Chromium</translation>
 <translation id="7099326575020694068">Chromium non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
-<translation id="7108914401277488191">Aumenta la tua produttività con Chromium</translation>
 <translation id="7118091470949186573">Ora puoi usare Chromium ogni volta che tocchi link in messaggi, documenti e altre app.</translation>
+<translation id="7165402419892018581">Scegli Chromium per la compilazione automatica</translation>
 <translation id="7175400662502680481">La tua password è stata compromessa nell'ambito di una violazione dei dati. Gestore delle password consiglia di cambiarla subito.</translation>
 <translation id="7208566199746267865">Chromium ti fa risparmiare tempo portando i tuoi account sul Web. Puoi aggiungere o rimuovere account nelle impostazioni.</translation>
 <translation id="725427773388857052">Chromium può contribuire a proteggerti da violazioni dei dati, siti web non sicuri e non solo.</translation>
@@ -104,6 +105,7 @@
 <translation id="7746854981345936341">Suggerimento per Chromium. Alcuni pulsanti si trovano ora nella parte inferiore della schermata, ad esempio Indietro, Avanti e Cerca.</translation>
 <translation id="7763454117143368771">Usa Chromium come browser predefinito per proteggerti da siti pericolosi e tenere al sicuro le tue password</translation>
 <translation id="7812317783196516890">Hai eseguito l'accesso e stai sincronizzando i tuoi dati con un account gestito da <ph name="DOMAIN" /> il cui amministratore può ora configurare criteri relativi agli utenti specifici per questo account che possono modificare il comportamento di Chromium.</translation>
+<translation id="7859018312476869945">Quando digiti nella barra degli indirizzi o nella casella di ricerca, Chromium invia ciò che digiti al tuo motore di ricerca predefinito per ricevere suggerimenti migliori. Questa opzione è disattivata in incognito.</translation>
 <translation id="786327964234957808">Stai cambiando account di sincronizzazione, passando dall'account <ph name="USER_EMAIL1" /> all'account <ph name="USER_EMAIL2" />. I dati di Chromium esistenti sono gestiti da <ph name="DOMAIN" />. I dati verranno cancellati dal dispositivo, ma rimarranno memorizzati nell'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Inizia a usare lo scanner di Chromium</translation>
 <translation id="7928628054454574139">Apri Chromium ogni volta che tocchi link in altre app</translation>
@@ -113,6 +115,7 @@
 <translation id="8073677936375100957">Eliminare i dati di Chromium dal dispositivo?</translation>
 <translation id="8240981428553046115">Chromium non ha potuto verificare la disponibilità di aggiornamenti. Riprova più tardi.</translation>
 <translation id="8409374867500149834">Disponi della misura di sicurezza più efficace di Chromium contro siti web pericolosi</translation>
+<translation id="8460301378281140593">Dalle Impostazioni dell'iPhone, apri "Opzioni password" e seleziona "Chromium"</translation>
 <translation id="858114650497379505">Puoi utilizzare le password salvate con Gestore delle password in altre app sull'iPhone.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Tutti i diritti riservati.</translation>
 <translation id="865600487977764604">Ti protegge su Chromium e potrebbe essere utilizzata per migliorare la tua sicurezza in altre app Google se hai eseguito l'accesso.</translation>

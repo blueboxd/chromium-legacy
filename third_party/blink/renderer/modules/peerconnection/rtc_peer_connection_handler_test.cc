@@ -917,7 +917,7 @@ TEST_F(RTCPeerConnectionHandlerTest, GetStatsWithBadSelector) {
 
 TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   rtc::scoped_refptr<webrtc::RTCStatsReport> report =
-      webrtc::RTCStatsReport::Create(42);
+      webrtc::RTCStatsReport::Create(webrtc::Timestamp::Micros(42));
 
   report->AddStats(
       std::unique_ptr<const webrtc::RTCStats>(new webrtc::RTCTestStats(
@@ -950,13 +950,13 @@ TEST_F(RTCPeerConnectionHandlerTest, GetRTCStats) {
   pc_handler_->GetStats(
       base::BindOnce(OnStatsDelivered, &result,
                      blink::scheduler::GetSingleThreadTaskRunnerForTesting()),
-      {});
+      {}, false);
   RunMessageLoopsUntilIdle();
   EXPECT_TRUE(result);
 
   int undefined_stats_count = 0;
   int defined_stats_count = 0;
-  for (std::unique_ptr<RTCStats> stats = result->Next(); stats;
+  for (std::unique_ptr<RTCStatsWrapper> stats = result->Next(); stats;
        stats = result->Next()) {
     EXPECT_EQ(stats->GetType().Utf8(), webrtc::RTCTestStats::kType);
     if (stats->Id().Utf8() == "RTCUndefinedStats") {
@@ -1261,6 +1261,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
   EXPECT_EQ(2u, resource_listener.measurement_count());
   EXPECT_EQ(webrtc::ResourceUsageState::kUnderuse,
             resource_listener.latest_measurement());
+  thermal_resource->SetResourceListener(nullptr);
 }
 
 TEST_F(RTCPeerConnectionHandlerTest,

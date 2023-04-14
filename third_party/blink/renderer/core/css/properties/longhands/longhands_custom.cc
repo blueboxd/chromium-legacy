@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder_converter.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/zoom_adjusted_pixel_value.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -148,6 +147,27 @@ const CSSValue* AlignmentBaseline::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.AlignmentBaseline());
 }
 
+const CSSValue* AnchorDefault::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (CSSValue* value =
+          css_parsing_utils::ConsumeIdent<CSSValueID::kImplicit>(range)) {
+    return value;
+  }
+  return css_parsing_utils::ConsumeDashedIdent(range, context);
+}
+const CSSValue* AnchorDefault::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  if (!style.AnchorDefault()) {
+    return CSSIdentifierValue::Create(CSSValueID::kImplicit);
+  }
+  return MakeGarbageCollected<CSSCustomIdentValue>(
+      style.AnchorDefault()->GetName());
+}
+
 const CSSValue* AnchorName::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -173,9 +193,9 @@ const CSSValue* AnchorScroll::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  if (CSSValue* value =
-          css_parsing_utils::ConsumeIdent<CSSValueID::kNone,
-                                          CSSValueID::kImplicit>(range)) {
+  if (CSSValue* value = css_parsing_utils::ConsumeIdent<
+          CSSValueID::kNone, CSSValueID::kDefault, CSSValueID::kImplicit>(
+          range)) {
     return value;
   }
   return css_parsing_utils::ConsumeDashedIdent(range, context);
@@ -186,6 +206,9 @@ const CSSValue* AnchorScroll::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (!style.AnchorScroll()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
+  }
+  if (style.AnchorScroll()->IsDefault()) {
+    return CSSIdentifierValue::Create(CSSValueID::kDefault);
   }
   if (style.AnchorScroll()->IsImplicit()) {
     return CSSIdentifierValue::Create(CSSValueID::kImplicit);
@@ -7753,34 +7776,38 @@ const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  auto text_underline_position = style.TextUnderlinePosition();
-  if (text_underline_position == kTextUnderlinePositionAuto) {
+  auto text_underline_position = style.GetTextUnderlinePosition();
+  if (text_underline_position == blink::TextUnderlinePosition::kAuto) {
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   }
-  if (text_underline_position == kTextUnderlinePositionFromFont) {
+  if (text_underline_position == blink::TextUnderlinePosition::kFromFont) {
     return CSSIdentifierValue::Create(CSSValueID::kFromFont);
   }
-  if (text_underline_position == kTextUnderlinePositionUnder) {
+  if (text_underline_position == blink::TextUnderlinePosition::kUnder) {
     return CSSIdentifierValue::Create(CSSValueID::kUnder);
   }
-  if (text_underline_position == kTextUnderlinePositionLeft) {
+  if (text_underline_position == blink::TextUnderlinePosition::kLeft) {
     return CSSIdentifierValue::Create(CSSValueID::kLeft);
   }
-  if (text_underline_position == kTextUnderlinePositionRight) {
+  if (text_underline_position == blink::TextUnderlinePosition::kRight) {
     return CSSIdentifierValue::Create(CSSValueID::kRight);
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  if (text_underline_position & kTextUnderlinePositionFromFont) {
+  if (EnumHasFlags(text_underline_position,
+                   blink::TextUnderlinePosition::kFromFont)) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kFromFont));
   } else {
-    DCHECK(text_underline_position & kTextUnderlinePositionUnder);
+    DCHECK(EnumHasFlags(text_underline_position,
+                        blink::TextUnderlinePosition::kUnder));
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kUnder));
   }
-  if (text_underline_position & kTextUnderlinePositionLeft) {
+  if (EnumHasFlags(text_underline_position,
+                   blink::TextUnderlinePosition::kLeft)) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kLeft));
   }
-  if (text_underline_position & kTextUnderlinePositionRight) {
+  if (EnumHasFlags(text_underline_position,
+                   blink::TextUnderlinePosition::kRight)) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kRight));
   }
   DCHECK_EQ(list->length(), 2U);

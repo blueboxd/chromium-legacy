@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_stats.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
+#include "third_party/blink/renderer/core/css/selector_checker-inl.h"
 #include "third_party/blink/renderer/core/css/selector_statistics.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -344,6 +345,25 @@ static bool RulesApplicableInCurrentTreeScope(
          element->ContainingTreeScope() == scoping_node->ContainingTreeScope();
 }
 
+bool SlowMatchWithNoResultFlags(
+    const SelectorChecker& checker,
+    SelectorChecker::SelectorCheckingContext& context,
+    const CSSSelector& selector,
+    const RuleData& rule_data,
+    unsigned expected_proximity = std::numeric_limits<unsigned>::max()) {
+  SelectorChecker::MatchResult result;
+  context.selector = &selector;
+  context.is_inside_visited_link =
+      rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
+  bool match = checker.Match(context, result);
+  DCHECK_EQ(0, result.flags);
+  DCHECK_EQ(kPseudoIdNone, result.dynamic_pseudo);
+  if (match) {
+    DCHECK_EQ(expected_proximity, result.proximity);
+  }
+  return match;
+}
+
 template <bool perf_trace_enabled>
 void ElementRuleCollector::CollectMatchingRulesForListInternal(
     base::span<const RuleData> rules,
@@ -353,14 +373,22 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
     int style_sheet_index,
     const SelectorChecker& checker,
     PartRequest* part_request) {
-  SelectorChecker::StyleScopeFrame style_scope_frame(context_.GetElement());
+  // This StyleScopeFrame is effectively ignored if the StyleRecalcContext
+  // provides StyleScopeFrame already (see call to GetParentFrameOrThis below).
+  // This happens e.g. when we need to collect matching rules for inspector
+  // purposes.
+  StyleScopeFrame style_scope_frame(context_.GetElement(),
+                                    style_recalc_context_.style_scope_frame);
 
   SelectorChecker::SelectorCheckingContext context(&context_.GetElement());
   context.scope = match_request.Scope();
   context.pseudo_id = pseudo_style_request_.pseudo_id;
   context.pseudo_argument = &pseudo_style_request_.pseudo_argument;
   context.vtt_originating_element = match_request.VTTOriginatingElement();
-  context.style_scope_frame = &style_scope_frame;
+  context.style_scope_frame =
+      &style_scope_frame.GetParentFrameOrThis(context_.GetElement());
+  context.is_initial = !style_recalc_context_.is_ensuring_style &&
+                       !style_recalc_context_.old_style;
 
   CascadeLayerSeeker layer_seeker(
       context.scope, context.vtt_originating_element, style_sheet, rule_set);
@@ -375,6 +403,10 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
     selector_statistics_collector.ReserveCapacity(
         static_cast<wtf_size_t>(rules.size()));
   }
+
+  const bool case_sensitive_tag_matching =
+      context.element->IsHTMLElement() ||
+      !IsA<HTMLDocument>(context.element->GetDocument());
 
   for (const RuleData& rule_data : rules) {
     if (perf_trace_enabled) {
@@ -408,20 +440,58 @@ void ElementRuleCollector::CollectMatchingRulesForListInternal(
     }
 
     SelectorChecker::MatchResult result;
-    context.selector = &selector;
     context.style_scope = scope_seeker.Seek(rule_data.GetPosition());
-    context.is_inside_visited_link =
-        rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
-    DCHECK(!context.is_inside_visited_link ||
-           inside_link_ != EInsideLink::kNotInsideLink);
-    bool match = checker.Match(context, result);
-    result_.AddFlags(result.flags);
-    if (!match) {
-      continue;
-    }
-    if (pseudo_style_request_.pseudo_id != kPseudoIdNone &&
-        pseudo_style_request_.pseudo_id != result.dynamic_pseudo) {
-      continue;
+    if (context.vtt_originating_element == nullptr &&
+        rule_data.IsEntirelyCoveredByBucketing()) {
+      // Just by seeing this rule, we know that its selector
+      // matched, and that we don't get any flags or a match
+      // against a pseudo-element. So we can skip the entire test.
+      if (pseudo_style_request_.pseudo_id != kPseudoIdNone) {
+        continue;
+      }
+      if (context.style_scope != nullptr &&
+          RuntimeEnabledFeatures::CSSScopeEnabled() &&
+          !checker.CheckInStyleScope(context, result)) {
+        DCHECK(
+            !SlowMatchWithNoResultFlags(checker, context, selector, rule_data));
+        continue;
+      }
+      DCHECK(SlowMatchWithNoResultFlags(checker, context, selector, rule_data,
+                                        result.proximity));
+    } else if (case_sensitive_tag_matching && rule_data.SelectorIsEasy()) {
+      if (pseudo_style_request_.pseudo_id != kPseudoIdNone) {
+        continue;
+      }
+      bool easy_match = EasySelectorChecker::Match(&selector, context.element);
+
+      if (context.style_scope != nullptr &&
+          RuntimeEnabledFeatures::CSSScopeEnabled() &&
+          !checker.CheckInStyleScope(context, result)) {
+        easy_match = false;
+      }
+      DCHECK_EQ(easy_match,
+                SlowMatchWithNoResultFlags(checker, context, selector,
+                                           rule_data, result.proximity))
+          << "Mismatch for selector " << selector.SelectorText()
+          << " on element " << context.element;
+      if (!easy_match) {
+        continue;
+      }
+    } else {
+      context.selector = &selector;
+      context.is_inside_visited_link =
+          rule_data.LinkMatchType() == CSSSelector::kMatchVisited;
+      DCHECK(!context.is_inside_visited_link ||
+             inside_link_ != EInsideLink::kNotInsideLink);
+      bool match = checker.Match(context, result);
+      result_.AddFlags(result.flags);
+      if (!match) {
+        continue;
+      }
+      if (pseudo_style_request_.pseudo_id != kPseudoIdNone &&
+          pseudo_style_request_.pseudo_id != result.dynamic_pseudo) {
+        continue;
+      }
     }
     const ContainerQuery* container_query =
         container_query_seeker.Seek(rule_data.GetPosition());
@@ -716,6 +786,13 @@ void ElementRuleCollector::CollectMatchingRules(
           bundle.rule_set->SpatialNavigationInterestPseudoClassRules(),
           match_request, bundle.rule_set, bundle.style_sheet,
           bundle.style_sheet_index, checker);
+    }
+  }
+  if (element.GetDocument().documentElement() == element) {
+    for (const auto bundle : match_request.AllRuleSets()) {
+      CollectMatchingRulesForList(
+          bundle.rule_set->RootElementRules(), match_request, bundle.rule_set,
+          bundle.style_sheet, bundle.style_sheet_index, checker);
     }
   }
   AtomicString element_name = matching_ua_rules_

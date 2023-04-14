@@ -121,15 +121,28 @@ std::vector<uint8_t> AsCTAPStyleCBORBytes(
   if (response.enterprise_attestation_returned) {
     map.emplace(4, true);
   }
-  if (response.has_associated_large_blob_key) {
+  if (response.large_blob_type == LargeBlobSupportType::kKey) {
     // Chrome ignores the value of the large blob key on make credential
     // requests.
     map.emplace(5, cbor::Value(std::array<uint8_t, kLargeBlobKeyLength>()));
   }
+  cbor::Value::MapValue unsigned_extension_outputs;
   if (response.device_public_key_signature.has_value()) {
-    cbor::Value::MapValue unsigned_extension_outputs;
     unsigned_extension_outputs.emplace(kExtensionDevicePublicKey,
                                        *response.device_public_key_signature);
+  }
+  if (response.prf_enabled) {
+    cbor::Value::MapValue prf;
+    prf.emplace(kExtensionPRFEnabled, true);
+    unsigned_extension_outputs.emplace(kExtensionPRF, std::move(prf));
+  }
+  if (response.large_blob_type == LargeBlobSupportType::kExtension) {
+    cbor::Value::MapValue large_blob_ext;
+    large_blob_ext.emplace(kExtensionLargeBlobSupported, true);
+    unsigned_extension_outputs.emplace(kExtensionLargeBlob,
+                                       std::move(large_blob_ext));
+  }
+  if (!unsigned_extension_outputs.empty()) {
     map.emplace(6, std::move(unsigned_extension_outputs));
   }
   auto encoded_bytes = cbor::Writer::Write(cbor::Value(std::move(map)));

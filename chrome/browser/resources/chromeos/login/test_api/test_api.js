@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '//resources/ash/common/assert.js';
+import {loadTimeData} from '//resources/ash/common/load_time_data.m.js';
+import {$} from '//resources/ash/common/util.js';
 import {afterNextRender} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assert} from 'chrome://resources/ash/common/assert.js';
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-import {$} from 'chrome://resources/ash/common/util.js';
 
 /**
  * @fileoverview Common testing utils methods used for OOBE tast tests.
@@ -194,33 +194,6 @@ class NetworkScreenTester extends ScreenElementApi {
   }
 }
 
-class EulaScreenTester extends ScreenElementApi {
-  constructor() {
-    super('oobe-eula-md');
-    this.eulaStep = new PolymerElementApi(this, '#eulaDialog');
-    this.nextButton = new PolymerElementApi(this, '#acceptButton');
-  }
-
-  /** @override */
-  shouldSkip() {
-    // Eula screen should skipped on non-branded build and on CfM devices.
-    return loadTimeData.getBoolean('testapi_shouldSkipEula');
-  }
-
-  /**
-   * Returns if the EULA Screen is ready for test interaction.
-   * @return {boolean}
-   */
-  isReadyForTesting() {
-    return this.isVisible() && this.eulaStep.isVisible() &&
-        this.nextButton.isVisible();
-  }
-
-  getNextButtonName() {
-    return loadTimeData.getString('oobeEulaAcceptAndContinueButtonText');
-  }
-}
-
 class UpdateScreenTester extends ScreenElementApi {
   constructor() {
     super('oobe-update');
@@ -253,8 +226,9 @@ class GaiaScreenTester extends ScreenElementApi {
    * @return {boolean}
    */
   isReadyForTesting() {
-    return this.isVisible() && !this.gaiaLoading.isVisible() &&
-        this.signinFrame.isVisible() && this.gaiaDialog.isVisible();
+    return (
+        this.isVisible() && !this.gaiaLoading.isVisible() &&
+        this.signinFrame.isVisible() && this.gaiaDialog.isVisible());
   }
 }
 
@@ -302,8 +276,9 @@ class AssistantScreenTester extends ScreenElementApi {
    * @return {boolean}
    */
   isReadyForTesting() {
-    return this.isVisible() &&
-        (this.valueProp.isVisible() || this.relatedInfo.isVisible());
+    return (
+        this.isVisible() &&
+        (this.valueProp.isVisible() || this.relatedInfo.isVisible()));
   }
 
   getSkipButtonName() {
@@ -419,8 +394,9 @@ class ThemeSelectionScreenTester extends ScreenElementApi {
    * @return {boolean}
    */
   isReadyForTesting() {
-    return this.isVisible() && this.lightThemeButton.isVisible() &&
-        this.darkThemeButton.isVisible() && this.autoThemeButton.isVisible();
+    return (
+        this.isVisible() && this.lightThemeButton.isVisible() &&
+        this.darkThemeButton.isVisible() && this.autoThemeButton.isVisible());
   }
 
   /**
@@ -543,8 +519,9 @@ class EnrollmentSignInStep extends PolymerElementApi {
    * @return {boolean}
    */
   isReadyForTesting() {
-    return this.isVisible() && this.signInFrame.isVisible() &&
-        this.nextButton.isVisible();
+    return (
+        this.isVisible() && this.signInFrame.isVisible() &&
+        this.nextButton.isVisible());
   }
 }
 
@@ -710,12 +687,17 @@ class ArcTosScreenTester extends ScreenElementApi {
   }
 }
 
-
 class GuestTosScreenTester extends ScreenElementApi {
   constructor() {
     super('guest-tos');
     this.loadedStep = new PolymerElementApi(this, '#loaded');
     this.nextButton = new PolymerElementApi(this, '#acceptButton');
+
+    this.googleEulaDialog = new PolymerElementApi(this, '#googleEulaDialog');
+    this.crosEulaDialog = new PolymerElementApi(this, '#crosEulaDialog');
+
+    this.googleEulaDialogLink = new PolymerElementApi(this, '#googleEulaLink');
+    this.crosEulaDialogLink = new PolymerElementApi(this, '#crosEulaLink');
   }
 
   /** @override */
@@ -732,8 +714,32 @@ class GuestTosScreenTester extends ScreenElementApi {
   getNextButtonName() {
     return loadTimeData.getString('guestTosAccept');
   }
-}
 
+  /** @return {string} */
+  getEulaButtonName() {
+    return loadTimeData.getString('guestTosOk');
+  }
+
+  /** @return {boolean} */
+  isGoogleEulaDialogShown() {
+    return this.googleEulaDialog.isVisible();
+  }
+
+  /** @return {boolean} */
+  isCrosEulaDialogShown() {
+    return this.crosEulaDialog.isVisible();
+  }
+
+  /** @return {string} */
+  getGoogleEulaLinkName() {
+    return this.googleEulaDialogLink.element().text.trim();
+  }
+
+  /** @return {string} */
+  getCrosEulaLinkName() {
+    return this.crosEulaDialogLink.element().text.trim();
+  }
+}
 
 class GestureNavigationScreenTester extends ScreenElementApi {
   constructor() {
@@ -753,6 +759,18 @@ class ConsolidatedConsentScreenTester extends ScreenElementApi {
     this.nextButton = new PolymerElementApi(this, '#acceptButton');
     this.readMoreButton =
         new PolymerElementApi(this.loadedStep, '#readMoreButton');
+    this.recoveryToggle = new PolymerElementApi(this, '#recoveryOptIn');
+
+    this.googleEulaDialog = new PolymerElementApi(this, '#googleEulaDialog');
+    this.crosEulaDialog = new PolymerElementApi(this, '#crosEulaDialog');
+    this.arcTosDialog = new PolymerElementApi(this, '#arcTosDialog');
+    this.privacyPolicyDialog =
+        new PolymerElementApi(this, '#privacyPolicyDialog');
+
+    this.googleEulaLink = new PolymerElementApi(this, '#googleEulaLink');
+    this.crosEulaLink = new PolymerElementApi(this, '#crosEulaLink');
+    this.arcTosLink = new PolymerElementApi(this, '#arcTosLink');
+    this.privacyPolicyLink = new PolymerElementApi(this, '#privacyPolicyLink');
   }
 
   /** @override */
@@ -770,13 +788,67 @@ class ConsolidatedConsentScreenTester extends ScreenElementApi {
     // The read more button is inside a <dom-if> element, if it's hidden, the
     // element would be removed entirely from dom, so we need to check if the
     // element exists before checking if it's visible.
-    return this.readMoreButton.element() != null &&
-        this.readMoreButton.isVisible();
+    return (
+        this.readMoreButton.element() != null &&
+        this.readMoreButton.isVisible());
   }
 
   /** @return {string} */
   getNextButtonName() {
     return loadTimeData.getString('consolidatedConsentAcceptAndContinue');
+  }
+
+  /**
+   * Enable the toggle which controls whether the user opted-in the the
+   * cryptohome recovery feature.
+   */
+  enableRecoveryToggle() {
+    this.recoveryToggle.element().checked = true;
+  }
+
+  /** @return {string} */
+  getEulaOkButtonName() {
+    return loadTimeData.getString('consolidatedConsentOK');
+  }
+
+  /** @return {boolean} */
+  isGoogleEulaDialogShown() {
+    return this.googleEulaDialog.isVisible();
+  }
+
+  /** @return {boolean} */
+  isCrosEulaDialogShown() {
+    return this.crosEulaDialog.isVisible();
+  }
+
+  /** @return {boolean} */
+  isArcTosDialogShown() {
+    return this.arcTosDialog.isVisible();
+  }
+
+  /** @return {boolean} */
+  isPrivacyPolicyDialogShown() {
+    return this.privacyPolicyDialog.isVisible();
+  }
+
+  /** @return {string} */
+  getGoogleEulaLinkName() {
+    return this.googleEulaLink.element().text.trim();
+  }
+
+  /** @return {string} */
+  getCrosEulaLinkName() {
+    return this.crosEulaLink.element().text.trim();
+  }
+
+  /** @return {string} */
+  getArcTosLinkName() {
+    return this.arcTosLink.element().text.trim();
+  }
+
+  /** @return {string} */
+  getPrivacyPolicyLinkName() {
+    return this.privacyPolicyLink.element().text.trim();
   }
 }
 
@@ -802,13 +874,18 @@ class SmartPrivacyProtectionScreenTester extends ScreenElementApi {
   }
 }
 
+class CryptohomeRecoverySetupScreenTester extends ScreenElementApi {
+  constructor() {
+    super('cryptohome-recovery-setup');
+  }
+}
+
 export class OobeApiProvider {
   constructor() {
     this.screens = {
       HIDDetectionScreen: new HIDDetectionScreenTester(),
       WelcomeScreen: new WelcomeScreenTester(),
       NetworkScreen: new NetworkScreenTester(),
-      EulaScreen: new EulaScreenTester(),
       UpdateScreen: new UpdateScreenTester(),
       EnrollmentScreen: new EnrollmentScreenTester(),
       UserCreationScreen: new UserCreationScreenTester(),
@@ -829,6 +906,7 @@ export class OobeApiProvider {
       GestureNavigation: new GestureNavigationScreenTester(),
       ConsolidatedConsentScreen: new ConsolidatedConsentScreenTester(),
       SmartPrivacyProtectionScreen: new SmartPrivacyProtectionScreenTester(),
+      CryptohomeRecoverySetupScreen: new CryptohomeRecoverySetupScreenTester(),
     };
 
     this.loginWithPin = function(username, pin) {
@@ -857,6 +935,10 @@ export class OobeApiProvider {
 
     this.isGaiaDialogVisible = function() {
       chrome.send('OobeTestApi.isGaiaDialogVisible');
+    };
+
+    this.getBrowseAsGuestButtonName = function() {
+      return loadTimeData.getString('testapi_browseAsGuest');
     };
   }
 }

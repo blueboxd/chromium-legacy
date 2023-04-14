@@ -354,6 +354,9 @@
   <message name="IDS_FILE_BROWSER_CONFIGURE_VOLUME_BUTTON_LABEL" desc="Title of the action for configuring the selected volume.">
     Configure
   </message>
+  <message name="IDS_FILE_BROWSER_UNMOUNT_BUTTON_LABEL" desc="Title of the action for unmounting a given filesystem.">
+    Eject <ph name="TARGET_NAME">$1<ex>zipfile.zip</ex></ph>
+  </message>
   <message name="IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL" desc="Title of the action for unmounting removable device.">
     Eject device
   </message>
@@ -604,6 +607,15 @@
   <message name="IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG" desc="File Manager status message including destination folder when copying multiple files or folders. 'Item' is used here as a generic term for file or directory.">
     Copying <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items to <ph name="FOLDER_NAME">$2<ex>images</ex></ph>
   </message>
+  <message name="IDS_FILE_BROWSER_PREPARING_FILE_NAME_MY_DRIVE" desc="Files app message displayed to users while they are copying files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Preparing to sync <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
+  </message>
+  <message name="IDS_FILE_BROWSER_PREPARING_ITEMS_MY_DRIVE" desc="Files app message displayed to users while they are copying files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Preparing to sync <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> items...
+  </message>
+  <message name="IDS_FILE_BROWSER_READY_TO_SYNC_MY_DRIVE" desc="Files app message displayed to users after they copy files into My Drive to help them understand that files pasted into My Drive are not immediately synced.">
+    Ready
+  </message>
   <message name="IDS_FILE_BROWSER_EXTRACT_FILESYSTEM_ERROR" desc="File Manager error message.">
     Extract operation failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
   </message>
@@ -804,6 +816,12 @@
   <message name="IDS_FILE_BROWSER_COMPLETE_LABEL" desc="Complete label.">
     Complete
   </message>
+  <message name="IDS_FILE_BROWSER_QUEUED_LABEL" desc="Queued label.">
+    Queued
+  </message>
+  <message name="IDS_FILE_BROWSER_IN_PROGRESS_LABEL" desc="In progress label.">
+    In progress
+  </message>
   <message name="IDS_FILE_BROWSER_DISMISS_LABEL" desc="Dismiss label.">
     Dismiss
   </message>
@@ -834,6 +852,13 @@
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has some result">
     Showing results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.
   </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_TITLE" desc="Text displayed in the files app when a search has no results">
+    No matching results
+  </message>
+  <message name="IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_DESC" desc="Text displayed in the files under the title when a search has no results">
+    Try another search
+  </message>
+
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_CLEAR_SEARCH" desc="Text spoken by ChromeVox/screen reader when a search term has been cleared">
     Search text cleared, showing all files and folders.
   </message>
@@ -1240,11 +1265,17 @@
   <message name="IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW" desc="Text showing individual space left on Google Drive">
     Storage low <ph name="REMAINING_PERCENTAGE">$1<ex>12</ex></ph>% left of your <ph name="TOTAL_SPACE">$2<ex>10 TB</ex></ph> individual storage.
   </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_SHARED_DRIVE_QUOTA_LOW" desc="Text showing shared drive space left on Google Drive">
+    Storage low <ph name="REMAINING_PERCENTAGE">$1<ex>12</ex></ph>% left of your <ph name="TOTAL_SPACE">$2<ex>10 TB</ex></ph> shared drive storage.
+  </message>
   <message name="IDS_FILE_BROWSER_DRIVE_WARNING_QUOTA_OVER" desc="Word prepended to 'drive quota over' warning messages exclusively for screen readers to make up for warning icons that are not picked up by them">
     Warning
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER" desc="Text informing users that their Google Drive individual quota has been exceeded">
     You’ve used all your individual Google Workspace storage.
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_SHARED_DRIVE_QUOTA_OVER" desc="Text informing users that their Google Drive individual quota has been exceeded">
+    You’ve used all your Shared Drive Google Workspace storage.
   </message>
   <message name="IDS_FILE_BROWSER_DRIVE_ORGANIZATION_QUOTA_OVER" desc="Text informing users that their Google Drive organization quota has been exceeded">
     <ph name="ORGANIZATION_NAME">$1<ex>Jane's Flowers</ex></ph> has used all of its Google Workspace storage.
@@ -1692,5 +1723,11 @@
   </message>
   <message name="IDS_FILE_BROWSER_DLP_COMPONENT_VM" desc="PluginVM component label.">
     virtual machine
+  </message>
+  <message name="IDS_FILE_BROWSER_ONE_DRIVE_MOVED_FILE_NUDGE" desc="Educational text that appears in the navigation tree when a file is automatically moved to OneDrive by the Office Cloud Upload feature/dialog.">
+    Recently opened Microsoft files have moved to OneDrive
+  </message>
+  <message name="IDS_FILE_BROWSER_DRIVE_MOVED_FILE_NUDGE" desc="Educational text that appears in the navigation tree when a file is automatically moved to Google Drive by the Office Cloud Upload feature/dialog.">
+    Recently opened Microsoft files have moved to Google Drive
   </message>
 </grit-part>

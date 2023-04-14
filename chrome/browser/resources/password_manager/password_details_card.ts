@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://resources/cr_elements/cr_input/cr_input_style.css.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/cr_input/cr_input.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 import './shared_style.css.js';
+import './dialogs/edit_password_dialog.js';
 
 import {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
@@ -20,13 +22,24 @@ import {getTemplate} from './password_details_card.html.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {ShowPasswordMixin} from './show_password_mixin.js';
 
+export type PasswordRemovedEvent =
+    CustomEvent<{removedFromStores: chrome.passwordsPrivate.PasswordStoreSet}>;
+
+declare global {
+  interface HTMLElementEventMap {
+    'password-removed': PasswordRemovedEvent;
+  }
+}
+
 export interface PasswordDetailsCardElement {
   $: {
     copyPasswordButton: CrIconButtonElement,
     copyUsernameButton: CrIconButtonElement,
     deleteButton: CrButtonElement,
     editButton: CrButtonElement,
+    noteValue: HTMLElement,
     passwordValue: CrInputElement,
+    showMore: HTMLAnchorElement,
     showPasswordButton: CrIconButtonElement,
     toast: CrToastElement,
     usernameValue: CrInputElement,
@@ -49,11 +62,27 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
     return {
       password: Object,
       toastMessage_: String,
+
+      showNoteFully_: Boolean,
+
+      showEditPasswordDialog_: Boolean,
     };
   }
 
   password: chrome.passwordsPrivate.PasswordUiEntry;
   private toastMessage_: string;
+  private noteRows_: number;
+  private showNoteFully_: boolean;
+  private showEditPasswordDialog_: boolean;
+
+  override connectedCallback() {
+    super.connectedCallback();
+    if (this.isFederated_()) {
+      return;
+    }
+    // Set default value here so listeners can be updated properly.
+    this.showNoteFully_ = false;
+  }
 
   private isFederated_(): boolean {
     return !!this.password.federationText;
@@ -86,9 +115,45 @@ export class PasswordDetailsCardElement extends PasswordDetailsCardElementBase {
     this.showToast_(this.i18n('usernameCopiedToClipboard'));
   }
 
+  private onDeleteClick_() {
+    // TODO(crbug.com/1350947): Show delete dialog if credential is present in
+    // both stores.
+    PasswordManagerImpl.getInstance().removeSavedPassword(
+        this.password.id, this.password.storedIn);
+    this.dispatchEvent(new CustomEvent('password-removed', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        removedFromStores: this.password.storedIn,
+      },
+    }));
+  }
+
   private showToast_(message: string) {
     this.toastMessage_ = message;
     this.$.toast.show();
+  }
+
+  private onEditClicked_() {
+    this.showEditPasswordDialog_ = true;
+  }
+
+  private onEditPasswordDialogClosed_() {
+    this.showEditPasswordDialog_ = false;
+  }
+
+  private getNoteValue_(): string {
+    return !this.password.note ? this.i18n('emptyNote') : this.password.note!;
+  }
+
+  private isNoteFullyVisible_(): boolean {
+    return this.showNoteFully_ ||
+        this.$.noteValue.scrollHeight === this.$.noteValue.offsetHeight;
+  }
+
+  private onshowMoreClick_(e: Event) {
+    e.preventDefault();
+    this.showNoteFully_ = true;
   }
 }
 

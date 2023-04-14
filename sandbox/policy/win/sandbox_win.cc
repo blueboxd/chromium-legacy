@@ -265,26 +265,6 @@ std::wstring PrependWindowsSessionPath(const wchar_t* object) {
 // Adds the generic config rules to a sandbox TargetConfig.
 ResultCode AddGenericConfig(sandbox::TargetConfig* config) {
   DCHECK(!config->IsConfigured());
-  ResultCode result;
-
-  if (!base::FeatureList::IsEnabled(
-          sandbox::policy::features::kChromePipeLockdown)) {
-    // Add the policy for the client side of a pipe. It is just a file
-    // in the \pipe\ namespace. We restrict it to pipes that start with
-    // "chrome." so the sandboxed process cannot connect to system services.
-    result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
-                             L"\\??\\pipe\\chrome.*");
-    if (result != SBOX_ALL_OK)
-      return result;
-
-    // Allow the server side of sync sockets, which are pipes that have
-    // the "chrome.sync" namespace and a randomly generated suffix.
-    result =
-        config->AddRule(SubSystem::kNamedPipes, Semantics::kNamedPipesAllowAny,
-                        L"\\\\.\\pipe\\chrome.sync.*");
-    if (result != SBOX_ALL_OK)
-      return result;
-  }
 
 // Add the policy for read-only PDB file access for stack traces.
 #if !defined(OFFICIAL_BUILD)
@@ -292,10 +272,14 @@ ResultCode AddGenericConfig(sandbox::TargetConfig* config) {
   if (!base::PathService::Get(base::FILE_EXE, &exe))
     return SBOX_ERROR_GENERIC;
   base::FilePath pdb_path = exe.DirName().Append(L"*.pdb");
-  result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowReadonly,
-                           pdb_path.value().c_str());
-  if (result != SBOX_ALL_OK)
-    return result;
+  {
+    ResultCode result =
+        config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowReadonly,
+                        pdb_path.value().c_str());
+    if (result != SBOX_ALL_OK) {
+      return result;
+    }
+  }
 #endif
 
 #if defined(SANITIZER_COVERAGE)
@@ -312,10 +296,14 @@ ResultCode AddGenericConfig(sandbox::TargetConfig* config) {
     CHECK(coverage_dir.size() == coverage_dir_size);
     base::FilePath sancov_path =
         base::FilePath(coverage_dir).Append(L"*.sancov");
-    result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
-                             sancov_path.value().c_str());
-    if (result != SBOX_ALL_OK)
-      return result;
+    {
+      ResultCode result =
+          config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
+                          sancov_path.value().c_str());
+      if (result != SBOX_ALL_OK) {
+        return result;
+      }
+    }
   }
 #endif
 
@@ -718,11 +706,13 @@ ResultCode GenerateConfigForSandboxedProcess(const base::CommandLine& cmd_line,
       process_type == switches::kGpuProcess ||
       process_type == switches::kUtilityProcess) {
     if (logging::IsLoggingToFileEnabled()) {
-      DCHECK(base::FilePath(logging::GetLogFileFullPath()).IsAbsolute());
+      auto log_path = logging::GetLogFileFullPath();
+      DCHECK(base::FilePath(log_path).IsAbsolute());
       result = config->AddRule(SubSystem::kFiles, Semantics::kFilesAllowAny,
-                               logging::GetLogFileFullPath().c_str());
-      if (result != SBOX_ALL_OK)
+                               log_path.c_str());
+      if (result != SBOX_ALL_OK) {
         return result;
+      }
     }
   }
 
@@ -1031,12 +1021,10 @@ ResultCode SandboxWin::StartSandboxedProcess(
     tag = delegate->GetSandboxTag();
 
   auto policy = g_broker_services->CreatePolicy(tag);
-  auto time_policy_created = timer.Elapsed();
   ResultCode result = GeneratePolicyForSandboxedProcess(
       cmd_line, process_type, handles_to_inherit, delegate, policy.get());
   if (SBOX_ALL_OK != result)
     return result;
-  auto time_policy_generated = timer.Elapsed();
 
   TRACE_EVENT_BEGIN0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
@@ -1046,7 +1034,6 @@ ResultCode SandboxWin::StartSandboxedProcess(
       cmd_line.GetProgram().value().c_str(),
       cmd_line.GetCommandLineString().c_str(), std::move(policy), &last_error,
       &temp_process_info);
-  auto time_process_spawned = timer.Elapsed();
 
   base::win::ScopedProcessInformation target(temp_process_info);
 
@@ -1070,32 +1057,13 @@ ResultCode SandboxWin::StartSandboxedProcess(
 
   delegate->PostSpawnTarget(target.process_handle());
   CHECK(ResumeThread(target.thread_handle()) != static_cast<DWORD>(-1));
-  auto time_process_resumed = timer.Elapsed();
 
   // Record timing histogram on sandboxed & launched success.
   // We're interested in the happy fast case so have a low maximum.
   if (SBOX_ALL_OK == result) {
-    const auto kLowBound = base::Microseconds(5);
-    const auto kHighBound = base::Microseconds(100000);
-    const int kBuckets = 50;
     base::UmaHistogramCustomMicrosecondsTimes(
-        "Process.Sandbox.StartSandboxedWin.CreatePolicyDuration",
-        time_policy_created, kLowBound, kHighBound, kBuckets);
-    base::UmaHistogramCustomMicrosecondsTimes(
-        "Process.Sandbox.StartSandboxedWin.GeneratePolicyDuration",
-        time_policy_generated - time_policy_created, kLowBound, kHighBound,
-        kBuckets);
-    base::UmaHistogramCustomMicrosecondsTimes(
-        "Process.Sandbox.StartSandboxedWin.SpawnTargetDuration",
-        time_process_spawned - time_policy_generated, kLowBound, kHighBound,
-        kBuckets);
-    base::UmaHistogramCustomMicrosecondsTimes(
-        "Process.Sandbox.StartSandboxedWin.PostSpawnTargetDuration",
-        time_process_resumed - time_process_spawned, kLowBound, kHighBound,
-        kBuckets);
-    base::UmaHistogramCustomMicrosecondsTimes(
-        "Process.Sandbox.StartSandboxedWin.TotalDuration", time_process_resumed,
-        kLowBound, kHighBound, kBuckets);
+        "Process.Sandbox.StartSandboxedWin.TotalDuration", timer.Elapsed(),
+        base::Microseconds(5), base::Microseconds(100000), 50);
   }
 
   *process = base::Process(target.TakeProcessHandle());

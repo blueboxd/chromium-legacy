@@ -44,6 +44,10 @@ bool AutofillClient::IsOffTheRecord() {
   return false;
 }
 
+AutofillDownloadManager* AutofillClient::GetDownloadManager() {
+  return nullptr;
+}
+
 IBANManager* AutofillClient::GetIBANManager() {
   return nullptr;
 }
@@ -59,7 +63,7 @@ AutofillClient::CreateSingleFieldFormFillRouter() {
       GetMerchantPromoCodeManager());
 }
 
-CreditCardCVCAuthenticator* AutofillClient::GetCVCAuthenticator() {
+CreditCardCvcAuthenticator* AutofillClient::GetCvcAuthenticator() {
   return nullptr;
 }
 

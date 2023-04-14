@@ -49,6 +49,7 @@ constexpr char16_t kUsername116[] = u"alice";
 constexpr char16_t kUsername216[] = u"bob";
 
 constexpr char16_t kPassword116[] = u"s3cre3t";
+constexpr char16_t kWeakPassword[] = u"123456";
 
 using password_manager::BulkLeakCheckServiceInterface;
 using password_manager::CredentialUIEntry;
@@ -65,10 +66,11 @@ using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::Pair;
 using ::testing::StrictMock;
+using ::testing::UnorderedElementsAre;
 
 struct MockPasswordCheckManagerObserver
     : IOSChromePasswordCheckManager::Observer {
-  MOCK_METHOD(void, CompromisedCredentialsChanged, (), (override));
+  MOCK_METHOD(void, InsecureCredentialsChanged, (), (override));
   MOCK_METHOD(void,
               PasswordCheckStatusChanged,
               (PasswordCheckState),
@@ -86,6 +88,7 @@ PasswordForm MakeSavedPassword(
     base::StringPiece16 password = kPassword116,
     base::StringPiece16 username_element = base::StringPiece16()) {
   PasswordForm form;
+  form.url = GURL(signon_realm);
   form.signon_realm = std::string(signon_realm);
   form.username_value = std::u16string(username);
   form.password_value = std::u16string(password);
@@ -236,7 +239,7 @@ TEST_F(IOSChromePasswordCheckManagerTest, LastTimePasswordCheckCompletedReset) {
 
 // Tests whether adding and removing an observer works as expected.
 TEST_F(IOSChromePasswordCheckManagerTest,
-       NotifyObserversAboutCompromisedCredentialChanges) {
+       NotifyObserversAboutInsecureCredentialChanges) {
   PasswordForm form = MakeSavedPassword(kExampleCom, kUsername116);
   store().AddLogin(form);
   RunUntilIdle();
@@ -246,14 +249,14 @@ TEST_F(IOSChromePasswordCheckManagerTest,
 
   // Adding a compromised credential should notify observers.
   EXPECT_CALL(observer, PasswordCheckStatusChanged);
-  EXPECT_CALL(observer, CompromisedCredentialsChanged);
+  EXPECT_CALL(observer, InsecureCredentialsChanged);
   AddIssueToForm(&form, InsecureType::kLeaked, base::Minutes(1));
   store().UpdateLogin(form);
   RunUntilIdle();
 
   // After an observer is removed it should no longer receive notifications.
   manager().RemoveObserver(&observer);
-  EXPECT_CALL(observer, CompromisedCredentialsChanged).Times(0);
+  EXPECT_CALL(observer, InsecureCredentialsChanged).Times(0);
   AddIssueToForm(&form, InsecureType::kPhished, base::Minutes(1));
   store().UpdateLogin(form);
   RunUntilIdle();
@@ -284,105 +287,76 @@ TEST_F(IOSChromePasswordCheckManagerTest, NotifyObserversAboutStateChanges) {
 
 // Tests expected delay is being added.
 TEST_F(IOSChromePasswordCheckManagerTest, CheckFinishedWithDelay) {
+  // Enable weak and reuse checks.
+  base::test::ScopedFeatureList feature_list(
+      password_manager::features::kIOSPasswordCheckup);
+
   store().AddLogin(MakeSavedPassword(kExampleCom, kUsername116));
 
   RunUntilIdle();
   StrictMock<MockPasswordCheckManagerObserver> observer;
   manager().AddObserver(&observer);
+
+  EXPECT_CALL(observer, InsecureCredentialsChanged).Times(2);
+  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
+      .Times(2);
   manager().StartPasswordCheck();
   RunUntilIdle();
 
-  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
-      .Times(0);
   static_cast<BulkLeakCheckServiceInterface::Observer*>(&manager())
       ->OnStateChanged(BulkLeakCheckServiceInterface::State::kIdle);
+
+  // Validate the minimum password check duration of 3 seconds is respected.
+  // The test will fail if any PasswordCheckStatusChanged calls are observed in
+  // the first 2 seconds after the check was started.
+  FastForwardBy(base::Seconds(2));
+  // After the minimum delay passes, the check status update should be received.
+  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle));
+  // Advance the clock 1 more second simulating that 3 seconds have passed so
+  // the check status update should have been received.
   FastForwardBy(base::Seconds(1));
 
-  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
-      .Times(0);
-  FastForwardBy(base::Seconds(1));
-
-  EXPECT_CALL(observer, PasswordCheckStatusChanged(PasswordCheckState::kIdle))
-      .Times(1);
-  FastForwardBy(base::Seconds(1));
   manager().RemoveObserver(&observer);
 }
 
-// Tests that the correct number of compromised credentials is returned.
-TEST_F(IOSChromePasswordCheckManagerTest, CheckCompromisedCredentialsCount) {
-  // Enable unmuted compromised credential feature and disable Password Checkup
-  // feature.
-  base::test::ScopedFeatureList featureList;
-  featureList.InitWithFeatures(
-      /*enabled_features=*/{password_manager::features::
-                                kMuteCompromisedPasswords},
-      /*disabled_features=*/{password_manager::features::kIOSPasswordCheckup});
-
-  // Add a muted password.
-  PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername216);
-  AddIssueToForm(&form1, InsecureType::kLeaked, base::Minutes(1), true);
-  store().AddLogin(form1);
-  RunUntilIdle();
-  // Should return an empty list because the compromised credential is muted.
-  EXPECT_THAT(manager().GetInsecureCredentials(), IsEmpty());
-
-  // Add an unmuted password.
-  PasswordForm form2 = MakeSavedPassword(kExampleCom, kUsername116);
-  AddIssueToForm(&form2, InsecureType::kLeaked, base::Minutes(1), false);
-  store().AddLogin(form2);
-  RunUntilIdle();
-
-  // Should return only the unmuted compromised credentials.
-  EXPECT_THAT(manager().GetInsecureCredentials(),
-              ElementsAre(CredentialUIEntry(form2)));
-}
-
-// Tests that the correct warning type is returned.
-TEST_F(IOSChromePasswordCheckManagerTest,
-       CheckReturnedHighestPriorityWarningType) {
-  // Enable Password Checkup feature.
-  base::test::ScopedFeatureList featureList;
-  featureList.InitAndEnableFeature(
+// Verify that GetInsecureCredentials returns weak credentials.
+TEST_F(IOSChromePasswordCheckManagerTest, WeakCredentialsAreReturned) {
+  // Enable weak and reuse checks.
+  base::test::ScopedFeatureList feature_list(
       password_manager::features::kIOSPasswordCheckup);
 
-  // The "no insecure passwords" warning is the highest priority warning.
-  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
-              WarningType::kNoInsecurePasswordsWarning);
+  PasswordForm weak_form =
+      MakeSavedPassword(kExampleCom, kUsername116, kWeakPassword);
+  store().AddLogin(weak_form);
 
-  // Add a muted password.
-  PasswordForm form1 = MakeSavedPassword(kExampleCom, kUsername216);
-  AddIssueToForm(&form1, InsecureType::kLeaked, base::Minutes(1),
-                 /*is_muted=*/true);
-  store().AddLogin(form1);
   RunUntilIdle();
-  // The "dismissed warnings" warning becomes the highest priority warning.
-  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
-              WarningType::kDismissedWarningsWarning);
-
-  // Add a weak password.
-  PasswordForm form2 = MakeSavedPassword(kExampleCom, kUsername216);
-  AddIssueToForm(&form2, InsecureType::kWeak, base::Minutes(1));
-  store().AddLogin(form2);
+  manager().StartPasswordCheck();
   RunUntilIdle();
 
-  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
-              WarningType::kWeakPasswordsWarning);
+  EXPECT_THAT(manager().GetInsecureCredentials(),
+              ElementsAre(CredentialUIEntry(weak_form)));
+}
 
-  // Add a reused password.
-  PasswordForm form3 = MakeSavedPassword(kExampleCom, kUsername216);
-  AddIssueToForm(&form3, InsecureType::kReused, base::Minutes(1));
-  store().AddLogin(form3);
+// Verify that GetInsecureCredentials returns reused credentials.
+TEST_F(IOSChromePasswordCheckManagerTest, ReusedCredentialsAreReturned) {
+  // Enable weak and reuse checks.
+  base::test::ScopedFeatureList feature_list(
+      password_manager::features::kIOSPasswordCheckup);
+
+  PasswordForm form_with_same_password_1 =
+      MakeSavedPassword(kExampleCom, kUsername116, kPassword116);
+  store().AddLogin(form_with_same_password_1);
+
+  PasswordForm form_with_same_password_2 =
+      MakeSavedPassword(kExampleCom, kUsername216, kPassword116);
+  store().AddLogin(form_with_same_password_2);
+
+  RunUntilIdle();
+  manager().StartPasswordCheck();
   RunUntilIdle();
 
-  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
-              WarningType::kReusedPasswordsWarning);
-
-  // Add an unmuted compromised password.
-  PasswordForm form4 = MakeSavedPassword(kExampleCom, kUsername216);
-  AddIssueToForm(&form4, InsecureType::kLeaked, base::Minutes(1));
-  store().AddLogin(form4);
-  RunUntilIdle();
-  // The "compromised passwords" warning becomes the highest priority warning.
-  EXPECT_THAT(manager().GetWarningOfHighestPriority(),
-              WarningType::kCompromisedPasswordsWarning);
+  EXPECT_THAT(
+      manager().GetInsecureCredentials(),
+      UnorderedElementsAre(CredentialUIEntry(form_with_same_password_1),
+                           CredentialUIEntry(form_with_same_password_2)));
 }

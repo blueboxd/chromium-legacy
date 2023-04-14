@@ -5,6 +5,23 @@
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build_overrides/partition_alloc.gni")
 
+if (is_apple) {
+  import("//build/config/features.gni")
+}
+
+# Whether 64-bit pointers are used.
+# A static_assert in partition_alloc_config.h verifies that.
+if (is_nacl) {
+  # NaCl targets don't use 64-bit pointers.
+  has_64_bit_pointers = false
+} else if (current_cpu == "x64" || current_cpu == "arm64") {
+  has_64_bit_pointers = true
+} else if (current_cpu == "x86" || current_cpu == "arm") {
+  has_64_bit_pointers = false
+} else {
+  assert(false, "Unknown CPU: $current_cpu")
+}
+
 if (use_partition_alloc_as_malloc_default) {
   _default_allocator = "partition"
 } else {
@@ -119,6 +136,14 @@ declare_args() {
   enable_dangling_raw_ptr_checks =
       enable_dangling_raw_ptr_checks_default && enable_backup_ref_ptr_support
 
+  # Enable the feature flags required to check for dangling pointers. That is to
+  # say `PartitionAllocBackupRefPtr` and `PartitionAllocDanglingPtr`.
+  #
+  # This is meant to be used on bots only. It is much easier to override the
+  # feature flags using a binary flag instead of updating multiple bots's
+  # scripts to pass command line arguments.
+  enable_dangling_raw_ptr_feature_flags_for_bots = false
+
   # Enables the dangling raw_ptr checks feature for the performance experiment.
   # Not every dangling pointers have been fixed or annotated yet. To avoid
   # accounting for the cost of calling the PA's embedder's callbacks when a
@@ -136,10 +161,20 @@ declare_args() {
   # Shadow metadata is still under development and only supports Linux
   # for now.
   enable_shadow_metadata = false
+
+  if (is_apple) {
+    # use_blink currently assumes mach absolute ticks (eg, to ensure trace
+    # events cohere).
+    partition_alloc_enable_mach_absolute_time_ticks = is_mac || use_blink
+  }
 }
 
-# *Scan is currently only used by Chromium.
-use_starscan = build_with_chromium
+# *Scan is currently only used by Chromium, and supports only 64-bit.
+use_starscan = build_with_chromium && has_64_bit_pointers
+
+pcscan_stack_supported =
+    use_starscan && (current_cpu == "x64" || current_cpu == "x86" ||
+                     current_cpu == "arm" || current_cpu == "arm64")
 
 # We want to provide assertions that guard against inconsistent build
 # args, but there is no point in having them fire if we're not building
@@ -222,6 +257,14 @@ assert(!use_asan_backup_ref_ptr || is_asan,
 
 assert(!use_asan_unowned_ptr || is_asan,
        "AsanUnownedPtr requires AddressSanitizer")
+
+if (is_apple) {
+  assert(!use_blink || partition_alloc_enable_mach_absolute_time_ticks,
+         "use_blink requires partition_alloc_enable_mach_absolute_time_ticks")
+
+  assert(!is_mac || partition_alloc_enable_mach_absolute_time_ticks,
+         "mac requires partition_alloc_enable_mach_absolute_time_ticks")
+}
 
 # AsanBackupRefPtr is not supported outside Chromium. The implementation is
 # entangled with `//base`. The code is only physically located with the

@@ -238,7 +238,7 @@ export function makePasswordCheckStatus(
 /**
  * Creates a new random GUID for testing.
  */
-function makeGuid(): string {
+export function makeGuid(): string {
   return patternMaker('xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx', 16);
 }
 
@@ -427,6 +427,7 @@ export class TestAutofillManager extends TestBrowserProxy implements
     AutofillManagerProxy {
   data: {
     addresses: chrome.autofillPrivate.AddressEntry[],
+    accountInfo: chrome.autofillPrivate.AccountInfo,
   };
 
   lastCallback:
@@ -434,6 +435,7 @@ export class TestAutofillManager extends TestBrowserProxy implements
 
   constructor() {
     super([
+      'getAccountInfo',
       'getAddressList',
       'removeAddress',
       'removePersonalDataManagerListener',
@@ -443,6 +445,10 @@ export class TestAutofillManager extends TestBrowserProxy implements
     // Set these to have non-empty data.
     this.data = {
       addresses: [],
+      accountInfo: {
+        email: 'stub-user@example.com',
+        isSyncEnabledForAutofillProfiles: true,
+      },
     };
 
     // Holds the last callbacks so they can be called when needed.
@@ -458,6 +464,11 @@ export class TestAutofillManager extends TestBrowserProxy implements
 
   removePersonalDataManagerListener(_listener: PersonalDataChangedListener) {
     this.methodCalled('removePersonalDataManagerListener');
+  }
+
+  getAccountInfo() {
+    this.methodCalled('getAccountInfo');
+    return Promise.resolve(this.data.accountInfo);
   }
 
   getAddressList() {
@@ -605,19 +616,28 @@ export class TestPaymentsManager extends TestBrowserProxy implements
    */
   assertExpectations(expected: PaymentsManagerExpectations) {
     assertEquals(
-        expected.requestedCreditCards, this.getCallCount('getCreditCardList'));
+        expected.requestedCreditCards, this.getCallCount('getCreditCardList'),
+        'requestedCreditCards mismatch');
     assertEquals(
         expected.listeningCreditCards,
         this.getCallCount('setPersonalDataManagerListener') -
-            this.getCallCount('removePersonalDataManagerListener'));
+            this.getCallCount('removePersonalDataManagerListener'),
+        'listeningCreditCards mismatch');
     assertEquals(
-        expected.removedCreditCards, this.getCallCount('removeCreditCard'));
+        expected.removedCreditCards, this.getCallCount('removeCreditCard'),
+        'removedCreditCards mismatch');
     assertEquals(
         expected.clearedCachedCreditCards,
-        this.getCallCount('clearCachedCreditCard'));
+        this.getCallCount('clearCachedCreditCard'),
+        'clearedCachedCreditCards mismatch');
     assertEquals(
-        expected.addedVirtualCards, this.getCallCount('addVirtualCard'));
-    assertEquals(expected.requestedIbans, this.getCallCount('getIbanList'));
-    assertEquals(expected.removedIbans, this.getCallCount('removeIban'));
+        expected.addedVirtualCards, this.getCallCount('addVirtualCard'),
+        'addedVirtualCards mismatch');
+    assertEquals(
+        expected.requestedIbans, this.getCallCount('getIbanList'),
+        'requestedIbans mismatch');
+    assertEquals(
+        expected.removedIbans, this.getCallCount('removeIban'),
+        'removedIbans mismatch');
   }
 }

@@ -38,7 +38,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
@@ -63,6 +62,8 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
@@ -78,8 +79,8 @@ class BackendDatabaseWithMockedClose
           pending_receiver)
       : receiver_(this, std::move(pending_receiver)) {
     receiver_.set_disconnect_handler(
-        base::BindOnce(&BackendDatabaseWithMockedClose::DatabaseDestroyed,
-                       base::Unretained(this)));
+        WTF::BindOnce(&BackendDatabaseWithMockedClose::DatabaseDestroyed,
+                      base::Unretained(this)));
   }
 
   void DatabaseDestroyed() { destroyed_ = true; }
@@ -170,7 +171,7 @@ class BackendDatabaseWithMockedClose
 class IDBRequestTest : public testing::Test {
  protected:
   void SetUp() override {
-    url_loader_mock_factory_ = WebURLLoaderMockFactory::GetSingletonInstance();
+    url_loader_mock_factory_ = URLLoaderMockFactory::GetSingletonInstance();
     WebURLResponse response;
     response.SetCurrentRequestUrl(KURL("blob:"));
     url_loader_mock_factory_->RegisterURLProtocol(WebString("blob"), response,
@@ -209,7 +210,7 @@ class IDBRequestTest : public testing::Test {
     store_ = MakeGarbageCollected<IDBObjectStore>(store_metadata, transaction_);
   }
 
-  WebURLLoaderMockFactory* url_loader_mock_factory_;
+  URLLoaderMockFactory* url_loader_mock_factory_;
   Persistent<IDBDatabase> db_;
   Persistent<IDBTransaction> transaction_;
   Persistent<IDBObjectStore> store_;

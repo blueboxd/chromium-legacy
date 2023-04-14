@@ -20,7 +20,7 @@ namespace {
 // The display serial number beginning byte position and its length in the
 // EDID number as defined in the spec.
 // https://en.wikipedia.org/wiki/Extended_Display_Identification_Data
-constexpr size_t kSerialNumberBeginingByte = 12U;
+constexpr size_t kSerialNumberBeginningByte = 12U;
 constexpr size_t kSerialNumberLengthInBytes = 4U;
 
 std::string ModeListString(
@@ -74,6 +74,7 @@ DisplaySnapshot::DisplaySnapshot(
     bool is_aspect_preserving_scaling,
     bool has_overscan,
     PrivacyScreenState privacy_screen_state,
+    bool has_content_protection_key,
     bool has_color_correction_matrix,
     bool color_correction_in_linear_space,
     const gfx::ColorSpace& color_space,
@@ -104,6 +105,7 @@ DisplaySnapshot::DisplaySnapshot(
       is_aspect_preserving_scaling_(is_aspect_preserving_scaling),
       has_overscan_(has_overscan),
       privacy_screen_state_(privacy_screen_state),
+      has_content_protection_key_(has_content_protection_key),
       has_color_correction_matrix_(has_color_correction_matrix),
       color_correction_in_linear_space_(color_correction_in_linear_space),
       color_space_(color_space),
@@ -124,9 +126,10 @@ DisplaySnapshot::DisplaySnapshot(
       drm_formats_and_modifiers_(drm_formats_and_modifiers) {
   // We must explicitly clear out the bytes that represent the serial number.
   const size_t end = std::min(
-      kSerialNumberBeginingByte + kSerialNumberLengthInBytes, edid_.size());
-  for (size_t i = kSerialNumberBeginingByte; i < end; ++i)
+      kSerialNumberBeginningByte + kSerialNumberLengthInBytes, edid_.size());
+  for (size_t i = kSerialNumberBeginningByte; i < end; ++i) {
     edid_[i] = 0;
+  }
 }
 
 DisplaySnapshot::~DisplaySnapshot() {}
@@ -150,12 +153,13 @@ std::unique_ptr<DisplaySnapshot> DisplaySnapshot::Clone() {
       display_id_, port_display_id_, edid_display_id_, connector_index_,
       origin_, physical_size_, type_, base_connector_id_, path_topology_,
       is_aspect_preserving_scaling_, has_overscan_, privacy_screen_state_,
-      has_color_correction_matrix_, color_correction_in_linear_space_,
-      color_space_, bits_per_channel_, hdr_static_metadata_, display_name_,
-      sys_path_, std::move(clone_modes), panel_orientation_, edid_,
-      cloned_current_mode, cloned_native_mode, product_code_,
-      year_of_manufacture_, maximum_cursor_size_, variable_refresh_rate_state_,
-      vertical_display_range_limits_, drm_formats_and_modifiers_);
+      has_content_protection_key_, has_color_correction_matrix_,
+      color_correction_in_linear_space_, color_space_, bits_per_channel_,
+      hdr_static_metadata_, display_name_, sys_path_, std::move(clone_modes),
+      panel_orientation_, edid_, cloned_current_mode, cloned_native_mode,
+      product_code_, year_of_manufacture_, maximum_cursor_size_,
+      variable_refresh_rate_state_, vertical_display_range_limits_,
+      drm_formats_and_modifiers_);
 }
 
 std::string DisplaySnapshot::ToString() const {
@@ -190,6 +194,16 @@ gfx::BufferFormat DisplaySnapshot::PrimaryFormat() {
 void DisplaySnapshot::AddIndexToDisplayId() {
   // The EDID-based display ID occupies the first 32 bits of |edid_display_id_|.
   edid_display_id_ |= static_cast<int64_t>(connector_index_) << 32;
+}
+
+bool DisplaySnapshot::IsVrrCapable() const {
+  // TODO(b/221220344): Add check that vertical limits are valid.
+  return variable_refresh_rate_state_ != display::kVrrNotCapable &&
+         vertical_display_range_limits_.has_value();
+}
+
+bool DisplaySnapshot::IsVrrEnabled() const {
+  return variable_refresh_rate_state_ == display::kVrrEnabled;
 }
 
 }  // namespace display

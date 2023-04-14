@@ -18,13 +18,12 @@ import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://w
 // <if expr="chromeos_ash">
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
 // </if>
-
+import {TestOpenWindowProxy} from 'chrome://webui-test/test_open_window_proxy.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 import {makeInsecureCredential, makePasswordCheckStatus} from './passwords_and_autofill_fake_data.js';
 import {getSyncAllPrefs, simulateSyncStatus} from './sync_test_util.js';
 import {TestHatsBrowserProxy} from './test_hats_browser_proxy.js';
-import {TestOpenWindowProxy} from './test_open_window_proxy.js';
 import {TestPasswordManagerProxy} from './test_password_manager_proxy.js';
 import {TestSyncBrowserProxy} from './test_sync_browser_proxy.js';
 
@@ -1882,10 +1881,14 @@ suite('PasswordsCheckSection', function() {
 
   // Verify if clicking "Edit password" in edit disclaimer opens edit dialog.
   test('testEditDisclaimer', async function() {
-    passwordManager.data.insecureCredentials = [makeInsecureCredential(
+    const insecureCredential = makeInsecureCredential(
         /*url*/ 'google.com', /*username*/ 'jdoerrie',
-        /*types*/[CompromiseType.LEAKED])];
-    passwordManager.setPlaintextPassword('password');
+        /*types*/[CompromiseType.LEAKED]);
+    passwordManager.data.insecureCredentials = [insecureCredential];
+    passwordManager.setRequestCredentialsDetailsResponse({
+      ...insecureCredential,
+      password: 'password',
+    });
 
     const checkPasswordSection = createCheckPasswordSection();
     await passwordManager.whenCalled('getInsecureCredentials');
@@ -1906,9 +1909,41 @@ suite('PasswordsCheckSection', function() {
     assertTrue(isElementVisible(editDisclaimerDialog));
     editDisclaimerDialog.$.edit.click();
 
-    await passwordManager.whenCalled('requestPlaintextPassword');
+    await passwordManager.whenCalled('requestCredentialsDetails');
     flush();
     assertTrue(isElementVisible(editDisclaimerDialog));
+  });
+
+  test('editDialog', async function() {
+    const insecureCredential = makeInsecureCredential(
+        /*url*/ 'google.com', /*username*/ 'jdoerrie',
+        /*types*/[CompromiseType.LEAKED]);
+    passwordManager.data.insecureCredentials = [insecureCredential];
+    passwordManager.setRequestCredentialsDetailsResponse({
+      ...insecureCredential,
+      password: 'password',
+      note: 'this is a note',
+    });
+
+    const checkPasswordSection = createCheckPasswordSection();
+    await passwordManager.whenCalled('getInsecureCredentials');
+
+    flush();
+    const listElements = checkPasswordSection.$.leakedPasswordList;
+    const node = listElements.children[0] as PasswordCheckListItemElement;
+
+    // Open the more actions menu and click 'Show Password'.
+    node.$.more.click();
+    checkPasswordSection.$.menuEditPassword.click();
+
+    await flushTasks();
+
+    const editDialog =
+        checkPasswordSection.shadowRoot!.querySelector('password-edit-dialog')!;
+    assertTrue(isElementVisible(editDialog));
+    assertEquals(
+        'this is a note',
+        editDialog.shadowRoot!.querySelector('cr-textarea')!.value);
   });
 
   // <if expr="chromeos_ash">

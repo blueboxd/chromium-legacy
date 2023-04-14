@@ -12,12 +12,14 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_session_focus_cycler.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/icon_button.h"
+#include "ash/style/system_shadow.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "capture_mode_menu_toggle_button.h"
@@ -27,6 +29,7 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/separator.h"
+#include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
 
 namespace ash {
@@ -35,7 +38,8 @@ namespace {
 
 constexpr gfx::Size kSettingsSize{256, 248};
 
-constexpr gfx::RoundedCornersF kBorderRadius{10.f};
+constexpr int kCornerRadius = 10;
+constexpr gfx::RoundedCornersF kRoundedCorners{kCornerRadius};
 
 // Returns the bounds of the settings widget in screen coordinates relative to
 // the bounds of the |capture_mode_bar_view| based on its given preferred
@@ -61,7 +65,10 @@ CaptureModeController::CaptureFolder GetCurrentCaptureFolder() {
 
 CaptureModeSettingsView::CaptureModeSettingsView(CaptureModeSession* session,
                                                  bool is_in_projector_mode)
-    : capture_mode_session_(session) {
+    : capture_mode_session_(session),
+      shadow_(SystemShadow::CreateShadowOnNinePatchLayerForView(
+          this,
+          SystemShadow::Type::kElevation12)) {
   auto* controller = CaptureModeController::Get();
   if (!controller->is_recording_in_progress()) {
     const bool audio_capture_managed_by_policy =
@@ -110,7 +117,8 @@ CaptureModeSettingsView::CaptureModeSettingsView(CaptureModeSession* session,
                      camera_managed_by_policy);
   }
 
-  if (features::AreCaptureModeDemoToolsEnabled()) {
+  if (features::AreCaptureModeDemoToolsEnabled() &&
+      !controller->is_recording_in_progress()) {
     separator_2_ = AddChildView(std::make_unique<views::Separator>());
     separator_2_->SetColorId(ui::kColorAshSystemUIMenuSeparator);
     demo_tools_menu_toggle_button_ =
@@ -146,12 +154,20 @@ CaptureModeSettingsView::CaptureModeSettingsView(CaptureModeSession* session,
   SetPaintToLayer();
   SetBackground(views::CreateThemedSolidBackground(kColorAshShieldAndBase80));
   layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetRoundedCornerRadius(kBorderRadius);
+  layer()->SetRoundedCornerRadius(kRoundedCorners);
   layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
   layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
+
+  if (features::IsDarkLightModeEnabled()) {
+    SetBorder(std::make_unique<views::HighlightBorder>(
+        kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1,
+        /*use_light_colors=*/false));
+  }
+
+  shadow_->SetRoundedCornerRadius(kCornerRadius);
 }
 
 CaptureModeSettingsView::~CaptureModeSettingsView() {
@@ -217,8 +233,17 @@ CaptureModeSettingsView::GetHighlightableItems() {
   audio_input_menu_group_->AppendHighlightableItems(highlightable_items);
   DCHECK(camera_menu_group_);
   camera_menu_group_->AppendHighlightableItems(highlightable_items);
-  if (save_to_menu_group_)
+
+  if (demo_tools_menu_toggle_button_) {
+    highlightable_items.push_back(
+        CaptureModeSessionFocusCycler::HighlightHelper::Get(
+            demo_tools_menu_toggle_button_->toggle_button()));
+  }
+
+  if (save_to_menu_group_) {
     save_to_menu_group_->AppendHighlightableItems(highlightable_items);
+  }
+
   return highlightable_items;
 }
 
@@ -382,7 +407,7 @@ void CaptureModeSettingsView::UpdateCameraMenuGroupVisibility(bool visible) {
 
 void CaptureModeSettingsView::OnDemoToolsButtonToggled() {
   const bool was_on = CaptureModeController::Get()->enable_demo_tools();
-  CaptureModeController::Get()->EnableDemoTools(!was_on);
+  CaptureModeController::Get()->EnableDemoTools(/*enable=*/!was_on);
 }
 
 BEGIN_METADATA(CaptureModeSettingsView, views::View)

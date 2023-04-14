@@ -35,6 +35,12 @@ enum KAnonymityBidMode {
   kEnforce  // Enforced.
 };
 
+// An opaque identifier that identifies an ad configuration used for
+// k-anonymity.
+struct KAnonKey {
+  string data;
+};
+
 // Subset of blink.mojom.InterestGroup that is used by GenerateBid() and can
 // vary between InterestGroups that can use the same BidderWorklet (so it's
 // "not shared" between InterestGroups that share the same BidderWorklet).
@@ -59,9 +65,9 @@ struct BidderWorkletNonSharedParams {
   array<blink.mojom.InterestGroupAd>? ads;
   array<blink.mojom.InterestGroupAd>? ad_components;
 
-  // ads_kanon[url] is true iff `url` is sufficiently k-anonymous to be used
-  // as an ad or an ad component.
-  map<url.mojom.Url, bool> ads_kanon;
+  // ads_kanon[kanon_key] is true iff `kanon_key` is sufficiently k-anonymous to
+  // be used as an ad or an ad component.
+  map<KAnonKey, bool> kanon_keys;
 };
 
 // Browser signals passed to the BidderWorklet's generateBid() method that are
@@ -156,7 +162,12 @@ interface GenerateBidClient {
   //   part of the trusted bidding signals, or an empty list, if no signals
   //   were received, or the signals had not priorityVector for the interest
   //   group that is generating a bid.
-  OnBiddingSignalsReceived(map<string, double> priority_vector) => ();
+  //
+  //  `trusted_signals_fetch_duration` The amount of time taken fetching trusted
+  //  bidding signals. If no trusted signals were fetched, returns a 0 duration.
+  OnBiddingSignalsReceived(
+      map<string, double> priority_vector,
+      mojo_base.mojom.TimeDelta trusted_signals_fetch_duration) => ();
 
   // Invoked once GenerateBid completes, either having successfully generated a
   // bid, or having failed to generate one for any reason.
@@ -210,6 +221,9 @@ interface GenerateBidClient {
   //
   // `pa_requests` The various requests made to the Private Aggregation API.
   //
+  // `bidding_duration` The amount of time taken running all bids (note that
+  // there may be 2 bids if the first bid result was not k-anonymous).
+  //
   // `errors` The various error messages to be used for debugging. These are too
   //  sensitive for the renderer to see. There may be errors even when a bid
   //  is offered, and there may be no errors when there's no bid. Includes
@@ -225,6 +239,7 @@ interface GenerateBidClient {
       bool has_set_priority,
       map<string, PrioritySignalsDouble?> update_priority_signals_overrides,
       array<PrivateAggregationRequest> pa_requests,
+      mojo_base.mojom.TimeDelta bidding_duration,
       array<string> errors);
 };
 
@@ -250,10 +265,15 @@ interface GenerateBidFinalizer {
   //  passing in as `per_buyer_timeout`. Null if not provided by the publisher
   //  page. Null will be passed to the worklet in that case.
   //
+  // See BeginGenerateBid for description of
+  //  `direct_from_seller_per_buyer_signals`, `
+  //  `direct_from_seller_auction_signals`
   FinishGenerateBid(
       string? auction_signals_json,
       string? per_buyer_signals_json,
-      mojo_base.mojom.TimeDelta? per_buyer_timeout);
+      mojo_base.mojom.TimeDelta? per_buyer_timeout,
+      url.mojom.Url? direct_from_seller_per_buyer_signals,
+      url.mojom.Url? direct_from_seller_auction_signals);
 };
 
 // Manages the auction workflow for one loaded FLEDGE bidder worklet.
@@ -303,6 +323,12 @@ interface BidderWorklet {
   // runAdAuction() with "?auctionSignals". Since this is fetched from a
   // subresource bundle, it may only be fetched using the URLLoaderFactory
   // passed in when creating the worklet.
+  //
+  // Both `direct_from_seller_auction_signals` and
+  // `direct_from_seller_per_buyer_signals` can alternatively be passed as
+  // parameters to FinishGenerateBid() if they are not available at time of
+  // BeginGenerateBid(); but each parameter can be passed in as non-nullopt at
+  // most once.
   //
   // `browser_signal_seller_origin` The origin of the seller script running
   //  the auction. Typically a valid, non-opaque HTTPS origin.

@@ -30,13 +30,14 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_state_delegate_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
+#import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -169,10 +170,14 @@ class BrowserCoordinatorTest : public PlatformTest {
     UrlLoadParams urlLoadParams = UrlLoadParams::InCurrentTab(url);
     urlLoadingBrowserAgent->Load(urlLoadParams);
 
-    // Force the DidStopLoading callback.
+    // Force the WebStateObserver callbacks that simulate a page load.
     web::WebStateObserver* ntpHelper =
         (web::WebStateObserver*)NewTabPageTabHelper::FromWebState(web_state);
-    ntpHelper->DidStopLoading(web_state);
+    web::FakeNavigationContext context;
+    context.SetUrl(url);
+    context.SetIsSameDocument(false);
+    ntpHelper->DidStartNavigation(web_state, &context);
+    ntpHelper->PageLoaded(web_state, web::PageLoadCompletionStatus::SUCCESS);
   }
 
   IOSChromeScopedTestingLocalState local_state_;
@@ -256,7 +261,7 @@ TEST_F(BrowserCoordinatorTest, SharePage) {
 }
 
 // Tests that -shareChromeApp is instantiating the SharingCoordinator
-// with ActivityParams where scenario is ShareChrome, leaving fullscreen
+// with SharingParams where scenario is ShareChrome, leaving fullscreen
 // and starting the share coordinator.
 TEST_F(BrowserCoordinatorTest, ShareChromeApp) {
   FullscreenModel model;
@@ -271,8 +276,8 @@ TEST_F(BrowserCoordinatorTest, ShareChromeApp) {
   ASSERT_EQ(0.0, controller_ptr->GetProgress());
 
   id expectShareChromeScenarioArg =
-      [OCMArg checkWithBlock:^BOOL(ActivityParams* params) {
-        return params.scenario == ActivityScenario::ShareChrome;
+      [OCMArg checkWithBlock:^BOOL(SharingParams* params) {
+        return params.scenario == SharingScenario::ShareChrome;
       }];
 
   id classMock = OCMClassMock([SharingCoordinator class]);
@@ -311,16 +316,13 @@ TEST_F(BrowserCoordinatorTest, NewTabPageTabHelperDelegate) {
   InsertWebState();
 
   // Open a NTP and expect a call to the NTP coordinator.
-  [[mockNTPCoordinator expect] ntpDidChangeVisibility:YES];
+  [[mockNTPCoordinator expect] didNavigateToNTP];
   OpenURL(GURL("chrome://newtab/"));
-  EXPECT_EQ(browser_coordinator.NTPCoordinator.webState, GetActiveWebState());
   EXPECT_OCMOCK_VERIFY(mockNTPCoordinator);
 
   // Open a non-NTP page and expect a call to the NTP coordinator.
-  [[mockNTPCoordinator expect] ntpDidChangeVisibility:NO];
-  [[mockNTPCoordinator expect] stop];
+  [[mockNTPCoordinator expect] didNavigateAwayFromNTP];
   OpenURL(GURL("chrome://version/"));
-  EXPECT_EQ(browser_coordinator.NTPCoordinator.webState, nullptr);
   EXPECT_OCMOCK_VERIFY(mockNTPCoordinator);
 
   [browser_coordinator stop];

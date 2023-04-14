@@ -35,11 +35,20 @@
     width: var(--emoji-picker-width);
   }
 
+  .search-side-padding,
   .side-padding {
-    flex-grow: 1;
+    flex-grow: 0;
     flex-shrink: 0;
     max-height: 100%;
     overflow-y: scroll;
+  }
+
+  .search-side-padding {
+    padding-inline-end: var(--emoji-picker-search-side-padding);
+    padding-inline-start: var(--emoji-picker-search-side-padding);
+  }
+
+  .side-padding {
     padding-inline-end: var(--emoji-picker-side-padding);
     padding-inline-start: var(--emoji-picker-side-padding);
   }
@@ -48,9 +57,12 @@
   #list-container {
     display: flex;
     flex-direction: column;
-    flex-grow: 1;
     overflow-y: clip;
     width: 100%;
+  }
+
+  #search-container {
+    flex-grow: 0;
   }
 
   #tabs {
@@ -234,13 +246,13 @@
 
 <div id="message" class="sr-only" aria-live="polite"></div>
   <emoji-search
-    class="side-padding"
+    class="search-side-padding"
     id="search-container"
     categories-data="[[categoriesData]]"
     lazy-indexing="[[searchLazyIndexing]]"
     on-scroll="onSearchScroll"
     category-metadata="[[getCategoryMetadata(gifSupport, category)]]"
-    gif-support="[[gifSupport]]">
+    gif-support$="[[gifSupport]]">
   </emoji-search>
 
 <div id="list-container">
@@ -347,29 +359,20 @@
   </div>
   <div class="divider"></div>
   <div class="side-padding" id="groups" on-scroll="onEmojiScroll">
-    <template is="dom-if" if="[[!isInfinite(category)]]">
-      <template is="dom-repeat" items="[[categoriesGroupElements]]">
-        <div data-group$="[[item.groupId]]">
-          <emoji-group data="[[item.emoji]]"
-            group="[[item.name]]"
-            preferred="[[item.preferences]]"
-            clearable$="[[item.isHistory]]"
-            category$="[[item.category]]"
-            class$="[[getEmojiGroupClassNames(item.isHistory,item.emoji)]]">
-          </emoji-group>
-        </div>
-      </template>
+    <template is="dom-repeat" items="[[categoriesGroupElements]]">
+      <div data-group$="[[item.groupId]]">
+        <emoji-group data="[[item.emoji]]"
+          group="[[item.name]]"
+          preferred="[[item.preferences]]"
+          clearable$="[[item.isHistory]]"
+          category$="[[item.category]]"
+          class$="[[getEmojiGroupClassNames(item.emoji,item,category,activeInfiniteGroupId)]]">
+        </emoji-group>
+      </div>
     </template>
-    <template is="dom-if" if="[[isInfinite(category)]]">
-        <div data-group$="[[activeInfiniteGroupElements]]">
-          <emoji-group data="[[activeInfiniteGroupElements.emoji]]"
-            group="[[activeInfiniteGroupElements.name]]"
-            preferred="[[activeInfiniteGroupElements.preferences]]"
-            clearable$="[[activeInfiniteGroupElements.isHistory]]"
-            category$="[[activeInfiniteGroupElements.category]]"
-            class$="[[getEmojiGroupClassNames(activeInfiniteGroupElements.isHistory,activeInfiniteGroupElements.emoji)]]">
-          </emoji-group>
-        </div>
+    <template is="dom-if" if="[[isGifInErrorState(status)]]">
+      <emoji-error status="[[status]]" error-message="[[errorMessage]]">
+      </emoji-error>
     </template>
   </div>
   <!-- Render invisible dummy tab to temporarily calculate width of a tab. -->

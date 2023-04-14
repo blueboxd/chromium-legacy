@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
@@ -142,6 +141,7 @@ input_ime::AssistiveWindowType ConvertAssistiveWindowType(
     case ash::ime::AssistiveWindowType::kGrammarSuggestion:
     case ash::ime::AssistiveWindowType::kMultiWordSuggestion:
     case ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion:
+    case ash::ime::AssistiveWindowType::kLearnMore:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_NONE;
     case ash::ime::AssistiveWindowType::kUndoWindow:
       return input_ime::AssistiveWindowType::ASSISTIVE_WINDOW_TYPE_UNDO;
@@ -497,8 +497,7 @@ class ImeObserverChromeOS
 
   void OnSurroundingTextChanged(const std::string& component_id,
                                 const std::u16string& text,
-                                int cursor_pos,
-                                int anchor_pos,
+                                const gfx::Range selection_range,
                                 int offset_pos) override {
     if (extension_id_.empty() ||
         !HasListener(input_ime::OnSurroundingTextChanged::kEventName))
@@ -509,8 +508,12 @@ class ImeObserverChromeOS
     // index in |info.text|, the javascript code on the extension side should
     // handle it.
     info.text = base::UTF16ToUTF8(text);
-    info.focus = cursor_pos;
-    info.anchor = anchor_pos;
+    // Due to a legacy mistake, the selection is reversed (i.e. 'focus' is the
+    // start and 'anchor' is the end), opposite to what the API documentation
+    // claims.
+    // TODO(b/245020074): Fix this without breaking existing 3p IMEs.
+    info.focus = selection_range.start();
+    info.anchor = selection_range.end();
     info.offset = offset_pos;
     auto args(input_ime::OnSurroundingTextChanged::Create(component_id, info));
 

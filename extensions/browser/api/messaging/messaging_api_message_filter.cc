@@ -212,6 +212,9 @@ bool IsValidSourceUrl(content::RenderProcessHost& process,
   url::Origin source_url_origin = url::Origin::Resolve(source_url, base_origin);
   auto* policy = content::ChildProcessSecurityPolicy::GetInstance();
   if (!policy->CanAccessDataForOrigin(process.GetID(), source_url_origin)) {
+    SCOPED_CRASH_KEY_STRING256(
+        "EMF_INVALID_SOURCE_URL", "base_origin",
+        base_origin.GetDebugString(false /* include_nonce */));
     bad_message::ReceivedBadMessage(&process,
                                     bad_message::EMF_INVALID_SOURCE_URL);
     return false;
@@ -298,6 +301,9 @@ absl::optional<ExtensionId> ValidateSourceContextAndExtractExtensionId(
     const url::SchemeHostPort& scheme_host_port =
         origin.GetTupleOrPrecursorTupleIfOpaque();
     if (scheme_host_port.scheme() != kExtensionScheme) {
+      SCOPED_CRASH_KEY_STRING256(
+          "EMF_NON_EXTENSION_SENDER_FRAME", "origin",
+          origin.GetDebugString(false /* include_nonce */));
       bad_message::ReceivedBadMessage(
           &process, bad_message::EMF_NON_EXTENSION_SENDER_FRAME);
       return absl::nullopt;
@@ -539,6 +545,11 @@ void MessagingAPIMessageFilter::OnResponsePending(
 
   MessageService::Get(browser_context_)
       ->NotifyResponsePending(port_id, render_process_id_, port_context);
+}
+
+// static
+void MessagingAPIMessageFilter::EnsureAssociatedFactoryBuilt() {
+  ShutdownNotifierFactory::GetInstance();
 }
 
 }  // namespace extensions

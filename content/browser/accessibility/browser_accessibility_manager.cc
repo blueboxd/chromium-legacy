@@ -862,6 +862,9 @@ void BrowserAccessibilityManager::Decrement(const BrowserAccessibility& node) {
 
 void BrowserAccessibilityManager::DoDefaultAction(
     const BrowserAccessibility& node) {
+  DCHECK(node.node()->data().GetDefaultActionVerb() !=
+         ax::mojom::DefaultActionVerb::kNone);
+
   if (!delegate_)
     return;
 
@@ -1578,10 +1581,11 @@ ui::AXTreeManager* BrowserAccessibilityManager::GetParentManager() const {
          !connected_to_parent_tree_node_);
   // delegate_ is null during unit tests.
   if (parent && delegate_ && delegate_->AccessibilityRenderFrameHost()) {
-    DCHECK(delegate_->AccessibilityRenderFrameHost()
-               ->GetParentOrOuterDocumentOrEmbedder() ==
-           browser_accessibility_manager_parent->delegate()
-               ->AccessibilityRenderFrameHost())
+    DCHECK(
+        delegate_->AccessibilityRenderFrameHost()
+            ->GetParentOrOuterDocumentOrEmbedderExcludingProspectiveOwners() ==
+        browser_accessibility_manager_parent->delegate()
+            ->AccessibilityRenderFrameHost())
         << "RenderFrameHost parent should match "
            "BrowserAccessibilityManager's "
            "parent's RenderFrameHost.";

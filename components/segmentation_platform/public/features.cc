@@ -12,10 +12,6 @@ BASE_FEATURE(kSegmentationPlatformFeature,
              "SegmentationPlatform",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSegmentationStructuredMetricsFeature,
-             "SegmentationStructuredMetrics",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSegmentationPlatformUkmEngine,
              "SegmentationPlatformUkmEngine",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -74,10 +70,9 @@ BASE_FEATURE(kContextualPageActionShareModel,
 
 BASE_FEATURE(kSegmentationPlatformSegmentInfoCache,
              "SegmentationPlatformSegmentInfoCache",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSegmentationDefaultReportingSegments,
              "SegmentationDefaultReportingSegments",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
 }  // namespace segmentation_platform::features

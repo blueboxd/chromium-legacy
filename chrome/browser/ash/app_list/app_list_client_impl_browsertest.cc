@@ -10,7 +10,6 @@
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
-#include "ash/public/cpp/app_list/app_list_switches.h"
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -35,6 +34,7 @@
 #include "chrome/browser/ash/app_list/search/search_controller.h"
 #include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
+#include "chrome/browser/ash/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/ash/login/login_manager_test.h"
 #include "chrome/browser/ash/login/test/login_manager_mixin.h"
 #include "chrome/browser/ash/login/ui/user_adding_screen.h"
@@ -44,7 +44,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
@@ -670,8 +669,7 @@ IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AppListAppLaunchTest, DemoModeAppLaunchSourceReported) {
-  ash::DemoSession::SetDemoConfigForTesting(
-      ash::DemoSession::DemoModeConfig::kOnline);
+  ash::test::LockDemoDeviceInstallAttributes();
   EXPECT_TRUE(ash::DemoSession::IsDeviceInDemoMode());
 
   // Should see 0 apps launched from the Launcher in the histogram at first.

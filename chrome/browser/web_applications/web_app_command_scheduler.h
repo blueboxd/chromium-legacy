@@ -8,7 +8,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/commands/fetch_installability_for_chrome_management.h"
 #include "chrome/browser/web_applications/commands/manifest_update_data_fetch_command.h"
 #include "chrome/browser/web_applications/commands/manifest_update_finalize_command.h"
@@ -104,7 +103,8 @@ class WebAppCommandScheduler {
                               webapps::InstallResultCode code,
                               bool did_uninstall_and_replace)> install_callback,
       base::WeakPtr<content::WebContents> contents,
-      std::unique_ptr<WebAppDataRetriever> data_retriever);
+      std::unique_ptr<WebAppDataRetriever> data_retriever,
+      WebAppUrlLoader* web_app_url_loader);
 
   // Install a placeholder app, this is used during externally managed install
   // flow when url load fails.
@@ -146,7 +146,7 @@ class WebAppCommandScheduler {
   // Schedules a command that installs the Isolated Web App described by the
   // given IsolatedWebAppUrlInfo and IsolationData.
   void InstallIsolatedWebApp(const IsolatedWebAppUrlInfo& url_info,
-                             const IsolationData& isolation_data,
+                             const IsolatedWebAppLocation& location,
                              InstallIsolatedWebAppCallback callback);
 
   // Scheduler a command that installs a web app from sync.

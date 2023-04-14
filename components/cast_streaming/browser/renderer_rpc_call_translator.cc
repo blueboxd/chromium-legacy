@@ -11,11 +11,15 @@ namespace cast_streaming::remoting {
 
 RendererRpcCallTranslator::RendererRpcCallTranslator(
     RpcMessageProcessor processor,
-    media::mojom::Renderer* renderer)
-    : message_processor_(std::move(processor)),
+    media::mojom::Renderer* renderer,
+    FlushUntilCallback flush_until_cb)
+    : flush_until_cb_(std::move(flush_until_cb)),
+      message_processor_(std::move(processor)),
       renderer_client_receiver_(this),
       renderer_(std::move(renderer)),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(flush_until_cb_);
+}
 
 RendererRpcCallTranslator::~RendererRpcCallTranslator() = default;
 
@@ -34,8 +38,10 @@ void RendererRpcCallTranslator::OnRpcInitialize() {
 
 void RendererRpcCallTranslator::OnRpcFlush(uint32_t audio_count,
                                            uint32_t video_count) {
+  flush_handles_.push_back(handle_);
   renderer_->Flush(base::BindOnce(&RendererRpcCallTranslator::OnFlushCompleted,
-                                  weak_factory_.GetWeakPtr(), handle_));
+                                  weak_factory_.GetWeakPtr()));
+  flush_until_cb_.Run(audio_count, video_count);
 }
 
 void RendererRpcCallTranslator::OnRpcStartPlayingFrom(base::TimeDelta time) {
@@ -103,10 +109,11 @@ void RendererRpcCallTranslator::OnInitializeCompleted(
                          CreateMessageForInitializationComplete(success));
 }
 
-void RendererRpcCallTranslator::OnFlushCompleted(
-    openscreen::cast::RpcMessenger::Handle handle_at_time_of_sending) {
-  message_processor_.Run(handle_at_time_of_sending,
-                         CreateMessageForFlushComplete());
+void RendererRpcCallTranslator::OnFlushCompleted() {
+  for (auto handle : flush_handles_) {
+    message_processor_.Run(handle, CreateMessageForFlushComplete());
+  }
+  flush_handles_.clear();
 }
 
 }  // namespace cast_streaming::remoting

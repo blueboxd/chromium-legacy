@@ -79,6 +79,9 @@ struct WallpaperCollection {
     // Name of this collection to be displayed to the user.
     string name;
 
+    // Extra description text about the wallpaper collection.
+    string description;
+
     // The preview image URLs of this collection.
     array<url.mojom.Url> previews;
 };
@@ -182,6 +185,11 @@ struct SetDailyRefreshResponse {
   bool force_refresh;
 };
 
+struct CurrentWallpaperDescription {
+  string title;
+  string content;
+};
+
 // Represents the currently selected wallpaper image.
 struct CurrentWallpaper {
   // Attribution text such as "Photo by John Doe" or the file name of the local
@@ -197,6 +205,11 @@ struct CurrentWallpaper {
   // A unique identifier for the image. This is used to identify which
   // |WallpaperImage| or local image the user has selected.
   string key;
+
+  // Extra description content about the image. Currently only supplied for
+  // images supplied by backdrop server with type
+  // `WallpaperType::{kDaily, kOnline}`.
+  CurrentWallpaperDescription? description;
 };
 
 // Receives updated wallpaper information whenever it is changed.
@@ -370,6 +383,9 @@ interface ThemeObserver {
   //Notifies the JS side about the current state of the color scheme.
   OnColorSchemeChanged(ColorScheme color_scheme);
 
+  // Notifies the JS side that the sample color schemes have changed.
+  OnSampleColorSchemesChanged(array<SampleColorScheme> sample_color_schemes);
+
   // Notifies the JS side about the current state of the static color.
   OnStaticColorChanged(skia.mojom.SkColor? color);
 };
@@ -520,11 +536,13 @@ interface UserProvider {
 };
 
 // The animation theme for screen saver. Should be kept in sync with
-// |ash::AmbientAnimationTheme|.
+// |ash::AmbientTheme|.
 enum AnimationTheme {
   kSlideshow = 0,
   kFeelTheBreeze = 1,
   kFloatOnBy = 2,
+  kVideoNewMexico = 3,
+  kVideoClouds = 4,
 };
 
 // The source of the screensaver images come from.

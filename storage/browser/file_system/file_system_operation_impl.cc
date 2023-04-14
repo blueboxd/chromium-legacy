@@ -413,7 +413,6 @@ FileSystemOperationImpl::FileSystemOperationImpl(
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   DCHECK(operation_context_.get());
-  operation_context_->DetachFromSequence();
   async_file_util_ = file_system_context_->GetAsyncFileUtil(url.type());
   DCHECK(async_file_util_);
 }
@@ -436,7 +435,7 @@ void FileSystemOperationImpl::GetUsageAndQuotaThenRunTask(
 
   DCHECK(quota_manager_proxy);
   quota_manager_proxy->GetUsageAndQuota(
-      blink::StorageKey(url.origin()),
+      blink::StorageKey::CreateFirstParty(url.origin()),
       FileSystemTypeToQuotaStorageType(url.type()),
       base::SequencedTaskRunner::GetCurrentDefault(),
       base::BindOnce(&FileSystemOperationImpl::DidGetUsageAndQuotaAndRunTask,

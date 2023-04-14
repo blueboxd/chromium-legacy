@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Jendela update firmware untuk perangkat eksternal terbuka. <ph name="NUM_UPDATES" /> update tersedia.</translation>
 <translation id="1145516343487477149">Temukan artikel bantuan dan jawaban atas pertanyaan umum tentang Chromebook</translation>
+<translation id="1167755866710282443">Buka menu untuk menyesuaikan tombol. Tarik menu untuk memindahkan.</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Standar (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Hapus</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Pilih album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Mode gelap</translation>
+<translation id="4130035430755296270">Terus gerakkan kursor untuk melihat opsi tata letak lainnya</translation>
 <translation id="4131410914670010031">Hitam dan putih</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Google Foto</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Resolusi DNS</translation>
 <translation id="4848429997038228357">BERJALAN</translation>
 <translation id="4854586501323951986">Layar sentuh bawaan</translation>
+<translation id="4855250849489639581">Geser ke bawah untuk melihat opsi tata letak lainnya</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} kesempatan lagi}other{<ph name="ERROR_MESSAGE" /> {0} kesempatan lagi}}</translation>
 <translation id="4873827928179867585">Algoritme autentikasi</translation>
 <translation id="4880328057631981605">Nama titik akses</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 Gambar</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> ini dikelola oleh <ph name="MANAGER" />. Administrator dapat mengonfigurasi perangkat dari jarak jauh.</translation>
 <translation id="7180611975245234373">Perbarui</translation>
+<translation id="7180865173735832675">Sesuaikan</translation>
 <translation id="7212734716605298123">Update firmware untuk perangkat eksternal</translation>
 <translation id="7216409898977639127">Operator seluler</translation>
 <translation id="725133483556299729">Pilih email</translation>

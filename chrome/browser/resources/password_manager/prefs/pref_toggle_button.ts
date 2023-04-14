@@ -49,6 +49,16 @@ export class PrefToggleButtonElement extends PrefToggleButtonElementBase {
         notify: true,
         reflectToAttribute: true,
       },
+
+      /**
+       * If true, do not automatically set the preference value on user click.
+       * Confirm the change first then call either sendPrefChange or
+       * resetToPrefValue accordingly.
+       */
+      changeRequiresValidation: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -59,24 +69,26 @@ export class PrefToggleButtonElement extends PrefToggleButtonElementBase {
   label: string;
   subLabel: string;
   checked: boolean;
+  changeRequiresValidation: boolean;
 
   override ready() {
     super.ready();
 
-    this.addEventListener('click', this.onHostClick_);
-  }
-
-  private onChange_(e: CustomEvent<boolean>) {
-    this.checked = e.detail;
-    this.updatePrefValue_();
+    this.addEventListener('click', this.onClick_);
   }
 
   /**
    * Handles non cr-toggle button clicks (cr-toggle handles its own click events
    * which don't bubble).
    */
-  private onHostClick_(e: Event) {
+  private onClick_(e: Event) {
     e.stopPropagation();
+
+    if (this.changeRequiresValidation) {
+      this.dispatchEvent(new CustomEvent(
+          'validate-and-change-pref', {bubbles: true, composed: true}));
+      return;
+    }
 
     this.checked = !this.checked;
     this.updatePrefValue_();

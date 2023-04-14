@@ -3520,6 +3520,12 @@ NavigationHandle* TestActivationManager::GetNavigationHandle() {
   return request_;
 }
 
+void TestActivationManager::SetCallbackCalledAfterActivationIsReady(
+    base::OnceClosure callback) {
+  DCHECK(!callback_in_last_condition);
+  callback_in_last_condition = std::move(callback);
+}
+
 CommitDeferringCondition::Result TestActivationManager::FirstConditionCallback(
     CommitDeferringCondition& condition,
     base::OnceClosure resume_callback) {
@@ -3554,6 +3560,10 @@ CommitDeferringCondition::Result TestActivationManager::FirstConditionCallback(
 CommitDeferringCondition::Result TestActivationManager::LastConditionCallback(
     CommitDeferringCondition& condition,
     base::OnceClosure resume_callback) {
+  if (callback_in_last_condition) {
+    std::move(callback_in_last_condition).Run();
+  }
+
   if (request_ != &condition.GetNavigationHandle())
     return CommitDeferringCondition::Result::kProceed;
 
@@ -3805,8 +3815,7 @@ void VerifyStaleContentOnFrameEviction(
   EvictionStateWaiter waiter{delegated_frame_host};
   render_widget_host_view_aura->WasOccluded();
   static_cast<viz::FrameEvictorClient*>(delegated_frame_host)
-      ->EvictDelegatedFrame(delegated_frame_host->GetFrameEvictorForTesting()
-                                ->CollectSurfaceIdsForEviction());
+      ->EvictDelegatedFrame();
   EXPECT_EQ(delegated_frame_host->frame_eviction_state(),
             DelegatedFrameHost::FrameEvictionState::kPendingEvictionRequests);
   // Wait until the stale frame content is copied and set onto the layer, i.e.

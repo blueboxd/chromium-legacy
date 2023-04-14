@@ -37,6 +37,7 @@
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom-shared.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/models/image_model.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/layout/flex_layout.h"
@@ -365,7 +366,7 @@ ToolbarActionViewController* ExtensionsToolbarContainer::GetPoppedOutAction()
 }
 
 void ExtensionsToolbarContainer::OnContextMenuShown(
-    ToolbarActionViewController* extension) {
+    const std::string& action_id) {
   // Only update the extension's toolbar visibility if the context menu is being
   // shown from an extension visible in the toolbar.
   if (!IsExtensionsMenuShowing()) {
@@ -374,13 +375,12 @@ void ExtensionsToolbarContainer::OnContextMenuShown(
     // fixed.
     HideActivePopup();
 #endif
-    extension_with_open_context_menu_id_ = extension->GetId();
+    extension_with_open_context_menu_id_ = action_id;
     UpdateIconVisibility(extension_with_open_context_menu_id_.value());
   }
 }
 
-void ExtensionsToolbarContainer::OnContextMenuClosed(
-    ToolbarActionViewController* extension) {
+void ExtensionsToolbarContainer::OnContextMenuClosed() {
   // |extension_with_open_context_menu_id_| does not have a value when a context
   // menu is being shown from within the extensions menu.
   if (extension_with_open_context_menu_id_.has_value()) {
@@ -397,25 +397,23 @@ bool ExtensionsToolbarContainer::CanShowActionsInToolbar() const {
 }
 
 bool ExtensionsToolbarContainer::IsActionVisibleOnToolbar(
-    const ToolbarActionViewController* action) const {
-  const std::string& extension_id = action->GetId();
-  return ShouldForceVisibility(extension_id) ||
-         model_->IsActionPinned(extension_id);
+    const std::string& action_id) const {
+  return GetActionVisibility(action_id) !=
+         extensions::ExtensionContextMenuModel::UNPINNED;
 }
 
 extensions::ExtensionContextMenuModel::ButtonVisibility
 ExtensionsToolbarContainer::GetActionVisibility(
-    const ToolbarActionViewController* action) const {
-  extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
-      extensions::ExtensionContextMenuModel::PINNED;
-
-  if (ShouldForceVisibility(action->GetId()) &&
-      !model_->IsActionPinned(action->GetId())) {
-    visibility = extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
-  } else if (!IsActionVisibleOnToolbar(action)) {
-    visibility = extensions::ExtensionContextMenuModel::UNPINNED;
+    const std::string& action_id) const {
+  if (model_->IsActionPinned(action_id)) {
+    return extensions::ExtensionContextMenuModel::PINNED;
   }
-  return visibility;
+
+  if (ShouldForceVisibility(action_id)) {
+    return extensions::ExtensionContextMenuModel::TRANSITIVELY_VISIBLE;
+  }
+
+  return extensions::ExtensionContextMenuModel::UNPINNED;
 }
 
 void ExtensionsToolbarContainer::UndoPopOut() {
@@ -665,13 +663,14 @@ void ExtensionsToolbarContainer::WriteDragDataForView(
       model_->pinned_action_ids(), sender,
       [this](const std::string& action_id) { return GetViewForId(action_id); });
   DCHECK(it != model_->pinned_action_ids().cend());
-
-  size_t index = it - model_->pinned_action_ids().cbegin();
-
   ToolbarActionView* extension_view = GetViewForId(*it);
-  data->provider().SetDragImage(GetExtensionIcon(extension_view),
+
+  ui::ImageModel icon = GetExtensionIcon(extension_view);
+  data->provider().SetDragImage(icon.Rasterize(GetColorProvider()),
                                 press_pt.OffsetFromOrigin());
+
   // Fill in the remaining info.
+  size_t index = it - model_->pinned_action_ids().cbegin();
   BrowserActionDragData drag_data(extension_view->view_controller()->GetId(),
                                   index);
   drag_data.Write(browser_->profile(), data);
@@ -809,11 +808,10 @@ size_t ExtensionsToolbarContainer::WidthToIconCount(int x_offset) {
   return std::min(unclamped_count, actions_.size());
 }
 
-gfx::ImageSkia ExtensionsToolbarContainer::GetExtensionIcon(
+ui::ImageModel ExtensionsToolbarContainer::GetExtensionIcon(
     ToolbarActionView* extension_view) {
-  return extension_view->view_controller()
-      ->GetIcon(GetCurrentWebContents(), GetToolbarActionSize())
-      .AsImageSkia();
+  return extension_view->view_controller()->GetIcon(GetCurrentWebContents(),
+                                                    GetToolbarActionSize());
 }
 
 void ExtensionsToolbarContainer::SetExtensionIconVisibility(
@@ -831,8 +829,7 @@ void ExtensionsToolbarContainer::SetExtensionIconVisibility(
 
   extension_view->SetImageModel(
       views::Button::STATE_NORMAL,
-      visible ? ui::ImageModel::FromImageSkia(GetExtensionIcon(extension_view))
-              : ui::ImageModel());
+      visible ? GetExtensionIcon(extension_view) : ui::ImageModel());
 }
 
 void ExtensionsToolbarContainer::UpdateContainerVisibility() {

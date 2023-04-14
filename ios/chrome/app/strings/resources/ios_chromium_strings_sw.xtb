@@ -11,7 +11,6 @@
 <translation id="1472013873724362412">Akaunti yako haifanyi kazi kwenye Chromium. Tafadhali wasiliana na msimamizi wako wa kikoa au utumie Akaunti ya kawaida ya Google kuingia.</translation>
 <translation id="1507010443238049608">Tusaidie Kuboresha Utendaji na Vipengele vya Chromium</translation>
 <translation id="1531155317299575425">Huonyesha vidokezo vya kuingia katika akaunti kwenye Chromium.</translation>
-<translation id="1584569488888892906">Chromium ni rahisi, salama na yenye kasi zaidi</translation>
 <translation id="1617663976202781617">Data kutoka usawazishaji wa Chromium</translation>
 <translation id="1722370509450468186">Nenosiri lako litahifadhiwa katika Akaunti yako (<ph name="EMAIL" />).</translation>
 <translation id="1736662517232558588">Imefuta data ya Chromium</translation>
@@ -61,10 +60,12 @@
 <translation id="4985291216379576555">Nje ya mtandao, Chromium imeshindwa kukagua kama kuna masasisho</translation>
 <translation id="4996471330284142407">Fanya mengi zaidi kwa kutumia Chromium ambayo ni rahisi, salama na yenye kasi zaidi.</translation>
 <translation id="4999538639245140991">Kwa sababu unaondoka kwenye akaunti inayodhibitiwa na <ph name="SIGNOUT_MANAGED_DOMAIN" />, data yako ya Chromium itafutwa kwenye kifaa hiki, lakini itasalia katika Akaunti yako ya Google.</translation>
+<translation id="5048795749726991615">Ili upate manenosiri uliyohifadhi kwa urahisi katika programu zako zingine, tumia Chromium kwa ajili ya Kujaza Kiotomatiki</translation>
 <translation id="5171868502429358653">Ingia Katika Akaunti kwenye Chromium</translation>
 <translation id="5224391634244552924">Hakuna manenosiri yaliyohifadhiwa. Chromium inaweza kukagua manenosiri yako ukiyahifadhi.</translation>
 <translation id="5308226104666789935">Chromium imeshindwa kukagua kama kuna masasisho</translation>
 <translation id="5396916991083608703">Ungependa Kuweka Chromium iwe Kivinjari chaguomsingi?</translation>
+<translation id="5453478652154926037">Chromium imeshindwa kukagua manenosiri yako.</translation>
 <translation id="5521125884468363740">Ili uone vichupo vyako kwenye kifaa chochote unakotumia Chromium, ingia katika akaunti na uwashe kipengele cha kusawazisha</translation>
 <translation id="5522297504975449419">Baadhi ya vipengele vya Chromium havitapatikana tena.</translation>
 <translation id="5573014823074921752">Kidokezo cha Chromium. Ili upate chaguo zaidi za kichupo, gusa na ushikilie kitufe cha 'Onyesha Vichupo' katika upau wa vidhibiti unaopatikana katika sehemu ya chini au juu ya skrini yako.</translation>
@@ -88,8 +89,8 @@
 <translation id="7018284295775193585">Imeshindwa kusasisha Chromium</translation>
 <translation id="7045244423563602563">Weka Mipangilio ya Chromium Upendavyo</translation>
 <translation id="7099326575020694068">Chromium imeshindwa kutumia kamera yako katika hali ya Mwonekano wa Madirisha Mawili</translation>
-<translation id="7108914401277488191">Fanya Mengi Zaidi kwa kutumia Chromium</translation>
 <translation id="7118091470949186573">Sasa unaweza kutumia Chromium wakati wowote unapogusa viungo katika ujumbe, hati na programu zingine.</translation>
+<translation id="7165402419892018581">Chagua Chromium ili Ujaze Kiotomatiki</translation>
 <translation id="7175400662502680481">Nenosiri lako limefichuliwa katika tukio la ufichuzi haramu wa data. Kidhibiti cha Manenosiri kinapendekeza ulibadilishe sasa hivi.</translation>
 <translation id="7208566199746267865">Chromium inaokoa muda wako kwa kuleta akaunti zako kwenye wavuti. Unaweza kuongeza au kuondoa akaunti katika Mipangilio.</translation>
 <translation id="725427773388857052">Chromium inaweza kukusaidia ulinde akaunti yako dhidi ya ufichuzi haramu wa data, tovuti ambazo si salama na zaidi.</translation>
@@ -104,6 +105,7 @@
 <translation id="7746854981345936341">Kidokezo cha Chromium. Baadhi ya vitufe sasa vinapatikana katika sehemu ya chini ya skrini yako, kama vile kitufe cha Nyuma, Mbele na Tafuta.</translation>
 <translation id="7763454117143368771">Tumia Chromium kama kivinjari chako chaguomsingi ili uendelee kulindwa dhidi ya tovuti hatari na uhakikishe manenosiri yako ni salama</translation>
 <translation id="7812317783196516890">Umeingia katika akaunti na unasawazisha data yako ukitumia akaunti inayosimamiwa na <ph name="DOMAIN" /> ambapo msimamizi wake sasa anaweza kuzifanya sera za mtumiaji ziwe mahususi kwenye akaunti hiyo hivyo zinaweza kubadilisha tabia za Chromium.</translation>
+<translation id="7859018312476869945">Unapoandika kwenye sehemu ya anwani au kisanduku cha kutafutia, Chromium hutuma unachokiandika kwenye mtambo wako chaguomsingi wa kutafuta ili upate mapendekezo bora. Kipengele hiki huwa kimezimwa katika Hali fiche.</translation>
 <translation id="786327964234957808">Unabadilisha akaunti za kusawazisha kutoka <ph name="USER_EMAIL1" /> kuwa <ph name="USER_EMAIL2" />. Data yako iliyopo ya Chromium inadhibitiwa na <ph name="DOMAIN" />. Hatua hii itafuta data yako kwenye kifaa hiki, lakini data yako itasalia katika <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Anza kutumia kichanganuzi cha Chromium</translation>
 <translation id="7928628054454574139">Tumia Chromium kufungua viungo vyovyote unavyogusa katika programu zingine</translation>
@@ -113,6 +115,7 @@
 <translation id="8073677936375100957">Ungependa kufuta data yako yote ya Chromium kwenye kifaa hiki?</translation>
 <translation id="8240981428553046115">Chromium imeshindwa kukagua kama kuna masasisho. Jaribu tena baadaye.</translation>
 <translation id="8409374867500149834">Una ulinzi thabiti zaidi wa Chromium dhidi ya tovuti hatari</translation>
+<translation id="8460301378281140593">Kwenye Mipangilio ya iPhone yako, fungua "Chaguo za Manenosiri" na uchague "Chromium"</translation>
 <translation id="858114650497379505">Unaweza kutumia manenosiri uliyohifadhi kwenye Kidhibiti cha Manenosiri katika programu zingine kwenye iPhone yako.</translation>
 <translation id="8586442755830160949">Hakimiliki <ph name="YEAR" /> Wasanidi wa Chromium. Haki zote zimehifadhiwa.</translation>
 <translation id="865600487977764604">Hulinda usalama wako kwenye Chromium na huenda ikatumiwa kuboresha usalama wako kwenye programu nyingine za Google unapokuwa umeingia katika akaunti.</translation>

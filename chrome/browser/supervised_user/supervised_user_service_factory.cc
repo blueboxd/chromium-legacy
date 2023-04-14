@@ -4,8 +4,11 @@
 
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 
+#include "base/functional/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/supervised_user/extensions_utils.h"
+#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/buildflags/buildflags.h"
@@ -41,7 +44,9 @@ SupervisedUserServiceFactory* SupervisedUserServiceFactory::GetInstance() {
 
 // static
 KeyedService* SupervisedUserServiceFactory::BuildInstanceFor(Profile* profile) {
-  return new SupervisedUserService(profile);
+  return new SupervisedUserService(
+      profile, IdentityManagerFactory::GetInstance()->GetForProfile(profile),
+      base::BindRepeating(supervised_user::IsSupportedChromeExtensionURL));
 }
 
 SupervisedUserServiceFactory::SupervisedUserServiceFactory()
@@ -53,6 +58,7 @@ SupervisedUserServiceFactory::SupervisedUserServiceFactory()
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
 #endif
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(KidsChromeManagementClientFactory::GetInstance());
 }
 
 SupervisedUserServiceFactory::~SupervisedUserServiceFactory() {}

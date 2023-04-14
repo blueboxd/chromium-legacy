@@ -19,7 +19,6 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -32,6 +31,7 @@
 @protocol CRWWebViewProxy;
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
+@protocol CRWFindInteraction;
 enum WKPermissionDecision : NSInteger;
 
 namespace web {
@@ -44,6 +44,7 @@ enum Permission : NSUInteger;
 enum PermissionState : NSUInteger;
 class SessionCertificatePolicyCacheImpl;
 class WebFrame;
+class WebFramesManagerImpl;
 
 // Implementation of WebState.
 // Generally mirrors //content's WebContents implementation.
@@ -296,8 +297,8 @@ class WebStateImpl final : public WebState {
   void Stop() final;
   const NavigationManager* GetNavigationManager() const final;
   NavigationManager* GetNavigationManager() final;
-  const WebFramesManager* GetWebFramesManager() const final;
-  WebFramesManager* GetWebFramesManager() final;
+  const WebFramesManager* GetPageWorldWebFramesManager() const final;
+  WebFramesManager* GetPageWorldWebFramesManager() final;
   const SessionCertificatePolicyCache* GetSessionCertificatePolicyCache()
       const final;
   SessionCertificatePolicyCache* GetSessionCertificatePolicyCache() final;
@@ -348,7 +349,7 @@ class WebStateImpl final : public WebState {
   bool IsFindInteractionSupported() final;
   bool IsFindInteractionEnabled() final;
   void SetFindInteractionEnabled(bool enabled) final;
-  UIFindInteraction* GetFindInteraction() final API_AVAILABLE(ios(16));
+  id<CRWFindInteraction> GetFindInteraction() final API_AVAILABLE(ios(16));
 
  protected:
   // WebState:

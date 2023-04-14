@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -200,8 +201,8 @@ TEST_F(TabsApiUnitTest, IsTabStripEditable) {
     std::unique_ptr<base::Value> value(
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser(), api_test_utils::NONE));
-    EXPECT_TRUE(value && value->is_dict());
-    EXPECT_EQ(*value->FindStringKey("pendingUrl"), url);
+    ASSERT_TRUE(value && value->is_dict());
+    EXPECT_EQ(*value->GetDict().FindString("pendingUrl"), url);
   }
 
   // Succeed while edit in progress and calling chrome.tabs.query.
@@ -316,7 +317,7 @@ TEST_F(TabsApiUnitTest, QueryWithoutTabsPermission) {
 
   const base::Value& third_tab_info = tabs_list_with_permission[0];
   ASSERT_TRUE(third_tab_info.is_dict());
-  absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
+  absl::optional<int> third_tab_id = third_tab_info.GetDict().FindInt("id");
   EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
 
   while (!browser()->tab_strip_model()->empty())
@@ -370,7 +371,7 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
 
     const base::Value& third_tab_info = tabs_list_with_permission[0];
     ASSERT_TRUE(third_tab_info.is_dict());
-    absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
+    absl::optional<int> third_tab_id = third_tab_info.GetDict().FindInt("id");
     EXPECT_EQ(ExtensionTabUtil::GetTabId(web_contentses[2]), third_tab_id);
   }
 
@@ -390,11 +391,11 @@ TEST_F(TabsApiUnitTest, QueryWithHostPermission) {
     expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[0]));
     expected_tabs_ids.push_back(ExtensionTabUtil::GetTabId(web_contentses[2]));
 
-    absl::optional<int> first_tab_id = first_tab_info.FindIntKey("id");
+    absl::optional<int> first_tab_id = first_tab_info.GetDict().FindInt("id");
     ASSERT_TRUE(first_tab_id);
     EXPECT_TRUE(base::Contains(expected_tabs_ids, *first_tab_id));
 
-    absl::optional<int> third_tab_id = third_tab_info.FindIntKey("id");
+    absl::optional<int> third_tab_id = third_tab_info.GetDict().FindInt("id");
     ASSERT_TRUE(third_tab_id);
     EXPECT_TRUE(base::Contains(expected_tabs_ids, *third_tab_id));
   }

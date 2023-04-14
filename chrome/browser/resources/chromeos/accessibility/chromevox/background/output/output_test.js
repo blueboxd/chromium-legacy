@@ -98,6 +98,7 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxE2ETest {
     await super.setUpDeferred();
 
     // Alphabetical based on file path.
+    await importModule('ChromeVox', '/chromevox/background/chromevox.js');
     await importModule('EventSource', '/chromevox/background/event_source.js');
     await importModule('FocusBounds', '/chromevox/background/focus_bounds.js');
     await importModule('Output', '/chromevox/background/output/output.js');
@@ -119,7 +120,8 @@ ChromeVoxOutputE2ETest = class extends ChromeVoxE2ETest {
     await importModule('Cursor', '/common/cursors/cursor.js');
     await importModule('CursorRange', '/common/cursors/range.js');
 
-    await importModule('LocalStorage', '/common/local_storage.js');
+    await importModule(
+        'SettingsManager', '/chromevox/common/settings_manager.js');
 
     globalThis.Dir = AutomationUtil.Dir;
     globalThis.RoleType = chrome.automation.RoleType;
@@ -342,7 +344,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
     ['Time control', [{value: 'role', start: 0, end: 12}]],
     ['Date control', [{value: 'role', start: 0, end: 12}]],
     [
-      'No file chosen, Choose File|Button',
+      'Choose File: No file chosen|Button',
       [
         {value: 'name', start: 0, end: 27},
         {value: new OutputEarconAction(EarconId.BUTTON), start: 0, end: 27},
@@ -362,7 +364,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Input', async function() {
     {string_: 'spnbtn', spans_: []},
     {string_: 'time'},
     {string_: 'date'},
-    {string_: 'No file chosen, Choose File btn'},
+    {string_: 'Choose File: No file chosen btn'},
     ' search',
     ' ed',
   ];
@@ -720,7 +722,7 @@ AX_TEST_F('ChromeVoxOutputE2ETest', 'Brief', async function() {
   const node = root.children[0].firstChild;
   const range = CursorRange.fromNode(node);
 
-  LocalStorage.set('useVerboseMode', false);
+  SettingsManager.set('useVerboseMode', false);
   const oWithoutPrev = new Output().withSpeech(range, null, 'navigate');
   assertEquals('inside', oWithoutPrev.speechOutputForTest.string_);
 });

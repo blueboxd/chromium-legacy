@@ -55,7 +55,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome je zastarel</translation>
 <translation id="1919130412786645364">Omogočanje prijave v Chrome</translation>
-<translation id="1952239763774043237">Če želite prejemati prihodnje posodobitve Google Chroma, potrebujete macOS 10.13 ali novejšega. V tem računalniku je nameščen macOS 10.12.</translation>
 <translation id="1953553007165777902">Prenašanje … Še <ph name="MINUTE" /> min.</translation>
 <translation id="2018528049276128029">Vsak profil ima svoje podatke v Chromu, kot so zaznamki, zgodovina, gesla in drugo.</translation>
 <translation id="2018879682492276940">Namestitev ni uspela. Poskusite znova.</translation>
@@ -188,6 +187,7 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4335235004908507846">Chrome vas lahko varuje pred podatkovnimi kršitvami, zlonamernimi razširitvami in drugim</translation>
 <translation id="4343195214584226067">Razširitev <ph name="EXTENSION_NAME" /> je dodana v Chrome</translation>
 <translation id="4384570495110188418">Chrome ne more preveriti gesel, ker niste prijavljeni</translation>
+<translation id="4393248995085527349">Če želite prejemati prihodnje posodobitve Google Chroma, potrebujete macOS 10.15 ali novejšega. V tem računalniku je nameščen macOS 10.13.</translation>
 <translation id="4427306783828095590">Izboljšana zaščita učinkoviteje blokira lažno predstavljanje in zlonamerno programsko opremo.</translation>
 <translation id="4450664632294415862">Chrome – Prijava v omrežje – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Poteka druga operacija v Google Chromu. Poskusite znova pozneje.</translation>
@@ -217,7 +217,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="4970880042055371251">Različica sistema Chrome OS</translation>
 <translation id="4970947549776831107">Chrome je blokiral to datoteko, ker gre za nevarno vrsto datoteke.</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Če želite prejemati prihodnje posodobitve Google Chroma, potrebujete macOS 10.13 ali novejšega. V tem računalniku je nameščen OS X 10.11.</translation>
 <translation id="5098668839038261629">Če je to vklopljeno, boste odjavljeni tudi iz Chroma.</translation>
 <translation id="5132929315877954718">Odkrijte zanimive aplikacije, igre, razširitve in teme za Google Chrome.</translation>
 <translation id="5139423532931106058">Prilagajanje profila v Chromu</translation>
@@ -245,6 +244,7 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome.}=1{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome. Anonimno okno se ne bo znova odprlo.}one{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome. # anonimno okno se ne bo znova odprlo.}two{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome. # anonimni okni se ne bosta znova odprli.}few{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome. # anonimna okna se ne bodo znova odprla.}other{Skrbnik prosi, da za uveljavitev te posodobitve znova zaženete Chrome. # anonimnih oken se ne bo znova odprlo.}}</translation>
 <translation id="5686916850681061684">Prilagajanje in nadziranje Google Chroma. Nekaj morate preveriti – kliknite za podrobnosti.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Če je vklopljeno, Chrome sprosti pomnilnik z neaktivnih zavihkov. Tako imajo aktivni zavihki in druge aplikacije več računalniških sredstev, Chrome pa je še naprej hiter. Neaktivni zavihki znova postanejo aktivni, ko se vrnete nanje.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome se bo znova zagnal čez 1 sekundo}one{Google Chrome se bo znova zagnal čez # sekundo}two{Google Chrome se bo znova zagnal čez # sekundi}few{Google Chrome se bo znova zagnal čez # sekunde}other{Google Chrome se bo znova zagnal čez # sekund}}</translation>
 <translation id="5727531838415286053">Če vas je Chrome naključno prijavil za aktivni preizkus, zgodovina brskanja vpliva na oglase, ki so prikazani, in zanimanja, kot je ocenjeno spodaj. Chrome zaradi varovanja vaše zasebnosti vsak mesec sproti izbriše vaša zanimanja. Zanimanja se osvežujejo, razen če jih odstranite.</translation>
 <translation id="5736850870166430177">Če vam spletno mesto poskusi ukrasti geslo ali ko prenašate škodljivo datoteko, lahko Chrome prav tako pošlje URL-je, vključno z delčki vsebine strani, Varnemu brskanju.</translation>
@@ -255,10 +255,12 @@ Google Chrome ne more obnoviti vaših nastavitev.</translation>
 <translation id="5895138241574237353">Znova zaženi</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Prijava v omrežje</translation>
 <translation id="5924017743176219022">Vzpostavljanje povezave z internetom …</translation>
+<translation id="5932997892801542621">Ko tipkate v naslovno vrstico ali iskalno polje, Chrome vaše vnose pošlje v Google Drive zaradi boljših predlogov za izdelke. V anonimnem načinu je to izklopljeno.</translation>
 <translation id="5940385492829620908">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromu.</translation>
 <translation id="5941711191222866238">Minimiziraj</translation>
 <translation id="5941830788786076944">Nastavi Google Chrome kot privzeti brskalnik</translation>
 <translation id="6003112304606738118">Prenašanje … Še <ph name="HOURS" /> h.</translation>
+<translation id="6010556343189461180">Če želite prejemati prihodnje posodobitve Google Chroma, potrebujete macOS 10.15 ali novejšega. V tem računalniku je nameščen macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome se bo zdaj zaprl.}=1{Chrome se bo zaprl čez 1 sekundo.}one{Chrome se bo zaprl čez # sekundo.}two{Chrome se bo zaprl čez # sekundi.}few{Chrome se bo zaprl čez # sekunde.}other{Chrome se bo zaprl čez # sekund.}}</translation>
 <translation id="6040143037577758943">Zapri</translation>
 <translation id="6070348360322141662">Zaradi večje varnosti bo Google Chrome šifriral vaše podatke</translation>
@@ -324,7 +326,6 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="7410958280246779049">Chrome je blokiral to datoteko, ker je nevarna.</translation>
 <translation id="7426611252293106642">Google Chrome morda ne bo deloval pravilno, ker ni več podprt v tej distribuciji Linuxa.</translation>
 <translation id="7481213027396403996">Izberite Chromovo najmočnejšo varnost</translation>
-<translation id="7486227612705979895">Chrome bo dostopal do Googla Drive zaradi ponujanja predlogov v naslovni vrstici</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119">Namestitveni program za <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -367,7 +368,6 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="8286862437124483331">Google Chrome poskuša prikazati gesla. Če želite omogočiti to, vnesite geslo za Windows.</translation>
 <translation id="828798499196665338">Tvoj starš je izklopil »Dovoljenja za spletna mesta, aplikacije in razširitve« za Chrome. Omogočanje tega ni dovoljeno: <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Opa! Google Chrome se je zrušil. Ga želite znova zagnati?</translation>
-<translation id="8341646175450781745">Če je vklopljeno, Chrome sprosti pomnilnik z neaktivnih zavihkov. Tako imajo aktivni zavihki in druge aplikacije več računalniških sredstev, Chrome pa je še naprej hiter. Neaktivni zavihki znova postanejo aktivni, ko se vrnete nanje. <ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> ali <ph name="BEGIN_LINK_2" />pošljite povratne informacije<ph name="END_LINK_2" />.</translation>
 <translation id="8342675569599923794">Ta datoteka je nevarna, zato jo je Chrome blokiral.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Kako uporabljamo te podatke:<ph name="END_BOLD" /> Spletna mesta lahko v Chromu shranjujejo podatke o vaših zanimanjih. Če na primer obiščete spletno mesto zaradi nakupa športnih copatov za maraton, bo spletno mesto morda določilo vaše zanimanje kot udeleževanje maratonov. Če pozneje obiščete drugo spletno mesto za registriranje za tek, vam lahko to spletno mesto glede na vaša zanimanja prikaže oglas za tekaško obutev.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Vse pravice pridržane.</translation>
@@ -398,6 +398,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="8686817260976772516">S profili v Chromu lahko ločite vse stvari v Chromu. Ustvarite profile za prijatelje in svojce ali ustvarite ločene za delo in zabavo.</translation>
 <translation id="8712767363896337380">Skoraj je posodobljen. Znova zaženite Chrome, da dokončate posodobitev.</translation>
 <translation id="873133009373065397">Google Chrome ne more določiti ali nastaviti privzetega brskalnika</translation>
+<translation id="8765470054473112089">Ko tipkate v naslovno vrstico ali iskalno polje, Chrome vaše vnose pošlje v privzeti iskalnik zaradi boljših predlogov. V anonimnem načinu je to izklopljeno.</translation>
 <translation id="8821043148920470810">Če želite prejemati prihodnje posodobitve Google Chroma, potrebujete Windows 10 ali novejšega. V tem računalniku je nameščen Windows 7.</translation>
 <translation id="8823341990149967727">Chrome je zastarel</translation>
 <translation id="8825634023950448068">Zaradi zaščite vaše varnosti samodejno izbrišemo vaša zanimanja, starejša od 4 tednov. Ko brskate naprej, se zanimanje morda znova prikaže na seznamu. Če se Chrome zmoti in ne želite videti nekaterih oglasov, lahko odstranite zanimanje.</translation>
@@ -411,7 +412,6 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="8986207147630327271">V ta brskalnik dodajate delovni profil in skrbniku omogočate nadzor samo nad delovnim profilom.</translation>
 <translation id="8989968390305463310">Zgodovina brskanja vpliva na prikazane oglase in zanimanja, kot je ocenjeno spodaj. Chrome zaradi varovanja vaše zasebnosti vsak mesec sproti samodejno izbriše vaša zanimanja. Zanimanja se lahko osvežujejo, razen če jih odstranite.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Posodobitev za Chrome je na voljo}=1{Posodobitev za Chrome je na voljo}one{Posodobitev za Chrome je na voljo že # dan}two{Posodobitev za Chrome je na voljo že # dneva}few{Posodobitev za Chrome je na voljo že # dni}other{Posodobitev za Chrome je na voljo že # dni}}</translation>
-<translation id="9003498785844995646">Če je vklopljena ta nastavitev, Chrome varčuje z energijo baterije tako, da omeji dejavnost v ozadju in vizualne učinke, kot sta tekoče pomikanje in število sličic v sekundi pri videoposnetkih. <ph name="BEGIN_LINK" />Preberite več<ph name="END_LINK" /> ali <ph name="BEGIN_LINK_2" />pošljite povratne informacije<ph name="END_LINK_2" />.</translation>
 <translation id="9053892488859122171">Sistem ChromeOS Flex</translation>
 <translation id="9067395829937117663">Za Google Chrome potrebujete Windows 7 ali novejši.</translation>
 <translation id="911206726377975832">Ali želite izbrisati tudi podatke brskanja?</translation>
@@ -422,6 +422,7 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="93760716455950538">Znova zaženite ChromeOS Flex</translation>
 <translation id="940313311831216333">Če želite do stvari v Chromu dostopati v vseh svojih napravah, se prijavite in nato vklopite sinhronizacijo.</translation>
 <translation id="943390475793766444">Chrome priporoča, da pregledate to datoteko, saj je morda nevarna.</translation>
+<translation id="963650557422347554">Če je vklopljena ta nastavitev, Chrome varčuje z energijo baterije tako, da omeji dejavnost v ozadju in vizualne učinke, kot sta tekoče pomikanje in število sličic v sekundi pri videoposnetkih.</translation>
 <translation id="989369509083708165">Google Chrome je privzeti brskalnik</translation>
 <translation id="989816563149873169">Bližnjica <ph name="SHORTCUT" /> omogoča preklop med profili v Chromu</translation>
 </translationbundle>

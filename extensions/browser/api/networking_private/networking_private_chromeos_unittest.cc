@@ -156,7 +156,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
 
     config_handler->SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUserHash,
                               base::Value(std::move(user_policy_onc)),
-                              base::Value(base::Value::Type::DICTIONARY));
+                              base::Value(base::Value::Type::DICT));
 
     const std::string device_policy_ssid = kManagedDeviceWifiSsid;
     base::Value::List device_policy_onc =
@@ -176,7 +176,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
             .Build();
     config_handler->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY, "",
                               base::Value(std::move(device_policy_onc)),
-                              base::Value(base::Value::Type::DICTIONARY));
+                              base::Value(base::Value::Type::DICT));
   }
 
   void SetDeviceProperty(const std::string& device_path,
@@ -191,7 +191,7 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
     device_test()->AddDevice(kCellularDevicePath, shill::kTypeCellular,
                              "stub_cellular_device1");
 
-    base::Value home_provider(base::Value::Type::DICTIONARY);
+    base::Value home_provider(base::Value::Type::DICT);
     home_provider.SetStringKey("name", "Cellular1_Provider");
     home_provider.SetStringKey("code", "000000");
     home_provider.SetStringKey("country", "us");
@@ -263,23 +263,24 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
   }
 
   int GetNetworkPriority(const ash::NetworkState* network) {
-    base::Value properties(base::Value::Type::DICTIONARY);
+    base::Value properties(base::Value::Type::DICT);
     network->GetStateProperties(&properties);
     absl::optional<int> priority =
-        properties.FindIntKey(shill::kPriorityProperty);
+        properties.GetDict().FindInt(shill::kPriorityProperty);
     if (!priority)
       return -1;
     return priority.value();
   }
 
-  bool GetServiceProfile(const std::string& service_path,
+  bool HasServiceProfile(const std::string& service_path,
                          std::string* profile_path) {
-    return profile_test()->GetService(service_path, profile_path).is_dict();
+    return profile_test()->GetService(service_path, profile_path).has_value();
   }
 
-  base::Value GetNetworkProperties(const std::string& service_path) {
+  absl::optional<base::Value::Dict> GetNetworkProperties(
+      const std::string& service_path) {
     base::RunLoop run_loop;
-    absl::optional<base::Value> properties;
+    absl::optional<base::Value::Dict> properties;
     ash::NetworkHandler::Get()
         ->network_configuration_handler()
         ->GetShillProperties(
@@ -289,16 +290,17 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                            base::Unretained(&properties),
                            run_loop.QuitClosure()));
     run_loop.Run();
-    if (!properties)
-      return base::Value();
+    if (!properties) {
+      return absl::nullopt;
+    }
     return std::move(*properties);
   }
 
   void OnNetworkProperties(const std::string& expected_path,
-                           absl::optional<base::Value>* result,
+                           absl::optional<base::Value::Dict>* result,
                            base::OnceClosure callback,
                            const std::string& service_path,
-                           absl::optional<base::Value> properties) {
+                           absl::optional<base::Value::Dict> properties) {
     if (!properties) {
       ADD_FAILURE() << "Error calling shill client.";
       std::move(callback).Run();
@@ -309,11 +311,12 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
     std::move(callback).Run();
   }
 
-  std::unique_ptr<base::Value> GetNetworkUiData(const base::Value& properties) {
-    CHECK(properties.is_dict());
-    const std::string* ui_data_json = properties.FindStringKey("UIData");
-    if (!ui_data_json)
+  std::unique_ptr<base::Value> GetNetworkUiData(
+      absl::optional<base::Value::Dict>& properties) {
+    const std::string* ui_data_json = properties->FindString("UIData");
+    if (!ui_data_json) {
       return nullptr;
+    }
 
     JSONStringValueDeserializer deserializer(*ui_data_json);
     return deserializer.Deserialize(nullptr, nullptr);
@@ -326,21 +329,26 @@ class NetworkingPrivateApiTest : public ApiUnitTest {
                                            ->network_state_handler()
                                            ->GetNetworkStateFromGuid(guid);
 
-    base::Value properties = GetNetworkProperties(network->path());
-    if (properties.is_none())
+    absl::optional<base::Value::Dict> properties =
+        GetNetworkProperties(network->path());
+    if (!properties.has_value()) {
       return false;
+    }
 
     std::unique_ptr<base::Value> ui_data = GetNetworkUiData(properties);
-    if (!ui_data)
+    if (!ui_data) {
       return false;
+    }
 
     const std::string* user_setting =
         ui_data->FindStringPath("user_settings." + key);
-    if (!user_setting)
+    if (!user_setting) {
       return false;
+    }
 
-    if (value)
+    if (value) {
       *value = *user_setting;
+    }
     return true;
   }
 
@@ -896,8 +904,9 @@ TEST_F(NetworkingPrivateApiTest,
                                          ->network_state_handler()
                                          ->GetNetworkStateFromGuid(guid);
 
-  base::Value properties = GetNetworkProperties(network->path());
-  ASSERT_TRUE(properties.is_dict());
+  absl::optional<base::Value::Dict> properties =
+      GetNetworkProperties(network->path());
+  ASSERT_TRUE(properties.has_value());
 
   std::unique_ptr<base::Value> ui_data = GetNetworkUiData(properties);
   ASSERT_TRUE(ui_data && ui_data->is_dict());
@@ -1122,7 +1131,7 @@ TEST_F(NetworkingPrivateApiTest, GetCellularPropertiesFromWebUi) {
                                        .Set("AccessPointName", "test-apn")
                                        .Set("Username", "test-user")
                                        .Set("Password", "test-password")
-                                       .Set("Authentication", "chap")
+                                       .Set("Authentication", "CHAP")
                                        .Build();
   base::Value::Dict expected_result =
       DictionaryBuilder()
@@ -1173,7 +1182,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetSharedNetwork) {
 
   base::RunLoop().RunUntilIdle();
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_TRUE(HasServiceProfile(kSharedWifiServicePath, &profile_path));
   EXPECT_EQ(ash::ShillProfileClient::GetSharedProfilePath(), profile_path);
 }
 
@@ -1182,7 +1191,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetPrivateNetwork) {
               base::StringPrintf(R"(["%s"])", kPrivateWifiGuid));
 
   std::string profile_path;
-  EXPECT_FALSE(GetServiceProfile(kPrivateWifiServicePath, &profile_path));
+  EXPECT_FALSE(HasServiceProfile(kPrivateWifiServicePath, &profile_path));
 }
 
 TEST_F(NetworkingPrivateApiTest, ForgetPrivateNetworkWebUI) {
@@ -1194,7 +1203,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetPrivateNetworkWebUI) {
               base::StringPrintf(R"(["%s"])", kPrivateWifiGuid));
 
   std::string profile_path;
-  EXPECT_FALSE(GetServiceProfile(kPrivateWifiServicePath, &profile_path));
+  EXPECT_FALSE(HasServiceProfile(kPrivateWifiServicePath, &profile_path));
 }
 
 TEST_F(NetworkingPrivateApiTest, ForgetUserPolicyNetwork) {
@@ -1210,7 +1219,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetUserPolicyNetwork) {
 
   base::RunLoop().RunUntilIdle();
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_TRUE(HasServiceProfile(network->path(), &profile_path));
   EXPECT_EQ(kUserProfilePath, profile_path);
 }
 
@@ -1231,7 +1240,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetUserPolicyNetworkWebUI) {
 
   base::RunLoop().RunUntilIdle();
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_TRUE(HasServiceProfile(network->path(), &profile_path));
   EXPECT_EQ(kUserProfilePath, profile_path);
 }
 
@@ -1244,7 +1253,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetDevicePolicyNetworkWebUI) {
   AddSharedNetworkToUserProfile(network->path());
 
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_TRUE(HasServiceProfile(network->path(), &profile_path));
   ASSERT_EQ(kUserProfilePath, profile_path);
 
   scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
@@ -1253,7 +1262,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetDevicePolicyNetworkWebUI) {
   RunFunction(forget_network.get(),
               base::StringPrintf(R"(["%s"])", kManagedDeviceWifiGuid));
 
-  EXPECT_TRUE(GetServiceProfile(network->path(), &profile_path));
+  EXPECT_TRUE(HasServiceProfile(network->path(), &profile_path));
   EXPECT_EQ(ash::ShillProfileClient::GetSharedProfilePath(), profile_path);
 }
 
@@ -1263,13 +1272,13 @@ TEST_F(NetworkingPrivateApiTest, ForgetNetworkInMultipleProfiles) {
   AddSharedNetworkToUserProfile(kSharedWifiServicePath);
 
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_TRUE(HasServiceProfile(kSharedWifiServicePath, &profile_path));
   ASSERT_EQ(kUserProfilePath, profile_path);
 
   RunFunction(new NetworkingPrivateForgetNetworkFunction(),
               base::StringPrintf(R"(["%s"])", kSharedWifiGuid));
 
-  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_TRUE(HasServiceProfile(kSharedWifiServicePath, &profile_path));
   EXPECT_EQ(ash::ShillProfileClient::GetSharedProfilePath(), profile_path);
 }
 
@@ -1277,7 +1286,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetNetworkInMultipleProfilesWebUI) {
   AddSharedNetworkToUserProfile(kSharedWifiServicePath);
 
   std::string profile_path;
-  EXPECT_TRUE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_TRUE(HasServiceProfile(kSharedWifiServicePath, &profile_path));
   ASSERT_EQ(kUserProfilePath, profile_path);
 
   scoped_refptr<NetworkingPrivateForgetNetworkFunction> forget_network =
@@ -1287,7 +1296,7 @@ TEST_F(NetworkingPrivateApiTest, ForgetNetworkInMultipleProfilesWebUI) {
   RunFunction(forget_network.get(),
               base::StringPrintf(R"(["%s"])", kSharedWifiGuid));
 
-  EXPECT_FALSE(GetServiceProfile(kSharedWifiServicePath, &profile_path));
+  EXPECT_FALSE(HasServiceProfile(kSharedWifiServicePath, &profile_path));
 }
 
 }  // namespace extensions

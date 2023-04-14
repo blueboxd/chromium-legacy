@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/constants/ambient_animation_theme.h"
+#include "ash/constants/ambient_theme.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/default_user_image.h"
 #include "ash/public/cpp/personalization_app/user_display_info.h"
@@ -187,6 +187,12 @@ const std::string& StructTraits<
   return collection.collection_name();
 }
 
+const std::string& StructTraits<
+    ash::personalization_app::mojom::WallpaperCollectionDataView,
+    backdrop::Collection>::description(const backdrop::Collection& collection) {
+  return collection.description();
+}
+
 std::vector<GURL> StructTraits<
     ash::personalization_app::mojom::WallpaperCollectionDataView,
     backdrop::Collection>::previews(const backdrop::Collection& collection) {
@@ -211,6 +217,38 @@ bool StructTraits<ash::personalization_app::mojom::WallpaperCollectionDataView,
                                                     collection) {
   return !(collection.has_collection_id() && collection.has_collection_name() &&
            collection.preview_size() > 0);
+}
+
+const std::string& StructTraits<
+    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
+    backdrop::Image::Description>::title(const backdrop::Image::Description&
+                                             description) {
+  return description.title();
+}
+
+const std::string& StructTraits<
+    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
+    backdrop::Image::Description>::content(const backdrop::Image::Description&
+                                               description) {
+  return description.content();
+}
+
+// Default to false as we don't ever need to convert back to
+// `Backdrop::Image::Description`
+bool StructTraits<
+    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
+    backdrop::Image::Description>::
+    Read(ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView
+             data,
+         backdrop::Image::Description* out) {
+  return false;
+}
+
+bool StructTraits<
+    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
+    backdrop::Image::Description>::IsNull(const backdrop::Image::Description&
+                                              description) {
+  return !description.has_content() && !description.has_title();
 }
 
 GURL StructTraits<ash::personalization_app::mojom::WallpaperImageDataView,
@@ -344,31 +382,40 @@ bool StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
          data.ReadSourceInfo(&out->source_info);
 }
 
-MojomAnimationTheme
-EnumTraits<MojomAnimationTheme, ash::AmbientAnimationTheme>::ToMojom(
-    ash::AmbientAnimationTheme input) {
+MojomAnimationTheme EnumTraits<MojomAnimationTheme, ash::AmbientTheme>::ToMojom(
+    ash::AmbientTheme input) {
   switch (input) {
-    case ash::AmbientAnimationTheme::kSlideshow:
+    case ash::AmbientTheme::kSlideshow:
       return MojomAnimationTheme::kSlideshow;
-    case ash::AmbientAnimationTheme::kFeelTheBreeze:
+    case ash::AmbientTheme::kFeelTheBreeze:
       return MojomAnimationTheme::kFeelTheBreeze;
-    case ash::AmbientAnimationTheme::kFloatOnBy:
+    case ash::AmbientTheme::kFloatOnBy:
       return MojomAnimationTheme::kFloatOnBy;
+    case ash::AmbientTheme::kVideoNewMexico:
+      return MojomAnimationTheme::kVideoNewMexico;
+    case ash::AmbientTheme::kVideoClouds:
+      return MojomAnimationTheme::kVideoClouds;
   }
 }
 
-bool EnumTraits<MojomAnimationTheme, ash::AmbientAnimationTheme>::FromMojom(
+bool EnumTraits<MojomAnimationTheme, ash::AmbientTheme>::FromMojom(
     MojomAnimationTheme input,
-    ash::AmbientAnimationTheme* output) {
+    ash::AmbientTheme* output) {
   switch (input) {
     case MojomAnimationTheme::kSlideshow:
-      *output = ash::AmbientAnimationTheme::kSlideshow;
+      *output = ash::AmbientTheme::kSlideshow;
       return true;
     case MojomAnimationTheme::kFeelTheBreeze:
-      *output = ash::AmbientAnimationTheme::kFeelTheBreeze;
+      *output = ash::AmbientTheme::kFeelTheBreeze;
       return true;
     case MojomAnimationTheme::kFloatOnBy:
-      *output = ash::AmbientAnimationTheme::kFloatOnBy;
+      *output = ash::AmbientTheme::kFloatOnBy;
+      return true;
+    case MojomAnimationTheme::kVideoNewMexico:
+      *output = ash::AmbientTheme::kVideoNewMexico;
+      return true;
+    case MojomAnimationTheme::kVideoClouds:
+      *output = ash::AmbientTheme::kVideoClouds;
       return true;
   }
   NOTREACHED();
@@ -533,12 +580,12 @@ StructTraits<ash::personalization_app::mojom::SampleColorSchemeDataView,
   return sample_color_scheme.scheme;
 }
 
-// Default to false as we don't ever need to convert back to
-// `ash::ColorSchemeSample`.
 bool StructTraits<ash::personalization_app::mojom::SampleColorSchemeDataView,
                   ash::SampleColorScheme>::
     Read(ash::personalization_app::mojom::SampleColorSchemeDataView data,
          ash::SampleColorScheme* out) {
-  return false;
+  return data.ReadScheme(&out->scheme) && data.ReadPrimary(&out->primary) &&
+         data.ReadSecondary(&out->secondary) &&
+         data.ReadTertiary(&out->tertiary);
 }
 }  // namespace mojo

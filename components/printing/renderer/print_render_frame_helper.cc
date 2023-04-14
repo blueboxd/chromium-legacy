@@ -34,6 +34,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/grit/components_resources.h"
+#include "components/printing/common/print_params.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -105,8 +106,6 @@ enum PrintPreviewHelperEvents {
   PREVIEW_EVENT_MAX,
 };
 
-constexpr double kMinDpi = 1.0;
-
 // Also set in third_party/WebKit/Source/core/page/PrintContext.h
 constexpr float kPrintingMinimumShrinkFactor = 1.33333333f;
 
@@ -143,13 +142,6 @@ int GetDPI(const mojom::PrintParams& print_params) {
   return static_cast<int>(
       std::max(print_params.dpi.width(), print_params.dpi.height()));
 #endif  // BUILDFLAG(IS_APPLE)
-}
-
-bool PrintMsgPrintParamsIsValid(const mojom::PrintParams& params) {
-  return !params.content_size.IsEmpty() && !params.page_size.IsEmpty() &&
-         !params.printable_area.IsEmpty() && params.document_cookie &&
-         params.dpi.width() > kMinDpi && params.dpi.height() > kMinDpi &&
-         params.margin_top >= 0 && params.margin_left >= 0;
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -903,7 +895,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       ukm::SourceId document_ukm_source_id,
       FinishChildFrameCreationFn finish_creation) override;
   void FrameDetached() override;
-  std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
 
   void CallOnReady();
   void ResizeForPrinting();
@@ -1153,10 +1145,10 @@ void PrepareFrameAndViewForPrint::FrameDetached() {
   frame_.Reset(nullptr);
 }
 
-std::unique_ptr<blink::WebURLLoaderFactory>
-PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
+scoped_refptr<network::SharedURLLoaderFactory>
+PrepareFrameAndViewForPrint::GetURLLoaderFactory() {
   blink::WebLocalFrame* frame = original_frame_.GetFrame();
-  return frame->Client()->CreateURLLoaderFactory();
+  return frame->Client()->GetURLLoaderFactory();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {
@@ -1674,8 +1666,7 @@ void PrintRenderFrameHelper::SnapshotForContentAnalysis(
     PrintPageInternal(
         *print_pages_params.params, page_index, page_count,
         GetScaleFactor(print_pages_params.params->scale_factor, is_pdf), frame,
-        metafile.get(), /*page_size_in_dpi=*/nullptr,
-        /*content_area_in_dpi=*/nullptr);
+        metafile.get());
   }
   frame->PrintEnd();
   metafile->FinishDocument();
@@ -1924,10 +1915,9 @@ bool PrintRenderFrameHelper::RenderPreviewPage(uint32_t page_number) {
   double scale_factor =
       GetScaleFactor(print_params.scale_factor,
                      /*is_pdf=*/!print_preview_context_.IsModifiable());
-  PrintPageInternal(
-      print_params, page_number, print_preview_context_.total_page_count(),
-      scale_factor, print_preview_context_.prepared_frame(), render_metafile,
-      /*page_size_in_dpi=*/nullptr, /*content_area_in_dpi=*/nullptr);
+  PrintPageInternal(print_params, page_number,
+                    print_preview_context_.total_page_count(), scale_factor,
+                    print_preview_context_.prepared_frame(), render_metafile);
   print_preview_context_.RenderedPreviewPage(base::TimeTicks::Now() -
                                              begin_time);
 
@@ -2321,25 +2311,17 @@ bool PrintRenderFrameHelper::PrintPagesNative(
   mojom::DidPrintDocumentParamsPtr page_params =
       mojom::DidPrintDocumentParams::New();
   page_params->content = mojom::DidPrintContentParams::New();
-  gfx::Size* page_size_in_dpi;
-  gfx::Rect* content_area_in_dpi;
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN)
-  page_size_in_dpi = &page_params->page_size;
-  content_area_in_dpi = &page_params->content_area;
-#else
-  page_size_in_dpi = nullptr;
-  content_area_in_dpi = nullptr;
-#endif
+  page_params->page_size = print_params.page_size;
+  page_params->content_area = gfx::Rect(print_params.page_size);
   bool is_pdf =
       IsPrintingPdfFrame(prep_frame_view_->frame(), prep_frame_view_->node());
   PrintPageInternal(print_params, printed_pages[0], page_count,
                     GetScaleFactor(print_params.scale_factor, is_pdf), frame,
-                    &metafile, page_size_in_dpi, content_area_in_dpi);
+                    &metafile);
   for (size_t i = 1; i < printed_pages.size(); ++i) {
     PrintPageInternal(print_params, printed_pages[i], page_count,
                       GetScaleFactor(print_params.scale_factor, is_pdf), frame,
-                      &metafile, /*page_size_in_dpi=*/nullptr,
-                      /*content_area_in_dpi=*/nullptr);
+                      &metafile);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -2416,9 +2398,7 @@ bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size) {
   // Check if the printer returned any settings, if the settings is empty, we
   // can safely assume there are no printer drivers configured. So we safely
   // terminate.
-  bool result = true;
-  if (!PrintMsgPrintParamsIsValid(*settings.params))
-    result = false;
+  const bool result = PrintMsgPrintParamsIsValid(*settings.params);
 
   // Reset to default values.
   ignore_css_margins_ = false;
@@ -2438,8 +2418,8 @@ bool PrintRenderFrameHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
   DCHECK(frame);
   bool fit_to_paper_size = !IsPrintingPdfFrame(frame, node);
   if (!InitPrintSettings(fit_to_paper_size)) {
+    // Browser triggered this code path. It already knows about the failure.
     notify_browser_of_print_failure_ = false;
-    GetPrintManagerHost()->ShowInvalidPrinterSettingsError();
     return false;
   }
 
@@ -2603,16 +2583,8 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
                                                uint32_t page_count,
                                                double scale_factor,
                                                blink::WebLocalFrame* frame,
-                                               MetafileSkia* metafile,
-                                               gfx::Size* page_size_in_dpi,
-                                               gfx::Rect* content_area_in_dpi) {
+                                               MetafileSkia* metafile) {
   double css_scale_factor = scale_factor;
-
-  // Save the original page size here to avoid rounding errors incurred by
-  // converting to pixels and back and by scaling the page for reflow and
-  // scaling back. Windows uses |page_size_in_dpi| for the actual page size
-  // so requires an accurate value.
-  gfx::Size original_page_size = params.page_size;
   mojom::PageSizeMarginsPtr page_layout_in_points =
       ComputePageLayoutInPointsForCss(frame, page_number, params,
                                       ignore_css_margins_, &css_scale_factor);
@@ -2622,26 +2594,11 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
   GetPageSizeAndContentAreaFromPageLayout(*page_layout_in_points, &page_size,
                                           &content_area);
 
-  // Calculate the actual page size and content area in dpi.
-  if (page_size_in_dpi)
-    *page_size_in_dpi = original_page_size;
-
-  if (content_area_in_dpi) {
-    // Output PDF matches paper size and should be printer edge to edge.
-    *content_area_in_dpi =
-        gfx::Rect(0, 0, page_size_in_dpi->width(), page_size_in_dpi->height());
-  }
-
   gfx::Rect canvas_area =
       params.display_header_footer ? gfx::Rect(page_size) : content_area;
 
-  // TODO(thestig): Figure out why Linux is different.
-#if BUILDFLAG(IS_WIN)
   float webkit_page_shrink_factor = frame->GetPrintPageShrink(page_number);
   float final_scale_factor = css_scale_factor * webkit_page_shrink_factor;
-#else
-  float final_scale_factor = css_scale_factor;
-#endif
 
   cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
       page_size, canvas_area, final_scale_factor, params.page_orientation);
@@ -2651,17 +2608,9 @@ void PrintRenderFrameHelper::PrintPageInternal(const mojom::PrintParams& params,
   canvas->SetPrintingMetafile(metafile);
 
   if (params.display_header_footer) {
-#if BUILDFLAG(IS_WIN)
-    const float fudge_factor = 1;
-#else
-    // TODO(thestig): Figure out why Linux needs this. It is almost certainly
-    // |kPrintingMinimumShrinkFactor| from Blink.
-    const float fudge_factor = kPrintingMinimumShrinkFactor;
-#endif
     // |page_number| is 0-based, so 1 is added.
     PrintHeaderAndFooter(canvas, page_number + 1, page_count, *frame,
-                         final_scale_factor / fudge_factor,
-                         *page_layout_in_points, params);
+                         final_scale_factor, *page_layout_in_points, params);
   }
 
   float webkit_scale_factor =

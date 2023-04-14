@@ -55,7 +55,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome is verouderd</translation>
 <translation id="1919130412786645364">Laat Chrome-aanmelding toe</translation>
-<translation id="1952239763774043237">Jy het macOS 10.13 of nuwer nodig om in die toekoms Google Chrome-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.12.</translation>
 <translation id="1953553007165777902">Laai tans af … <ph name="MINUTE" /> minuut(minute) oor</translation>
 <translation id="2018528049276128029">Elke profiel hou sy eie Chrome-inligting soos boekmerke, geskiedenis, wagwoorde en meer</translation>
 <translation id="2018879682492276940">Kan nie installeer nie. Probeer weer.</translation>
@@ -188,6 +187,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="4335235004908507846">Chrome kan help om jou teen dataskendings, slegte uitbreidings, en meer te beskerm</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> is by Chrome gevoeg</translation>
 <translation id="4384570495110188418">Chrome kan nie jou wagwoorde nagaan nie, want jy is nie aangemeld nie</translation>
+<translation id="4393248995085527349">Jy het macOS 10.15 of nuwer nodig om in die toekoms Google Chrome-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.13.</translation>
 <translation id="4427306783828095590">Verbeterde beskerming doen meer om uitvissing en wanware te blokkeer</translation>
 <translation id="4450664632294415862">Chrome – Netwerkaanmelding – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">'n Ander handeling in Google Chrome vind tans plaas. Probeer asseblief later weer.</translation>
@@ -217,7 +217,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 <translation id="4970880042055371251">Chrome-bedryfstelselweergawe</translation>
 <translation id="4970947549776831107">Chrome het hierdie lêer geblokkeer omdat hierdie soort lêer gevaarlik is</translation>
 <translation id="4990567037958725628">Google Chrome Kanarie</translation>
-<translation id="5037581483200764584">Jy het macOS 10.13 of nuwer nodig om in die toekoms Google Chrome-opdaterings te kry. Hierdie rekenaar gebruik OS X 10.11.</translation>
 <translation id="5098668839038261629">Wanneer dit aan is, sal jy ook by Chrome afgemeld word</translation>
 <translation id="5132929315877954718">Ontdek wonderlike programme, speletjies, uitbreidings en temas vir Google Chrome.</translation>
 <translation id="5139423532931106058">Pasmaak jou Chrome-profiel</translation>
@@ -245,6 +244,7 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Jou administrateur vra dat jy Chrome herbegin om hierdie opdatering toe te pas}=1{Jou administrateur vra dat jy Chrome herbegin om hierdie opdatering toe te pas. Jou incognitovenster sal nie weer oopgemaak word nie.}other{Jou administrateur vra dat jy Chrome herbegin om hierdie opdatering toe te pas. Jou # incognitovensters sal nie weer oopgemaak word nie.}}</translation>
 <translation id="5686916850681061684">Pasmaak en beheer Google Chrome. Iets verg jou aandag – klik vir besonderhede.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Wanneer dit aan is, maak Chrome geheue uit onaktiewe oortjies beskikbaar. Dit gee aktiewe oortjies en ander apps meer rekenaarhulpbronne en hou Chrome vinnig. Jou onaktiewe oortjies word outomaties weer aktief wanneer jy na hulle toe teruggaan.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome sal oor 1 sekonde herbegin}other{Google Chrome sal oor # sekondes herbegin}}</translation>
 <translation id="5727531838415286053">As Chrome jou lukraak vir ’n aktiewe proeflopie gekies het, sal jou blaaigeskiedenis die advertensies wat jy sien, beïnvloed asook die belangstellings soos hieronder geskat. Chrome vee elke maand jou belangstellings op ’n rollende basis uit om jou privaatheid te beskerm. Belangstellings herlaai, tensy jy hulle verwyder.</translation>
 <translation id="5736850870166430177">As 'n werf probeer om jou wagwoord te steel, of wanneer jy 'n skadelike lêer aflaai, sal Chrome dalk ook URL'e, insluitend stukkies bladsyinhoud, na Veiligblaai toe stuur</translation>
@@ -255,10 +255,12 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="5895138241574237353">Herbegin</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – Netwerkaanmelding</translation>
 <translation id="5924017743176219022">Koppel tans aan die internet …</translation>
+<translation id="5932997892801542621">Wanneer jy iets in die adresbalk of soekkassie tik, stuur Chrome wat jy tik na Google Drive toe om itemvoorstelle te kry. Dit is af in Incognito.</translation>
 <translation id="5940385492829620908">Jou web, boekmerke en ander Chrome-goed woon hier.</translation>
 <translation id="5941711191222866238">Maak kleiner</translation>
 <translation id="5941830788786076944">Maak Google Chrome die verstekblaaier</translation>
 <translation id="6003112304606738118">Laai tans af … <ph name="HOURS" /> uur oor</translation>
+<translation id="6010556343189461180">Jy het macOS 10.15 of nuwer nodig om in die toekoms Google Chrome-opdaterings te kry. Hierdie rekenaar gebruik macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome gaan nou toemaak.}=1{Chrome gaan oor 1 sekonde toemaak.}other{Chrome gaan oor # sekondes toemaak.}}</translation>
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6070348360322141662">Google Chrome sal jou data enkripteer vir bykomende sekuriteit</translation>
@@ -324,7 +326,6 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="7410958280246779049">Chrome het hierdie lêer geblokkeer omdat dit gevaarlik is</translation>
 <translation id="7426611252293106642">Google Chrome sal dalk nie reg werk nie omdat dit nie meer in hierdie Linux-uitreiking gesteun word nie</translation>
 <translation id="7481213027396403996">Kry Chrome se sterkste beskerming</translation>
-<translation id="7486227612705979895">Chrome sal by jou Drive ingaan om voorstelle in die adresbalk te maak</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" />-installeerder</translation>
 <translation id="7606334485649076285">Google Chrome OS Flex</translation>
@@ -367,7 +368,6 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="8286862437124483331">Google Chrome probeer tans om wagwoorde te wys. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
 <translation id="828798499196665338">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chrome afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie geaktiveer word nie.</translation>
 <translation id="8290100596633877290">Sjoe! Google Chrome het omgeval. Herbegin nou?</translation>
-<translation id="8341646175450781745">Wanneer dit aan is, maak Chrome geheue uit onaktiewe oortjies beskikbaar. Dit gee aktiewe oortjies en ander programme meer rekenaarhulpbronne en hou Chrome vinnig. Jou onaktiewe oortjies word outomaties weer aktief wanneer jy na hulle toe teruggaan. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /> of <ph name="BEGIN_LINK_2" />stuur terugvoer<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Hierdie lêer is gevaarlik en daarom het Chrome dit geblokkeer.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Hoe ons hierdie data gebruik:<ph name="END_BOLD" /> Werwe kan inligting oor jou belangstellings in Chrome stoor. As jy byvoorbeeld ’n werf besoek om skoene vir ’n marathon te koop, kan die werf jou belangstelling definieer as iemand wat marathons hardloop. As jy later ’n ander werf besoek om vir ’n wedloop te registreer, kan daardie werf vir jou ’n advertensie vir drafskoene op grond van jou belangstellings wys.</translation>
 <translation id="8370517070665726704">Kopiereg <ph name="YEAR" /> Google LLC. Alle regte voorbehou.</translation>
@@ -398,6 +398,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="8686817260976772516">Met Chrome-profiele kan jy al jou Chrome-goed skei. Skep profiele vir vriende en familielede, of verdeel tussen werk en pret.</translation>
 <translation id="8712767363896337380">Amper op datum! Herbegin Chrome om opdatering te voltooi.</translation>
 <translation id="873133009373065397">Google Chrome kan nie die verstekblaaier bepaal of stel nie</translation>
+<translation id="8765470054473112089">Wanneer jy iets in die adresbalk of soekkassie tik, stuur Chrome wat jy tik na jou versteksoekenjin toe om beter voorstelle te kry. Dit is af in Incognito.</translation>
 <translation id="8821043148920470810">Jy het Windows 10 of nuwer nodig om in die toekoms Google Chrome-opdaterings te kry. Hierdie rekenaar gebruik Windows 7.</translation>
 <translation id="8823341990149967727">Chrome is verouderd</translation>
 <translation id="8825634023950448068">Ons vee outomaties jou belangstellings uit wat ouer as 4 weke is om jou privaatheid te beskerm. Terwyl jy aanhou blaai, kan ’n belangstelling weer op die lys verskyn. En as Chrome dit verkeerd kry of as jy sekere advertensies nie wil sien nie, kan jy ’n belangstelling verwyder.</translation>
@@ -411,7 +412,6 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="8986207147630327271">Jy voeg tans 'n werkprofiel by hierdie blaaier en gee jou administrateur beheer oor net jou werkprofiel.</translation>
 <translation id="8989968390305463310">Jou blaaigeskiedenis beïnvloed die advertensies wat jy sien en die belangstellings soos hieronder geskat. Chrome vee outomaties elke maand jou belangstellings op ’n rollende basis uit om jou privaatheid te beskerm. Belangstellings kan herlaai, tensy jy hulle verwyder.</translation>
 <translation id="8999208279178790196">{0,plural, =0{'n Chrome-opdatering is beskikbaar}=1{'n Chrome-opdatering is beskikbaar}other{'n Chrome-opdatering is al # dae lank beskikbaar}}</translation>
-<translation id="9003498785844995646">Wanneer dit aan is, bespaar Chrome batterykrag deur agtergrondaktiwiteit en visuele effekte, soos gladde rollees en videoraamtempo's, te beperk. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /> of <ph name="BEGIN_LINK_2" />stuur terugvoer<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Chrome OS Flex-stelsel</translation>
 <translation id="9067395829937117663">Google Chrome vereis Windows 7 of nuwer.</translation>
 <translation id="911206726377975832">Vee ook jou blaaidata uit?</translation>
@@ -422,6 +422,7 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="93760716455950538">Herbegin Chrome OS Flex</translation>
 <translation id="940313311831216333">Meld aan en skakel dan sinkronisering aan om op al jou toestelle toegang tot jou Chrome-goed te kry.</translation>
 <translation id="943390475793766444">Chrome beveel aan dat hierdie lêer geskandeer word omdat dit gevaarlik kan wees.</translation>
+<translation id="963650557422347554">Wanneer dit aan is, bespaar Chrome batterykrag deur agtergrondaktiwiteit en visuele effekte, soos gladde rollees en videoraamtempo’s, te beperk.</translation>
 <translation id="989369509083708165">Google Chrome is jou verstekblaaier</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> kan tussen Chrome-profiele wissel</translation>
 </translationbundle>

@@ -192,6 +192,7 @@ android_aidl("webengine_aidl") {
     "org/chromium/webengine/interfaces/ICookieManagerDelegate.aidl",
     "org/chromium/webengine/interfaces/INavigationObserverDelegate.aidl",
     "org/chromium/webengine/interfaces/INavigationParams.aidl",
+    "org/chromium/webengine/interfaces/IPostMessageCallback.aidl",
     "org/chromium/webengine/interfaces/IStringCallback.aidl",
     "org/chromium/webengine/interfaces/ITabCallback.aidl",
     "org/chromium/webengine/interfaces/ITabListObserverDelegate.aidl",
@@ -226,6 +227,7 @@ android_library("webengine_java") {
   sources = [
     "org/chromium/webengine/CookieManager.java",
     "org/chromium/webengine/ExceptionHelper.java",
+    "org/chromium/webengine/MessageEventListener.java",
     "org/chromium/webengine/Navigation.java",
     "org/chromium/webengine/NavigationObserver.java",
     "org/chromium/webengine/NavigationObserverDelegate.java",
@@ -257,6 +259,7 @@ android_library("webengine_java") {
     "//third_party/androidx:androidx_annotation_annotation_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_concurrent_concurrent_futures_java",
+    "//third_party/androidx:androidx_core_core_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
     "//third_party/androidx:androidx_lifecycle_lifecycle_viewmodel_java",
     "//weblayer/browser/java:base_module_interfaces_java",

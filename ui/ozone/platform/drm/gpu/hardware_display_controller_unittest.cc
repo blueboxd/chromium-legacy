@@ -10,8 +10,8 @@
 #include <string>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/files/file_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
@@ -26,12 +26,14 @@
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_framebuffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_gpu_util.h"
+#include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_controller.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane.h"
 #include "ui/ozone/platform/drm/gpu/mock_drm_device.h"
 #include "ui/ozone/platform/drm/gpu/page_flip_watchdog.h"
 
 namespace ui {
+
 namespace {
 
 // Create a basic mode for a 6x4 screen.
@@ -48,8 +50,6 @@ const std::string kGpuCrashLogTimeout =
     base::NumberToString(kWaitForModesetTimeout.InSeconds()) +
     " s of the first page flip failure. Crashing GPU process.";
 
-}  // namespace
-
 class FakeFenceFD {
  public:
   FakeFenceFD();
@@ -61,6 +61,8 @@ class FakeFenceFD {
   base::ScopedFD read_fd;
   base::ScopedFD write_fd;
 };
+
+}  // namespace
 
 FakeFenceFD::FakeFenceFD() {
   int fds[2];
@@ -92,7 +94,7 @@ class HardwareDisplayControllerTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void InitializeDrmDevice(bool use_atomic);
+  void InitializeDrmDevice(bool use_atomic, size_t movable_planes = 0);
   void SchedulePageFlip(DrmOverlayPlaneList planes);
   void OnSubmission(gfx::SwapResult swap_result,
                     gfx::GpuFenceHandle release_fence);
@@ -110,6 +112,16 @@ class HardwareDisplayControllerTest : public testing::Test {
     std::unique_ptr<GbmBuffer> buffer = drm_->gbm_device()->CreateBuffer(
         DRM_FORMAT_XRGB8888, kOverlaySize, GBM_BO_USE_SCANOUT);
     return DrmFramebuffer::AddFramebuffer(drm_, buffer.get(), kOverlaySize);
+  }
+
+  std::vector<HardwareDisplayPlane*> GetMovableOverlays() {
+    std::vector<HardwareDisplayPlane*> out;
+    for (const auto& plane : drm_->plane_manager()->planes()) {
+      if (plane->GetCompatibleCrtcIds().size() > 1) {
+        out.push_back(plane.get());
+      }
+    }
+    return out;
   }
 
   base::test::SingleThreadTaskEnvironment task_environment_{
@@ -145,7 +157,8 @@ void HardwareDisplayControllerTest::TearDown() {
   drm_ = nullptr;
 }
 
-void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
+void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic,
+                                                        size_t movable_planes) {
   // This will change the plane_manager of the drm.
   // HardwareDisplayController is tied to the plane_manager CRTC states.
   // Destruct the controller before destructing the plane manager its CRTC
@@ -157,7 +170,9 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
       kInFormatsBlobIdBase, {DRM_FORMAT_XRGB8888}, {}));
 
   auto drm_state = MockDrmDevice::MockDrmState::CreateStateWithDefaultObjects(
-      /*crtc_count=*/2, /*planes_per_crtc*/ 2);
+      /*crtc_count=*/2, /*planes_per_crtc*/ 2, movable_planes);
+  drm_state.crtc_properties[0].properties.push_back(
+      {.id = kVrrEnabledPropId, .value = 0});
   drm_->InitializeState(drm_state, use_atomic);
   primary_crtc_ = drm_->crtc_property(0).id;
   secondary_crtc_ = drm_->crtc_property(1).id;
@@ -173,7 +188,8 @@ void HardwareDisplayControllerTest::InitializeDrmDevice(bool use_atomic) {
 bool HardwareDisplayControllerTest::ModesetWithPlanes(
     const DrmOverlayPlaneList& modeset_planes) {
   CommitRequest commit_request;
-  controller_->GetModesetProps(&commit_request, modeset_planes, kDefaultMode);
+  controller_->GetModesetProps(&commit_request, modeset_planes, kDefaultMode,
+                               /*enable_vrr=*/false);
   CommitRequest request_for_update = commit_request;
   bool status = drm_->plane_manager()->Commit(std::move(commit_request),
                                               DRM_MODE_ATOMIC_ALLOW_MODESET);
@@ -221,7 +237,7 @@ void HardwareDisplayControllerTest::OnPresentation(
 uint64_t HardwareDisplayControllerTest::GetPlanePropertyValue(
     uint32_t plane,
     const std::string& property_name) {
-  DrmDevice::Property p{};
+  DrmWrapper::Property p{};
   ScopedDrmObjectPropertyPtr properties(
       drm_->GetObjectProperties(plane, DRM_MODE_OBJECT_PLANE));
   EXPECT_TRUE(
@@ -246,16 +262,22 @@ TEST_F(HardwareDisplayControllerTest, CrtcPropsAfterModeset) {
   ScopedDrmObjectPropertyPtr crtc_props =
       drm_->GetObjectProperties(primary_crtc_, DRM_MODE_OBJECT_CRTC);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE", &prop);
     EXPECT_EQ(kActivePropId, prop.id);
     EXPECT_EQ(1U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID", &prop);
     EXPECT_EQ(kModePropId, prop.id);
     EXPECT_GT(prop.value, 0U);
+  }
+  {
+    DrmWrapper::Property prop = {};
+    GetDrmPropertyForName(drm_.get(), crtc_props.get(), "VRR_ENABLED", &prop);
+    EXPECT_EQ(kVrrEnabledPropId, prop.id);
+    EXPECT_EQ(0U, prop.value);
   }
 }
 
@@ -268,13 +290,13 @@ TEST_F(HardwareDisplayControllerTest, ConnectorPropsAfterModeset) {
       drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
 
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kCrtcIdPropId, prop.id);
     EXPECT_EQ(kCrtcIdBase, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "link-status",
                           &prop);
     EXPECT_EQ(kLinkStatusPropId, prop.id);
@@ -294,37 +316,37 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
       DrmOverlayPlane::GetPrimaryPlane(modeset_planes);
 
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kPlaneCrtcId, prop.id);
     EXPECT_EQ(kCrtcIdBase, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_X", &prop);
     EXPECT_EQ(kCrtcX, prop.id);
     EXPECT_EQ(primary_plane->display_bounds.x(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_Y", &prop);
     EXPECT_EQ(kCrtcY, prop.id);
     EXPECT_EQ(primary_plane->display_bounds.y(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_W", &prop);
     EXPECT_EQ(kCrtcW, prop.id);
     EXPECT_EQ(kDefaultModeSize.width(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_H", &prop);
     EXPECT_EQ(kCrtcH, prop.id);
     EXPECT_EQ(kDefaultModeSize.height(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "FB_ID", &prop);
     EXPECT_EQ(kPlaneFbId, prop.id);
     EXPECT_EQ(primary_plane->buffer->opaque_framebuffer_id(),
@@ -339,31 +361,31 @@ TEST_F(HardwareDisplayControllerTest, PlanePropsAfterModeset) {
       gfx::Rect(crop_rect.x() << 16, crop_rect.y() << 16,
                 crop_rect.width() << 16, crop_rect.height() << 16);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_X", &prop);
     EXPECT_EQ(kSrcX, prop.id);
     EXPECT_EQ(fixed_point_rect.x(), static_cast<float>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_Y", &prop);
     EXPECT_EQ(kSrcY, prop.id);
     EXPECT_EQ(fixed_point_rect.y(), static_cast<float>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_W", &prop);
     EXPECT_EQ(kSrcW, prop.id);
     EXPECT_EQ(fixed_point_rect.width(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_H", &prop);
     EXPECT_EQ(kSrcH, prop.id);
     EXPECT_EQ(fixed_point_rect.height(), static_cast<int>(prop.value));
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD", &prop);
     EXPECT_EQ(kInFencePropId, prop.id);
     EXPECT_GT(static_cast<int>(prop.value), base::kInvalidPlatformFile);
@@ -378,7 +400,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Test invalid fence fd
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -396,7 +418,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Verify fence FD after a GPU Fence is added to the plane.
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -413,7 +435,7 @@ TEST_F(HardwareDisplayControllerTest, FenceFdValueChange) {
 
   // Test an invalid FD again after the fence is removed.
   {
-    DrmDevice::Property fence_fd_prop = {};
+    DrmWrapper::Property fence_fd_prop = {};
     ScopedDrmObjectPropertyPtr plane_props =
         drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD",
@@ -435,22 +457,28 @@ TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
   ScopedDrmObjectPropertyPtr crtc_props =
       drm_->GetObjectProperties(primary_crtc_, DRM_MODE_OBJECT_CRTC);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "ACTIVE", &prop);
     EXPECT_EQ(kActivePropId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), crtc_props.get(), "MODE_ID", &prop);
     EXPECT_EQ(kModePropId, prop.id);
+    EXPECT_EQ(0U, prop.value);
+  }
+  {
+    DrmWrapper::Property prop = {};
+    GetDrmPropertyForName(drm_.get(), crtc_props.get(), "VRR_ENABLED", &prop);
+    EXPECT_EQ(kVrrEnabledPropId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
 
   ScopedDrmObjectPropertyPtr connector_props =
       drm_->GetObjectProperties(kConnectorIdBase, DRM_MODE_OBJECT_CONNECTOR);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), connector_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kCrtcIdPropId, prop.id);
     EXPECT_EQ(0U, prop.value);
@@ -459,67 +487,67 @@ TEST_F(HardwareDisplayControllerTest, CheckDisableResetsProps) {
   ScopedDrmObjectPropertyPtr plane_props =
       drm_->GetObjectProperties(kPlaneOffset, DRM_MODE_OBJECT_PLANE);
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_ID", &prop);
     EXPECT_EQ(kPlaneCrtcId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_X", &prop);
     EXPECT_EQ(kCrtcX, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_Y", &prop);
     EXPECT_EQ(kCrtcY, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_W", &prop);
     EXPECT_EQ(kCrtcW, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "CRTC_H", &prop);
     EXPECT_EQ(kCrtcH, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "FB_ID", &prop);
     EXPECT_EQ(kPlaneFbId, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_X", &prop);
     EXPECT_EQ(kSrcX, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_Y", &prop);
     EXPECT_EQ(kSrcY, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_W", &prop);
     EXPECT_EQ(kSrcW, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "SRC_H", &prop);
     EXPECT_EQ(kSrcH, prop.id);
     EXPECT_EQ(0U, prop.value);
   }
   {
-    DrmDevice::Property prop = {};
+    DrmWrapper::Property prop = {};
     GetDrmPropertyForName(drm_.get(), plane_props.get(), "IN_FENCE_FD", &prop);
     EXPECT_EQ(kInFencePropId, prop.id);
     EXPECT_EQ(base::kInvalidPlatformFile, static_cast<int>(prop.value));
@@ -1192,4 +1220,170 @@ TEST_F(HardwareDisplayControllerTest, MultiplePlanesModeset) {
                                plane.buffer));
   }
 }
+
+TEST_F(HardwareDisplayControllerTest, CheckPinningAfterPageFlip) {
+  InitializeDrmDevice(/*use_atomic=*/true, /*movable_planes=*/1);
+
+  DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
+  EXPECT_EQ(1, drm_->get_commit_count());
+
+  DrmOverlayPlane page_flip_plane(CreateBuffer(), nullptr);
+  std::vector<DrmOverlayPlane> page_flip_planes;
+  page_flip_planes.push_back(page_flip_plane.Clone());
+  page_flip_planes.push_back(page_flip_plane.Clone());
+  page_flip_planes.push_back(page_flip_plane.Clone());
+
+  SchedulePageFlip((std::move(page_flip_planes)));
+  drm_->RunCallbacks();
+  EXPECT_EQ(1, successful_page_flips_count_);
+
+  size_t in_use_planes = 0;
+  for (auto& plane : drm_->plane_manager()->planes()) {
+    if (plane->in_use()) {
+      EXPECT_EQ(controller_->crtc_controllers()[0]->crtc(),
+                plane->owning_crtc());
+      in_use_planes++;
+    }
+  }
+  EXPECT_EQ(3u, in_use_planes);
+}
+
+TEST_F(HardwareDisplayControllerTest, CheckPinningAfterFailedPageFlip) {
+  InitializeDrmDevice(/*use_atomic=*/true, /*movable_planes=*/1);
+
+  DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes));
+  EXPECT_EQ(1, drm_->get_commit_count());
+
+  // InitializeDrmDevice created 2 crtcs with 2 planes, plus a movable plane.
+  // Try to fill 'em up:
+  auto flip_all_planes = [&]() {
+    DrmOverlayPlane page_flip_plane(CreateBuffer(), nullptr);
+    std::vector<DrmOverlayPlane> page_flip_planes;
+    page_flip_planes.push_back(page_flip_plane.Clone());
+    page_flip_planes.push_back(page_flip_plane.Clone());
+    page_flip_planes.push_back(page_flip_plane.Clone());
+
+    SchedulePageFlip((std::move(page_flip_planes)));
+    drm_->RunCallbacks();
+  };
+
+  flip_all_planes();
+  EXPECT_EQ(1, successful_page_flips_count_);
+  EXPECT_FALSE(last_presentation_feedback_.failed());
+
+  drm_->set_commit_expectation(false);
+  flip_all_planes();
+  EXPECT_TRUE(last_presentation_feedback_.failed());
+
+  size_t in_use_planes =
+      base::ranges::count_if(drm_->plane_manager()->planes(),
+                             [](const auto& plane) { return plane->in_use(); });
+  EXPECT_EQ(0u, in_use_planes) << "Planes, including pinned planes, should not "
+                                  "be in use after a failed flip.";
+}
+
+TEST_F(HardwareDisplayControllerTest,
+       PinnedPlanesAreRespectedDuringModesetting) {
+  InitializeDrmDevice(/*use_atomic=*/true, /*movable_planes=*/1);
+
+  DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+
+  HardwareDisplayPlane* movable_plane = GetMovableOverlays()[0];
+  movable_plane->set_in_use(true);
+  movable_plane->set_owning_crtc(drm_->crtc_property(1).id);
+
+  ASSERT_FALSE(controller_->HasCrtc(drm_, movable_plane->owning_crtc()));
+  EXPECT_FALSE(ModesetWithPlanes(modeset_planes))
+      << "Modesetting should fail if it requires a movable plane that is "
+         "already pinned to a different CRTC.";
+  EXPECT_EQ(0, drm_->get_commit_count());
+
+  movable_plane->set_in_use(false);
+  movable_plane->set_owning_crtc(0);
+
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes))
+      << "Modesetting with movable planes should work once those movable "
+         "planes are available to use.";
+  EXPECT_EQ(1, drm_->get_commit_count());
+}
+
+TEST_F(HardwareDisplayControllerTest, AddingAndRemovingCrtcsWithMovablePlanes) {
+  InitializeDrmDevice(/*use_atomic=*/true, /*movable_planes=*/1);
+
+  controller_->AddCrtc(std::make_unique<CrtcController>(
+      drm_, secondary_crtc_, drm_->connector_property(1).id));
+
+  DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+
+  EXPECT_FALSE(ModesetWithPlanes(modeset_planes))
+      << "Should not modeset when two CRTCs both need the movable overlay "
+         "plane.";
+
+  modeset_planes.pop_back();
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes))
+      << "Modesetting should work when neigher CRTC needs the movable overlay "
+         "plane";
+
+  {
+    DrmOverlayPlaneList flip_planes;
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    SchedulePageFlip(std::move(flip_planes));
+    drm_->RunCallbacks();
+    EXPECT_TRUE(last_presentation_feedback_.failed())
+        << "Only one of the CRTCs should be able to use an additional plane.";
+  }
+
+  {
+    DrmOverlayPlaneList flip_planes;
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    SchedulePageFlip(std::move(flip_planes));
+    drm_->RunCallbacks();
+    EXPECT_FALSE(last_presentation_feedback_.failed())
+        << "Both CRTCs should be able to flip with their own overlays.";
+  }
+
+  auto removed_crtc = controller_->RemoveCrtc(drm_, secondary_crtc_);
+  EXPECT_TRUE(removed_crtc);
+  {
+    DrmOverlayPlaneList flip_planes;
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    flip_planes.emplace_back(CreateBuffer(), nullptr);
+    SchedulePageFlip(std::move(flip_planes));
+    drm_->RunCallbacks();
+    EXPECT_FALSE(last_presentation_feedback_.failed())
+        << "With only one CRTC to flip, we should be able to use the movable "
+           "plane again.";
+  }
+}
+
+TEST_F(HardwareDisplayControllerTest,
+       ModesettingWithMirroringAndMultipleMovablePlanes) {
+  InitializeDrmDevice(/*use_atomic=*/true, /*movable_planes=*/2);
+
+  controller_->AddCrtc(std::make_unique<CrtcController>(
+      drm_, secondary_crtc_, drm_->connector_property(1).id));
+
+  DrmOverlayPlaneList modeset_planes;
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+  modeset_planes.emplace_back(CreateBuffer(), nullptr);
+
+  EXPECT_TRUE(ModesetWithPlanes(modeset_planes))
+      << "Should be able modeset with two CRTCs and two movable planes.";
+}
+
 }  // namespace ui

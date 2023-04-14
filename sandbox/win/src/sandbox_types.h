@@ -184,20 +184,16 @@ enum TerminationCodes {
   SBOX_FATAL_LAST
 };
 
-#if !defined(SANDBOX_FUZZ_TARGET)
 static_assert(SBOX_FATAL_MEMORY_EXCEEDED ==
                   base::win::kSandboxFatalMemoryExceeded,
               "Value for SBOX_FATAL_MEMORY_EXCEEDED must match base.");
-#endif  // !defined(SANDBOX_FUZZ_TARGET)
 
 class BrokerServices;
 class TargetServices;
 
 // Contains the pointer to a target or broker service.
 struct SandboxInterfaceInfo {
-  // TODO(crbug.com/1298696): Chrome crashes with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<BrokerServices, DegradeToNoOpWhenMTE> broker_services;
+  raw_ptr<BrokerServices> broker_services;
   raw_ptr<TargetServices> target_services;
 };
 

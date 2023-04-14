@@ -70,6 +70,21 @@ std::string GetHttpMethodString(TrustedVaultRequest::HttpMethod http_method) {
   return std::string();
 }
 
+TrustedVaultRequest::HttpStatus AccessTokenFetchingErrorToRequestHttpStatus(
+    TrustedVaultAccessTokenFetcher::FetchingError access_token_error) {
+  switch (access_token_error) {
+    case TrustedVaultAccessTokenFetcher::FetchingError::kTransientAuthError:
+      return TrustedVaultRequest::HttpStatus::kTransientAccessTokenFetchError;
+    case TrustedVaultAccessTokenFetcher::FetchingError::kPersistentAuthError:
+      return TrustedVaultRequest::HttpStatus::kPersistentAccessTokenFetchError;
+    case TrustedVaultAccessTokenFetcher::FetchingError::kNotPrimaryAccount:
+      return TrustedVaultRequest::HttpStatus::
+          kPrimaryAccountChangeAccessTokenFetchError;
+  }
+  NOTREACHED();
+  return TrustedVaultRequest::HttpStatus::kTransientAccessTokenFetchError;
+}
+
 }  // namespace
 
 TrustedVaultRequest::TrustedVaultRequest(
@@ -102,18 +117,22 @@ void TrustedVaultRequest::FetchAccessTokenAndSendRequest(
 }
 
 void TrustedVaultRequest::OnAccessTokenFetched(
-    absl::optional<signin::AccessTokenInfo> access_token_info) {
+    TrustedVaultAccessTokenFetcher::AccessTokenInfoOrError
+        access_token_info_or_error) {
   base::UmaHistogramBoolean("Sync.TrustedVaultAccessTokenFetchSuccess",
-                            access_token_info.has_value());
+                            access_token_info_or_error.has_value());
 
-  if (!access_token_info.has_value()) {
+  if (!access_token_info_or_error.has_value()) {
+    // TODO(crbug.com/1413179): expose persistent auth errors to the higher
+    // level as a dedicated status.
     RunCompletionCallbackAndMaybeDestroySelf(
-        HttpStatus::kAccessTokenFetchingFailure,
+        /*status=*/AccessTokenFetchingErrorToRequestHttpStatus(
+            access_token_info_or_error.error()),
         /*response_body=*/std::string());
     return;
   }
 
-  url_loader_ = CreateURLLoader(access_token_info->token);
+  url_loader_ = CreateURLLoader(access_token_info_or_error->token);
   // Destroying |this| object will cancel the request, so use of Unretained() is
   // safe here.
   url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
@@ -135,6 +154,11 @@ void TrustedVaultRequest::OnURLLoadComplete(
                                      reason_for_uma_);
 
   std::string response_content = response_body ? *response_body : std::string();
+  if (http_response_code == 0) {
+    RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kNetworkError,
+                                             response_content);
+    return;
+  }
   if (http_response_code == net::HTTP_BAD_REQUEST) {
     RunCompletionCallbackAndMaybeDestroySelf(HttpStatus::kBadRequest,
                                              response_content);

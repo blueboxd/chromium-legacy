@@ -12,6 +12,7 @@
 #include "ash/wm/window_state.h"
 #include "chromeos/ui/wm/features.h"
 #include "ui/aura/window.h"
+#include "ui/base/hit_test.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
@@ -41,11 +42,12 @@ TabletModeFloatWindowResizer::TabletModeFloatWindowResizer(
       split_view_drag_indicators_(std::make_unique<SplitViewDragIndicators>(
           window_state->window()->GetRootWindow())),
       last_location_in_parent_(details().initial_location_in_parent) {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   // TODO(sophiewen): Remove this once the untuck window widget is implemented.
   Shell::Get()->float_controller()->MaybeUntuckFloatedWindowForTablet(
       GetTarget());
   split_view_drag_indicators_->SetDraggedWindow(GetTarget());
+  window_state->OnDragStarted(HTCAPTION);
 }
 
 TabletModeFloatWindowResizer::~TabletModeFloatWindowResizer() {
@@ -112,18 +114,19 @@ void TabletModeFloatWindowResizer::CompleteDrag() {
     // TODO(crbug.com/1351562): Ensure that this works for all orientations.
     split_view_controller->OnWindowDragEnded(
         float_window, snap_position_, gfx::ToRoundedPoint(location_in_screen));
+    window_state_->OnCompleteDrag(last_location_in_parent_);
     return;
   }
 
   // `FloatController` will magnetize windows to one of the corners if it
   // remains in float state and not tucked.
-  auto* float_controller = Shell::Get()->float_controller();
-  float_controller->OnDragCompletedForTablet(float_window,
-                                             last_location_in_parent_);
+  Shell::Get()->float_controller()->OnDragCompletedForTablet(float_window);
+  window_state_->OnCompleteDrag(last_location_in_parent_);
 }
 
 void TabletModeFloatWindowResizer::RevertDrag() {
   GetTarget()->SetBounds(details().initial_bounds_in_parent);
+  window_state_->OnRevertDrag(details().initial_location_in_parent);
 }
 
 void TabletModeFloatWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
@@ -160,6 +163,7 @@ void TabletModeFloatWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {
   }
   Shell::Get()->float_controller()->OnFlingOrSwipeForTablet(
       GetTarget(), velocity_x, velocity_y);
+  window_state_->OnCompleteDrag(last_location_in_parent_);
 }
 
 }  // namespace ash

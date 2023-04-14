@@ -5,15 +5,32 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "chrome/browser/apps/app_deduplication_service/app_deduplication_service.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 
+namespace {
+// Folder path to where the deduplication data will be stored on disk.
+constexpr char kAppDeduplicationFolderPath[] =
+    "app_deduplication_service/deduplication_data/";
+}  // namespace
+
 namespace apps::deduplication {
+
+namespace prefs {
+constexpr char kLastGetDataFromServerTimestamp[] =
+    "apps.app_deduplication_service.last_get_data_from_server_timestamp";
+}  // namespace prefs
 
 AppDeduplicationService::AppDeduplicationService(Profile* profile)
     : profile_(profile),
@@ -23,9 +40,36 @@ AppDeduplicationService::AppDeduplicationService(Profile* profile)
   app_registry_cache_observation_.Observe(
       &apps::AppServiceProxyFactory::GetForProfile(profile)
            ->AppRegistryCache());
+
+  if (base::FeatureList::IsEnabled(features::kAppDeduplicationServiceFondue)) {
+    base::FilePath path =
+        profile_->GetPath().AppendASCII(kAppDeduplicationFolderPath);
+    cache_ = std::make_unique<AppDeduplicationCache>(path);
+    StartLoginFlow();
+  }
 }
 
 AppDeduplicationService::~AppDeduplicationService() = default;
+
+void AppDeduplicationService::StartLoginFlow() {
+  const int hours_diff =
+      std::abs((GetServerPref() - base::Time::Now()).InHours());
+
+  if (hours_diff >= 24) {
+    GetDeduplicateDataFromServer();
+  } else {
+    // Read most recent data from cache.
+    cache_->ReadDeduplicationCache(base::BindOnce(
+        &AppDeduplicationService::OnReadDeduplicationCacheCompleted,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void AppDeduplicationService::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterTimePref(prefs::kLastGetDataFromServerTimestamp,
+                             base::Time());
+}
 
 std::vector<Entry> AppDeduplicationService::GetDuplicates(
     const EntryId& entry_id) {
@@ -71,6 +115,8 @@ bool AppDeduplicationService::AreDuplicates(const EntryId& entry_id_1,
   return duplication_index_1 == duplication_index_2;
 }
 
+// This function is only used when the kAppDeduplicationService flag
+// is enabled.
 void AppDeduplicationService::OnDuplicatedGroupListUpdated(
     const proto::DuplicatedGroupList& duplicated_group_list) {
   // Use the index as the internal indexing key for fast look up. If the
@@ -197,7 +243,99 @@ void AppDeduplicationService::GetDeduplicateDataFromServer() {
 
 void AppDeduplicationService::OnGetDeduplicateDataFromServerCompleted(
     absl::optional<proto::DeduplicateData> response) {
-  // TODO(b/264216262): handle response data and store in disk.
+  if (response.has_value()) {
+    profile_->GetPrefs()->SetTime(prefs::kLastGetDataFromServerTimestamp,
+                                  base::Time::Now());
+    cache_->WriteDeduplicationCache(
+        response.value(),
+        base::BindOnce(
+            &AppDeduplicationService::OnWriteDeduplicationCacheCompleted,
+            weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    cache_->ReadDeduplicationCache(base::BindOnce(
+        &AppDeduplicationService::OnReadDeduplicationCacheCompleted,
+        weak_ptr_factory_.GetWeakPtr()));
+  }
+
+  if (get_data_complete_callback_for_testing_) {
+    std::move(get_data_complete_callback_for_testing_)
+        .Run(response.has_value());
+  }
+}
+
+void AppDeduplicationService::OnWriteDeduplicationCacheCompleted(bool result) {
+  if (!result) {
+    LOG(ERROR) << "Writing deduplication data to disk failed.";
+    return;
+  }
+  cache_->ReadDeduplicationCache(base::BindOnce(
+      &AppDeduplicationService::OnReadDeduplicationCacheCompleted,
+      weak_ptr_factory_.GetWeakPtr()));
+  return;
+}
+
+void AppDeduplicationService::OnReadDeduplicationCacheCompleted(
+    absl::optional<proto::DeduplicateData> data) {
+  if (!data.has_value()) {
+    LOG(ERROR) << "Reading deduplication data from disk failed.";
+    return;
+  }
+  DeduplicateDataToEntries(data.value());
+}
+
+base::Time AppDeduplicationService::GetServerPref() {
+  return profile_->GetPrefs()->GetTime(prefs::kLastGetDataFromServerTimestamp);
+}
+
+// This function is only used when the kAppDeduplicationServiceFondue flag
+// is enabled.
+void AppDeduplicationService::DeduplicateDataToEntries(
+    const proto::DeduplicateData data) {
+  // Use the index as the internal indexing key for fast look up. If the
+  // size of the duplicated groups goes over integer 32 limit, a new indexing
+  // key needs to be introduced.
+  uint32_t index = 1;
+  for (auto const& group : data.app_group()) {
+    DuplicateGroup duplicate_group;
+    for (auto const& app : group.app()) {
+      const std::string& app_id = app.app_id();
+      const std::string& platform = app.platform();
+      EntryId entry_id;
+
+      if (platform == "arc") {
+        entry_id = EntryId(app_id, AppType::kArc);
+      } else if (platform == "web") {
+        entry_id = EntryId(app_id, AppType::kWeb);
+      } else if (platform == "phonehub") {
+        entry_id = EntryId(app_id);
+      } else if (platform == "website") {
+        GURL entry_url = GURL(app_id);
+        if (entry_url.is_valid()) {
+          entry_id = EntryId(GURL(app_id));
+        } else {
+          continue;
+        }
+      } else {
+        continue;
+      }
+
+      entry_to_group_map_[entry_id] = index;
+      // Initialize entry status.
+      entry_status_[entry_id] = entry_id.entry_type == EntryType::kApp
+                                    ? EntryStatus::kNotInstalledApp
+                                    : EntryStatus::kNonApp;
+      Entry entry(std::move(entry_id));
+      duplicate_group.entries.push_back(std::move(entry));
+    }
+    duplication_map_[index] = std::move(duplicate_group);
+    index++;
+  }
+
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
+    UpdateInstallationStatus(update);
+  });
 }
 
 }  // namespace apps::deduplication

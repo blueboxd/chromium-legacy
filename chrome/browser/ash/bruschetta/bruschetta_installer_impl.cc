@@ -28,6 +28,7 @@
 #include "components/download/public/background_service/background_download_service.h"
 #include "components/download/public/background_service/clients.h"
 #include "components/download/public/background_service/download_params.h"
+#include "components/prefs/pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace bruschetta {
@@ -468,7 +469,10 @@ void BruschettaInstallerImpl::StartVm() {
   VLOG(2) << "Starting VM";
   NotifyObserver(State::kStartVm);
 
-  if (!GetInstallableConfig(profile_, config_id_)) {
+  auto launch_policy_opt = GetLaunchPolicyForConfig(profile_, config_id_);
+
+  if (!HasInstallableConfig(profile_, config_id_) ||
+      !launch_policy_opt.has_value()) {
     // Policy has changed to prohibit installation, so bail out before actually
     // starting the VM.
     install_running_ = false;
@@ -476,18 +480,22 @@ void BruschettaInstallerImpl::StartVm() {
     LOG(ERROR) << "Installation prohibited by policy";
     return;
   }
+  auto launch_policy = *launch_policy_opt;
 
   auto* client = ash::ConciergeClient::Get();
   DCHECK(client) << "This code requires a ConciergeClient";
 
   std::string user_hash =
       ash::ProfileHelper::GetUserIdHashFromProfile(profile_);
+  std::string vm_username = GetVmUsername(profile_);
   vm_tools::concierge::StartVmRequest request;
 
   request.set_name(kBruschettaVmName);
   request.set_owner_id(std::move(user_hash));
+  request.set_vm_username(vm_username);
   request.mutable_vm()->set_tools_dlc_id(kToolsDlc);
   request.set_start_termina(false);
+  request.set_vtpm_proxy(launch_policy.vtpm_enabled);
 
   auto* disk = request.add_disks();
   disk->set_path(std::move(disk_path_));
@@ -507,12 +515,14 @@ void BruschettaInstallerImpl::StartVm() {
   fds.push_back(std::move(fds_->pflash));
   fds_.reset();
 
-  client->StartVmWithFds(std::move(fds), request,
-                         base::BindOnce(&BruschettaInstallerImpl::OnStartVm,
-                                        weak_ptr_factory_.GetWeakPtr()));
+  client->StartVmWithFds(
+      std::move(fds), request,
+      base::BindOnce(&BruschettaInstallerImpl::OnStartVm,
+                     weak_ptr_factory_.GetWeakPtr(), launch_policy));
 }
 
 void BruschettaInstallerImpl::OnStartVm(
+    RunningVmPolicy launch_policy,
     absl::optional<vm_tools::concierge::StartVmResponse> result) {
   if (MaybeClose()) {
     return;
@@ -528,6 +538,11 @@ void BruschettaInstallerImpl::OnStartVm(
     }
     return;
   }
+
+  BruschettaService::GetForProfile(profile_)->RegisterVmLaunch(vm_name_,
+                                                               launch_policy);
+  profile_->GetPrefs()->SetBoolean(bruschetta::prefs::kBruschettaInstalled,
+                                   true);
 
   LaunchTerminal();
 }

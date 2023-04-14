@@ -13,6 +13,7 @@
 #include "components/unexportable_keys/background_long_task_scheduler.h"
 #include "components/unexportable_keys/background_task_priority.h"
 #include "components/unexportable_keys/ref_counted_unexportable_signing_key.h"
+#include "components/unexportable_keys/unexportable_key_id.h"
 #include "crypto/signature_verifier.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -59,11 +60,15 @@ class UnexportableKeyTaskManager {
           callback);
 
   // Creates a new signing key from a `wrapped_key` asynchronously.
-  // `wrapped_Key` must have resulted from calling `GetWrappedKey()` on a
+  // `wrapped_key` must have resulted from calling `GetWrappedKey()` on a
   // previous instance of `crypto::UnexportableSigningKey`.
+  // `key_id` is a unique identifier that will be attached to the signing key.
+  // The caller is responsible for avoiding collisions and not requesting
+  // several keys under the same id.
   // Invokes `callback` with nullptr if `wrapped_key` cannot be imported.
   void FromWrappedSigningKeySlowlyAsync(
       base::span<const uint8_t> wrapped_key,
+      const UnexportableKeyId& key_id,
       BackgroundTaskPriority priority,
       base::OnceCallback<void(scoped_refptr<RefCountedUnexportableSigningKey>)>
           callback);

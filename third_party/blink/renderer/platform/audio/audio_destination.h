@@ -122,13 +122,19 @@ class PLATFORM_EXPORT AudioDestination final
   // hardware.
   int FramesPerBuffer() const;
 
-  // The information from the actual audio hardware. (via Platform::Current)
-  static uint32_t MaxChannelCount();
+  // The maximum channel count of the current audio sink device.
+  uint32_t MaxChannelCount();
 
   // Sets the detect silence flag for `web_audio_device_`.
   void SetDetectSilence(bool detect_silence);
 
   unsigned RenderQuantumFrames() const;
+
+  // Creates a new sink and return its device status. If the status is OK,
+  // replace the existing sink with the new one. This function is called in
+  // RealtimeAudioDestinationHandler::SetSinkDescriptor, which can be invoked
+  // from the constructor of AudioContext and AudioContext.setSinkId() method.
+  media::OutputDeviceStatus CreateSinkAndGetDeviceStatus();
 
  private:
   explicit AudioDestination(AudioIOCallback&,

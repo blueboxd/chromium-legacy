@@ -234,7 +234,7 @@ void VpnServiceForExtensionAsh::CreateConfiguration(
   ash::NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(
-          base::Value(std::move(properties)),
+          std::move(properties),
           base::BindOnce(
               &VpnServiceForExtensionAsh::OnCreateConfigurationSuccess,
               weak_factory_.GetWeakPtr(), std::move(success), configuration),
@@ -296,7 +296,7 @@ void VpnServiceForExtensionAsh::SetParameters(base::Value::Dict parameters,
 
   auto [success, failure] = AdaptCallback(std::move(callback));
   ash::ShillThirdPartyVpnDriverClient::Get()->SetParameters(
-      active_configuration_->object_path(), base::Value(std::move(parameters)),
+      active_configuration_->object_path(), std::move(parameters),
       base::BindOnce(&RunWarningCallback, std::move(success)),
       std::move(failure));
 }
@@ -612,18 +612,20 @@ void VpnServiceAsh::OnVpnExtensionsChanged(
 
 void VpnServiceAsh::OnGetShillProperties(
     const std::string& service_path,
-    absl::optional<base::Value> configuration_properties) {
+    absl::optional<base::Value::Dict> configuration_properties) {
   if (!configuration_properties) {
     return;
   }
   const std::string* vpn_type =
-      configuration_properties->FindStringPath(shill::kProviderTypeProperty);
+      configuration_properties->FindStringByDottedPath(
+          shill::kProviderTypeProperty);
   const std::string* extension_id =
-      configuration_properties->FindStringPath(shill::kProviderHostProperty);
+      configuration_properties->FindStringByDottedPath(
+          shill::kProviderHostProperty);
   const std::string* type =
-      configuration_properties->FindStringPath(shill::kTypeProperty);
+      configuration_properties->FindStringByDottedPath(shill::kTypeProperty);
   const std::string* configuration_name =
-      configuration_properties->FindStringPath(shill::kNameProperty);
+      configuration_properties->FindStringByDottedPath(shill::kNameProperty);
   if (!vpn_type || !extension_id || !type || !configuration_name ||
       *vpn_type != shill::kProviderThirdPartyVpn || *type != shill::kTypeVPN) {
     return;

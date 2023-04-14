@@ -37,9 +37,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
+#include "base/system/sys_info.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
-#include "chromeos/ash/components/system/devicemode.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_observer.h"
@@ -761,11 +761,15 @@ void TabletModeController::SuspendDone(base::TimeDelta sleep_duration) {
 void TabletModeController::OnInputDeviceConfigurationChanged(
     uint8_t input_device_types) {
   if (input_device_types & (ui::InputDeviceEventObserver::kMouse |
-                            ui::InputDeviceEventObserver::kTouchpad)) {
+                            ui::InputDeviceEventObserver::kTouchpad |
+                            ui::InputDeviceEventObserver::kPointingStick)) {
     if (input_device_types & ui::InputDeviceEventObserver::kMouse)
       VLOG(1) << "Mouse device configuration changed.";
     if (input_device_types & ui::InputDeviceEventObserver::kTouchpad)
       VLOG(1) << "Touchpad device configuration changed.";
+    if (input_device_types & ui::InputDeviceEventObserver::kPointingStick)
+      VLOG(1) << "Pointing stick device configuration changed.";
+
     HandlePointingDeviceAddedOrRemoved();
   }
 }
@@ -1084,6 +1088,12 @@ void TabletModeController::HandlePointingDeviceAddedOrRemoved() {
         bluetooth_devices_observer_.get(), &has_external_pointing_device,
         &has_internal_pointing_device);
   }
+  if (!has_external_pointing_device || !has_internal_pointing_device) {
+    CheckHasPointingDevices(
+        ui::DeviceDataManager::GetInstance()->GetPointingStickDevices(),
+        bluetooth_devices_observer_.get(), &has_external_pointing_device,
+        &has_internal_pointing_device);
+  }
 
   const bool changed =
       (has_external_pointing_device_ != has_external_pointing_device) ||
@@ -1328,7 +1338,7 @@ bool TabletModeController::ShouldUiBeInTabletMode() const {
     return true;
 
   return !has_internal_pointing_device_ && CanEnterTabletMode() &&
-         HasActiveInternalDisplay() && chromeos::IsRunningAsSystemCompositor();
+         HasActiveInternalDisplay() && base::SysInfo::IsRunningOnChromeOS();
 }
 
 bool TabletModeController::SetIsInTabletPhysicalState(bool new_state) {

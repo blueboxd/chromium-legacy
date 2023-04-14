@@ -201,7 +201,7 @@ class PLATFORM_EXPORT GeometryMapper {
       InclusiveIntersectOrNot);
 
   template <ForCompositingOverlap>
-  static bool SlowLocalToAncestorVisualRectWithEffects(
+  static bool SlowLocalToAncestorVisualRectWithPixelMovingFilters(
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
@@ -222,6 +222,16 @@ class PLATFORM_EXPORT GeometryMapper {
       const gfx::RectF& local_rect,
       const PropertyTreeState& local_state,
       const PropertyTreeState& ancestor_state);
+
+  static void MapFixedVisualRectInScrollForCompositingOverlap(
+      const TransformPaintPropertyNode& scroll_translation,
+      gfx::RectF& rect,
+      PropertyTreeState& state);
+
+  static void MapVisualRectAboveScrollForCompositingOverlap(
+      const TransformPaintPropertyNode& scroll_translation,
+      gfx::RectF& rect,
+      PropertyTreeState& state);
 
   static void MoveRect(gfx::RectF& rect, const gfx::Vector2dF& delta) {
     rect.Offset(delta.x(), delta.y());

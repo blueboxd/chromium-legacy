@@ -10,18 +10,24 @@
 #import "base/guid.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
+#import "base/test/scoped_feature_list.h"
 #import "components/autofill/core/browser/data_model/autofill_profile.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
 #import "components/autofill/core/common/autofill_features.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_profile_edit_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/personal_data_manager_finished_profile_tasks_waiter.h"
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
 #import "ios/chrome/browser/webdata_services/web_data_service_factory.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
+#import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
+#import "ui/base/l10n/l10n_util_mac.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,8 +56,9 @@ static NSArray* FindTextFieldDescendants(UIView* root) {
 
   while ([descendants count]) {
     UIView* view = [descendants objectAtIndex:0];
-    if ([view isKindOfClass:[UITextField class]])
+    if ([view isKindOfClass:[UITextField class]]) {
       [textFields addObject:view];
+    }
 
     [descendants addObjectsFromArray:[view subviews]];
     [descendants removeObjectAtIndex:0];
@@ -59,6 +66,26 @@ static NSArray* FindTextFieldDescendants(UIView* root) {
 
   return textFields;
 }
+}  // namespace
+
+@interface AutofillProfileEditTableViewControllerTestDelegate
+    : NSObject <AutofillProfileEditTableViewControllerDelegate>
+@end
+
+@implementation AutofillProfileEditTableViewControllerTestDelegate
+
+- (void)willSelectCountryWithCurrentlySelectedCountry:(NSString*)country {
+}
+
+- (void)didEditAutofillProfile:(autofill::AutofillProfile*)profile {
+}
+
+- (void)viewDidDisappear {
+}
+
+@end
+
+namespace {
 
 class AutofillProfileEditTableViewControllerTest : public PlatformTest {
  protected:
@@ -78,6 +105,11 @@ class AutofillProfileEditTableViewControllerTest : public PlatformTest {
           ->set_local_state_for_testing(local_state_.Get());
     }
     personal_data_manager_->OnSyncServiceInitialized(nullptr);
+    delegate_ =
+        [[AutofillProfileEditTableViewControllerTestDelegate alloc] init];
+  }
+
+  void LoadController(bool is_account_profile = false) {
     PersonalDataManagerFinishedProfileTasksWaiter waiter(
         personal_data_manager_);
 
@@ -101,12 +133,22 @@ class AutofillProfileEditTableViewControllerTest : public PlatformTest {
                                 kTestCountryCode);
     autofill_profile.SetRawInfo(autofill::PHONE_HOME_WHOLE_NUMBER, kTestPhone);
     autofill_profile.SetRawInfo(autofill::EMAIL_ADDRESS, kTestEmail);
-    personal_data_manager_->SaveImportedProfile(autofill_profile);
+    if (is_account_profile) {
+      autofill_profile.set_source_for_testing(
+          autofill::AutofillProfile::Source::kAccount);
+      personal_data_manager_->AddProfile(autofill_profile);
+    } else {
+      personal_data_manager_->SaveImportedProfile(autofill_profile);
+    }
     waiter.Wait();  // Wait for the completion of the asynchronous operation.
 
-    autofill_profile_edit_controller_ = [AutofillProfileEditTableViewController
-        controllerWithProfile:autofill_profile
-          personalDataManager:personal_data_manager_];
+    autofill_profile_edit_controller_ =
+        [[AutofillProfileEditTableViewController alloc]
+            initWithDelegate:delegate_
+                     profile:&autofill_profile
+                   userEmail:(is_account_profile
+                                  ? base::SysUTF16ToNSString(kTestEmail)
+                                  : nil)];
 
     // Load the view to force the loading of the model.
     [autofill_profile_edit_controller_ loadViewIfNeeded];
@@ -117,10 +159,12 @@ class AutofillProfileEditTableViewControllerTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   autofill::PersonalDataManager* personal_data_manager_;
   AutofillProfileEditTableViewController* autofill_profile_edit_controller_;
+  AutofillProfileEditTableViewControllerTestDelegate* delegate_ = nil;
 };
 
 // Default test case of no addresses or credit cards.
 TEST_F(AutofillProfileEditTableViewControllerTest, TestInitialization) {
+  LoadController();
   TableViewModel* model = [autofill_profile_edit_controller_ tableViewModel];
   int rowCnt =
       base::FeatureList::IsEnabled(
@@ -134,6 +178,7 @@ TEST_F(AutofillProfileEditTableViewControllerTest, TestInitialization) {
 
 // Adding a single address results in an address section.
 TEST_F(AutofillProfileEditTableViewControllerTest, TestOneProfile) {
+  LoadController();
   TableViewModel* model = [autofill_profile_edit_controller_ tableViewModel];
   UITableView* tableView = [autofill_profile_edit_controller_ tableView];
 
@@ -160,6 +205,23 @@ TEST_F(AutofillProfileEditTableViewControllerTest, TestOneProfile) {
     EXPECT_TRUE([[field text]
         isEqualToString:base::SysUTF16ToNSString(expected_values[row])]);
   }
+}
+
+// Tests the footer text of the view controller for the address profiles with
+// source kAccount when `autofill::features::kAutofillAccountProfilesUnionView`
+// is enabled.
+TEST_F(AutofillProfileEditTableViewControllerTest, TestFooterTextWithEmail) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      autofill::features::kAutofillAccountProfilesUnionView);
+  LoadController(true);
+
+  TableViewModel* model = [autofill_profile_edit_controller_ tableViewModel];
+
+  NSString* expected_footer_text = l10n_util::GetNSStringF(
+      IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT, kTestEmail);
+  TableViewLinkHeaderFooterItem* footer = [model footerForSectionIndex:1];
+  EXPECT_NSEQ(expected_footer_text, footer.text);
 }
 
 }  // namespace

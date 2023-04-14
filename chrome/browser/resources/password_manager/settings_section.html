@@ -1,12 +1,4 @@
 <style include="shared-style cr-shared-style">
-  cr-link-row {
-    --cr-icon-button-margin-start: 0px;
-  }
-
-  cr-link-row[hide-icon]::part(icon) {
-    display: none;
-  }
-
   #blockedSitesTitle {
     margin-top: 28px;
   }
@@ -49,25 +41,32 @@
       sub-label="$i18n{autosigninDescription}"
       pref-key="credentials_enable_autosignin">
   </pref-toggle-button>
-  <cr-link-row id="trustedVaultBanner" class="cr-row"
+  <if expr="is_win or is_macosx">
+    <template is="dom-if"
+        if="[[isBiometricAuthenticationForFillingToggleVisible_]]">
+      <pref-toggle-button id="biometricAuthenticationToggle" class="hr"
+          label="$i18n{biometricAuthenticaionForFillingLabel}"
+          pref-key="password_manager.biometric_authentication_filling"
+          change-requires-validation
+          on-validate-and-change-pref="switchBiometricAuthBeforeFillingState_">
+      </pref-toggle-button>
+    </template>
+  </if>
+  <cr-link-row id="trustedVaultBanner" class="cr-row settings-cr-link-row"
       label="$i18n{trustedVaultBannerLabelOfferOptIn}"
       sub-label="$i18n{trustedVaultBannerSubLabelOfferOptIn}" external>
   </cr-link-row>
-  <cr-link-row id="importPasswords" class="cr-row"
+  <cr-link-row id="importPasswords" class="cr-row settings-cr-link-row"
       label="$i18n{importPasswords}"
       sub-label="$i18n{importPasswordsDescription}" hide-icon>
   </cr-link-row>
-  <cr-link-row id="exportPasswordsBanner" class="cr-row"
-      label="$i18n{exportPasswords}"
-      sub-label="$i18n{exportPasswordsDescription}" hide-icon>
-      <cr-button id="exportPasswordsButton" on-click="onExportClick_">
-          $i18n{downloadFile}
-      </cr-button>
-  </cr-link-row>
+  <template is="dom-if" if="[[hasPasswordsToExport_]]" restamp>
+      <passwords-exporter></passwords-exporter>
+  </template>
   <template is="dom-if" if="[[!isPasswordManagerShortcutInstalled_]]" restamp>
-    <cr-link-row id="addShortcutBanner" class="cr-row"
+    <cr-link-row id="addShortcutBanner" class="cr-row settings-cr-link-row"
         on-click="onAddShortcutClick_" label="$i18n{addShortcut}"
-        sub-label="$i18n{addShortcutDescription}" hide-icon>
+        sub-label="[[getShortcutBannerDescription_()]]" hide-icon>
     </cr-link-row>
   </template>
 </div>
@@ -92,8 +91,3 @@
     </template>
   </div>
 </div>
-<template is="dom-if" if="[[showPasswordsExportDialog_]]" restamp>
-  <passwords-export-dialog
-    on-passwords-export-dialog-close="onPasswordsExportDialogClosed_">
-  </passwords-export-dialog>
-</template>

@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_DEVICE_SIGNALS_CORE_COMMON_SIGNALS_CONSTANTS_H_
 #define COMPONENTS_DEVICE_SIGNALS_CORE_COMMON_SIGNALS_CONSTANTS_H_
 
+#include "base/files/file_path.h"
+#include "build/build_config.h"
+
 namespace device_signals {
 
 // Signal names can be used as keys to store/retrieve signal values from
@@ -58,6 +61,8 @@ extern const char kUnsupported[];
 extern const char kMissingSystemService[];
 extern const char kMissingBundle[];
 extern const char kMissingParameters[];
+extern const char kParsingFailed[];
+extern const char kUnexpectedValue[];
 
 }  // namespace errors
 

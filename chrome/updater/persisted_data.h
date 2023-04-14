@@ -74,8 +74,8 @@ class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
   std::string GetAP(const std::string& id) const;
   void SetAP(const std::string& id, const std::string& ap);
 
-  // This function sets everything in the registration request object into the
-  // persistent data store.
+  // This function sets any non-empty field in the registration request object
+  // into the persistent data store.
   void RegisterApp(const RegistrationRequest& rq);
 
   // This function removes a registered application from the persistent store.
@@ -89,6 +89,12 @@ class PersistedData : public base::RefCountedThreadSafe<PersistedData> {
   // than itself, and is never unset, even if the app is uninstalled.
   bool GetHadApps() const;
   void SetHadApps();
+
+  // UsageStatsEnabled reflects whether the updater as a whole is allowed to
+  // send usage stats, and is set or reset periodically based on the usage
+  // stats opt-in state of each product.
+  bool GetUsageStatsEnabled() const;
+  void SetUsageStatsEnabled(bool usage_stats_enabled);
 
   // LastChecked is set when the updater completed successfully a call to
   // `UpdateService::UpdateAll` as indicated by the `UpdateService::Result`

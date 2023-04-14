@@ -180,7 +180,6 @@
 <translation id="1984417487208496350">Առանց պաշտպանության (խորհուրդ չի տրվում)</translation>
 <translation id="1986685561493779662">Անունն արդեն գոյություն ունի</translation>
 <translation id="1995884366040846621">Շարունակելու համար <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> ընկերությունը կփոխանցի ձեր անունը, էլ․ հասցեն և պրոֆիլի նկարը այս կայքին։ Ծանոթացեք այս կայքի <ph name="BEGIN_LINK1" />գաղտնիության քաղաքականությանը<ph name="END_LINK1" />։</translation>
-<translation id="2000419248597011803">Ձեր կանխադրված որոնիչին է ուղարկում հասցեագոտու և որոնման դաշտի հարցումները, ինչպես նաև որոշ քուքիներ</translation>
 <translation id="200114059308480249">Ներառե՞լ շրջապատող տեքստը Google-ի որոնման հարցումներում</translation>
 <translation id="2009341475524975924">Գովազդի արդյունավետությունը գնահատելու համար կայքերը կարող են փոխանակել որոշակի տվյալներ, օրինակ՝ օրվա ժամը, երբ գովազդը ցուցադրվել է ձեզ։</translation>
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ֆայլ}one{# ֆայլ}other{# ֆայլ}}</translation>
@@ -227,7 +226,6 @@
 <translation id="2248941474044011069">Գաղտնաբառերը գաղտնագրվում են ձեր սարքում, այնուհետև պահվում Google Գաղտնաբառերի կառավարիչում։</translation>
 <translation id="2249635629516220541">Կառավարեք տվյալները, որոնք օգտագործում են կայքերը՝ ձեզ գովազդ ցուցադրելու համար</translation>
 <translation id="2259659629660284697">Գաղտնաբառերի արտահանում…</translation>
-<translation id="2276231040576210443">Դուք ցանկացած ժամանակ կարող եք անցնել <ph name="BEGIN_LINK1" />կարգավորումներ<ph name="END_LINK1" /> և ընտրել, թե ինչն եք ուզում համաժամացնել։ Google-ը կարող է ձեր պատմության հիման վրա անհատականացնել Որոնումը և այլ ծառայությունները։</translation>
 <translation id="2276696007612801991">Մտեք Google հաշիվ՝ ձեր գաղտնաբառերը ստուգելու համար</translation>
 <translation id="2278052315791335171">Եթե հեռացնեք այս գաղտնաբառը, ձեր հաշիվը չի ջնջվի <ph name="SITE" /> կայքից։</translation>
 <translation id="2286841657746966508">Վճարային հասցե</translation>
@@ -304,9 +302,7 @@
 <translation id="2656405586795711023">Վեբ հավելվածներ</translation>
 <translation id="2669454659051515572">Այս սարքն օգտագործող ցանկացած օգտատեր կարող է տեսնել ներբեռնված ֆայլերը</translation>
 <translation id="2702516483241149200">Նորույթ․ կիսվեք հղումով, որն ուղղորդում է դեպի այս տեքստ</translation>
-<translation id="2704606927547763573">Պատճենվեց</translation>
 <translation id="2707726405694321444">Թարմացնել էջը</translation>
-<translation id="2709516037105925701">Ինքնալցում</translation>
 <translation id="271033894570825754">New</translation>
 <translation id="2711073837061989559">Փորձնական տարբերակներ</translation>
 <translation id="2718352093833049315">Միայն Wi-Fi-ով</translation>
@@ -391,13 +387,13 @@
 <translation id="3066573403916685335">Տեղափոխել վար</translation>
 <translation id="3070005020161560471">Ավտոմատ թարգմանել</translation>
 <translation id="3072980200212375806"><ph name="APP_NAME" /> հավելվածը կբացվի Chrome-ում։ Շարունակելով՝ դուք ընդունում եք <ph name="BEGIN_LINK1" />Google-ի օգտագործման պայմանները<ph name="END_LINK1" /> և <ph name="BEGIN_LINK2" />Google Chrome-ի և ChromeOS-ի օգտագործման լրացուցիչ պայմանները<ph name="END_LINK2" />։ Կիրառվում է նաև <ph name="BEGIN_LINK3" />Գաղտնիության քաղաքականությունը<ph name="END_LINK3" />։</translation>
+<translation id="3083194063661536258">Դուք դուրս եք եկել հաշվից։ Կոճակ։ Այս տարբերակը բացում է պատուհան, որում կարող եք մուտք գործել և միացնել համաժամացումը։</translation>
 <translation id="3091010850649238832">Ցույց տալ սեղմատախտակի բովանդակությունը</translation>
 <translation id="3098745985164956033">Պատկերներն ուղարկվում են Google-ին՝ նկարագրությունները բարելավելու նպատակով</translation>
 <translation id="3104179992611025423">Ձեր դիտարկիչը կառավարվում է ձեր ծնողների կողմից</translation>
 <translation id="3114507951000454849">Կարդացեք այսօրվա նորությունները <ph name="NEWS_ICON" /></translation>
 <translation id="311958134571892113">կապված է հետևյալ քարտի հետ՝</translation>
 <translation id="3123734510202723619">Հայտարարություններ</translation>
-<translation id="3130863904455712965">Պատմություն և այլ տվյալներ</translation>
 <translation id="3134784203083076891">»</translation>
 <translation id="314939179385989105">Chrome-ի գլխավոր էջ</translation>
 <translation id="3157931365184549694">Վերականգնել</translation>
@@ -454,6 +450,7 @@
 <translation id="3421726884497337397">Ընտրեք, թե երբ պետք է կողմնակի քուքիները արգելափակվեն</translation>
 <translation id="3428747202529429621">Ապահովում է ձեր անվտանգությունը Chrome-ում և Google հավելվածներում, երբ մտել եք ձեր հաշիվ</translation>
 <translation id="3429160811076349561">Փորձնական գործառույթներն անջատված են</translation>
+<translation id="3432973700170747422">Ջնջել վերջին 15 րոպեն</translation>
 <translation id="3435465986463792564">Շատ պատուհաննե՞ր եք բացել։ Դրանք կարող եք կառավարել այստեղ</translation>
 <translation id="3435738964857648380">Անվտանգություն</translation>
 <translation id="3443221991560634068">Վերաբեռնել ընթացիկ էջը</translation>
@@ -520,7 +517,6 @@
 <translation id="3830886834687455630">Թարմացրեք Google Play ծառայությունները՝ ձեր գաղտնաբառերը ստուգելու համար</translation>
 <translation id="3845098929839618392">Բացել ինկոգնիտո ներդիրում</translation>
 <translation id="3856096718352044181">Հաստատեք, որ սա վավեր մատակարար է կամ նորից փորձեք</translation>
-<translation id="3858127568696903256">Այստեղ դիտեք բովանդակությունը, որին հետևում եք</translation>
 <translation id="3858860766373142691">Անուն</translation>
 <translation id="3861633093716975811">Հաճախ դիտվող տեսանյութեր</translation>
 <translation id="3874520961715512166">Կայքը հեռացվեց</translation>
@@ -629,7 +625,6 @@
 <translation id="4452411734226507615">Փակել <ph name="TAB_TITLE" /> ներդիրը</translation>
 <translation id="4452548195519783679">Էջանիշը պահվել է <ph name="FOLDER_NAME" />-ում</translation>
 <translation id="4461614516424362539">Դուք կարող եք օգտագործել այս հեռախոսը որպես անվտանգության բանալի սարքերում, որոնք կապված են QR կոդի միջոցով։ Եթե սարքը հեռացնեք կապվածների ցանկից, անհրաժեշտ կլինի այնտեղ նորից սկանավորել QR կոդը։</translation>
-<translation id="4479839115899251637">Ջնջել ընթերցանության ցանկից</translation>
 <translation id="4479972344484327217">«<ph name="MODULE" />» բաղադրիչը տեղադրվում է Chrome-ի համար…</translation>
 <translation id="4484496141267039529">Կապ չկա։ Փորձեք ավելի ուշ։</translation>
 <translation id="4487967297491345095">Chrome հավելվածի բոլոր տվյալներն ընդմիշտ կջնջվեն, ներառյալ` բոլոր ֆայլերը, կարգավորումները, հաշիվները, տվյալների շտեմարանները և այլն:</translation>
@@ -924,10 +919,12 @@
 <translation id="6000203700195075278">Նորից բաժանորդագրվել</translation>
 <translation id="6002122790816966947">Ձեր սարքերը</translation>
 <translation id="6005538289190791541">Առաջարկվող գաղտնաբառ</translation>
+<translation id="6011308810877101166">Բարելավել որոնման առաջարկները</translation>
 <translation id="6039379616847168523">Անցնել հաջորդ ներդիր</translation>
 <translation id="6040143037577758943">Փակել</translation>
 <translation id="604124094241169006">Ավտոմատ</translation>
 <translation id="6042308850641462728">Ավելին</translation>
+<translation id="6049046116080614938">Դուք մուտք եք գործել որպես <ph name="USER_NAME" />։ <ph name="USER_EMAIL" />։ Կոճակ։ Բացել կարգավորումները։</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ անհայտ սխալի պատճառով:</translation>
 <translation id="605721222689873409">տարի</translation>
 <translation id="6059830886158432458">Կառավարեք ձեր պատմություններն ու գործողություններն այստեղ</translation>
@@ -990,7 +987,6 @@
 <translation id="6397616442223433927">Կապը վերականգնվեց</translation>
 <translation id="6401458660421980302">Այս ներդիրը մեկ այլ սարք ուղարկելու համար մուտք գործեք Chrome այդ սարքում</translation>
 <translation id="6402652558933147609"><ph name="ERROR_CODE" />՝ <ph name="VIOLATED_URL" /> էջում</translation>
-<translation id="6403371459378431832">Համաժամացրեք ձեր տվյալները բոլոր սարքերում</translation>
 <translation id="6404511346730675251">Փոփոխել էջանիշը</translation>
 <translation id="6406506848690869874">Համաժամացում</translation>
 <translation id="6407224748847589805">Չհաջողվեց միանալ ձեր համակարգչին։ Ընտրեք հաստատման այլ տարբերակ։</translation>
@@ -1247,7 +1243,6 @@
 <translation id="7686086654630106285">Կայքերի կողմից առաջարկվող գովազդների մասին</translation>
 <translation id="768618399695552958">Ձեր կողմից այցելվող որոշ էջեր նախապես են բեռնվում։ Եթե հղումը կատարվում է Google-ի որևէ կայքից, նախաբեռնումը կարող է կատարվել Google-ի սերվերների միջոցով։</translation>
 <translation id="7698359219371678927">Ստեղծեք նամակ <ph name="APP_NAME" /> հավելվածում</translation>
-<translation id="7704317875155739195">Ավտոմատ լրացնել որոնման հարցումները և URL-ները</translation>
 <translation id="7707922173985738739">Օգտագործել բջջային ինտերնետ</translation>
 <translation id="7709094866268987903">Այստեղ կհայտնվեն ձեր հեռացրած հետաքրքրությունները</translation>
 <translation id="7709918231054955894">Դիտեք ձեր բոլոր ներդիրները</translation>
@@ -1302,6 +1297,7 @@
 <translation id="7968014550143838305">Ավելացվեց ընթերցանության ցանկում</translation>
 <translation id="7971136598759319605">Ակտիվ է եղել 1 օր առաջ</translation>
 <translation id="7975379999046275268">Նախադիտել էջը <ph name="BEGIN_NEW" />Նոր<ph name="END_NEW" /></translation>
+<translation id="7981085434646346979">Դուք մուտք եք գործել որպես <ph name="USER_NAME" />։ Կոճակ։ Բացել կարգավորումները։</translation>
 <translation id="7986497153528221272">Գաղտնաբառերը դիտելու համար նախ ձեր սարքում կարգավորեք էկրանի կողպումը</translation>
 <translation id="7995059495660416932">Բովանդակությունը կցուցադրվի, երբ հասանելի դառնա</translation>
 <translation id="799576009106109668">Դուք ավելի արագ կդիտեք վեբ էջերը, քանի որ բովանդակությունը նախապես բեռնվում է՝ ընթացիկ բացված վեբ էջի հիման վրա</translation>
@@ -1319,7 +1315,6 @@
 <translation id="8037801708772278989">Ստուգվել է հենց նոր</translation>
 <translation id="804335162455518893">SD քարտը չհաջողվեց գտնել</translation>
 <translation id="8048533522416101084">{TAB_COUNT,plural, =1{<ph name="TAB_COUNT_ONE" /> ինկոգնիտո ներդիր}one{<ph name="TAB_COUNT_NORMAL" /> ինկոգնիտո ներդիր}other{<ph name="TAB_COUNT_NORMAL" /> ինկոգնիտո ներդիր}}</translation>
-<translation id="8048728378294435881">Պահուստավորեք ձեր տվյալները և օգտագործեք դրանք ցանկացած սարքում</translation>
 <translation id="8051695050440594747">Հասանելի է <ph name="MEGABYTES" /> ՄԲ</translation>
 <translation id="8058655154417507695">Ժամկետի սպառման տարեթիվը</translation>
 <translation id="8058746566562539958">Բացել Chrome-ի նոր ներդիրում</translation>
@@ -1453,6 +1448,7 @@
 <translation id="8746155870861185046">Կիսվել ընդգծված տեքստով</translation>
 <translation id="8748850008226585750">Բովանդակությունը թաքցված է</translation>
 <translation id="8756969031206844760">Թարմացնե՞լ գաղտնաբառը</translation>
+<translation id="8765470054473112089">Երբ դուք տեքստ եք մուտքագրում հասցեագոտում կամ որոնման դաշտում, Chrome-ը ձեր հարցումն ուղարկում է կանխադրված որոնողական համակարգին՝ ավելի լավ առաջարկներ ստանալու համար։ Այս գործառույթն անջատված է ինկոգնիտո ռեժիմում։</translation>
 <translation id="8766529642647037772">Ստեղծե՞լ այս հղման նման ընդգծված հղում</translation>
 <translation id="8773160212632396039">Հարցումը մշակվում է</translation>
 <translation id="8788265440806329501">Նավիգացիայի պատմության թերթը փակված է</translation>
@@ -1492,7 +1488,6 @@
 <translation id="8955719471735800169">Հետ դեպի վերև</translation>
 <translation id="8964479563882643397">Նոր ինկոգնիտո ներդիր բացելու համար բացեք ընտրացանկը</translation>
 <translation id="8965591936373831584">սպասում է</translation>
-<translation id="8967427617812342790">Ավելացնել ընթերցանության ցանկում</translation>
 <translation id="8968085728801125376">{TAB_COUNT,plural, =1{<ph name="INCOGNITO_TAB_COUNT" /> ինկոգնիտո և <ph name="TAB_COUNT_ONE" /> այլ ներդիր կփակվեն}one{<ph name="INCOGNITO_TAB_COUNT" /> ինկոգնիտո և <ph name="TAB_COUNT_MANY" /> այլ ներդիր կփակվեն}other{<ph name="INCOGNITO_TAB_COUNT" /> ինկոգնիտո և <ph name="TAB_COUNT_MANY" /> այլ ներդիրներ կփակվեն}}</translation>
 <translation id="8970887620466824814">Սխալ առաջացավ:</translation>
 <translation id="8972098258593396643">Ներբեռնե՞լ կանխադրված պանակ</translation>

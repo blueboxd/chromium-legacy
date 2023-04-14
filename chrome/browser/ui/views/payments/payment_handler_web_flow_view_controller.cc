@@ -129,7 +129,7 @@ class ReadOnlyOriginView : public views::View {
       origin_label->SetID(static_cast<int>(DialogViewID::SHEET_TITLE));
 
       // Pad to keep header as the same height as when the page title is valid.
-      constexpr int kVerticalPadding = 10;
+      constexpr int kVerticalPadding = 13;
       origin_label->SetBorder(views::CreateEmptyBorder(
           gfx::Insets::TLBR(kVerticalPadding, 0, kVerticalPadding, 0)));
     }
@@ -275,14 +275,11 @@ void PaymentHandlerWebFlowViewController::FillContentView(
 
   // The webview must get an explicitly set height otherwise the layout doesn't
   // make it fill its container. This is likely because it has no content at the
-  // time of first layout (nothing has loaded yet). Because of this, set it to.
+  // time of first layout (nothing has loaded yet). Because of this, set it to
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
-  //
-  // TODO(crbug.com/1385136): Correct this for the experimental minimal header
-  // UX (currently it leaves a gap at the bottom of the dialog).
-  web_view->SetPreferredSize(
-      gfx::Size(0, dialog()->GetActualPaymentHandlerDialogHeight() - 75));
+  web_view->SetPreferredSize(gfx::Size(
+      0, dialog()->GetActualPaymentHandlerDialogHeight() - GetHeaderHeight()));
 }
 
 bool PaymentHandlerWebFlowViewController::ShouldShowPrimaryButton() {
@@ -309,6 +306,7 @@ void PaymentHandlerWebFlowViewController::PopulateSheetHeaderView(
   // | ICON |          origin          | CLOSE |
   // +-----------------------------------------+
 
+  container->SetID(static_cast<int>(DialogViewID::PAYMENT_APP_HEADER));
   container->SetBackground(GetHeaderBackground(container));
   constexpr int kVerticalInset = 8;
   constexpr int kHeaderHorizontalInset = 16;
@@ -321,13 +319,17 @@ void PaymentHandlerWebFlowViewController::PopulateSheetHeaderView(
 
   // Icon column.
   const SkBitmap* icon_bitmap = state()->selected_app()->icon_bitmap();
-  // TODO(crbug.com/1385136): Handle missing/empty/rectangular icons.
-  DCHECK(icon_bitmap && !icon_bitmap->drawsNothing());
-  layout->AddColumn(
-      views::LayoutAlignment::kStart, views::LayoutAlignment::kCenter,
-      views::TableLayout::kFixedSize, views::TableLayout::ColumnSize::kFixed,
-      /*fixed_width=*/32,
-      /*min_width=*/0);
+  const bool has_icon = icon_bitmap && !icon_bitmap->drawsNothing();
+  constexpr int kHeaderIconWidth = 32;
+  if (has_icon) {
+    layout->AddColumn(views::LayoutAlignment::kStart,
+                      views::LayoutAlignment::kCenter,
+                      views::TableLayout::kFixedSize,
+                      views::TableLayout::ColumnSize::kFixed, kHeaderIconWidth,
+                      /*min_width=*/0);
+  } else {
+    layout->AddPaddingColumn(views::TableLayout::kFixedSize, kHeaderIconWidth);
+  }
 
   // Origin column.
   layout->AddColumn(
@@ -350,19 +352,20 @@ void PaymentHandlerWebFlowViewController::PopulateSheetHeaderView(
   //
   // We should set image size in density independent pixels here, since
   // views::ImageView objects are rastered at the device scale factor.
-  views::ImageView* app_icon_view = container->AddChildView(CreateAppIconView(
-      /*icon_resource_id=*/0, icon_bitmap,
-      // TODO(crbug.com/1385136): Determine correct text (used for both tooltip
-      // and screen reader).
-      /*tooltip_text=*/GetPaymentHandlerDialogTitle(web_contents())));
-  app_icon_view->SetID(static_cast<int>(DialogViewID::PAYMENT_APP_HEADER_ICON));
-  float adjusted_width =
-      base::checked_cast<float>(icon_bitmap->width()) *
-      (IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
-       icon_bitmap->height());
-  app_icon_view->SetImageSize(gfx::Size(
-      adjusted_width,
-      IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
+  if (has_icon) {
+    views::ImageView* app_icon_view = container->AddChildView(CreateAppIconView(
+        /*icon_resource_id=*/0, icon_bitmap,
+        /*tooltip_text=*/l10n_util::GetStringUTF16(IDS_PAYMENT_HANDLER_ICON)));
+    app_icon_view->SetID(
+        static_cast<int>(DialogViewID::PAYMENT_APP_HEADER_ICON));
+    float adjusted_width =
+        base::checked_cast<float>(icon_bitmap->width()) *
+        (IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
+         icon_bitmap->height());
+    app_icon_view->SetImageSize(gfx::Size(
+        adjusted_width,
+        IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight));
+  }
 
   // Add the origin label.
   const url::Origin origin =
@@ -426,6 +429,12 @@ bool PaymentHandlerWebFlowViewController::GetSheetId(DialogViewID* sheet_id) {
 
 bool PaymentHandlerWebFlowViewController::
     DisplayDynamicBorderForHiddenContents() {
+  return false;
+}
+
+bool PaymentHandlerWebFlowViewController::CanContentViewBeScrollable() {
+  // The web contents is set to a constant size and will render its own
+  // scrollbar if necessary.
   return false;
 }
 

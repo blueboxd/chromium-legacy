@@ -19,7 +19,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/authentication/views/views_constants.h"
-#import "ios/chrome/browser/ui/first_run/field_trial_constants.h"
 #import "ios/chrome/browser/ui/first_run/first_run_app_interface.h"
 #import "ios/chrome/browser/ui/first_run/first_run_constants.h"
 #import "ios/chrome/browser/ui/settings/google_services/google_services_settings_constants.h"
@@ -312,7 +311,7 @@ void OpenGoogleServicesSettings() {
       waitForMatcher:grey_accessibilityID(kFakeAuthActivityViewIdentifier)];
   // Close the SSO view controller.
   id<GREYMatcher> matcher =
-      grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(@"Cancel"),
+      grey_allOf(grey_accessibilityID(kFakeAuthCancelButtonIdentifier),
                  grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:matcher] performAction:grey_tap()];
   // Make sure the SSO view controller is fully removed before ending the test.

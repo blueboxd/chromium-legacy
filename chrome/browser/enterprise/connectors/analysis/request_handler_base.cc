@@ -17,7 +17,7 @@ RequestHandlerBase::RequestHandlerBase(
     const std::string& user_action_id,
     uint64_t user_action_requests_count,
     safe_browsing::DeepScanAccessPoint access_point)
-    : upload_service_(upload_service ? upload_service->AsWeakPtr() : nullptr),
+    : upload_service_(upload_service),
       profile_(profile),
       analysis_settings_(analysis_settings),
       url_(url),
@@ -72,7 +72,7 @@ void RequestHandlerBase::PrepareRequest(
 
 safe_browsing::BinaryUploadService*
 RequestHandlerBase::GetBinaryUploadService() {
-  return upload_service_.get();
+  return upload_service_;
 }
 
 }  // namespace enterprise_connectors

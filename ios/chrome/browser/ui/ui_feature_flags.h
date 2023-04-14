@@ -49,6 +49,12 @@ BASE_DECLARE_FEATURE(kDefaultBrowserFullscreenPromoExperiment);
 // Feature flag that allows external apps to show default browser settings.
 BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 
+// Feature flag to use the new Edit menu API for browser view.
+BASE_DECLARE_FEATURE(kIOSCustomBrowserEditMenu);
+
+// Feature flag to enable partial translate in the edit menu.
+BASE_DECLARE_FEATURE(kIOSEditMenuPartialTranslate);
+
 // Feature flag that shows iOS 15 context menu, instead of tooltip popover,
 // during a location bar long press gesture.
 BASE_DECLARE_FEATURE(kIOSLocationBarUseNativeContextMenu);
@@ -58,10 +64,6 @@ BASE_DECLARE_FEATURE(kIOSNewOmniboxImplementation);
 
 // Feature flag that removes the crash infobar.
 BASE_DECLARE_FEATURE(kRemoveCrashInfobar);
-
-// Feature flag to enable removing any entry points to the history UI from
-// Incognito mode.
-BASE_DECLARE_FEATURE(kUpdateHistoryEntryPointsInIncognito);
 
 // Feature flag to enable using Lens to search for images.
 BASE_DECLARE_FEATURE(kUseLensToSearchForImage);
@@ -100,12 +102,6 @@ BASE_DECLARE_FEATURE(kCalendarExperienceKit);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
-// Feature flag to enable Emails detection.
-BASE_DECLARE_FEATURE(kEnableEmails);
-
-// Feature flag to enable Phone Numbers detection.
-BASE_DECLARE_FEATURE(kEnablePhoneNumbers);
-
 // Parameter name for the parameter controlling whether or not experience kit
 // maps should be enabled in search result pages or not.
 extern const char kExperienceKitMapsVariationName[];
@@ -122,16 +118,10 @@ BASE_DECLARE_FEATURE(kEnableMiniMap);
 // When enabled sort tab by last usage in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridRecencySort);
 
-// Feature to enable multiline gradient support in fade truncating label.
-BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
-
-// Flag to enable accessibility identifier to omnibox leading image.
-BASE_DECLARE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage);
-
-// Flag to enable tab strip context menu.
-BASE_DECLARE_FEATURE(kTabStripContextMenu);
-
 // Whether the tab grid tabs should be sorted by recency.
 bool IsTabGridSortedByRecency();
+
+// Feature to enable multiline gradient support in fade truncating label.
+BASE_DECLARE_FEATURE(kMultilineFadeTruncatingLabel);
 
 #endif  // IOS_CHROME_BROWSER_UI_UI_FEATURE_FLAGS_H_

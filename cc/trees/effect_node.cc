@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "cc/trees/effect_node.h"
+
 #include "base/notreached.h"
 #include "base/trace_event/traced_value.h"
+#include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/trees/property_tree.h"
 
@@ -226,6 +228,14 @@ void EffectNode::AsValueInto(base::trace_event::TracedValue* value) const {
                     closest_ancestor_with_copy_request_id);
   value->SetInteger("closest_ancestor_being_captured_id",
                     closest_ancestor_being_captured_id);
+  if (view_transition_shared_element_id.valid()) {
+    value->SetString("view_transition_shared_element_id",
+                     view_transition_shared_element_id.ToString());
+  }
+  if (view_transition_element_resource_id.IsValid()) {
+    value->SetInteger("view_transition_element_resource_id",
+                      view_transition_element_resource_id.id());
+  }
 }
 
 }  // namespace cc

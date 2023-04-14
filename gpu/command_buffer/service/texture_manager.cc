@@ -735,19 +735,7 @@ MemoryTypeTracker* Texture::GetMemTracker() {
   }
 }
 
-Texture::LevelInfo::LevelInfo()
-    : target(0),
-      level(-1),
-      internal_format(0),
-      width(0),
-      height(0),
-      depth(0),
-      border(0),
-      format(0),
-      type(0),
-      image_state(UNBOUND),
-      estimated_size(0),
-      internal_workaround(false) {}
+Texture::LevelInfo::LevelInfo() = default;
 
 Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
     : cleared_rect(rhs.cleared_rect),
@@ -761,9 +749,9 @@ Texture::LevelInfo::LevelInfo(const LevelInfo& rhs)
       format(rhs.format),
       type(rhs.type),
       image(rhs.image),
-      image_state(rhs.image_state),
       estimated_size(rhs.estimated_size),
-      internal_workaround(rhs.internal_workaround) {}
+      internal_workaround(rhs.internal_workaround),
+      image_state(rhs.image_state) {}
 
 Texture::LevelInfo::~LevelInfo() = default;
 
@@ -1333,7 +1321,7 @@ void Texture::SetLevelInfo(GLenum target,
   info.format = format;
   info.type = type;
   info.image.reset();
-  info.image_state = UNBOUND;
+  info.image_state = NOIMAGE;
   info.internal_workaround = false;
 
   UpdateMipCleared(&info, width, height, cleared_rect);
@@ -1881,6 +1869,8 @@ void Texture::SetLevelImageInternal(GLenum target,
                                     GLint level,
                                     gl::GLImage* image,
                                     ImageState state) {
+  DCHECK(image ? state != ImageState::NOIMAGE : state == ImageState::NOIMAGE);
+
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(face_index, face_infos_.size());
@@ -1896,12 +1886,25 @@ void Texture::SetLevelImageInternal(GLenum target,
   UpdateHasImages();
 }
 
-void Texture::SetLevelImage(GLenum target,
-                            GLint level,
-                            gl::GLImage* image,
-                            ImageState state) {
+void Texture::SetBoundLevelImage(GLenum target,
+                                 GLint level,
+                                 gl::GLImage* image) {
   SetStreamTextureServiceId(0);
-  SetLevelImageInternal(target, level, image, state);
+  SetLevelImageInternal(target, level, image, ImageState::BOUND);
+}
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
+void Texture::SetUnboundLevelImage(GLenum target,
+                                   GLint level,
+                                   gl::GLImage* image) {
+  SetStreamTextureServiceId(0);
+  SetLevelImageInternal(target, level, image, ImageState::UNBOUND);
+}
+#endif
+
+void Texture::UnsetLevelImage(GLenum target, GLint level) {
+  SetStreamTextureServiceId(0);
+  SetLevelImageInternal(target, level, nullptr, ImageState::NOIMAGE);
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1911,7 +1914,8 @@ void Texture::BindToServiceId(GLuint service_id) {
 }
 #endif
 
-void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+void Texture::MarkLevelImageBound(GLenum target, GLint level) {
   DCHECK_GE(level, 0);
   size_t face_index = GLES2Util::GLTargetToFaceIndex(target);
   DCHECK_LT(face_index, face_infos_.size());
@@ -1920,8 +1924,9 @@ void Texture::SetLevelImageState(GLenum target, GLint level, ImageState state) {
   Texture::LevelInfo& info = face_infos_[face_index].level_infos[level];
   DCHECK_EQ(info.target, target);
   DCHECK_EQ(info.level, level);
-  info.image_state = state;
+  info.image_state = ImageState::BOUND;
 }
+#endif
 
 const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
                                                 GLint level) const {
@@ -1940,21 +1945,30 @@ const Texture::LevelInfo* Texture::GetLevelInfo(GLint target,
   return nullptr;
 }
 
-gl::GLImage* Texture::GetLevelImage(GLint target,
-                                    GLint level,
-                                    ImageState* state) const {
+gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
   const LevelInfo* info = GetLevelInfo(target, level);
   if (!info)
     return nullptr;
 
-  if (state)
-    *state = info->image_state;
   return info->image.get();
 }
 
-gl::GLImage* Texture::GetLevelImage(GLint target, GLint level) const {
-  return GetLevelImage(target, level, nullptr);
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+bool Texture::HasUnboundLevelImage(GLint target, GLint level) const {
+  const LevelInfo* info = GetLevelInfo(target, level);
+  if (!info) {
+    return false;
+  }
+
+  if (!info->image.get()) {
+    DCHECK(info->image_state == ImageState::NOIMAGE);
+    return false;
+  }
+
+  DCHECK(info->image_state != ImageState::NOIMAGE);
+  return info->image_state == ImageState::UNBOUND;
 }
+#endif
 
 void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
                               uint64_t client_tracing_id,
@@ -2586,13 +2600,29 @@ GLsizei TextureManager::ComputeMipMapCount(GLenum target,
   }
 }
 
-void TextureManager::SetLevelImage(TextureRef* ref,
-                                   GLenum target,
-                                   GLint level,
-                                   gl::GLImage* image,
-                                   Texture::ImageState state) {
+void TextureManager::SetBoundLevelImage(TextureRef* ref,
+                                        GLenum target,
+                                        GLint level,
+                                        gl::GLImage* image) {
   DCHECK(ref);
-  ref->texture()->SetLevelImage(target, level, image, state);
+  ref->texture()->SetBoundLevelImage(target, level, image);
+}
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
+void TextureManager::SetUnboundLevelImage(TextureRef* ref,
+                                          GLenum target,
+                                          GLint level,
+                                          gl::GLImage* image) {
+  DCHECK(ref);
+  ref->texture()->SetUnboundLevelImage(target, level, image);
+}
+#endif
+
+void TextureManager::UnsetLevelImage(TextureRef* ref,
+                                     GLenum target,
+                                     GLint level) {
+  DCHECK(ref);
+  ref->texture()->UnsetLevelImage(target, level);
 }
 
 size_t TextureManager::GetSignatureSize() const {

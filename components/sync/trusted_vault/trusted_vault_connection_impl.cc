@@ -16,6 +16,7 @@
 #include "components/sync/trusted_vault/proto_string_bytes_conversion.h"
 #include "components/sync/trusted_vault/securebox.h"
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
+#include "components/sync/trusted_vault/trusted_vault_connection.h"
 #include "components/sync/trusted_vault/trusted_vault_crypto.h"
 #include "components/sync/trusted_vault/trusted_vault_request.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
@@ -155,14 +156,29 @@ void ProcessJoinSecurityDomainsResponse(
     case TrustedVaultRequest::HttpStatus::kSuccess:
     case TrustedVaultRequest::HttpStatus::kConflict:
       break;
+    case TrustedVaultRequest::HttpStatus::kNetworkError:
+      std::move(callback).Run(TrustedVaultRegistrationStatus::kNetworkError,
+                              /*last_key_version=*/0);
+      return;
     case TrustedVaultRequest::HttpStatus::kOtherError:
       std::move(callback).Run(TrustedVaultRegistrationStatus::kOtherError,
                               /*last_key_version=*/0);
       return;
-    case TrustedVaultRequest::HttpStatus::kAccessTokenFetchingFailure:
+    case TrustedVaultRequest::HttpStatus::kTransientAccessTokenFetchError:
       std::move(callback).Run(
-          TrustedVaultRegistrationStatus::kAccessTokenFetchingFailure,
+          TrustedVaultRegistrationStatus::kTransientAccessTokenFetchError,
           /*last_key_version=*/0);
+      return;
+    case TrustedVaultRequest::HttpStatus::kPersistentAccessTokenFetchError:
+      std::move(callback).Run(
+          TrustedVaultRegistrationStatus::kPersistentAccessTokenFetchError,
+          /*last_key_version=*/0);
+      return;
+    case TrustedVaultRequest::HttpStatus::
+        kPrimaryAccountChangeAccessTokenFetchError:
+      std::move(callback).Run(TrustedVaultRegistrationStatus::
+                                  kPrimaryAccountChangeAccessTokenFetchError,
+                              /*last_key_version=*/0);
       return;
     case TrustedVaultRequest::HttpStatus::kNotFound:
     case TrustedVaultRequest::HttpStatus::kBadRequest:
@@ -217,11 +233,15 @@ void ProcessDownloadIsRecoverabilityDegradedResponse(
   switch (http_status) {
     case TrustedVaultRequest::HttpStatus::kSuccess:
       break;
+    case TrustedVaultRequest::HttpStatus::kNetworkError:
     case TrustedVaultRequest::HttpStatus::kOtherError:
     case TrustedVaultRequest::HttpStatus::kNotFound:
     case TrustedVaultRequest::HttpStatus::kBadRequest:
     case TrustedVaultRequest::HttpStatus::kConflict:
-    case TrustedVaultRequest::HttpStatus::kAccessTokenFetchingFailure:
+    case TrustedVaultRequest::HttpStatus::kTransientAccessTokenFetchError:
+    case TrustedVaultRequest::HttpStatus::kPersistentAccessTokenFetchError:
+    case TrustedVaultRequest::HttpStatus::
+        kPrimaryAccountChangeAccessTokenFetchError:
       std::move(callback).Run(TrustedVaultRecoverabilityStatus::kError);
       return;
   }

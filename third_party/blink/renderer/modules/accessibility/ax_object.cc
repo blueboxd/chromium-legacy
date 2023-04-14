@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/events/simulated_click_options.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -62,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
@@ -1487,7 +1489,8 @@ void AXObject::SerializeElementAttributes(ui::AXNodeData* node_data) {
   // Expose StringAttribute::kRole, which is used for the xml-roles object
   // attribute. Prefer the raw ARIA role attribute value, otherwise, the ARIA
   // equivalent role is used, if it is a role that is exposed in xml-roles.
-  const AtomicString& role_str = GetRoleAttributeStringForObjectAttribute();
+  const AtomicString& role_str =
+      GetRoleAttributeStringForObjectAttribute(node_data);
   TruncateAndAddStringAttribute(
       node_data, ax::mojom::blink::StringAttribute::kRole, role_str);
 }
@@ -2244,6 +2247,16 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
     }
   }
 
+  // See if we need to add aria-details for a popover invoker.
+  if (!node_data->HasIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kDetailsIds)) {
+    if (AXObject* popover = GetTargetPopoverForInvoker()) {
+      node_data->AddIntListAttribute(
+          ax::mojom::blink::IntListAttribute::kDetailsIds,
+          {static_cast<int32_t>(popover->AXObjectID())});
+    }
+  }
+
   // Try to get an aria-controls listbox for an <input role="combobox">.
   if (!node_data->HasIntListAttribute(
           ax::mojom::blink::IntListAttribute::kControlsIds)) {
@@ -2265,6 +2278,25 @@ void AXObject::SerializeUnignoredAttributes(ui::AXNodeData* node_data,
       SerializeHTMLAttributes(node_data);
     }
   }
+}
+
+// Popover invoking elements should have details relationships with their
+// target popover, when that popover is a) open, and b) not the next element
+// in the DOM (depth first search order).
+AXObject* AXObject::GetTargetPopoverForInvoker() {
+  auto* form_element = DynamicTo<HTMLFormControlElement>(GetElement());
+  if (!form_element) {
+    return nullptr;
+  }
+  HTMLElement* target_popover = form_element->popoverTargetElement().popover;
+  if (!target_popover || !target_popover->popoverOpen()) {
+    return nullptr;
+  }
+  if (ElementTraversal::NextSkippingChildren(*form_element) == target_popover) {
+    // The next element is already the popover.
+    return nullptr;
+  }
+  return AXObjectCache().GetOrCreate(target_popover);
 }
 
 // Try to get an aria-controls for an <input role="combobox">, because it
@@ -2331,25 +2363,25 @@ AXObject* AXObject::GetControlsListboxForTextfieldCombobox() {
   return listbox_candidate;
 }
 
-const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute() {
+const AtomicString& AXObject::GetRoleAttributeStringForObjectAttribute(
+    ui::AXNodeData* node_data) {
   // All ARIA roles are exposed in xml-roles.
   if (const AtomicString& role_str =
           GetAOMPropertyOrARIAAttribute(AOMStringProperty::kRole)) {
     return role_str;
   }
 
-  ax::mojom::blink::Role landmark_role = RoleValue();
+  ax::mojom::blink::Role landmark_role = node_data->role;
   if (landmark_role == ax::mojom::blink::Role::kFooter) {
     // - Treat <footer> as "contentinfo" in xml-roles object attribute.
     landmark_role = ax::mojom::blink::Role::kContentInfo;
   } else if (landmark_role == ax::mojom::blink::Role::kHeader) {
     // - Treat <header> as "banner" in xml-roles object attribute.
     landmark_role = ax::mojom::blink::Role::kBanner;
-  } else if (!ui::IsLandmark(RoleValue())) {
+  } else if (!ui::IsLandmark(node_data->role)) {
     // Landmarks are the only roles exposed in xml-roles, matching Firefox.
     return g_null_atom;
   }
-
   return ARIARoleName(landmark_role);
 }
 
@@ -2424,8 +2456,9 @@ ax::mojom::blink::Role AXObject::ComputeFinalRoleForSerialization() const {
   // AXLayoutObject::RoleFromLayoutObjectOrNode is called, that node's
   // accessible children have not been calculated. Rather than force calculation
   // there, wait until we have the full tree.
-  if (role_ == ax::mojom::blink::Role::kSvgRoot && !UnignoredChildCount())
+  if (role_ == ax::mojom::blink::Role::kSvgRoot && !UnignoredChildCount()) {
     return ax::mojom::blink::Role::kImage;
+  }
 
   // DPUB ARIA 1.1 deprecated doc-biblioentry and doc-endnote, but it's still
   // possible to create these internal roles / platform mappings with a listitem
@@ -2448,6 +2481,28 @@ ax::mojom::blink::Role AXObject::ComputeFinalRoleForSerialization() const {
         if (ancestor_role == ax::mojom::blink::Role::kDocEndnotes)
           return ax::mojom::blink::Role::kDocEndnote;
       }
+    }
+  }
+
+  if (role_ == ax::mojom::blink::Role::kHeader) {
+    if (IsDescendantOfLandmarkDisallowedElement()) {
+      return ax::mojom::blink::Role::kHeaderAsNonLandmark;
+    }
+  }
+
+  if (role_ == ax::mojom::blink::Role::kFooter) {
+    if (IsDescendantOfLandmarkDisallowedElement()) {
+      return ax::mojom::blink::Role::kFooterAsNonLandmark;
+    }
+  }
+
+  // An <aside> element should not be considered a landmark region
+  // if it is a child of a landmark disallowed element, UNLESS it has
+  // an accessible name.
+  if (role_ == ax::mojom::blink::Role::kComplementary) {
+    if (IsDescendantOfLandmarkDisallowedElement() &&
+        !IsNameFromAuthorAttribute()) {
+      return ax::mojom::blink::Role::kGenericContainer;
     }
   }
 
@@ -2782,6 +2837,10 @@ bool AXObject::AccessibilityIsIgnored() const {
         << "\nThe Detach() method sets cached_is_ignored_ to true, but "
            "something has recomputed it.";
   }
+  if (!cached_is_ignored_ && IsA<Document>(GetNode()) && CachedParentObject() &&
+      CachedParentObject()->IsMenuList()) {
+    NOTREACHED() << "The menulist popup's document must be ignored.";
+  }
 #endif
   return cached_is_ignored_;
 }
@@ -2833,7 +2892,7 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
 
   const ComputedStyle* style = GetComputedStyle();
 
-  cached_is_hidden_via_style = ComputeIsHiddenViaStyle(style);
+  cached_is_hidden_via_style_ = ComputeIsHiddenViaStyle(style);
 
   // Decisions in what subtree descendants are included (each descendant's
   // cached children_) depends on the ARIA hidden state. When it changes,
@@ -2878,6 +2937,20 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
     SetNeedsToUpdateChildren();
   }
 
+  // Call children changed on included ancestor.
+  // This must be called before cached_is_ignored_* are updated, otherwise a
+  // performance optimization depending on LastKnownIsIncludedInTreeValue()
+  // may misfire.
+  if (included_in_tree_changed) {
+    if (AXObject* parent = CachedParentObject()) {
+      // Defers a ChildrenChanged() on the first included ancestor.
+      // Must defer it, otherwise it can cause reentry into
+      // UpdateCachedAttributeValuesIfNeeded() on |this|.
+      // ParentObjectUnignored()->SetNeedsToUpdateChildren();
+      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
+    }
+  }
+
   cached_is_ignored_ = is_ignored;
   cached_is_ignored_but_included_in_tree_ = is_ignored_but_included_in_tree;
   // Compute live region root, which can be from any ARIA live value, including
@@ -2898,45 +2971,70 @@ void AXObject::UpdateCachedAttributeValuesIfNeeded(
   cached_aria_column_index_ = ComputeAriaColumnIndex();
   cached_aria_row_index_ = ComputeAriaRowIndex();
 
-  if (included_in_tree_changed) {
-    if (AXObject* parent = CachedParentObject()) {
-      // Defers a ChildrenChanged() on the first included ancestor.
-      // Must defer it, otherwise it can cause reentry into
-      // UpdateCachedAttributeValuesIfNeeded() on |this|.
-      AXObjectCache().ChildrenChangedOnAncestorOf(const_cast<AXObject*>(this));
-    }
-  }
-
   if (GetLayoutObject() && GetLayoutObject()->IsText()) {
     cached_local_bounding_box_rect_for_accessibility_ =
         GetLayoutObject()->LocalBoundingBoxRectForAccessibility();
   }
 }
 
-bool AXObject::AccessibilityIsIgnoredByDefault(
+bool AXObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
-  return DefaultObjectInclusion(ignored_reasons) == kIgnoreObject;
+  return ShouldIgnoreForHiddenOrInert(ignored_reasons);
 }
 
-AXObjectInclusion AXObject::DefaultObjectInclusion(
+bool AXObject::ShouldIgnoreForHiddenOrInert(
     IgnoredReasons* ignored_reasons) const {
-  if (IsAriaHidden()) {
+  DCHECK(AXObjectCache().ModificationCount() == last_modification_count_)
+      << "Hidden values must be computed before ignored.";
+
+  // All nodes must have an unignored parent within their tree under
+  // the root node of the web area, so force that node to always be unignored.
+  if (IsA<Document>(GetNode())) {
+    return false;
+  }
+
+  if (cached_is_aria_hidden_) {
     // Keep keyboard focusable elements that are aria-hidden in tree, so that
     // they can still fire events such as focus and value changes.
     if (!IsKeyboardFocusable()) {
       if (ignored_reasons)
         ComputeIsAriaHidden(ignored_reasons);
-      return kIgnoreObject;
+      return true;
     }
   }
 
-  if (IsInert()) {
-    if (ignored_reasons)
+  if (cached_is_inert_) {
+    if (ignored_reasons) {
       ComputeIsInert(ignored_reasons);
-    return kIgnoreObject;
+    }
+    return true;
   }
 
-  return kDefaultBehavior;
+  // aria-hidden=false is meant to override visibility as the determinant in
+  // AX hierarchy inclusion, but only for the element it is specified, and not
+  // the entire subtree. See https://w3c.github.io/aria/#aria-hidden.
+  if (AOMPropertyOrARIAAttributeIsFalse(AOMBooleanProperty::kHidden)) {
+    return false;
+  }
+
+  if (cached_is_hidden_via_style_) {
+    if (ignored_reasons) {
+      ignored_reasons->push_back(
+          IgnoredReason(GetLayoutObject() ? kAXNotVisible : kAXNotRendered));
+    }
+    return true;
+  }
+
+  // Hide nodes that are whitespace or are occluded by CSS alt text.
+  if (!GetLayoutObject() && GetNode() && !IsA<HTMLAreaElement>(GetNode()) &&
+      !DisplayLockUtilities::IsDisplayLockedPreventingPaint(GetNode())) {
+    if (ignored_reasons) {
+      ignored_reasons->push_back(IgnoredReason(kAXNotRendered));
+    }
+    return true;
+  }
+
+  return false;
 }
 
 // Note: do not rely on the value of this inside of display:none.
@@ -3488,24 +3586,24 @@ const AXObject* AXObject::GetAtomicTextFieldAncestor(
   return nullptr;
 }
 
-const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
-  switch (RoleValue()) {
-    case ax::mojom::blink::Role::kDateTime:
-    case ax::mojom::blink::Role::kDate:
-    case ax::mojom::blink::Role::kInputTime:
-    case ax::mojom::blink::Role::kTime:
-      return this;
-    default:
-      break;
-  }
-
-  if (max_levels_to_check == 0)
+const AXObject* AXObject::DatetimeAncestor() const {
+  ShadowRoot* shadow_root = GetNode()->ContainingShadowRoot();
+  if (!shadow_root || shadow_root->GetType() != ShadowRootType::kUserAgent) {
     return nullptr;
-
-  if (AXObject* parent = ParentObject())
-    return parent->DatetimeAncestor(max_levels_to_check - 1);
-
-  return nullptr;
+  }
+  auto* input = DynamicTo<HTMLInputElement>(&shadow_root->host());
+  if (!input) {
+    return nullptr;
+  }
+  if (input->type() != input_type_names::kDatetimeLocal &&
+      input->type() != input_type_names::kDatetime &&
+      input->type() != input_type_names::kDate &&
+      input->type() != input_type_names::kTime &&
+      input->type() != input_type_names::kMonth &&
+      input->type() != input_type_names::kWeek) {
+    return nullptr;
+  }
+  return AXObjectCache().GetOrCreate(input);
 }
 
 bool AXObject::LastKnownIsIgnoredValue() const {
@@ -3940,7 +4038,7 @@ bool AXObject::ComputeIsHiddenViaStyle(const ComputedStyle* style) const {
 
 bool AXObject::IsHiddenViaStyle() const {
   UpdateCachedAttributeValuesIfNeeded();
-  return cached_is_hidden_via_style;
+  return cached_is_hidden_via_style_;
 }
 
 // Return true if this should be removed from accessible name computations.
@@ -4248,6 +4346,10 @@ AccessibilityOrientation AXObject::Orientation() const {
 }
 
 AXObject* AXObject::GetChildFigcaption() const { return nullptr; }
+
+bool AXObject::IsDescendantOfLandmarkDisallowedElement() const {
+  return false;
+}
 
 void AXObject::LoadInlineTextBoxes() {}
 
@@ -6898,8 +7000,9 @@ String AXObject::ToString(bool verbose, bool cached_values_only) const {
     } else if (AriaHiddenRoot()) {
       string_builder = string_builder + " ariaHiddenRootExtra";
     }
-    if (cached_values_only ? cached_is_hidden_via_style : IsHiddenViaStyle())
+    if (cached_values_only ? cached_is_hidden_via_style_ : IsHiddenViaStyle()) {
       string_builder = string_builder + " isHiddenViaCSS";
+    }
     if (cached_values_only ? cached_is_inert_ : IsInert())
       string_builder = string_builder + " isInert";
     if (IsMissingParent())

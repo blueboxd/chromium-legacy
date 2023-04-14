@@ -22,16 +22,16 @@
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
-#include "chrome/browser/ash/policy/core/user_cloud_policy_manager_ash.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/ash/components/install_attributes/install_attributes.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -172,10 +172,14 @@ void AddStringsForDrive(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_DRIVE_SHARED_WITH_ME_COLLECTION_LABEL);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_LOW",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_LOW);
+  SET_STRING("DRIVE_SHARED_DRIVE_QUOTA_LOW",
+             IDS_FILE_BROWSER_DRIVE_SHARED_DRIVE_QUOTA_LOW);
   SET_STRING("DRIVE_WARNING_QUOTA_OVER",
              IDS_FILE_BROWSER_DRIVE_WARNING_QUOTA_OVER);
   SET_STRING("DRIVE_INDIVIDUAL_QUOTA_OVER",
              IDS_FILE_BROWSER_DRIVE_INDIVIDUAL_QUOTA_OVER);
+  SET_STRING("DRIVE_SHARED_DRIVE_QUOTA_OVER",
+             IDS_FILE_BROWSER_DRIVE_SHARED_DRIVE_QUOTA_OVER);
   SET_STRING("DRIVE_ORGANIZATION_QUOTA_OVER",
              IDS_FILE_BROWSER_DRIVE_ORGANIZATION_QUOTA_OVER);
   SET_STRING("DRIVE_VISIT_DRIVE_GOOGLE_COM",
@@ -345,6 +349,8 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_FEEDBACK_COLLAPSE_LABEL);
   SET_STRING("FILES_FEEDBACK_WINDOW", IDS_FILE_BROWSER_FILES_FEEDBACK_WINDOW);
   SET_STRING("COMPLETE_LABEL", IDS_FILE_BROWSER_COMPLETE_LABEL);
+  SET_STRING("QUEUED_LABEL", IDS_FILE_BROWSER_QUEUED_LABEL);
+  SET_STRING("IN_PROGRESS_LABEL", IDS_FILE_BROWSER_IN_PROGRESS_LABEL);
   SET_STRING("CONFIGURE_VOLUME_BUTTON_LABEL",
              IDS_FILE_BROWSER_CONFIGURE_VOLUME_BUTTON_LABEL);
   SET_STRING("CONFIRM_MOBILE_DATA_USE",
@@ -409,6 +415,11 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("COPY_FILE_NAME_LONG", IDS_FILE_BROWSER_COPY_FILE_NAME_LONG);
   SET_STRING("COPY_ITEMS_REMAINING_LONG",
              IDS_FILE_BROWSER_COPY_ITEMS_REMAINING_LONG);
+  SET_STRING("PREPARING_FILE_NAME_MY_DRIVE",
+             IDS_FILE_BROWSER_PREPARING_FILE_NAME_MY_DRIVE);
+  SET_STRING("PREPARING_ITEMS_MY_DRIVE",
+             IDS_FILE_BROWSER_PREPARING_ITEMS_MY_DRIVE);
+  SET_STRING("READY_TO_SYNC_MY_DRIVE", IDS_FILE_BROWSER_READY_TO_SYNC_MY_DRIVE);
   SET_STRING("COPY_SOURCE_NOT_FOUND_ERROR",
              IDS_FILE_BROWSER_COPY_SOURCE_NOT_FOUND_ERROR);
   SET_STRING("COPY_TARGET_EXISTS_ERROR",
@@ -813,6 +824,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_SEARCH_OPTIONS_TYPES_IMAGES);
   SET_STRING("SEARCH_OPTIONS_TYPES_VIDEOS",
              IDS_FILE_BROWSER_SEARCH_OPTIONS_TYPES_VIDEOS);
+  SET_STRING("SEARCH_NO_MATCHING_RESULTS_TITLE",
+             IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_TITLE);
+  SET_STRING("SEARCH_NO_MATCHING_RESULTS_DESC",
+             IDS_FILE_BROWSER_SEARCH_NO_MATCHING_RESULTS_DESC);
 
   SET_STRING("SELECT_ALL_COMMAND_LABEL",
              IDS_FILE_BROWSER_SELECT_ALL_COMMAND_LABEL);
@@ -972,6 +987,7 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_MOVE_TO_TRASH_ITEMS_REMAINING);
   SET_STRING("UNKNOWN_FILESYSTEM_WARNING",
              IDS_FILE_BROWSER_UNKNOWN_FILESYSTEM_WARNING);
+  SET_STRING("UNMOUNT_BUTTON_LABEL", IDS_FILE_BROWSER_UNMOUNT_BUTTON_LABEL);
   SET_STRING("UNMOUNT_DEVICE_BUTTON_LABEL",
              IDS_FILE_BROWSER_UNMOUNT_DEVICE_BUTTON_LABEL);
   SET_STRING("UNMOUNT_FAILED", IDS_FILE_BROWSER_UNMOUNT_FAILED);
@@ -1039,44 +1055,52 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("DLP_COMPONENT_PLAY", IDS_FILE_BROWSER_DLP_COMPONENT_PLAY);
   SET_STRING("DLP_COMPONENT_LINUX", IDS_FILE_BROWSER_DLP_COMPONENT_LINUX);
   SET_STRING("DLP_COMPONENT_VM", IDS_FILE_BROWSER_DLP_COMPONENT_VM);
+  SET_STRING("ONE_DRIVE_MOVED_FILE_NUDGE",
+             IDS_FILE_BROWSER_ONE_DRIVE_MOVED_FILE_NUDGE);
+  SET_STRING("DRIVE_MOVED_FILE_NUDGE", IDS_FILE_BROWSER_DRIVE_MOVED_FILE_NUDGE);
 }  // NOLINT(readability/fn_size): Structure of AddStringsGeneric function
    // should be easy to manage.
 
 #undef SET_STRING
 
 bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  // Google One offer is for a device, not for an account. Do not show a banner
+  // if a device is enrolled.
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_ash()
+          ->IsDeviceEnterpriseManaged()) {
+    return false;
+  }
+
+  raw_ptr<user_manager::UserManager> user_manager =
+      user_manager::UserManager::Get();
   if (!user_manager) {
     return false;
   }
 
-  user_manager::User* user = user_manager->GetActiveUser();
+  raw_ptr<user_manager::User> user = user_manager->GetActiveUser();
   if (!user) {
     return false;
   }
 
-  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
+  raw_ptr<Profile> profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
   if (!profile) {
     return false;
   }
 
-  // `GetUserCloudPolicyManagerAsh` returns non-nullptr if a profile is a
-  // managed account, e.g. enterprise account, child account.
-  // This approach is taken in
-  // `UserTypeByDeviceTypeMetricsProvider::GetUserSegment`.
-  if (profile->GetUserCloudPolicyManagerAsh()) {
+  if (profile->IsGuestSession()) {
     return false;
   }
 
-  ash::InstallAttributes* install_attributes = ash::InstallAttributes::Get();
-  if (!install_attributes) {
+  if (profile->IsChild()) {
     return false;
   }
 
-  // Google One offer is for a device. Do not show a banner if a device is not
-  // `policy::DeviceMode::DEVICE_MODE_CONSUMER`.
-  if (install_attributes->GetMode() !=
-      policy::DeviceMode::DEVICE_MODE_CONSUMER) {
+  if (profile->GetProfilePolicyConnector()->IsManaged()) {
+    return false;
+  }
+
+  if (!ash::ProfileHelper::IsOwnerProfile(profile)) {
     return false;
   }
 
@@ -1183,6 +1207,12 @@ void AddFileManagerFeatureStrings(const std::string& locale,
   dict->Set("GUEST_OS", true);
 
   dict->Set("JELLY", base::FeatureList::IsEnabled(ash::features::kJelly));
+
+  dict->Set("DRIVE_SHORTCUTS",
+            base::FeatureList::IsEnabled(ash::features::kFilesDriveShortcuts));
+
+  dict->Set("DRIVE_FS_BULK_PINNING",
+            base::FeatureList::IsEnabled(ash::features::kDriveFsBulkPinning));
 
   if (base::FeatureList::IsEnabled(features::kDataLeakPreventionPolicy) &&
       base::FeatureList::IsEnabled(

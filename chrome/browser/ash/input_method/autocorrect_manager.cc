@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
 #include "ui/base/ime/ash/ime_bridge.h"
@@ -341,15 +342,16 @@ void RecordPhysicalKeyboardAutocorrectPref(const std::string& engine_id,
       "InputMethod.Assistive.AutocorrectV2.PkUserPreference.All", pref);
 }
 
-bool CouldTriggerAutocorrectWithSurroundingText(const std::u16string& text,
-                                                size_t cursor_pos,
-                                                size_t anchor_pos) {
+bool CouldTriggerAutocorrectWithSurroundingText(
+    const std::u16string& text,
+    const gfx::Range selection_range) {
   // TODO(b/161490813): Do not count cases that autocorrect is disabled.
   //    Currently, there are different logics in different places that disable
   //    autocorrect based on settings, domain and text field attributes.
   //    Ideally, all the cases that autocorrect is disabled on a text field
   //    must not be counted here.
-  return cursor_pos == anchor_pos && cursor_pos == text.size() &&
+  const uint32_t cursor_pos = selection_range.end();
+  return selection_range.is_empty() && cursor_pos == text.size() &&
          text.size() >= 2 && base::IsAsciiWhitespace(text.back()) &&
          !base::IsAsciiWhitespace(text[text.size() - 2]);
 }
@@ -373,7 +375,14 @@ bool IsAutocorrectSuggestionInSurroundingText(
 AutocorrectManager::AutocorrectManager(
     SuggestionHandlerInterface* suggestion_handler,
     Profile* profile)
-    : suggestion_handler_(suggestion_handler), profile_(profile) {}
+    : suggestion_handler_(suggestion_handler), profile_(profile) {
+  undo_button_.id = ui::ime::ButtonId::kUndo;
+  undo_button_.window_type = ash::ime::AssistiveWindowType::kUndoWindow;
+  learn_more_button_.id = ui::ime::ButtonId::kLearnMore;
+  learn_more_button_.announce_string =
+      l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  learn_more_button_.window_type = ash::ime::AssistiveWindowType::kLearnMore;
+}
 
 AutocorrectManager::~AutocorrectManager() = default;
 
@@ -735,29 +744,45 @@ bool AutocorrectManager::OnKeyEvent(const ui::KeyEvent& event) {
     return false;
   }
 
-  if (event.code() == ui::DomCode::ARROW_UP ||
-      event.code() == ui::DomCode::TAB) {
-    HighlightUndoButton();
+  if (event.code() == ui::DomCode::ARROW_UP) {
+    HighlightButtons(/*should_highlight_undo=*/true,
+                     /*should_highlight_learn_more=*/false);
     return true;
   }
-  if (event.code() == ui::DomCode::ENTER &&
-      pending_autocorrect_->undo_button_highlighted) {
-    UndoAutocorrect();
-    return true;
+  if (event.code() == ui::DomCode::TAB) {
+    if (!pending_autocorrect_->undo_button_highlighted) {
+      HighlightButtons(/*should_highlight_undo=*/true,
+                       /*should_highlight_learn_more=*/false);
+      return true;
+    }
+    if (pending_autocorrect_->learn_more_button_visible) {
+      HighlightButtons(/*should_highlight_undo=*/false,
+                       /*should_highlight_learn_more=*/true);
+      return true;
+    }
   }
-
+  if (event.code() == ui::DomCode::ENTER) {
+    if (pending_autocorrect_->undo_button_highlighted) {
+      UndoAutocorrect();
+      return true;
+    }
+    if (pending_autocorrect_->learn_more_button_highlighted) {
+      HideUndoWindow();
+      suggestion_handler_->ClickButton(learn_more_button_);
+      return true;
+    }
+  }
   return false;
 }
 
-void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
-                                                  const int cursor_pos,
-                                                  const int anchor_pos) {
+void AutocorrectManager::OnSurroundingTextChanged(
+    const std::u16string& text,
+    const gfx::Range selection_range) {
   if (error_on_hiding_undo_window_) {
     HideUndoWindow();
   }
 
-  if (CouldTriggerAutocorrectWithSurroundingText(text, cursor_pos,
-                                                 anchor_pos)) {
+  if (CouldTriggerAutocorrectWithSurroundingText(text, selection_range)) {
     LogAssistiveAutocorrectInternalState(
         AutocorrectInternalStates::kCouldTriggerAutocorrect);
   }
@@ -804,9 +829,6 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
           ? text.length() - pending_autocorrect_->text_length
           : 0;
 
-  const uint32_t cursor_pos_unsigned
-      = base::checked_cast<uint32_t>(cursor_pos);
-
   // If range is empty, it means user has mutated suggestion. So, clear range
   // and consider autocorrect suggestion as implicitly rejected.
   if (range.is_empty()) {
@@ -838,10 +860,12 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
     return;
   }
 
+  const uint32_t cursor_pos = selection_range.end();
+
   // If cursor is inside autocorrect range (inclusive), show undo window and
   // record relevant metrics.
-  if (cursor_pos_unsigned >= range.start() &&
-      cursor_pos_unsigned <= range.end() && cursor_pos == anchor_pos) {
+  if (cursor_pos >= range.start() && cursor_pos <= range.end() &&
+      selection_range.is_empty()) {
     ShowUndoWindow(range, text);
   } else {
     // Ensure undo window is hidden when cursor is not inside the autocorrect
@@ -852,8 +876,8 @@ void AutocorrectManager::OnSurroundingTextChanged(const std::u16string& text,
   // Only update at the end so that the metrics can use the cursor selection
   // just before the edit
   pending_autocorrect_->last_autocorrect_range = range;
-  pending_autocorrect_->last_selection_range = gfx::Range(
-      std::min(cursor_pos, anchor_pos), std::max(cursor_pos, anchor_pos));
+  pending_autocorrect_->last_selection_range =
+      gfx::Range(selection_range.GetMin(), selection_range.GetMax());
 }
 
 void AutocorrectManager::OnFocus(int context_id) {
@@ -980,6 +1004,8 @@ void AutocorrectManager::ShowUndoWindow(
   AssistiveWindowProperties properties;
   properties.type = ash::ime::AssistiveWindowType::kUndoWindow;
   properties.visible = true;
+  properties.show_setting_link =
+      pending_autocorrect_->learn_more_button_visible;
   properties.announce_string = l10n_util::GetStringFUTF16(
       IDS_SUGGESTION_AUTOCORRECT_UNDO_WINDOW_SHOWN,
       pending_autocorrect_->original_text,
@@ -1040,36 +1066,39 @@ void AutocorrectManager::HideUndoWindow() {
 
   if (pending_autocorrect_.has_value()) {
     pending_autocorrect_->undo_button_highlighted = false;
+    pending_autocorrect_->learn_more_button_highlighted = false;
     pending_autocorrect_->undo_window_visible = false;
   }
 }
 
-void AutocorrectManager::HighlightUndoButton() {
+void AutocorrectManager::HighlightButtons(
+    const bool should_highlight_undo,
+    const bool should_highlight_learn_more) {
   if (!pending_autocorrect_.has_value() ||
-      !pending_autocorrect_->undo_window_visible ||
-      pending_autocorrect_->undo_button_highlighted) {
+      !pending_autocorrect_->undo_window_visible) {
     return;
   }
 
   std::string error;
-  ui::ime::AssistiveWindowButton button = ui::ime::AssistiveWindowButton();
-  button.id = ui::ime::ButtonId::kUndo;
-  button.window_type = ash::ime::AssistiveWindowType::kUndoWindow;
-  button.announce_string = l10n_util::GetStringFUTF16(
-      IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
-      pending_autocorrect_->original_text);
-  suggestion_handler_->SetButtonHighlighted(context_id_, button, true,
-                                            &error);
-
-  LogAssistiveAutocorrectInternalState(
-      AutocorrectInternalStates::kHighlightUndoWindow);
-
+  undo_button_.announce_string =
+      l10n_util::GetStringFUTF16(IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON,
+                                 pending_autocorrect_->original_text);
+  suggestion_handler_->SetButtonHighlighted(context_id_, undo_button_,
+                                            should_highlight_undo, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Failed to highlight undo button.";
     return;
   }
+  suggestion_handler_->SetButtonHighlighted(
+      context_id_, learn_more_button_, should_highlight_learn_more, &error);
+  if (!error.empty()) {
+    LOG(ERROR) << "Failed to highlight learn more button.";
+    return;
+  }
 
-  pending_autocorrect_->undo_button_highlighted = true;
+  pending_autocorrect_->undo_button_highlighted = should_highlight_undo;
+  pending_autocorrect_->learn_more_button_highlighted =
+      should_highlight_learn_more;
 }
 
 void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
@@ -1118,8 +1147,7 @@ void AutocorrectManager::AcceptOrClearPendingAutocorrect() {
 
 void AutocorrectManager::OnTextFieldContextualInfoChanged(
     const TextFieldContextualInfo& info) {
-  disabled_by_rule_ =
-      ImeRulesConfig::GetInstance()->IsAutoCorrectDisabled(info);
+  disabled_by_rule_ = IsAutoCorrectDisabled(info);
   if (disabled_by_rule_) {
     LogAssistiveAutocorrectInternalState(
         AutocorrectInternalStates::kAppIsInDenylist);

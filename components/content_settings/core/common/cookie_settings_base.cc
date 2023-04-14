@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/notreached.h"
 #include "base/types/optional_util.h"
+#include "build/blink_buildflags.h"
 #include "build/build_config.h"
 #include "net/base/features.h"
 #include "net/base/net_errors.h"
@@ -17,21 +18,25 @@
 #include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
-#if !BUILDFLAG(IS_IOS)
+#if BUILDFLAG(USE_BLINK)
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
 #endif
 
 namespace content_settings {
 
+bool CookieSettingsBase::storage_access_api_grants_unpartitioned_storage_ =
+    false;
+
+void CookieSettingsBase::
+    SetStorageAccessAPIGrantsUnpartitionedStorageForTesting(bool grants) {
+  storage_access_api_grants_unpartitioned_storage_ = grants;
+}
+
 CookieSettingsBase::CookieSettingsBase()
-    : storage_access_api_enabled_(
-          base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)),
-      storage_access_api_grants_unpartitioned_storage_(
-          net::features::kStorageAccessAPIGrantsUnpartitionedStorage.Get()),
-      is_storage_partitioned_(base::FeatureList::IsEnabled(
+    : is_storage_partitioned_(base::FeatureList::IsEnabled(
           net::features::kThirdPartyStoragePartitioning)),
       is_privacy_sandbox_v4_enabled_(
-#if BUILDFLAG(IS_IOS)
+#if !BUILDFLAG(USE_BLINK)
           false
 #else
           base::FeatureList::IsEnabled(
@@ -64,10 +69,10 @@ bool CookieSettingsBase::ShouldDeleteCookieOnExit(
   GURL origin = net::cookie_util::CookieOriginToURL(domain, is_https);
   // Pass GURL() as first_party_url since we don't know the context and
   // don't want to match against (*, exception) pattern.
+  // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting = GetCookieSettingInternal(
       origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
-      QueryReason::kSetting);
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr);
   DCHECK(IsValidSetting(setting));
   if (setting == CONTENT_SETTING_ALLOW)
     return false;
@@ -100,37 +105,32 @@ ContentSetting CookieSettingsBase::GetCookieSetting(
     const GURL& url,
     const GURL& first_party_url,
     net::CookieSettingOverrides overrides,
-    content_settings::SettingSource* source,
-    QueryReason query_reason) const {
+    content_settings::SettingSource* source) const {
   return GetCookieSettingInternal(
       url, first_party_url,
       IsThirdPartyRequest(url, net::SiteForCookies::FromUrl(first_party_url)),
-      overrides, source, query_reason);
+      overrides, source);
 }
 
 bool CookieSettingsBase::IsFullCookieAccessAllowed(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
     const absl::optional<url::Origin>& top_frame_origin,
-    net::CookieSettingOverrides overrides,
-    QueryReason query_reason) const {
+    net::CookieSettingOverrides overrides) const {
   ContentSetting setting = GetCookieSettingInternal(
       url,
       GetFirstPartyURL(site_for_cookies, base::OptionalToPtr(top_frame_origin)),
-      IsThirdPartyRequest(url, site_for_cookies), overrides, nullptr,
-      query_reason);
+      IsThirdPartyRequest(url, site_for_cookies), overrides, nullptr);
   return IsAllowed(setting);
 }
 
-// TODO(crbug.com/1413957): Remove QueryReason parameter from this method.
-bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin,
-                                             QueryReason query_reason) const {
+bool CookieSettingsBase::IsCookieSessionOnly(const GURL& origin) const {
   // Pass GURL() as first_party_url since we don't know the context and
   // don't want to match against (*, exception) pattern.
+  // No overrides are given since existing ones only pertain to 3P checks.
   ContentSetting setting = GetCookieSettingInternal(
       origin, is_privacy_sandbox_v4_enabled_ ? GURL() : origin,
-      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr,
-      QueryReason::kSetting);
+      /*is_third_party_request=*/false, net::CookieSettingOverrides(), nullptr);
   DCHECK(IsValidSetting(setting));
   return setting == CONTENT_SETTING_SESSION_ONLY;
 }
@@ -152,41 +152,28 @@ CookieSettingsBase::GetCookieAccessSemanticsForDomain(
 }
 
 bool CookieSettingsBase::ShouldConsiderStorageAccessGrants(
-    QueryReason query_reason) const {
-  return CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      query_reason, storage_access_api_enabled_,
-      storage_access_api_grants_unpartitioned_storage_,
-      is_storage_partitioned_);
+    net::CookieSettingOverrides overrides) const {
+  return overrides.Has(net::CookieSettingOverride::kStorageAccessGrantEligible);
+}
+
+net::CookieSettingOverrides CookieSettingsBase::SettingOverridesForStorage()
+    const {
+  net::CookieSettingOverrides overrides;
+  if (storage_access_api_grants_unpartitioned_storage_ ||
+      is_storage_partitioned_) {
+    overrides.Put(net::CookieSettingOverride::kStorageAccessGrantEligible);
+  }
+  if (is_storage_partitioned_) {
+    overrides.Put(
+        net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
+  }
+  return overrides;
 }
 
 bool CookieSettingsBase::ShouldConsiderTopLevelStorageAccessGrants(
-    QueryReason query_reason) const {
-  // Unlike the standard Storage Access API, the top-level version does not
-  // unlock unpartitioned storage more generally. It applies only to cookies.
-  return CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      query_reason, storage_access_api_enabled_,
-      /*storage_access_api_grants_unpartitioned_storage=*/false,
-      is_storage_partitioned_);
-}
-
-// static
-bool CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-    QueryReason query_reason,
-    bool storage_access_api_enabled,
-    bool storage_access_api_grants_unpartitioned_storage,
-    bool is_storage_partitioned) {
-  switch (query_reason) {
-    case QueryReason::kSetting:
-      return false;
-    case QueryReason::kPrivacySandbox:
-      return false;
-    case QueryReason::kSiteStorage:
-      return storage_access_api_enabled &&
-             (storage_access_api_grants_unpartitioned_storage ||
-              is_storage_partitioned);
-    case QueryReason::kCookies:
-      return storage_access_api_enabled;
-  }
+    net::CookieSettingOverrides overrides) const {
+  return overrides.Has(
+      net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible);
 }
 
 // static

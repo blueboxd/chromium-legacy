@@ -270,7 +270,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
                              : nullptr),
       keyword(match.keyword),
       from_keyword(match.from_keyword),
-      action(match.action),
+      actions(match.actions),
       from_previous(match.from_previous),
       search_terms_args(
           match.search_terms_args
@@ -283,7 +283,8 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       duplicate_matches(match.duplicate_matches),
       query_tiles(match.query_tiles),
       suggest_tiles(match.suggest_tiles),
-      scoring_signals(match.scoring_signals) {}
+      scoring_signals(match.scoring_signals),
+      culled_by_provider(match.culled_by_provider) {}
 
 AutocompleteMatch::AutocompleteMatch(AutocompleteMatch&& match) noexcept {
   *this = std::move(match);
@@ -327,7 +328,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   associated_keyword = std::move(match.associated_keyword);
   keyword = std::move(match.keyword);
   from_keyword = std::move(match.from_keyword);
-  action = std::move(match.action);
+  actions = std::move(match.actions);
   from_previous = std::move(match.from_previous);
   search_terms_args = std::move(match.search_terms_args);
   post_content = std::move(match.post_content);
@@ -336,6 +337,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   query_tiles = std::move(match.query_tiles);
   suggest_tiles = std::move(match.suggest_tiles);
   scoring_signals = std::move(match.scoring_signals);
+  culled_by_provider = std::move(match.culled_by_provider);
 #if BUILDFLAG(IS_ANDROID)
   DestroyJavaObject();
   std::swap(java_match_, match.java_match_);
@@ -392,7 +394,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
           : nullptr);
   keyword = match.keyword;
   from_keyword = match.from_keyword;
-  action = match.action;
+  actions = match.actions;
   from_previous = match.from_previous;
   search_terms_args.reset(
       match.search_terms_args
@@ -406,6 +408,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   query_tiles = match.query_tiles;
   suggest_tiles = match.suggest_tiles;
   scoring_signals = match.scoring_signals;
+  culled_by_provider = match.culled_by_provider;
 
 #if BUILDFLAG(IS_ANDROID)
   // In case the target element previously held a java object, release it.
@@ -827,27 +830,18 @@ GURL AutocompleteMatch::GURLToStrippedGURL(
   if (template_url != nullptr &&
       template_url->SupportsReplacement(
           template_url_service->search_terms_data())) {
-    static const bool optimize =
-        base::FeatureList::IsEnabled(omnibox::kStrippedGurlOptimization);
-    if (optimize) {
-      using CacheKey = std::tuple<const TemplateURL*, GURL, bool, bool>;
-      static base::LRUCache<CacheKey, GURL> template_cache(30);
-      const CacheKey cache_key = {template_url, url, keep_search_intent_params,
-                                  normalize_search_terms};
-      const auto& cached = template_cache.Get(cache_key);
-      if (cached != template_cache.end()) {
-        stripped_destination_url = cached->second;
-      } else if (template_url->KeepSearchTermsInURL(
-                     url, template_url_service->search_terms_data(),
-                     keep_search_intent_params, normalize_search_terms,
-                     &stripped_destination_url)) {
-        template_cache.Put(cache_key, stripped_destination_url);
-      }
-    } else {
-      template_url->KeepSearchTermsInURL(
-          url, template_url_service->search_terms_data(),
-          keep_search_intent_params, normalize_search_terms,
-          &stripped_destination_url);
+    using CacheKey = std::tuple<const TemplateURL*, GURL, bool, bool>;
+    static base::LRUCache<CacheKey, GURL> template_cache(30);
+    const CacheKey cache_key = {template_url, url, keep_search_intent_params,
+                                normalize_search_terms};
+    const auto& cached = template_cache.Get(cache_key);
+    if (cached != template_cache.end()) {
+      stripped_destination_url = cached->second;
+    } else if (template_url->KeepSearchTermsInURL(
+                   url, template_url_service->search_terms_data(),
+                   keep_search_intent_params, normalize_search_terms,
+                   &stripped_destination_url)) {
+      template_cache.Put(cache_key, stripped_destination_url);
     }
   }
 
@@ -1255,6 +1249,12 @@ size_t AutocompleteMatch::EstimateMemoryUsage() const {
 
 void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
     AutocompleteMatch& duplicate_match) {
+  // TODO(manukh): There's some duplicate logic between `BetterDuplicate()` and
+  //   `UpgradeMatchWithPropertiesFrom()`. This is unavoidable due to having to
+  //   taking different fields from different duplicates, rather having 1 match
+  //   that's absolutely overrides all other matches. Perhaps we can avoid this
+  //   if we join the 2 functions.
+
   // For Entity Matches, absorb the duplicate match's |allowed_to_be_default|
   // and |inline_autocompletion| properties.
   if (type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY &&
@@ -1284,10 +1284,26 @@ void AutocompleteMatch::UpgradeMatchWithPropertiesFrom(
 
   from_previous = from_previous && duplicate_match.from_previous;
 
-  // Take the `action`, if any, so that it will be presented instead of buried.
-  if (!action && duplicate_match.action && IsActionCompatible()) {
-    action = duplicate_match.action;
-    duplicate_match.action = nullptr;
+  // Take the `actions` so that they will be presented instead of buried.
+  if (actions.empty() && !duplicate_match.actions.empty() &&
+      IsActionCompatible()) {
+    actions = std::move(duplicate_match.actions);
+  }
+
+  // Prefer fresh suggestion text over potentially stale shortcut text for
+  // bookmark paths and document metadata. Don't edit the omnibox text (i.e.
+  // `fill_into_edit`, `inline_autocompletion`, and `additional_text`) as the
+  // duplicate may not be `allowed_to_be_default_match`.
+  if (GetDeduplicationProviderPreferenceScore(
+          duplicate_match.provider->type()) >
+      GetDeduplicationProviderPreferenceScore(provider->type())) {
+    contents = duplicate_match.contents;
+    contents_class = duplicate_match.contents_class;
+    description = duplicate_match.description;
+    description_class = duplicate_match.description_class;
+    description_for_shortcuts = duplicate_match.description_for_shortcuts;
+    description_class_for_shortcuts =
+        duplicate_match.description_class_for_shortcuts;
   }
 
   // Copy `rich_autocompletion_triggered` for counterfactual logging.
@@ -1650,6 +1666,10 @@ void AutocompleteMatch::WriteIntoTrace(perfetto::TracedValue context) const {
   dict.Add("additional_text", additional_text);
   dict.Add("destination_url", destination_url);
   dict.Add("keyword", keyword);
+}
+
+OmniboxAction* AutocompleteMatch::GetPrimaryAction() const {
+  return actions.empty() ? nullptr : actions[0].get();
 }
 
 #if DCHECK_IS_ON()

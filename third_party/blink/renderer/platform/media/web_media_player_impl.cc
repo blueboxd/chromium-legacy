@@ -1094,7 +1094,8 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
     client_->DidMediaMetadataChange(
         delegate_has_audio_, HasVideo(),
         pipeline_metadata_.audio_decoder_config.codec(),
-        pipeline_metadata_.video_decoder_config.codec(), content_type);
+        pipeline_metadata_.video_decoder_config.codec(), content_type,
+        pipeline_metadata_.video_decoder_config.is_encrypted());
     delegate_->DidMediaMetadataChange(delegate_id_, delegate_has_audio_,
                                       HasVideo(), content_type);
 
@@ -1797,6 +1798,10 @@ bool WebMediaPlayerImpl::IsSecurityOriginCryptographic() const {
       .SchemeIsCryptographic();
 }
 
+void WebMediaPlayerImpl::UpdateLoadedUrl(const GURL& url) {
+  loaded_url_ = url;
+}
+
 bool WebMediaPlayerImpl::RestartForHls() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
@@ -1935,7 +1940,8 @@ void WebMediaPlayerImpl::OnMetadata(const media::PipelineMetadata& metadata) {
   client_->DidMediaMetadataChange(
       delegate_has_audio_, HasVideo(),
       pipeline_metadata_.audio_decoder_config.codec(),
-      pipeline_metadata_.video_decoder_config.codec(), content_type);
+      pipeline_metadata_.video_decoder_config.codec(), content_type,
+      pipeline_metadata_.video_decoder_config.is_encrypted());
   delegate_->DidMediaMetadataChange(delegate_id_, delegate_has_audio_,
                                     HasVideo(), content_type);
 
@@ -2221,7 +2227,8 @@ void WebMediaPlayerImpl::OnDurationChange() {
   client_->DidMediaMetadataChange(
       delegate_has_audio_, HasVideo(),
       pipeline_metadata_.audio_decoder_config.codec(),
-      pipeline_metadata_.video_decoder_config.codec(), content_type);
+      pipeline_metadata_.video_decoder_config.codec(), content_type,
+      pipeline_metadata_.video_decoder_config.is_encrypted());
   delegate_->DidMediaMetadataChange(delegate_id_, delegate_has_audio_,
                                     HasVideo(), content_type);
 
@@ -3427,6 +3434,12 @@ absl::optional<viz::SurfaceId> WebMediaPlayerImpl::GetSurfaceId() {
 }
 
 void WebMediaPlayerImpl::RequestVideoFrameCallback() {
+  // If the first frame hasn't been received, kick off a request to generate one
+  // since we may not always do so for hidden preload=metadata playbacks.
+  if (!has_first_frame_) {
+    OnBecameVisible();
+  }
+
   compositor_->SetOnFramePresentedCallback(
       media::BindToCurrentLoop(base::BindOnce(
           &WebMediaPlayerImpl::OnNewFramePresentedCallback, weak_this_)));

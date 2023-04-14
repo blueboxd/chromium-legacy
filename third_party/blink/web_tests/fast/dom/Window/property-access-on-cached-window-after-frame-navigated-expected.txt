@@ -101,7 +101,6 @@ PASS oldChildWindow.navigator.windowControlsOverlay.visible is newChildWindow.na
 PASS oldChildWindow.navigator.xr.ondevicechange is newChildWindow.navigator.xr.ondevicechange
 PASS oldChildWindow.onabort is newChildWindow.onabort
 PASS oldChildWindow.onafterprint is newChildWindow.onafterprint
-PASS oldChildWindow.onaftertoggle is newChildWindow.onaftertoggle
 PASS oldChildWindow.onanimationend is newChildWindow.onanimationend
 PASS oldChildWindow.onanimationiteration is newChildWindow.onanimationiteration
 PASS oldChildWindow.onanimationstart is newChildWindow.onanimationstart
@@ -183,8 +182,6 @@ PASS oldChildWindow.onpointerout is newChildWindow.onpointerout
 PASS oldChildWindow.onpointerover is newChildWindow.onpointerover
 PASS oldChildWindow.onpointerrawupdate is newChildWindow.onpointerrawupdate
 PASS oldChildWindow.onpointerup is newChildWindow.onpointerup
-PASS oldChildWindow.onpopoverhide is newChildWindow.onpopoverhide
-PASS oldChildWindow.onpopovershow is newChildWindow.onpopovershow
 PASS oldChildWindow.onpopstate is newChildWindow.onpopstate
 PASS oldChildWindow.onprogress is newChildWindow.onprogress
 PASS oldChildWindow.onratechange is newChildWindow.onratechange

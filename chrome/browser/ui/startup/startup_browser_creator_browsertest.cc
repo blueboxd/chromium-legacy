@@ -73,6 +73,7 @@
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/startup/startup_tab_provider.h"
 #include "chrome/browser/ui/startup/startup_types.h"
+#include "chrome/browser/ui/startup/web_app_startup_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
@@ -106,6 +107,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -3196,11 +3198,30 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserWebAppProtocolAndFileHandlingTest,
 // nor the onboarding promos exist there.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 
-class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
+enum class ForYouFreStateParam {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // On Lacros we are waterfalling the feature, follow whatever the hardcoded
+  // default is.
+  kDefault,
+#else
+  kEnabled,
+  kDisabled,
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+};
+
+class StartupBrowserCreatorFirstRunTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<ForYouFreStateParam> {
  public:
   StartupBrowserCreatorFirstRunTest() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
+    if (UsesForYouFre()) {
+      scoped_feature_list_.InitWithFeatures(
+          {welcome::kForceEnabled, kForYouFre}, {});
+    } else {
+      scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled},
+                                            {kForYouFre});
+    }
 #endif
   }
   StartupBrowserCreatorFirstRunTest(const StartupBrowserCreatorFirstRunTest&) =
@@ -3211,6 +3232,17 @@ class StartupBrowserCreatorFirstRunTest : public InProcessBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
+
+  // Returns `true` when the "ForYouFre" feature is enabled, which does not use
+  // chrome://welcome, but instead runs the first run experience in a dedicated
+  // window.
+  bool UsesForYouFre() const {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    return base::FeatureList::IsEnabled(kForYouFre);
+#else
+    return GetParam() == ForYouFreStateParam::kEnabled;
+#endif  //  BUILDFLAG(IS_CHROMEOS_LACROS)
+  }
 
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
   policy::PolicyMap policy_map_;
@@ -3245,7 +3277,7 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
   ASSERT_TRUE(embedded_test_server()->Start());
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTabs(
@@ -3282,7 +3314,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, AddFirstRunTabs) {
 #define MAYBE_RestoreOnStartupURLsPolicySpecified \
   RestoreOnStartupURLsPolicySpecified
 #endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
                        MAYBE_RestoreOnStartupURLsPolicySpecified) {
 #if BUILDFLAG(IS_WIN)
   return;
@@ -3338,7 +3370,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
 #else
 #define MAYBE_FirstRunTabsWithRestoreSession FirstRunTabsWithRestoreSession
 #endif
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
                        MAYBE_FirstRunTabsWithRestoreSession) {
   // Simulate the following initial preferences:
   // {
@@ -3376,7 +3408,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
             tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3413,7 +3445,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
   // Ensure that the standard Welcome page appears on second run on Win 10, and
   // on first run on all other platforms.
   ASSERT_EQ(1, tab_strip1->count());
-  bool should_show_welcome = true;
+  bool should_show_welcome = !UsesForYouFre();
   std::string new_tab_url1 =
       tab_strip1->GetWebContentsAt(0)->GetVisibleURL().possibly_invalid_spec();
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -3441,7 +3473,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, WelcomePages) {
       tab_strip1->GetWebContentsAt(0)->GetVisibleURL().possibly_invalid_spec());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
+IN_PROC_BROWSER_TEST_P(StartupBrowserCreatorFirstRunTest,
                        WelcomePagesWithPolicy) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -3512,6 +3544,16 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest,
   EXPECT_EQ("title1.html",
             tab_strip->GetWebContentsAt(0)->GetVisibleURL().ExtractFileName());
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         StartupBrowserCreatorFirstRunTest,
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+                         testing::Values(ForYouFreStateParam::kDefault)
+#else
+                         testing::Values(ForYouFreStateParam::kEnabled,
+                                         ForYouFreStateParam::kDisabled)
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+);
 
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -3588,9 +3630,17 @@ class StartupBrowserCreatorInfobarsTest
       const base::CommandLine& command_line) {
     BrowserAddedObserver added_observer;
 
+    base::test::TestFuture<void> app_launch_done;
+    if (command_line.HasSwitch(switches::kAppId)) {
+      web_app::startup::SetStartupDoneCallbackForTesting(
+          app_launch_done.GetCallback());
+    } else {
+      std::move(app_launch_done.GetCallback()).Run();
+    }
     EXPECT_TRUE(StartupBrowserCreator().ProcessCmdLineImpl(
         command_line, base::FilePath(), chrome::startup::IsProcessStartup::kNo,
         {browser()->profile(), StartupProfileMode::kBrowserWindow}, {}));
+    EXPECT_TRUE(app_launch_done.Wait());
 
     // Wait until the new browser window has been created. Using
     // `FindOneOtherBrowser` is not sufficient here, because the window may be

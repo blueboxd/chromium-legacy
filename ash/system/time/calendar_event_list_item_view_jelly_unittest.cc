@@ -20,12 +20,13 @@ namespace {
 std::unique_ptr<google_apis::calendar::CalendarEvent> CreateEvent(
     const char* start_time,
     const char* end_time,
-    bool all_day_event = false) {
+    bool all_day_event = false,
+    std::string hangout_link = "") {
   return calendar_test_utils::CreateEvent(
       "id_0", "summary_0", start_time, end_time,
       google_apis::calendar::CalendarEvent::EventStatus::kConfirmed,
       google_apis::calendar::CalendarEvent::ResponseStatus::kAccepted,
-      all_day_event);
+      all_day_event, hangout_link);
 }
 
 }  // namespace
@@ -54,7 +55,8 @@ class CalendarViewEventListItemViewJellyTest : public AshTestBase {
                                google_apis::calendar::CalendarEvent* event,
                                bool round_top_corners = false,
                                bool round_bottom_corners = false,
-                               int max_width = 0) {
+                               bool show_event_list_dot = true,
+                               int fixed_width = 0) {
     event_list_item_view_jelly_.reset();
     controller_->UpdateMonth(date);
     controller_->selected_date_ = date;
@@ -64,7 +66,8 @@ class CalendarViewEventListItemViewJellyTest : public AshTestBase {
             SelectedDateParams{controller_->selected_date().value(),
                                controller_->selected_date_midnight(),
                                controller_->selected_date_midnight_utc()},
-            *event, round_top_corners, round_bottom_corners, max_width);
+            *event, round_top_corners, round_bottom_corners,
+            show_event_list_dot, fixed_width);
   }
 
   void SetSelectedDateInController(base::Time date) {
@@ -82,6 +85,16 @@ class CalendarViewEventListItemViewJellyTest : public AshTestBase {
   const views::Label* GetTimeLabel() {
     return static_cast<views::Label*>(
         event_list_item_view_jelly_->GetViewByID(kTimeLabelID));
+  }
+
+  const views::View* GetEventListItemDot() {
+    return static_cast<views::View*>(
+        event_list_item_view_jelly_->GetViewByID(kEventListItemDotID));
+  }
+
+  const views::Button* GetJoinButton() {
+    return static_cast<views::Button*>(
+        event_list_item_view_jelly_->GetViewByID(kJoinButtonID));
   }
 
   CalendarViewController* controller() { return controller_.get(); }
@@ -136,7 +149,7 @@ TEST_F(CalendarViewEventListItemViewJellyTest, TopRoundedCorners) {
 
   const ui::Layer* background_layer =
       event_list_item_view()->GetLayersInOrder().back();
-  EXPECT_EQ(gfx::RoundedCornersF(12, 12, 0, 0),
+  EXPECT_EQ(gfx::RoundedCornersF(16, 16, 0, 0),
             background_layer->rounded_corner_radii());
 }
 
@@ -148,12 +161,12 @@ TEST_F(CalendarViewEventListItemViewJellyTest, BottomRoundedCorners) {
   const char* end_time_string = "22 Nov 2021 10:00 GMT";
   const auto event = CreateEvent(start_time_string, end_time_string);
 
-  CreateEventListItemView(date, event.get(), /*round_top_corners*/ false,
-                          /*round_bottom_corners*/ true);
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/false,
+                          /*round_bottom_corners=*/true);
 
   const ui::Layer* background_layer =
       event_list_item_view()->GetLayersInOrder().back();
-  EXPECT_EQ(gfx::RoundedCornersF(0, 0, 12, 12),
+  EXPECT_EQ(gfx::RoundedCornersF(0, 0, 16, 16),
             background_layer->rounded_corner_radii());
 }
 
@@ -165,16 +178,16 @@ TEST_F(CalendarViewEventListItemViewJellyTest, AllRoundedCorners) {
   const char* end_time_string = "22 Nov 2021 10:00 GMT";
   const auto event = CreateEvent(start_time_string, end_time_string);
 
-  CreateEventListItemView(date, event.get(), /*round_top_corners*/ true,
-                          /*round_bottom_corners*/ true);
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true);
 
   const ui::Layer* background_layer =
       event_list_item_view()->GetLayersInOrder().back();
-  EXPECT_EQ(gfx::RoundedCornersF(12, 12, 12, 12),
+  EXPECT_EQ(gfx::RoundedCornersF(16, 16, 16, 16),
             background_layer->rounded_corner_radii());
 }
 
-TEST_F(CalendarViewEventListItemViewJellyTest, MaxLabelWidth) {
+TEST_F(CalendarViewEventListItemViewJellyTest, FixedLabelWidth) {
   base::Time date;
   ASSERT_TRUE(base::Time::FromString("22 Nov 2021 00:00 UTC", &date));
   SetSelectedDateInController(date);
@@ -182,20 +195,82 @@ TEST_F(CalendarViewEventListItemViewJellyTest, MaxLabelWidth) {
   const char* end_time_string = "22 Nov 2021 10:00 GMT";
   const auto event = CreateEvent(start_time_string, end_time_string);
 
-  // If we don't set `max_width`, it should default to 0 (which the
-  // `views::Label`) will ignore).
-  CreateEventListItemView(date, event.get(), /*round_top_corners*/ true,
-                          /*round_bottom_corners*/ true);
+  // If we don't set `fixed_width`, it will default to 0 (which the
+  // `views::Label::SizeToFit()` method will ignore).
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true);
 
-  EXPECT_EQ(GetSummaryLabel()->GetMaximumWidth(), 0);
+  // The label should have it's preferred size as we didn't set a `fixed_width`.
+  EXPECT_TRUE(GetSummaryLabel()->width() > 0);
 
-  // If we set a `max_width`, it should exist on the Summary Label.
-  const auto max_width = 200;
-  CreateEventListItemView(date, event.get(), /*round_top_corners*/ true,
-                          /*round_bottom_corners*/ true,
-                          /*max_width=*/max_width);
+  // Set a fixed width. The label should be this size exactly.
+  const auto fixed_width = 150;
+  CreateEventListItemView(date, event.get(),
+                          /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true,
+                          /*show_event_list_dot=*/true,
+                          /*fixed_width=*/fixed_width);
 
-  EXPECT_EQ(GetSummaryLabel()->GetMaximumWidth(), 200);
+  EXPECT_EQ(fixed_width, GetSummaryLabel()->width());
+}
+
+TEST_F(CalendarViewEventListItemViewJellyTest,
+       ShouldShowAndHideEventListItemDot) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("22 Nov 2021 00:00 UTC", &date));
+  SetSelectedDateInController(date);
+  const char* start_time_string = "22 Nov 2021 09:00 GMT";
+  const char* end_time_string = "22 Nov 2021 10:00 GMT";
+  const auto event = CreateEvent(start_time_string, end_time_string);
+
+  // Set `show_event_list_dot` to false.
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true,
+                          /*show_event_list_dot=*/false);
+
+  // Event list dot should not exist.
+  EXPECT_FALSE(GetEventListItemDot());
+
+  // Set `show_event_list_dot` to true.
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true,
+                          /*show_event_list_dot=*/true);
+
+  // Event list dot should exist.
+  EXPECT_TRUE(GetEventListItemDot());
+}
+
+TEST_F(CalendarViewEventListItemViewJellyTest,
+       ShouldShowJoinMeetingButton_WhenGoogleMeetLinkExists) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("22 Nov 2021 00:00 UTC", &date));
+  SetSelectedDateInController(date);
+  const char* start_time_string = "22 Nov 2021 09:00 GMT";
+  const char* end_time_string = "22 Nov 2021 10:00 GMT";
+  const auto event = CreateEvent(start_time_string, end_time_string, false,
+                                 "https://meet.google.com/my-meeting");
+
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true,
+                          /*show_event_list_dot=*/false);
+
+  EXPECT_TRUE(GetJoinButton());
+}
+
+TEST_F(CalendarViewEventListItemViewJellyTest,
+       ShouldHideJoinMeetingButton_WhenGoogleMeetLinkDoesNotExist) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("22 Nov 2021 00:00 UTC", &date));
+  SetSelectedDateInController(date);
+  const char* start_time_string = "22 Nov 2021 09:00 GMT";
+  const char* end_time_string = "22 Nov 2021 10:00 GMT";
+  const auto event = CreateEvent(start_time_string, end_time_string);
+
+  CreateEventListItemView(date, event.get(), /*round_top_corners=*/true,
+                          /*round_bottom_corners=*/true,
+                          /*show_event_list_dot=*/false);
+
+  EXPECT_FALSE(GetJoinButton());
 }
 
 }  // namespace ash

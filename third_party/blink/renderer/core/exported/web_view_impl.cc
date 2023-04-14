@@ -162,6 +162,7 @@
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_supplement.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
 #include "third_party/blink/renderer/platform/fonts/generic_font_family_settings.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -2377,7 +2378,9 @@ void WebViewImpl::SetPageScaleFactor(float scale_factor) {
   DCHECK(GetPage());
   DCHECK(MainFrameImpl());
 
-  MainFrameImpl()->GetFrame()->SetScaleFactor(scale_factor);
+  if (LocalFrame* frame = MainFrameImpl()->GetFrame()) {
+    frame->SetScaleFactor(scale_factor);
+  }
 }
 
 void WebViewImpl::SetZoomFactorForDeviceScaleFactor(
@@ -2553,6 +2556,46 @@ void WebViewImpl::SetPageLifecycleStateInternal(
   for (WebFrame* frame = MainFrame(); frame; frame = frame->TraverseNext()) {
     if (frame->IsWebLocalFrame()) {
       frame->ToWebLocalFrame()->Client()->DidSetPageLifecycleState();
+    }
+  }
+
+  UpdateViewTransitionState(restoring_from_bfcache, storing_in_bfcache,
+                            page_restore_params);
+}
+
+void WebViewImpl::UpdateViewTransitionState(
+    bool restoring_from_bfcache,
+    bool storing_in_bfcache,
+    const mojom::blink::PageRestoreParamsPtr& page_restore_params) {
+  // If we have view_transition_state, then we must be a main frame.
+  DCHECK(!page_restore_params || !page_restore_params->view_transition_state ||
+         MainFrame()->IsWebLocalFrame());
+  // We can't be both restoring and storing things.
+  DCHECK(!restoring_from_bfcache || !storing_in_bfcache);
+
+  if (!MainFrame()->IsWebLocalFrame()) {
+    return;
+  }
+  LocalFrame* local_frame = To<LocalFrame>(GetPage()->MainFrame());
+  DCHECK(local_frame);
+
+  // When restoring from BFCache, start a transition if we have a view
+  // transition state.
+  if (restoring_from_bfcache && page_restore_params->view_transition_state) {
+    if (auto* document = local_frame->GetDocument()) {
+      ViewTransitionSupplement::CreateFromSnapshotForNavigation(
+          *document, std::move(*page_restore_params->view_transition_state));
+    }
+  }
+
+  // If we're storing the page in BFCache, abort any pending transitions. This
+  // is important since when we bring the page back from BFCache, we might
+  // attempt to create a transition and fail if there is one already happening.
+  // Note that even if we won't be creating a transition, it's harmless to abort
+  // the main frame transition when going into BFCache.
+  if (storing_in_bfcache) {
+    if (auto* document = local_frame->GetDocument()) {
+      ViewTransitionSupplement::AbortTransition(*document);
     }
   }
 }
@@ -2983,9 +3026,15 @@ void WebViewImpl::Show(const LocalFrameToken& opener_frame_token,
   DCHECK(local_main_frame_host_remote_);
   DCHECK(web_widget_);
   web_widget_->SetPendingWindowRect(adjusted_rect);
+  const WebWindowFeatures& web_window_features = page_->GetWindowFeatures();
   mojom::blink::WindowFeaturesPtr window_features =
       mojom::blink::WindowFeatures::New();
   window_features->bounds = requested_rect;
+  window_features->has_x = web_window_features.x_set;
+  window_features->has_y = web_window_features.y_set;
+  window_features->has_width = web_window_features.width_set;
+  window_features->has_height = web_window_features.height_set;
+  window_features->is_popup = web_window_features.is_popup;
   local_main_frame_host_remote_->ShowCreatedWindow(
       opener_frame_token, NavigationPolicyToDisposition(policy),
       std::move(window_features), opened_by_user_gesture,

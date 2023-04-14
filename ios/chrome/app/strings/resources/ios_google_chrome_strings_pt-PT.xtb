@@ -3,6 +3,7 @@
 <translationbundle lang="pt-PT">
 <translation id="1143896152279775643">A palavra-passe será guardada no Gestor de palavras-passe da Google para <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Ajudar a melhorar as funcionalidades e o desempenho do Chrome</translation>
+<translation id="1352919863522755794">O Gestor de Palavras-passe da Google não conseguiu verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="1462727070346936664">Inicie sessão para tirar o máximo partido do Chrome.</translation>
 <translation id="1479202195792305274">O Chrome pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="1493827051843127077">Defina o Chrome como a predefinição para sincronizar os separadores, as palavras-chave e as informações de pagamento em todos os seus dispositivos</translation>
@@ -12,17 +13,16 @@
 <translation id="1682483655351012182">Sincronizar os dados do Chrome</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Esta conta e quaisquer dados não guardados serão removidos do Chrome e de outras apps Google neste dispositivo.</translation>
-<translation id="1968388653333775699">Faça mais com o Chrome</translation>
 <translation id="2009224836393115614">O Chrome não conseguiu verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="2056123005618757196">Faça mais com um Google Chrome simples, seguro e mais rápido do que nunca.</translation>
 <translation id="2147651015520127414">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
 <translation id="2199719347983604670">Dados da Sincronização do Chrome</translation>
-<translation id="2313070403598893276">O Google Chrome é simples, seguro e está mais rápido do que nunca</translation>
 <translation id="2339201583852607431">A palavra-passe será guardada na sua Conta Google (<ph name="EMAIL" />).</translation>
 <translation id="2342919707875585281">O Chrome partilha a sua localização com os sites que permite.</translation>
 <translation id="2347208864470321755">Se esta funcionalidade estiver ativada, o Chrome oferecer-se-á para traduzir páginas escritas noutros idiomas com o Google Tradutor. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="2427791862912929107">O Chrome inclui funcionalidades que ajudam a gerir os seus dados de Internet e a velocidade com que as páginas Web são carregadas.
 <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" />.</translation>
+<translation id="2444854139071078915">Para obter facilmente as palavras-passe guardadas nas outras apps, use o Chrome para o preenchimento automático</translation>
 <translation id="2561231791489583059">Utilize o Chrome como o navegador predefinido para obter proteção contra sites perigosos e manter as suas palavras-passe protegidas</translation>
 <translation id="2574249610672786438">Para ver os seus separadores onde quer que esteja a utilizar o Chrome, inicie sessão em todos os seus dispositivos.</translation>
 <translation id="2576431527583832481">O Chrome ficou ainda melhor! Está disponível uma nova versão.</translation>
@@ -31,6 +31,7 @@
 <translation id="2689064829982324496">Para terminar sessão na sua Conta Google em todos os Websites, <ph name="BEGIN_LINK" />termine sessão no Chrome<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">O Chrome não conseguiu verificar se existem atualizações. Tente mais tarde.</translation>
 <translation id="2732745070297234559">O Chrome não conseguiu verificar todas as palavras-passe. Tente novamente amanhã.</translation>
+<translation id="2767464022270041271">Não existem palavras-passe guardadas. O Gestor de Palavras-passe da Google pode verificar as suas palavras-passe quando as guardar.</translation>
 <translation id="2869959624320573933">Inicie sessão no Chrome</translation>
 <translation id="2957447865124070833">Selecione <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" />.</translation>
 <translation id="3030414234702425231">Uma vez que está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os seus dados do Chrome serão eliminados deste dispositivo. Contudo, permanecem na sua Conta Google.</translation>
@@ -38,7 +39,7 @@
 <translation id="3173834708294760622">Página do Google Chrome</translation>
 <translation id="3196546062792660320">O Chrome poupa o seu tempo ao trazer as suas contas para a Web. Pode adicionar ou remover contas nas Definições.</translation>
 <translation id="3282568296779691940">Iniciar sessão no Chrome</translation>
-<translation id="3345341804167540816">Usar o Chrome em todas as plataformas</translation>
+<translation id="3345341804167540816">Utilizar o Chrome em todas as plataformas</translation>
 <translation id="3503014945441706099">Obtenha também a Navegação segura melhorada para este perfil do Chrome</translation>
 <translation id="3522659714780527202">Para ver os seus separadores onde quer que esteja a utilizar o Chrome, ative a sincronização.</translation>
 <translation id="3533694711092285624">Não existem palavras-passe guardadas. O Chrome consegue verificar as suas palavras-passe quando as guarda.</translation>
@@ -59,15 +60,18 @@
 <translation id="4698415050768537821">O Chrome não conseguiu verificar todas as palavras-passe. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique as palavras-passe na sua Conta Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Para ajudar a melhorar a app, o Chrome envia dados de utilização e falhas de sistema para a Google. <ph name="BEGIN_LINK" />Faça a gestão<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Opção não suportada no Chrome Beta.</translation>
+<translation id="4840404732697892756">O Gestor de Palavras-passe da Google pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
 <translation id="5030102366287574140">O Chrome pode ajudar a proteger contra violações de dados, Websites inseguros e muito mais.</translation>
 <translation id="5108659628347594808">Melhore o Chrome</translation>
 <translation id="5119391094379141756">Selecione o Chrome</translation>
 <translation id="5162467219239570114">O Chrome está desatualizado. Se não estiverem disponíveis atualizações na <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, é possível que o seu dispositivo já não suporte novas versões do Chrome.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode utilizar a câmara porque está a ser utilizada por outra aplicação</translation>
 <translation id="5460571915754665838">4. Selecione o Chrome</translation>
+<translation id="5492504007368565877">O Gestor de Palavras-passe da Google não consegue verificar as suas palavras-passe.</translation>
 <translation id="5552137475244467770">O Chrome verifica periodicamente se as suas palavras-passe fazem parte das listas publicadas online. Ao fazê-lo, as suas palavras-passe e nomes de utilizador estão encriptados, pelo que não podem ser lidos por ninguém, incluindo a Google.</translation>
 <translation id="5639704535586432836">Abra Definições &gt; Privacidade &gt; Câmara &gt; Google Chrome e ative a câmara.</translation>
 <translation id="5642200033778930880">O Google Chrome não pode utilizar a câmara no modo Vista dividida</translation>
+<translation id="5661521615548540542">O Gestor de Palavras-passe da Google não conseguiu verificar todas as palavras-passe. Tente mais tarde.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Está offline. O Chrome não consegue verificar se existem atualizações.</translation>
 <translation id="5716154293141027663">Abra o Chrome sempre que tocar em links noutras apps</translation>
@@ -87,6 +91,7 @@
 <translation id="6709398533399187136">A sua palavra-passe foi exposta numa violação de dados. O Gestor de palavras-passe da Google recomenda que a altere agora.</translation>
 <translation id="6822673484890854830">O Chrome não conseguiu verificar todas as palavras-passe. Tente mais tarde.</translation>
 <translation id="6964931465519938134">Agora, pode utilizar o Chrome sempre que tocar em links de mensagens, documentos e outras apps.</translation>
+<translation id="6975725306479268850">Escolha o Chrome para o preenchimento automático</translation>
 <translation id="701356708427365932">Conheça o novo menu do Chrome</translation>
 <translation id="7059914902409643750">Personalize o Chrome</translation>
 <translation id="7124339256045485976">Mantenha o Chrome atualizado.</translation>
@@ -107,6 +112,8 @@
 <translation id="7754633291442704733">A sua organização <ph name="DOMAIN" /> vai ter acesso aos seus dados do Chrome, marcadores, histórico, palavras-passe e outras definições que armazenar nesta conta. Quando terminar sessão, os dados são limpos deste dispositivo.  No entanto, os dados permanecem armazenados na sua Conta Google gerida e ficam disponíveis para a sua organização. A sua organização também pode definir Políticas do Utilizador específicas para essa conta que podem alterar o comportamento do Chrome.</translation>
 <translation id="7780154209050837198">Para tirar o máximo partido do Chrome, inicie sessão no mesmo com a sua Conta Google.</translation>
 <translation id="7855730255114109580">O Google Chrome está atualizado</translation>
+<translation id="7939179037291298976">Nas Definições do iPhone, abra as "Opções de palavras-passe" e selecione "Chrome"</translation>
+<translation id="7975131781538454817">As notificações do Chrome estão desativadas nas Definições do dispositivo. Primeiro, tem de permitir as notificações.</translation>
 <translation id="8022947259858476807">Utilize o Chrome por predefinição para abrir links, pesquisar a partir de widgets e preencher automaticamente palavras-passe noutras apps</translation>
 <translation id="81358522153858150">O Chrome suporta agora Políticas do Utilizador para a sua conta gerida</translation>
 <translation id="8160472928944011082">Não é possível atualizar o Chrome.</translation>
@@ -120,9 +127,12 @@
   2. Toque em App de navegador predefinida
   3. Selecione o Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8603022514504485810">O Gestor de Palavras-passe da Google não conseguiu verificar todas as palavras-passe. Tente amanhã ou <ph name="BEGIN_LINK" />verifique as palavras-passe na sua Conta Google<ph name="END_LINK" />.</translation>
 <translation id="8736550665979974340">Proteja-se com o Google Chrome</translation>
+<translation id="8765470054473112089">Quando escreve na barra de endereço ou caixa de pesquisa, o Chrome envia o que escreve para o motor de pesquisa predefinido de forma a obter melhores sugestões. Esta opção está desativada na Navegação anónima.</translation>
 <translation id="8772179140489533211">Mostra pedidos para iniciar sessão no Chrome.</translation>
 <translation id="8788269841521769222">Não terá de memorizar esta palavra-passe. Será guardada no Gestor de palavras-passe da Google de <ph name="EMAIL" /></translation>
+<translation id="8857676124663337448">O Gestor de Palavras-passe da Google não conseguiu verificar todas as palavras-passe. Tente amanhã.</translation>
 <translation id="8897749957032330183">As palavras-passe são guardadas no Gestor de Palavras-passe da Google neste dispositivo.</translation>
 <translation id="8969290730818637510">Quando a opção está ativada:
 <ph name="BEGIN_INDENT" />  • Ajude a melhorar o Chrome para as pessoas que o utilizam de forma semelhante à sua.<ph name="END_INDENT" />
@@ -133,6 +143,7 @@ Aspetos a considerar:
   • Se o Chrome falhar, os detalhes sobre a falha podem incluir algumas informações pessoais.
 
   • Se ativar a sincronização, as métricas também podem incluir informações sobre os URLs que visita.<ph name="END_INDENT" /></translation>
+<translation id="9101160735177453133">Para ativar a opção "Acompanhar preço", permita as notificações do Chrome nas Definições do dispositivo</translation>
 <translation id="9103442491611662960">Vai obter a proteção de segurança padrão para este perfil do Chrome</translation>
 <translation id="9112744793181547300">Pretende definir o Chrome como a predefinição?</translation>
 <translation id="9122931302567044771">Isto significa que o Chrome irá pedir sempre o site para computador.</translation>

@@ -50,7 +50,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -63,7 +62,6 @@
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/ui_controls.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -88,7 +86,14 @@ void LoggedInSpokenFeedbackTest::SetUpInProcessBrowserTestFixture() {
   AccessibilityManager::SetBrailleControllerForTest(&braille_controller_);
 }
 
+void LoggedInSpokenFeedbackTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
+  event_generator_ = std::make_unique<ui::test::EventGenerator>(
+      Shell::Get()->GetPrimaryRootWindow());
+}
+
 void LoggedInSpokenFeedbackTest::TearDownOnMainThread() {
+  event_generator_.reset();
   AccessibilityManager::SetBrailleControllerForTest(nullptr);
   // Unload the ChromeVox extension so the browser doesn't try to respond to
   // in-flight requests during test shutdown. https://crbug.com/923090
@@ -97,47 +102,51 @@ void LoggedInSpokenFeedbackTest::TearDownOnMainThread() {
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPress(ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, false, false, false, false)));
+  ui::test::EmulateFullKeyPressReleaseSequence(event_generator_.get(), key,
+                                               false, false, false, false);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithControl(ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, true, false, false, false)));
+  ui::test::EmulateFullKeyPressReleaseSequence(
+      event_generator_.get(), key, /*control=*/true, false, false, false);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithControlAndAlt(
     ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, true, false, true, false)));
+  ui::test::EmulateFullKeyPressReleaseSequence(event_generator_.get(), key,
+                                               /*control=*/true, false,
+                                               /*shift=*/true, false);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithShift(ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, false, true, false, false)));
+  ui::test::EmulateFullKeyPressReleaseSequence(
+      event_generator_.get(), key, false, /*shift=*/true, false, false);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndShift(
     ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, false, true, false, true)));
+  ui::test::EmulateFullKeyPressReleaseSequence(event_generator_.get(), key,
+                                               false, /*shift=*/true, false,
+                                               /*command=*/true);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearch(ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, false, false, false, true)));
+  ui::test::EmulateFullKeyPressReleaseSequence(
+      event_generator_.get(), key, false, false, false, /*command=*/true);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControl(
     ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, true, false, false, true)));
+  ui::test::EmulateFullKeyPressReleaseSequence(event_generator_.get(), key,
+                                               /*control=*/true, false, false,
+                                               /*command=*/true);
 }
 
 void LoggedInSpokenFeedbackTest::SendKeyPressWithSearchAndControlAndShift(
     ui::KeyboardCode key) {
-  ASSERT_NO_FATAL_FAILURE(ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-      nullptr, key, true, true, false, true)));
+  ui::test::EmulateFullKeyPressReleaseSequence(event_generator_.get(), key,
+                                               /*control=*/true, /*shift=*/true,
+                                               false, /*command=*/true);
 }
 
 void LoggedInSpokenFeedbackTest::SendStickyKeyCommand() {
@@ -146,8 +155,7 @@ void LoggedInSpokenFeedbackTest::SendStickyKeyCommand() {
 }
 
 void LoggedInSpokenFeedbackTest::SendMouseMoveTo(const gfx::Point& location) {
-  ASSERT_NO_FATAL_FAILURE(
-      ASSERT_TRUE(ui_controls::SendMouseMove(location.x(), location.y())));
+  event_generator_->MoveMouseTo(location.x(), location.y());
 }
 
 bool LoggedInSpokenFeedbackTest::PerformAcceleratorAction(
@@ -1969,25 +1977,16 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, KeyboardShortcutViewer) {
   sm_.Replay();
 }
 
-//
 // Spoken feedback tests of the out-of-box experience.
-//
-
-// Parameter value represents if the OobeRemoveShutdownButton feature is
-// enabled.
-class OobeSpokenFeedbackTest : public OobeBaseTest,
-                               public testing::WithParamInterface<bool> {
- protected:
-  OobeSpokenFeedbackTest() {
-    feature_list_.InitWithFeatureState(features::kOobeRemoveShutdownButton,
-                                       GetParam());
-  }
-
+class OobeSpokenFeedbackTest : public OobeBaseTest {
+ public:
+  OobeSpokenFeedbackTest() = default;
   OobeSpokenFeedbackTest(const OobeSpokenFeedbackTest&) = delete;
   OobeSpokenFeedbackTest& operator=(const OobeSpokenFeedbackTest&) = delete;
+  ~OobeSpokenFeedbackTest() override = default;
 
-  ~OobeSpokenFeedbackTest() override {}
-
+ protected:
+  // OobeBaseTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     OobeBaseTest::SetUpCommandLine(command_line);
     // Many bots don't have keyboard/mice which triggers the HID detection
@@ -1997,16 +1996,22 @@ class OobeSpokenFeedbackTest : public OobeBaseTest,
     // the device type so tutorial-related behavior can be tested.
     command_line->AppendSwitchASCII(switches::kFormFactor, "CHROMEBOOK");
   }
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        Shell::Get()->GetPrimaryRootWindow());
+  }
+  void TearDownOnMainThread() override {
+    event_generator_.reset();
+    OobeBaseTest::TearDownOnMainThread();
+  }
 
+  std::unique_ptr<ui::test::EventGenerator> event_generator_;
   test::SpeechMonitor sm_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // TODO(crbug.com/1310682) - Re-enable this test.
-IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
-  ui_controls::EnableUIControls();
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   AccessibilityManager::Get()->EnableSpokenFeedbackWithTutorial();
 
@@ -2014,37 +2019,23 @@ IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest, DISABLED_SpokenFeedbackInOobe) {
   sm_.ExpectSpeech("Welcome to ChromeVox!");
 
   // The tutorial can be exited by pressing Escape.
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_ESCAPE, false, false, false, false));
-  });
+  sm_.Call([&]() { event_generator_->PressAndReleaseKey(ui::VKEY_ESCAPE, 0); });
 
   sm_.ExpectSpeech("Get started");
 
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_TAB, false, false, false, false));
-  });
+  sm_.Call([&]() { event_generator_->PressAndReleaseKey(ui::VKEY_TAB, 0); });
   sm_.ExpectSpeech("Pause animation");
 
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_TAB, false, false, false, false));
-  });
-  if (GetParam()) {
-    sm_.ExpectSpeechPattern("*Status tray*");
-  } else {
-    sm_.ExpectSpeech("Shut down");
-  }
+  sm_.Call([&]() { event_generator_->PressAndReleaseKey(ui::VKEY_TAB, 0); });
+  sm_.ExpectSpeechPattern("*Status tray*");
   sm_.ExpectSpeech("Button");
 
   sm_.Replay();
 }
 
 // TODO(akihiroota): fix flakiness: http://crbug.com/1172390
-IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest,
+IN_PROC_BROWSER_TEST_F(OobeSpokenFeedbackTest,
                        DISABLED_SpokenFeedbackTutorialInOobe) {
-  ui_controls::EnableUIControls();
   ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
   sm_.ExpectSpeech("Welcome to ChromeVox!");
@@ -2052,17 +2043,12 @@ IN_PROC_BROWSER_TEST_P(OobeSpokenFeedbackTest,
       "Welcome to the ChromeVox tutorial*When you're ready, use the spacebar "
       "to move to the next lesson.");
   // Press space to move to the next lesson.
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_SPACE, false, false, false, false));
-  });
+  sm_.Call([&]() { event_generator_->PressAndReleaseKey(ui::VKEY_SPACE, 0); });
   sm_.ExpectSpeech("Essential Keys: Control");
   sm_.ExpectSpeechPattern("*To continue, press the Control key.*");
   // Press control to move to the next lesson.
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_CONTROL, false, false, false, false));
-  });
+  sm_.Call(
+      [&]() { event_generator_->PressAndReleaseKey(ui::VKEY_CONTROL, 0); });
   sm_.ExpectSpeechPattern("*To continue, press the left Shift key.");
   sm_.Replay();
 }
@@ -2085,7 +2071,7 @@ class SigninToUserProfileSwitchTest : public OobeSpokenFeedbackTest {
 // Verifies that spoken feedback correctly handles profile switch (signin ->
 // user) and announces the sync consent screen correctly.
 // TODO(crbug.com/1184714): Fix flakiness.
-IN_PROC_BROWSER_TEST_P(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
+IN_PROC_BROWSER_TEST_F(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   // Force sync screen.
   LoginDisplayHost::default_host()->GetWizardContext()->is_branded_build = true;
   AccessibilityManager::Get()->EnableSpokenFeedback(true);
@@ -2099,15 +2085,12 @@ IN_PROC_BROWSER_TEST_P(SigninToUserProfileSwitchTest, DISABLED_LoginAsNewUser) {
   sm_.ExpectSpeechPattern("Welcome to the ChromeVox tutorial*");
 
   // The tutorial can be exited by pressing Escape.
-  sm_.Call([]() {
-    ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
-        nullptr, ui::VKEY_ESCAPE, false, false, false, false));
-  });
+  sm_.Call([&]() { event_generator_->PressAndReleaseKey(ui::VKEY_ESCAPE, 0); });
 
   sm_.ExpectSpeech("Accept and continue");
 
   // Check that profile switched to the active user.
-  sm_.Call([]() {
+  sm_.Call([&]() {
     ASSERT_EQ(AccessibilityManager::Get()->profile(),
               ProfileManager::GetActiveUserProfile());
   });
@@ -2187,8 +2170,5 @@ IN_PROC_BROWSER_TEST_F(DeskTemplatesSpokenFeedbackTest, DeskTemplatesBasic) {
 
   sm_.Replay();
 }
-
-INSTANTIATE_TEST_SUITE_P(All, OobeSpokenFeedbackTest, testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, SigninToUserProfileSwitchTest, testing::Bool());
 
 }  // namespace ash

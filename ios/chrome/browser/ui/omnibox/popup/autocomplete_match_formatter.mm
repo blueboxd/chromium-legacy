@@ -243,8 +243,11 @@ UIColor* DimColorIncognito() {
 }
 
 - (UIImage*)matchTypeIcon {
-  return GetOmniboxSuggestionIconForAutocompleteMatchType(
-      _match.type, /* is_starred */ false);
+  return GetOmniboxSuggestionIconForAutocompleteMatchType(_match.type);
+}
+
+- (NSString*)matchTypeIconAccessibilityIdentifier {
+  return base::SysUTF8ToNSString(AutocompleteMatchType::ToString(_match.type));
 }
 
 - (BOOL)isMatchTypeSearch {

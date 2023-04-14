@@ -24,6 +24,7 @@ class NetworkConnectionHandler;
 class NetworkDeviceHandler;
 class NetworkProfileHandler;
 class NetworkStateHandler;
+class TechnologyStateController;
 
 namespace network_config {
 
@@ -48,7 +49,8 @@ class CrosNetworkConfig
       ManagedNetworkConfigurationHandler* network_configuration_handler,
       NetworkConnectionHandler* network_connection_handler,
       NetworkCertificateHandler* network_certificate_handler,
-      NetworkProfileHandler* network_profile_handler);
+      NetworkProfileHandler* network_profile_handler,
+      TechnologyStateController* technology_state_controller);
   CrosNetworkConfig(const CrosNetworkConfig&) = delete;
   CrosNetworkConfig& operator=(const CrosNetworkConfig&) = delete;
   ~CrosNetworkConfig() override;
@@ -131,13 +133,13 @@ class CrosNetworkConfig
   void OnGetManagedProperties(GetManagedPropertiesCallback callback,
                               std::string guid,
                               const std::string& service_path,
-                              absl::optional<base::Value> properties,
+                              absl::optional<base::Value::Dict> properties,
                               absl::optional<std::string> error);
   void OnGetManagedPropertiesEap(
       GetManagedPropertiesCallback callback,
       chromeos::network_config::mojom::ManagedPropertiesPtr managed_properties,
       const std::string& service_path,
-      absl::optional<base::Value> properties,
+      absl::optional<base::Value::Dict> properties,
       absl::optional<std::string> error);
   void SetPropertiesInternal(const std::string& guid,
                              const NetworkState& network,
@@ -177,8 +179,9 @@ class CrosNetworkConfig
   void OnGetAlwaysOnVpn(GetAlwaysOnVpnCallback callback,
                         std::string mode,
                         std::string service_path);
-  void OnGetSupportedVpnTypes(GetSupportedVpnTypesCallback callback,
-                              absl::optional<base::Value> manager_properties);
+  void OnGetSupportedVpnTypes(
+      GetSupportedVpnTypesCallback callback,
+      absl::optional<base::Value::Dict> manager_properties);
   void PopulateTrafficCounters(RequestTrafficCountersCallback callback,
                                absl::optional<base::Value> traffic_counters);
 
@@ -218,6 +221,7 @@ class CrosNetworkConfig
   NetworkConnectionHandler* network_connection_handler_;    // Unowned
   NetworkCertificateHandler* network_certificate_handler_;  // Unowned
   NetworkProfileHandler* network_profile_handler_;          // Unowned
+  TechnologyStateController* technology_state_controller_;  // Unowned
 
   mojo::RemoteSet<chromeos::network_config::mojom::CrosNetworkConfigObserver>
       observers_;

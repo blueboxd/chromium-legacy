@@ -1044,13 +1044,12 @@ IN_PROC_BROWSER_TEST_F(
           ->profile()
           ->GetDefaultStoragePartition()
           ->GetServiceWorkerContext();
-  EXPECT_EQ(
-      true,
-      service_worker_context_->MaybeHasRegistrationForStorageKey(
-          blink::StorageKey(url::Origin::Create(GetOriginServerURL("/")))));
+  EXPECT_EQ(true, service_worker_context_->MaybeHasRegistrationForStorageKey(
+                      blink::StorageKey::CreateFirstParty(
+                          url::Origin::Create(GetOriginServerURL("/")))));
   EXPECT_EQ(false, service_worker_context_->MaybeHasRegistrationForStorageKey(
-                       blink::StorageKey(url::Origin::Create(
-                           GURL("https://unregistered.com")))));
+                       blink::StorageKey::CreateFromStringForTesting(
+                           "https://unregistered.com")));
 
   GURL prefetch_url = GetOriginServerURL("/title2.html");
 
@@ -2196,7 +2195,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithDecoyRequestsBrowserTest,
           ->GetDefaultStoragePartition()
           ->GetServiceWorkerContext();
   ASSERT_TRUE(service_worker_context_->MaybeHasRegistrationForStorageKey(
-      blink::StorageKey(url::Origin::Create(starting_page))));
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(starting_page))));
 
   ukm::SourceId srp_source_id =
       GetWebContents()->GetPrimaryMainFrame()->GetPageUkmSourceId();
@@ -2460,10 +2459,9 @@ class SSLReportingPrefetchProxyBrowserTest : public PrefetchProxyBrowserTest {
   void SetFeatures() override {
     // Important: Features with parameters can't be used here, because it will
     // cause a failed DCHECK in the SSL reporting test.
-    scoped_feature_list_.InitWithFeatures(
-        {features::kIsolatePrerenders,
-         blink::features::kSpeculationRulesPrefetchProxy},
-        {});
+    scoped_feature_list_.InitFromCommandLine(
+        "IsolatePrerenders,SpeculationRulesPrefetchProxy",
+        "PrefetchUseContentRefactor");
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -3138,15 +3136,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
                          ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
                          ukm::builders::PrefetchProxy_AfterSRPClick::
                              kSRPClickPrefetchStatusName));
-
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.Prefetch.Subresources.NetError", net::OK, 2);
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.Prefetch.Subresources.Quantity", 4, 1);
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.Prefetch.Subresources.RespCode", 200, 2);
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.AfterClick.Subresources.UsedCache", true, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
@@ -3588,10 +3577,6 @@ IN_PROC_BROWSER_TEST_F(PrefetchProxyWithNSPBrowserTest,
 
   // Navigate to the predicted site.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), eligible_link));
-
-  // Checks that only one resource was used from cache.
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.AfterClick.Subresources.UsedCache", true, 1);
 
   // Navigate again to trigger UKM recording.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
@@ -4097,14 +4082,11 @@ class SpeculationPrefetchProxyTest : public PrefetchProxyBrowserTest {
   }
 
   void SetFeatures() override {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kIsolatePrerenders,
-          {{"use_speculation_rules", "true"},
-           {"max_srp_prefetches", "3"},
-           {"max_subresource_count_per_prerender", "50"}}},
-         {blink::features::kLightweightNoStatePrefetch, {}},
-         {blink::features::kSpeculationRulesPrefetchProxy, {}}},
-        {{features::kLazyImageLoading}});
+    scoped_feature_list_.InitFromCommandLine(
+        "IsolatePrerenders:use_speculation_rules/true/max_srp_prefetches/4/"
+        "max_subresource_count_per_prerender/"
+        "50,LightweightNoStatePrefetch,SpeculationRulesPrefetchProxy",
+        "PrefetchUseContentRefactor,LazyImageLoading");
   }
 
  private:
@@ -4288,18 +4270,6 @@ IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
                          ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
                          ukm::builders::PrefetchProxy_AfterSRPClick::
                              kSRPClickPrefetchStatusName));
-
-  // In addition to "prefetch.js" and "prefetch-redirect-start.js",
-  // "favicon.ico" is also counted here, because the favicon loading is
-  // triggered from `FrameLoader::DidFinishNavigation()` at the end of NSP.
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.Prefetch.Subresources.NetError", net::OK, 3);
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.Prefetch.Subresources.Quantity", 4, 1);
-  histogram_tester.ExpectBucketCount(
-      "PrefetchProxy.Prefetch.Subresources.RespCode", 200, 2);
-  histogram_tester.ExpectUniqueSample(
-      "PrefetchProxy.AfterClick.Subresources.UsedCache", true, 2);
 }
 
 IN_PROC_BROWSER_TEST_F(SpeculationPrefetchProxyTest,
@@ -4398,6 +4368,12 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
   PrefetchProxyPrerenderBrowserTest& operator=(
       const PrefetchProxyPrerenderBrowserTest&) = delete;
 
+  void SetFeatures() override {
+    scoped_feature_list_.InitFromCommandLine(
+        "IsolatePrerenders:use_speculation_rules/false/max_srp_prefetches/1",
+        "PrefetchUseContentRefactor");
+  }
+
   void SetUpOnMainThread() override {
     prerender_test_helper_->SetUp(embedded_test_server());
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -4426,6 +4402,7 @@ class PrefetchProxyPrerenderBrowserTest : public PrefetchProxyBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<content::test::PrerenderTestHelper> prerender_test_helper_;
 };
 
@@ -4723,17 +4700,11 @@ class SpeculationOnlyPrivatePrefetchesPrefetchProxyTest
     : public PrefetchProxyBrowserTest {
  public:
   void SetFeatures() override {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kIsolatePrerenders,
-          {
-              {"use_speculation_rules", "true"},
-              {"max_srp_prefetches", "3"},
-              {"use_individual_network_contexts", "true"},
-              {"support_non_private_prefetches", "false"},
-          }},
-         {blink::features::kLightweightNoStatePrefetch, {}},
-         {blink::features::kSpeculationRulesPrefetchProxy, {}}},
-        {{features::kLazyImageLoading}});
+    scoped_feature_list_.InitFromCommandLine(
+        "IsolatePrerenders:use_speculation_rules/true/max_srp_prefetches/3/"
+        "use_individual_network_contexts/true/support_non_private_prefetches/"
+        "false,LightweightNoStatePrefetch,SpeculationRulesPrefetchProxy",
+        "PrefetchUseContentRefactor,LazyImageLoading");
   }
 
  private:
@@ -4777,17 +4748,11 @@ class SpeculationNonPrivatePrefetchesPrefetchProxyTest
     : public PrefetchProxyBrowserTest {
  public:
   void SetFeatures() override {
-    scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{features::kIsolatePrerenders,
-          {
-              {"use_speculation_rules", "true"},
-              {"max_srp_prefetches", "3"},
-              {"use_individual_network_contexts", "true"},
-              {"support_non_private_prefetches", "true"},
-          }},
-         {blink::features::kLightweightNoStatePrefetch, {}},
-         {blink::features::kSpeculationRulesPrefetchProxy, {}}},
-        {{features::kLazyImageLoading}});
+    scoped_feature_list_.InitFromCommandLine(
+        "IsolatePrerenders:use_speculation_rules/true/max_srp_prefetches/3/"
+        "use_individual_network_contexts/true/support_non_private_prefetches/"
+        "true,LightweightNoStatePrefetch,SpeculationRulesPrefetchProxy",
+        "PrefetchUseContentRefactor,LazyImageLoading");
   }
 
  private:

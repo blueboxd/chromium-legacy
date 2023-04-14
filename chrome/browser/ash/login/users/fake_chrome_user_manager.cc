@@ -291,7 +291,7 @@ void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
       WallpaperControllerClientImpl::Get();
   // `wallpaper_client` could be nullptr in tests.
   if (wallpaper_client)
-    wallpaper_client->RemoveUserWallpaper(account_id);
+    wallpaper_client->RemoveUserWallpaper(account_id, base::DoNothing());
   ProfileHelper::Get()->RemoveUserFromListForTesting(account_id);
 
   const user_manager::UserList::iterator it =
@@ -663,7 +663,7 @@ bool FakeChromeUserManager::IsUserAllowed(
 
 void FakeChromeUserManager::CreateLocalState() {
   local_state_ = std::make_unique<TestingPrefServiceSimple>();
-  user_manager::KnownUser::RegisterPrefs(local_state_->registry());
+  ChromeUserManager::RegisterPrefs(local_state_->registry());
 }
 
 void FakeChromeUserManager::SimulateUserProfileLoad(
@@ -726,10 +726,6 @@ void FakeChromeUserManager::OnUserRemoved(const AccountId& account_id) {
 void FakeChromeUserManager::SetUserAffiliation(
     const AccountId& account_id,
     const AffiliationIDSet& user_affiliation_ids) {}
-
-bool FakeChromeUserManager::ShouldReportUser(const std::string& user_id) const {
-  return false;
-}
 
 bool FakeChromeUserManager::IsFullManagementDisclosureNeeded(
     policy::DeviceLocalAccountPolicyBroker* broker) const {

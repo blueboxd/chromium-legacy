@@ -92,7 +92,8 @@ class PluginVmApps : public AppPublisher,
       const guest_os::GuestOsRegistryService::Registration& registration,
       bool generate_new_icon_key);
 
-  void OnPluginVmAvailabilityChanged(bool is_allowed, bool is_configured);
+  void OnPluginVmAllowedChanged(bool is_allowed);
+  void OnPluginVmConfiguredChanged();
   void OnPermissionChanged();
 
   Profile* const profile_;
@@ -103,8 +104,7 @@ class PluginVmApps : public AppPublisher,
   // Whether the Plugin VM app is allowed by policy.
   bool is_allowed_ = false;
 
-  std::unique_ptr<plugin_vm::PluginVmAvailabilitySubscription>
-      availability_subscription_;
+  std::unique_ptr<plugin_vm::PluginVmPolicySubscription> policy_subscription_;
   PrefChangeRegistrar pref_registrar_;
 };
 

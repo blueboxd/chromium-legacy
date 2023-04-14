@@ -7,7 +7,6 @@
 #include <memory>
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/flexible_box_algorithm.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -135,7 +134,6 @@ bool ContainsNonWhitespace(const LayoutBox* box) {
 
 NGFlexLayoutAlgorithm::NGFlexLayoutAlgorithm(
     const NGLayoutAlgorithmParams& params,
-    DevtoolsFlexInfo* layout_info_for_devtools,
     const HashMap<wtf_size_t, LayoutUnit>* cross_size_adjustments)
     : NGLayoutAlgorithm(params),
       is_column_(Style().ResolvedIsColumnFlexDirection()),
@@ -1066,7 +1064,6 @@ const NGLayoutResult* NGFlexLayoutAlgorithm::Layout() {
 const NGLayoutResult*
 NGFlexLayoutAlgorithm::RelayoutIgnoringChildScrollbarChanges() {
   DCHECK(!ignore_child_scrollbar_changes_);
-  DCHECK(!layout_info_for_devtools_);
   NGLayoutAlgorithmParams params(
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), /* early_break */ nullptr);
@@ -1285,8 +1282,6 @@ void NGFlexLayoutAlgorithm::PlaceFlexItems(
       NGConstraintSpace child_space = BuildSpaceForLayout(
           flex_item.ng_input_node_, flex_item.FlexedBorderBoxSize(),
           flex_item.max_content_contribution_);
-      auto minimum_top = DeferredShapingMinimumTopScope::CreateDelta(
-          Node(), cross_axis_offset);
 
       // We need to get the item's cross axis size given its new main size. If
       // the new main size is the item's inline size, then we have to do a
@@ -1458,8 +1453,6 @@ NGLayoutResult::EStatus NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSize(
             flex_item.ng_input_node, flex_item.main_axis_final_size,
             /* override_inline_size */ absl::nullopt,
             line_output.line_cross_size);
-        auto minimum_top = DeferredShapingMinimumTopScope::CreateDelta(
-            Node(), offset.block_offset);
         layout_result =
             flex_item.ng_input_node.Layout(child_space,
                                            /* break_token */ nullptr);
@@ -1740,8 +1733,6 @@ NGFlexLayoutAlgorithm::GiveItemsFinalPositionAndSizeForFragmentation(
         flex_item->ng_input_node, flex_item->main_axis_final_size,
         /* override_inline_size */ absl::nullopt, line_cross_size_for_stretch,
         offset.block_offset, min_block_size_should_encompass_intrinsic_size);
-    auto minimum_top = DeferredShapingMinimumTopScope::CreateDelta(
-        Node(), offset.block_offset);
     const NGLayoutResult* layout_result = flex_item->ng_input_node.Layout(
         child_space, item_break_token, early_break_in_child);
 
@@ -2673,7 +2664,7 @@ const NGLayoutResult* NGFlexLayoutAlgorithm::RelayoutWithNewRowSizes() {
       Node(), container_builder_.InitialFragmentGeometry(), ConstraintSpace(),
       BreakToken(), early_break_, additional_early_breaks_);
   NGFlexLayoutAlgorithm algorithm_with_row_cross_sizes(
-      params, layout_info_for_devtools_.get(), &row_cross_size_updates_);
+      params, &row_cross_size_updates_);
   auto& new_builder = algorithm_with_row_cross_sizes.container_builder_;
   new_builder.SetBoxType(container_builder_.BoxType());
   algorithm_with_row_cross_sizes.ignore_child_scrollbar_changes_ =

@@ -27,6 +27,7 @@ class ImageModel;
 }  // namespace ui
 
 namespace views {
+class FocusRing;
 class View;
 class Widget;
 }  // namespace views
@@ -36,6 +37,7 @@ namespace ash {
 class NotificationCenterBubble;
 class NotificationListView;
 class NotificationCenterTray;
+class NotificationCenterView;
 
 // Utility class to facilitate easier testing of the notification center.
 class NotificationCenterTestApi {
@@ -64,7 +66,8 @@ class NotificationCenterTestApi {
       const message_center::NotifierId& notifier_id =
           message_center::NotifierId(),
       const message_center::NotificationPriority =
-          message_center::NotificationPriority::DEFAULT_PRIORITY);
+          message_center::NotificationPriority::DEFAULT_PRIORITY,
+      const bool pinned = false);
 
   // Adds a notification and returns the associated id.
   std::string AddNotification();
@@ -72,6 +75,9 @@ class NotificationCenterTestApi {
   // Adds a notification with the source url and notifier id corresponding to
   // the provided url as a string. Useful for testing notification grouping.
   std::string AddNotificationWithSourceUrl(const std::string& url);
+
+  // Adds a pinned notification and return the associated id.
+  std::string AddPinnedNotification();
 
   // Adds a notification with the system component notifier and system priority
   // level.
@@ -85,6 +91,9 @@ class NotificationCenterTestApi {
 
   // Returns true if `NotificationCenterBubble` is shown, false otherwise.
   bool IsBubbleShown();
+
+  // Returns true if a pinned icons is shown in the `NotificationCenterTray`.
+  bool IsPinnedIconShown();
 
   // Returns true if a popup associated with the provided `id` exists, false
   // otherwise.
@@ -124,7 +133,13 @@ class NotificationCenterTestApi {
   NotificationCenterBubble* GetBubble();
 
   // Returns the top level view for the notification center.
-  views::View* GetNotificationCenterView();
+  NotificationCenterView* GetNotificationCenterView();
+
+  // Returns the parent view for all notification views.
+  NotificationListView* GetNotificationListView();
+
+  // Completes all animations that may be running in `NotificationListView`.
+  void CompleteNotificationListAnimation();
 
   // Returns the clear all button in the bottom right corner of the notification
   // center UI.
@@ -135,10 +150,14 @@ class NotificationCenterTestApi {
   // `NotificationGroupingController` to create a parent notification.
   std::string NotificationIdToParentNotificationId(const std::string& id);
 
+  // Returns the notification center tray's focus ring.
+  views::FocusRing* GetFocusRing() const;
+
+  // Focuses the notification center tray.
+  void FocusTray();
+
  private:
   std::string GenerateNotificationId();
-
-  NotificationListView* GetNotificationListView();
 
   NotificationListView* GetNotificationListViewOnDisplay(int64_t display_id);
 

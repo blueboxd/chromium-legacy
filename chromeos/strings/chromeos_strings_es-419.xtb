@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">La ventana de actualización de firmware para dispositivos externos está abierta. Hay <ph name="NUM_UPDATES" /> actualizaciones disponibles.</translation>
 <translation id="1145516343487477149">Encuentra artículos de ayuda y respuestas a preguntas frecuentes sobre Chromebooks.</translation>
+<translation id="1167755866710282443">Abre el menú para personalizar las teclas. Arrastra el menú para moverlo.</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> administra el dispositivo <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1175951029573070619">Promedio (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Quitar</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Seleccionar álbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Panel táctil con conexión USB</translation>
 <translation id="4117637339509843559">Modo oscuro</translation>
+<translation id="4130035430755296270">Sigue colocando el cursor sobre otras opciones de diseño</translation>
 <translation id="4131410914670010031">Blanco y negro</translation>
 <translation id="4145784616224233563">Firewall de HTTP</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) resolución de DNS</translation>
 <translation id="4848429997038228357">EN EJECUCIÓN</translation>
 <translation id="4854586501323951986">Pantalla táctil integrada</translation>
+<translation id="4855250849489639581">Desliza el dedo hacia abajo para obtener más opciones de diseño.</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intento.}other{<ph name="ERROR_MESSAGE" /> Quedan {0} intentos.}}</translation>
 <translation id="4873827928179867585">Algoritmo de autenticación</translation>
 <translation id="4880328057631981605">Nombre de punto de acceso</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 imagen</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> administra el dispositivo <ph name="DEVICE_TYPE" />. Los administradores pueden configurarlo de forma remota.</translation>
 <translation id="7180611975245234373">Actualizar</translation>
+<translation id="7180865173735832675">Personalizar</translation>
 <translation id="7212734716605298123">Actualizaciones de firmware para dispositivos externos</translation>
 <translation id="7216409898977639127">Proveedor de red celular</translation>
 <translation id="725133483556299729">Seleccionar un correo electrónico</translation>

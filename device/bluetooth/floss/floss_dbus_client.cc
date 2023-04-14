@@ -19,20 +19,24 @@ int kDBusTimeoutMs = 2000;
 // TODO(b/189499077) - Expose via floss package
 const char kAdapterService[] = "org.chromium.bluetooth";
 const char kManagerService[] = "org.chromium.bluetooth.Manager";
-const char kAdapterInterface[] = "org.chromium.bluetooth.Bluetooth";
-const char kGattInterface[] = "org.chromium.bluetooth.BluetoothGatt";
-const char kBatteryManagerInterface[] = "org.chromium.bluetooth.BatteryManager";
-const char kAdminInterface[] = "org.chromium.bluetooth.BluetoothAdmin";
-const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
-const char kExperimentalInterface[] = "org.chromium.bluetooth.Experimental";
-const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
+
+const char kAdapterLoggingObjectFormat[] =
+    "/org/chromium/bluetooth/hci%d/logging";
 const char kAdapterObjectFormat[] = "/org/chromium/bluetooth/hci%d/adapter";
-const char kGattObjectFormat[] = "/org/chromium/bluetooth/hci%d/gatt";
-const char kMediaObjectFormat[] = "/org/chromium/bluetooth/hci%d/media";
+const char kAdminObjectFormat[] = "/org/chromium/bluetooth/hci%d/admin";
 const char kBatteryManagerObjectFormat[] =
     "/org/chromium/bluetooth/hci%d/battery_manager";
-const char kAdminObjectFormat[] = "/org/chromium/bluetooth/hci%d/admin";
+const char kGattObjectFormat[] = "/org/chromium/bluetooth/hci%d/gatt";
+const char kManagerObject[] = "/org/chromium/bluetooth/Manager";
+const char kMediaObjectFormat[] = "/org/chromium/bluetooth/hci%d/media";
 
+const char kAdapterInterface[] = "org.chromium.bluetooth.Bluetooth";
+const char kAdapterLoggingInterface[] = "org.chromium.bluetooth.Logging";
+const char kAdminInterface[] = "org.chromium.bluetooth.BluetoothAdmin";
+const char kBatteryManagerInterface[] = "org.chromium.bluetooth.BatteryManager";
+const char kExperimentalInterface[] = "org.chromium.bluetooth.Experimental";
+const char kGattInterface[] = "org.chromium.bluetooth.BluetoothGatt";
+const char kManagerInterface[] = "org.chromium.bluetooth.Manager";
 const char kSocketManagerInterface[] = "org.chromium.bluetooth.SocketManager";
 
 namespace adapter {
@@ -40,6 +44,7 @@ const char kGetAddress[] = "GetAddress";
 const char kGetName[] = "GetName";
 const char kSetName[] = "SetName";
 const char kGetDiscoverable[] = "GetDiscoverable";
+const char kGetDiscoverableTimeout[] = "GetDiscoverableTimeout";
 const char kSetDiscoverable[] = "SetDiscoverable";
 const char kStartDiscovery[] = "StartDiscovery";
 const char kCancelDiscovery[] = "CancelDiscovery";
@@ -88,6 +93,7 @@ const char kOnDeviceDisconnected[] = "OnDeviceDisconnected";
 
 const char kOnScannerRegistered[] = "OnScannerRegistered";
 const char kOnScanResult[] = "OnScanResult";
+const char kOnScanResultLost[] = "OnScanResultLost";
 }  // namespace adapter
 
 namespace manager {
@@ -153,6 +159,8 @@ const char kConfigureMtu[] = "ConfigureMtu";
 const char kConnectionParameterUpdate[] = "ConnectionParameterUpdate";
 const char kCallbackInterface[] =
     "org.chromium.bluetooth.BluetoothGattCallback";
+const char kServerCallbackInterface[] =
+    "org.chromium.bluetooth.BluetoothGattServerCallback";
 
 const char kOnClientRegistered[] = "OnClientRegistered";
 const char kOnClientConnectionState[] = "OnClientConnectionState";
@@ -169,6 +177,30 @@ const char kOnReadRemoteRssi[] = "OnReadRemoteRssi";
 const char kOnConfigureMtu[] = "OnConfigureMtu";
 const char kOnConnectionUpdated[] = "OnConnectionUpdated";
 const char kOnServiceChanged[] = "OnServiceChanged";
+
+const char kRegisterServer[] = "RegisterServer";
+const char kUnregisterServer[] = "UnregisterServer";
+const char kServerConnect[] = "ServerConnect";
+const char kServerDisconnect[] = "ServerDisconnect";
+const char kServerSetPreferredPhy[] = "ServerSetPreferredPhy";
+const char kServerReadPhy[] = "ServerReadPhy";
+const char kAddService[] = "AddService";
+const char kRemoveService[] = "RemoveService";
+const char kClearServices[] = "ClearServices";
+const char kSendResponse[] = "SendResponse";
+const char kServerSendNotification[] = "SendNotification";
+
+const char kOnServerRegistered[] = "OnServerRegistered";
+const char kOnServerConnectionState[] = "OnServerConnectionState";
+const char kOnServerServiceAdded[] = "OnServiceAdded";
+const char kOnServerCharacteristicReadRequest[] = "OnCharacteristicReadRequest";
+const char kOnServerDescriptorReadRequest[] = "OnDescriptorReadRequest";
+const char kOnServerCharacteristicWriteRequest[] =
+    "OnCharacteristicWriteRequest";
+const char kOnServerDescriptorWriteRequest[] = "OnDescriptorWriteRequest";
+const char kOnServerNotificationSent[] = "OnNotificationSent";
+const char kOnServerMtuChanged[] = "OnMtuChanged";
+const char kOnServerSubrateChange[] = "OnSubrateChange";
 }  // namespace gatt
 
 namespace advertiser {
@@ -219,6 +251,11 @@ const char kSetAllowedServices[] = "SetAllowedServices";
 const char kGetAllowedServices[] = "GetAllowedServices";
 const char kGetDevicePolicyEffect[] = "GetDevicePolicyEffect";
 }  // namespace admin
+
+namespace adapter_logging {
+const char kIsDebugEnabled[] = "IsDebugEnabled";
+const char kSetDebugLogging[] = "SetDebugLogging";
+}  // namespace adapter_logging
 
 namespace experimental {
 const char kSetLLPrivacy[] = "SetLLPrivacy";
@@ -378,6 +415,11 @@ dbus::ObjectPath FlossDBusClient::GenerateBatteryManagerPath(
 dbus::ObjectPath FlossDBusClient::GenerateAdminPath(int adapter_index) {
   return dbus::ObjectPath(
       base::StringPrintf(kAdminObjectFormat, adapter_index));
+}
+
+dbus::ObjectPath FlossDBusClient::GenerateLoggingPath(int adapter_index) {
+  return dbus::ObjectPath(
+      base::StringPrintf(kAdapterLoggingObjectFormat, adapter_index));
 }
 
 // Default error handler for dbus clients is to just print the error right now.

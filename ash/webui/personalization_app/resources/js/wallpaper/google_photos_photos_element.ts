@@ -16,8 +16,8 @@ import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-li
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {CurrentWallpaper, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../../personalization_app.mojom-webui.js';
 import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
-import {CurrentWallpaper, GooglePhotosPhoto, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStateError} from '../personalization_state.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getNumberOfGridItemsPerRow, isNonEmptyArray} from '../utils.js';
@@ -38,9 +38,12 @@ function getPlaceholders(): GooglePhotosPhotosRow[] {
   const placeholdersPerRow = getNumberOfGridItemsPerRow();
   const placeholders: GooglePhotosPhotosRow[] = [];
   getLoadingPlaceholders(() => {
-    const photo = new GooglePhotosPhoto();
-    photo.id = PLACEHOLDER_ID;
-    return photo;
+    return {
+      id: PLACEHOLDER_ID,
+      name: '',
+      date: {data: []},
+      url: {url: ''},
+    };
   }).forEach((placeholder, i) => {
     let row = placeholders[placeholders.length - 1];
     if (!row || row.length === placeholdersPerRow) {

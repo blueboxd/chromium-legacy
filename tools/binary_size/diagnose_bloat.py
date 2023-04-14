@@ -260,6 +260,14 @@ class _BuildHelper:
     return [to_mapping_path(x) for x in self.abs_apk_paths]
 
   @property
+  def abs_extra_paths(self):
+    def to_extra_paths(p):
+      aab_path = p.replace('.minimal.apks', '.aab')
+      return [aab_path + '.unused_resources', aab_path + '.R.txt']
+
+    return [p for x in self.abs_apk_paths for p in to_extra_paths(x)]
+
+  @property
   def apk_name(self):
     if self.apk_name_override:
       return self.apk_name_override
@@ -427,6 +435,9 @@ class _BuildArchive:
       for path in self.build.abs_mapping_paths:
         # Some apks have no .mapping files.
         self._ArchiveFile(path, missing_ok=True)
+      for path in self.build.abs_extra_paths:
+        # These are useful for debugging but not necessary.
+        self._ArchiveFile(path, missing_ok=True)
       self._ArchiveResourceSizes()
     self._ArchiveSizeFile()
     if self._save_unstripped:
@@ -489,7 +500,7 @@ class _DiffArchiveManager:
   """Class for maintaining BuildArchives and their related diff artifacts."""
 
   def __init__(self, revs, archive_dir, diffs, build, subrepo, save_unstripped,
-               supersize_archive_args):
+               supersize_archive_args, share):
     self.archive_dir = archive_dir
     self.build = build
     self.build_archives = [
@@ -498,6 +509,7 @@ class _DiffArchiveManager:
     ]
     self.diffs = diffs
     self.subrepo = subrepo
+    self.share = share
     self._summary_stats = []
 
   def MaybeDiff(self, before_id, after_id):
@@ -549,28 +561,30 @@ class _DiffArchiveManager:
 
     logging.info('Creating .sizediff')
     _RunCmd(supersize_cmd)
-    oneoffs_dir = 'oneoffs'
-    visibility = '-a public-read '
+    gsutil_cmd = ['gsutil.py', 'cp']
     if is_internal:
       oneoffs_dir = 'private-oneoffs'
-      visibility = ''
-
+    else:
+      oneoffs_dir = 'oneoffs'
+      gsutil_cmd += ['-a', 'public-read']
     unique_name = '{}_{}.sizediff'.format(before.rev, after.rev)
-    msg = (
-        '\n=====================\n'
-        'Saved locally to {local}. To view, upload to '
-        'https://chrome-supersize.firebaseapp.com/viewer.html.\n'
-        'To share, run:\n'
-        '> gsutil.py cp {visibility}{local} '
-        'gs://chrome-supersize/{oneoffs_dir}/{unique_name}\n\n'
-        'Then view it at https://chrome-supersize.firebaseapp.com/viewer.html'
+    local = os.path.relpath(report_path)
+    gsutil_cmd += [local, f'gs://chrome-supersize/{oneoffs_dir}/{unique_name}']
+
+    if self.share:
+      msg = 'Automatically uploaded, '
+      _RunCmd(gsutil_cmd)
+    else:
+      msg = (f'Saved locally to {local}. To view, upload to '
+             'https://chrome-supersize.firebaseapp.com/viewer.html.\n'
+             'To share, run:\n'
+             f'> {" ".join(gsutil_cmd)}\n\n'
+             'Then ')
+    msg = '\n=====================\n' + msg + (
+        'view it at https://chrome-supersize.firebaseapp.com/viewer.html'
         '?load_url=https://storage.googleapis.com/chrome-supersize/'
-        '{oneoffs_dir}/{unique_name}'
+        f'{oneoffs_dir}/{unique_name}'
         '\n=====================\n')
-    msg = msg.format(local=os.path.relpath(report_path),
-                     unique_name=unique_name,
-                     visibility=visibility,
-                     oneoffs_dir=oneoffs_dir)
     logging.info(msg)
 
   def Summarize(self):
@@ -883,6 +897,9 @@ def main():
   parser.add_argument('--supersize-archive-args',
                       help='Args to pass through to the supersize archive '
                       'command (e.g. --java-only, --no-output-directory, etc).')
+  parser.add_argument('--share',
+                      action='store_true',
+                      help='Automatically upload using gsutil.py.')
 
   build_group = parser.add_argument_group('build arguments')
   build_group.add_argument('--no-goma',
@@ -961,7 +978,7 @@ def main():
     diffs += [ResourceSizesDiff()]
   diff_mngr = _DiffArchiveManager(revs, args.archive_directory, diffs, build,
                                   subrepo, args.unstripped,
-                                  args.supersize_archive_args)
+                                  args.supersize_archive_args, args.share)
   consecutive_failures = 0
   i = 0
   for i, archive in enumerate(diff_mngr.build_archives):

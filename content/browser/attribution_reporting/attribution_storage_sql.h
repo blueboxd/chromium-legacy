@@ -23,6 +23,10 @@
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/storage_partition.h"
 
+namespace attribution_reporting {
+class SuitableOrigin;
+}  // namespace attribution_reporting
+
 namespace base {
 class GUID;
 }  // namespace base
@@ -46,10 +50,24 @@ enum class RateLimitResult : int;
 // destroyed on the same sequence. The sequence must outlive |this|.
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
-  // Exposed for testing.
-  static const int kCurrentVersionNumber;
-  static const int kCompatibleVersionNumber;
-  static const int kDeprecatedVersionNumber;
+  // Version number of the database.
+  // TODO: remove the active_unattributed_sources_by_site_reporting_origin index
+  // during the next DB migration.
+  static constexpr int kCurrentVersionNumber = 46;
+
+  // Earliest version which can use a `kCurrentVersionNumber` database
+  // without failing.
+  static constexpr int kCompatibleVersionNumber = 46;
+
+  // Latest version of the database that cannot be upgraded to
+  // `kCurrentVersionNumber` without razing the database.
+  //
+  // Note that all versions >=15 were introduced during the transitional state
+  // of the Attribution Reporting API and can be removed when done.
+  static constexpr int kDeprecatedVersionNumber = 34;
+
+  static_assert(kCompatibleVersionNumber <= kCurrentVersionNumber);
+  static_assert(kDeprecatedVersionNumber < kCompatibleVersionNumber);
 
   [[nodiscard]] static bool DeleteStorageForTesting(
       const base::FilePath& user_data_directory);
@@ -204,13 +222,15 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] absl::optional<AttributionReport::EventLevelData::Id>
-  StoreEventLevelReport(StoredSource::Id source_id,
-                        uint64_t trigger_data,
-                        base::Time trigger_time,
-                        base::Time report_time,
-                        int64_t priority,
-                        const base::GUID& external_report_id,
-                        absl::optional<uint64_t> trigger_debug_key)
+  StoreEventLevelReport(
+      StoredSource::Id source_id,
+      uint64_t trigger_data,
+      base::Time trigger_time,
+      base::Time report_time,
+      int64_t priority,
+      const base::GUID& external_report_id,
+      absl::optional<uint64_t> trigger_debug_key,
+      const attribution_reporting::SuitableOrigin& context_origin)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   absl::optional<AttributionReport> ReadReportFromStatement(sql::Statement&)
@@ -352,6 +372,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       const AttributionInfo& attribution_info,
       const AttributionTrigger& trigger,
       absl::optional<AttributionReport>& report,
+      absl::optional<uint64_t>& dedup_key,
       absl::optional<int>& max_aggregatable_reports_per_destination)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 

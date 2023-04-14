@@ -49,7 +49,6 @@ export class ChromeVoxPrefs {
         LocalStorage.set(pref, ChromeVoxPrefs.DEFAULT_PREFS[pref]);
       }
     }
-    ChromeVoxPrefs.instance.enableOrDisableLogUrlWatcher_();
 
     BridgeHelper.registerHandler(
         TARGET, Action.GET_PREFS, () => ChromeVoxPrefs.instance.getPrefs());
@@ -69,13 +68,14 @@ export class ChromeVoxPrefs {
    *     LocalStorage and SettingsManager.
    */
   getPrefs() {
-    const prefs = {};
+    let prefs = {};
     for (const pref in ChromeVoxPrefs.DEFAULT_PREFS) {
       prefs[pref] = LocalStorage.get(pref);
     }
     for (const pref of SettingsManager.PREFS) {
       prefs[pref] = SettingsManager.get(pref);
     }
+    prefs = {...prefs, ...SettingsManager.getEventStreamFilters()};
     return prefs;
   }
 
@@ -85,6 +85,10 @@ export class ChromeVoxPrefs {
    * @param {Object|string|number|boolean} value The new value of the pref.
    */
   setPref(key, value) {
+    if (SettingsManager.EVENT_STREAM_FILTERS.includes(key)) {
+      SettingsManager.setEventStreamFilter(key, Boolean(value));
+      return;
+    }
     if (SettingsManager.PREFS.includes(key)) {
       SettingsManager.set(key, value);
       return;
@@ -100,7 +104,7 @@ export class ChromeVoxPrefs {
    * @param {boolean} value The new value of the pref.
    */
   setLoggingPrefs(key, value) {
-    LocalStorage.set(key, value);
+    SettingsManager.set(key, value);
     if (key === 'enableSpeechLogging') {
       TtsBackground.console.setEnabled(value);
     } else if (key === 'enableEventStreamLogging') {
@@ -151,7 +155,7 @@ export class ChromeVoxPrefs {
 
   enableOrDisableLogUrlWatcher_() {
     for (const pref of Object.values(ChromeVoxPrefs.loggingPrefs)) {
-      if (LocalStorage.get(pref)) {
+      if (SettingsManager.getBoolean(pref)) {
         LogUrlWatcher.create();
         return;
       }
@@ -169,86 +173,10 @@ export class ChromeVoxPrefs {
  * @type {Object<Object>}
  */
 ChromeVoxPrefs.DEFAULT_PREFS = {
-  'announceDownloadNotifications': true,
-  'announceRichTextAttributes': true,
-  'audioStrategy': 'audioNormal',
   'brailleCaptions': false,
-  'brailleSideBySide': true,
-  'brailleTableType': 'brailleTable8',
-  'brailleTable6': 'en-UEB-g2',
-  'brailleTable8': 'en-nabcc',
-  'capitalStrategy': 'increasePitch',
-  'cvoxKey': '',
-  'enableBrailleLogging': false,
-  'enableEarconLogging': false,
-  'enableSpeechLogging': false,
   'earcons': true,
-  'enableEventStreamLogging': false,
-  'focusFollowsMouse': false,
-  'granularity': undefined,
-  'languageSwitching': false,
-  'menuBrailleCommands': false,
-  'numberReadingStyle': 'asWords',
-  'position': {},
-  'smartStickyMode': true,
-  'speakTextUnderMouse': false,
   'sticky': false,
   'typingEcho': 0,
-  'usePitchChanges': true,
-  'useVerboseMode': true,
-
-  // eventStreamFilters
-  'activedescendantchanged': true,
-  'alert': true,
-  'ariaAttributeChanged': true,
-  'autocorrectionOccured': true,
-  'blur': true,
-  'checkedStateChanged': true,
-  'childrenChanged': true,
-  'clicked': true,
-  'documentSelectionChanged': true,
-  'documentTitleChanged': true,
-  'expandedChanged': true,
-  'focus': true,
-  'focusContext': true,
-  'imageFrameUpdated': true,
-  'hide': true,
-  'hitTestResult': true,
-  'hover': true,
-  'invalidStatusChanged': true,
-  'layoutComplete': true,
-  'liveRegionCreated': true,
-  'liveRegionChanged': true,
-  'loadComplete': true,
-  'locationChanged': true,
-  'mediaStartedPlaying': true,
-  'mediaStoppedPlaying': true,
-  'menuEnd': true,
-  'menuListItemSelected': true,
-  'menuListValueChanged': true,
-  'menuPopupEnd': true,
-  'menuPopupStart': true,
-  'menuStart': true,
-  'mouseCanceled': true,
-  'mouseDragged': true,
-  'mouseMoved': true,
-  'mousePressed': true,
-  'mouseReleased': true,
-  'rowCollapsed': true,
-  'rowCountChanged': true,
-  'rowExpanded': true,
-  'scrollPositionChanged': true,
-  'scrolledToAnchor': true,
-  'selectedChildrenChanged': true,
-  'selection': true,
-  'selectionAdd': true,
-  'selectionRemove': true,
-  'show': true,
-  'stateChanged': true,
-  'textChanged': true,
-  'textSelectionChanged': true,
-  'treeChanged': true,
-  'valueInTextFieldChanged': true,
 };
 
 

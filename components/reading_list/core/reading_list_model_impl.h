@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/reading_list/core/reading_list_entry.h"
@@ -56,8 +57,10 @@ class ReadingListModelImpl : public ReadingListModel {
   size_t unseen_size() const override;
   void MarkAllSeen() override;
   bool DeleteAllEntries() override;
-  const ReadingListEntry* GetEntryByURL(const GURL& gurl) const override;
+  scoped_refptr<const ReadingListEntry> GetEntryByURL(
+      const GURL& gurl) const override;
   bool IsUrlSupported(const GURL& url) override;
+  bool NeedsExplicitUploadToSyncServer(const GURL& url) const override;
   const ReadingListEntry& AddOrReplaceEntry(
       const GURL& url,
       const std::string& title,
@@ -82,8 +85,8 @@ class ReadingListModelImpl : public ReadingListModel {
   void RemoveObserver(ReadingListModelObserver* observer) override;
 
   // API specifically for changes received via sync.
-  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry);
-  ReadingListEntry* SyncMergeEntry(std::unique_ptr<ReadingListEntry> entry);
+  void SyncAddEntry(scoped_refptr<ReadingListEntry> entry);
+  ReadingListEntry* SyncMergeEntry(scoped_refptr<ReadingListEntry> entry);
   void SyncRemoveEntry(const GURL& url);
   void SyncDeleteAllEntriesAndSyncMetadata();
 
@@ -109,6 +112,10 @@ class ReadingListModelImpl : public ReadingListModel {
   // ReadingListModelImpl's ScopedReadingListBatchUpdateImpl.
   std::unique_ptr<ScopedReadingListBatchUpdateImpl>
   BeginBatchUpdatesWithSyncMetadata();
+
+  // Returns true if the model is sync-ing with the server and the initial
+  // download of data and corresponding merge has completed.
+  bool IsTrackingSyncMetadata() const;
 
   // Test-only factory function to inject an arbitrary change processor.
   static std::unique_ptr<ReadingListModelImpl> BuildNewForTest(
@@ -142,7 +149,7 @@ class ReadingListModelImpl : public ReadingListModel {
 
   // Add |entry| to the model, which must not exist before, and notify the sync
   // bridge if |source| is not ADDED_VIA_SYNC.
-  void AddEntryImpl(std::unique_ptr<ReadingListEntry> entry,
+  void AddEntryImpl(scoped_refptr<ReadingListEntry> entry,
                     reading_list::EntrySource source);
 
   // Remove entry |url| and propagate to the sync bridge if |from_sync| is
@@ -162,7 +169,7 @@ class ReadingListModelImpl : public ReadingListModel {
 
   bool loaded_ = false;
 
-  std::map<GURL, ReadingListEntry> entries_;
+  std::map<GURL, scoped_refptr<ReadingListEntry>> entries_;
   size_t unread_entry_count_ = 0;
   size_t read_entry_count_ = 0;
   size_t unseen_entry_count_ = 0;

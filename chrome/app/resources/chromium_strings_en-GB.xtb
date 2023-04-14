@@ -12,7 +12,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="1131805035311359397">To check if your passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK" />sign in to Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
 <translation id="1203500561924088507">Thanks for installing. You must restart your browser before using <ph name="BUNDLE_NAME" />.</translation>
-<translation id="1231839967188101156">When on, Chromium frees up memory from inactive tabs. This gives active tabs and other apps more computer resources and keeps Chromium fast. Your inactive tabs automatically become active again when you go back to them. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Memory Saver Made Chromium Faster</translation>
 <translation id="1315551408014407711">Set up your new Chromium profile</translation>
 <translation id="1396446129537741364">Chromium is trying to show passwords.</translation>
@@ -34,6 +33,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="185970820835152459">You can manage your signed-in Google Accounts. Your Google Accounts are used for Chromium browser, Play Store, Gmail and more. If you want to add an account for someone else, like a family member, add a new person to your <ph name="DEVICE_TYPE" /> instead. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Sites can store information with Chromium about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.</translation>
 <translation id="1881322772814446296">You are signing in with a managed account and giving its administrator control over your Chromium profile. Your Chromium data, such as your apps, bookmarks, history, passwords and other settings will become permanently tied to <ph name="USER_NAME" />. You will be able to delete this data via the Google Accounts Dashboard, but you will not be able to associate this data with another account. You can optionally create a new profile to keep your existing Chromium data separate. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">When you type in the address bar or search box, Chromium sends what you type to Google Drive to get item suggestions. This is off in Incognito.</translation>
 <translation id="1911763535808217981">By turning this off, you can sign in to Google sites such as Gmail, without signing in to Chromium</translation>
 <translation id="1929939181775079593">Chromium is unresponsive. Relaunch now?</translation>
 <translation id="193439633299369377">Chromium OS needs to be restarted to apply the update.</translation>
@@ -116,6 +116,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="3567254597502212821">Your browsing history, a record of sites that you've visited using Chromium on this device.</translation>
 <translation id="3575459661164320785">There's harmful software on your computer. Chromium can remove it, restore your settings and disable extensions to make your browser work normally again.</translation>
 <translation id="3593091352817399191">Another account is already signed in. To keep your browsing separate, Chromium can create your own profile for you.</translation>
+<translation id="363078681319665186">To get future Chromium updates, you'll need macOS 10.15 or later. This computer is using macOS 10.13.</translation>
 <translation id="3639635944603682591">This person's browsing data will be deleted from this device. To recover the data, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{A new update for Chromium is available and will be applied as soon as you relaunch.}=1{A new update for Chromium is available and will be applied as soon as you relaunch. Your Incognito window won't reopen.}other{A new update for Chromium is available and will be applied as soon as you relaunch. Your # Incognito windows won't reopen.}}</translation>
 <translation id="3651803019964686660">To send a number from <ph name="ORIGIN" /> to your Android phone, sign in to Chromium on both devices.</translation>
@@ -123,12 +124,12 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="3702352323269013324">Learn more about ad personalisation in Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Your administrator asks that you relaunch Chromium to apply this update}=1{Your administrator asks that you relaunch Chromium to apply this update. Your Incognito window won't reopen.}other{Your administrator asks that you relaunch Chromium to apply this update. Your # Incognito windows won't reopen.}}</translation>
 <translation id="3713809861844741608">Open link in new Chromium &amp;tab</translation>
-<translation id="3728336900324680424">Chromium will access your Drive to make suggestions in the address bar</translation>
 <translation id="378917192836375108">Chromium lets you click a phone number on the web and call it with Skype!</translation>
 <translation id="3830894615770080216">Chromium OS system</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">Get help with Chromium OS</translation>
 <translation id="3871664619793219264">Get your Chromium browser stuff from <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">To get future Chromium updates, you'll need macOS 10.15 or later. This computer is using macOS 10.14.</translation>
 <translation id="388648406173476553">Customise and control Chromium. Something needs your attention – click for details.</translation>
 <translation id="3889543394854987837">Click your name to open Chromium and start browsing.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> is already signed in to this Chromium profile. To keep your browsing separate, Chromium can create your own profile for you.</translation>
@@ -218,6 +219,7 @@ Permissions that you've already given to websites and apps may apply to this acc
 <translation id="6072463441809498330">Make Chromium Faster</translation>
 <translation id="608006075545470555">Add work profile to this browser</translation>
 <translation id="6096348254544841612">Customise and control Chromium. Update is available.</translation>
+<translation id="6102072151902574948">When on, Chromium conserves battery power by limiting background activity and visual effects, such as smooth scrolling and video frame rates.</translation>
 <translation id="6119438414301547735">Allow extension to show access requests in the Chromium toolbar</translation>
 <translation id="6120345080069858279">Chromium will save this password in your Google Account. You won’t have to remember it.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> is dangerous, so Chromium has blocked it.</translation>
@@ -277,6 +279,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6940431691900807093">Later, a site that you visit can ask Chromium to see your interests in order to personalise the ads that you see. Chromium can share up to three interests.</translation>
 <translation id="6964305034639999644">Open link in Chromium inco&amp;gnito window</translation>
 <translation id="6978145336957848883">Weak passwords are easy to guess. Let Chromium <ph name="BEGIN_LINK" />create and remember strong passwords for you<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">When on, Chromium frees up memory from inactive tabs. This gives active tabs and other apps more computer resources and keeps Chromium fast. Your inactive tabs automatically become active again when you go back to them.</translation>
 <translation id="6984667024406244807">Chromium is inactive</translation>
 <translation id="6985329841647292029">Chromium OS terms</translation>
 <translation id="6990124437352146030">Chromium needs permission to access your microphone for this site</translation>
@@ -321,6 +324,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">A Chromium profile with this account already exists on this device</translation>
 <translation id="7845233973568007926">Thanks for installing. You must restart your computer before using <ph name="BUNDLE_NAME" />.</translation>
+<translation id="7859018312476869945">When you type in the address bar or search box, Chromium sends what you type to your default search engine to get better suggestions. This is off in Incognito.</translation>
 <translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="7872446069773932638">Downloading… <ph name="SECONDS" /> second(s) remaining</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />How you can manage your data:<ph name="END_BOLD" /> To protect your privacy, we auto-delete your interests that are older than four weeks. As you keep browsing, an interest might appear on the list again. Or you can remove interests that you don’t want Chromium to consider.</translation>
@@ -348,9 +352,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
 <translation id="8550334526674375523">This work profile is completely separate from your personal profile.</translation>
 <translation id="8558383651099478961">Your parent has turned off 'Permissions for sites, apps and extensions' for Chromium. Adding this <ph name="EXTENSION_TYPE_PARAMETER" /> is not allowed.</translation>
-<translation id="8561285221328166383">To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium can check your passwords when you sign in with your Google Account</translation>
-<translation id="8574036838419011058">When on, Chromium conserves battery power by limiting background activity and visual effects, such as smooth scrolling and video frame rates. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />How we use this data:<ph name="END_BOLD" /> Sites can store information with Chromium about your interests. For example, if you visit a site to buy shoes for a marathon, the site might define your interest as running marathons. Later, if you visit a different site to register for a race, that site can show you an ad for running shoes based on your interests.</translation>
 <translation id="8619360774459241877">Launching Chromium...</translation>
@@ -381,7 +383,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium may not function correctly because it is no longer supported on Windows XP or Windows Vista</translation>
 <translation id="942598560705308788">Certificates managed by Chromium</translation>
-<translation id="945990405696787151">To get future Chromium updates, you'll need macOS 10.13 or later. This computer is using OS X 10.11.</translation>
 <translation id="965162752251293939">Who's using Chromium?</translation>
 <translation id="967427899662692980">Get Chromium's strongest security</translation>
 <translation id="9792300276217204">Always clear site data from your device when you close Chromium</translation>

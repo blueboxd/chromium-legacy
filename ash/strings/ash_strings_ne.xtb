@@ -133,11 +133,13 @@
 <translation id="163517899691012366">Do Not Disturb अन हुँदा सूचनाहरू म्युट गरिन्छन्</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> वटा डिभाइस</translation>
 <translation id="1639239467298939599">लोड गर्दै</translation>
+<translation id="1647986356840967552">अघिल्लो पेज</translation>
 <translation id="1654477262762802994">आवाजमार्फत गरिने क्वेरी सुरु गर्नुहोस्</translation>
 <translation id="1668469839109562275">अन्तर्निर्मित VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> बाँकी छ</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> कनेक्ट गरिएको छैन।</translation>
 <translation id="1677582821739292812">कुनै व्यक्तिले तपाईंको स्क्रिनमा हेरिरहनुभएको छ</translation>
+<translation id="1683399938733266832">CPU को हालको प्रयोग: <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">सिफ्ट</translation>
 <translation id="1698080062160024910"><ph name="TOTAL_TIME" /> टाइमर · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6 ठेगाना: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@
 <translation id="1771761307086386028">दायाँतिर स्क्रोल गर्नुहोस्</translation>
 <translation id="1774796056689732716">पात्रो, <ph name="CURRENT_MONTH_YEAR" />, हाल चयन गरिएको मिति: <ph name="DATE" />।</translation>
 <translation id="1787955149152357925">अफ छ</translation>
-<translation id="1797271123677381264">पासवर्ड बिर्सनुभयो</translation>
 <translation id="1807246157184219062">हल्का</translation>
 <translation id="181103072419391116">सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
 <translation id="1816896987747843206">यसले क्यामेरा प्रयोग गर्ने अनुमति भएका सबै एप तथा वेबसाइटहरूलाई क्यामेरा प्रयोग गर्ने अनुमति दिन्छ</translation>
@@ -381,6 +382,7 @@
 <translation id="3051189971848907985">प्रोफाइलको नाम बदलिँदै छ। केही मिनेट पर्खनुहोस्।</translation>
 <translation id="3055162170959710888">तपाईंले आज यो डिभाइस <ph name="USED_TIME" /> प्रयोग गर्नुभयो</translation>
 <translation id="3062298103034426069">यसमा काम गर्दैन</translation>
+<translation id="3068622547379332530">संस्करण <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">सेल्फ बायाँतिर छ</translation>
 <translation id="3077734595579995578">शिफ्ट</translation>
 <translation id="3081696990447829002">मेनु विस्तृत गर्नुहोस्</translation>
@@ -421,9 +423,11 @@
 <translation id="3289674678944039601">एड्याप्टरमार्फत चार्ज गरिँदै छ</translation>
 <translation id="3290356915286466215">असुरक्षित</translation>
 <translation id="3294437725009624529">पाहुना</translation>
+<translation id="3298690094479023523">तपाईंको PIN वा पासवर्ड अझै पनि पुष्टि गर्न सकिएन। फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="3307642347673023554">ल्यापटप मोड प्रयोग गर्न थालियो</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> अझै पनि पछि साइन इन गर्न सक्नुहुन्छ।</translation>
 <translation id="3321628682574733415">अभिभावकको कोड गलत छ</translation>
+<translation id="332827762492701193">सूचनाहरू लुकाइएका छन्</translation>
 <translation id="3339826665088060472">स्क्रिन क्याप्चर अर्थात् स्क्रिनसट र स्क्रिन रेकर्डिङ गर्ने टुल</translation>
 <translation id="3340978935015468852">सेटिङहरू</translation>
 <translation id="3341303451326249809">स्क्रिनसट खिचियो</translation>
@@ -554,12 +558,14 @@
 <translation id="397105322502079400">हिसाब गर्दै...</translation>
 <translation id="397726367135689299">ब्याट्री राम्रोसँग चार्ज नहुन सक्छ।</translation>
 <translation id="3977512764614765090">ब्याट्री <ph name="PERCENTAGE" />% छ र चार्ज हुँदै छ।</translation>
+<translation id="3984536049089846927">अर्को पेज</translation>
 <translation id="3986082989454912832">कल उठाउनुहोस्</translation>
 <translation id="3995138139523574647">USB-C यन्त्र (दायाँ भागको पछाडिको पोर्ट)</translation>
 <translation id="40062176907008878">हस्तलेखन</translation>
 <translation id="4017989525502048489">लेजर प्वाइन्टर</translation>
 <translation id="401993194061514265">मार्कर उपलब्ध छैन। स्क्रिनकास्ट पुनः खोल्नुहोस्।</translation>
 <translation id="4021716437419160885">तलतिर स्क्रोल गर्नुहोस्</translation>
+<translation id="4024840464866786680">तपाईंले आफ्नो PIN बिर्सनुभयो वा आफ्नो Google खाताको पासवर्ड बदल्नुभयो भने यो प्रयोगकर्ता खाता रिकभर गरी हेर्नुहोस्।</translation>
 <translation id="4028481283645788203">थप सुरक्षाका लागि पासवर्ड चाहिन्छ</translation>
 <translation id="4032485810211612751"><ph name="HOURS" /> : <ph name="MINUTES" /> : <ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">तपाईं आफ्नो स्क्रिन आदान प्रदान गर्दै हुनुहुन्छ</translation>
@@ -575,9 +581,10 @@
 <translation id="4123259114412175274">तपाईं आफ्नो Chromebook अनलक गर्न चाहनुहुन्छ भने आफ्नो फोनको ब्लुटुथ अन छ भन्ने कुरा सुनिश्चित गर्नुहोस्</translation>
 <translation id="4125970834901680537">ट्याब्लेट मोडमा एपहरूमा भएको सामग्री स्ट्रिम गर्न सकिँदैन। ल्यापटप मोडमा गई फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="4129129681837227511">आफ्नो लक स्क्रिनमा सूचनाहरू हेर्नका लागि सेटिङहरू परिवर्तन गर्न अनलक गर्नुहोस्</translation>
-<translation id="4130035430755296270">लेआउटसम्बन्धी थप विकल्पहरू प्राप्त गर्न होभर गरिराख्नुहोस्</translation>
+<translation id="4131973331381812765">तापक्रम: <ph name="TEMPERATURE" />°C - हालको गति: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
 <translation id="4136724716305260864">सूर्योदय नहुँदासम्म अन रहने छ</translation>
 <translation id="4146833061457621061">सङ्गीत प्ले गर्नुहोस्</translation>
+<translation id="4150201353443180367">प्रदर्शन</translation>
 <translation id="4165275524535002941">यो केबल डिस्प्लेहरूमा जोड्न मिल्दैन</translation>
 <translation id="4177913004758410636">{0,plural, =1{एक दिनभित्र डिभाइस रिस्टार्ट गर्नुहोस्}other{# दिनभित्र डिभाइस रिस्टार्ट गर्नुहोस्}}</translation>
 <translation id="4181841719683918333">भाषाहरू</translation>
@@ -699,10 +706,12 @@
 <translation id="4735944890391795473">डेस्क १२</translation>
 <translation id="473775607612524610">अपडेट गर्नुहोस्</translation>
 <translation id="4740516757091333363">सेभ गरिएको डेस्क मेटाउने हो?</translation>
+<translation id="4747410141429390146">सूचनाहरू हेर्न कृपया स्क्रिन अनलक गर्नुहोस्</translation>
 <translation id="4752784485658729358">६ वटाभन्दा बढी डेस्क सेभ गर्न मिल्दैन। तपाईं नयाँ डेस्क सेभ गर्न चाहनुहुन्छ भने सेभ गरिएको कुनै डेस्क हटाउनुहोस्।</translation>
 <translation id="4759238208242260848">डाउनलोडहरू</translation>
 <translation id="4762573482154983647">एपहरू लुकाउनुहोस्</translation>
 <translation id="4774338217796918551">भोलि <ph name="COME_BACK_TIME" /> बजे फेरि आउनुहोला।</translation>
+<translation id="4776584068981882959">तपाईंको पासवर्ड अझै पनि पुष्टि गर्न सकिएन। फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> को लागि लागि पासवर्ड</translation>
 <translation id="4777825441726637019">Play स्टोर</translation>
 <translation id="4778095205580009397">Google सहायक डेमो सत्रमा उपलब्ध छैन।</translation>
@@ -727,6 +736,7 @@
 <translation id="4895488851634969361">ब्याटरी पूर्ण भयो।</translation>
 <translation id="490375751687810070">ठाडो</translation>
 <translation id="490788395437447240">ब्याट्री <ph name="BATTERY_PERCENTAGE" />% छ</translation>
+<translation id="491504982845934899">डिभाइस सेटअप गरेपछि <ph name="NETWORK_NAME" /> एक्टिभेट गर्नुहोस्</translation>
 <translation id="4917385247580444890">बलियो</translation>
 <translation id="4918086044614829423">स्वीकार्नुहोस्</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> ले हाल तपाईंको क्यामेरा प्रयोग गरिरहेको छ</translation>
@@ -842,6 +852,7 @@
 <translation id="5536723544185013515">हालसालै चलाइएका एपहरू, हालसालै चलाइएका एउटा एपबाट अर्को एपमा जान लेफ्ट वा राइट एरो की थिच्नुहोस्</translation>
 <translation id="553675580533261935">सत्रबाट बाहिर जाँदै</translation>
 <translation id="5537725057119320332">कास्ट गर्नु</translation>
+<translation id="5546397813406633847">प्रयोगकर्ता खाता रिकभर गर्नुहोस्</translation>
 <translation id="554893713779400387">श्रुतिलेखन सुविधा टगल गर्नुहोस्</translation>
 <translation id="5558091555391176027">नजिकैका डिभाइससँग सेयर गर्ने सुविधाको उच्च भिजिबिलिटी मोड टगल गर्नुहोस्</translation>
 <translation id="5560420195677022218">आफ्नो फोनमा भएका एपहरू <ph name="DEVICE_TYPE" /> मा हेर्नुहोस्</translation>
@@ -858,6 +869,7 @@
 <translation id="5618148318840095371">तपाईंको डिभाइस अझ राम्रो नेटवर्कमा कनेक्ट गरिएको छ</translation>
 <translation id="5619862035903135339">एड्मिनले तोक्नुभएको नीतिअनुसार स्क्रिन क्याप्चर गर्ने सुविधा अफ गरिन्छ</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">तपाईंको पासवर्ड पुष्टि गर्न सकिएन। फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="5648021990716966815">माइकको ज्याक</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> तपाईंको ध्यानाकर्षण गराउन चाहन्छ।</translation>
 <translation id="5662075790140998213">डेस्क १०</translation>
@@ -876,6 +888,7 @@
 <translation id="5707775774148071965">तपाईंको केबलको तुलनामा तपाईंको डिभाइसमा उच्च गतिमा डेटा ट्रान्सफर हुन्छ। डिभाइस राम्ररी नचल्न सक्छ।</translation>
 <translation id="5710450975648804523">बाधा नपुर्‍याउनुहोस् नामक सेवा सक्रिय छ</translation>
 <translation id="571295407079589142">मोबाइल डेटा अफ गरियो</translation>
+<translation id="5727460725221669831">तपाईंले आफ्नो पासवर्ड बिर्सनुभयो वा आफ्नो Google खाताको पासवर्ड बदल्नुभयो भने यो प्रयोगकर्ता खाता रिकभर गरी हेर्नुहोस्।</translation>
 <translation id="573413375004481890">यो यन्त्रले तपाईंको कुनै पनि डिस्प्ले समर्थन गर्न सकेन, त्यसैले एउटाको जडान विच्छेद गरियो</translation>
 <translation id="5740328398383587084">नजिकैका डिभाइससँग सेयर गर्ने सुविधा</translation>
 <translation id="574392208103952083">मध्यम</translation>
@@ -905,6 +918,7 @@
 <translation id="5867606971598166637">तपाईंका सिस्टम एड्मिन तपाईंका स्क्रिनहरू अनुगमन गर्दै हुनुहुन्छ</translation>
 <translation id="5876666360658629066">अभिभावकको कोड प्रविष्टि गर्नुहोस्</translation>
 <translation id="5881540930187678962">फोन हब पछि सेटअप गर्नुहोस्</translation>
+<translation id="5881663018261910378">अफ छ</translation>
 <translation id="5887954372087850114">"<ph name="DESK_TITLE" />" मा "<ph name="WINDOW_TITLE" />" विन्डो असाइन गरिएको छ र यो विन्डो अन्य सबै डेस्कबाट अनअसाइन गरिएको छ</translation>
 <translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="589817443623831496">पोइन्ट स्क्यानिङ</translation>
@@ -1319,6 +1333,7 @@
 <translation id="8131740175452115882">निश्चित</translation>
 <translation id="8131994907636310308">एप क्रमबद्ध गर्ने टोस्ट बन्द गर्नुहोस्</translation>
 <translation id="8132793192354020517"><ph name="NAME" /> मा जडित</translation>
+<translation id="8138705869659070104">डिभाइस सेटअप गरेपछि एक्टिभेट गर्नुहोस्</translation>
 <translation id="813913629614996137">सुरुवात गर्दै...</translation>
 <translation id="8142441511840089262">दुई पटक क्लिक गर्नुहोस्</translation>
 <translation id="8142699993796781067">निजी नेटवर्क</translation>

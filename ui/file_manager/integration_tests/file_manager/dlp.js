@@ -7,6 +7,7 @@ import {addEntries, ENTRIES, EntryType, RootPath, sendBrowserTestCommand, sendTe
 import {testcase} from '../testcase.js';
 
 import {navigateWithDirectoryTree, openAndWaitForClosingDialog, remoteCall, setupAndWaitUntilReady} from './background.js';
+import {FakeTask} from './tasks.js';
 import {BASIC_ANDROID_ENTRY_SET, BASIC_LOCAL_ENTRY_SET} from './test_data.js';
 
 /**
@@ -141,55 +142,69 @@ testcase.dlpContextMenuRestrictionDetails = async () => {
           ':not([hidden]):not([disabled])');
 };
 
+// Filters used for the following save-as and file-open tests.
+// Rows in `My files`
+const downloadsRow = ['Downloads', '--', 'Folder'];
+const playFilesRow = ['Play files', '--', 'Folder'];
+const linuxFilesRow = ['Linux files', '--', 'Folder'];
+// Dialog buttons
+const okButton = '.button-panel button.ok:enabled';
+const disabledOkButton = '.button-panel button.ok:disabled';
+const cancelButton = '.button-panel button.cancel';
+
 /**
- * Tests the save dialogs properly show DLP blocked volumes/directories. If a
- * volume is blocked by DLP, it should be marked as disabled both in the
- * navigation list and in the details list. If such a volume is selected, the
- * "Open" dialog button should be disabled, i.e. changing the directory is
- * prevented.
+ * Tests the save dialogs properly show DLP blocked Play files, before
+ * and after being mounted, both in the navigation list and in
+ * the details list.
  */
-testcase.saveAsDlpRestrictedDirectory = async () => {
+testcase.saveAsDlpRestrictedAndroid = async () => {
   // Setup the restrictions.
-  await sendTestMessage({name: 'setBlockedArc'});
-
-  const okButton = '.button-panel button.ok:enabled';
-  const disabledOkButton = '.button-panel button.ok:disabled';
-  const cancelButton = '.button-panel button.cancel';
-
-  // Add entries to Downloads.
-  await addEntries(['local'], [ENTRIES.hello]);
+  await sendTestMessage({name: 'setBlockedComponent', component: 'arc'});
 
   const closer = async (dialog) => {
-    // Verify that the button is enabled when a file is selected.
-    await remoteCall.waitUntilSelected(dialog, ENTRIES.hello.targetPath);
-    await remoteCall.waitForElement(dialog, okButton);
-
     // Select My Files folder and wait for file list to display Downloads, Play
     // files, and Linux files.
     await navigateWithDirectoryTree(dialog, '/My files');
-    const downloadsRow = ['Downloads', '--', 'Folder'];
-    const playFilesRow = ['Play files', '--', 'Folder'];
-    const linuxFilesRow = ['Linux files', '--', 'Folder'];
+
     await remoteCall.waitForFiles(
         dialog, [downloadsRow, playFilesRow, linuxFilesRow],
         {ignoreFileSize: true, ignoreLastModifiedTime: true});
 
     // Only one directory, Android files, should be disabled, both as the tree
     // item and the directory in the main list.
-    const playFilesInFileList = '.directory[disabled][file-name="Play files"]';
-    const playFilesInDirectoryTree = '#directory-tree .tree-item[disabled] ' +
+    const guestName = 'Play files';
+    const disabledDirectory = `.directory[disabled][file-name="${guestName}"]`;
+    const disabledRealTreeItem = '#directory-tree .tree-item[disabled] ' +
         '.icon[volume-type-icon="android_files"]';
-    await remoteCall.waitForElementsCount(dialog, [playFilesInFileList], 1);
-    await remoteCall.waitForElementsCount(
-        dialog, [playFilesInDirectoryTree], 1);
+    const disabledFakeTreeItem = '#directory-tree .tree-item[disabled] ' +
+        '[root-type-icon=android_files]';
+    await remoteCall.waitForElement(dialog, disabledDirectory);
+    await remoteCall.waitForElement(dialog, disabledRealTreeItem);
 
     // Verify that the button is enabled when a non-blocked volume is selected.
     await remoteCall.waitUntilSelected(dialog, 'Downloads');
     await remoteCall.waitForElement(dialog, okButton);
 
     // Verify that the button is disabled when a blocked volume is selected.
-    await remoteCall.waitUntilSelected(dialog, 'Play files');
+    await remoteCall.waitUntilSelected(dialog, guestName);
     await remoteCall.waitForElement(dialog, disabledOkButton);
+
+    // Unmount Play files and mount ARCVM.
+    await sendTestMessage({name: 'unmountPlayFiles'});
+    const guestId = await sendTestMessage({
+      name: 'registerMountableGuest',
+      displayName: guestName,
+      canMount: true,
+      vmType: 'arcvm',
+    });
+
+    // Wait for the placeholder to appear, which should be disabled. The
+    // directory shouldn't appear in the details list.
+    // TODO(b/267133288): Check why the dir doesn't appear and fix if necessary.
+    await remoteCall.waitAndClickElement(dialog, disabledFakeTreeItem);
+    await remoteCall.waitForFiles(
+        dialog, [downloadsRow, linuxFilesRow],
+        {ignoreFileSize: true, ignoreLastModifiedTime: true});
 
     // Click the close button to dismiss the dialog.
     await remoteCall.waitAndClickElement(dialog, [cancelButton]);
@@ -198,7 +213,7 @@ testcase.saveAsDlpRestrictedDirectory = async () => {
   chrome.test.assertEq(
       undefined,
       await openAndWaitForClosingDialog(
-          {type: 'saveFile'}, 'downloads', [ENTRIES.hello], closer));
+          {type: 'saveFile'}, 'downloads', [], closer));
 };
 
 /**
@@ -209,11 +224,7 @@ testcase.saveAsDlpRestrictedDirectory = async () => {
  */
 testcase.saveAsDlpRestrictedVm = async () => {
   // Setup the restrictions.
-  await sendTestMessage({name: 'setBlockedPluginVM'});
-
-  const okButton = '.button-panel button.ok:enabled';
-  const disabledOkButton = '.button-panel button.ok:disabled';
-  const cancelButton = '.button-panel button.cancel';
+  await sendTestMessage({name: 'setBlockedComponent', component: 'pluginVm'});
 
   const guestName = 'JennyAnyDots';
   const guestId = await sendTestMessage({
@@ -226,9 +237,6 @@ testcase.saveAsDlpRestrictedVm = async () => {
   const closer = async (dialog) => {
     // Select My Files folder and wait for file list.
     await navigateWithDirectoryTree(dialog, '/My files');
-    const downloadsRow = ['Downloads', '--', 'Folder'];
-    const playFilesRow = ['Play files', '--', 'Folder'];
-    const linuxFilesRow = ['Linux files', '--', 'Folder'];
     const guestFilesRow = [guestName, '--', 'Folder'];
     await remoteCall.waitForFiles(
         dialog, [downloadsRow, playFilesRow, linuxFilesRow, guestFilesRow],
@@ -291,11 +299,7 @@ testcase.saveAsDlpRestrictedVm = async () => {
  */
 testcase.saveAsDlpRestrictedCrostini = async () => {
   // Setup the restrictions.
-  await sendTestMessage({name: 'setBlockedCrostini'});
-
-  const okButton = '.button-panel button.ok:enabled';
-  const disabledOkButton = '.button-panel button.ok:disabled';
-  const cancelButton = '.button-panel button.cancel';
+  await sendTestMessage({name: 'setBlockedComponent', component: 'crostini'});
 
   // Add entries to Downloads.
   await addEntries(['local'], [ENTRIES.hello]);
@@ -308,9 +312,6 @@ testcase.saveAsDlpRestrictedCrostini = async () => {
     // Select My Files folder and wait for file list to display Downloads, Play
     // files, and Linux files.
     await navigateWithDirectoryTree(dialog, '/My files');
-    const downloadsRow = ['Downloads', '--', 'Folder'];
-    const playFilesRow = ['Play files', '--', 'Folder'];
-    const linuxFilesRow = ['Linux files', '--', 'Folder'];
     await remoteCall.waitForFiles(
         dialog, [downloadsRow, playFilesRow, linuxFilesRow],
         {ignoreFileSize: true, ignoreLastModifiedTime: true});
@@ -352,6 +353,71 @@ testcase.saveAsDlpRestrictedCrostini = async () => {
 };
 
 /**
+ * Tests the save dialogs properly show blocked USB volumes.
+ */
+testcase.saveAsDlpRestrictedUsb = async () => {
+  // Mount a USB volume.
+  await sendTestMessage({name: 'mountFakeUsbEmpty'});
+
+  // Setup the restrictions.
+  await sendTestMessage({name: 'setBlockedComponent', component: 'usb'});
+
+  const closer = async (dialog) => {
+    const disabledRealTreeItem = '#directory-tree .tree-item[disabled] ' +
+        '[volume-type-icon="removable"]';
+    // It should be disabled in the navigation list, but the eject button should
+    // be enabled.
+    await remoteCall.waitForElementsCount(dialog, [disabledRealTreeItem], 1);
+    await remoteCall.waitForElementsCount(
+        dialog, ['.root-eject:not([disabled])'], 1);
+
+    // Unmount.
+    await sendTestMessage({name: 'unmountUsb'});
+    await remoteCall.waitForElementsCount(dialog, [disabledRealTreeItem], 0);
+
+    // Mount again - should still be disabled.
+    await sendTestMessage({name: 'mountFakeUsbEmpty'});
+    await remoteCall.waitForElementsCount(dialog, [disabledRealTreeItem], 1);
+
+    // Click the close button to dismiss the dialog.
+    await remoteCall.waitAndClickElement(dialog, [cancelButton]);
+  };
+
+  chrome.test.assertEq(
+      undefined,
+      await openAndWaitForClosingDialog(
+          {type: 'saveFile'}, 'downloads', [], closer));
+};
+
+/**
+ * Tests the save dialogs properly show blocked Google drive volume.
+ */
+testcase.saveAsDlpRestrictedDrive = async () => {
+  // Setup the restrictions.
+  await sendTestMessage({name: 'setBlockedComponent', component: 'drive'});
+
+  const closer = async (dialog) => {
+    const disabledRealTreeItem = '#directory-tree ' +
+        '.tree-item.drive-volume[disabled][has-children=false]';
+    const expandIcon = disabledRealTreeItem + ' > .tree-row .expand-icon';
+    // It should be disabled in the navigation list, and the expand icon
+    // shouldn't be visible.
+    await remoteCall.waitForElementsCount(dialog, [disabledRealTreeItem], 1);
+    const element = await remoteCall.waitForElementStyles(
+        dialog, expandIcon, ['visibility']);
+    chrome.test.assertEq('hidden', element.styles['visibility']);
+
+    // Click the close button to dismiss the dialog.
+    await remoteCall.waitAndClickElement(dialog, [cancelButton]);
+  };
+
+  chrome.test.assertEq(
+      undefined,
+      await openAndWaitForClosingDialog(
+          {type: 'saveFile'}, 'downloads', [], closer));
+};
+
+/**
  * Tests that save dialogs are opened in a requested volume/directory,
  * when it's not blocked by DLP.
  * This test is an addition to the `saveAsDlpRestrictedRedirectsToMyFiles` test
@@ -359,8 +425,6 @@ testcase.saveAsDlpRestrictedCrostini = async () => {
  * opened in the requested path.
  */
 testcase.saveAsNonDlpRestricted = async () => {
-  const cancelButton = '.button-panel button.cancel';
-
   // Add entries to Play files.
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
 
@@ -386,14 +450,12 @@ testcase.saveAsNonDlpRestricted = async () => {
  * but rather in the default display root.
  */
 testcase.saveAsDlpRestrictedRedirectsToMyFiles = async () => {
-  const cancelButton = '.button-panel button.cancel';
-
   // Add entries to Downloads and Play files.
   await addEntries(['local'], [ENTRIES.hello]);
   await addEntries(['android_files'], BASIC_ANDROID_ENTRY_SET);
 
   // Setup the restrictions.
-  await sendTestMessage({name: 'setBlockedArc'});
+  await sendTestMessage({name: 'setBlockedComponent', component: 'arc'});
 
   const blockedCloser = async (dialog) => {
     // Double check: current directory should be the default root, not Play
@@ -437,10 +499,6 @@ testcase.openDlpRestrictedFile = async () => {
   // Setup the restrictions.
   await sendTestMessage({name: 'setIsRestrictedByAnyRuleRestrictions'});
   await sendTestMessage({name: 'setIsRestrictedDestinationRestriction'});
-
-  const okButton = '.button-panel button.ok:enabled';
-  const disabledOkButton = '.button-panel button.ok:disabled';
-  const cancelButton = '.button-panel button.cancel';
 
   const closer = async (dialog) => {
     // Wait for the file list to appear.
@@ -507,10 +565,6 @@ testcase.openFolderDlpRestricted = async () => {
   await sendTestMessage({name: 'setIsRestrictedByAnyRuleRestrictions'});
   await sendTestMessage({name: 'setIsRestrictedDestinationRestriction'});
 
-  const enabledOkButton = '.button-panel button.ok:enabled';
-  const disabledOkButton = '.button-panel button.ok:disabled';
-  const cancelButton = '.button-panel button.cancel';
-
   const closer = async (dialog) => {
     // Wait for directoryA to appear.
     await remoteCall.waitForElement(
@@ -564,5 +618,56 @@ testcase.openFolderDlpRestricted = async () => {
     fileNames: [ENTRIES.directoryA.targetPath],
     openType: 'open',
   });
-  await remoteCall.waitAndClickElement(dialog, enabledOkButton);
+  await remoteCall.waitAndClickElement(dialog, okButton);
+};
+
+/**
+ * Tests that DLP disabled file tasks are shown as disabled in the menu.
+ */
+testcase.fileTasksDlpRestricted = async () => {
+  const entry = ENTRIES.hello;
+  // Open Files app.
+  const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, [entry], []);
+  // Override file tasks so that some are DLP disabled.
+  const fakeTasks = [
+    new FakeTask(
+        true, {appId: 'dummyId1', taskType: 'file', actionId: 'open-with'},
+        'DummyTask1', false, true),
+    new FakeTask(
+        false, {appId: 'dummyId2', taskType: 'file', actionId: 'open-with'},
+        'DummyTask2', false, false),
+    new FakeTask(
+        false, {appId: 'dummyId3', taskType: 'file', actionId: 'open-with'},
+        'DummyTask3', false, true),
+  ];
+  await remoteCall.callRemoteTestUtil('overrideTasks', appId, [fakeTasks]);
+
+  // Open the context menu.
+  await remoteCall.showContextMenuFor(appId, entry.nameText);
+
+  // Verify that the default task item is visible but disabled.
+  await remoteCall.waitForElement(
+      appId,
+      ['#file-context-menu:not([hidden]) ' +
+       '[command="#default-task"][disabled]:not([hidden])']);
+
+  // Select the file.
+  await remoteCall.waitUntilSelected(appId, entry.nameText);
+
+  // Display the tasks menu.
+  await remoteCall.expandOpenDropdown(appId);
+
+  // Wait for the dropdown menu to show.
+  await remoteCall.waitForElement(
+      appId, '#tasks-menu:not([hidden]) cr-menu-item');
+
+  // Verify that the first and third tasks are disabled, and the second one is
+  // not.
+  await remoteCall.waitForElement(
+      appId, ['#tasks-menu:not([hidden]) cr-menu-item[disabled]:nth-child(1)']);
+  await remoteCall.waitForElement(
+      appId,
+      ['#tasks-menu:not([hidden]) cr-menu-item:not([disabled]):nth-child(2)']);
+  await remoteCall.waitForElement(
+      appId, ['#tasks-menu:not([hidden]) cr-menu-item[disabled]:nth-child(3)']);
 };

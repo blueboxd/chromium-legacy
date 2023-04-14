@@ -52,6 +52,7 @@
 #include "third_party/blink/public/mojom/page/page.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/page_state/page_state.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_navigation_body_loader.h"
 #include "third_party/blink/public/web/web_document_loader.h"
@@ -65,7 +66,6 @@
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/policy_container.h"
 #include "third_party/blink/renderer/core/frame/use_counter_impl.h"
-#include "third_party/blink/renderer/core/html/fenced_frame/fenced_frame_reporting.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/core/loader/document_load_timing.h"
 #include "third_party/blink/renderer/core/loader/frame_loader_types.h"
@@ -107,7 +107,6 @@ class LocalFrame;
 class LocalFrameClient;
 class MHTMLArchive;
 class PrefetchedSignedExchangeManager;
-class ResourceTimingInfo;
 class SerializedScriptValue;
 class SubresourceFilter;
 class WebServiceWorkerNetworkProvider;
@@ -149,7 +148,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   LocalFrame* GetFrame() const { return frame_; }
 
-  ResourceTimingInfo* GetNavigationTimingInfo() const;
+  mojom::blink::ResourceTimingInfoPtr TakeNavigationTimingInfo();
 
   void DetachFromFrame(bool flush_microtask_queue);
 
@@ -370,14 +369,17 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                     HistoryNavigationType,
                                     CommitReason commit_reason);
 
-  const KURL& WebBundlePhysicalUrl() const { return web_bundle_physical_url_; }
-
   bool NavigationScrollAllowed() const { return navigation_scroll_allowed_; }
 
   // We want to make sure that the largest content is painted before the "LCP
   // limit", so that we get a good LCP value. This returns the remaining time to
   // the LCP limit. See crbug.com/1065508 for details.
   base::TimeDelta RemainingTimeToLCPLimit() const;
+
+  // We are experimenting the idea of making preloaded fonts render-blocking up
+  // to a certain amount of time after navigation starts. This returns the
+  // remaining time to that time limit. See crbug.com/1412861 for details.
+  base::TimeDelta RemainingTimeToRenderBlockingFontMaxBlockingTime() const;
 
   mojom::blink::ContentSecurityNotifier& GetContentSecurityNotifier();
 
@@ -598,6 +600,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Computes and creates CSP for this document.
   ContentSecurityPolicy* CreateCSP();
 
+  bool IsSameOriginInitiator() const;
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.
   std::unique_ptr<WebNavigationParams> params_;
@@ -614,6 +617,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // These fields are copied from WebNavigationParams, see there for definition.
   DocumentToken token_;
   KURL url_;
+  KURL original_url_;
   AtomicString http_method_;
   // The referrer on the final request for this document.
   AtomicString referrer_;
@@ -748,11 +752,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const bool is_static_data_ = false;
   CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
-  scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
+  mojom::blink::ResourceTimingInfoPtr resource_timing_info_for_parent_;
+  base::TimeTicks redirect_end_time_;
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
-  const KURL web_bundle_physical_url_;
-  const KURL web_bundle_claimed_url_;
   ukm::SourceId ukm_source_id_;
 
   // This UseCounter tracks feature usage associated with the lifetime of

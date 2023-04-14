@@ -29,26 +29,30 @@ public class CustomTabHeightStrategy implements FindToolbarObserver {
     }
 
     public static CustomTabHeightStrategy createStrategy(Activity activity, @Px int initialHeight,
-            boolean isPartialCustomTabFixedHeight, CustomTabsConnection connection,
-            @Nullable CustomTabsSessionToken session,
+            @Px int initialWidth, int breakPointDp, boolean isPartialCustomTabFixedHeight,
+            CustomTabsConnection connection, @Nullable CustomTabsSessionToken session,
             ActivityLifecycleDispatcher lifecycleDispatcher, FullscreenManager fullscreenManager,
-            boolean isTablet, boolean interactWithBackground) {
-        if (initialHeight <= 0) {
+            boolean isTablet, boolean interactWithBackground, boolean showMaximizeButton,
+            int decorationType) {
+        if (initialHeight <= 0
+                && (!ChromeFeatureList.sCctResizableSideSheet.isEnabled() || initialWidth <= 0)) {
             return new CustomTabHeightStrategy();
         }
 
         if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
-            return new PartialCustomTabDisplayManager(activity, initialHeight,
-                    isPartialCustomTabFixedHeight,
+            return new PartialCustomTabDisplayManager(activity, initialHeight, initialWidth,
+                    breakPointDp, isPartialCustomTabFixedHeight,
                     (height, width)
                             -> connection.onResized(session, height, width),
-                    lifecycleDispatcher, fullscreenManager, isTablet, interactWithBackground);
+                    lifecycleDispatcher, fullscreenManager, isTablet, interactWithBackground,
+                    showMaximizeButton, decorationType);
         } else {
-            return new PartialCustomTabHeightStrategy(activity, initialHeight,
+            return new PartialCustomTabBottomSheetStrategy(activity, initialHeight,
                     isPartialCustomTabFixedHeight,
                     (height, width)
                             -> connection.onResized(session, height, width),
-                    lifecycleDispatcher, fullscreenManager, isTablet, interactWithBackground);
+                    lifecycleDispatcher, fullscreenManager, isTablet, interactWithBackground, false,
+                    new PartialCustomTabHandleStrategyFactory());
         }
     }
 

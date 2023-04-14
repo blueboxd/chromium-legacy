@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_plane_data.h"
 #include "ui/gfx/overlay_priority_hint.h"
+#include "ui/gl/gl_enums.h"
 #include "ui/gl/gl_utils.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/scoped_make_current.h"
@@ -536,7 +537,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   DCHECK(GLenumToTextureTarget(target) != TextureTarget::kUnkown);
   scoped_refptr<TexturePassthrough> texture_passthrough;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   // If there was anything bound that required an image bind / copy,
   // forget it since it's no longer bound to a sampler.
   RemovePendingBindingTexture(target, active_texture_unit_);
@@ -561,7 +562,7 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
 
     DCHECK(texture_passthrough);
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
     // If |texture_passthrough| has a bound image that requires processing
     // before a draw, then keep track of it.
     if (texture_passthrough->is_bind_pending()) {
@@ -1205,7 +1206,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDispatchCompute(
     GLuint num_groups_x,
     GLuint num_groups_y,
     GLuint num_groups_z) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDispatchComputeFn(num_groups_x, num_groups_y, num_groups_z);
@@ -1214,7 +1215,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDispatchCompute(
 
 error::Error GLES2DecoderPassthroughImpl::DoDispatchComputeIndirect(
     GLintptr offset) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   // TODO(jiajie.hu@intel.com): Use glDispatchComputeIndirectRobustANGLEFn()
@@ -1226,7 +1227,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDispatchComputeIndirect(
 error::Error GLES2DecoderPassthroughImpl::DoDrawArrays(GLenum mode,
                                                        GLint first,
                                                        GLsizei count) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawArraysFn(mode, first, count);
@@ -1236,7 +1237,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArrays(GLenum mode,
 error::Error GLES2DecoderPassthroughImpl::DoDrawArraysIndirect(
     GLenum mode,
     const void* offset) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   // TODO(jiajie.hu@intel.com): Use glDrawArraysIndirectRobustANGLEFn() when
@@ -1249,7 +1250,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElements(GLenum mode,
                                                          GLsizei count,
                                                          GLenum type,
                                                          const void* indices) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawElementsFn(mode, count, type, indices);
@@ -1260,7 +1261,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsIndirect(
     GLenum mode,
     GLenum type,
     const void* offset) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   // TODO(jiajie.hu@intel.com): Use glDrawElementsIndirectRobustANGLEFn() when
@@ -1419,7 +1420,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2D(
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
   }
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImageForClientIDIfNeeded(texture);
 #endif
   api()->glFramebufferTexture2DEXTFn(
@@ -2685,10 +2686,6 @@ error::Error GLES2DecoderPassthroughImpl::DoShaderBinary(GLsizei n,
                                                          GLenum binaryformat,
                                                          const void* binary,
                                                          GLsizei length) {
-#if 1  // No binary shader support.
-  InsertError(GL_INVALID_ENUM, "Invalid enum.");
-  return error::kNoError;
-#else
   std::vector<GLuint> service_shaders(n, 0);
   for (GLsizei i = 0; i < n; i++) {
     service_shaders[i] = GetShaderServiceID(shaders[i], resources_);
@@ -2696,7 +2693,6 @@ error::Error GLES2DecoderPassthroughImpl::DoShaderBinary(GLsizei n,
   api()->glShaderBinaryFn(n, service_shaders.data(), binaryformat, binary,
                           length);
   return error::kNoError;
-#endif
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoShaderSource(GLuint shader,
@@ -3444,7 +3440,7 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
                 "Cannot change the attachments of the default framebuffer.");
     return error::kNoError;
   }
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImageForClientIDIfNeeded(texture);
 #endif
   api()->glFramebufferTexture2DMultisampleEXTFn(
@@ -3585,7 +3581,7 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
     pending_query.commands_issued_timestamp = base::TimeTicks::Now();
   pending_queries_.push_back(std::move(pending_query));
 
-  return ProcessQueries(false);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
@@ -3620,7 +3616,10 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
 
     if (query_info->type != GL_NONE && query_info->type != target) {
       InsertError(GL_INVALID_OPERATION,
-                  "Query type does not match the target.");
+                  base::StringPrintf(
+                      "Query type (%s) does not match the target (%s).",
+                      gl::GLEnums::GetStringEnum(query_info->type).c_str(),
+                      gl::GLEnums::GetStringEnum(target).c_str()));
       return error::kNoError;
     }
   } else {
@@ -3744,7 +3743,7 @@ error::Error GLES2DecoderPassthroughImpl::DoEndQueryEXT(GLenum target,
       break;
   }
   pending_queries_.push_back(std::move(pending_query));
-  return ProcessQueries(false);
+  return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoEndTransformFeedback() {
@@ -3754,7 +3753,11 @@ error::Error GLES2DecoderPassthroughImpl::DoEndTransformFeedback() {
 
 error::Error GLES2DecoderPassthroughImpl::DoSetDisjointValueSyncCHROMIUM(
     DisjointValueSync* sync) {
-  NOTIMPLEMENTED();
+  GLint disjoint = 0;
+  api()->glGetIntegervFn(GL_GPU_DISJOINT_EXT, &disjoint);
+  if (disjoint > 0) {
+    sync->SetDisjointCount(disjoint);
+  }
   return error::kNoError;
 }
 
@@ -4441,7 +4444,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopyTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha) {
   gl::ScopedEnableTextureRectangleInShaderCompiler enable(
       feature_info_->IsWebGLContext() ? api() : nullptr);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImageForClientIDIfNeeded(source_id);
 #endif
   api()->glCopyTextureCHROMIUMFn(
@@ -4472,7 +4475,7 @@ error::Error GLES2DecoderPassthroughImpl::DoCopySubTextureCHROMIUM(
     GLboolean unpack_unmultiply_alpha) {
   gl::ScopedEnableTextureRectangleInShaderCompiler enable(
       feature_info_->IsWebGLContext() ? api() : nullptr);
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImageForClientIDIfNeeded(source_id);
 #endif
   api()->glCopySubTextureCHROMIUMFn(
@@ -4488,7 +4491,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawArraysInstancedANGLE(
     GLint first,
     GLsizei count,
     GLsizei primcount) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawArraysInstancedANGLEFn(mode, first, count, primcount);
@@ -4502,7 +4505,7 @@ GLES2DecoderPassthroughImpl::DoDrawArraysInstancedBaseInstanceANGLE(
     GLsizei count,
     GLsizei primcount,
     GLuint baseinstance) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawArraysInstancedBaseInstanceANGLEFn(mode, first, count, primcount,
@@ -4516,7 +4519,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDrawElementsInstancedANGLE(
     GLenum type,
     const void* indices,
     GLsizei primcount) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawElementsInstancedANGLEFn(mode, count, type, indices, primcount);
@@ -4532,7 +4535,7 @@ GLES2DecoderPassthroughImpl::DoDrawElementsInstancedBaseVertexBaseInstanceANGLE(
     GLsizei primcount,
     GLint basevertex,
     GLuint baseinstance) {
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   BindPendingImagesForSamplersIfNeeded();
 #endif
   api()->glDrawElementsInstancedBaseVertexBaseInstanceANGLEFn(
@@ -4997,6 +5000,33 @@ error::Error GLES2DecoderPassthroughImpl::DoConvertYUVAMailboxesToRGBINTERNAL(
                                lazy_context_->shared_context_state());
   auto result = helper.ConvertYUVAMailboxesToRGB(yuv_color_space, plane_config,
                                                  subsampling, mailboxes_in);
+  if (!result.has_value()) {
+    InsertError(result.error().gl_error, result.error().msg);
+  }
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoCopySharedImageINTERNAL(
+    GLint xoffset,
+    GLint yoffset,
+    GLint x,
+    GLint y,
+    GLsizei width,
+    GLsizei height,
+    GLboolean unpack_flip_y,
+    const volatile GLbyte* mailboxes) {
+  if (!lazy_context_) {
+    lazy_context_ = LazySharedContextState::Create(this);
+    if (!lazy_context_) {
+      return error::kNoError;
+    }
+  }
+  ui::ScopedMakeCurrent smc(lazy_context_->shared_context_state()->context(),
+                            lazy_context_->shared_context_state()->surface());
+  CopySharedImageHelper helper(group_->shared_image_representation_factory(),
+                               lazy_context_->shared_context_state());
+  auto result = helper.CopySharedImage(xoffset, yoffset, x, y, width, height,
+                                       unpack_flip_y, mailboxes);
   if (!result.has_value()) {
     InsertError(result.error().gl_error, result.error().msg);
   }

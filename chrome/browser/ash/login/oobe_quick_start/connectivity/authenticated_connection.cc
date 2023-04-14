@@ -5,7 +5,9 @@
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/authenticated_connection.h"
 
 #include "base/base64.h"
+#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
 #include "components/cbor/values.h"
@@ -60,6 +62,8 @@ const uint8_t kAuthenticatorGetAssertionCommand = 0x02;
 const char kUserPresenceMapKey[] = "up";
 const char kUserVerificationMapKey[] = "uv";
 
+const char kNotifySourceOfUpdateMessageKey[] = "isForcedUpdateRequired";
+
 }  // namespace
 
 AuthenticatedConnection::AuthenticatedConnection(
@@ -69,12 +73,38 @@ AuthenticatedConnection::AuthenticatedConnection(
 AuthenticatedConnection::~AuthenticatedConnection() = default;
 
 void AuthenticatedConnection::RequestAccountTransferAssertion(
-    const std::string& challenge_b64url) {
+    const std::string& challenge_b64url,
+    RequestAccountTransferAssertionCallback callback) {
   challenge_b64url_ = challenge_b64url;
-  SendBootstrapOptions();
+
+  auto parse_assertion_response =
+      base::BindOnce(&AuthenticatedConnection::ParseAssertionResponse,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  auto request_assertion =
+      base::IgnoreArgs<absl::optional<std::vector<uint8_t>>>(base::BindOnce(
+          &AuthenticatedConnection::RequestAssertion,
+          weak_ptr_factory_.GetWeakPtr(), std::move(parse_assertion_response)));
+
+  // Set up a callback to call GetInfo, calling back into RequestAssertion (and
+  // ignoring the results of GetInfo) after the call succeeds.
+  auto get_info =
+      base::IgnoreArgs<absl::optional<std::vector<uint8_t>>>(base::BindOnce(
+          &AuthenticatedConnection::GetInfo, weak_ptr_factory_.GetWeakPtr(),
+          std::move(request_assertion)));
+
+  // Call into SetBootstrapOptions, starting the chain of callbacks.
+  SendBootstrapOptions(std::move(get_info));
 }
 
-void AuthenticatedConnection::SendBootstrapOptions() {
+void AuthenticatedConnection::NotifySourceOfUpdate() {
+  base::Value::Dict message_payload;
+  message_payload.Set(kNotifySourceOfUpdateMessageKey, true);
+  SendPayload(message_payload);
+}
+
+void AuthenticatedConnection::SendBootstrapOptions(
+    ConnectionResponseCallback callback) {
   base::Value::Dict bootstrap_options;
   bootstrap_options.Set(kAccountRequirementKey, kAccountRequirementSingle);
   bootstrap_options.Set(kFlowTypeKey, kFlowTypeTargetChallenge);
@@ -83,12 +113,10 @@ void AuthenticatedConnection::SendBootstrapOptions() {
   message_payload.Set(kBootstrapOptionsKey, std::move(bootstrap_options));
 
   SendPayload(message_payload);
-  nearby_connection_->Read(
-      base::BindOnce(&AuthenticatedConnection::OnBootstrapOptionsResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+  nearby_connection_->Read(std::move(callback));
 }
 
-void AuthenticatedConnection::GetInfo() {
+void AuthenticatedConnection::GetInfo(ConnectionResponseCallback callback) {
   std::vector<uint8_t> ctap_request_command({kAuthenticatorGetInfoCommand});
   base::Value::Dict second_device_auth_payload;
   second_device_auth_payload.Set(kFidoMessageKey,
@@ -97,12 +125,11 @@ void AuthenticatedConnection::GetInfo() {
   message_payload.Set(kSecondDeviceAuthPayloadKey,
                       std::move(second_device_auth_payload));
   SendPayload(message_payload);
-  nearby_connection_->Read(
-      base::BindOnce(&AuthenticatedConnection::OnFidoGetInfoResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+  nearby_connection_->Read(std::move(callback));
 }
 
-void AuthenticatedConnection::RequestAssertion() {
+void AuthenticatedConnection::RequestAssertion(
+    ConnectionResponseCallback callback) {
   DCHECK(!challenge_b64url_.empty());
   cbor::Value request = GenerateGetAssertionRequest();
   std::vector<uint8_t> ctap_request_command =
@@ -114,9 +141,7 @@ void AuthenticatedConnection::RequestAssertion() {
   message_payload.Set(kSecondDeviceAuthPayloadKey,
                       std::move(second_device_auth_payload));
   SendPayload(message_payload);
-  nearby_connection_->Read(
-      base::BindOnce(&AuthenticatedConnection::OnFidoGetAssertionResponse,
-                     weak_ptr_factory_.GetWeakPtr()));
+  nearby_connection_->Read(std::move(callback));
 }
 
 cbor::Value AuthenticatedConnection::GenerateGetAssertionRequest() {
@@ -164,18 +189,9 @@ std::string AuthenticatedConnection::CreateFidoClientDataJson(
   return fido_client_data_json;
 }
 
-void AuthenticatedConnection::OnBootstrapOptionsResponse(
-    absl::optional<std::vector<uint8_t>>) {
-  GetInfo();
-}
-
-void AuthenticatedConnection::OnFidoGetInfoResponse(
-    absl::optional<std::vector<uint8_t>>) {
-  RequestAssertion();
-}
-
-void AuthenticatedConnection::OnFidoGetAssertionResponse(
-    absl::optional<std::vector<uint8_t>>) {
+void AuthenticatedConnection::ParseAssertionResponse(
+    RequestAccountTransferAssertionCallback callback,
+    absl::optional<std::vector<uint8_t>> response_bytes) {
   NOTIMPLEMENTED();
 }
 

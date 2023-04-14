@@ -6,20 +6,15 @@
 
 #include <memory>
 
+#include "components/unexportable_keys/unexportable_key_id.h"
 #include "crypto/unexportable_key.h"
 
 namespace unexportable_keys {
 
-namespace {
-RefCountedUnexportableSigningKey::KeyId GetNextKeyId() {
-  static uint32_t next_id = 0;
-  return RefCountedUnexportableSigningKey::KeyId(next_id++);
-}
-}  // namespace
-
 RefCountedUnexportableSigningKey::RefCountedUnexportableSigningKey(
-    std::unique_ptr<crypto::UnexportableSigningKey> key)
-    : key_(std::move(key)), key_id_(GetNextKeyId()) {
+    std::unique_ptr<crypto::UnexportableSigningKey> key,
+    const UnexportableKeyId& key_id)
+    : key_(std::move(key)), id_(key_id) {
   DCHECK(key_);
 }
 

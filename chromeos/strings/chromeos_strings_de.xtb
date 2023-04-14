@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Das Fenster für Firmwareupdates für externe Geräte ist geöffnet. Es sind <ph name="NUM_UPDATES" /> Updates verfügbar.</translation>
 <translation id="1145516343487477149">Hier findest du Hilfeartikel und Antworten auf häufig gestellte Fragen zu Chromebooks</translation>
+<translation id="1167755866710282443">Öffne das Menü, um die Schlüssel anzupassen. Ziehe das Menü zum Verschieben.</translation>
 <translation id="1175697296044146566">Dieses Gerät (<ph name="DEVICE_TYPE" />) wird von <ph name="MANAGER" /> verwaltet.</translation>
 <translation id="1175951029573070619">Durchschnittlich (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Entfernen</translation>
@@ -143,7 +144,7 @@
 <translation id="2180197493692062006">Es gab ein Problem. Versuche, die App wieder zu öffnen.</translation>
 <translation id="2209788852729124853">Traffic-Zähler zurücksetzen</translation>
 <translation id="2212733584906323460">Namensauflösung</translation>
-<translation id="2217935453350629363">Aktuelle Geschwindigkeit</translation>
+<translation id="2217935453350629363">Momentane Geschwindigkeit</translation>
 <translation id="2224337661447660594">Kein Internet</translation>
 <translation id="222447520299472966">Es muss mindestens ein Art Gallery-Album ausgewählt werden</translation>
 <translation id="2230005943220647148">Celsius</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Album <ph name="TITLE" /> <ph name="DESC" /> auswählen</translation>
 <translation id="4111761024568264522">USB-Touchpad</translation>
 <translation id="4117637339509843559">Dunkler Modus</translation>
+<translation id="4130035430755296270">Für weitere Layoutoptionen Mauszeiger weiter darauf halten</translation>
 <translation id="4131410914670010031">Schwarz-Weiß</translation>
 <translation id="4145784616224233563">HTTP-Firewall</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS-Auflösung</translation>
 <translation id="4848429997038228357">LÄUFT</translation>
 <translation id="4854586501323951986">Eingebauter Touchscreen</translation>
+<translation id="4855250849489639581">Für weitere Layoutoptionen nach unten wischen</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Noch {0} Versuch}other{<ph name="ERROR_MESSAGE" /> Noch {0} Versuche}}</translation>
 <translation id="4873827928179867585">Authentifizierungsalgorithmus</translation>
 <translation id="4880328057631981605">Name des Zugangspunkts</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 Bild</translation>
 <translation id="7177485034254901881">Dieses <ph name="DEVICE_TYPE" /> wird von <ph name="MANAGER" /> verwaltet. Administratoren können das Gerät per Remotezugriff konfigurieren.</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
+<translation id="7180865173735832675">Anpassen</translation>
 <translation id="7212734716605298123">Firmwareupdates für externe Geräte</translation>
 <translation id="7216409898977639127">Mobilfunkanbieter</translation>
 <translation id="725133483556299729">E-Mail-Adresse auswählen</translation>
@@ -724,7 +728,7 @@
 <translation id="7701040980221191251">Keine</translation>
 <translation id="7705524343798198388">VPN</translation>
 <translation id="7716280709122323042">WPA3</translation>
-<translation id="773153675489693198">Ladezyklen</translation>
+<translation id="773153675489693198">Anzahl der Ladezyklen</translation>
 <translation id="7747039790905080783">Vorinstallierter Schlüssel</translation>
 <translation id="7762130827864645708">Du hast dein Passwort geändert. Bitte verwende ab jetzt das neue Passwort.</translation>
 <translation id="7763470514545477072">Domain-Suffix stimmt überein</translation>

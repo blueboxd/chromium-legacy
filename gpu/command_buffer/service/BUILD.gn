@@ -103,9 +103,6 @@ target(link_target_type, "gles2_sources") {
 
   deps = []
   sources = [
-    "abstract_texture.h",
-    "abstract_texture_impl.cc",
-    "abstract_texture_impl.h",
     "buffer_manager.cc",
     "buffer_manager.h",
     "client_service_map.h",
@@ -299,10 +296,16 @@ target(link_target_type, "gles2_sources") {
 
   if (!is_android) {
     sources += [
+      "abstract_texture.h",
       "passthrough_abstract_texture_impl.cc",
       "passthrough_abstract_texture_impl.h",
       "validating_abstract_texture_impl.cc",
       "validating_abstract_texture_impl.h",
+    ]
+  } else {
+    sources += [
+      "abstract_texture_android.cc",
+      "abstract_texture_android.h",
     ]
   }
 
@@ -476,7 +479,7 @@ target(link_target_type, "gles2_sources") {
     }
   }
 
-  if (is_mac) {
+  if (is_apple) {
     deps += [ "//components/viz/common:metal_context_provider" ]
     sources += [
       "shared_image/iosurface_image_backing.h",
@@ -486,13 +489,17 @@ target(link_target_type, "gles2_sources") {
       "shared_image/shared_image_format_utils_mac.mm",
     ]
 
-    # Required by gles2_cmd_decoder.cc on Mac.
+    # Required by gles2_cmd_decoder.cc on Apple.
     frameworks = [
-      "Cocoa.framework",
       "IOSurface.framework",
       "Metal.framework",
-      "OpenGL.framework",
     ]
+    if (is_mac) {
+      frameworks += [
+        "Cocoa.framework",
+        "OpenGL.framework",
+      ]
+    }
   }
 
   if (skia_use_dawn) {
@@ -596,8 +603,6 @@ if (is_android) {
   static_library("android_texture_owner_test_support") {
     testonly = true
     sources = [
-      "mock_abstract_texture.cc",
-      "mock_abstract_texture.h",
       "mock_texture_owner.cc",
       "mock_texture_owner.h",
       "ref_counted_lock_for_test.cc",

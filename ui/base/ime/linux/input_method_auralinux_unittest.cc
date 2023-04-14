@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
@@ -152,7 +154,8 @@ class LinuxInputMethodContextForTesting : public LinuxInputMethodContext {
 
   void UpdateFocus(bool has_client,
                    TextInputType old_type,
-                   TextInputType new_type) override {}
+                   TextInputType new_type,
+                   ui::TextInputClient::FocusReason reason) override {}
 
   void SetCursorLocation(const gfx::Rect& rect) override {
     cursor_position_ = rect;
@@ -315,10 +318,7 @@ class InputMethodAuraLinuxTest : public testing::Test {
   InputMethodAuraLinuxTest& operator=(const InputMethodAuraLinuxTest&) = delete;
 
  protected:
-  InputMethodAuraLinuxTest()
-      : input_method_auralinux_(nullptr),
-        delegate_(nullptr),
-        context_(nullptr) {
+  InputMethodAuraLinuxTest() {
     GetInputMethodContextFactoryForTest() =
         base::BindRepeating([](LinuxInputMethodContextDelegate* delegate)
                                 -> std::unique_ptr<LinuxInputMethodContext> {
@@ -332,8 +332,9 @@ class InputMethodAuraLinuxTest : public testing::Test {
   }
 
   void SetUp() override {
-    delegate_ = new InputMethodDelegateForTesting();
-    input_method_auralinux_ = new InputMethodAuraLinux(delegate_);
+    delegate_ = std::make_unique<InputMethodDelegateForTesting>();
+    input_method_auralinux_ =
+        std::make_unique<InputMethodAuraLinux>(delegate_.get());
     input_method_auralinux_->OnFocus();
     context_ = static_cast<LinuxInputMethodContextForTesting*>(
         input_method_auralinux_->GetContextForTesting());
@@ -343,16 +344,13 @@ class InputMethodAuraLinuxTest : public testing::Test {
     context_->SetSyncMode(false);
     context_->SetEatKey(false);
     context_ = nullptr;
-
-    delete input_method_auralinux_;
-    input_method_auralinux_ = nullptr;
-    delete delegate_;
-    delegate_ = nullptr;
+    input_method_auralinux_.reset();
+    delegate_.reset();
   }
 
-  raw_ptr<InputMethodAuraLinux> input_method_auralinux_;
-  raw_ptr<InputMethodDelegateForTesting> delegate_;
-  raw_ptr<LinuxInputMethodContextForTesting> context_;
+  std::unique_ptr<InputMethodDelegateForTesting> delegate_;
+  std::unique_ptr<InputMethodAuraLinux> input_method_auralinux_;
+  raw_ptr<LinuxInputMethodContextForTesting> context_ = nullptr;
   raw_ptr<TestResult> test_result_;
 };
 
@@ -697,12 +695,12 @@ void DeadKeyTest(TextInputType text_input_type,
 }
 
 TEST_F(InputMethodAuraLinuxTest, DeadKeyTest) {
-  DeadKeyTest(TEXT_INPUT_TYPE_TEXT, input_method_auralinux_, context_,
+  DeadKeyTest(TEXT_INPUT_TYPE_TEXT, input_method_auralinux_.get(), context_,
               test_result_);
 }
 
 TEST_F(InputMethodAuraLinuxTest, DeadKeyTestTypeNone) {
-  DeadKeyTest(TEXT_INPUT_TYPE_NONE, input_method_auralinux_, context_,
+  DeadKeyTest(TEXT_INPUT_TYPE_NONE, input_method_auralinux_.get(), context_,
               test_result_);
 }
 

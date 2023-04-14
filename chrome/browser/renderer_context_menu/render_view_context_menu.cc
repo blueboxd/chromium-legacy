@@ -11,7 +11,6 @@
 #include <set>
 #include <utility>
 
-#include "ash/components/arc/arc_features.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -121,6 +120,7 @@
 #include "components/guest_view/browser/guest_view_base.h"
 #include "components/language/core/browser/language_model_manager.h"
 #include "components/lens/lens_features.h"
+#include "components/lens/lens_metrics.h"
 #include "components/live_caption/caption_util.h"
 #include "components/media_router/browser/media_router_dialog_controller.h"
 #include "components/media_router/browser/media_router_metrics.h"
@@ -143,6 +143,7 @@
 #include "components/spellcheck/common/spellcheck_common.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -267,10 +268,10 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
 #include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
@@ -459,13 +460,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_PDF_OCR_ALWAYS, 127},
        {IDC_CONTENT_CONTEXT_PDF_OCR_ONCE, 128},
        {IDC_CONTENT_CONTEXT_AUTOFILL_FEEDBACK, 129},
+       {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 130},
+       {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 131},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 130}});
+       {0, 132}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -497,13 +500,15 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_RESHARELINKTOTEXT, 24},
        {IDC_OPEN_LINK_IN_PROFILE_FIRST, 25},
        {IDC_CONTENT_CONTEXT_ADD_A_NOTE, 26},
+       {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB, 27},
+       {IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS, 28},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the ContextMenuOptionDesktop enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 27}});
+       {0, 29}});
 
   return *(type == UmaEnumIdLookupType::GeneralEnumId ? kGeneralMap
                                                       : kSpecificMap);
@@ -1184,6 +1189,14 @@ int RenderViewContextMenu::GetSearchForImageIdc() const {
   return IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE;
 }
 
+int RenderViewContextMenu::GetTranslateImageIdc() const {
+  if (base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
+      search::DefaultSearchProviderIsGoogle(GetProfile())) {
+    return IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS;
+  }
+  return IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB;
+}
+
 int RenderViewContextMenu::GetRegionSearchIdc() const {
   return search::DefaultSearchProviderIsGoogle(GetProfile())
              ? IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH
@@ -1253,10 +1266,9 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
   }
 
   // Log UKM for Lens context menu items.
-  if ((id == IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH &&
-       lens::features::GetEnableUKMLoggingForRegionSearch()) ||
-      (id == IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE &&
-       lens::features::GetEnableUKMLoggingForImageSearch())) {
+  if (id == IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH ||
+      id == IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE ||
+      id == IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS) {
     // Enum id should correspond to the RenderViewContextMenuItem enum.
     ukm::SourceId source_id =
         source_web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId();
@@ -1508,6 +1520,7 @@ void RenderViewContextMenu::AppendLinkItems() {
           profile_manager->GetProfileAttributesStorage()
               .GetAllProfilesAttributesSortedByName();
       std::vector<ProfileAttributesEntry*> target_profiles_entries;
+      bool has_active_profiles = false;
       for (ProfileAttributesEntry* entry : entries) {
         base::FilePath profile_path = entry->GetPath();
         Profile* profile_for_path =
@@ -1517,12 +1530,16 @@ void RenderViewContextMenu::AppendLinkItems() {
           target_profiles_entries.push_back(entry);
           if (chrome::FindLastActiveWithProfile(profile_for_path))
             multiple_profiles_open_ = true;
+          if (ProfileMetrics::IsProfileActive(entry)) {
+            has_active_profiles = true;
+          }
         }
       }
 
       if ((multiple_profiles_open_ ||
-           base::FeatureList::IsEnabled(features::kDisplayOpenLinkAsProfile)) &&
-          !target_profiles_entries.empty()) {
+           (base::FeatureList::IsEnabled(features::kDisplayOpenLinkAsProfile) &&
+            has_active_profiles))) {
+        DCHECK(!target_profiles_entries.empty());
         if (target_profiles_entries.size() == 1) {
           int menu_index = static_cast<int>(profile_link_paths_.size());
           ProfileAttributesEntry* entry = target_profiles_entries.front();
@@ -1729,6 +1746,21 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
   }
 
   menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
+
+  if (base::FeatureList::IsEnabled(lens::features::kEnableImageTranslate) &&
+      provider && !provider->image_translate_url().empty() &&
+      provider->image_translate_url_ref().IsValid(
+          service->search_terms_data())) {
+    ChromeTranslateClient* chrome_translate_client =
+        ChromeTranslateClient::FromWebContents(embedder_web_contents_);
+    if (chrome_translate_client &&
+        chrome_translate_client->GetLanguageState().IsPageTranslated()) {
+      menu_model_.AddItem(
+          GetTranslateImageIdc(),
+          l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_TRANSLATEIMAGE,
+                                     GetImageSearchProviderName(provider)));
+    }
+  }
 }
 
 void RenderViewContextMenu::AppendAudioItems() {
@@ -1921,6 +1953,7 @@ void RenderViewContextMenu::AppendMediaRouterItem() {
 void RenderViewContextMenu::AppendReadAnythingItem() {
   menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING,
                                   IDS_CONTENT_CONTEXT_READ_ANYTHING);
+  menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
 }
 
 void RenderViewContextMenu::AppendPdfOcrItems() {
@@ -2370,6 +2403,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     case IDC_CONTENT_CONTEXT_OPENIMAGENEWTAB:
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
     case IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE:
+    case IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB:
+    case IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS:
       return params_.src_url.is_valid() &&
              (params_.src_url.scheme() != content::kChromeUIScheme);
 
@@ -2528,7 +2563,8 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
     {
       auto* service = chromeos::LacrosService::Get();
       return service &&
-             service->IsAvailable<crosapi::mojom::ClipboardHistory>();
+             service->IsAvailable<crosapi::mojom::ClipboardHistory>() &&
+             IsPasteEnabled();
     }
 #else
       NOTREACHED() << "Unhandled id: " << id;
@@ -2675,11 +2711,19 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE:
-      ExecSearchWebForImage();
+      ExecSearchWebForImage(/*is_image_translate=*/false);
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE:
-      ExecSearchLensForImage();
+      ExecSearchLensForImage(/*is_image_translate=*/false);
+      break;
+
+    case IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB:
+      ExecSearchWebForImage(/*is_image_translate=*/true);
+      break;
+
+    case IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS:
+      ExecSearchLensForImage(/*is_image_translate=*/true);
       break;
 
     case IDC_CONTENT_CONTEXT_OPEN_IN_READ_ANYTHING:
@@ -2862,6 +2906,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SEARCHWEBFOR: {
+      RecordAmbientSearchQuery(
+          lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_WEB_FOR);
       if (side_search::IsSearchWebInSidePanelSupported(
               chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
         ExecSearchWebInSidePanel(selection_navigation_url_);
@@ -3251,7 +3297,8 @@ bool RenderViewContextMenu::IsOpenLinkAllowedByDlp(const GURL& link_url) const {
       dlp_rules_manager->IsRestrictedDestination(
           params_.page_url, link_url,
           policy::DlpRulesManager::Restriction::kClipboard,
-          /*out_source_pattern=*/nullptr, /*out_destination_pattern=*/nullptr);
+          /*out_source_pattern=*/nullptr, /*out_destination_pattern=*/nullptr,
+          /*out_rule_metadata=*/nullptr);
   // TODO(crbug.com/1222057): show a warning if the level is kWarn
   return level != policy::DlpRulesManager::Level::kBlock;
 #else
@@ -3616,7 +3663,7 @@ void RenderViewContextMenu::ExecCopyImageAt() {
     frame_host->CopyImageAt(params_.x, params_.y);
 }
 
-void RenderViewContextMenu::ExecSearchLensForImage() {
+void RenderViewContextMenu::ExecSearchLensForImage(bool is_image_translate) {
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(source_web_contents_);
   if (!core_tab_helper)
@@ -3624,9 +3671,17 @@ void RenderViewContextMenu::ExecSearchLensForImage() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
+
+  lens::RecordAmbientSearchQuery(
+      lens::AmbientSearchEntryPoint::
+          CONTEXT_MENU_SEARCH_IMAGE_WITH_GOOGLE_LENS);
   core_tab_helper->SearchWithLens(
       render_frame_host, params().src_url,
-      lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM);
+      is_image_translate
+          ? lens::EntryPoint::
+                CHROME_TRANSLATE_IMAGE_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM
+          : lens::EntryPoint::CHROME_SEARCH_WITH_GOOGLE_LENS_CONTEXT_MENU_ITEM,
+      is_image_translate);
 }
 
 void RenderViewContextMenu::ExecAddANote() {
@@ -3676,7 +3731,7 @@ void RenderViewContextMenu::ExecRegionSearch(
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
-void RenderViewContextMenu::ExecSearchWebForImage() {
+void RenderViewContextMenu::ExecSearchWebForImage(bool is_image_translate) {
   CoreTabHelper* core_tab_helper =
       CoreTabHelper::FromWebContents(source_web_contents_);
   if (!core_tab_helper)
@@ -3684,7 +3739,10 @@ void RenderViewContextMenu::ExecSearchWebForImage() {
   RenderFrameHost* render_frame_host = GetRenderFrameHost();
   if (!render_frame_host)
     return;
-  core_tab_helper->SearchByImage(render_frame_host, params().src_url);
+  lens::RecordAmbientSearchQuery(
+      lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_IMAGE_WITH_WEB);
+  core_tab_helper->SearchByImage(render_frame_host, params().src_url,
+                                 is_image_translate);
 }
 
 void RenderViewContextMenu::ExecSearchWebInSidePanel(const GURL& url) {

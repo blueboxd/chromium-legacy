@@ -48,11 +48,10 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/shell_content_browser_client.h"
-#include "content/test/test_content_browser_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -436,7 +435,7 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
     options.type = script_type;
     registration_ = CreateNewServiceWorkerRegistration(
         wrapper()->context()->registry(), options,
-        blink::StorageKey(url::Origin::Create(scope)));
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(scope)));
     // Set the update check time to avoid triggering updates in the middle of
     // tests.
     registration_->set_last_update_check(base::Time::Now());
@@ -465,8 +464,9 @@ class ServiceWorkerVersionBrowserTest : public ContentBrowserTest {
             /*is_parent_frame_secure=*/true, wrapper()->context()->AsWeakPtr(),
             &remote_endpoints_.back());
     const GURL url = embedded_test_server()->GetURL("/service_worker/host");
-    container_host->UpdateUrls(url, url::Origin::Create(url),
-                               blink::StorageKey(url::Origin::Create(url)));
+    container_host->UpdateUrls(
+        url, url::Origin::Create(url),
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(url)));
     container_host->SetControllerRegistration(
         registration_, false /* notify_controllerchange */);
   }
@@ -766,10 +766,9 @@ class WaitForLoaded : public EmbeddedWorkerInstance::Listener {
   base::OnceClosure quit_;
 };
 
-class MockContentBrowserClient : public TestContentBrowserClient {
+class MockContentBrowserClient : public ContentBrowserTestContentBrowserClient {
  public:
-  MockContentBrowserClient()
-      : TestContentBrowserClient(), data_saver_enabled_(false) {}
+  MockContentBrowserClient() : data_saver_enabled_(false) {}
 
   ~MockContentBrowserClient() override = default;
 
@@ -1299,7 +1298,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
       embedded_test_server()->GetURL(kScope),
       blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kAll);
-  blink::StorageKey key(url::Origin::Create(options.scope));
+  const blink::StorageKey key =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(options.scope));
 
   // Register and wait for activation.
   auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
@@ -1372,7 +1372,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
       embedded_test_server()->GetURL(kScope),
       blink::mojom::ScriptType::kClassic,
       blink::mojom::ServiceWorkerUpdateViaCache::kNone);
-  blink::StorageKey key(url::Origin::Create(options.scope));
+  const blink::StorageKey key =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(options.scope));
   auto observer = base::MakeRefCounted<WorkerActivatedObserver>(wrapper());
   observer->Init();
   public_context()->RegisterServiceWorker(
@@ -1407,12 +1408,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithSaveData) {
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
   content_browser_client.set_data_saver_enabled(true);
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
   shell()->web_contents()->OnWebPreferencesChanged();
   EXPECT_EQ(Install("/service_worker/fetch_in_install.js"),
             blink::ServiceWorkerStatusCode::kOk);
-  SetBrowserClientForTesting(old_client);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
@@ -1422,12 +1420,9 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
   content_browser_client.set_data_saver_enabled(true);
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
   shell()->web_contents()->OnWebPreferencesChanged();
   EXPECT_EQ(Install("/service_worker/generated_sw.js"),
             blink::ServiceWorkerStatusCode::kOk);
-  SetBrowserClientForTesting(old_client);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithoutSaveData) {
@@ -1435,11 +1430,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, FetchWithoutSaveData) {
       base::BindRepeating(&VerifySaveDataHeaderNotInRequest));
   StartServerAndNavigateToSetup();
   MockContentBrowserClient content_browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&content_browser_client);
   EXPECT_EQ(Install("/service_worker/fetch_in_install.js"),
             blink::ServiceWorkerStatusCode::kOk);
-  SetBrowserClientForTesting(old_client);
 }
 
 IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {

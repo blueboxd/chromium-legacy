@@ -8,6 +8,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/services/storage/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -296,6 +297,10 @@ class ServiceWorkerRegistryTest : public testing::Test {
 
   size_t inflight_call_count() { return registry()->inflight_calls_.size(); }
 
+  std::map<blink::StorageKey, std::set<GURL>>& registration_scope_cache() {
+    return registry()->registration_scope_cache_;
+  }
+
   void InitializeTestHelper() {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(
         user_data_directory_path_, special_storage_policy_.get());
@@ -336,7 +341,7 @@ class ServiceWorkerRegistryTest : public testing::Test {
     blink::ServiceWorkerStatusCode result;
     base::RunLoop loop;
     registry()->FindRegistrationForClientUrl(
-        document_url, key,
+        ServiceWorkerRegistry::Purpose::kNotForNavigation, document_url, key,
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode status,
                 scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -477,6 +482,21 @@ class ServiceWorkerRegistryTest : public testing::Test {
     return result;
   }
 
+  blink::ServiceWorkerStatusCode UpdateResourceSha256Checksums(
+      const ServiceWorkerRegistration* registration,
+      const base::flat_map<int64_t, std::string>& updated_sha256_checksums) {
+    base::RunLoop loop;
+    blink::ServiceWorkerStatusCode result;
+    registry()->UpdateResourceSha256Checksums(
+        registration->id(), registration->key(), updated_sha256_checksums,
+        base::BindLambdaForTesting([&](blink::ServiceWorkerStatusCode status) {
+          result = status;
+          loop.Quit();
+        }));
+    loop.Run();
+    return result;
+  }
+
   GetStorageUsageForStorageKeyResult GetStorageUsageForStorageKey(
       const blink::StorageKey& key) {
     GetStorageUsageForStorageKeyResult result;
@@ -604,7 +624,8 @@ TEST_F(ServiceWorkerRegistryTest, RegisteredStorageKeyCount) {
   std::vector<scoped_refptr<ServiceWorkerRegistration>> registrations;
   int64_t dummy_resource_id = 1;
   for (const auto& pair : scope_and_script_pairs) {
-    blink::StorageKey key(url::Origin::Create(pair.first));
+    const blink::StorageKey key =
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(pair.first));
     registrations.emplace_back(CreateServiceWorkerRegistrationAndVersion(
         context(), pair.first, pair.second, key, dummy_resource_id));
     ++dummy_resource_id;
@@ -638,7 +659,8 @@ TEST_F(ServiceWorkerRegistryTest, CreateNewRegistration) {
   EnsureRemoteCallsAreExecuted();
 
   const GURL kScope("http://www.test.not/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
 
   scoped_refptr<ServiceWorkerRegistration> registration;
 
@@ -671,7 +693,8 @@ TEST_F(ServiceWorkerRegistryTest, CreateNewRegistration) {
 
 TEST_F(ServiceWorkerRegistryTest, GetOrCreateBucketError) {
   const GURL kScope("http://www.test.not/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
 
   scoped_refptr<ServiceWorkerRegistration> registration;
 
@@ -695,7 +718,8 @@ TEST_F(ServiceWorkerRegistryTest, GetOrCreateBucketError) {
 
 TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
   const GURL kScope("http://www.test.not/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const GURL kResource1("http://www.test.not/scope/resource1.js");
   const int64_t kResource1Size = 1591234;
@@ -884,6 +908,12 @@ TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
                 found_registration.get(),
                 ServiceWorkerVersion::FetchHandlerType::kEmptyFetchHandler),
             blink::ServiceWorkerStatusCode::kOk);
+  ASSERT_EQ(UpdateResourceSha256Checksums(
+                found_registration.get(),
+                base::flat_map<int64_t, std::string>(
+                    {{resources[0]->resource_id, "fakevalue1"},
+                     {resources[1]->resource_id, "fakevalue2"}})),
+            blink::ServiceWorkerStatusCode::kOk);
 
   found_registration = nullptr;
 
@@ -919,7 +949,8 @@ TEST_F(ServiceWorkerRegistryTest, StoreFindUpdateDeleteRegistration) {
 
 TEST_F(ServiceWorkerRegistryTest, InstallingRegistrationsAreFindable) {
   const GURL kScope("http://www.test.not/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("http://www.test.not/script.js");
   const GURL kDocumentUrl("http://www.test.not/scope/document.html");
   const int64_t kVersionId = 0;
@@ -1064,7 +1095,8 @@ TEST_F(ServiceWorkerRegistryTest, InstallingRegistrationsAreFindable) {
 
 TEST_F(ServiceWorkerRegistryTest, FindRegistration_LongestScopeMatch) {
   const GURL kDocumentUrl("http://www.example.com/scope/foo");
-  const blink::StorageKey kKey(url::Origin::Create(kDocumentUrl));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kDocumentUrl));
   scoped_refptr<ServiceWorkerRegistration> found_registration;
 
   // Registration for "/scope/".
@@ -1156,7 +1188,8 @@ TEST_P(ServiceWorkerRegistryMergeTest, MergeDuplicateFindRegistrationCalls) {
   }
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScript("http://www.example.com/script.js");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
                                                 kKey,
@@ -1171,7 +1204,7 @@ TEST_P(ServiceWorkerRegistryMergeTest, MergeDuplicateFindRegistrationCalls) {
   base::RunLoop loop;
   for (int i = 0; i < kCallCount; i++) {
     registry()->FindRegistrationForClientUrl(
-        kScope, kKey,
+        ServiceWorkerRegistry::Purpose::kNotForNavigation, kScope, kKey,
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode status,
                 scoped_refptr<ServiceWorkerRegistration> found_registration) {
@@ -1200,10 +1233,291 @@ TEST_P(ServiceWorkerRegistryMergeTest, MergeDuplicateFindRegistrationCalls) {
   loop.Run();
 }
 
+class ServiceWorkerScopeCacheTest : public ServiceWorkerRegistryTest {
+ public:
+  scoped_refptr<ServiceWorkerRegistration> RegisterServiceWorker(
+      const GURL& scope,
+      const GURL& script,
+      int64_t resource_id,
+      int expected_registration_scope_cache_size) {
+    scoped_refptr<ServiceWorkerRegistration> registration =
+        CreateServiceWorkerRegistrationAndVersion(
+            context(), scope, script,
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(scope)),
+            resource_id);
+    ServiceWorkerVersion* version = registration->waiting_version();
+    EXPECT_EQ(blink::ServiceWorkerStatusCode::kOk,
+              StoreRegistration(registration, version));
+    EXPECT_EQ(static_cast<size_t>(expected_registration_scope_cache_size),
+              registration_scope_cache().size());
+    return registration;
+  }
+
+  void CheckRegistration(
+      const GURL& scope,
+      blink::ServiceWorkerStatusCode expected_status,
+      scoped_refptr<ServiceWorkerRegistration> expected_registration,
+      int expected_inflight_call_count,
+      int expected_registration_scope_cache_size) {
+    base::RunLoop loop;
+    registry()->FindRegistrationForClientUrl(
+        ServiceWorkerRegistry::Purpose::kNotForNavigation, scope,
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(scope)),
+        base::BindLambdaForTesting(
+            [&](blink::ServiceWorkerStatusCode status,
+                scoped_refptr<ServiceWorkerRegistration> found_registration) {
+              EXPECT_EQ(expected_status, status);
+              EXPECT_EQ(expected_registration, found_registration);
+              EXPECT_EQ(
+                  static_cast<size_t>(expected_registration_scope_cache_size),
+                  registration_scope_cache().size());
+              loop.Quit();
+            }));
+    EXPECT_EQ(static_cast<size_t>(expected_inflight_call_count),
+              inflight_call_count());
+    loop.Run();
+  }
+};
+
+TEST_F(ServiceWorkerScopeCacheTest, SkipMojoCallIfPossible) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      storage::kServiceWorkerScopeCache);
+  const GURL kScript("http://www.example.com/script.js");
+  const GURL kScope1("http://www.example.com/scope1/");
+  const GURL kScope2("http://www.example.com/scope2/");
+  const GURL kOutOfScope("http://www.example.com/");
+  const GURL kDifferentOrigin("http://different.origin.com/");
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope1));
+  EXPECT_EQ(kKey,
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope2)));
+  EXPECT_EQ(kKey, blink::StorageKey::CreateFirstParty(
+                      url::Origin::Create(kOutOfScope)));
+  const blink::StorageKey kDifferentOriginKey =
+      blink::StorageKey::CreateFirstParty(
+          url::Origin::Create(kDifferentOrigin));
+  EXPECT_NE(kKey, kDifferentOriginKey);
+
+  // Register kScope1.
+  scoped_refptr<ServiceWorkerRegistration> registration1 =
+      RegisterServiceWorker(kScope1, kScript, /*resource_id=*/1,
+                            /*expected_registration_scope_cache_size=*/0);
+
+  // FindRegistrationForClientUrl adds a registration_scope_cache entry.
+  CheckRegistration(kScope1, blink::ServiceWorkerStatusCode::kOk, registration1,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1}), registration_scope_cache()[kKey]);
+
+  // Register kScope2.
+  scoped_refptr<ServiceWorkerRegistration> registration2 =
+      RegisterServiceWorker(kScope2, kScript, /*resource_id=*/2,
+                            /*expected_registration_scope_cache_size=*/1);
+
+  // When registration_scope_cache has an entry for StorageKey, and when scope
+  // doesn't match, the FindRegistrationForClientUrl mojo shouldn't be
+  // called.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // FindRegistrationForClientUrl adds a registration_scope_cache entry.
+  CheckRegistration(kScope2, blink::ServiceWorkerStatusCode::kOk, registration2,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+
+  // When registration_scope_cache has an entry for StorageKey, and when scope
+  // doesn't match, the FindRegistrationForClientUrl mojo shouldn't be
+  // called.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // When registration_scope_cache doesn't have an entry,
+  // expected_inflight_call_count should be 1 because we don't know if there is
+  // a registration or not. After this call, registration_scope_cache should
+  // have an additional entry for `kDifferentOrigin`.
+  EXPECT_FALSE(registration_scope_cache().contains(kDifferentOriginKey));
+  CheckRegistration(kDifferentOrigin,
+                    blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/2);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+  EXPECT_TRUE(registration_scope_cache().contains(kDifferentOriginKey));
+  EXPECT_EQ(std::set<GURL>(), registration_scope_cache()[kDifferentOriginKey]);
+
+  // Delete registration1
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            DeleteRegistration(registration1));
+  EXPECT_EQ(2U, registration_scope_cache().size());
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope2}), registration_scope_cache()[kKey]);
+  EXPECT_TRUE(registration_scope_cache().contains(kDifferentOriginKey));
+  EXPECT_EQ(std::set<GURL>(), registration_scope_cache()[kDifferentOriginKey]);
+
+  // Delete registration2
+  ASSERT_EQ(blink::ServiceWorkerStatusCode::kOk,
+            DeleteRegistration(registration2));
+  EXPECT_EQ(1U, registration_scope_cache().size());
+  EXPECT_TRUE(registration_scope_cache().contains(kDifferentOriginKey));
+  EXPECT_EQ(std::set<GURL>(), registration_scope_cache()[kDifferentOriginKey]);
+}
+
+TEST_F(ServiceWorkerScopeCacheTest, ScopeCacheLimitPerKey) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      storage::kServiceWorkerScopeCache,
+      {{storage::kServiceWorkerScopeCacheLimitPerKey.name, "2"}});
+  const GURL kScript("http://www.example.com/script.js");
+  const GURL kScope1("http://www.example.com/scope1/");
+  const GURL kScope2("http://www.example.com/scope2/");
+  const GURL kScope3("http://www.example.com/scope3/");
+  const GURL kOutOfScope("http://www.example.com/");
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope1));
+  EXPECT_EQ(kKey,
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope2)));
+  EXPECT_EQ(kKey,
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope3)));
+  EXPECT_EQ(kKey, blink::StorageKey::CreateFirstParty(
+                      url::Origin::Create(kOutOfScope)));
+
+  // Register kScope1.
+  scoped_refptr<ServiceWorkerRegistration> registration1 =
+      RegisterServiceWorker(kScope1, kScript, /*resource_id=*/1,
+                            /*expected_registration_scope_cache_size=*/0);
+
+  // Check registration for kScope1.
+  CheckRegistration(kScope1, blink::ServiceWorkerStatusCode::kOk, registration1,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1}), registration_scope_cache()[kKey]);
+
+  // Confirm that finding kOutOfScope don't trigger mojo call.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // Register kScope2.
+  scoped_refptr<ServiceWorkerRegistration> registration2 =
+      RegisterServiceWorker(kScope2, kScript, /*resource_id=*/2,
+                            /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+
+  // Check registration for kScope2.
+  CheckRegistration(kScope2, blink::ServiceWorkerStatusCode::kOk, registration2,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+
+  // Confirm that finding kOutOfScope don't trigger mojo call.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // Register kScope3. This time, evenif the scope count exceeds the
+  // kServiceWorkerScopeCacheLimitPerKey, the scope must be cached because this
+  // operation doesn't involve mojo call that send a large size of data.
+  scoped_refptr<ServiceWorkerRegistration> registration3 =
+      RegisterServiceWorker(kScope3, kScript, /*resource_id=*/3,
+                            /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2, kScope3}),
+            registration_scope_cache()[kKey]);
+
+  // Confirm that finding kOutOfScope don't trigger mojo call.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // Check registration for kScope3. This time, the scope count exceeds
+  // the kServiceWorkerScopeCacheLimitPerKey, and the scope_cache will be
+  // cleared.
+  CheckRegistration(kScope3, blink::ServiceWorkerStatusCode::kOk, registration3,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/0);
+
+  // Confirm that finding kOutOfScope trigger mojo call. The scope
+  // cache must be empty because the scope count exceeds the
+  // kServiceWorkerScopeCacheLimitPerKey.
+  CheckRegistration(kOutOfScope, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    /*expected_registration=*/nullptr,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/0);
+}
+
+TEST_F(ServiceWorkerScopeCacheTest, CanHandleNewRegistration) {
+  base::test::ScopedFeatureList scoped_feature_list(
+      storage::kServiceWorkerScopeCache);
+  const GURL kScript("http://www.example.com/script.js");
+  const GURL kScope1("http://www.example.com/scope/");
+  const GURL kScope2("http://www.example.com/");
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope1));
+  EXPECT_EQ(kKey,
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope2)));
+
+  // Register kScope1.
+  scoped_refptr<ServiceWorkerRegistration> registration1 =
+      RegisterServiceWorker(kScope1, kScript, /*resource_id=*/1,
+                            /*expected_registration_scope_cache_size=*/0);
+
+  // Finding kScope2 ends up with kErrorNotFound, but adds a
+  // registration_scope_cache entry.
+  CheckRegistration(kScope2, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    nullptr,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1}), registration_scope_cache()[kKey]);
+
+  // Confirm that finding kScope2 doesn't call mojo function for the 2nd time.
+  CheckRegistration(kScope2, blink::ServiceWorkerStatusCode::kErrorNotFound,
+                    nullptr,
+                    /*expected_inflight_call_count=*/0,
+                    /*expected_registration_scope_cache_size=*/1);
+
+  // Register kScope2.
+  scoped_refptr<ServiceWorkerRegistration> registration2 =
+      RegisterServiceWorker(kScope2, kScript, /*resource_id=*/2,
+                            /*expected_registration_scope_cache_size=*/1);
+
+  // New registration updates `registration_scope_cache`.
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+
+  // kScope2 must be found.
+  CheckRegistration(kScope2, blink::ServiceWorkerStatusCode::kOk, registration2,
+                    /*expected_inflight_call_count=*/1,
+                    /*expected_registration_scope_cache_size=*/1);
+  EXPECT_TRUE(registration_scope_cache().contains(kKey));
+  EXPECT_EQ(std::set<GURL>({kScope1, kScope2}),
+            registration_scope_cache()[kKey]);
+}
+
 // Tests that fields of ServiceWorkerRegistrationInfo are filled correctly.
 TEST_F(ServiceWorkerRegistryTest, RegistrationInfoFields) {
   const GURL kScope("http://www.example.com/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("http://www.example.com/script1.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
@@ -1239,7 +1553,8 @@ TEST_F(ServiceWorkerRegistryTest, RegistrationInfoFields) {
 
 TEST_F(ServiceWorkerRegistryTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   const GURL origin1("http://www1.example.com");
-  const blink::StorageKey key1(url::Origin::Create(origin1));
+  const blink::StorageKey key1 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(origin1));
   const GURL scope1("http://www1.example.com/foo/");
   const GURL script1(origin1.spec() + "/script.js");
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources1;
@@ -1255,7 +1570,8 @@ TEST_F(ServiceWorkerRegistryTest, OriginTrialsAbsentEntryAndEmptyEntry) {
   StoreRegistrationData(std::move(data1), std::move(resources1));
 
   const GURL origin2("http://www2.example.com");
-  const blink::StorageKey key2(url::Origin::Create(origin2));
+  const blink::StorageKey key2 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(origin2));
   const GURL scope2("http://www2.example.com/foo/");
   const GURL script2(origin2.spec() + "/script.js");
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources2;
@@ -1291,7 +1607,8 @@ TEST_F(ServiceWorkerRegistryTest, OriginTrialsAbsentEntryAndEmptyEntry) {
 // Tests loading a registration that has no navigation preload state.
 TEST_F(ServiceWorkerRegistryTest, AbsentNavigationPreloadState) {
   const GURL origin1("http://www1.example.com");
-  const blink::StorageKey key1(url::Origin::Create(origin1));
+  const blink::StorageKey key1 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(origin1));
   const GURL scope1("http://www1.example.com/foo/");
   const GURL script1(origin1.spec() + "/script.js");
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources1;
@@ -1324,7 +1641,8 @@ TEST_F(ServiceWorkerRegistryTest, AbsentNavigationPreloadState) {
 // well as a custom header value.
 TEST_F(ServiceWorkerRegistryTest, EnabledNavigationPreloadState) {
   const GURL kScope("https://valid.example.com/scope");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("https://valid.example.com/script.js");
   const std::string kHeaderValue("custom header value");
 
@@ -1364,7 +1682,8 @@ TEST_F(ServiceWorkerRegistryTest, EnabledNavigationPreloadState) {
 TEST_F(ServiceWorkerRegistryTest, ScriptResponseTime) {
   // Make a registration.
   const GURL kScope("https://example.com/scope");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("https://example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
@@ -1413,7 +1732,8 @@ TEST_F(ServiceWorkerRegistryTest, ScriptResponseTime) {
 // state.
 TEST_F(ServiceWorkerRegistryTest, DisabledNavigationPreloadState) {
   const GURL kScope("https://valid.example.com/scope");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("https://valid.example.com/script.js");
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScript,
@@ -1451,7 +1771,7 @@ TEST_F(ServiceWorkerRegistryTest, StoragePolicyChange) {
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScriptUrl("http://www.example.com/script.js");
   const auto kOrigin(url::Origin::Create(kScope));
-  const blink::StorageKey kKey(kOrigin);
+  const blink::StorageKey kKey = blink::StorageKey::CreateFirstParty(kOrigin);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScriptUrl,
@@ -1478,7 +1798,7 @@ TEST_F(ServiceWorkerRegistryTest, RemoteStorageDisconnection) {
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScriptUrl("http://www.example.com/script.js");
   const auto kOrigin(url::Origin::Create(kScope));
-  const blink::StorageKey kKey(kOrigin);
+  const blink::StorageKey kKey = blink::StorageKey::CreateFirstParty(kOrigin);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScriptUrl,
@@ -1510,7 +1830,8 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
 
   const GURL kScope1("https://www.example.com/scope/");
   const GURL kScriptUrl1("https://www.example.com/script.js");
-  const blink::StorageKey kKey1(url::Origin::Create(kScope1));
+  const blink::StorageKey kKey1 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope1));
   scoped_refptr<ServiceWorkerRegistration> registration1 =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScriptUrl1,
                                                 kKey1,
@@ -1518,7 +1839,8 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
 
   const GURL kScope2("https://www2.example.com/scope/foo");
   const GURL kScriptUrl2("https://www2.example.com/foo/script.js");
-  const blink::StorageKey kKey2(url::Origin::Create(kScope2));
+  const blink::StorageKey kKey2 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope2));
   scoped_refptr<ServiceWorkerRegistration> registration2 =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScriptUrl2,
                                                 kKey2,
@@ -1575,7 +1897,7 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
   {
     base::RunLoop loop1;
     registry()->FindRegistrationForClientUrl(
-        kScope1, kKey1,
+        ServiceWorkerRegistry::Purpose::kNotForNavigation, kScope1, kKey1,
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode status,
                 scoped_refptr<ServiceWorkerRegistration> found_registration) {
@@ -1587,7 +1909,8 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
     base::RunLoop loop2;
     const GURL kNotInScope("http://www.example.com/not-in-scope");
     registry()->FindRegistrationForScope(
-        kNotInScope, blink::StorageKey(url::Origin::Create(kNotInScope)),
+        kNotInScope,
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(kNotInScope)),
         base::BindLambdaForTesting(
             [&](blink::ServiceWorkerStatusCode status,
                 scoped_refptr<ServiceWorkerRegistration> found_registration) {
@@ -1703,7 +2026,8 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls) {
 TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_FindRegistrationForId) {
   // Prerequisite: Store two registrations.
   const GURL origin1("https://www.example.com");
-  const blink::StorageKey key1(url::Origin::Create(origin1));
+  const blink::StorageKey key1 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(origin1));
   const GURL scope1("https://www.example.com/foo/");
   const GURL script1(origin1.spec() + "/script.js");
   const int64_t registration_id1 = 1;
@@ -1718,7 +2042,8 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_FindRegistrationForId) {
   StoreRegistrationData(std::move(data1), std::move(resources1));
 
   const GURL origin2("https://www.example.com");
-  const blink::StorageKey key2(url::Origin::Create(origin2));
+  const blink::StorageKey key2 =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(origin2));
   const GURL scope2("https://www.example.com/bar/");
   const GURL script2(origin2.spec() + "/script.js");
   const int64_t registration_id2 = 2;
@@ -1767,7 +2092,8 @@ TEST_F(ServiceWorkerRegistryTest,
   EnsureRemoteCallsAreExecuted();
 
   const GURL kScope("http://www.example.com/scope/");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScriptUrl("http://www.example.com/script.js");
 
   scoped_refptr<ServiceWorkerRegistration> registration;
@@ -1829,7 +2155,7 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_UserData) {
   const GURL kScope1("http://www.example.com/scope/");
   const GURL kScriptUrl1("http://www.example.com/script.js");
   const auto kOrigin1(url::Origin::Create(kScope1));
-  const blink::StorageKey kKey1(kOrigin1);
+  const blink::StorageKey kKey1 = blink::StorageKey::CreateFirstParty(kOrigin1);
   scoped_refptr<ServiceWorkerRegistration> registration1 =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope1, kScriptUrl1,
                                                 kKey1,
@@ -1840,7 +2166,7 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_UserData) {
   const GURL kScope2("http://www.example.com/scope/foo");
   const GURL kScriptUrl2("http://www.example.com/fooscript.js");
   const auto kOrigin2(url::Origin::Create(kScope2));
-  const blink::StorageKey kKey2(kOrigin2);
+  const blink::StorageKey kKey2 = blink::StorageKey::CreateFirstParty(kOrigin2);
   scoped_refptr<ServiceWorkerRegistration> registration2 =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope2, kScriptUrl2,
                                                 kKey2,
@@ -2056,7 +2382,7 @@ TEST_F(ServiceWorkerRegistryTest, RetryInflightCalls_ApplyPolicyUpdates) {
   const GURL kScope("http://www.example.com/scope/");
   const GURL kScriptUrl("http://www.example.com/script.js");
   const auto kOrigin(url::Origin::Create(kScope));
-  const blink::StorageKey kKey(kOrigin);
+  const blink::StorageKey kKey = blink::StorageKey::CreateFirstParty(kOrigin);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
       CreateServiceWorkerRegistrationAndVersion(context(), kScope, kScriptUrl,
@@ -2210,7 +2536,8 @@ class ServiceWorkerRegistryOriginTrialsTest : public ServiceWorkerRegistryTest {
 
 TEST_F(ServiceWorkerRegistryOriginTrialsTest, FromMainScript) {
   const GURL kScope("https://valid.example.com/scope");
-  const blink::StorageKey kKey(url::Origin::Create(kScope));
+  const blink::StorageKey kKey =
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kScope));
   const GURL kScript("https://valid.example.com/script.js");
   const int64_t kRegistrationId = 1;
   const int64_t kVersionId = 1;
@@ -2327,7 +2654,7 @@ class ServiceWorkerRegistryResourceTest : public ServiceWorkerRegistryTest {
     ServiceWorkerRegistryTest::SetUp();
 
     scope_ = GURL("http://www.test.not/scope/");
-    key_ = blink::StorageKey(url::Origin::Create(scope_));
+    key_ = blink::StorageKey::CreateFirstParty(url::Origin::Create(scope_));
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
     document_url_ = GURL("http://www.test.not/scope/document.html");
@@ -2360,7 +2687,8 @@ class ServiceWorkerRegistryResourceTest : public ServiceWorkerRegistryTest {
     version_id_ = version->version_id();
 
     // Add the resources ids to the uncommitted list.
-    blink::StorageKey key(url::Origin::Create(scope_));
+    const blink::StorageKey key =
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(scope_));
     registry()->StoreUncommittedResourceId(resource_id1_, key);
     registry()->StoreUncommittedResourceId(resource_id2_, key);
     EnsureRemoteCallsAreExecuted();

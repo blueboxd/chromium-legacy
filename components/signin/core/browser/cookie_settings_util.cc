@@ -13,6 +13,9 @@
 
 namespace signin {
 
+// TODO(crbug.com/1386190): Consider whether the following checks should
+// take in CookieSettingOverrides rather than default to none.
+
 bool SettingsAllowSigninCookies(
     const content_settings::CookieSettings* cookie_settings) {
   GURL gaia_url = GaiaUrls::GetInstance()->gaia_url();
@@ -20,12 +23,10 @@ bool SettingsAllowSigninCookies(
   return cookie_settings &&
          cookie_settings->IsFullCookieAccessAllowed(
              gaia_url, net::SiteForCookies::FromUrl(gaia_url),
-             url::Origin::Create(gaia_url), net::CookieSettingOverrides(),
-             content_settings::CookieSettings::QueryReason::kCookies) &&
+             url::Origin::Create(gaia_url), net::CookieSettingOverrides()) &&
          cookie_settings->IsFullCookieAccessAllowed(
              google_url, net::SiteForCookies::FromUrl(google_url),
-             url::Origin::Create(google_url), net::CookieSettingOverrides(),
-             content_settings::CookieSettings::QueryReason::kCookies);
+             url::Origin::Create(google_url), net::CookieSettingOverrides());
 }
 
 bool SettingsDeleteSigninCookiesOnExit(

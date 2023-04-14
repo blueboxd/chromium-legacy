@@ -24,15 +24,16 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_response_reader_factory.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_validator.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/signed_web_bundle_reader.h"
-#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/locks/lock.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/mock_data_retriever.h"
@@ -47,12 +48,14 @@
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,10 +122,10 @@ IsolatedWebAppUrlInfo CreateEd25519IsolatedWebAppUrlInfo() {
   return url_info.value();
 }
 
-IsolationData CreateIsolationDataDevProxy(
+IsolatedWebAppLocation CreateDevProxyLocation(
     base::StringPiece dev_mode_proxy_url = "http://default-proxy-url.org/") {
-  return IsolationData{IsolationData::DevModeProxy{
-      .proxy_url = url::Origin::Create(GURL(dev_mode_proxy_url))}};
+  return DevModeProxy{.proxy_url =
+                          url::Origin::Create(GURL(dev_mode_proxy_url))};
 }
 
 blink::mojom::ManifestPtr CreateDefaultManifest(const GURL& application_url) {
@@ -196,6 +199,8 @@ class FakeResponseReaderFactory : public IsolatedWebAppResponseReaderFactory {
                             const web_package::SignedWebBundleId& web_bundle_id,
                             bool skip_signature_verification,
                             Callback callback) override {
+    // Signatures _must_ be verified during installation.
+    CHECK(!skip_signature_verification);
     if (bundle_error_) {
       std::move(callback).Run(base::unexpected(std::move(*bundle_error_)));
     } else {
@@ -210,6 +215,8 @@ class FakeResponseReaderFactory : public IsolatedWebAppResponseReaderFactory {
 class InstallIsolatedWebAppCommandTest : public ::testing::Test {
  public:
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
     FakeWebAppProvider* provider = FakeWebAppProvider::Get(profile());
 
     auto command_manager_url_loader = std::make_unique<TestWebAppUrlLoader>();
@@ -246,7 +253,7 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
     IsolatedWebAppUrlInfo url_info;
     std::unique_ptr<WebAppUrlLoader> url_loader;
     std::unique_ptr<content::WebContents> web_contents;
-    absl::optional<IsolationData> isolation_data;
+    absl::optional<IsolatedWebAppLocation> location;
     raw_ptr<WebAppInstallFinalizer> install_finalizer = nullptr;
     absl::optional<IsolatedWebAppResponseReaderFactory::Error> bundle_error;
   };
@@ -279,10 +286,10 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
       url_loader = std::move(test_url_loader);
     }
 
-    auto command = CreateCommand(
-        parameters.url_info, std::move(web_contents), parameters.isolation_data,
-        std::move(url_loader), test_future.GetCallback(),
-        std::move(parameters.bundle_error));
+    auto command = CreateCommand(parameters.url_info, std::move(web_contents),
+                                 parameters.location, std::move(url_loader),
+                                 test_future.GetCallback(),
+                                 std::move(parameters.bundle_error));
 
     command->SetDataRetrieverForTesting(
         data_retriever != nullptr ? std::move(data_retriever)
@@ -295,19 +302,19 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
   std::unique_ptr<InstallIsolatedWebAppCommand> CreateCommand(
       const IsolatedWebAppUrlInfo& url_info,
       std::unique_ptr<content::WebContents> web_contents,
-      absl::optional<IsolationData> isolation_data,
+      absl::optional<IsolatedWebAppLocation> location,
       std::unique_ptr<WebAppUrlLoader> url_loader,
       base::OnceCallback<
           void(base::expected<InstallIsolatedWebAppCommandSuccess,
                               InstallIsolatedWebAppCommandError>)> callback,
       absl::optional<IsolatedWebAppResponseReaderFactory::Error> bundle_error =
           absl::nullopt) {
-    if (!isolation_data.has_value()) {
-      isolation_data = CreateIsolationDataDevProxy();
+    if (!location.has_value()) {
+      location = CreateDevProxyLocation();
     }
 
     return std::make_unique<InstallIsolatedWebAppCommand>(
-        url_info, isolation_data.value(), std::move(web_contents),
+        url_info, location.value(), std::move(web_contents),
         std::move(url_loader), *profile(), std::move(callback),
         std::make_unique<FakeResponseReaderFactory>(std::move(bundle_error)));
   }
@@ -316,8 +323,8 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
                  InstallIsolatedWebAppCommandError>
   ExecuteCommandWithManifest(const IsolatedWebAppUrlInfo& url_info,
                              const blink::mojom::ManifestPtr& manifest,
-                             absl::optional<IsolationData> isolation_data =
-                                 absl::optional<IsolationData>()) {
+                             absl::optional<IsolatedWebAppLocation> location =
+                                 absl::optional<IsolatedWebAppLocation>()) {
     GURL application_url = url_info.origin().GetURL();
     std::unique_ptr<MockDataRetriever> fake_data_retriever =
         CreateDefaultDataRetriever(application_url);
@@ -329,7 +336,7 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
     return ExecuteCommand(
         Parameters{
             .url_info = url_info,
-            .isolation_data = isolation_data,
+            .location = location,
         },
         std::move(fake_data_retriever));
   }
@@ -341,6 +348,7 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
   //
   // See details in //docs/threading_and_tasks_testing.md.
   content::BrowserTaskEnvironment browser_task_environment_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   std::unique_ptr<TestingProfile> profile_ = []() {
     TestingProfile::Builder builder;
@@ -506,6 +514,17 @@ TEST_F(InstallIsolatedWebAppCommandTest,
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest,
+       InstallationFailsWhenDevModeIsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kIsolatedWebAppDevMode);
+
+  IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
+  EXPECT_THAT(ExecuteCommand(Parameters{.url_info = url_info}),
+              IsInstallationError(
+                  HasSubstr("Isolated Web App Developer Mode is not enabled")));
+}
+
+TEST_F(InstallIsolatedWebAppCommandTest,
        InstallationFinalizedWithIsolatedWebAppDevInstallInstallSource) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
 
@@ -561,7 +580,7 @@ TEST_F(InstallIsolatedWebAppCommandTest, CommandLocksOnAppIdAndWebContents) {
       url_info,
       content::WebContents::Create(
           content::WebContents::CreateParams(profile())),
-      CreateIsolationDataDevProxy(), std::make_unique<TestWebAppUrlLoader>(),
+      CreateDevProxyLocation(), std::make_unique<TestWebAppUrlLoader>(),
       test_future.GetCallback());
   EXPECT_THAT(
       command->lock_description(),
@@ -589,27 +608,24 @@ TEST_F(InstallIsolatedWebAppCommandTest,
               IsInstallationError(HasSubstr("Manifest is null")));
 }
 
-TEST_F(InstallIsolatedWebAppCommandTest, IsolationDataSentToFinalizer) {
+TEST_F(InstallIsolatedWebAppCommandTest, LocationSentToFinalizer) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
 
-  EXPECT_THAT(ExecuteCommand(Parameters{
-                  .url_info = url_info,
-                  .isolation_data =
-                      IsolationData{
-                          IsolationData::DevModeProxy{
-                              .proxy_url = url::Origin::Create(
-                                  GURL("http://some-testing-proxy-url.com/"))},
-                      },
-              }),
-              IsInstallationOk());
+  EXPECT_THAT(
+      ExecuteCommand(Parameters{
+          .url_info = url_info,
+          .location = DevModeProxy{.proxy_url = url::Origin::Create(GURL(
+                                       "http://some-testing-proxy-url.com/"))},
+      }),
+      IsInstallationOk());
 
   EXPECT_THAT(web_app_registrar().GetAppById(url_info.app_id()),
               Pointee(AllOf(Property(
                   "isolation_data", &WebApp::isolation_data,
                   Optional(Field(
-                      "content", &IsolationData::content,
-                      VariantWith<IsolationData::DevModeProxy>(Field(
-                          "proxy_url", &IsolationData::DevModeProxy::proxy_url,
+                      "location", &WebApp::IsolationData::location,
+                      VariantWith<DevModeProxy>(Field(
+                          "proxy_url", &DevModeProxy::proxy_url,
                           Eq(url::Origin::Create(GURL(
                               "http://some-testing-proxy-url.com/")))))))))));
 }
@@ -969,8 +985,7 @@ TEST_F(InstallIsolatedWebAppCommandManifestIconsTest,
                   "Error during icon downloading: AbortedDueToFailure")));
 }
 
-TEST_F(InstallIsolatedWebAppCommandTest,
-       SetDevModeIsolationDataBeforeUrlLoading) {
+TEST_F(InstallIsolatedWebAppCommandTest, SetDevModeLocationBeforeUrlLoading) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   auto url_loader = std::make_unique<TestWebAppUrlLoader>();
   url_loader->SetNextLoadUrlResult(
@@ -978,38 +993,32 @@ TEST_F(InstallIsolatedWebAppCommandTest,
           ".well-known/_generated_install_page.html"),
       WebAppUrlLoader::Result::kUrlLoaded);
 
-  absl::optional<IsolationData> isolation_data = absl::nullopt;
+  absl::optional<IsolatedWebAppLocation> location = absl::nullopt;
   url_loader->TrackLoadUrlCalls(base::BindLambdaForTesting(
       [&](const GURL& unused_url, content::WebContents* web_contents,
           WebAppUrlLoader::UrlComparison unused_url_comparison) {
-        isolation_data =
+        location =
             IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents)
-                .isolation_data();
+                .location();
       }));
 
-  EXPECT_THAT(ExecuteCommand(Parameters{
-                  .url_info = url_info,
-                  .url_loader = std::move(url_loader),
-                  .isolation_data =
-                      IsolationData{
-                          IsolationData::DevModeProxy{
-                              .proxy_url = url::Origin::Create(
-                                  GURL("http://some-testing-proxy-url.com/"))},
-                      },
-              }),
-              IsInstallationOk());
-
   EXPECT_THAT(
-      isolation_data,
-      Optional(Field("content", &IsolationData::content,
-                     VariantWith<IsolationData::DevModeProxy>(Field(
-                         "proxy_url", &IsolationData::DevModeProxy::proxy_url,
-                         Eq(url::Origin::Create(
-                             GURL("http://some-testing-proxy-url.com/"))))))));
+      ExecuteCommand(Parameters{
+          .url_info = url_info,
+          .url_loader = std::move(url_loader),
+          .location = DevModeProxy{.proxy_url = url::Origin::Create(GURL(
+                                       "http://some-testing-proxy-url.com/"))},
+      }),
+      IsInstallationOk());
+
+  EXPECT_THAT(location, Optional(VariantWith<DevModeProxy>(Field(
+                            "proxy_url", &DevModeProxy::proxy_url,
+                            Eq(url::Origin::Create(GURL(
+                                "http://some-testing-proxy-url.com/")))))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest,
-       SetInstalledBundleIsolationDataBeforeUrlLoading) {
+       SetInstalledBundleLocationBeforeUrlLoading) {
   IsolatedWebAppUrlInfo url_info = CreateEd25519IsolatedWebAppUrlInfo();
   auto url_loader = std::make_unique<TestWebAppUrlLoader>();
   url_loader->SetNextLoadUrlResult(
@@ -1017,34 +1026,30 @@ TEST_F(InstallIsolatedWebAppCommandTest,
           ".well-known/_generated_install_page.html"),
       WebAppUrlLoader::Result::kUrlLoaded);
 
-  absl::optional<IsolationData> isolation_data = absl::nullopt;
+  absl::optional<IsolatedWebAppLocation> location = absl::nullopt;
   url_loader->TrackLoadUrlCalls(base::BindLambdaForTesting(
       [&](const GURL& unused_url, content::WebContents* web_contents,
           WebAppUrlLoader::UrlComparison unused_url_comparison) {
-        isolation_data =
+        location =
             IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents)
-                .isolation_data();
+                .location();
       }));
 
   EXPECT_THAT(ExecuteCommand(Parameters{
                   .url_info = url_info,
                   .url_loader = std::move(url_loader),
-                  .isolation_data =
-                      IsolationData{
-                          IsolationData::InstalledBundle{
-                              .path = base::FilePath{FILE_PATH_LITERAL(
-                                  "/testing/path/to/a/bundle")},
-                          },
+                  .location =
+                      InstalledBundle{
+                          .path = base::FilePath{FILE_PATH_LITERAL(
+                              "/testing/path/to/a/bundle")},
                       },
               }),
               IsInstallationOk());
 
-  EXPECT_THAT(isolation_data,
-              Optional(Field("content", &IsolationData::content,
-                             VariantWith<IsolationData::InstalledBundle>(Field(
-                                 "path", &IsolationData::InstalledBundle::path,
-                                 Eq(base::FilePath{FILE_PATH_LITERAL(
-                                     "/testing/path/to/a/bundle")}))))));
+  EXPECT_THAT(location, Optional(VariantWith<InstalledBundle>(
+                            Field("path", &InstalledBundle::path,
+                                  Eq(base::FilePath{FILE_PATH_LITERAL(
+                                      "/testing/path/to/a/bundle")})))));
 }
 
 using InstallIsolatedWebAppCommandMetricsTest =
@@ -1157,25 +1162,26 @@ class InstallIsolatedWebAppCommandBundleTest
       public ::testing::WithParamInterface<bool> {
  public:
   InstallIsolatedWebAppCommandBundleTest()
-      : isolation_data_(GetParam()
-                            ? IsolationData{IsolationData::InstalledBundle{
-                                  .path = base::FilePath{FILE_PATH_LITERAL(
-                                      "/testing/path/to/a/bundle")},
-                              }}
-                            : IsolationData{IsolationData::DevModeBundle{
-                                  .path = base::FilePath{FILE_PATH_LITERAL(
-                                      "/testing/path/to/a/bundle")},
-                              }}) {}
+      : is_dev_mode_(GetParam()),
+        location_(is_dev_mode_ ? IsolatedWebAppLocation(InstalledBundle{
+                                     .path = base::FilePath{FILE_PATH_LITERAL(
+                                         "/testing/path/to/a/bundle")},
+                                 })
+                               : IsolatedWebAppLocation(DevModeBundle{
+                                     .path = base::FilePath{FILE_PATH_LITERAL(
+                                         "/testing/path/to/a/bundle")},
+                                 })) {}
 
  protected:
-  IsolationData isolation_data_;
+  bool is_dev_mode_;
+  IsolatedWebAppLocation location_;
 };
 
 TEST_P(InstallIsolatedWebAppCommandBundleTest, InstallsWhenThereIsNoError) {
   IsolatedWebAppUrlInfo url_info = CreateEd25519IsolatedWebAppUrlInfo();
   EXPECT_THAT(ExecuteCommand(Parameters{
                   .url_info = url_info,
-                  .isolation_data = isolation_data_,
+                  .location = location_,
                   .bundle_error = absl::nullopt,
               }),
               IsInstallationOk());
@@ -1185,17 +1191,36 @@ TEST_P(InstallIsolatedWebAppCommandBundleTest, ErrorsOnBundleError) {
   IsolatedWebAppUrlInfo url_info = CreateEd25519IsolatedWebAppUrlInfo();
   EXPECT_THAT(
       ExecuteCommand(Parameters{.url_info = url_info,
-                                .isolation_data = isolation_data_,
+                                .location = location_,
                                 .bundle_error = MetadataError("test error")}),
       IsInstallationError(HasSubstr("test error")));
+}
+
+TEST_P(InstallIsolatedWebAppCommandBundleTest,
+       DoesNotInstallDevModeBundleWhenDevModeIsDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kIsolatedWebAppDevMode);
+
+  IsolatedWebAppUrlInfo url_info = CreateEd25519IsolatedWebAppUrlInfo();
+  auto installation_result =
+      ExecuteCommand(Parameters{.url_info = url_info,
+                                .location = location_,
+                                .bundle_error = absl::nullopt});
+  if (GetParam()) {
+    EXPECT_THAT(installation_result, IsInstallationOk());
+  } else {
+    EXPECT_THAT(installation_result,
+                IsInstallationError(HasSubstr(
+                    "Isolated Web App Developer Mode is not enabled")));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(All,
                          InstallIsolatedWebAppCommandBundleTest,
                          ::testing::Bool(),
                          [](::testing::TestParamInfo<bool> param_info) {
-                           return param_info.param ? "InstalledBundle"
-                                                   : "DevModeBundle";
+                           return param_info.param ? "DevModeBundle"
+                                                   : "InstalledBundle";
                          });
 
 }  // namespace

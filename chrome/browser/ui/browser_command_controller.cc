@@ -26,7 +26,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/shell_integration.h"
@@ -609,6 +608,9 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SAVE_CREDIT_CARD_FOR_PAGE:
       SaveCreditCard(browser_);
       break;
+    case IDC_SAVE_IBAN_FOR_PAGE:
+      SaveIBAN(browser_);
+      break;
     case IDC_MIGRATE_LOCAL_CREDIT_CARD_FOR_PAGE:
       MigrateLocalCards(browser_);
       break;
@@ -792,7 +794,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowDownloads(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_MANAGE_EXTENSIONS:
-      ShowExtensions(browser_->GetBrowserForOpeningWebUi(), std::string());
+      ShowExtensions(browser_->GetBrowserForOpeningWebUi());
       break;
     case IDC_PERFORMANCE:
       ShowSettingsSubPage(browser_->GetBrowserForOpeningWebUi(),
@@ -1064,9 +1066,10 @@ void BrowserCommandController::InitCommandState() {
     return;
 
   // Navigation commands
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE, true);
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, true);
+  const bool can_reload = CanReload(browser_);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD, can_reload);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE, can_reload);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, can_reload);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_WINDOW, true);
@@ -1081,7 +1084,7 @@ void BrowserCommandController::InitCommandState() {
 #if BUILDFLAG(IS_CHROMEOS)
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_MULTITASK_MENU,
-      chromeos::wm::features::IsFloatWindowEnabled());
+      chromeos::wm::features::IsWindowLayoutMenuEnabled());
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   command_updater_.UpdateCommandEnabled(IDC_MINIMIZE_WINDOW, true);
@@ -1324,11 +1327,10 @@ void BrowserCommandController::UpdateCommandsForTabState() {
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_BACK, CanGoBack(browser_));
   command_updater_.UpdateCommandEnabled(IDC_FORWARD, CanGoForward(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD, CanReload(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE,
-                                        CanReload(browser_));
-  command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE,
-                                        CanReload(browser_));
+  const bool can_reload = CanReload(browser_);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD, can_reload);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_BYPASSING_CACHE, can_reload);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_CLEARING_CACHE, can_reload);
 
   // Window management commands
   bool is_app = browser_->is_type_app() || browser_->is_type_app_popup();

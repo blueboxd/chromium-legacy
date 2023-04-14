@@ -28,6 +28,7 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/policy_container.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/triggering_event_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/navigation/navigation_params.mojom-shared.h"
 #include "third_party/blink/public/mojom/runtime_feature_state/runtime_feature_state.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -95,6 +96,10 @@ struct BLINK_EXPORT WebNavigationInfo {
 
   // The load type. See WebFrameLoadType.
   WebFrameLoadType frame_load_type = WebFrameLoadType::kStandard;
+
+  // If true, will override cases where a WebFrameLoadType::kStandard navigation
+  // is implicitly converted to a kReplaceCurrentItem navigation.
+  mojom::ForceHistoryPush force_history_push = mojom::ForceHistoryPush::kNo;
 
   // During a history load, a child frame can be initially navigated
   // to an url from the history state. This flag indicates it.
@@ -419,15 +424,6 @@ struct BLINK_EXPORT WebNavigationParams {
   // The origin trial features activated in the document initiating this
   // navigation that should be applied in the document being navigated to.
   WebVector<int> initiator_origin_trial_features;
-
-  // The physical URL of Web Bundle from which the document is loaded.
-  // Used as an additional identifier for MemoryCache.
-  WebURL web_bundle_physical_url;
-
-  // The claimed URL inside Web Bundle file from which the document is loaded.
-  // This URL is used for window.location and document.URL and relative path
-  // computation in the document.
-  WebURL web_bundle_claimed_url;
 
   // UKM source id to be associated with the Document that will be installed
   // in the current frame.

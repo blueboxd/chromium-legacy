@@ -33,10 +33,9 @@ FileSystemAccessCapacityTracker::FileSystemAccessCapacityTracker(
     base::PassKey<FileSystemAccessRegularFileDelegate>)
     : capacity_allocation_host_(context),
       file_size_(file_size),
-      file_capacity_(file_size),
-      task_runner_(context->GetTaskRunner(TaskType::kMiscPlatformAPI)) {
+      file_capacity_(file_size) {
   capacity_allocation_host_.Bind(std::move(capacity_allocation_host_remote),
-                                 task_runner_);
+                                 context->GetTaskRunner(TaskType::kStorage));
   DCHECK(capacity_allocation_host_.is_bound());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

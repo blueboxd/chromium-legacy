@@ -22,6 +22,7 @@
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_options.h"
 #include "components/autofill/core/browser/ui/popup_types.h"
+#include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/device_reauth/mock_biometric_authenticator.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
@@ -130,7 +131,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               (),
               (override));
   MOCK_METHOD(translate::TranslateDriver*, GetTranslateDriver, (), (override));
-  MOCK_METHOD(void, ShowAutofillSettings, (bool), (override));
+  MOCK_METHOD(void, ShowAutofillSettings, (autofill::PopupType), (override));
   MOCK_METHOD(void,
               ShowUnmaskPrompt,
               (const autofill::CreditCard&,
@@ -236,7 +237,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               TryToShowFastCheckout,
               (const autofill::FormData&,
                const autofill::FormFieldData&,
-               autofill::AutofillDriver*),
+               base::WeakPtr<autofill::AutofillManager>),
               (override));
   MOCK_METHOD(void, HideFastCheckout, (bool), (override));
   MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (override));
@@ -259,7 +260,7 @@ class MockAutofillClient : public autofill::AutofillClient {
               (override));
   MOCK_METHOD(void, PinPopupView, (), (override));
   MOCK_METHOD(PopupOpenArgs, GetReopenPopupArgs, (), (const, override));
-  MOCK_METHOD(base::span<const autofill::Suggestion>,
+  MOCK_METHOD(std::vector<autofill::Suggestion>,
               GetPopupSuggestions,
               (),
               (const, override));
@@ -283,7 +284,6 @@ class MockAutofillClient : public autofill::AutofillClient {
               (const std::u16string&, const std::u16string&),
               (override));
   MOCK_METHOD(bool, IsContextSecure, (), (const, override));
-  MOCK_METHOD(bool, ShouldShowSigninPromo, (), (override));
   MOCK_METHOD(void, ExecuteCommand, (int), (override));
   MOCK_METHOD(autofill::LogManager*, GetLogManager, (), (const, override));
   MOCK_METHOD(const autofill::AutofillAblationStudy&,
@@ -951,4 +951,98 @@ TEST_F(PasswordManagerUtilTest, ShouldShowBiometricAuthPromo) {
 
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 
+struct TestCase {
+  std::string url;
+  std::string expected_result;
+};
+
+class PasswordManagerUtilMainDomainTest
+    : public testing::Test,
+      public testing::WithParamInterface<TestCase> {
+ protected:
+  const base::flat_set<std::string>& psl_extension_list() {
+    return psl_extension_list_;
+  }
+
+ private:
+  base::flat_set<std::string> psl_extension_list_ = {
+      "app.link",
+      "bttn.io",
+      "test-app.link",
+      "smart.link",
+      "page.link",
+      "onelink.me",
+      "goo.gl",
+      "app.goo.gl",
+      "more.app.goo.gl",
+      // Missing domain.goo.gl on purpose to show all levels need to be included
+      // for multi-level extended main domain (see b/196013199#comment4 for more
+      // context)
+      "included.domain.goo.gl",
+  };
+};
+
+TEST_P(PasswordManagerUtilMainDomainTest, ParamTest) {
+  const TestCase& tc = GetParam();
+  EXPECT_THAT(GetExtendedTopLevelDomain(GURL(tc.url), psl_extension_list()),
+              testing::Eq(tc.expected_result));
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PasswordManagerUtilMainDomainTest,
+    ::testing::Values(
+        // error cases
+        TestCase(),                         // empty string
+        TestCase{"some arbitrary string"},  // not parsable
+        TestCase{"amazon.com"},             // no schema
+        TestCase{"https://"},               // empty host
+        TestCase{"https://.com"},           // Not under psl, too short
+        TestCase{"https://192.168.100.1"},  // ip as hostname
+        // In PSL list or unknown domain
+        TestCase{"https://main.unknown", "main.unknown"},  // unknown domain
+        // Blogspot.com, special case which is in PSL
+        TestCase{"https://foo.blogspot.com", "foo.blogspot.com"},
+        // different url depths
+        TestCase{"https://f.com", "f.com"},
+        TestCase{"https://facebook.com", "facebook.com"},
+        TestCase{"https://www.facebook.com", "facebook.com"},
+        TestCase{"https://many.many.many.facebook.com", "facebook.com"},
+        // different url schemas and non tld parts
+        TestCase{"http://www.twitter.com", "twitter.com"},
+        TestCase{"https://mobile.twitter.com", "twitter.com"},
+        TestCase{"android://blabla@com.twitter.android"},
+        // additional URI components, see
+        // https://tools.ietf.org/html/rfc3986#section-3
+        TestCase{"https://facebook.com/", "facebook.com"},
+        TestCase{"https://facebook.com/path/", "facebook.com"},
+        TestCase{"https://facebook.com?queryparam=value", "facebook.com"},
+        TestCase{"https://facebook.com#fragment", "facebook.com"},
+        TestCase{"https://userinfo@facebook.com", "facebook.com"},
+        // public suffix with more than one component
+        TestCase{"https://facebook.co.uk", "facebook.co.uk"},
+        TestCase{"https://www.some.trentinosuedtirol.it",
+                 "some.trentinosuedtirol.it"},
+        TestCase{"https://www.some.ac.gov.br", "some.ac.gov.br"},
+        // extended top level domains
+        TestCase{"https://app.link", "app.link"},
+        TestCase{"https://user1.app.link", "user1.app.link"},
+        TestCase{"https://user1.test-app.link", "user1.test-app.link"},
+        TestCase{"https://many.many.many.user1.app.link", "user1.app.link"},
+        // multi level extended top level domains (see b/196013199 and
+        // http://doc/1LlPX9DxrCZxsuB_b52vCdiGavVupaI9zjiibdQb9v24)
+        TestCase{"https://goo.gl", "goo.gl"},
+        TestCase{"https://app.goo.gl", "app.goo.gl"},
+        TestCase{"https://user1.app.goo.gl", "user1.app.goo.gl"},
+        TestCase{"https://many.many.many.user1.app.goo.gl", "user1.app.goo.gl"},
+        TestCase{"https://one.more.app.goo.gl", "one.more.app.goo.gl"},
+        // PSL_EXTENSION_LIST contains included.domain.goo.gl but missing
+        // domain.goo.gl due to this multi level extension does not extend
+        // beyond this level.
+        TestCase{"https://levels.not.included.domain.goo.gl", "domain.goo.gl"},
+        // Http schema
+        TestCase{"http://f.com", "f.com"},
+        TestCase{"http://facebook.com", "facebook.com"},
+        TestCase{"http://www.facebook.com", "facebook.com"},
+        TestCase{"http://many.many.many.facebook.com", "facebook.com"}));
 }  // namespace password_manager_util

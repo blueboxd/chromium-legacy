@@ -42,8 +42,7 @@ class FakeTaskRunner : public base::SingleThreadTaskRunner {
 
 namespace user_manager {
 
-FakeUserManager::FakeUserManager()
-    : UserManagerBase(new FakeTaskRunner()), primary_user_(nullptr) {}
+FakeUserManager::FakeUserManager() : UserManagerBase(new FakeTaskRunner()) {}
 
 FakeUserManager::~FakeUserManager() {
 }
@@ -109,6 +108,11 @@ void FakeUserManager::RemoveUserFromList(const AccountId& account_id) {
       delete *it;
     users_.erase(it);
   }
+}
+
+void FakeUserManager::RemoveUserFromListForRecreation(
+    const AccountId& account_id) {
+  RemoveUserFromList(account_id);
 }
 
 const UserList& FakeUserManager::GetUsers() const {
@@ -252,10 +256,6 @@ const User* FakeUserManager::FindUser(const AccountId& account_id) const {
 
 User* FakeUserManager::FindUserAndModify(const AccountId& account_id) {
   return nullptr;
-}
-
-const User* FakeUserManager::GetPrimaryUser() const {
-  return primary_user_;
 }
 
 std::u16string FakeUserManager::GetUserDisplayName(

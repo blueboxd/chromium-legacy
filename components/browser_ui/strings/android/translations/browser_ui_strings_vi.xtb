@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2687403674020088961">Chặn tất cả cookie (không khuyến nghị)</translation>
-<translation id="2704606927547763573">Đã sao chép</translation>
 <translation id="2713106313042589954">Tắt máy ảnh</translation>
 <translation id="2717722538473713889">Địa chỉ email</translation>
 <translation id="2750481671343847896">Các trang web có thể đưa ra lời nhắc đăng nhập từ các dịch vụ nhận dạng.</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="780301667611848630">Không, cảm ơn</translation>
 <translation id="7804248752222191302">Một trang web đang sử dụng máy ảnh của bạn</translation>
+<translation id="7807060072011926525">Do Google cung cấp</translation>
 <translation id="7835852323729233924">Đang phát nội dung nghe nhìn</translation>
 <translation id="783819812427904514">Bật tiếng video</translation>
 <translation id="7846076177841592234">Hủy chọn</translation>
@@ -414,7 +414,7 @@
 <translation id="8676374126336081632">Xóa văn bản nhập</translation>
 <translation id="8681886425883659911">Quảng cáo sẽ bị chặn trên các trang web được xác định là hiện quảng cáo xâm nhập hoặc gây hiểu lầm</translation>
 <translation id="868929229000858085">Tìm kiếm trong danh bạ</translation>
-<translation id="8712637175834984815">Tôi hiểu</translation>
+<translation id="8712637175834984815">Bỏ qua</translation>
 <translation id="8719283222052720129">Bật quyền cho <ph name="APP_NAME" /> trong phần <ph name="BEGIN_LINK" />Cài đặt Android<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Thử lại</translation>
 <translation id="8730621377337864115">Xong</translation>

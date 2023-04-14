@@ -42,6 +42,7 @@ class Rect;
 }  // namespace gfx
 
 namespace display {
+
 class DisplayChangeObserver;
 class DisplayLayoutStore;
 class DisplayObserver;
@@ -50,7 +51,7 @@ class Screen;
 
 namespace test {
 class DisplayManagerTestApi;
-}
+}  // namespace test
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
@@ -121,7 +122,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     internal_display_has_accelerometer_ = has_accelerometer;
   }
 
-  // Returns the display id of the first display in the outupt list.
+  // Returns the display id of the first display in the output list.
   int64_t first_display_id() const { return first_display_id_; }
 
   TouchDeviceManager* touch_device_manager() const {
@@ -159,7 +160,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   DisplayIdList GetConnectedDisplayIdList() const;
 
   // Test if the `connected_display_id_list_` matches the internal state of
-  // DisplayManager, which is a combinatino of
+  // DisplayManager, which is a combination of
   // `hardware_mirroring_display_id_list_`, `software_mirroring_display_list_`
   // and the `display_id_list` argument which is the list of displays that host
   // the desktop environment. In unified desktop mode, the `active_id_list` will
@@ -169,7 +170,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
       const DisplayIdList& display_id_list) const;
 
   // Sets the layout for the current display pair. The |layout| specifies the
-  // locaion of the displays relative to their parents.
+  // location of the displays relative to their parents.
   void SetLayoutForCurrentDisplays(std::unique_ptr<DisplayLayout> layout);
 
   // Returns display for given |display_id|.
@@ -178,7 +179,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Checks the validity of given |display_id|.
   bool IsDisplayIdValid(int64_t display_id) const;
 
-  // Finds the display that contains |point| in screeen coordinates.  Returns
+  // Finds the display that contains |point| in screen coordinates.  Returns
   // invalid display if there is no display that can satisfy the condition.
   const Display& FindDisplayContainingPoint(
       const gfx::Point& point_in_screen) const;
@@ -259,7 +260,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 
   // Called when display configuration has changed. The new display
   // configurations is passed as a vector of Display object, which contains each
-  // display's new infomration.
+  // display's new information.
   void OnNativeDisplaysChanged(
       const std::vector<ManagedDisplayInfo>& display_info_list);
 
@@ -301,7 +302,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // connected and active. (mirroring display isn't active, for example).
   bool IsActiveDisplayId(int64_t display_id) const;
 
-  // Returns the number of connected displays. For exampe, this returns 2 in
+  // Returns the number of connected displays. For example, this returns 2 in
   // mirror mode with one external display.
   size_t num_connected_displays() const {
     return connected_display_id_list_.size();
@@ -399,7 +400,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // Unified Mode layout matrix.
   int GetUnifiedDesktopRowMaxHeight(int row_index) const;
 
-  // Returns the display used for software mirrroring. Returns invalid display
+  // Returns the display used for software mirroring. Returns invalid display
   // if not found.
   const Display GetMirroringDisplayById(int64_t id) const;
 

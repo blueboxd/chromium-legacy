@@ -40,7 +40,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if !BUILDFLAG(IS_IOS)
-#include "components/autofill/core/browser/payments/fido_authentication_strike_database.h"
+#include "components/autofill/core/browser/strike_databases/payments/fido_authentication_strike_database.h"
 #endif
 
 namespace autofill {
@@ -525,12 +525,12 @@ void CreditCardAccessManager::Authenticate(
       // the vcn context token and the selected challenge option.
       if (card_->record_type() == CreditCard::VIRTUAL_CARD) {
         DCHECK(selected_challenge_option_);
-        client_->GetCVCAuthenticator()->Authenticate(
+        client_->GetCvcAuthenticator()->Authenticate(
             card_.get(), weak_ptr_factory_.GetWeakPtr(), personal_data_manager_,
             virtual_card_unmask_response_details_.context_token,
             *selected_challenge_option_);
       } else {
-        client_->GetCVCAuthenticator()->Authenticate(
+        client_->GetCvcAuthenticator()->Authenticate(
             card_.get(), weak_ptr_factory_.GetWeakPtr(),
             personal_data_manager_);
       }
@@ -565,8 +565,8 @@ CreditCardAccessManager::GetOrCreateFidoAuthenticator() {
 }
 #endif
 
-void CreditCardAccessManager::OnCVCAuthenticationComplete(
-    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
+void CreditCardAccessManager::OnCvcAuthenticationComplete(
+    const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
   is_authentication_in_progress_ = false;
   can_fetch_unmask_details_ = true;
 
@@ -802,7 +802,7 @@ bool CreditCardAccessManager::IsSelectedCardFidoAuthorized() {
 }
 
 bool CreditCardAccessManager::ShouldRespondImmediately(
-    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
+    const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
 #if BUILDFLAG(IS_ANDROID)
   // GetRealPan did not return RequestOptions (user did not specify intent to
   // opt-in) AND flow is not registering a new card, so fill the form
@@ -823,7 +823,7 @@ bool CreditCardAccessManager::ShouldRespondImmediately(
 }
 
 bool CreditCardAccessManager::ShouldRegisterCardWithFido(
-    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
+    const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
   // Card authorization token is required in order to call
   // CreditCardFidoAuthenticator::Authorize(), so if we do not have a card
   // authorization token populated we immediately return false.
@@ -851,7 +851,7 @@ bool CreditCardAccessManager::ShouldRegisterCardWithFido(
 }
 
 bool CreditCardAccessManager::ShouldOfferFidoOptInDialog(
-    const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response) {
+    const CreditCardCvcAuthenticator::CvcAuthenticationResponse& response) {
 #if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
   // We should not offer FIDO opt-in dialog on mobile.
   return false;

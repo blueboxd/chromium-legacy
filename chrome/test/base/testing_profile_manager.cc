@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/fake_profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -66,6 +67,10 @@ TestingProfileManager::TestingProfileManager(
 
 TestingProfileManager::~TestingProfileManager() {
   ProfileDestroyer::DestroyPendingProfilesForShutdown();
+
+  // Drop unowned references before destroying the object that owns them.
+  profile_manager_ = nullptr;
+  local_state_ = nullptr;
 
   // Destroying this class also destroys the LocalState, so make sure the
   // associated ProfileManager is also destroyed.
@@ -140,7 +145,7 @@ TestingProfile* TestingProfileManager::CreateTestingProfile(
   entry->SetAvatarIconIndex(avatar_id);
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   entry->SetSupervisedUserId(is_supervised_profile
-                                 ? ::supervised_users::kChildAccountSUID
+                                 ? ::supervised_user::kChildAccountSUID
                                  : std::string());
 #endif
   entry->SetLocalProfileName(user_name, entry->IsUsingDefaultName());

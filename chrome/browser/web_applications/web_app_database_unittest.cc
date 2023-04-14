@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
+#include "chrome/browser/web_applications/scope_extension_info.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
@@ -74,9 +75,9 @@ class WebAppDatabaseTest : public WebAppTest {
     provider_->SetDatabaseFactory(std::move(database_factory));
     provider_->SetSyncBridge(std::move(sync_bridge));
 
-    sync_bridge_->SetSubsystems(database_factory_,
-                                &provider_->GetCommandManager(),
-                                &provider_->scheduler());
+    sync_bridge_->SetSubsystems(
+        database_factory_, &provider_->GetCommandManager(),
+        &provider_->scheduler(), &provider_->GetInstallManager());
 
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
@@ -378,6 +379,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->allowed_launch_protocols().empty());
   EXPECT_TRUE(app->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app->url_handlers().empty());
+  EXPECT_TRUE(app->scope_extensions().empty());
   EXPECT_TRUE(app->last_badging_time().is_null());
   EXPECT_TRUE(app->last_launch_time().is_null());
   EXPECT_TRUE(app->install_time().is_null());
@@ -387,7 +389,6 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_FALSE(app->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app->manifest_url().is_empty());
   EXPECT_FALSE(app->manifest_id().has_value());
-  EXPECT_FALSE(app->IsStorageIsolated());
   EXPECT_TRUE(app->permissions_policy().empty());
   EXPECT_FALSE(app->isolation_data().has_value());
   RegisterApp(std::move(app));
@@ -450,13 +451,13 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app_copy->allowed_launch_protocols().empty());
   EXPECT_TRUE(app_copy->disallowed_launch_protocols().empty());
   EXPECT_TRUE(app_copy->url_handlers().empty());
+  EXPECT_TRUE(app_copy->scope_extensions().empty());
   EXPECT_TRUE(app_copy->shortcuts_menu_item_infos().empty());
   EXPECT_TRUE(app_copy->downloaded_shortcuts_menu_icons_sizes().empty());
   EXPECT_EQ(app_copy->run_on_os_login_mode(), RunOnOsLoginMode::kNotRun);
   EXPECT_FALSE(app_copy->run_on_os_login_os_integration_state().has_value());
   EXPECT_TRUE(app_copy->manifest_url().is_empty());
   EXPECT_FALSE(app_copy->manifest_id().has_value());
-  EXPECT_FALSE(app_copy->IsStorageIsolated());
   EXPECT_TRUE(app_copy->permissions_policy().empty());
   EXPECT_FALSE(app_copy->tab_strip());
 }
@@ -591,7 +592,7 @@ class WebAppDatabaseProtoDataTest : public ::testing::Test {
   }
 
   std::unique_ptr<WebApp> CreateIsolatedWebApp(
-      const IsolationData& isolation_data) {
+      const WebApp::IsolationData& isolation_data) {
     std::unique_ptr<WebApp> web_app = CreateMinimalWebApp();
     web_app->SetIsolationData(isolation_data);
     return web_app;
@@ -623,20 +624,20 @@ TEST_F(WebAppDatabaseProtoDataTest, DoesNotSetIsolationDataIfNotIsolated) {
 TEST_F(WebAppDatabaseProtoDataTest, SavesInstalledBundleIsolationData) {
   base::FilePath path(FILE_PATH_LITERAL("bundle_path"));
   std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
-      IsolationData(IsolationData::InstalledBundle{.path = path}));
+      WebApp::IsolationData(InstalledBundle{.path = path}));
 
   std::unique_ptr<WebApp> protoed_web_app = ToAndFromProto(*web_app);
   EXPECT_THAT(*web_app, Eq(*protoed_web_app));
-  EXPECT_THAT(web_app->isolation_data()->content,
-              VariantWith<IsolationData::InstalledBundle>(Field(
-                  "path", &IsolationData::InstalledBundle::path, Eq(path))));
+  EXPECT_THAT(web_app->isolation_data()->location,
+              VariantWith<InstalledBundle>(
+                  Field("path", &InstalledBundle::path, Eq(path))));
 }
 
 TEST_F(WebAppDatabaseProtoDataTest,
        HandlesCorruptedInstalledBundleIsolationData) {
   base::FilePath path(FILE_PATH_LITERAL("bundle_path"));
   std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
-      IsolationData(IsolationData::InstalledBundle{.path = path}));
+      WebApp::IsolationData(InstalledBundle{.path = path}));
 
   std::unique_ptr<WebAppProto> web_app_proto =
       WebAppDatabase::CreateWebAppProto(*web_app);
@@ -656,21 +657,21 @@ TEST_F(WebAppDatabaseProtoDataTest,
 
 TEST_F(WebAppDatabaseProtoDataTest, SavesDevModeBundleIsolationData) {
   base::FilePath path(FILE_PATH_LITERAL("dev_bundle_path"));
-  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
-      IsolationData(IsolationData::DevModeBundle{.path = path}));
+  std::unique_ptr<WebApp> web_app =
+      CreateIsolatedWebApp(WebApp::IsolationData(DevModeBundle{.path = path}));
 
   std::unique_ptr<WebApp> protoed_web_app = ToAndFromProto(*web_app);
   EXPECT_THAT(*web_app, Eq(*protoed_web_app));
-  EXPECT_THAT(web_app->isolation_data()->content,
-              VariantWith<IsolationData::DevModeBundle>(Field(
-                  "path", &IsolationData::DevModeBundle::path, Eq(path))));
+  EXPECT_THAT(web_app->isolation_data()->location,
+              VariantWith<DevModeBundle>(
+                  Field("path", &DevModeBundle::path, Eq(path))));
 }
 
 TEST_F(WebAppDatabaseProtoDataTest,
        HandlesCorruptedDevModeBundleIsolationData) {
   base::FilePath path(FILE_PATH_LITERAL("bundle_path"));
-  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
-      IsolationData(IsolationData::DevModeBundle{.path = path}));
+  std::unique_ptr<WebApp> web_app =
+      CreateIsolatedWebApp(WebApp::IsolationData(DevModeBundle{.path = path}));
 
   std::unique_ptr<WebAppProto> web_app_proto =
       WebAppDatabase::CreateWebAppProto(*web_app);
@@ -689,16 +690,16 @@ TEST_F(WebAppDatabaseProtoDataTest,
 }
 
 TEST_F(WebAppDatabaseProtoDataTest, SavesDevModeProxyIsolationData) {
-  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(IsolationData(
-      IsolationData::DevModeProxy{.proxy_url = url::Origin::Create(
-                                      GURL("https://proxy-example.com/"))}));
+  std::unique_ptr<WebApp> web_app = CreateIsolatedWebApp(
+      WebApp::IsolationData(DevModeProxy{.proxy_url = url::Origin::Create(GURL(
+                                             "https://proxy-example.com/"))}));
 
   std::unique_ptr<WebApp> protoed_web_app = ToAndFromProto(*web_app);
   EXPECT_THAT(*web_app, Eq(*protoed_web_app));
   EXPECT_THAT(
-      web_app->isolation_data()->content,
-      VariantWith<IsolationData::DevModeProxy>(
-          Field("proxy_url", &IsolationData::DevModeProxy::proxy_url,
+      web_app->isolation_data()->location,
+      VariantWith<DevModeProxy>(
+          Field("proxy_url", &DevModeProxy::proxy_url,
                 Eq(url::Origin::Create(GURL("https://proxy-example.com/"))))));
 }
 

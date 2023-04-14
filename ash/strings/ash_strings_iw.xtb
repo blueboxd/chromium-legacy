@@ -133,11 +133,13 @@
 <translation id="163517899691012366">ההתראות מושתקות כשהמצב 'נא לא להפריע' מופעל</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> מכשירים</translation>
 <translation id="1639239467298939599">בטעינה</translation>
+<translation id="1647986356840967552">לדף הקודם</translation>
 <translation id="1654477262762802994">הפעלה של שאילתה קולית</translation>
 <translation id="1668469839109562275">‏רשתות VPN מובנות</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
 <translation id="1677507110654891115">התכונה <ph name="FEATURE_NAME" /> לא מחוברת.</translation>
 <translation id="1677582821739292812">מישהו מביט במסך שלך</translation>
+<translation id="1683399938733266832">‏השימוש הנוכחי במעבד (CPU): <ph name="CPU_USEAGE" />%</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">טיימר של <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">‏כתובת IPv6: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@
 <translation id="1771761307086386028">גלילה ימינה</translation>
 <translation id="1774796056689732716">יומן, <ph name="CURRENT_MONTH_YEAR" />, התאריך שנבחר הוא <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">כבוי</translation>
-<translation id="1797271123677381264">שכחתי את הסיסמה</translation>
 <translation id="1807246157184219062">בהיר</translation>
 <translation id="181103072419391116">עוצמת האות: <ph name="SIGNAL_STRENGTH" />, הרשת מנוהלת על ידי מנהל המערכת שלך</translation>
 <translation id="1816896987747843206">הפעולה הזו מאפשרת גישה למצלמה לכל האפליקציות והאתרים שיש להם הרשאת גישה למצלמה</translation>
@@ -381,6 +382,7 @@
 <translation id="3051189971848907985">שינוי שם הפרופיל מתבצע. יש להמתין מספר דקות.</translation>
 <translation id="3055162170959710888">השתמשת היום במכשיר הזה במשך <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">אין תמיכה</translation>
+<translation id="3068622547379332530">גרסה <ph name="VERSION_NAME" /> ‏(<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">המדף בצד שמאל</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">הרחבת התפריט</translation>
@@ -421,9 +423,11 @@
 <translation id="3289674678944039601">מתבצעת טעינה באמצעות מתאם</translation>
 <translation id="3290356915286466215">לא מאובטחת</translation>
 <translation id="3294437725009624529">אורח</translation>
+<translation id="3298690094479023523">לא הצלחנו לאמת את קוד האימות או את הסיסמה שלך. יש לנסות שוב.</translation>
 <translation id="3307642347673023554">עברת למצב מחשב נייד</translation>
 <translation id="3308453408813785101">ל-<ph name="USER_EMAIL_ADDRESS" /> תהיה עדיין אפשרות להיכנס לחשבון מאוחר יותר.</translation>
 <translation id="3321628682574733415">קוד הורה שגוי</translation>
+<translation id="332827762492701193">ההתראות מוסתרות</translation>
 <translation id="3339826665088060472">צילום מסך, כלים ליצירת צילומי מסך והקלטות מסך</translation>
 <translation id="3340978935015468852">הגדרות</translation>
 <translation id="3341303451326249809">צילום המסך בוצע</translation>
@@ -554,12 +558,14 @@
 <translation id="397105322502079400">מתבצע חישוב...</translation>
 <translation id="397726367135689299">יכול להיות שטעינת הסוללה מבוצעת בצורה לא מהימנה.</translation>
 <translation id="3977512764614765090">‏שיעור הטעינה של הסוללה הוא ‎<ph name="PERCENTAGE" />%‎ והטעינה נמשכת.</translation>
+<translation id="3984536049089846927">לדף הבא</translation>
 <translation id="3986082989454912832">מענה</translation>
 <translation id="3995138139523574647">‏מכשיר עם יציאת USB-C (יציאה ימנית-אחורית)</translation>
 <translation id="40062176907008878">כתב יד</translation>
 <translation id="4017989525502048489">סמן לייזר</translation>
 <translation id="401993194061514265">‏כלי הסימון לא זמין. יש לפתוח את Screencast מחדש.</translation>
 <translation id="4021716437419160885">גלילה למטה</translation>
+<translation id="4024840464866786680">‏אם שינית לאחרונה את הסיסמה וקוד האימות לחשבון Google או ששכחת אותם, אפשר לנסות לשחזר את הגישה למשתמש הזה.</translation>
 <translation id="4028481283645788203">יש להזין סיסמה כדי לענות על דרישות האבטחה המוגברות</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">המסך שלך משותף</translation>
@@ -575,9 +581,10 @@
 <translation id="4123259114412175274">‏כדי לבטל את הנעילה של ה-Chromebook, צריך לוודא שה-Bluetooth בטלפון מופעל</translation>
 <translation id="4125970834901680537">לא ניתן לשדר אפליקציות במצב טאבלט. צריך לנסות שוב במצב מחשב נייד.</translation>
 <translation id="4129129681837227511">להצגת הודעות במסך הנעילה, יש לבטל את הנעילה כדי לשנות את ההגדרה</translation>
-<translation id="4130035430755296270">כשמציבים את העכבר מעל אפשרויות הפריסה אפשר לראות עוד אפשרויות</translation>
+<translation id="4131973331381812765">‏הטמפרטורה: <ph name="TEMPERATURE" />°C – המהירות הנוכחית: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" />GHz</translation>
 <translation id="4136724716305260864">התכונה פעילה עד הזריחה</translation>
 <translation id="4146833061457621061">השמעת מוזיקה</translation>
+<translation id="4150201353443180367">תצוגה</translation>
 <translation id="4165275524535002941">יכול להיות שהכבל לא תומך במסכים</translation>
 <translation id="4177913004758410636">{0,plural, =1{עליך לעדכן את המכשיר בתוך יום אחד}one{עליך לעדכן את המכשיר תוך # ימים}two{עליך לעדכן את המכשיר תוך יומיים}other{עליך לעדכן את המכשיר תוך # ימים}}</translation>
 <translation id="4181841719683918333">שפות</translation>
@@ -699,10 +706,12 @@
 <translation id="4735944890391795473">שולחן עבודה וירטואלי מספר 12</translation>
 <translation id="473775607612524610">עדכון</translation>
 <translation id="4740516757091333363">למחוק את שולחן העבודה השמור?</translation>
+<translation id="4747410141429390146">צריך לבטל את הנעילה כדי להציג את ההתראות</translation>
 <translation id="4752784485658729358">ניתן לשמור רק 6 שולחנות עבודה וירטואליים. צריך להסיר שולחן עבודה וירטואלי כדי לשמור אחד חדש.</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4762573482154983647">הסתרת אפליקציות</translation>
 <translation id="4774338217796918551">אפשר לחזור מחר בשעה <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">לא הצלחנו לאמת את הסיסמה שלך. יש לנסות שוב.</translation>
 <translation id="4776917500594043016">סיסמה עבור <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">‏חנות Play</translation>
 <translation id="4778095205580009397">‏Google Assistant לא זמינה בסשן הדגמה.</translation>
@@ -727,6 +736,7 @@
 <translation id="4895488851634969361">הסוללה טעונה במלואה.</translation>
 <translation id="490375751687810070">אנכי</translation>
 <translation id="490788395437447240">%<ph name="BATTERY_PERCENTAGE" /> סוללה</translation>
+<translation id="491504982845934899">הפעלת <ph name="NETWORK_NAME" /> לאחר הגדרת המכשיר</translation>
 <translation id="4917385247580444890">חזק</translation>
 <translation id="4918086044614829423">אישור</translation>
 <translation id="4919841137949306064">המצלמה בשימוש כרגע על ידי <ph name="APP_NAME" /></translation>
@@ -842,6 +852,7 @@
 <translation id="5536723544185013515">האפליקציות האחרונות, מנווטים לכל האפליקציות האחרונות באמצעות החץ שמאלה או החץ ימינה</translation>
 <translation id="553675580533261935">יציאה מההפעלה</translation>
 <translation id="5537725057119320332">העברה</translation>
+<translation id="5546397813406633847">שחזור הגישה למשתמש</translation>
 <translation id="554893713779400387">הפעלת הכתבה או הפסקתה</translation>
 <translation id="5558091555391176027">החלפת מצב השיתוף בקרבת מקום במידת חשיפה גבוהה</translation>
 <translation id="5560420195677022218">הצגת האפליקציות שבטלפון ב-<ph name="DEVICE_TYPE" /></translation>
@@ -858,6 +869,7 @@
 <translation id="5618148318840095371">העברנו אותך לרשת טובה יותר</translation>
 <translation id="5619862035903135339">לפי המדיניות של מנהל המערכת, צילום המסך מושבת</translation>
 <translation id="5625955975703555628">+LTE</translation>
+<translation id="5627392655516693966">לא ניתן היה לאמת את הסיסמה. יש לנסות שוב.</translation>
 <translation id="5648021990716966815">שקע מיקרופון</translation>
 <translation id="5652575806481723716">האפליקציה <ph name="FOCUSED_APP_NAME" /> מבקשת את תשומת לבך.</translation>
 <translation id="5662075790140998213">שולחן עבודה וירטואלי מספר 10</translation>
@@ -876,6 +888,7 @@
 <translation id="5707775774148071965">קצב התקשורת של הכבל נמוך מזה של המכשיר. יכול להיות שביצועי המכשיר יוגבלו.</translation>
 <translation id="5710450975648804523">מצב 'נא לא להפריע' מופעל</translation>
 <translation id="571295407079589142">חבילת הגלישה כבויה</translation>
+<translation id="5727460725221669831">‏אם שינית לאחרונה את הסיסמה לחשבון Google או ששכחת אותה, אפשר לנסות לשחזר את הגישה למשתמש הזה.</translation>
 <translation id="573413375004481890">המכשיר הזה לא הצליח לתמוך בכל המסכים, ולכן אחד מהם נותק</translation>
 <translation id="5740328398383587084">שיתוף בקרבת מקום</translation>
 <translation id="574392208103952083">בינוני</translation>
@@ -905,6 +918,7 @@
 <translation id="5867606971598166637">האדמין עוקב אחר המסכים שלך</translation>
 <translation id="5876666360658629066">יש להזין קוד גישה להורים</translation>
 <translation id="5881540930187678962">‏להגדרת Phone Hub במועד מאוחר יותר</translation>
+<translation id="5881663018261910378">מושבתת</translation>
 <translation id="5887954372087850114">החלון <ph name="WINDOW_TITLE" /> מוקצה לטובת <ph name="DESK_TITLE" /> וההקצאה שלו לכל שאר שולחנות העבודה הווירטואליים בוטלה.</translation>
 <translation id="5895138241574237353">הפעלה מחדש</translation>
 <translation id="589817443623831496">סריקת נקודות</translation>
@@ -1321,6 +1335,7 @@
 <translation id="8131740175452115882">אישור</translation>
 <translation id="8131994907636310308">סגירת ההודעה הקופצת של המיון</translation>
 <translation id="8132793192354020517">מחובר ל<ph name="NAME" /></translation>
+<translation id="8138705869659070104">הפעלה לאחר הגדרת המכשיר</translation>
 <translation id="813913629614996137">מתבצע אתחול...</translation>
 <translation id="8142441511840089262">לחיצה כפולה</translation>
 <translation id="8142699993796781067">רשת פרטית</translation>

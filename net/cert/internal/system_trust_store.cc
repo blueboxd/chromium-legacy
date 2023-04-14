@@ -414,11 +414,33 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
 
+namespace {
+TrustStoreAndroid* GetGlobalTrustStoreAndroidForCRS() {
+  static base::NoDestructor<TrustStoreAndroid> static_trust_store_android;
+  return static_trust_store_android.get();
+}
+
+void InitializeTrustStoreForCRSOnWorkerThread() {
+  GetGlobalTrustStoreAndroidForCRS()->Initialize();
+}
+}  // namespace
+
 std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStoreChromeRoot(
     std::unique_ptr<TrustStoreChrome> chrome_root) {
-  return std::make_unique<SystemTrustStoreChrome>(
-      std::move(chrome_root), std::make_unique<TrustStoreAndroid>());
+  return std::make_unique<SystemTrustStoreChromeWithUnOwnedSystemStore>(
+      std::move(chrome_root), GetGlobalTrustStoreAndroidForCRS());
 }
+
+void InitializeTrustStoreAndroid() {
+  base::ThreadPool::PostTask(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&InitializeTrustStoreForCRSOnWorkerThread));
+}
+
+#else
+
+void InitializeTrustStoreAndroid() {}
 
 #endif  // CHROME_ROOT_STORE_SUPPORTED
 

@@ -54,6 +54,7 @@
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/win/atl_module.h"
+#include "ui/gfx/switches.h"
 #endif
 
 #if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
@@ -70,7 +71,9 @@
 #if BUILDFLAG(IS_MAC)
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "content/app/mac_init.h"
+#endif
 
+#if BUILDFLAG(IS_APPLE)
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
 #include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #endif
@@ -200,7 +203,7 @@ RunContentProcess(ContentMainParams params,
     content_main_runner->ReInitializeParams(std::move(params));
   } else {
     is_initialized = true;
-#if BUILDFLAG(IS_MAC) && BUILDFLAG(USE_ALLOCATOR_SHIM)
+#if BUILDFLAG(IS_APPLE) && BUILDFLAG(USE_ALLOCATOR_SHIM)
     allocator_shim::InitializeAllocatorShim();
 #endif
     base::EnableTerminationOnOutOfMemory();
@@ -238,7 +241,7 @@ RunContentProcess(ContentMainParams params,
     base::CommandLine::Init(argc, argv);
 
 #if BUILDFLAG(IS_POSIX)
-    PopulateFileDescriptorStoreFromGlobalDescriptors();
+    PopulateFileDescriptorStoreFromFdTable();
 #endif
 
     base::EnableTerminationOnHeapCorruption();
@@ -282,6 +285,15 @@ RunContentProcess(ContentMainParams params,
     InitializeMac();
 #endif
 
+#if BUILDFLAG(IS_IOS)
+    // TODO(crbug.com/1412835): Remove this initialization on iOS. Everything
+    // runs in process for now as we have no fork.
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    command_line->AppendSwitch(switches::kSingleProcess);
+    command_line->AppendSwitch(switches::kEnableViewport);
+    command_line->AppendSwitch(switches::kUseMobileUserAgent);
+#endif
+
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
     base::subtle::EnableFDOwnershipEnforcement(true);
 #endif
@@ -302,7 +314,9 @@ RunContentProcess(ContentMainParams params,
 #if BUILDFLAG(IS_WIN)
     // Route stdio to parent console (if any) or create one.
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableLogging)) {
+            switches::kEnableLogging) ||
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kHeadless)) {
       base::RouteStdioToConsole(true);
     }
 #endif

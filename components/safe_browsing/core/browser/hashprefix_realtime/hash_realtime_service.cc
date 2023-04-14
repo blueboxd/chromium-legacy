@@ -303,8 +303,9 @@ HashRealTimeService::ParseResponseAndUpdateBackoff(
   auto response =
       ParseResponse(net_error, response_code, std::move(response_body),
                     requested_hash_prefixes);
-  LogOperationResult(response.has_value() ? OperationResult::kSuccess
-                                          : response.error());
+  base::UmaHistogramEnumeration(
+      "SafeBrowsing.HPRT.OperationResult",
+      response.has_value() ? OperationResult::kSuccess : response.error());
   if (response.has_value()) {
     backoff_operator_->ReportSuccess();
   } else if (response.error() != OperationResult::kRetriableError) {
@@ -437,12 +438,6 @@ base::WeakPtr<HashRealTimeService> HashRealTimeService::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void HashRealTimeService::LogOperationResult(
-    OperationResult operation_result) const {
-  base::UmaHistogramEnumeration("SafeBrowsing.HPRT.OperationResult",
-                                operation_result);
-}
-
 net::NetworkTrafficAnnotationTag HashRealTimeService::GetTrafficAnnotationTag()
     const {
   return net::DefineNetworkTrafficAnnotation(
@@ -466,6 +461,9 @@ net::NetworkTrafficAnnotationTag HashRealTimeService::GetTrafficAnnotationTag()
     internal {
       contacts {
         email: "thefrog@chromium.org"
+      }
+      contacts {
+        email: "chrome-counter-abuse-alerts@google.com"
       }
     }
     user_data {

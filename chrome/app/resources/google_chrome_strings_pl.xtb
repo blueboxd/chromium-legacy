@@ -50,7 +50,6 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome jest nieaktualny</translation>
 <translation id="1919130412786645364">Zezwalaj na logowanie się w Chrome</translation>
-<translation id="1952239763774043237">Aby otrzymywać w przyszłości aktualizacje Google Chrome, musisz mieć system macOS 10.13 lub nowszy. Na tym komputerze jest zainstalowany system macOS 10.12.</translation>
 <translation id="1953553007165777902">Pobieram… Pozostało: <ph name="MINUTE" /> min</translation>
 <translation id="2018528049276128029">Każdy profil zawiera własne dane Chrome, takie jak zakładki, historia, hasła i inne</translation>
 <translation id="2018879682492276940">Nie udało się zainstalować. Spróbuj ponownie.</translation>
@@ -183,6 +182,7 @@
 <translation id="4335235004908507846">Chrome pomaga chronić Cię przed naruszeniami bezpieczeństwa danych, niebezpiecznymi rozszerzeniami i innymi zagrożeniami.</translation>
 <translation id="4343195214584226067">Rozszerzenie <ph name="EXTENSION_NAME" /> zostało dodane do Chrome</translation>
 <translation id="4384570495110188418">Chrome nie może sprawdzić haseł, jeśli się nie zalogujesz</translation>
+<translation id="4393248995085527349">Aby otrzymywać w przyszłości aktualizacje Google Chrome, musisz mieć system macOS 10.15 lub nowszy. Na tym komputerze jest zainstalowany system macOS 10.13.</translation>
 <translation id="4427306783828095590">Silniejsza ochrona lepiej chroni przed phishingiem i złośliwym oprogramowaniem</translation>
 <translation id="4450664632294415862">Chrome – logowanie do sieci – <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome wykonuje teraz inną operację. Spróbuj ponownie później.</translation>
@@ -212,7 +212,6 @@
 <translation id="4970880042055371251">Wersja Chrome OS</translation>
 <translation id="4970947549776831107">Plik został zablokowany przez Chrome, bo ten typ pliku jest niebezpieczny</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Aby otrzymywać w przyszłości aktualizacje Google Chrome, musisz mieć system macOS 10.13 lub nowszy. Na komputerze jest zainstalowany system OS X 10.11.</translation>
 <translation id="5098668839038261629">Jeśli ta opcja jest włączona, zostaniesz też wylogowany(-a) z Chrome</translation>
 <translation id="5132929315877954718">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do przeglądarki Google Chrome.</translation>
 <translation id="5139423532931106058">Dostosuj swój profil Chrome</translation>
@@ -236,6 +235,7 @@
 <translation id="5678190148303298925">{COUNT,plural, =0{Administrator prosi o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację}=1{Administrator prosi o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację. Okno incognito nie otworzy się ponownie.}few{Administrator prosi o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzą się ponownie.}many{Administrator prosi o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację. # okien incognito nie otworzy się ponownie.}other{Administrator prosi o ponowne uruchomienie Chrome, by przeglądarka mogła zainstalować tę aktualizację. # okna incognito nie otworzy się ponownie.}}</translation>
 <translation id="5686916850681061684">Dostosuj i kontroluj Google Chrome. Pewna kwestia wymaga Twojej uwagi – kliknij, by przejść do szczegółów.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Gdy to ustawienie jest włączone, Chrome zwalnia pamięć zajętą przez nieaktywne karty. Dzięki temu aktywne karty i inne aplikacje mają więcej zasobów komputerowych, a Chrome działa szybciej. Nieaktywne karty zostaną automatycznie włączone, gdy ponownie je otworzysz.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome uruchomi się ponownie za sekundę}few{Google Chrome uruchomi się ponownie za # sekundy}many{Google Chrome uruchomi się ponownie za # sekund}other{Google Chrome uruchomi się ponownie za # sekundy}}</translation>
 <translation id="5727531838415286053">Jeśli w wyniku losowego wyboru Chrome obejmuje Cię aktywny test, historia przeglądania wpływa na wyświetlane reklamy i oszacowane zainteresowania (patrz poniżej). Żeby chronić Twoją prywatność, Chrome co miesiąc automatycznie usuwa Twoje zainteresowania. Zainteresowania są odświeżane, chyba że je usuniesz.</translation>
 <translation id="5736850870166430177">Jeśli strona próbuje wykraść Twoje hasło lub pobierasz szkodliwy plik, Chrome może też wysłać URL wraz z fragmentami zawartości strony do usługi Bezpieczne przeglądanie.</translation>
@@ -246,10 +246,12 @@
 <translation id="5895138241574237353">Uruchom ponownie</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> – logowanie do sieci</translation>
 <translation id="5924017743176219022">Łączę z internetem…</translation>
+<translation id="5932997892801542621">Gdy piszesz na pasku adresu lub w polu wyszukiwania, Chrome wysyła to, co wpisujesz, na Dysk Google, aby uzyskać sugestie dotyczące elementów. Ta funkcja jest wyłączona w trybie incognito.</translation>
 <translation id="5940385492829620908">Tu są Twoje strony, zakładki i inne dane z Chrome.</translation>
 <translation id="5941711191222866238">Minimalizuj</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="6003112304606738118">Pobieram… Pozostało: <ph name="HOURS" /> godz.</translation>
+<translation id="6010556343189461180">Aby otrzymywać w przyszłości aktualizacje Google Chrome, musisz mieć system macOS 10.15 lub nowszy. Na tym komputerze jest zainstalowany system macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Aplikacja Chrome zostanie teraz zamknięta.}=1{Aplikacja Chrome zostanie zamknięta za 1 sekundę.}few{Aplikacja Chrome zostanie zamknięta za # sekundy.}many{Aplikacja Chrome zostanie zamknięta za # sekund.}other{Aplikacja Chrome zostanie zamknięta za # sekundy.}}</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="6070348360322141662">Dla większego bezpieczeństwa Google Chrome szyfruje dane</translation>
@@ -315,7 +317,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="7410958280246779049">Ten plik został zablokowany przez Chrome, bo jest niebezpieczny</translation>
 <translation id="7426611252293106642">Przeglądarka Google Chrome może działać nieprawidłowo, bo nie jest już obsługiwana w tej dystrybucji Linuksa</translation>
 <translation id="7481213027396403996">Korzystaj z najlepszych zabezpieczeń Chrome</translation>
-<translation id="7486227612705979895">Chrome będzie mieć dostęp do Dysku, by wyświetlać podpowiedzi na pasku adresu</translation>
 <translation id="7535429826459677826">Wersja deweloperska Google Chrome</translation>
 <translation id="7583399374488819119">Instalator <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -358,7 +359,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="8286862437124483331">Google Chrome próbuje pokazać hasła. Podaj swoje hasło do Windows, by na to zezwolić.</translation>
 <translation id="828798499196665338">Rodzic wyłączył „Uprawnienia stron, aplikacji i rozszerzeń” dla Chrome. Włączenie elementu <ph name="EXTENSION_TYPE_PARAMETER" /> jest niedozwolone.</translation>
 <translation id="8290100596633877290">O kurczę! Przeglądarka Google Chrome uległa awarii. Uruchomić ją teraz ponownie?</translation>
-<translation id="8341646175450781745">Gdy to ustawienie jest włączone, Chrome zwalnia pamięć zajętą przez nieaktywne karty. Dzięki temu aktywne karty i inne aplikacje mają więcej zasobów komputerowych, a Chrome działa szybciej. Nieaktywne karty zostaną automatycznie włączone, gdy ponownie je otworzysz. <ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> lub <ph name="BEGIN_LINK_2" />prześlij opinię<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Ten plik jest niebezpieczny, dlatego został zablokowany przez Chrome.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Jak używamy tych danych:<ph name="END_BOLD" /> w Chrome witryny mogą przechowywać informacje o Twoich zainteresowaniach. Na przykład jeśli odwiedzasz stronę internetową, żeby kupić buty na maraton, strona może zidentyfikować bieganie w maratonach jako Twoje zainteresowanie. Jeśli później odwiedzisz inną witrynę, żeby zapisać się na jakiś bieg, witryna ta może wyświetlić reklamę butów do biegania na podstawie Twoich zainteresowań.</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Wszelkie prawa zastrzeżone.</translation>
@@ -389,6 +389,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="8686817260976772516">Dzięki profilom Chrome wszystkie swoje rzeczy z tej przeglądarki możesz przechowywać osobno. Utwórz profile dla znajomych i rodziny albo oddziel pracę od rozrywki.</translation>
 <translation id="8712767363896337380">Prawie gotowe. Aby dokończyć aktualizowanie, uruchom ponownie Chrome.</translation>
 <translation id="873133009373065397">Google Chrome nie może określić ani ustawić domyślnej przeglądarki</translation>
+<translation id="8765470054473112089">Gdy piszesz na pasku adresu lub w polu wyszukiwania, Chrome wysyła to, co piszesz, do domyślnej wyszukiwarki, aby podawać Ci lepsze sugestie. Ta funkcja jest wyłączona w trybie incognito.</translation>
 <translation id="8821043148920470810">Aby w przyszłości otrzymywać aktualizacje Google Chrome, musisz mieć system Windows 10 lub nowszy. Na tym komputerze jest zainstalowany system Windows 7.</translation>
 <translation id="8823341990149967727">Chrome jest nieaktualny</translation>
 <translation id="8825634023950448068">Aby chronić Twoją prywatność, automatycznie usuwamy Twoje zainteresowania, które są starsze niż 4 tygodnie. Podczas dalszego przeglądania zainteresowanie może się pojawić ponownie na liście. Jeśli uznasz to za błąd lub jeśli nie będą Cię interesować określone reklamy, możesz usunąć zainteresowanie.</translation>
@@ -402,7 +403,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="8986207147630327271">Dodajesz profil służbowy w tej przeglądarce i dajesz swojemu administratorowi kontrolę tylko nad tym profilem.</translation>
 <translation id="8989968390305463310">Historia przeglądania wpływa na wyświetlane reklamy i oszacowane zainteresowania (patrz poniżej). Żeby chronić Twoją prywatność, Chrome co miesiąc automatycznie usuwa Twoje zainteresowania. Zainteresowania mogą być odświeżane, chyba że je usuniesz.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Dostępna jest aktualizacja Chrome}=1{Dostępna jest aktualizacja Chrome}few{Aktualizacja Chrome jest dostępna od # dni}many{Aktualizacja Chrome jest dostępna od # dni}other{Aktualizacja Chrome jest dostępna od # dnia}}</translation>
-<translation id="9003498785844995646">Gdy ta funkcja jest włączona, Chrome oszczędza baterię, ograniczając aktywność w tle i efekty wizualne, takie jak płynne przewijanie i liczba klatek w filmie. <ph name="BEGIN_LINK" />Dowiedz się więcej<ph name="END_LINK" /> lub <ph name="BEGIN_LINK_2" />prześlij opinię<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">System ChromeOS Flex</translation>
 <translation id="9067395829937117663">Google Chrome wymaga systemu Windows 7 lub nowszego.</translation>
 <translation id="911206726377975832">Czy usunąć także dane przeglądania?</translation>
@@ -413,6 +413,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="93760716455950538">Uruchom ChromeOS Flex ponownie</translation>
 <translation id="940313311831216333">Aby mieć dostęp do danych z Chrome na wszystkich swoich urządzeniach, zaloguj się i włącz synchronizację.</translation>
 <translation id="943390475793766444">Chrome zaleca przeskanowanie tego pliku, bo może on być niebezpieczny.</translation>
+<translation id="963650557422347554">Gdy ta funkcja jest włączona, Chrome oszczędza baterię, ograniczając aktywność w tle i efekty wizualne, takie jak płynne przewijanie i liczba klatek w filmie.</translation>
 <translation id="989369509083708165">Google Chrome jest domyślną przeglądarką</translation>
 <translation id="989816563149873169">Profile Chrome przełącza skrót <ph name="SHORTCUT" /></translation>
 </translationbundle>

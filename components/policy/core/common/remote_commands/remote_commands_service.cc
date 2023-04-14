@@ -21,6 +21,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_validator.h"
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "components/policy/core/common/remote_commands/remote_commands_factory.h"
+#include "components/policy/proto/device_management_backend.pb.h"
 
 namespace policy {
 
@@ -250,7 +251,7 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   }
 
   client_->FetchRemoteCommands(
-      std::move(id_to_acknowledge), previous_results,
+      std::move(id_to_acknowledge), previous_results, GetSignatureType(),
       base::BindOnce(&RemoteCommandsService::OnRemoteCommandsFetched,
                      weak_factory_.GetWeakPtr()));
 
@@ -272,8 +273,7 @@ void RemoteCommandsService::VerifyAndEnqueueSignedCommand(
     const em::SignedData& signed_command) {
   const bool valid_signature = CloudPolicyValidatorBase::VerifySignature(
       signed_command.data(), store_->policy_signature_public_key(),
-      signed_command.signature(),
-      CloudPolicyValidatorBase::SignatureType::SHA1);
+      signed_command.signature(), GetSignatureType());
 
   auto ignore_result = base::BindOnce(
       [](RemoteCommandsService* self, const char* error_msg,
@@ -387,8 +387,9 @@ void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   result.set_result(CommandStatusToResultType(command->status()));
 
   std::unique_ptr<std::string> result_payload = command->GetResultPayload();
-  if (result_payload)
+  if (result_payload) {
     result.set_payload(std::move(*result_payload));
+  }
 
   SYSLOG(INFO) << "Remote command " << command->unique_id()
                << " finished with result " << ToString(result.result()) << " ("
@@ -407,19 +408,22 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
   DCHECK(command_fetch_in_progress_);
   command_fetch_in_progress_ = false;
 
-  if (!on_command_acked_callback_.is_null())
+  if (!on_command_acked_callback_.is_null()) {
     std::move(on_command_acked_callback_).Run();
+  }
 
   // TODO(binjin): Add retrying on errors. See http://crbug.com/466572.
   if (status == DM_STATUS_SUCCESS) {
-    for (const auto& command : commands)
+    for (const auto& command : commands) {
       VerifyAndEnqueueSignedCommand(command);
+    }
   }
 
   // Start another fetch request job immediately if there are unsent command
   // results or enqueued fetch requests.
-  if (!unsent_results_.empty() || has_enqueued_fetch_request_)
+  if (!unsent_results_.empty() || has_enqueued_fetch_request_) {
     FetchRemoteCommands();
+  }
 }
 
 void RemoteCommandsService::RecordReceivedRemoteCommand(

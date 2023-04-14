@@ -7,6 +7,7 @@
 #include "base/containers/contains.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -128,6 +129,8 @@ bool IsClassicProfilePickerFlow(const ProfilePicker::Params& params) {
     case ProfilePicker::EntryPoint::kBackgroundModeManager:
     case ProfilePicker::EntryPoint::kProfileIdle:
     case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
+    case ProfilePicker::EntryPoint::kOnStartupNoProfile:
+    case ProfilePicker::EntryPoint::kNewSessionOnExistingProcessNoProfile:
       return true;
     case ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun:
     case ProfilePicker::EntryPoint::kFirstRun:
@@ -159,9 +162,6 @@ void ProfilePicker::Show(Params&& params) {
   if (g_profile_picker_view) {
     g_profile_picker_view->UpdateParams(std::move(params));
   } else {
-    // TODO(crbug.com/1340791): This is temporarily added to understand
-    // crbug.com/1340791. Remove when it is resolved.
-    LOG(WARNING) << "ProfilePickerView is created";
     g_profile_picker_view = new ProfilePickerView(std::move(params));
   }
   g_profile_picker_view->Display();
@@ -367,9 +367,7 @@ void ProfilePickerView::UpdateParams(ProfilePicker::Params&& params) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Cancel any flow that was in progress.
   params_.NotifyAccountSelected(std::string());
-  params_.NotifyFirstRunExited(
-      ProfilePicker::FirstRunExitStatus::kQuitEarly,
-      ProfilePicker::FirstRunExitSource::kReusingWindow);
+  params_.NotifyFirstRunExited(ProfilePicker::FirstRunExitStatus::kQuitEarly);
 #endif
 
   params_ = std::move(params);
@@ -389,6 +387,12 @@ void ProfilePickerView::ShowScreen(
     content::WebContents* contents,
     const GURL& url,
     base::OnceClosure navigation_finished_closure) {
+  base::ScopedClosureRunner finish_init_runner;
+  if (state_ == kInitializing) {
+    finish_init_runner.ReplaceClosure(
+        base::BindOnce(&ProfilePickerView::FinishInit, base::Unretained(this)));
+  }
+
   if (url.is_empty()) {
     DCHECK(!navigation_finished_closure);
     ShowScreenFinished(contents);
@@ -433,9 +437,10 @@ void ProfilePickerView::Clear() {
   if (state_ == kClosing)
     return;
 
-  if (state_ == kReady) {
+  state_ = kClosing;
+
+  if (GetWidget()) {
     GetWidget()->Close();
-    state_ = kClosing;
     return;
   }
 
@@ -565,7 +570,6 @@ void ProfilePickerView::Display() {
     // Build the layout synchronously before creating the picker profile to
     // simplify tests.
     BuildLayout();
-
     g_browser_process->profile_manager()->CreateProfileAsync(
         params_.profile_path(),
         base::BindOnce(&ProfilePickerView::OnPickerProfileCreated,
@@ -624,10 +628,16 @@ void ProfilePickerView::Init(Profile* picker_profile) {
   flow_controller_ = CreateFlowController(picker_profile, GetClearClosure());
   DCHECK(flow_controller_);
   flow_controller_->Init();
-  state_ = kReady;
+}
 
-  PrefService* prefs = g_browser_process->local_state();
-  prefs->SetBoolean(prefs::kBrowserProfilePickerShown, true);
+void ProfilePickerView::FinishInit() {
+  DCHECK_EQ(kInitializing, state_);
+  state_ = kDisplayed;
+
+  if (IsClassicProfilePickerFlow(params_)) {
+    PrefService* prefs = g_browser_process->local_state();
+    prefs->SetBoolean(prefs::kBrowserProfilePickerShown, true);
+  }
 
   if (params_.entry_point() == ProfilePicker::EntryPoint::kOnStartup) {
     DCHECK(!creation_time_on_startup_.is_null());
@@ -735,14 +745,8 @@ void ProfilePickerView::WindowClosing() {
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
-  // TODO(crbug.com/1340791): The logging message is added to understand
-  // crbug.com/1340791 further temporarily. Remove it when it is resolved.
   if (g_profile_picker_view == this) {
-    LOG(WARNING) << "The ProfilePickerView is deleted";
     g_profile_picker_view = nullptr;
-  } else {
-    LOG(WARNING) << "The WindowClosing event is observed, but which is not "
-                 << "for the global ProfilePickerView.";
   }
 
   // Show a new profile window if it has been requested while the current window

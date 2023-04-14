@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the tryserver.blink builder group."""
 
-load("//lib/builders.star", "goma", "os", "reclient")
+load("//lib/builders.star", "os", "reclient")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/branches.star", "branches")
 load("//lib/try.star", "try_")
@@ -56,7 +56,6 @@ try_.builder(
         retry_failed_shards = False,
     ),
     os = os.LINUX_DEFAULT,
-    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
@@ -239,6 +238,46 @@ blink_mac_builder(
 
 blink_mac_builder(
     name = "mac12.0.arm64-blink-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = True,
+    ),
+)
+
+blink_mac_builder(
+    name = "mac13-blink-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
+)
+
+blink_mac_builder(
+    name = "mac13.arm64-blink-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
             config = "chromium",

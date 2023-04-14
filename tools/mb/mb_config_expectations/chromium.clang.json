@@ -255,7 +255,6 @@
   "ToTLinuxMSan": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
       "is_clang": true,
       "is_debug": false,
       "is_msan": true,
@@ -276,6 +275,7 @@
       "chrome_pgo_phase": 1,
       "is_clang": true,
       "is_official_build": true,
+      "is_on_release_branch": true,
       "llvm_force_head_revision": true,
       "symbol_level": 0
     }
@@ -412,6 +412,7 @@
       "chrome_pgo_phase": 1,
       "is_clang": true,
       "is_official_build": true,
+      "is_on_release_branch": true,
       "llvm_force_head_revision": true,
       "symbol_level": 0
     }

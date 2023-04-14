@@ -121,11 +121,6 @@ BASE_DECLARE_FEATURE(kDataLeakPreventionFilesRestriction);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kDefaultLinkCapturingInBrowser);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kDMServerOAuthForChildUser);
 #endif
 
@@ -135,7 +130,28 @@ BASE_DECLARE_FEATURE(kPreinstalledWebAppInstallation);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kPreinstalledWebAppDuplicationFixer);
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kPreinstalledWebAppWindowExperiment);
+// Finch-controlled user group for the experiment.
+// Used in metrics. Do not renumber or reuse values.
+enum class PreinstalledWebAppWindowExperimentUserGroup : int32_t {
+  // Default. Experiment is not running.
+  kUnknown = 0,
+  // User assigned to have the default behaviour.
+  kControl = 1,
+  // User assigned to have preinstalled web apps open in windows with link
+  // capturing.
+  kWindow = 2,
+  // User assigned to have preinstalled web apps open in browser tabs without
+  // link capturing.
+  kTab = 3
+};
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kOsIntegrationSubManagers);
 enum class OsIntegrationSubManagersStage {
@@ -363,6 +379,8 @@ BASE_DECLARE_FEATURE(kHappinessTrackingPrivacyHubBaseline);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kHideWebAppOriginText);
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kHttpsOnlyMode);
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHttpsFirstModeForAdvancedProtectionUsers);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kHttpsFirstModeV2);
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kHttpsUpgrades);
 
@@ -418,9 +436,6 @@ BASE_DECLARE_FEATURE(kKAnonymityServiceOHTTPRequests);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kKAnonymityServiceStorage);
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kUpdateHistoryEntryPointsInIncognito);
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kLinuxLowMemoryMonitor);
@@ -817,6 +832,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kVrBrowsingExperimentalRendering);
 #endif  // ENABLE_VR
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kWebAppFrameToolbarInBrowserView);
+
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAppManifestIconUpdating);
@@ -913,6 +931,15 @@ BASE_DECLARE_FEATURE(kUseWebAppDBInsteadOfExternalPrefs);
 // an app window.
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAuthFlowInBrowserTab);
+enum class WebAuthFlowInBrowserTabMode {
+  // Auth flow is presented in a new tab attached to a new/existing browser.
+  kNewTab,
+  // Auth flow is presented in a browser popup window.
+  kPopupWindow
+};
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::FeatureParam<WebAuthFlowInBrowserTabMode>
+    kWebAuthFlowInBrowserTabMode;
 
 bool PrefServiceEnabled();
 

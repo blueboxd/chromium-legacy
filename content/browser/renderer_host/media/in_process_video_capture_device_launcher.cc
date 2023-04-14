@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_media_id.h"
 #include "content/public/common/content_features.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -92,10 +92,6 @@ const int kMaxNumberOfBuffers = media::kVideoCaptureDefaultMaxBufferPoolSize;
 #if BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 #if BUILDFLAG(IS_MAC)
-BASE_FEATURE(kDesktopCaptureMacV2,
-             "DesktopCaptureMacV2",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kScreenCaptureKitMac,
              "ScreenCaptureKitMac",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -137,7 +133,6 @@ bool ShouldUseDesktopCaptureLacrosV2() {
          VideoCaptureDeviceProxyLacros::IsAvailable();
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -208,8 +203,7 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
     if ((device_out = CreateScreenCaptureKitDeviceMac(desktop_id)))
       return kScreenCaptureKitDeviceMac;
   }
-  if ((base::FeatureList::IsEnabled(kDesktopCaptureMacV2))
-      && __builtin_available(macOS 10.8, *)) {
+  if (__builtin_available(macOS 10.8, *)) {
     if ((device_out = CreateDesktopCaptureDeviceMac(desktop_id)))
       return kDesktopCaptureDeviceMac;
   }
@@ -220,7 +214,7 @@ DesktopCaptureImplementation CreatePlatformDependentVideoCaptureDevice(
 #endif
   return kNoImplementation;
 }
-
+#endif  // BUILDFLAG(ENABLE_SCREEN_CAPTURE)
 }  // anonymous namespace
 
 InProcessVideoCaptureDeviceLauncher::InProcessVideoCaptureDeviceLauncher(
@@ -263,9 +257,10 @@ void InProcessVideoCaptureDeviceLauncher::LaunchDeviceAsync(
   base::OnceClosure start_capture_closure;
   // Use of Unretained |this| is safe, because |done_cb| guarantees that |this|
   // stays alive.
-  ReceiveDeviceCallback after_start_capture_callback = media::BindToCurrentLoop(
-      base::BindOnce(&InProcessVideoCaptureDeviceLauncher::OnDeviceStarted,
-                     base::Unretained(this), callbacks, std::move(done_cb)));
+  ReceiveDeviceCallback after_start_capture_callback =
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
+          &InProcessVideoCaptureDeviceLauncher::OnDeviceStarted,
+          base::Unretained(this), callbacks, std::move(done_cb)));
 
   switch (stream_type) {
     case blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE: {

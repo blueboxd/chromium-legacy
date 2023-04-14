@@ -510,8 +510,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   auto impl = gl::GetGLImplementationParts();
   bool gl_disabled = impl == gl::kGLImplementationDisabled;
-  bool is_swangle = impl == gl::ANGLEImplementation::kSwiftShader;
 
+#if BUILDFLAG(ENABLE_VALIDATING_COMMAND_DECODER)
+  bool is_swangle = impl == gl::ANGLEImplementation::kSwiftShader;
   // Compute passthrough decoder status before ComputeGpuFeatureInfo below.
   // Do this after GL is initialized so extensions can be queried.
   // Using SwANGLE forces the passthrough command decoder.
@@ -533,6 +534,31 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   gpu_preferences_.use_passthrough_cmd_decoder =
       gpu_info_.passthrough_cmd_decoder;
+#else
+  // If gl is disabled passthrough/validating command decoder doesn't matter. If
+  // it's not ensure that passthrough command decoder is supported as it's our
+  // only option.
+  if (!gl_disabled) {
+    LOG_IF(FATAL, !gles2::PassthroughCommandDecoderSupported())
+        << "Passthrough is not supported, GL is "
+        << gl::GetGLImplementationGLName(gl::GetGLImplementationParts())
+        << ", ANGLE is "
+        << gl::GetGLImplementationANGLEName(gl::GetGLImplementationParts());
+    gpu_info_.passthrough_cmd_decoder = true;
+    gpu_preferences_.use_passthrough_cmd_decoder = true;
+  }
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // TODO(b/233238923): While passthrough is rolling out on CrOS, it's useful
+  // to know whether a bug report is for a session with passthrough enabled.
+  // Remove this logging when passthrough is fully launched on CrOS.
+  if (gpu_preferences_.use_passthrough_cmd_decoder) {
+    LOG(WARNING) << "Using passthrough command decoder. NOTE: This log is "
+        << "to help triage feedback reports and does not by itself mean there "
+        << "is an issue.";
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
   // We need to collect GL strings (VENDOR, RENDERER) for blocklisting purposes.
   if (!gl_disabled) {

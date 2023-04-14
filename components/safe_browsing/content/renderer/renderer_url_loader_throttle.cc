@@ -16,15 +16,29 @@
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace safe_browsing {
 
 namespace {
 
+constexpr char kFromCacheUmaSuffix[] = ".FromCache";
+constexpr char kFromNetworkUmaSuffix[] = ".FromNetwork";
+
 // Returns true if the URL is known to be safe. We also require that this URL
-// never redirects to a potentially unsafe URL.
+// never redirects to a potentially unsafe URL, because the redirected URLs are
+// also skipped if this function returns true.
 bool KnownSafeUrl(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme);
+}
+
+void LogTotalDelay2MetricsWithResponseType(bool is_response_from_cache,
+                                           base::TimeDelta total_delay) {
+  base::UmaHistogramTimes(
+      base::StrCat({"SafeBrowsing.RendererThrottle.TotalDelay2",
+                    is_response_from_cache ? kFromCacheUmaSuffix
+                                           : kFromNetworkUmaSuffix}),
+      total_delay);
 }
 
 }  // namespace
@@ -120,15 +134,29 @@ void RendererURLLoaderThrottle::WillProcessResponse(
   base::UmaHistogramBoolean(
       "SafeBrowsing.RendererThrottle.IsCheckCompletedOnProcessResponse",
       check_completed);
+  is_response_from_cache_ =
+      response_head->was_fetched_via_cache && !response_head->network_accessed;
   if (is_start_request_called_) {
+    base::TimeTicks process_time = base::TimeTicks::Now();
     base::UmaHistogramTimes(
         "SafeBrowsing.RendererThrottle.IntervalBetweenStartAndProcess",
-        base::TimeTicks::Now() - start_request_time_);
+        process_time - start_request_time_);
+    base::UmaHistogramTimes(
+        base::StrCat(
+            {"SafeBrowsing.RendererThrottle.IntervalBetweenStartAndProcess",
+             is_response_from_cache_ ? kFromCacheUmaSuffix
+                                     : kFromNetworkUmaSuffix}),
+        process_time - start_request_time_);
+    if (check_completed) {
+      LogTotalDelay2MetricsWithResponseType(is_response_from_cache_,
+                                            base::TimeDelta());
+    }
     is_start_request_called_ = false;
   }
 
-  if (check_completed)
+  if (check_completed) {
     return;
+  }
 
   DCHECK(!deferred_);
   deferred_ = true;
@@ -204,8 +232,11 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
   // resumed), record the total delay.
   if (!proceed || pending_checks_ == 0) {
     // If the resource load is currently deferred, there is a delay.
-    if (deferred_)
+    if (deferred_) {
       total_delay_ = base::TimeTicks::Now() - defer_start_time_;
+      LogTotalDelay2MetricsWithResponseType(is_response_from_cache_,
+                                            total_delay_);
+    }
     base::UmaHistogramTimes("SafeBrowsing.RendererThrottle.TotalDelay2",
                             total_delay_);
   }

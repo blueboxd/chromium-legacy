@@ -64,7 +64,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     Builder& SetType(DisplayConnectionType type);
     Builder& SetBaseConnectorId(uint64_t base_connector_id);
     Builder& SetPathTopology(const std::vector<uint64_t>& path_topology);
-    Builder& SetIsAspectPerservingScaling(bool is_aspect_preserving_scaling);
+    Builder& SetIsAspectPreservingScaling(bool is_aspect_preserving_scaling);
     Builder& SetHasOverscan(bool has_overscan);
     Builder& SetHasColorCorrectionMatrix(bool val);
     Builder& SetColorCorrectionInLinearSpace(bool val);
@@ -79,6 +79,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     // Sets physical_size for high DPI display.
     Builder& SetHighDPI();
     Builder& SetPrivacyScreen(PrivacyScreenState state);
+    Builder& SetHasContentProtectionKey(bool has_content_protection_key);
     Builder& SetColorSpace(const gfx::ColorSpace& color_space);
     Builder& SetBitsPerChannel(uint32_t bits_per_channel);
     Builder& SetHDRStaticMetadata(
@@ -108,6 +109,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     bool is_aspect_preserving_scaling_ = false;
     bool has_overscan_ = false;
     PrivacyScreenState privacy_screen_state_ = kNotSupported;
+    bool has_content_protection_key_ = false;
     bool has_color_correction_matrix_ = false;
     bool color_correction_in_linear_space_ = false;
     std::string name_;
@@ -136,6 +138,7 @@ class FAKE_DISPLAY_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
       bool is_aspect_preserving_scaling,
       bool has_overscan,
       PrivacyScreenState privacy_screen_state,
+      bool has_content_protection_key_,
       bool has_color_correction_matrix,
       bool color_correction_in_linear_space,
       std::string display_name,

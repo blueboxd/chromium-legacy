@@ -11,7 +11,9 @@
 namespace blink {
 
 class Element;
+class ComputedStyle;
 class HTMLSlotElement;
+class StyleScopeFrame;
 
 // StyleRecalcContext is an object that is passed on the stack during
 // the style recalc process.
@@ -55,6 +57,12 @@ class CORE_EXPORT StyleRecalcContext {
   // Set to the nearest container (for container queries), if any.
   // This is used to evaluate container queries in ElementRuleCollector.
   Element* container = nullptr;
+
+  StyleScopeFrame* style_scope_frame = nullptr;
+
+  // The style for the element at the start of the lifecycle update, or the
+  // :initial styles for the second pass when transitioning from display:none.
+  const ComputedStyle* old_style = nullptr;
 
   // If true, something about the parent's style (e.g., that it has
   // modifications to one or more non-independent inherited properties)

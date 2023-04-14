@@ -15,7 +15,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
@@ -94,15 +93,11 @@ class StartSurfaceToolbarView extends RelativeLayout {
      * @param isVisible Whether the menu button is visible.
      */
     void setMenuButtonVisibility(boolean isVisible) {
-        // TODO(crbug.com/1258204): Update the paddings of mIdentityDiscButton when it's moved to
-        // start and remove final values here.
-        final int buttonPaddingLeft = getContext().getResources().getDimensionPixelOffset(
-                R.dimen.start_surface_toolbar_button_padding_to_button);
         final int buttonPaddingRight =
-                (isVisible ? buttonPaddingLeft
+                (isVisible ? 0
                            : getContext().getResources().getDimensionPixelOffset(
                                    R.dimen.start_surface_toolbar_button_padding_to_edge));
-        mIdentityDiscButton.setPadding(buttonPaddingLeft, 0, buttonPaddingRight, 0);
+        mIdentityDiscButton.setPadding(0, 0, buttonPaddingRight, 0);
     }
 
     /**
@@ -204,12 +199,11 @@ class StartSurfaceToolbarView extends RelativeLayout {
     }
 
     /**
-     * Updates idnetity disc content description.
-     * @param contentDescriptionResId The new description for the button.
+     * Updates identity disc content description.
+     * @param contentDescription The new description for the button.
      */
-    void setIdentityDiscContentDescription(@StringRes int contentDescriptionResId) {
-        mIdentityDiscButton.setContentDescription(
-                getContext().getResources().getString(contentDescriptionResId));
+    void setIdentityDiscContentDescription(String contentDescription) {
+        mIdentityDiscButton.setContentDescription(contentDescription);
     }
 
     /**

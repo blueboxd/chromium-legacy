@@ -28,6 +28,7 @@
 
 // Protocol used to relay relevant user interactions from a grid UI.
 @protocol GridViewControllerDelegate
+
 // Tells the delegate that the item with `itemID` was selected in
 // `gridViewController`.
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -40,7 +41,7 @@
 // i.e., there was an intention to create a new item.
 - (void)didTapPlusSignInGridViewController:
     (GridViewController*)gridViewController;
-// Tells the delegate that the item at `sourceIndex` was moved to
+// Tells the delegate that the item with `itemID` was moved to
 // `destinationIndex`.
 - (void)gridViewController:(GridViewController*)gridViewController
          didMoveItemWithID:(NSString*)itemID
@@ -49,6 +50,9 @@
 // changed to `count`.
 - (void)gridViewController:(GridViewController*)gridViewController
         didChangeItemCount:(NSUInteger)count;
+// Tells the delegate that the item with `itemID` was removed.
+- (void)gridViewController:(GridViewController*)gridViewController
+       didRemoveItemWIthID:(NSString*)itemID;
 
 // Tells the delegate that the visibility of the last item of the grid changed.
 - (void)didChangeLastItemVisibilityInGridViewController:
@@ -63,7 +67,6 @@
 // dragging.
 - (void)gridViewControllerWillBeginDragging:
     (GridViewController*)gridViewController;
-
 // Tells the delegate that the grid view controller cells will begin dragging.
 - (void)gridViewControllerDragSessionWillBegin:
     (GridViewController*)gridViewController;
@@ -81,6 +84,11 @@
 - (void)gridViewControllerDropAnimationDidEnd:
     (GridViewController*)gridViewController;
 
+// Tells the delegate that the inactive tabs button was tapped in
+// `gridViewController`, i.e., there was an intention to show inactive tabs.
+- (void)didTapInactiveTabsButtonInGridViewController:
+    (GridViewController*)gridViewController;
+
 @end
 
 // A view controller that contains a grid of items.
@@ -94,6 +102,8 @@
 @property(nonatomic, strong) UIView<GridEmptyView>* emptyStateView;
 // Returns YES if the grid has no items.
 @property(nonatomic, readonly, getter=isGridEmpty) BOOL gridEmpty;
+// Currently visible items in the grid.
+@property(nonatomic, readonly) NSSet<NSString*>* visibleGridItems;
 // The visual look of the grid.
 @property(nonatomic, assign) GridTheme theme;
 // The current mode for the grid.

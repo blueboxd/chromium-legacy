@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/modules/mediastream/crop_target.h"
 #include "third_party/blink/renderer/modules/mediastream/identifiability_metrics.h"
 #include "third_party/blink/renderer/modules/mediastream/input_device_info.h"
-#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/navigator_media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_client.h"
@@ -429,24 +428,17 @@ ScriptPromise MediaDevices::SendUserMediaRequest(
         surface_type, TokenFromConstraints(options));
   }
   ScriptPromise promise = resolver->Promise();
-  MediaErrorState error_state;
   UserMediaRequest* request =
       UserMediaRequest::Create(window, user_media_client, media_type, options,
-                               callbacks, error_state, surface);
+                               callbacks, exception_state, surface);
   if (!request) {
-    DCHECK(error_state.HadException());
-    if (error_state.CanGenerateException()) {
-      // TODO(crbug.com/1373398): Change this to use
-      // ScriptPromiseResolverWithTracker.
-      error_state.RaiseException(exception_state);
-      return ScriptPromise();
-    }
+    DCHECK(exception_state.HadException());
+    resolver->RecordResultAndLatency(
+        UserMediaRequestResult::kInvalidConstraints);
     RecordIdentifiabilityMetric(
         surface, GetExecutionContext(),
-        IdentifiabilityBenignStringToken(error_state.GetErrorMessage()));
-    resolver->Reject(error_state.CreateError(),
-                     UserMediaRequestResult::kInvalidConstraints);
-    return promise;
+        IdentifiabilityBenignStringToken(exception_state.Message()));
+    return ScriptPromise();
   }
 
   String error_message;
@@ -504,13 +496,6 @@ ScriptPromise MediaDevices::getDisplayMedia(
     return ScriptPromise();
   }
 
-  // Measure calls without transient activation as required by spec in
-  // https://github.com/w3c/mediacapture-screen-share/pull/106
-  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
-    UseCounter::Count(window,
-                      WebFeature::kGetDisplayMediaWithoutUserActivation);
-  }
-
   const bool capture_allowed_by_permissions_policy = window->IsFeatureEnabled(
       mojom::blink::PermissionsPolicyFeature::kDisplayCapture,
       ReportOptions::kReportOnFailure);
@@ -526,6 +511,18 @@ ScriptPromise MediaDevices::getDisplayMedia(
         exception_state, DOMExceptionCode::kNotAllowedError,
         kFeaturePolicyBlocked, UserMediaRequestResult::kNotAllowedError);
     return ScriptPromise();
+  }
+
+  if (!LocalFrame::HasTransientUserActivation(window->GetFrame())) {
+    UseCounter::Count(window,
+                      WebFeature::kGetDisplayMediaWithoutUserActivation);
+    if (RuntimeEnabledFeatures::
+            GetDisplayMediaRequiresUserActivationEnabled()) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidStateError,
+          "getDisplayMedia() requires transient activation (user gesture).");
+      return ScriptPromise();
+    }
   }
 
   if (options->hasAutoSelectAllScreens() && options->autoSelectAllScreens()) {
@@ -551,9 +548,7 @@ ScriptPromise MediaDevices::getDisplayMedia(
   }
 
   MediaStreamConstraints* const constraints = ToMediaStreamConstraints(options);
-  if (base::FeatureList::IsEnabled(
-          blink::features::kNewGetDisplayMediaPickerOrder) &&
-      !options->hasSelfBrowserSurface() &&
+  if (!options->hasSelfBrowserSurface() &&
       (!options->hasPreferCurrentTab() || !options->preferCurrentTab())) {
     constraints->setSelfBrowserSurface("exclude");
   }

@@ -46,16 +46,8 @@ public interface BackgroundTaskScheduler {
     boolean isScheduled(Context context, int taskId);
 
     /**
-     * Performs data migrations and flushes cached UMA data. Must not be invoked until native has
-     * been loaded.
+     * Flushes cached UMA data. Must not be invoked until native has been loaded.
      */
     @MainThread
     void doMaintenance();
-
-    /**
-     * Reschedules all the tasks currently scheduler through BackgroundTaskSheduler.
-     * @param context the current context.
-     */
-    @MainThread
-    void reschedule(Context context);
 }

@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/element_rare_data_field.h"
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
-#include "third_party/blink/renderer/core/dom/popover_animation_finished_event_listener.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -18,7 +17,6 @@ namespace blink {
 
 enum class PopoverVisibilityState {
   kHidden,
-  kTransitioning,
   kShowing,
 };
 
@@ -69,26 +67,28 @@ class PopoverData final : public GarbageCollected<PopoverData>,
     previously_focused_element_ = element;
   }
 
-  PopoverAnimationFinishedEventListener* animationFinishedListener() const {
-    return animation_finished_listener_;
-  }
-  void setAnimationFinishedListener(
-      PopoverAnimationFinishedEventListener* listener) {
-    if (animation_finished_listener_ &&
-        !animation_finished_listener_->IsFinished()) {
-      // If we're clearing the listener, dispose it, to prevent listeners from
-      // firing later.
-      animation_finished_listener_->Dispose();
-    }
-    DCHECK(!animation_finished_listener_ ||
-           animation_finished_listener_->IsFinished());
-    animation_finished_listener_ = listener;
-  }
-
   void setAnchorElement(Element* anchor) { anchor_element_ = anchor; }
   Element* anchorElement() const { return anchor_element_; }
   void setAnchorObserver(PopoverAnchorObserver* observer) {
     anchor_observer_ = observer;
+  }
+
+  bool hasPendingToggleEventTask() const {
+    return pending_toggle_event_task_.IsActive();
+  }
+  void cancelPendingToggleEventTask() { pending_toggle_event_task_.Cancel(); }
+  void setPendingToggleEventTask(TaskHandle&& task) {
+    DCHECK(!pending_toggle_event_task_.IsActive());
+    pending_toggle_event_task_ = std::move(task);
+  }
+
+  bool pendingToggleEventStartedClosed() const {
+    DCHECK(hasPendingToggleEventTask());
+    return pending_toggle_event_started_closed_;
+  }
+  void setPendingToggleEventStartedClosed(bool was_closed) {
+    DCHECK(!hasPendingToggleEventTask());
+    pending_toggle_event_started_closed_ = was_closed;
   }
 
   HTMLSelectMenuElement* ownerSelectMenuElement() const {
@@ -101,7 +101,6 @@ class PopoverData final : public GarbageCollected<PopoverData>,
   void Trace(Visitor* visitor) const override {
     visitor->Trace(invoker_);
     visitor->Trace(previously_focused_element_);
-    visitor->Trace(animation_finished_listener_);
     visitor->Trace(anchor_element_);
     visitor->Trace(anchor_observer_);
     visitor->Trace(owner_select_menu_element_);
@@ -113,13 +112,15 @@ class PopoverData final : public GarbageCollected<PopoverData>,
   PopoverValueType type_ = PopoverValueType::kNone;
   WeakMember<Element> invoker_;
   WeakMember<Element> previously_focused_element_;
-  // We hold a strong reference to the animation finished listener, so that we
-  // can confirm that the listeners get removed before cleanup.
-  Member<PopoverAnimationFinishedEventListener> animation_finished_listener_;
 
   // Target of the 'anchor' attribute.
   Member<Element> anchor_element_;
   Member<PopoverAnchorObserver> anchor_observer_;
+
+  // Any pending 'toggle' event waiting to be fired. Used for coalescing
+  // behavior so that only one such event is fired.
+  TaskHandle pending_toggle_event_task_;
+  bool pending_toggle_event_started_closed_;
 
   WeakMember<HTMLSelectMenuElement> owner_select_menu_element_;
 };

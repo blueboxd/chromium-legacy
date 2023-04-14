@@ -725,8 +725,6 @@ apps::AppPtr WebAppPublisherHelper::CreateWebApp(const WebApp* web_app) {
     const std::string name = base::UTF16ToUTF8(shortcut.name);
     std::string shortcut_id = GenerateShortcutId();
     StoreShortcutId(shortcut_id, shortcut);
-    app->shortcuts.push_back(
-        std::make_unique<apps::Shortcut>(shortcut_id, name));
   }
 
   return app;
@@ -926,6 +924,7 @@ void WebAppPublisherHelper::Launch(
     case apps::LaunchSource::kFromProtocolHandler:
     case apps::LaunchSource::kFromUrlHandler:
     case apps::LaunchSource::kFromLockScreen:
+    case apps::LaunchSource::kFromAppHomePage:
       break;
   }
 
@@ -1370,17 +1369,6 @@ void WebAppPublisherHelper::OnAppRegistrarDestroyed() {
   registrar_observation_.Reset();
 }
 
-void WebAppPublisherHelper::OnWebAppLocallyInstalledStateChanged(
-    const AppId& app_id,
-    bool is_locally_installed) {
-  const WebApp* web_app = GetWebApp(app_id);
-  if (!web_app) {
-    return;
-  }
-
-  delegate_->PublishWebApp(CreateWebApp(web_app));
-}
-
 void WebAppPublisherHelper::OnWebAppLastLaunchTimeChanged(
     const std::string& app_id,
     const base::Time& last_launch_time) {
@@ -1626,10 +1614,8 @@ IconEffects WebAppPublisherHelper::GetIconEffects(const WebApp* web_app) {
     icon_effects |= IconEffects::kBlocked;
   }
 
-#if BUILDFLAG(IS_CHROMEOS)
   icon_effects |= web_app->is_generated_icon() ? IconEffects::kCrOsStandardMask
                                                : IconEffects::kCrOsStandardIcon;
-#endif
 
   if (IsPaused(web_app->app_id())) {
     icon_effects |= IconEffects::kPaused;

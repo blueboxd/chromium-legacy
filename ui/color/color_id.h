@@ -104,37 +104,51 @@
   E_CPONLY(kColorRefNeutralVariant100) \
   \
   /* UI material system color tokens */ \
-  /* Core sys tokens */ \
+  /* Primary. */ \
   E_CPONLY(kColorSysPrimary) \
   E_CPONLY(kColorSysOnPrimary) \
   E_CPONLY(kColorSysPrimaryContainer) \
   E_CPONLY(kColorSysOnPrimaryContainer) \
+  /* Secondary. */ \
   E_CPONLY(kColorSysSecondary) \
   E_CPONLY(kColorSysOnSecondary) \
   E_CPONLY(kColorSysSecondaryContainer) \
   E_CPONLY(kColorSysOnSecondaryContainer) \
+  /* Tertiary. */ \
   E_CPONLY(kColorSysTertiary) \
   E_CPONLY(kColorSysOnTertiary) \
   E_CPONLY(kColorSysTertiaryContainer) \
   E_CPONLY(kColorSysOnTertiaryContainer) \
+  /* Error. */ \
   E_CPONLY(kColorSysError) \
   E_CPONLY(kColorSysOnError) \
   E_CPONLY(kColorSysErrorContainer) \
   E_CPONLY(kColorSysOnErrorContainer) \
-  E_CPONLY(kColorSysSurfaceVariant) \
+  /* Neutral. */ \
+  E_CPONLY(kColorSysOnSurface) \
   E_CPONLY(kColorSysOnSurfaceVariant) \
   E_CPONLY(kColorSysOutline) \
+  E_CPONLY(kColorSysSurfaceVariant) \
+  /* Inverse. */ \
   E_CPONLY(kColorSysInversePrimary) \
   E_CPONLY(kColorSysInverseOnSurface) \
-  /* Base and surface tokens */ \
+  /* Surfaces. */ \
   E_CPONLY(kColorSysSurface) \
   E_CPONLY(kColorSysSurface1) \
   E_CPONLY(kColorSysSurface2) \
   E_CPONLY(kColorSysSurface3) \
   E_CPONLY(kColorSysSurface4) \
   E_CPONLY(kColorSysSurface5) \
-  E_CPONLY(kColorSysDisabledContainer) \
-  /* Chrome surfaces */ \
+  /* General. */ \
+  E_CPONLY(kColorSysOnSurfacePrimary) \
+  E_CPONLY(kColorSysOnSurfaceSecondary) \
+  E_CPONLY(kColorSysOnSurfaceSubtle) \
+  /* Chrome surfaces. */ \
+  E_CPONLY(kColorSysBase) \
+  E_CPONLY(kColorSysOnBase) \
+  E_CPONLY(kColorSysOnBaseSecondary) \
+  E_CPONLY(kColorSysOnBaseDivider) \
+  E_CPONLY(kColorSysOnBaseBorder) \
   E_CPONLY(kColorSysHeader) \
   E_CPONLY(kColorSysHeaderInactive) \
   E_CPONLY(kColorSysOnHeaderDivider) \
@@ -145,24 +159,21 @@
   E_CPONLY(kColorSysOnHeaderSecondaryInactive) \
   E_CPONLY(kColorSysOnHeaderContainer) \
   E_CPONLY(kColorSysOnHeaderContainerInactive) \
-  /* On-color tokens for any bases */ \
-  E_CPONLY(kColorSysOnSurface) \
-  E_CPONLY(kColorSysOnSurfaceDisabled) \
-  E_CPONLY(kColorSysOnSurfacePrimary) \
-  E_CPONLY(kColorSysOnSurfaceSecondary) \
-  E_CPONLY(kColorSysOnSurfaceSubtle) \
-  /* Effect tokens */ \
+  /* Effects. */ \
+  E_CPONLY(kColorSysShadow) \
+  /* States. */ \
   E_CPONLY(kColorSysStateHover) \
   E_CPONLY(kColorSysStateFocus) \
   E_CPONLY(kColorSysStatePressed) \
   E_CPONLY(kColorSysStateDrag) \
   E_CPONLY(kColorSysStateFocusRing) \
+  E_CPONLY(kColorSysStateDisabled) \
+  E_CPONLY(kColorSysStateDisabledContainer) \
   /* Core color concepts */ \
   /* kColorAccent is used in color_provider_css_colors_test.ts. */ \
   /* If changing the variable name, the variable name in the test needs to */ \
   /* be changed as well. */ \
   E_CPONLY(kColorAccent) \
-  E_CPONLY(kColorAccentWithGuaranteedContrastAtopPrimaryBackground) \
   E_CPONLY(kColorAlertHighSeverity) \
   E_CPONLY(kColorAlertLowSeverity) \
   E_CPONLY(kColorAlertMediumSeverity) \
@@ -208,6 +219,11 @@
   E_CPONLY(kColorButtonForegroundProminent) \
   E_CPONLY(kColorButtonForegroundTonal) \
   E_CPONLY(kColorButtonForegroundUnchecked) \
+  E_CPONLY(kColorMultitaskFeedbackButtonLabelBackground) \
+  E_CPONLY(kColorMultitaskFeedbackButtonLabelForeground) \
+  E_CPONLY(kColorMultitaskMenuNudgePulse) \
+  E_CPONLY(kColorComboboxBackground) \
+  E_CPONLY(kColorComboboxBackgroundDisabled) \
   E_CPONLY(kColorCustomFrameCaptionForeground) \
   E_CPONLY(kColorDebugBoundsOutline) \
   E_CPONLY(kColorDebugContentOutline) \
@@ -282,16 +298,6 @@
   E_CPONLY(kColorOverlayScrollbarStrokeHoveredLight) \
   E_CPONLY(kColorProgressBar) \
   E_CPONLY(kColorProgressBarPaused) \
-  E_CPONLY(kColorReadAnythingBackground) \
-  E_CPONLY(kColorReadAnythingBackgroundBlue) \
-  E_CPONLY(kColorReadAnythingBackgroundDark) \
-  E_CPONLY(kColorReadAnythingBackgroundLight) \
-  E_CPONLY(kColorReadAnythingBackgroundYellow) \
-  E_CPONLY(kColorReadAnythingForeground) \
-  E_CPONLY(kColorReadAnythingForegroundBlue) \
-  E_CPONLY(kColorReadAnythingForegroundDark) \
-  E_CPONLY(kColorReadAnythingForegroundLight) \
-  E_CPONLY(kColorReadAnythingForegroundYellow) \
   E_CPONLY(kColorScrollbarArrowBackgroundHovered) \
   E_CPONLY(kColorScrollbarArrowBackgroundPressed) \
   E_CPONLY(kColorScrollbarArrowForeground) \
@@ -338,17 +344,22 @@
   E_CPONLY(kColorTextfieldBackgroundDisabled) \
   E_CPONLY(kColorTextfieldForeground) \
   E_CPONLY(kColorTextfieldForegroundDisabled) \
+  E_CPONLY(kColorTextfieldForegroundInvalid) \
   E_CPONLY(kColorTextfieldForegroundPlaceholder) \
   E_CPONLY(kColorTextfieldSelectionBackground) \
   E_CPONLY(kColorTextfieldSelectionForeground) \
+  E_CPONLY(kColorTextfieldInvalidOutline) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \
   E_CPONLY(kColorToggleButtonShadow) \
   E_CPONLY(kColorToggleButtonThumbOff) \
+  E_CPONLY(kColorToggleButtonThumbOffDisabled) \
   E_CPONLY(kColorToggleButtonThumbOn) \
+  E_CPONLY(kColorToggleButtonThumbOnDisabled) \
   E_CPONLY(kColorToggleButtonThumbOnIcon) \
   E_CPONLY(kColorToggleButtonTrackOff) \
   E_CPONLY(kColorToggleButtonTrackOn) \
+  E_CPONLY(kColorToggleButtonTrackOnDisabled) \
   E_CPONLY(kColorTooltipBackground) \
   E_CPONLY(kColorTooltipForeground) \
   E_CPONLY(kColorTreeBackground) \
@@ -376,7 +387,7 @@
   E_CPONLY(kColorAshFocusRing) \
   /* TODO(kylixrd): Determine whether this special color should follow */ \
   /* light/dark mode. Remove if it should equal kColorAshFocusRing. */ \
-  E_CPONLY(kColorAshEditFinishFocusRing) \
+  E_CPONLY(kColorAshInputOverlayFocusRing) \
   E_CPONLY(kColorAshIconInOobe) \
   \
   /* TODO(crbug/1319917): Remove these when dark light mode is launched. */ \

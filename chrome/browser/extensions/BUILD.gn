@@ -654,6 +654,8 @@ static_library("extensions") {
     "pref_mapping.cc",
     "pref_mapping.h",
     "pref_transformer_interface.h",
+    "profile_util.cc",
+    "profile_util.h",
     "proxy_overridden_bubble_delegate.cc",
     "proxy_overridden_bubble_delegate.h",
     "safe_browsing_verdict_handler.cc",
@@ -805,6 +807,7 @@ static_library("extensions") {
     "//components/safe_browsing/core/browser:safe_browsing_metrics_collector",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/site_engagement/core/mojom:mojo_bindings",
+    "//components/supervised_user/core/common:buildflags",
     "//components/supervised_user/core/common:common",
     "//components/webapps/browser",
 
@@ -1043,6 +1046,7 @@ static_library("extensions") {
       ]
     }
     deps += [
+      "//chrome/browser/chromeos/drivefs:native_message_host_origins",
       "//chrome/browser/chromeos/extensions:constants",
 
       # TODO(crbug.com/1340540): Find an appropriate spot for vpn_provider.

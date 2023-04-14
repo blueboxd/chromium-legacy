@@ -5,6 +5,7 @@
 import {assertEquals, assertFalse, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 
 import {waitForElementUpdate} from '../common/js/unittest_util.js';
+import {constants} from '../foreground/js/constants.js';
 
 import {XfIcon} from './xf_icon.js';
 
@@ -28,20 +29,20 @@ export async function testIconType(done: () => void) {
   const span = getSpanFromIcon(icon);
 
   // Check for all office icons, there should be a keep-color class.
-  icon.type = XfIcon.types.WORD;
+  icon.type = constants.ICON_TYPES.WORD;
   await waitForElementUpdate(icon);
   assertTrue(span.classList.contains('keep-color'));
 
-  icon.type = XfIcon.types.EXCEL;
+  icon.type = constants.ICON_TYPES.EXCEL;
   await waitForElementUpdate(icon);
   assertTrue(span.classList.contains('keep-color'));
 
-  icon.type = XfIcon.types.POWERPOINT;
+  icon.type = constants.ICON_TYPES.POWERPOINT;
   await waitForElementUpdate(icon);
   assertTrue(span.classList.contains('keep-color'));
 
   // Check no keep-color class for other icon types.
-  icon.type = XfIcon.types.ANDROID_FILES;
+  icon.type = constants.ICON_TYPES.ANDROID_FILES;
   await waitForElementUpdate(icon);
   assertFalse(span.classList.contains('keep-color'));
 
@@ -62,6 +63,62 @@ export async function testIconSize(done: () => void) {
   await waitForElementUpdate(icon);
   assertEquals('48px', window.getComputedStyle(span).width);
   assertEquals('48px', window.getComputedStyle(span).height);
+
+  done();
+}
+
+export async function testIconSetWithLowDPI(done: () => void) {
+  const icon = await getIcon();
+  icon.iconSet = {
+    icon16x16Url: 'fake-base64-data',
+    icon32x32Url: undefined,
+  };
+  await waitForElementUpdate(icon);
+
+  const span = getSpanFromIcon(icon);
+  assertTrue(span.classList.contains('keep-color'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes(
+      '-webkit-image-set'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes('1x'));
+  assertFalse(window.getComputedStyle(span).backgroundImage.includes('2x'));
+
+  done();
+}
+
+
+export async function testIconSetWithHighDPI(done: () => void) {
+  const icon = await getIcon();
+  icon.iconSet = {
+    icon16x16Url: undefined,
+    icon32x32Url: 'fake-base64-data',
+  };
+  await waitForElementUpdate(icon);
+
+  const span = getSpanFromIcon(icon);
+  assertTrue(span.classList.contains('keep-color'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes(
+      '-webkit-image-set'));
+  assertFalse(window.getComputedStyle(span).backgroundImage.includes('1x'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes('2x'));
+
+  done();
+}
+
+
+export async function testIconSetWithBothDPI(done: () => void) {
+  const icon = await getIcon();
+  icon.iconSet = {
+    icon16x16Url: 'fake-base64-data',
+    icon32x32Url: 'fake-base64-data',
+  };
+  await waitForElementUpdate(icon);
+
+  const span = getSpanFromIcon(icon);
+  assertTrue(span.classList.contains('keep-color'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes(
+      '-webkit-image-set'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes('1x'));
+  assertTrue(window.getComputedStyle(span).backgroundImage.includes('2x'));
 
   done();
 }

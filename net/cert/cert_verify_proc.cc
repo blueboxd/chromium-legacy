@@ -273,85 +273,6 @@ void RecordTrustAnchorHistogram(const HashValueVector& spki_hashes,
   }
 }
 
-// Parse |cert| and return the classification of the ExtendedKeyUsage, or
-// EKUStatus::kInvalid on error.
-CertVerifyProc::EKUStatus GetEkuStatus(CRYPTO_BUFFER* cert) {
-  ParseCertificateOptions options;
-  options.allow_invalid_serial_numbers = true;
-  der::Input tbs_certificate_tlv;
-  der::Input signature_algorithm_tlv;
-  der::BitString signature_value;
-  ParsedTbsCertificate tbs;
-  if (!ParseCertificate(
-          der::Input(CRYPTO_BUFFER_data(cert), CRYPTO_BUFFER_len(cert)),
-          &tbs_certificate_tlv, &signature_algorithm_tlv, &signature_value,
-          nullptr /* errors*/) ||
-      !ParseTbsCertificate(tbs_certificate_tlv, options, &tbs,
-                           nullptr /*errors*/)) {
-    return CertVerifyProc::EKUStatus::kInvalid;
-  }
-
-  if (!tbs.extensions_tlv)
-    return CertVerifyProc::EKUStatus::kNoEKU;
-
-  std::map<der::Input, ParsedExtension> extensions;
-  if (!ParseExtensions(tbs.extensions_tlv.value(), &extensions))
-    return CertVerifyProc::EKUStatus::kInvalid;
-
-  auto it = extensions.find(der::Input(kExtKeyUsageOid));
-  if (it == extensions.end())
-    return CertVerifyProc::EKUStatus::kNoEKU;
-
-  std::vector<der::Input> extended_key_usage;
-  if (!ParseEKUExtension(it->second.value, &extended_key_usage))
-    return CertVerifyProc::EKUStatus::kInvalid;
-
-  base::flat_set<der::Input> eku_set(extended_key_usage.begin(),
-                                     extended_key_usage.end());
-  if (eku_set.contains(der::Input(kAnyEKU)))
-    return CertVerifyProc::EKUStatus::kAnyEKU;
-
-  if (eku_set.contains(der::Input(kServerAuth))) {
-    if (eku_set.size() == 1)
-      return CertVerifyProc::EKUStatus::kServerAuthOnly;
-
-    if (eku_set.size() == 2 && eku_set.contains(der::Input(kClientAuth))) {
-      return CertVerifyProc::EKUStatus::kServerAuthAndClientAuthOnly;
-    }
-
-    return CertVerifyProc::EKUStatus::kServerAuthAndOthers;
-  }
-
-  return CertVerifyProc::EKUStatus::kOther;
-}
-
-// Logs the LeafExtendedKeyUsage histogram. Should only be called on
-// successfully verified chains.
-void RecordEkuHistogram(const CertVerifyResult& verify_result) {
-  CRYPTO_BUFFER* leaf = verify_result.verified_cert->cert_buffer();
-  CRYPTO_BUFFER* root =
-      verify_result.verified_cert->intermediate_buffers().empty()
-          ? leaf
-          : verify_result.verified_cert->intermediate_buffers().back().get();
-
-  CertVerifyProc::EKUStatus eku_status = GetEkuStatus(leaf);
-  HashValue root_spki_hash;
-  if (!x509_util::CalculateSha256SpkiHash(root, &root_spki_hash))
-    return;
-
-  base::StringPiece histogram_suffix;
-  if (!verify_result.is_issued_by_known_root)
-    histogram_suffix = "PrivateRoot";
-  else if (IsLegacyPubliclyTrustedCA(root_spki_hash))
-    histogram_suffix = "LegacyKnownRoot";
-  else
-    histogram_suffix = "KnownRoot";
-
-  base::UmaHistogramEnumeration(
-      base::StrCat({"Net.Certificate.LeafExtendedKeyUsage.", histogram_suffix}),
-      eku_status);
-}
-
 // Inspects the signature algorithms in a single certificate |cert|.
 //
 //   * Sets |verify_result->has_sha1| to true if the certificate uses SHA1.
@@ -441,8 +362,6 @@ void RecordEkuHistogram(const CertVerifyResult& verify_result) {
           verify_result->verified_cert->cert_buffer(), verify_result)) {
     return false;
   }
-
-  verify_result->has_sha1_leaf = verify_result->has_sha1;
 
   // Fill in hash algorithms for the intermediate cerificates, excluding the
   // final one (which is presumably the trust anchor; may be incorrect for
@@ -639,16 +558,9 @@ int CertVerifyProc::Verify(X509Certificate* cert,
     verify_result->cert_status |= CERT_STATUS_SHA1_SIGNATURE_PRESENT;
 
   // Flag certificates using weak signature algorithms.
-
-  // Current SHA-1 behaviour:
-  // - Reject all SHA-1
-  // - ... unless it's not publicly trusted and SHA-1 is allowed
-  bool current_sha1_issue =
-      (verify_result->is_issued_by_known_root ||
-       !(flags & VERIFY_ENABLE_SHA1_LOCAL_ANCHORS)) &&
-      (verify_result->has_sha1_leaf || verify_result->has_sha1);
-
-  if (current_sha1_issue) {
+  bool sha1_allowed = (flags & VERIFY_ENABLE_SHA1_LOCAL_ANCHORS) &&
+                      !verify_result->is_issued_by_known_root;
+  if (!sha1_allowed && verify_result->has_sha1) {
     verify_result->cert_status |= CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
     // Avoid replacing a more serious error, such as an OS/library failure,
     // by ensuring that if verification failed, it failed with a certificate
@@ -688,7 +600,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
   if (rv == OK) {
     RecordTrustAnchorHistogram(verify_result->public_key_hashes,
                                verify_result->is_issued_by_known_root);
-    RecordEkuHistogram(*verify_result);
   }
 
   net_log.EndEvent(NetLogEventType::CERT_VERIFY_PROC,

@@ -74,34 +74,28 @@ bool FromProto(
     const {{type}}& input,
     std::vector<{{mojom_type}}>& output) {
   bool result = true;
-  size_t i = 0;
 
-  output.resize(input.values_size());
-
+  output.reserve(input.values_size());
   for (const auto& entry : input.values()) {
-{%-   if kind.kind|is_nullable_kind %}
     {{mojom_type}} value;
+{%-   if kind.kind|is_nullable_kind %}
     {{mojom_maybe_type}} maybe_value;
     if (FromProto(entry.value(), maybe_value)) {
       value = std::move(maybe_value);
     }
-    output[i++] = std::move(value);
 {%-   elif kind.kind|is_map_kind or kind.kind|is_array_kind %}
-    {{mojom_type}} values;
-    result = FromProto(entry, values);
+    result = FromProto(entry, value);
     if (!result) {
       break;
     }
-    output[i++] = std::move(values);
 {%-   else %}
-    {{mojom_type}} value;
     result = FromProto(entry.value(), value);
     if (!result) {
       break;
     }
-    output[i++] = std::move(value);
 {%-   endif %}
-  }
+    output.emplace_back(std::move(value));
+}
 
   return result;
 }{{"\n"-}}
@@ -221,7 +215,7 @@ bool FromProto(
   output = static_cast<{{mojom_type}}>(input);
   return true;
 {%-   else %}
-  return mojo::EnumTraits<{{enum_type}}, {{mojom_type}}>::FromMojom(
+  return ::mojo::EnumTraits<{{enum_type}}, {{mojom_type}}>::FromMojom(
     static_cast<{{enum_type}}>(input), &output);
 {%-   endif %}
 }
@@ -265,9 +259,9 @@ bool FromProto(
 {%-       set kind = field.kind %}
 {%-       set field_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
 {%-       set field_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=true) %}
-  {{field_mojom_type}} local_{{name}} = mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
+  {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
 {%-       if kind|is_nullable_kind %}
-  {{field_maybe_mojom_type}} local_maybe_{{name}} = mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
+  {{field_maybe_mojom_type}} local_maybe_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
 {%-       endif %}
 {%-     endfor %}
 
@@ -325,7 +319,7 @@ bool FromProto(
 {%-     set dataview_type = (union|get_qualified_name_for_kind(flatten_nested_kind=True)) ~ "DataView" %}
 {%-     set data_type = (union|get_qualified_name_for_kind(flatten_nested_kind=True, internal=True)) %}
   ::mojo::Message mojolpm_message(0, 0, 0, 0, nullptr);
-  mojo::internal::MessageFragment<{{data_type}}> mojolpm_fragment(
+  ::mojo::internal::MessageFragment<{{data_type}}> mojolpm_fragment(
       mojolpm_message);
 
   ::mojo::internal::Serializer<{{dataview_type}}, const {{union_type}}>::Serialize(
@@ -341,15 +335,15 @@ bool FromProto(
     case {{union_type}}::k{{("m_" ~ name)|under_to_camel}}: {
 {%-       if kind|is_nullable_kind %}
 {%-         set field_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=true) %}
-      {{field_mojom_type}} local_{{name}} = mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
-      {{field_maybe_mojom_type}} maybe_local_{{name}} = mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
+      {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
+      {{field_maybe_mojom_type}} maybe_local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_maybe_mojom_type}}>();
       if (FromProto(input.m_{{name}}(), maybe_local_{{name}})) {
         local_{{name}} = std::move(maybe_local_{{name}});
       }
       output = {{union|get_qualified_name_for_kind(flatten_nested_kind=true)}}::New{{name|under_to_camel}}(std::move(local_{{name}}));
       return true;
 {%-       else %}
-      {{field_mojom_type}} local_{{name}} = mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
+      {{field_mojom_type}} local_{{name}} = ::mojo::DefaultConstructTraits::CreateInstance<{{field_mojom_type}}>();
       if (FromProto(input.m_{{name}}(), local_{{name}})) {
         output = {{union|get_qualified_name_for_kind(flatten_nested_kind=true)}}::New{{name|under_to_camel}}(std::move(local_{{name}}));
         return true;

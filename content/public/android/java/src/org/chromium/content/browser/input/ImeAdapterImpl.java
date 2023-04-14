@@ -1013,7 +1013,7 @@ public class ImeAdapterImpl
                 editableNodeBoundsPixOnScreen = new Rect();
             }
             mWebContents.getStylusWritingHandler().onFocusedNodeChanged(
-                    editableNodeBoundsPixOnScreen, isEditable);
+                    editableNodeBoundsPixOnScreen, isEditable, mViewDelegate.getContainerView());
         }
     }
 
@@ -1086,6 +1086,11 @@ public class ImeAdapterImpl
                         ImeAdapterImplJni.get().handleStylusWritingGestureAction(
                                 mNativeImeAdapterAndroid, ImeAdapterImpl.this,
                                 gestureData.serialize());
+                    }
+
+                    @Override
+                    public void finishComposingText() {
+                        ImeAdapterImpl.this.finishComposingText();
                     }
                 });
     }

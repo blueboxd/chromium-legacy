@@ -4,29 +4,41 @@
 
 package org.chromium.chrome.browser.customtabs.features.partialcustomtab;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.InsetDrawable;
+import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.AccelerateInterpolator;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
+import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.base.ViewUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.function.BooleanSupplier;
 
 /**
  * Base class for PCCT size strategies implementations.
@@ -34,8 +46,6 @@ import java.lang.annotation.RetentionPolicy;
 public abstract class PartialCustomTabBaseStrategy
         extends CustomTabHeightStrategy implements FullscreenManager.Observer {
     protected final Activity mActivity;
-    protected final @Px int mUnclampedInitialHeight;
-    protected final boolean mIsFixedHeight;
     protected final OnResizedCallback mOnResizedCallback;
     protected final FullscreenManager mFullscreenManager;
     protected final boolean mIsTablet;
@@ -69,9 +79,19 @@ public abstract class PartialCustomTabBaseStrategy
     protected View mToolbarView;
     protected View mToolbarCoordinator;
     protected int mToolbarColor;
+    protected PartialCustomTabHandleStrategyFactory mHandleStrategyFactory;
 
     protected int mShadowOffset;
     protected boolean mDrawOutlineShadow;
+
+    // Note: Do not use anywhere except in |onConfigurationChanged| as it might not be up-to-date.
+    protected boolean mIsInMultiWindowMode;
+    protected int mOrientation;
+
+    private ValueAnimator mAnimator;
+    private Runnable mPostAnimationRunnable;
+
+    private BooleanSupplier mIsFullscreen;
 
     @IntDef({PartialCustomTabType.NONE, PartialCustomTabType.BOTTOM_SHEET,
             PartialCustomTabType.SIDE_SHEET, PartialCustomTabType.FULL_SIZE})
@@ -83,12 +103,10 @@ public abstract class PartialCustomTabBaseStrategy
         int FULL_SIZE = 3;
     }
 
-    public PartialCustomTabBaseStrategy(Activity activity, @Px int initialHeight,
-            boolean isFixedHeight, OnResizedCallback onResizedCallback,
-            FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground) {
+    public PartialCustomTabBaseStrategy(Activity activity, OnResizedCallback onResizedCallback,
+            FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground,
+            PartialCustomTabHandleStrategyFactory handleStrategyFactory) {
         mActivity = activity;
-        mUnclampedInitialHeight = initialHeight;
-        mIsFixedHeight = isFixedHeight;
         mOnResizedCallback = onResizedCallback;
         mIsTablet = isTablet;
         mInteractWithBackground = interactWithBackground;
@@ -103,6 +121,12 @@ public abstract class PartialCustomTabBaseStrategy
         mDrawOutlineShadow = SysUtils.isLowEndDevice();
         mCachedHandleHeight =
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_handle_height);
+
+        mOrientation = mActivity.getResources().getConfiguration().orientation;
+        mIsInMultiWindowMode = MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+
+        mHandleStrategyFactory = handleStrategyFactory;
+        mIsFullscreen = fullscreenManager::getPersistentFullscreenMode;
     }
 
     @Override
@@ -131,10 +155,60 @@ public abstract class PartialCustomTabBaseStrategy
         roundCorners(coordinatorView, toolbar, toolbarCornerRadius);
     }
 
+    public void onShowSoftInput(Runnable softKeyboardRunnable) {
+        softKeyboardRunnable.run();
+    }
+
+    public void onConfigurationChanged(int orientation) {
+        boolean isInMultiWindow = MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
+        int displayHeight = mVersionCompat.getDisplayHeight();
+        int displayWidth = mVersionCompat.getDisplayWidth();
+
+        if (isInMultiWindow != mIsInMultiWindowMode || orientation != mOrientation
+                || displayHeight != mDisplayHeight || displayWidth != mDisplayWidth) {
+            mIsInMultiWindowMode = isInMultiWindow;
+            mOrientation = orientation;
+            mDisplayHeight = displayHeight;
+            mDisplayWidth = displayWidth;
+            if (isFullHeight()) {
+                // We should update CCT position before Window#FLAG_LAYOUT_NO_LIMITS is set,
+                // otherwise it is not possible to get the correct content height.
+                mActivity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+
+                // Clean up the state initiated by IME so the height can be restored when
+                // rotating back to non-full-height mode later.
+                cleanupImeStateCallback();
+            }
+            mPositionUpdater.run();
+        }
+    }
+
+    // FullscreenManager.Observer implementation
+
+    @Override
+    public void onEnterFullscreen(Tab tab, FullscreenOptions options) {
+        WindowManager.LayoutParams attrs = mActivity.getWindow().getAttributes();
+        attrs.height = MATCH_PARENT;
+        attrs.width = MATCH_PARENT;
+        attrs.y = 0;
+        attrs.x = 0;
+        mActivity.getWindow().setAttributes(attrs);
+        mOnResizedCallback.onResized(
+                mVersionCompat.getDisplayHeight(), mVersionCompat.getDisplayWidth());
+    }
+
+    @Override
+    public void onExitFullscreen(Tab tab) {
+        // |mNavbarHeight| is zero now. Post the task instead.
+        new Handler().post(() -> {
+            initializeSize();
+            var attrs = mActivity.getWindow().getAttributes();
+            mOnResizedCallback.onResized(attrs.height, attrs.width);
+        });
+    }
+
     @PartialCustomTabType
     public abstract int getStrategyType();
-
-    public abstract void onShowSoftInput(Runnable softKeyboardRunnable);
 
     protected abstract void updatePosition();
 
@@ -142,11 +216,15 @@ public abstract class PartialCustomTabBaseStrategy
 
     protected abstract boolean isFullHeight();
 
+    protected abstract void cleanupImeStateCallback();
+
     protected abstract void adjustCornerRadius(GradientDrawable d, int radius);
 
     protected abstract void setTopMargins(int shadowOffset, int handleOffset);
 
     protected abstract boolean shouldHaveNoShadowOffset();
+
+    protected abstract boolean isMaximized();
 
     protected boolean canInteractWithBackground() {
         return mInteractWithBackground;
@@ -172,6 +250,8 @@ public abstract class PartialCustomTabBaseStrategy
         mNavbarHeight = mVersionCompat.getNavbarHeight();
         mStatusbarHeight = mVersionCompat.getStatusbarHeight();
     }
+
+    protected void initializeSize() {}
 
     protected void updateDragBarVisibility(int dragHandlebarVisibility) {
         View dragBar = mActivity.findViewById(R.id.drag_bar);
@@ -199,7 +279,13 @@ public abstract class PartialCustomTabBaseStrategy
             View coordinator, CustomTabToolbar toolbar, @Px int toolbarCornerRadius) {
         // Inflate the handle View.
         ViewStub handleViewStub = mActivity.findViewById(R.id.custom_tabs_handle_view_stub);
-        handleViewStub.inflate();
+        // If the handle view has already been inflated then the stub will be null. This can happen,
+        // for example, when we are transitioning from side-sheet to bottom-sheet and we need to
+        // apply the round corners logic again.
+        if (handleViewStub != null) {
+            handleViewStub.inflate();
+        }
+
         View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
         handleView.setElevation(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation));
@@ -231,5 +317,75 @@ public abstract class PartialCustomTabBaseStrategy
 
         // Having the transparent background is necessary for the shadow effect.
         mActivity.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+    }
+
+    protected boolean isFullscreen() {
+        return mIsFullscreen.getAsBoolean();
+    }
+
+    protected void setupAnimator() {
+        mAnimator = new ValueAnimator();
+        mAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationStart(Animator animation) {}
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mPostAnimationRunnable.run();
+            }
+        });
+
+        int animTime = mActivity.getResources().getInteger(android.R.integer.config_mediumAnimTime);
+        mAnimator.setDuration(animTime);
+        mAnimator.setInterpolator(new AccelerateInterpolator());
+    }
+
+    protected void startAnimation(int start, int end,
+            ValueAnimator.AnimatorUpdateListener updateListener, Runnable endRunnable) {
+        mAnimator.removeAllUpdateListeners();
+        mAnimator.addUpdateListener(updateListener);
+        mPostAnimationRunnable = endRunnable;
+        mAnimator.setIntValues(start, end);
+        mAnimator.start();
+    }
+
+    @Override
+    public void handleCloseAnimation(Runnable finishRunnable) {
+        if (mFinishRunnable != null) return;
+
+        mFinishRunnable = finishRunnable;
+
+        Window window = mActivity.getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
+        WindowManager.LayoutParams attrs = window.getAttributes();
+
+        startAnimation(attrs.y, mHeight, (animator) -> {}, this::onCloseAnimationEnd);
+    }
+
+    protected void onCloseAnimationEnd() {
+        assert mFinishRunnable != null;
+
+        mFinishRunnable.run();
+        mFinishRunnable = null;
+    }
+
+    @VisibleForTesting
+    void setMockViewForTesting(ViewGroup coordinatorLayout, View toolbar, View toolbarCoordinator) {
+        mPositionUpdater = this::updatePosition;
+        mToolbarView = toolbar;
+        mToolbarCoordinator = toolbarCoordinator;
+
+        onPostInflationStartup();
+        mCoordinatorLayout = coordinatorLayout;
+    }
+
+    @VisibleForTesting
+    void setFullscreenSupplierForTesting(BooleanSupplier fullscreen) {
+        mIsFullscreen = fullscreen;
+    }
+
+    @VisibleForTesting
+    int getTopMarginForTesting() {
+        var mlp = (ViewGroup.MarginLayoutParams) mToolbarCoordinator.getLayoutParams();
+        return mlp.topMargin;
     }
 }

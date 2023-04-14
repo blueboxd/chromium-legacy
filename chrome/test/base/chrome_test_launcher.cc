@@ -17,6 +17,7 @@
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/run_loop.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/strings/string_util.h"
 #include "base/test/allow_check_is_test_for_testing.h"
 #include "base/test/task_environment.h"
@@ -74,13 +75,6 @@
 #include "chrome/browser/first_run/scoped_relaunch_chrome_browser_override.h"
 #include "chrome/browser/upgrade_detector/installed_version_poller.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
-#include "base/strings/string_number_conversions.h"
-#include "content/public/test/browser_test_switches.h"
 #endif
 
 // static
@@ -239,34 +233,11 @@ void ChromeTestLauncherDelegate::PreSharding() {
   if (IsUserAnAdmin())
     firewall_rules_ = std::make_unique<ScopedFirewallRules>();
 #endif
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  CHECK(ash_processes_dir_.CreateUniqueTempDir());
-  base::CommandLine::ForCurrentProcess()->AppendSwitchPath(
-      content::test::switches::kAshProcessesDirPath,
-      ash_processes_dir_.GetPath());
-#endif
 }
 
 void ChromeTestLauncherDelegate::OnDoneRunningTests() {
 #if BUILDFLAG(IS_WIN)
   firewall_rules_.reset();
-#endif
-
-// In test runners, they may create ash processes outlive the runner process.
-// So we need to terminate those ash processes in the test launcher.
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  base::FileEnumerator files(ash_processes_dir_.GetPath(), false,
-                             base::FileEnumerator::FILES);
-  for (base::FilePath name = files.Next(); !name.empty(); name = files.Next()) {
-    std::string str_pid;
-    CHECK(base::ReadFileToString(name, &str_pid));
-    int pid;
-    CHECK(base::StringToInt(str_pid, &pid)) << "Cannot read pid. The content "
-                                            << "of the file is: " << str_pid;
-    base::Process process = base::Process::Open(pid);
-    process.Terminate(0, false);
-  }
 #endif
 }
 
@@ -295,6 +266,15 @@ int LaunchChromeTests(size_t parallel_jobs,
 #endif  // BUILDFLAG(IS_WIN)
 
   const auto& command_line = *base::CommandLine::ForCurrentProcess();
+
+  // PoissonAllocationSampler's TLS slots need to be set up before
+  // MainThreadStackSamplingProfiler, which can allocate TLS slots of its own.
+  // On some platforms pthreads can malloc internally to access higher-numbered
+  // TLS slots, which can cause reentry in the heap profiler. (See the comment
+  // on ReentryGuard::InitTLSSlot().)
+  // TODO(https://crbug.com/1411454): Clean up other paths that call this Init()
+  // function, which are now redundant.
+  base::PoissonAllocationSampler::Init();
 
   // Initialize sampling profiler for tests that relaunching a browser. This
   // mimics the behavior in standalone Chrome, where this is done in

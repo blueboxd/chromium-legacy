@@ -833,6 +833,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method createContextSync
 [Worker] interface MLContext
 [Worker]     attribute @@toStringTag
+[Worker]     method compute
+[Worker]     method computeSync
 [Worker]     method constructor
 [Worker] interface MLGraph
 [Worker]     attribute @@toStringTag
@@ -841,7 +843,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     method add
 [Worker]     method averagePool2d
-[Worker]     method buildAsync
+[Worker]     method build
+[Worker]     method buildSync
 [Worker]     method clamp
 [Worker]     method constant
 [Worker]     method constructor
@@ -2710,6 +2713,10 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method constructor
 [Worker] interface WebGLBuffer
 [Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker] interface WebGLContextEvent : Event
+[Worker]     attribute @@toStringTag
+[Worker]     getter statusMessage
 [Worker]     method constructor
 [Worker] interface WebGLFramebuffer
 [Worker]     attribute @@toStringTag

@@ -135,7 +135,7 @@ void TestAXNodeWrapper::ResetGlobalState() {
 }
 
 TestAXNodeWrapper::~TestAXNodeWrapper() {
-  platform_node_->Destroy();
+  platform_node_.ExtractAsDangling()->Destroy();
 }
 
 const AXNodeData& TestAXNodeWrapper::GetData() const {
@@ -484,11 +484,6 @@ absl::optional<int> TestAXNodeWrapper::GetTableAriaColCount() const {
 
 absl::optional<int> TestAXNodeWrapper::GetTableCellCount() const {
   return node_->GetTableCellCount();
-}
-
-absl::optional<bool> TestAXNodeWrapper::GetTableHasColumnOrRowHeaderNode()
-    const {
-  return node_->GetTableHasColumnOrRowHeaderNode();
 }
 
 std::vector<AXNodeID> TestAXNodeWrapper::GetColHeaderNodeIds() const {

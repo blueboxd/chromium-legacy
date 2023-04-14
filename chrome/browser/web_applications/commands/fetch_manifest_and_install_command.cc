@@ -524,9 +524,10 @@ void FetchManifestAndInstallCommand::OnInstallCompleted(
     const AppId& app_id,
     webapps::InstallResultCode code) {
   if (base::FeatureList::IsEnabled(features::kRecordWebAppDebugInfo)) {
-    base::Value task_error_dict = install_error_log_entry_.TakeErrorDict();
-    if (!task_error_dict.DictEmpty())
-      command_manager()->LogToInstallManager(std::move(task_error_dict));
+    if (install_error_log_entry_.HasErrorDict()) {
+      command_manager()->LogToInstallManager(
+          install_error_log_entry_.TakeErrorDict());
+    }
   }
 
   webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));

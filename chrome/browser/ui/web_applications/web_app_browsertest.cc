@@ -32,7 +32,7 @@
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/protocol/browser_handler.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/scoped_disable_client_side_decorations_for_test.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/shell_integration.h"
@@ -1149,8 +1149,16 @@ IN_PROC_BROWSER_TEST_F(WebAppBrowserTest, CanInstallWithPolicyPwa) {
             kEnabled);
 }
 
+// TODO(crbug.com/1415857): Flaky on ChromeOS.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_OpenDetailedInstallDialogOnlyOnce \
+  DISABLED_OpenDetailedInstallDialogOnlyOnce
+#else
+#define MAYBE_OpenDetailedInstallDialogOnlyOnce \
+  OpenDetailedInstallDialogOnlyOnce
+#endif
 IN_PROC_BROWSER_TEST_F(WebAppBrowserTest_DetailedInstallDialog,
-                       OpenDetailedInstallDialogOnlyOnce) {
+                       MAYBE_OpenDetailedInstallDialogOnlyOnce) {
   base::UserActionTester user_action_tester;
   NavigateToURLAndWait(
       browser(),

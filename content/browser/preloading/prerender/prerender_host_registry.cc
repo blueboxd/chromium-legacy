@@ -133,17 +133,27 @@ int PrerenderHostRegistry::CreateAndStartHost(
         reason != PreloadingEligibility::kEligible) {
       switch (reason) {
         case PreloadingEligibility::kPreloadingDisabled:
-          // TODO(crbug.com/1382315): add
-          // PrerenderFinalStatus::kPreloadingDisabled
-          break;
-        case PreloadingEligibility::kBatterySaverEnabled:
-          // TODO(crbug.com/1382315): add
-          // PrerenderFinalStatus::kBatterySaverEnabled
+          RecordFailedPrerenderFinalStatus(
+              PrerenderCancellationReason(
+                  PrerenderFinalStatus::kPreloadingDisabled),
+              attributes);
           break;
         case PreloadingEligibility::kDataSaverEnabled:
           RecordFailedPrerenderFinalStatus(
               PrerenderCancellationReason(
                   PrerenderFinalStatus::kDataSaverEnabled),
+              attributes);
+          break;
+        case PreloadingEligibility::kBatterySaverEnabled:
+          RecordFailedPrerenderFinalStatus(
+              PrerenderCancellationReason(
+                  PrerenderFinalStatus::kBatterySaverEnabled),
+              attributes);
+          break;
+        case PreloadingEligibility::kPreloadingUnsupportedByWebContents:
+          RecordFailedPrerenderFinalStatus(
+              PrerenderCancellationReason(
+                  PrerenderFinalStatus::kPreloadingUnsupportedByWebContents),
               attributes);
           break;
         default:
@@ -175,34 +185,21 @@ int PrerenderHostRegistry::CreateAndStartHost(
       return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
+    // Allow prerendering only for same-site. The initiator origin is nullopt
+    // when prerendering is initiated by the browser (not by a renderer using
+    // Speculation Rules API). In that case, skip this same-site check.
     // TODO(crbug.com/1176054): Support cross-site prerendering.
-    // The initiator origin is nullopt when prerendering is initiated by the
-    // browser (not by a renderer using Speculation Rules API). In that case,
-    // skip the same-site and same-origin check.
-    if (!attributes.IsBrowserInitiated()) {
-      if (!prerender_navigation_utils::IsSameSite(
-              attributes.prerendering_url,
-              attributes.initiator_origin.value())) {
-        RecordFailedPrerenderFinalStatus(
-            PrerenderCancellationReason(
-                PrerenderFinalStatus::kCrossSiteNavigation),
-            attributes);
-        if (attempt)
-          attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
-        return RenderFrameHost::kNoFrameTreeNodeId;
-      } else if (
-          !blink::features::
-              IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled() &&
-          !attributes.initiator_origin.value().IsSameOriginWith(
-              attributes.prerendering_url)) {
-        RecordFailedPrerenderFinalStatus(
-            PrerenderCancellationReason(
-                PrerenderFinalStatus::kSameSiteCrossOriginNavigation),
-            attributes);
-        if (attempt)
-          attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
-        return RenderFrameHost::kNoFrameTreeNodeId;
+    if (!attributes.IsBrowserInitiated() &&
+        !prerender_navigation_utils::IsSameSite(
+            attributes.prerendering_url, attributes.initiator_origin.value())) {
+      RecordFailedPrerenderFinalStatus(
+          PrerenderCancellationReason(
+              PrerenderFinalStatus::kCrossSiteNavigation),
+          attributes);
+      if (attempt) {
+        attempt->SetEligibility(PreloadingEligibility::kCrossOrigin);
       }
+      return RenderFrameHost::kNoFrameTreeNodeId;
     }
 
     // Disallow all pages that have an effective URL like hosted apps and NTP.
@@ -601,6 +598,18 @@ int PrerenderHostRegistry::ReserveHostToActivate(
   if (host_id != expected_host_id)
     return RenderFrameHost::kNoFrameTreeNodeId;
 
+  // Disallow activation when ongoing navigations exist. It can happen when the
+  // main frame navigation starts after PrerenderCommitDeferringCondition posts
+  // a task to resume activation and before the activation is completed.
+  auto& prerender_frame_tree = prerender_host_by_frame_tree_node_id_[host_id]
+                                   .get()
+                                   ->GetPrerenderFrameTree();
+  if (prerender_frame_tree.root()->HasNavigation()) {
+    CancelHost(host_id,
+               PrerenderFinalStatus::kActivatedDuringMainFrameNavigation);
+    return RenderFrameHost::kNoFrameTreeNodeId;
+  }
+
   // Remove the host from the map of non-reserved hosts.
   std::unique_ptr<PrerenderHost> host =
       std::move(prerender_host_by_frame_tree_node_id_[host_id]);
@@ -748,6 +757,30 @@ void PrerenderHostRegistry::CancelAllHostsForTesting() {
 
 base::WeakPtr<PrerenderHostRegistry> PrerenderHostRegistry::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void PrerenderHostRegistry::DidStartNavigation(
+    NavigationHandle* navigation_handle) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kPrerender2MainFrameNavigation)) {
+    return;
+  }
+
+  // DidStartNavigation is used for monitoring the main frame navigation in a
+  // prerendered page so do nothing for other navigations.
+  auto* navigation_request = NavigationRequest::From(navigation_handle);
+  if (!navigation_request->IsInPrerenderedMainFrame() ||
+      navigation_request->IsSameDocument()) {
+    return;
+  }
+
+  // PrerenderHost owns ongoing `navigation_request` indirectly until it is
+  // ready to commit, so `prerender_host` should always be non-null here.
+  auto* prerender_host = PrerenderHost::GetPrerenderHostFromFrameTreeNode(
+      *navigation_request->frame_tree_node());
+  DCHECK(prerender_host);
+
+  prerender_host->DidStartNavigation(navigation_handle);
 }
 
 void PrerenderHostRegistry::DidFinishNavigation(

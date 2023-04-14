@@ -300,7 +300,7 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
   private getIcon_(
       issues: chrome.passwordsPrivate.PasswordUiEntry[],
       checkForError: boolean): string {
-    if (checkForError && this.didCompromiseCheckFail_()) {
+    if (checkForError && this.status_ && this.didCompromiseCheckFail_()) {
       return 'cr:error';
     }
     return !!issues && issues.length ? 'cr:error' : 'cr:check-circle';
@@ -332,6 +332,9 @@ export class CheckupSectionElement extends CheckupSectionElementBase {
   }
 
   private getCompromisedSectionSublabel_(): string {
+    if (!this.status_ || !this.compromisedPasswords_) {
+      return '';
+    }
     const brandingName = this.i18n('localPasswordManager');
     switch (this.status_.state) {
       case CheckState.IDLE:

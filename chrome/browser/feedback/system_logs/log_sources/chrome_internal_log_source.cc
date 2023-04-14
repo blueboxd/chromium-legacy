@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/common/channel_info.h"
-#include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_internals_util.h"
@@ -53,6 +52,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/metrics/enrollment_status.h"
+#include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/system/statistics_provider.h"
 #include "chromeos/version/version_loader.h"
@@ -522,11 +522,11 @@ void ChromeInternalLogSource::PopulateLocalStateSettings(
     SystemLogsResponse* response) {
   // Extract the "settings" entry in the local state and serialize back to
   // a string.
-  base::Value local_state =
+  base::Value::Dict local_state =
       g_browser_process->local_state()->GetPreferenceValues(
           PrefService::EXCLUDE_DEFAULTS);
-  const base::Value* local_state_settings =
-      local_state.FindDictKey(kSettingsKey);
+  const base::Value::Dict* local_state_settings =
+      local_state.FindDict(kSettingsKey);
   if (!local_state_settings) {
     VLOG(1) << "Failed to extract the settings entry from Local State.";
     return;

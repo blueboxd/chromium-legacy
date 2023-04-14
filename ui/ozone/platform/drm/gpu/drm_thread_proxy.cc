@@ -35,25 +35,25 @@ void OnBufferCreatedOnDrmThread(
 
 class GbmDeviceGenerator : public DrmDeviceGenerator {
  public:
-  GbmDeviceGenerator() {}
+  GbmDeviceGenerator() = default;
 
   GbmDeviceGenerator(const GbmDeviceGenerator&) = delete;
   GbmDeviceGenerator& operator=(const GbmDeviceGenerator&) = delete;
 
-  ~GbmDeviceGenerator() override {}
+  ~GbmDeviceGenerator() override = default;
 
   // DrmDeviceGenerator:
   scoped_refptr<DrmDevice> CreateDevice(const base::FilePath& path,
-                                        base::File file,
+                                        base::ScopedFD fd,
                                         bool is_primary_device) override {
-    auto gbm = CreateGbmDevice(file.GetPlatformFile());
+    auto gbm = CreateGbmDevice(fd.get());
     if (!gbm) {
       PLOG(ERROR) << "Unable to initialize GBM for " << path.value();
       return nullptr;
     }
 
     auto drm = base::MakeRefCounted<DrmDevice>(
-        path, std::move(file), is_primary_device, std::move(gbm));
+        path, std::move(fd), is_primary_device, std::move(gbm));
     if (!drm->Initialize())
       return nullptr;
     return drm;

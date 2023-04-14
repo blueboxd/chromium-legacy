@@ -139,10 +139,7 @@ class AutocompleteResultTest : public testing::Test {
     template_url_service_->Load();
   }
 
-  void TearDown() override {
-    task_environment_.RunUntilIdle();
-    AutocompleteResult::ClearDontCopyDoneProvidersForTesting();
-  }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   // Configures |match| from |data|.
   void PopulateAutocompleteMatch(const TestData& data,
@@ -426,7 +423,7 @@ TEST_F(AutocompleteResultTest, TransferOldMatches) {
   };
   TestData result[] = {
       {2, 1, 400, true},
-      {1, 1, 399, true},
+      {1, 1, 399, false},  // transferred matches aren't allowed to be default.
   };
 
   ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(last, std::size(last),
@@ -452,7 +449,7 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesAllowedToBeDefault) {
   TestData result[] = {
       {4, 1, 900, true},
       {3, 1, 1000, false},
-      {2, 1, 899, true},
+      {2, 1, 899, false},  // transferred matches aren't allowed to be default.
   };
 
   ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(last, std::size(last),
@@ -608,7 +605,7 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesMultipleProviders) {
   // The expected results are out of relevance order because the top-scoring
   // allowed to be default match is always pulled to the top.
   TestData result[] = {
-      {6, 2, 800, true}, {5, 1, 1000, false}, {3, 2, 799, true},
+      {6, 2, 800, true}, {5, 1, 1000, false}, {3, 2, 799, false},
       {7, 1, 500, true}, {4, 1, 499, false},
   };
 
@@ -631,7 +628,7 @@ TEST_F(AutocompleteResultTest,
       {7, 1, 500, true},
   };
   TestData result[] = {
-      {5, 1, 1000, true}, {1, 2, 999, true}, {6, 2, 800, false},
+      {5, 1, 1000, true}, {1, 2, 999, false}, {6, 2, 800, false},
       {4, 1, 700, false}, {7, 1, 500, true},
   };
 
@@ -652,7 +649,7 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesSkipsSpecializedSuggestions) {
   };
   TestData result[] = {
       {3, 1, 600, true},
-      {2, 2, 500, true},
+      {2, 2, 500, false},
   };
 
   ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(last, std::size(last),
@@ -662,12 +659,6 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesSkipsSpecializedSuggestions) {
 
 // Tests that transferred matches do not include the specialized match types.
 TEST_F(AutocompleteResultTest, TransferOldMatchesSkipDoneProviders) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      omnibox::kAutocompleteStability,
-      {{OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.name,
-        "true"}});
-
   TestData last[] = {
       {0, 1, 500},  // Suggestion from done provider
       {1, 2, 400},  // Suggestion for not-done provider
@@ -680,37 +671,6 @@ TEST_F(AutocompleteResultTest, TransferOldMatchesSkipDoneProviders) {
       {2, 3, 700},  // New suggestion from done provider
       {3, 4, 600},  // New suggestion from not-done provider
       // Skip suggestion `{0, 1, 500}`.
-      {1, 2, 400},  // Transferred suggestion from not-done provider
-  };
-
-  GetProvider(1)->done_ = true;
-  GetProvider(3)->done_ = true;
-
-  ASSERT_NO_FATAL_FAILURE(RunTransferOldMatchesTest(last, std::size(last),
-                                                    current, std::size(current),
-                                                    result, std::size(result)));
-}
-
-TEST_F(AutocompleteResultTest,
-       TransferOldMatchesSkipDoneProviders_CopyDoneProviders) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeatureWithParameters(
-      omnibox::kAutocompleteStability,
-      {{OmniboxFieldTrial::kAutocompleteStabilityDontCopyDoneProviders.name,
-        "false"}});
-
-  TestData last[] = {
-      {0, 1, 500},  // Suggestion from done provider
-      {1, 2, 400},  // Suggestion for not-done provider
-  };
-  TestData current[] = {
-      {2, 3, 700},  // Suggestion from done provider
-      {3, 4, 600},  // Suggestion for not-done provider
-  };
-  TestData result[] = {
-      {2, 3, 700},  // New suggestion from done provider
-      {3, 4, 600},  // New suggestion from not-done provider
-      {0, 1, 500},  // Transferred suggestion from done provider
       {1, 2, 400},  // Transferred suggestion from not-done provider
   };
 
@@ -2456,10 +2416,20 @@ TEST_F(AutocompleteResultTest, AttachesPedals) {
 
   // Ensure the entity suggestion doesn't get a pedal even though its contents
   // form a concept match.
-  EXPECT_EQ(nullptr, std::prev(result.end())->action);
+  ASSERT_TRUE(std::prev(result.end())->actions.empty());
 
   // The same concept-matching contents on a non-entity suggestion gets a pedal.
-  EXPECT_NE(nullptr, result.begin()->action);
+  ASSERT_TRUE(!result.begin()->actions.empty());
+
+  // Also ensure pedal can be retrieved with generic predicate.
+  ASSERT_EQ(nullptr,
+            std::prev(result.end())->GetActionWhere([](const auto& action) {
+              return true;
+            }));
+  ASSERT_NE(nullptr, result.begin()->GetActionWhere([](const auto& action) {
+    return action->GetID() ==
+           static_cast<int32_t>(OmniboxPedalId::CLEAR_BROWSING_DATA);
+  }));
 }
 
 TEST_F(AutocompleteResultTest, DocumentSuggestionsCanMergeButNotToDefault) {

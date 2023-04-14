@@ -78,14 +78,14 @@ void SubscriptionsServerProxy::Create(
     return;
   }
 
-  base::Value subscriptions_list(base::Value::Type::LIST);
+  base::Value::List subscriptions_list;
   for (const auto& subscription : *subscriptions) {
     subscriptions_list.Append(Serialize(subscription));
   }
-  base::Value subscriptions_json(base::Value::Type::DICTIONARY);
-  subscriptions_json.SetKey(kSubscriptionsKey, std::move(subscriptions_list));
-  base::Value request_json(base::Value::Type::DICTIONARY);
-  request_json.SetKey(kCreateRequestParamsKey, std::move(subscriptions_json));
+  base::Value::Dict subscriptions_json;
+  subscriptions_json.Set(kSubscriptionsKey, std::move(subscriptions_list));
+  base::Value::Dict request_json;
+  request_json.Set(kCreateRequestParamsKey, std::move(subscriptions_json));
   std::string post_data;
   base::JSONWriter::Write(request_json, &post_data);
 
@@ -144,15 +144,15 @@ void SubscriptionsServerProxy::Delete(
     return;
   }
 
-  base::Value deletions_list(base::Value::Type::LIST);
+  base::Value::List deletions_list;
   for (const auto& subscription : *subscriptions) {
     if (subscription.timestamp != kUnknownSubscriptionTimestamp)
       deletions_list.Append(base::Int64ToValue(subscription.timestamp));
   }
-  base::Value deletions_json(base::Value::Type::DICTIONARY);
-  deletions_json.SetKey(kEventTimestampsKey, std::move(deletions_list));
-  base::Value request_json(base::Value::Type::DICTIONARY);
-  request_json.SetKey(kDeleteRequestParamsKey, std::move(deletions_json));
+  base::Value::Dict deletions_json;
+  deletions_json.Set(kEventTimestampsKey, std::move(deletions_list));
+  base::Value::Dict request_json;
+  request_json.Set(kDeleteRequestParamsKey, std::move(deletions_json));
   std::string post_data;
   base::JSONWriter::Write(request_json, &post_data);
 
@@ -344,7 +344,7 @@ void SubscriptionsServerProxy::OnGetSubscriptionsJsonParsed(
 
 base::Value SubscriptionsServerProxy::Serialize(
     const CommerceSubscription& subscription) {
-  base::Value subscription_json(base::Value::Type::DICTIONARY);
+  base::Value subscription_json(base::Value::Type::DICT);
   subscription_json.SetStringKey(kSubscriptionTypeKey,
                                  SubscriptionTypeToString(subscription.type));
   subscription_json.SetStringKey(
@@ -354,7 +354,7 @@ base::Value SubscriptionsServerProxy::Serialize(
       kSubscriptionManagementTypeKey,
       SubscriptionManagementTypeToString(subscription.management_type));
   if (auto seen_offer = subscription.user_seen_offer) {
-    base::Value seen_offer_json(base::Value::Type::DICTIONARY);
+    base::Value seen_offer_json(base::Value::Type::DICT);
     seen_offer_json.SetStringKey(kSeenOfferIdKey, seen_offer->offer_id);
     seen_offer_json.SetStringKey(
         kSeenOfferPriceKey, base::NumberToString(seen_offer->user_seen_price));

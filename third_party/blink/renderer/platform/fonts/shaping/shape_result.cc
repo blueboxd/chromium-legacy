@@ -1519,13 +1519,11 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   return result;
 }
 
-scoped_refptr<ShapeResult> ShapeResult::CreateForSpacesInternal(
-    const Font* font,
-    TextDirection direction,
-    unsigned start_index,
-    unsigned length,
-    float total_width,
-    float per_glyph_width) {
+scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
+                                                        TextDirection direction,
+                                                        unsigned start_index,
+                                                        unsigned length,
+                                                        float width) {
   DCHECK_GT(length, 0u);
   const SimpleFontData* font_data = font->PrimaryFont();
   DCHECK(font_data);
@@ -1540,37 +1538,15 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForSpacesInternal(
   scoped_refptr<ShapeResult::RunInfo> run = RunInfo::Create(
       font_data, hb_direction, CanvasRotationInVertical::kRegular,
       HB_SCRIPT_COMMON, start_index, length, length);
-  result->width_ = run->width_ = total_width;
-  if (per_glyph_width > 0 && length != run->NumGlyphs())
-    per_glyph_width = per_glyph_width * length / run->NumGlyphs();
+  result->width_ = run->width_ = width;
   length = run->NumGlyphs();
   for (unsigned i = 0; i < length; i++) {
     const unsigned index = blink::IsLtr(direction) ? i : length - 1 - i;
-    run->glyph_data_[i] = {font_data->SpaceGlyph(), index, true,
-                           per_glyph_width > 0 ? per_glyph_width : total_width};
-    total_width = 0;
+    run->glyph_data_[i] = {font_data->SpaceGlyph(), index, true, width};
+    width = 0;
   }
   result->runs_.push_back(std::move(run));
   return result;
-}
-
-scoped_refptr<ShapeResult> ShapeResult::CreateForSpaces(const Font* font,
-                                                        TextDirection direction,
-                                                        unsigned start_index,
-                                                        unsigned length,
-                                                        float width) {
-  return CreateForSpacesInternal(font, direction, start_index, length, width,
-                                 -1);
-}
-
-scoped_refptr<ShapeResult> ShapeResult::CreateForSpacesWithPerGlyphWidth(
-    const Font* font,
-    TextDirection direction,
-    unsigned start_index,
-    unsigned length,
-    float per_glyph_width) {
-  return CreateForSpacesInternal(font, direction, start_index, length,
-                                 per_glyph_width * length, per_glyph_width);
 }
 
 scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
@@ -1630,6 +1606,10 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
     if (!repetition_count)
       continue;
     DCHECK(part_index < assembly_parameters.glyph_count);
+    float glyph_ink_ascent;
+    if (!is_horizontal_assembly) {
+      glyph_ink_ascent = -font->PrimaryFont()->BoundsForGlyph(part.glyph).y();
+    }
     for (unsigned repetition_index = 0; repetition_index < repetition_count;
          repetition_index++) {
       unsigned glyph_index =
@@ -1644,7 +1624,7 @@ scoped_refptr<ShapeResult> ShapeResult::CreateForStretchyMathOperator(
                                        full_advance};
       if (!is_horizontal_assembly) {
         GlyphOffset glyph_offset(
-            0, -assembly_parameters.stretch_size + part.full_advance);
+            0, -assembly_parameters.stretch_size + glyph_ink_ascent);
         run->glyph_data_.SetOffsetAt(glyph_index, glyph_offset);
         result->has_vertical_offsets_ |= (glyph_offset.y() != 0);
       }
@@ -2006,7 +1986,7 @@ void ShapeResult::ComputeRunInkBounds(const ShapeResult::RunInfo& run,
   auto glyph_offsets = run.glyph_data_.GetOffsets<has_non_zero_glyph_offsets>();
   const SimpleFontData& current_font_data = *run.font_data_;
   unsigned num_glyphs = run.glyph_data_.size();
-#if !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_APPLE)
   Vector<Glyph, 256> glyphs(num_glyphs);
   unsigned i = 0;
   for (const auto& glyph_data : run.glyph_data_)
@@ -2018,7 +1998,7 @@ void ShapeResult::ComputeRunInkBounds(const ShapeResult::RunInfo& run,
   GlyphBoundsAccumulator bounds(run_advance);
   for (unsigned j = 0; j < num_glyphs; ++j) {
     const HarfBuzzRunGlyphData& glyph_data = run.glyph_data_[j];
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
     gfx::RectF glyph_bounds =
         current_font_data.BoundsForGlyph(glyph_data.glyph);
 #else

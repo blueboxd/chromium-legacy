@@ -39,6 +39,7 @@
 #include "chrome/browser/ui/webui/cr_components/most_visited/most_visited_handler.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
+#include "chrome/browser/ui/webui/history_clusters/history_clusters_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/browser/ui/webui/new_tab_page/untrusted_source.h"
@@ -91,6 +92,9 @@
 
 using content::BrowserContext;
 using content::WebContents;
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(NewTabPageUI,
+                                      kCustomizeChromeButtonElementId);
 
 namespace {
 
@@ -448,11 +452,18 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT},
       {"modulesFirstRunExperienceOptOutToast",
        IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT_TOAST},
+      {"modulesJourneysResumeJourney", IDS_NTP_MODULES_RESUME_YOUR_JOURNEY},
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
   };
   source->AddLocalizedStrings(kStrings);
+
+  absl::optional<int> modules_max_width_px =
+      ntp_features::GetModulesMaxWidthPixels();
+  if (modules_max_width_px.has_value()) {
+    source->AddInteger("modulesMaxWidthPx", modules_max_width_px.value());
+  }
 
   source->AddInteger(
       "modulesCartDiscountConsentVariation",
@@ -748,6 +759,23 @@ void NewTabPageUI::BindInterface(
                                                 profile_, web_contents());
 }
 
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<history_clusters::mojom::PageHandler>
+        pending_page_handler) {
+  history_clusters_handler_ =
+      std::make_unique<history_clusters::HistoryClustersHandler>(
+          std::move(pending_page_handler), profile_, web_contents());
+}
+
+void NewTabPageUI::BindInterface(
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandlerFactory>
+        pending_receiver) {
+  if (help_bubble_handler_factory_receiver_.is_bound()) {
+    help_bubble_handler_factory_receiver_.reset();
+  }
+  help_bubble_handler_factory_receiver_.Bind(std::move(pending_receiver));
+}
+
 void NewTabPageUI::CreatePageHandler(
     mojo::PendingRemote<new_tab_page::mojom::Page> pending_page,
     mojo::PendingReceiver<new_tab_page::mojom::PageHandler>
@@ -795,6 +823,15 @@ void NewTabPageUI::CreatePageHandler(
       navigation_start_time_);
   most_visited_page_handler_->EnableCustomLinks(IsCustomLinksEnabled());
   most_visited_page_handler_->SetShortcutsVisible(IsShortcutsVisible());
+}
+
+void NewTabPageUI::CreateHelpBubbleHandler(
+    mojo::PendingRemote<help_bubble::mojom::HelpBubbleClient> client,
+    mojo::PendingReceiver<help_bubble::mojom::HelpBubbleHandler> handler) {
+  help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
+      std::move(handler), std::move(client), this,
+      std::vector<ui::ElementIdentifier>{
+          NewTabPageUI::kCustomizeChromeButtonElementId});
 }
 
 // OnColorProviderChanged can be called during the destruction process and

@@ -15,7 +15,7 @@ import org.chromium.webengine.TabListObserver;
 import org.chromium.webengine.TabObserver;
 
 /**
- * Default observers for Test Acivites.
+ * Default observers for Test Activities.
  */
 public class DefaultObservers {
     private static final String TAG = "WEDefaultObservers";
@@ -55,6 +55,11 @@ public class DefaultObservers {
                             + ", HTTP-StatusCode: " + navigation.getStatusCode()
                             + ", samePage: " + navigation.isSameDocument());
         }
+
+        @Override
+        public void onLoadProgressChanged(double progress) {
+            Log.i(TAG, "received NavigationEvent: 'onLoadProgressChanged()';");
+        }
     }
 
     static class DefaultTabListObserver extends TabListObserver {
@@ -66,7 +71,6 @@ public class DefaultObservers {
         @Override
         public void onTabAdded(@NonNull Tab tab) {
             Log.i(TAG, "received TabList Event: 'onTabAdded'-event");
-
             // Recursively add tab and navigation observers to any new tab.
             tab.registerTabObserver(new DefaultTabObserver());
             tab.getNavigationController().registerNavigationObserver(

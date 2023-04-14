@@ -4,7 +4,7 @@
 #include "device/bluetooth/floss/floss_advertiser_client.h"
 
 #include "components/device_event_log/device_event_log.h"
-#include "device/bluetooth/floss/floss_gatt_client.h"
+#include "device/bluetooth/floss/floss_gatt_manager_client.h"
 
 namespace floss {
 namespace {
@@ -190,22 +190,13 @@ void FlossAdvertiserClient::Init(dbus::Bus* bus,
 
   if (!exported_callback_manager_.ExportCallback(
           dbus::ObjectPath(kAdvertisingSetCallbackPath),
-          weak_ptr_factory_.GetWeakPtr())) {
+          weak_ptr_factory_.GetWeakPtr(),
+          base::BindOnce(&FlossAdvertiserClient::OnMethodsExported,
+                         weak_ptr_factory_.GetWeakPtr()))) {
     LOG(ERROR)
         << "Unable to successfully export FlossAdvertiserClientObserver.";
     return;
   }
-
-  // Registering callbacks. We will get the callback id in
-  // |CompleteRegisterCallback| for later use.
-  dbus::MethodCall register_callback(kGattInterface,
-                                     advertiser::kRegisterCallback);
-  dbus::MessageWriter writer(&register_callback);
-  writer.AppendObjectPath(dbus::ObjectPath(kAdvertisingSetCallbackPath));
-  object_proxy->CallMethodWithErrorResponse(
-      &register_callback, kDBusTimeoutMs,
-      base::BindOnce(&FlossAdvertiserClient::CompleteRegisterCallback,
-                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FlossAdvertiserClient::AddObserver(
@@ -261,6 +252,26 @@ void FlossAdvertiserClient::SetAdvertisingParameters(
           weak_ptr_factory_.GetWeakPtr(), std::move(success_callback),
           std::move(error_callback), adv_id),
       advertiser::kSetAdvertisingParameters, adv_id, params);
+}
+
+void FlossAdvertiserClient::OnMethodsExported() {
+  dbus::ObjectProxy* object_proxy =
+      bus_->GetObjectProxy(service_name_, gatt_adapter_path_);
+  if (!object_proxy) {
+    LOG(ERROR) << "FlossAdvertiserClient couldn't init. Object proxy was null.";
+    return;
+  }
+
+  // Registering callbacks. We will get the callback id in
+  // |CompleteRegisterCallback| for later use.
+  dbus::MethodCall register_callback(kGattInterface,
+                                     advertiser::kRegisterCallback);
+  dbus::MessageWriter writer(&register_callback);
+  writer.AppendObjectPath(dbus::ObjectPath(kAdvertisingSetCallbackPath));
+  object_proxy->CallMethodWithErrorResponse(
+      &register_callback, kDBusTimeoutMs,
+      base::BindOnce(&FlossAdvertiserClient::CompleteRegisterCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FlossAdvertiserClient::CompleteRegisterCallback(

@@ -24,7 +24,6 @@
 #include "chrome/browser/metrics/incognito_observer.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "chrome/browser/privacy_budget/identifiability_study_state.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "components/metrics/file_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -46,6 +45,7 @@
 
 class BrowserActivityWatcher;
 class Profile;
+class ProfileManager;
 class PrefRegistrySimple;
 
 namespace network_time {
@@ -110,7 +110,7 @@ class ChromeMetricsServiceClient
   void LoadingStateChanged(bool is_loading) override;
   bool IsReportingPolicyManaged() override;
   metrics::EnableMetricsDefault GetMetricsReportingDefaultState() override;
-  bool IsUMACellularUploadLogicEnabled() override;
+  bool IsOnCellularConnection() override;
   bool IsUkmAllowedForAllProfiles() override;
   bool AreNotificationListenersEnabledOnAllProfiles() override;
   std::string GetAppPackageNameIfLoggable() override;

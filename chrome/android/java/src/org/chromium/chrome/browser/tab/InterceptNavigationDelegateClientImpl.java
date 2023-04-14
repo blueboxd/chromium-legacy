@@ -55,11 +55,6 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
             }
 
             @Override
-            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
-                mInterceptNavigationDelegate.onNavigationFinishedNoop(navigation);
-            }
-
-            @Override
             public void onDestroyed(Tab tab) {
                 mInterceptNavigationDelegate.associateWithWebContents(null);
             }
@@ -90,11 +85,6 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
     @Override
     public boolean isIncognito() {
         return mTab.isIncognito();
-    }
-
-    @Override
-    public boolean isHidden() {
-        return mTab.isHidden();
     }
 
     @Override

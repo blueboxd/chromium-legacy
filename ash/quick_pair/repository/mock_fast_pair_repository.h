@@ -31,12 +31,12 @@ class MockFastPairRepository : public FastPairRepository {
                CheckAccountKeysCallback callback),
               (override));
   MOCK_METHOD(void,
-              AssociateAccountKey,
+              WriteAccountAssociationToFootprints,
               (scoped_refptr<Device> device,
                const std::vector<uint8_t>& account_key),
               (override));
   MOCK_METHOD(bool,
-              AssociateAccountKeyLocally,
+              WriteAccountAssociationToLocalRegistry,
               (scoped_refptr<Device> device),
               (override));
   MOCK_METHOD(void,
@@ -58,11 +58,11 @@ class MockFastPairRepository : public FastPairRepository {
               (override));
   MOCK_METHOD(bool,
               EvictDeviceImages,
-              (const device::BluetoothDevice* device),
+              (const std::string& mac_address),
               (override));
   MOCK_METHOD(absl::optional<bluetooth_config::DeviceImageInfo>,
               GetImagesForDevice,
-              (const std::string& device_id),
+              (const std::string& mac_address),
               (override));
   MOCK_METHOD(void,
               CheckOptInStatus,

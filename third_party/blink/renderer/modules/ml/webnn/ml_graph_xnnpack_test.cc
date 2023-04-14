@@ -15,12 +15,15 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_clamp_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_conv_2d_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_pool_2d_options.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ml_resample_2d_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/ml/ml.h"
 #include "third_party/blink/renderer/modules/ml/ml_context.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder_utils.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_graph_test_base.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_xnnpack.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operator.h"
@@ -39,9 +42,10 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
     // Test building MLGraphXnnpack with default options. The promise should be
     // resoveld with an MLGraphXnnpack object. The XNNPACK library should be
     // initialized successfully.
-    auto* builder = CreateMLGraphBuilder(scope);
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -53,9 +57,11 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
     // should be initialized successfully.
     auto* context_options = MLContextOptions::Create();
     context_options->setDevicePreference(V8MLDevicePreference::Enum::kCpu);
-    auto* builder = CreateMLGraphBuilder(scope, context_options);
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* builder =
+        CreateMLGraphBuilder(scope.GetExecutionContext(), context_options);
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -65,7 +71,7 @@ TEST_P(MLGraphXnnpackTest, SharedXnnpackContextTest) {
 
 TEST_F(MLGraphXnnpackTest, TopoSortOperatorsTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test sorting a graph in the following topology:
     //   conv2d
@@ -73,13 +79,15 @@ TEST_F(MLGraphXnnpackTest, TopoSortOperatorsTest) {
     //    add
     //     |
     //   relu
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* conv2d = BuildConv2d(scope, builder, input, filter);
-    auto* bias =
-        BuildConstant(scope, builder, {1}, V8MLOperandType::Enum::kFloat32);
+    auto* bias = BuildConstant(builder, {1}, V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
     auto* add = builder->add(conv2d, bias, scope.GetExceptionState());
     ASSERT_NE(add, nullptr);
     auto* relu = builder->relu(add, scope.GetExceptionState());
@@ -99,10 +107,12 @@ TEST_F(MLGraphXnnpackTest, TopoSortOperatorsTest) {
     //  conv2d   conv2d
     //      \   /   \
     //       add    output
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setAutoPad(V8MLAutoPad::Enum::kSameLower);
     auto* conv2d_0 = BuildConv2d(scope, builder, input, filter, options);
@@ -123,7 +133,7 @@ TEST_F(MLGraphXnnpackTest, TopoSortOperatorsTest) {
 
 TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   Vector<uint32_t> shape({1, 4, 4, 3});
   // TODO(crbug.com/1273291): Test float16 data type once the XNNPACK Subgraph
   // Add Node supports it.
@@ -134,10 +144,12 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     //            add
     //             |
     //          [output]
-    auto* input0 = BuildInput(scope, builder, "input0", shape,
-                              V8MLOperandType::Enum::kFloat32);
-    auto* input1 = BuildInput(scope, builder, "input1", shape,
-                              V8MLOperandType::Enum::kFloat32);
+    auto* input0 =
+        BuildInput(builder, "input0", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* input1 =
+        BuildInput(builder, "input1", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -164,10 +176,12 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     //            add
     //             |
     //          [output]
-    auto* input = BuildInput(scope, builder, "input", shape,
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* constant =
-        BuildConstant(scope, builder, shape, V8MLOperandType::Enum::kFloat32);
+        BuildConstant(builder, shape, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, input, constant);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -196,14 +210,17 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     //                   add
     //                    |
     //                 [output]
-    auto* input = BuildInput(scope, builder, "input", shape,
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* constant0 =
-        BuildConstant(scope, builder, shape, V8MLOperandType::Enum::kFloat32);
+        BuildConstant(builder, shape, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* intermediate = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, input, constant0);
     auto* constant1 =
-        BuildConstant(scope, builder, shape, V8MLOperandType::Enum::kFloat32);
+        BuildConstant(builder, shape, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, intermediate, constant1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -233,15 +250,18 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
     //            relu    add
     //             |       |
     //       [output0]   [output1]
-    auto* input0 = BuildInput(scope, builder, "input0", shape,
-                              V8MLOperandType::Enum::kFloat32);
-    auto* input1 = BuildInput(scope, builder, "input1", shape,
-                              V8MLOperandType::Enum::kFloat32);
+    auto* input0 =
+        BuildInput(builder, "input0", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* input1 =
+        BuildInput(builder, "input1", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* intermediate = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
     auto* output0 = builder->relu(intermediate, scope.GetExceptionState());
-    auto* input2 = BuildInput(scope, builder, "input2", shape,
-                              V8MLOperandType::Enum::kFloat32);
+    auto* input2 =
+        BuildInput(builder, "input2", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output1 = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, intermediate, input2);
     auto [graph, exception] = BuildGraph(
@@ -272,233 +292,9 @@ TEST_P(MLGraphXnnpackTest, DefineXnnpackValuesTest) {
   }
 }
 
-template <typename T>
-struct OperandInfo {
-  V8MLOperandType::Enum type;
-  Vector<uint32_t> dimensions;
-  Vector<T> values;
-};
-
-// Helper function to set the data of an ArrayBufferView from a vector.
-template <typename T>
-void SetArrayBufferViewValues(NotShared<DOMArrayBufferView> array_buffer_view,
-                              const Vector<T>& values) {
-  DCHECK_EQ(array_buffer_view->byteLength(), values.size() * sizeof(T));
-  memcpy(array_buffer_view->BaseAddress(), values.data(),
-         values.size() * sizeof(T));
-}
-
-// Overrode helper function to create an ArrayBufferView given an operand and
-// set its data from a vector.
-template <typename T>
-NotShared<DOMArrayBufferView> CreateArrayBufferViewForOperand(
-    const MLOperand* operand,
-    const Vector<T>& values) {
-  auto array_buffer_view = CreateArrayBufferViewForOperand(operand);
-  SetArrayBufferViewValues(array_buffer_view, values);
-  return array_buffer_view;
-}
-
-// Helper function to get the data of an ArrayBufferView into a vector.
-template <typename T>
-Vector<T> GetArrayBufferViewValues(
-    NotShared<DOMArrayBufferView> array_buffer_view) {
-  Vector<T> values(base::checked_cast<wtf_size_t>(
-      array_buffer_view->byteLength() / array_buffer_view->TypeSize()));
-  memcpy(values.data(), array_buffer_view->BaseAddress(),
-         array_buffer_view->byteLength());
-  return values;
-}
-
-template <typename T>
-struct ElementWiseBinaryTester {
-  MLGraphXnnpackTest* helper;
-  ElementWiseBinaryKind kind;
-  OperandInfo<T> lhs;
-  OperandInfo<T> rhs;
-  Vector<T> expected;
-
-  void Test(V8TestingScope& scope) {
-    // Build the graph.
-    auto* builder = CreateMLGraphBuilder(scope);
-    auto* lhs_operand =
-        BuildInput(scope, builder, "lhs", lhs.dimensions, lhs.type);
-    auto* rhs_operand =
-        BuildInput(scope, builder, "rhs", rhs.dimensions, rhs.type);
-    auto* output_operand =
-        BuildElementWiseBinary(scope, builder, kind, lhs_operand, rhs_operand);
-    auto [graph, build_exception] =
-        helper->BuildGraph(scope, builder, {{"output", output_operand}});
-    EXPECT_NE(graph, nullptr);
-
-    // Compute the graph.
-    auto lhs_buffer = CreateArrayBufferViewForOperand(lhs_operand, lhs.values);
-    auto rhs_buffer = CreateArrayBufferViewForOperand(rhs_operand, rhs.values);
-    auto output_buffer = CreateArrayBufferViewForOperand(output_operand);
-    auto* compute_exception = helper->ComputeGraph(
-        scope, graph, {{"lhs", lhs_buffer}, {"rhs", rhs_buffer}},
-        {{"output", output_buffer}});
-    EXPECT_EQ(compute_exception, nullptr);
-    auto results = GetArrayBufferViewValues<T>(output_buffer);
-    EXPECT_EQ(results, expected);
-  }
-};
-
 TEST_P(MLGraphXnnpackTest, ElementWiseBinaryTest) {
   V8TestingScope scope;
-  {
-    // Test element-wise add operator for two 1-D tensors.
-    // The expected results should be the sum of the values of the two input
-    // tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kAdd,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2},
-                .values = {1.0, 2.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2},
-                .values = {3.0, 4.0}},
-        .expected = {4.0, 6.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise add operator for two 2-D tensors.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kAdd,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2, 2},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2, 2},
-                .values = {5.0, 6.0, 7.0, 8.0}},
-        .expected = {6.0, 8.0, 10.0, 12.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise add operator for 1-D tensor broadcasting to 2-D
-    // tensor.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kAdd,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2, 2},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2},
-                .values = {5.0, 6.0}},
-        .expected = {6.0, 8.0, 8.0, 10.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise add operator for 3-D tensor broadcasting to 3-D
-    // tensor.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kAdd,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {2, 1, 2},
-                .values = {5.0, 6.0, 7.0, 8.0}},
-        .expected = {6.0, 8.0, 8.0, 10.0, 8.0, 10.0, 10.0, 12.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise add operator for two 4-D tensors
-    ElementWiseBinaryTester<float>{
-        .kind = ElementWiseBinaryKind::kAdd,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {5.0, 6.0, 7.0, 8.0}},
-        .expected = {6.0, 8.0, 10.0, 12.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise sub operator for two 4-D tensors.
-    // The expected results should be the difference of the values of the two
-    // input tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kSub,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {5.0, 6.0, 7.0, 8.0}},
-        .expected = {-4.0, -4.0, -4.0, -4.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise mul operator for two 4-D tensors.
-    // The expected results should be the prdocut of the values of the two input
-    // tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kMul,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 2.0, 3.0, 4.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {5.0, 6.0, 7.0, 8.0}},
-        .expected = {5.0, 12.0, 21.0, 32.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise div operator for two 4-D tensors.
-    // The expected results should be the quotient of the values of the two
-    // input tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kDiv,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {3.0, 4.0, 6.0, 8.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 2.0, 2.0, 2.0}},
-        .expected = {3.0, 2.0, 3.0, 4.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise min operator for two 4-D tensors.
-    // The expected results should be the lesser values of the two input
-    // tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kMin,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 4.0, 5.0, 8.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {2.0, 3.0, 6.0, 7.0}},
-        .expected = {1.0, 3.0, 5.0, 7.0}}
-        .Test(scope);
-  }
-  {
-    // Test element-wise max operator for two 4-D tensors.
-    // The expected results should be the greater values of the two input
-    // tensors, element-wise.
-    ElementWiseBinaryTester<float>{
-        .helper = this,
-        .kind = ElementWiseBinaryKind::kMax,
-        .lhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {1.0, 4.0, 5.0, 8.0}},
-        .rhs = {.type = V8MLOperandType::Enum::kFloat32,
-                .dimensions = {1, 2, 2, 1},
-                .values = {2.0, 3.0, 6.0, 7.0}},
-        .expected = {2.0, 4.0, 6.0, 8.0}}
-        .Test(scope);
-  }
+  TestElementWiseBinary(scope);
 }
 
 template <typename T>
@@ -509,9 +305,9 @@ struct ReluTester {
 
   void Test(V8TestingScope& scope) {
     // Build the graph.
-    auto* builder = CreateMLGraphBuilder(scope);
-    auto* input_operand =
-        BuildInput(scope, builder, "input", input.dimensions, input.type);
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
     auto* output_operand =
         builder->relu(input_operand, scope.GetExceptionState());
     auto [graph, build_exception] =
@@ -519,13 +315,15 @@ struct ReluTester {
     EXPECT_NE(graph, nullptr);
 
     // Compute the graph.
-    auto input_buffer =
-        CreateArrayBufferViewForOperand(input_operand, input.values);
-    auto output_buffer = CreateArrayBufferViewForOperand(output_operand);
-    auto* compute_exception = helper->ComputeGraph(
-        scope, graph, {{"input", input_buffer}}, {{"output", output_buffer}});
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
-    auto results = GetArrayBufferViewValues<T>(output_buffer);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
     EXPECT_EQ(results, expected);
   }
 };
@@ -572,6 +370,72 @@ TEST_P(MLGraphXnnpackTest, ReluTest) {
   }
 }
 
+template <typename T>
+struct Resample2dTester {
+  MLGraphXnnpackTest* helper;
+  OperandInfo<T> input;
+  Vector<T> expected;
+
+  void Test(V8TestingScope& scope,
+            MLResample2dOptions* options = MLResample2dOptions::Create()) {
+    // Build the graph.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        BuildResample2d(scope, builder, input_operand, options);
+    auto [graph, build_exception] =
+        helper->BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+    EXPECT_EQ(results, expected);
+  }
+};
+
+TEST_P(MLGraphXnnpackTest, Resample2dTest) {
+  V8TestingScope scope;
+  {
+    // Test resample2d operator with axes = {1, 2}, sizes = {4, 4}.
+    auto* options = MLResample2dOptions::Create();
+    options->setSizes({4, 4});
+    options->setAxes({1, 2});
+    options->setMode(V8MLInterpolationMode::Enum::kLinear);
+    Resample2dTester<float>{
+        .helper = this,
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {1, 2, 2, 1},
+                  .values = {1, 2, 3, 4}},
+        .expected = {1., 1.25, 1.75, 2., 1.5, 1.75, 2.25, 2.5, 2.5, 2.75, 3.25,
+                     3.5, 3., 3.25, 3.75, 4.}}
+        .Test(scope, options);
+  }
+  {
+    // Test resample2d operator with axes = {1, 2}, scales = {2.0, 2.0}.
+    auto* options = MLResample2dOptions::Create();
+    options->setScales({2.0, 2.0});
+    options->setAxes({1, 2});
+    options->setMode(V8MLInterpolationMode::Enum::kLinear);
+    Resample2dTester<float>{
+        .helper = this,
+        .input = {.type = V8MLOperandType::Enum::kFloat32,
+                  .dimensions = {1, 2, 2, 1},
+                  .values = {1, 2, 3, 4}},
+        .expected = {1., 1.25, 1.75, 2., 1.5, 1.75, 2.25, 2.5, 2.5, 2.75, 3.25,
+                     3.5, 3., 3.25, 3.75, 4.}}
+        .Test(scope, options);
+  }
+}
+
 void CheckExternalValues(const MLGraphXnnpack* xnnpack_graph,
                          const MLNamedArrayBufferViews& inputs,
                          const MLNamedArrayBufferViews& outputs) {
@@ -606,7 +470,7 @@ void CheckExternalValues(const MLGraphXnnpack* xnnpack_graph,
 
 TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   Vector<uint32_t> shape({1, 2, 2, 1});
   // Create an MLGraphXnnpack with the following topology:
   //       [input0] [input1]
@@ -614,10 +478,12 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
   //            add
   //             |
   //          [output]
-  auto* input0 = BuildInput(scope, builder, "input0", shape,
-                            V8MLOperandType::Enum::kFloat32);
-  auto* input1 = BuildInput(scope, builder, "input1", shape,
-                            V8MLOperandType::Enum::kFloat32);
+  auto* input0 =
+      BuildInput(builder, "input0", shape, V8MLOperandType::Enum::kFloat32,
+                 scope.GetExceptionState());
+  auto* input1 =
+      BuildInput(builder, "input1", shape, V8MLOperandType::Enum::kFloat32,
+                 scope.GetExceptionState());
   auto* output = BuildElementWiseBinary(
       scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
   auto [graph, exception] = BuildGraph(scope, builder, {{"output", output}});
@@ -636,12 +502,12 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
     compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    results = GetArrayBufferViewValues<float>(output_buffer);
+    results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
   }
   {
@@ -658,14 +524,14 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
-    SetArrayBufferViewValues<float>(input0_buffer, {2.0, 3.0, 4.0, 5.0});
-    SetArrayBufferViewValues<float>(input1_buffer, {6.0, 7.0, 8.0, 9.0});
+    SetArrayBufferViewValues<float>(inputs[0].second, {2.0, 3.0, 4.0, 5.0});
+    SetArrayBufferViewValues<float>(inputs[1].second, {6.0, 7.0, 8.0, 9.0});
     compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    results = GetArrayBufferViewValues<float>(output_buffer);
+    results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({8.0, 10.0, 12.0, 14.0}));
   }
   {
@@ -681,7 +547,7 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
     auto new_input0_buffer =
         CreateArrayBufferViewForOperand<float>(input0, {2.0, 3.0, 4.0, 5.0});
@@ -691,7 +557,7 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    results = GetArrayBufferViewValues<float>(output_buffer);
+    results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({8.0, 10.0, 12.0, 14.0}));
   }
   {
@@ -707,14 +573,14 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
     auto new_output_buffer = CreateArrayBufferViewForOperand(output);
     outputs = {{"output", new_output_buffer}};
     compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    results = GetArrayBufferViewValues<float>(new_output_buffer);
+    results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
   }
 }
@@ -723,7 +589,7 @@ TEST_P(MLGraphXnnpackTest, InvokeXnnpackRuntimeTest) {
 // name.
 TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   Vector<uint32_t> shape({1, 2, 2, 1});
   {
     // Create an MLGraphXnnpack with the following topology:
@@ -733,7 +599,8 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     //             |
     //            [x]
     auto* input =
-        BuildInput(scope, builder, "x", shape, V8MLOperandType::Enum::kFloat32);
+        BuildInput(builder, "x", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     auto [graph, exception] = BuildGraph(scope, builder, {{"x", output}});
     ASSERT_NE(graph, nullptr);
@@ -746,7 +613,7 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({0.0, 0.0, 0.5, 10.0}));
   }
   {
@@ -757,9 +624,11 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     //             |
     //            [y]
     auto* input0 =
-        BuildInput(scope, builder, "x", shape, V8MLOperandType::Enum::kFloat32);
+        BuildInput(builder, "x", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* input1 =
-        BuildInput(scope, builder, "y", shape, V8MLOperandType::Enum::kFloat32);
+        BuildInput(builder, "y", shape, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(
         scope, builder, ElementWiseBinaryKind::kAdd, input0, input1);
     auto [graph, exception] = BuildGraph(scope, builder, {{"y", output}});
@@ -776,8 +645,199 @@ TEST_P(MLGraphXnnpackTest, InputAndOutputUseSameNameTest) {
     auto* compute_exception = ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
     CheckExternalValues(xnnpack_graph, inputs, outputs);
-    auto results = GetArrayBufferViewValues<float>(output_buffer);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
     EXPECT_EQ(results, Vector<float>({6.0, 8.0, 10.0, 12.0}));
+  }
+}
+
+TEST_F(MLGraphXnnpackTest, ComputeAsyncTest) {
+  V8TestingScope scope;
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+  // Build an MLGraphXnnpack with the following topology:
+  //        [a]     [b]
+  //           \    /
+  //            add
+  //             |
+  //          [output]
+  auto* a_operand =
+      BuildInput(builder, "a", {1, 2, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                 scope.GetExceptionState());
+  auto* b_operand =
+      BuildInput(builder, "b", {1, 2, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                 scope.GetExceptionState());
+  auto* output_operand =
+      builder->add(a_operand, b_operand, scope.GetExceptionState());
+  ScriptPromiseTester graph_build_tester(
+      scope.GetScriptState(),
+      builder->build(scope.GetScriptState(), {{"output", output_operand}},
+                     scope.GetExceptionState()));
+  graph_build_tester.WaitUntilSettled();
+  ASSERT_EQ(graph_build_tester.IsFulfilled(), true);
+  auto* graph = NativeValueTraits<MLGraph>::NativeValue(
+      scope.GetIsolate(), graph_build_tester.Value().V8Value(),
+      scope.GetExceptionState());
+  ASSERT_NE(graph, nullptr);
+  {
+    // Test throwing exception if the first input ArrayBufferView is detached.
+    auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
+    a_buffer_view->DetachForTesting();
+    ASSERT_EQ(a_buffer_view->IsDetached(), true);
+    auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
+    auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+    ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+    graph->ComputeAsync({{"a", a_buffer_view}, {"b", b_buffer_view}},
+                        {{"output", output_buffer_view}}, resolver,
+                        scope.GetExceptionState());
+    tester.WaitUntilSettled();
+    EXPECT_NE(tester.IsFulfilled(), true);
+    auto* exception = V8DOMException::ToImplWithTypeCheck(
+        scope.GetIsolate(), tester.Value().V8Value());
+    EXPECT_NE(exception, nullptr);
+    EXPECT_EQ(exception->name(),
+              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    EXPECT_EQ(
+        exception->message(),
+        "Invalid inputs: The array buffer view with name \"a\" is detached.");
+    // Other ArrayBufferViews should not be detached.
+    EXPECT_EQ(b_buffer_view->IsDetached(), false);
+    EXPECT_EQ(output_buffer_view->IsDetached(), false);
+  }
+  {
+    // Test throwing exception if the second input ArrayBufferView is detached.
+    auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
+    auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
+    b_buffer_view->DetachForTesting();
+    ASSERT_EQ(b_buffer_view->IsDetached(), true);
+    auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+    ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+    graph->ComputeAsync({{"a", a_buffer_view}, {"b", b_buffer_view}},
+                        {{"output", output_buffer_view}}, resolver,
+                        scope.GetExceptionState());
+    tester.WaitUntilSettled();
+    EXPECT_NE(tester.IsFulfilled(), true);
+    auto* exception = V8DOMException::ToImplWithTypeCheck(
+        scope.GetIsolate(), tester.Value().V8Value());
+    EXPECT_NE(exception, nullptr);
+    EXPECT_EQ(exception->name(),
+              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    EXPECT_EQ(
+        exception->message(),
+        "Invalid inputs: The array buffer view with name \"b\" is detached.");
+    // Other ArrayBufferViews should not be detached.
+    EXPECT_EQ(a_buffer_view->IsDetached(), false);
+    EXPECT_EQ(output_buffer_view->IsDetached(), false);
+  }
+  {
+    // Test throwing exception if the output ArrayBufferView is detached.
+    auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
+    auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
+    auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
+    output_buffer_view->DetachForTesting();
+    ASSERT_EQ(output_buffer_view->IsDetached(), true);
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+    ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+    graph->ComputeAsync({{"a", a_buffer_view}, {"b", b_buffer_view}},
+                        {{"output", output_buffer_view}}, resolver,
+                        scope.GetExceptionState());
+    tester.WaitUntilSettled();
+    EXPECT_NE(tester.IsFulfilled(), true);
+    auto* exception = V8DOMException::ToImplWithTypeCheck(
+        scope.GetIsolate(), tester.Value().V8Value());
+    EXPECT_NE(exception, nullptr);
+    EXPECT_EQ(exception->name(),
+              DOMException::GetErrorName(DOMExceptionCode::kDataError));
+    EXPECT_EQ(exception->message(),
+              "Invalid outputs: The array buffer view with name \"output\" is "
+              "detached.");
+    // Other ArrayBufferViews should not be detached.
+    EXPECT_EQ(a_buffer_view->IsDetached(), false);
+    EXPECT_EQ(b_buffer_view->IsDetached(), false);
+  }
+  {
+    // Test the input and output ArrayBufferViews are detached if
+    // ComputeAsync() call succeeds.
+    auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
+    auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
+    auto output_buffer_view = CreateArrayBufferViewForOperand(output_operand);
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+    ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+    graph->ComputeAsync({{"a", a_buffer_view}, {"b", b_buffer_view}},
+                        {{"output", output_buffer_view}}, resolver,
+                        scope.GetExceptionState());
+    EXPECT_EQ(a_buffer_view->IsDetached(), true);
+    EXPECT_EQ(b_buffer_view->IsDetached(), true);
+    EXPECT_EQ(output_buffer_view->IsDetached(), true);
+    tester.WaitUntilSettled();
+    EXPECT_EQ(tester.IsFulfilled(), true);
+  }
+  {
+    // Test the input and output ArrayBufferViews of MLComputeResult have the
+    // same type, byte offset, byte length and base address of those passed to
+    // ComputeAsync().
+    auto a_buffer_view = CreateArrayBufferViewForOperand(a_operand);
+    auto a_buffer_view_type = a_buffer_view->GetType();
+    size_t a_buffer_view_byte_offset = a_buffer_view->byteOffset();
+    size_t a_buffer_view_byte_length = a_buffer_view->byteLength();
+    void* a_buffer_view_base_address = a_buffer_view->BaseAddress();
+    auto b_buffer_view = CreateArrayBufferViewForOperand(b_operand);
+    auto b_buffer_view_type = b_buffer_view->GetType();
+    size_t b_buffer_view_byte_offset = b_buffer_view->byteOffset();
+    size_t b_buffer_view_byte_length = b_buffer_view->byteLength();
+    void* b_buffer_view_base_address = b_buffer_view->BaseAddress();
+    // Create a double-sized ArrayBuffer for output operand.
+    auto* array_buffer = DOMArrayBuffer::Create(
+        output_operand->NumberOfElements() * 2, sizeof(float));
+    // Create an ArrayBufferView that views the second half of the output
+    // ArrayBuffer.
+    const size_t expected_byte_offset =
+        output_operand->NumberOfElements() * sizeof(float);
+    auto output_buffer_view = NotShared<DOMArrayBufferView>(
+        blink::DOMFloat32Array::Create(array_buffer, expected_byte_offset,
+                                       output_operand->NumberOfElements()));
+    auto output_buffer_view_type = output_buffer_view->GetType();
+    size_t output_buffer_view_byte_offset = output_buffer_view->byteOffset();
+    ASSERT_EQ(output_buffer_view_byte_offset, expected_byte_offset);
+    size_t output_buffer_view_byte_length = output_buffer_view->byteLength();
+    void* output_buffer_view_base_address = output_buffer_view->BaseAddress();
+    auto* resolver =
+        MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
+    ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
+    graph->ComputeAsync({{"a", a_buffer_view}, {"b", b_buffer_view}},
+                        {{"output", output_buffer_view}}, resolver,
+                        scope.GetExceptionState());
+    tester.WaitUntilSettled();
+    EXPECT_EQ(tester.IsFulfilled(), true);
+    auto* compute_result = NativeValueTraits<MLComputeResult>::NativeValue(
+        scope.GetIsolate(), tester.Value().V8Value(),
+        scope.GetExceptionState());
+    EXPECT_EQ(compute_result->inputs().size(), 2u);
+    EXPECT_EQ(compute_result->inputs()[0].first, "a");
+    auto result_a_buffer_view = compute_result->inputs()[0].second;
+    EXPECT_EQ(result_a_buffer_view->GetType(), a_buffer_view_type);
+    EXPECT_EQ(result_a_buffer_view->byteOffset(), a_buffer_view_byte_offset);
+    EXPECT_EQ(result_a_buffer_view->byteLength(), a_buffer_view_byte_length);
+    EXPECT_EQ(result_a_buffer_view->BaseAddress(), a_buffer_view_base_address);
+    EXPECT_EQ(compute_result->inputs()[1].first, "b");
+    auto result_b_buffer_view = compute_result->inputs()[1].second;
+    EXPECT_EQ(result_b_buffer_view->GetType(), b_buffer_view_type);
+    EXPECT_EQ(result_b_buffer_view->byteOffset(), b_buffer_view_byte_offset);
+    EXPECT_EQ(result_b_buffer_view->byteLength(), b_buffer_view_byte_length);
+    EXPECT_EQ(result_b_buffer_view->BaseAddress(), b_buffer_view_base_address);
+    EXPECT_EQ(compute_result->outputs()[0].first, "output");
+    auto result_output_buffer_view = compute_result->outputs()[0].second;
+    EXPECT_EQ(result_output_buffer_view->GetType(), output_buffer_view_type);
+    EXPECT_EQ(result_output_buffer_view->byteOffset(),
+              output_buffer_view_byte_offset);
+    EXPECT_EQ(result_output_buffer_view->byteLength(),
+              output_buffer_view_byte_length);
+    EXPECT_EQ(result_output_buffer_view->BaseAddress(),
+              output_buffer_view_base_address);
   }
 }
 
@@ -790,9 +850,9 @@ struct ClampTester {
   void Test(V8TestingScope& scope,
             MLClampOptions* options = MLClampOptions::Create()) {
     // Build the graph.
-    auto* builder = CreateMLGraphBuilder(scope);
-    auto* input_operand =
-        BuildInput(scope, builder, "input", input.dimensions, input.type);
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
     auto* output_operand =
         builder->clamp(input_operand, options, scope.GetExceptionState());
     auto [graph, build_exception] =
@@ -800,13 +860,15 @@ struct ClampTester {
     EXPECT_NE(graph, nullptr);
 
     // Compute the graph.
-    auto input_buffer =
-        CreateArrayBufferViewForOperand(input_operand, input.values);
-    auto output_buffer = CreateArrayBufferViewForOperand(output_operand);
-    auto* compute_exception = helper->ComputeGraph(
-        scope, graph, {{"input", input_buffer}}, {{"output", output_buffer}});
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
-    auto results = GetArrayBufferViewValues<T>(output_buffer);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
     EXPECT_EQ(results, expected);
   }
 };
@@ -860,17 +922,17 @@ TEST_P(MLGraphXnnpackTest, ClampTest) {
 }
 
 template <typename T>
-MLOperand* BuildConstant(V8TestingScope& scope,
-                         MLGraphBuilder* builder,
+MLOperand* BuildConstant(MLGraphBuilder* builder,
                          const Vector<uint32_t>& dimensions,
                          V8MLOperandType::Enum type,
-                         const Vector<T>& values) {
+                         const Vector<T>& values,
+                         ExceptionState& exception_state) {
   size_t buffer_size = std::accumulate(dimensions.begin(), dimensions.end(),
                                        size_t(1), std::multiplies<uint32_t>());
   auto buffer = CreateDOMArrayBufferView(buffer_size, type);
   DCHECK_EQ(buffer->byteLength(), values.size() * sizeof(T));
   memcpy(buffer->BaseAddress(), values.data(), buffer->byteLength());
-  return BuildConstant(scope, builder, dimensions, type, buffer);
+  return BuildConstant(builder, dimensions, type, exception_state, buffer);
 }
 
 template <typename T>
@@ -885,13 +947,15 @@ struct Conv2dTester {
             MLGraphBuilder* builder,
             MLConv2dOptions* options = MLConv2dOptions::Create()) {
     // Build the graph.
-    auto* input_operand =
-        BuildInput(scope, builder, "input", input.dimensions, input.type);
-    auto* filter_operand = BuildConstant(scope, builder, filter.dimensions,
-                                         filter.type, filter.values);
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* filter_operand =
+        BuildConstant(builder, filter.dimensions, filter.type, filter.values,
+                      scope.GetExceptionState());
     if (bias) {
-      options->setBias(BuildConstant(scope, builder, bias.value().dimensions,
-                                     bias.value().type, bias.value().values));
+      options->setBias(BuildConstant(builder, bias.value().dimensions,
+                                     bias.value().type, bias.value().values,
+                                     scope.GetExceptionState()));
     }
     auto* output_operand =
         BuildConv2d(scope, builder, input_operand, filter_operand, options);
@@ -900,20 +964,22 @@ struct Conv2dTester {
     EXPECT_NE(graph, nullptr);
 
     // Compute the graph.
-    auto input_buffer =
-        CreateArrayBufferViewForOperand(input_operand, input.values);
-    auto output_buffer = CreateArrayBufferViewForOperand(output_operand);
-    auto* compute_exception = helper->ComputeGraph(
-        scope, graph, {{"input", input_buffer}}, {{"output", output_buffer}});
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
-    Vector<float> results = GetArrayBufferViewValues<T>(output_buffer);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
     EXPECT_EQ(results, expected);
   }
 };
 
 TEST_P(MLGraphXnnpackTest, Conv2dTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test conv2d operator for nhwc input layout and ohwi filter layout.
     auto* options = MLConv2dOptions::Create();
@@ -1030,6 +1096,168 @@ TEST_P(MLGraphXnnpackTest, Conv2dTest) {
 }
 
 template <typename T>
+struct GemmTester {
+  MLGraphXnnpackTest* helper;
+  OperandInfo<T> a;
+  OperandInfo<T> b;
+  absl::optional<OperandInfo<T>> c = absl::nullopt;
+  Vector<T> expected;
+
+  void Test(V8TestingScope& scope,
+            MLGraphBuilder* builder,
+            MLGemmOptions* options = MLGemmOptions::Create()) {
+    // Build the graph.
+    auto* a_operand = BuildInput(builder, "input", a.dimensions, a.type,
+                                 scope.GetExceptionState());
+    auto* b_operand = BuildConstant(builder, b.dimensions, b.type, b.values,
+                                    scope.GetExceptionState());
+    if (c) {
+      options->setC(BuildConstant(builder, c.value().dimensions, c.value().type,
+                                  c.value().values, scope.GetExceptionState()));
+    }
+    auto* output_operand =
+        BuildGemm(scope, builder, a_operand, b_operand, options);
+    auto [graph, build_exception] =
+        helper->BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input", CreateArrayBufferViewForOperand(a_operand, a.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+  }
+};
+
+TEST_P(MLGraphXnnpackTest, GemmTest) {
+  V8TestingScope scope;
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+  {
+    // Test gemm operator without operand c.
+    GemmTester<float>{.a = {.type = V8MLOperandType::Enum::kFloat32,
+                            .dimensions = {2, 2},
+                            .values = {1.0, 2.0, 2.0, 1.0}},
+                      .b = {.type = V8MLOperandType::Enum::kFloat32,
+                            .dimensions = {2, 1},
+                            .values = {2.0, 4.0}},
+                      .expected = {10.0, 8.0}}
+        .Test(scope, builder);
+  }
+  {
+    // Test gemm operator with operand c.
+    GemmTester<float>{
+        .a = {.type = V8MLOperandType::Enum::kFloat32,
+              .dimensions = {2, 2},
+              .values = {1.0, 2.0, 2.0, 1.0}},
+        .b = {.type = V8MLOperandType::Enum::kFloat32,
+              .dimensions = {2, 1},
+              .values = {2.0, 4.0}},
+        .c = OperandInfo<float>{.type = V8MLOperandType::Enum::kFloat32,
+                                .dimensions = {1},
+                                .values = {1.0}},
+        .expected = {11.0, 9.0}}
+        .Test(scope, builder);
+  }
+  {
+    // Test gemm operator with bTranspose = true.
+    auto* options = MLGemmOptions::Create();
+    options->setBTranspose(true);
+    GemmTester<float>{
+        .a = {.type = V8MLOperandType::Enum::kFloat32,
+              .dimensions = {2, 2},
+              .values = {1.0, 2.0, 2.0, 1.0}},
+        .b = {.type = V8MLOperandType::Enum::kFloat32,
+              .dimensions = {1, 2},
+              .values = {2.0, 4.0}},
+        .c = OperandInfo<float>{.type = V8MLOperandType::Enum::kFloat32,
+                                .dimensions = {1},
+                                .values = {1.0}},
+        .expected = {11.0, 9.0}}
+        .Test(scope, builder, options);
+  }
+}
+
+struct HardSwishTester {
+  MLGraphXnnpackTest* helper;
+  OperandInfo<float> input;
+  Vector<float> expected;
+
+  void Test(V8TestingScope& scope) {
+    // Build the graph.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        builder->hardSwish(input_operand, scope.GetExceptionState());
+    auto [graph, build_exception] =
+        helper->BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
+    EXPECT_EQ(results.size(), expected.size());
+    for (wtf_size_t i = 0; i < expected.size(); ++i) {
+      EXPECT_FLOAT_EQ(results[i], expected[i]);
+    }
+  }
+};
+
+TEST_P(MLGraphXnnpackTest, HardSwishTest) {
+  V8TestingScope scope;
+  {
+    // Test hardSwish operator for 1-D tensor.
+    // The expected results should be the result of the nonlinear function, y =
+    // x * max(0, min(6, (x + 3))) / 6, applied to the input tensor,
+    // element-wise.
+    HardSwishTester{.helper = this,
+                    .input = {.type = V8MLOperandType::Enum::kFloat32,
+                              .dimensions = {2},
+                              .values = {-0.6, 0.6}},
+                    .expected = {-0.24, 0.36}}
+        .Test(scope);
+  }
+  {
+    // Test hardSwish operator for 2-D tensor.
+    HardSwishTester{.helper = this,
+                    .input = {.type = V8MLOperandType::Enum::kFloat32,
+                              .dimensions = {2, 2},
+                              .values = {-1.2, -0.6, 0.6, 1.2}},
+                    .expected = {-0.36, -0.24, 0.36, 0.84}}
+        .Test(scope);
+  }
+  {
+    // Test hardSwish operator for 3-D tensor.
+    HardSwishTester{.helper = this,
+                    .input = {.type = V8MLOperandType::Enum::kFloat32,
+                              .dimensions = {1, 2, 2},
+                              .values = {-1.2, -0.6, 0.6, 1.2}},
+                    .expected = {-0.36, -0.24, 0.36, 0.84}}
+        .Test(scope);
+  }
+  {
+    // Test hardSwish operator for 4-D tensor.
+    HardSwishTester{.helper = this,
+                    .input = {.type = V8MLOperandType::Enum::kFloat32,
+                              .dimensions = {1, 2, 2, 1},
+                              .values = {-1.2, -0.6, 0.6, 1.2}},
+                    .expected = {-0.36, -0.24, 0.36, 0.84}}
+        .Test(scope);
+  }
+}
+
+template <typename T>
 struct Pool2dTester {
   MLGraphXnnpackTest* helper;
   Pool2dKind kind;
@@ -1038,22 +1266,24 @@ struct Pool2dTester {
 
   void Test(V8TestingScope& scope,
             MLPool2dOptions* options = MLPool2dOptions::Create()) {
-    auto* builder = CreateMLGraphBuilder(scope);
-    auto* input_operand =
-        BuildInput(scope, builder, "input", input.dimensions, input.type);
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
     auto* output_operand =
         BuildPool2d(scope, builder, kind, input_operand, options);
     auto [graph, build_exception] =
         helper->BuildGraph(scope, builder, {{"output", output_operand}});
     EXPECT_NE(graph, nullptr);
 
-    auto input_buffer =
-        CreateArrayBufferViewForOperand(input_operand, input.values);
-    auto output_buffer = CreateArrayBufferViewForOperand(output_operand);
-    auto* compute_exception = helper->ComputeGraph(
-        scope, graph, {{"input", input_buffer}}, {{"output", output_buffer}});
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
     EXPECT_EQ(compute_exception, nullptr);
-    Vector<float> results = GetArrayBufferViewValues<T>(output_buffer);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
     EXPECT_EQ(results, expected);
   }
 };
@@ -1103,11 +1333,188 @@ TEST_P(MLGraphXnnpackTest, Pool2dTest) {
   }
 }
 
+// Because XNNPACK reshape Node runs copy operator, ReshapeTester just checks
+// the output against the input. So there is no need to set expected results.
+template <typename T>
+struct ReshapeTester {
+  MLGraphXnnpackTest* helper;
+  OperandInfo<T> input;
+  Vector<absl::optional<uint32_t>> new_shape;
+  Vector<uint32_t> expected_output_shape;
+
+  void Test(V8TestingScope& scope) {
+    // Build the graph.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        builder->reshape(input_operand, new_shape, scope.GetExceptionState());
+    EXPECT_EQ(output_operand->Dimensions(), expected_output_shape);
+    auto [graph, build_exception] =
+        helper->BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute the graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<T>(outputs[0].second);
+    EXPECT_EQ(results, input.values);
+  }
+};
+
+TEST_P(MLGraphXnnpackTest, ReshapeTest) {
+  V8TestingScope scope;
+  {
+    // Test reshaping 2-D tensor to 1-D tensor.
+    ReshapeTester<float>{.helper = this,
+                         .input = {.type = V8MLOperandType::Enum::kFloat32,
+                                   .dimensions = {2, 2},
+                                   .values = {-10.0, -0.5, 0.5, 10.0}},
+                         .new_shape = {4},
+                         .expected_output_shape = {4}}
+        .Test(scope);
+  }
+  {
+    // Test reshaping from 2-D tensor to 1-D tensor with calculated dimension.
+    ReshapeTester<float>{.helper = this,
+                         .input = {.type = V8MLOperandType::Enum::kFloat32,
+                                   .dimensions = {2, 2},
+                                   .values = {-10.0, -0.5, 0.5, 10.0}},
+                         .new_shape = {absl::nullopt},
+                         .expected_output_shape = {4}}
+        .Test(scope);
+  }
+  {
+    // Test reshaping from 4-D tensor to 2-D tensor.
+    ReshapeTester<float>{.helper = this,
+                         .input = {.type = V8MLOperandType::Enum::kFloat32,
+                                   .dimensions = {1, 2, 2, 1},
+                                   .values = {-10.0, -0.5, 0.5, 10.0}},
+                         .new_shape = {1, 4},
+                         .expected_output_shape = {1, 4}}
+        .Test(scope);
+  }
+  {
+    // Test reshaping from 4-D tensor to 2-D tensor with calculated dimension.
+    ReshapeTester<float>{.helper = this,
+                         .input = {.type = V8MLOperandType::Enum::kFloat32,
+                                   .dimensions = {1, 2, 2, 1},
+                                   .values = {-10.0, -0.5, 0.5, 10.0}},
+                         .new_shape = {1, absl::nullopt},
+                         .expected_output_shape = {1, 4}}
+        .Test(scope);
+  }
+}
+
+// The outputs of softmax function,
+// https://en.wikipedia.org/wiki/Softmax_function, are floating-point numbers
+// with mantissa. The WPT WebNN conformance test cases of softmax operator,
+// https://github.com/web-platform-tests/wpt/blob/master/webnn/resources/test_data/softmax.json,
+// will test the accuracy loss of the results against the expected values with
+// the WG-agreed tolerance setting.
+//
+// For MLGraphXnnpack unit testing, SoftmaxTester instead checks the compute
+// results of an MLGraph containing a softmax MLOperator against the results of
+// calling XNNPACK softmax operator API for the same input. With that, the
+// expected values are not needed.
+struct SoftmaxTester {
+  MLGraphXnnpackTest* helper;
+  OperandInfo<float> input;
+
+  void Test(V8TestingScope& scope) {
+    // Create and run XNNPACK softmax operator.
+    ASSERT_EQ(xnn_status_success, xnn_initialize(/*allocator=*/nullptr));
+
+    DCHECK_EQ(input.dimensions.size(), 2u);
+    const uint32_t batch_size = input.dimensions[0];
+    const uint32_t channels = input.dimensions[1];
+
+    xnn_operator_t softmax_op = nullptr;
+    const xnn_status status = xnn_create_softmax_nc_f32(
+        channels, channels, channels, /*flags=*/0, &softmax_op);
+    ASSERT_EQ(xnn_status_success, status);
+    ASSERT_NE(nullptr, softmax_op);
+    std::unique_ptr<xnn_operator, decltype(&xnn_delete_operator)> auto_op(
+        softmax_op, xnn_delete_operator);
+
+    // XNNPACK may access beyond array bounds. The caller must allocate at least
+    // XNN_EXTRA_BYTES extra bytes after the tensor data passed to XNNPACK.
+    Vector<float> xnnpack_input(input.values);
+    xnnpack_input.Grow(input.values.size() + XNN_EXTRA_BYTES / sizeof(float));
+    Vector<float> xnnpack_output(batch_size * channels +
+                                 XNN_EXTRA_BYTES / sizeof(float));
+    ASSERT_EQ(
+        xnn_status_success,
+        xnn_setup_softmax_nc_f32(softmax_op, batch_size, xnnpack_input.data(),
+                                 xnnpack_output.data(),
+                                 /*threadpool=*/nullptr));
+
+    ASSERT_EQ(xnn_status_success,
+              xnn_run_operator(softmax_op, /*threadpool=*/nullptr));
+    // Remove the extra bytes of XNNPACK output.
+    xnnpack_output.Shrink(batch_size * channels);
+
+    // Build WebNN graph with softmax operator.
+    auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
+    auto* input_operand = BuildInput(builder, "input", input.dimensions,
+                                     input.type, scope.GetExceptionState());
+    auto* output_operand =
+        builder->softmax(input_operand, scope.GetExceptionState());
+    auto [graph, build_exception] =
+        helper->BuildGraph(scope, builder, {{"output", output_operand}});
+    EXPECT_NE(graph, nullptr);
+
+    // Compute WebNN graph.
+    MLNamedArrayBufferViews inputs(
+        {{"input",
+          CreateArrayBufferViewForOperand(input_operand, input.values)}});
+    MLNamedArrayBufferViews outputs(
+        {{"output", CreateArrayBufferViewForOperand(output_operand)}});
+    auto* compute_exception =
+        helper->ComputeGraph(scope, graph, inputs, outputs);
+    EXPECT_EQ(compute_exception, nullptr);
+    auto results = GetArrayBufferViewValues<float>(outputs[0].second);
+
+    // Compare the results of WebNN graph and XNNPACK operator.
+    EXPECT_EQ(results, xnnpack_output);
+  }
+};
+
+TEST_P(MLGraphXnnpackTest, SoftmaxTest) {
+  V8TestingScope scope;
+  {
+    // Test softmax operator for input operand with [2, 2] dimensions.
+    // There is no need to set expected results, because SoftmaxTester will
+    // calculate the expected results by calling XNNPACK softmax operator
+    // APIs.
+    SoftmaxTester{.helper = this,
+                  .input = {.type = V8MLOperandType::Enum::kFloat32,
+                            .dimensions = {2, 2},
+                            .values = {-1.0, -0.5, 0.5, 1.0}}}
+        .Test(scope);
+  }
+  {
+    // Test softmax operator for input operand with [1, 4] dimensions.
+    SoftmaxTester{.helper = this,
+                  .input = {.type = V8MLOperandType::Enum::kFloat32,
+                            .dimensions = {1, 4},
+                            .values = {-1.0, -0.5, 0.5, 1.0}}}
+        .Test(scope);
+  }
+}
+
 // TODO(crbug.com/1273291): Test the async execution mode once the
 // MLGraphXnnpack implements it.
 INSTANTIATE_TEST_SUITE_P(All,
                          MLGraphXnnpackTest,
-                         ::testing::Values(ExecutionMode::kSync),
+                         ::testing::Values(ExecutionMode::kSync,
+                                           ExecutionMode::kAsync),
                          ExecutionModeParamToString);
 
 }  // namespace blink

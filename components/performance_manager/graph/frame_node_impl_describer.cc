@@ -52,7 +52,7 @@ void FrameNodeImplDescriber::OnTakenFromGraph(Graph* graph) {
   graph->GetNodeDataDescriberRegistry()->UnregisterDescriber(this);
 }
 
-base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
+base::Value::Dict FrameNodeImplDescriber::DescribeFrameNodeData(
     const FrameNode* node) const {
   const FrameNodeImpl* impl = FrameNodeImpl::FromNode(node);
 
@@ -66,7 +66,6 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
           impl->document_.has_nonempty_beforeunload);
   doc.Set("network_almost_idle", impl->document_.network_almost_idle.value());
   doc.Set("had_form_interaction", impl->document_.had_form_interaction.value());
-  ret.Set("had_user_edits", impl->document_.had_user_edits.value());
   ret.Set("document", std::move(doc));
 
   // Frame node properties.
@@ -87,7 +86,7 @@ base::Value FrameNodeImplDescriber::DescribeFrameNodeData(
           ViewportIntersectionToString(impl->viewport_intersection_.value()));
   ret.Set("visibility", FrameNodeVisibilityToString(impl->visibility_.value()));
 
-  return base::Value(std::move(ret));
+  return ret;
 }
 
 }  // namespace performance_manager

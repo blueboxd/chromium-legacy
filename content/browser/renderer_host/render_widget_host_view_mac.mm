@@ -494,13 +494,15 @@ void RenderWidgetHostViewMac::NotifyHostAndDelegateOnWasShown(
   // in this state, but doesn't include the presentation time request.
   if (has_saved_frame && tab_switch_start_state) {
     browser_compositor_->GetDelegatedFrameHost()
-        ->RequestPresentationTimeForNextFrame(
+        ->RequestSuccessfulPresentationTimeForNextFrame(
             std::move(tab_switch_start_state));
   }
 }
 
-void RenderWidgetHostViewMac::RequestPresentationTimeFromHostOrDelegate(
-    blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
+void RenderWidgetHostViewMac::
+    RequestSuccessfulPresentationTimeFromHostOrDelegate(
+        blink::mojom::RecordContentToVisibleTimeRequestPtr
+            visible_time_request) {
   DCHECK(!host_->is_hidden());
   DCHECK(visible_time_request);
 
@@ -510,18 +512,20 @@ void RenderWidgetHostViewMac::RequestPresentationTimeFromHostOrDelegate(
     // If the frame for the renderer is already available, then the
     // tab-switching time is the presentation time for the browser-compositor.
     browser_compositor_->GetDelegatedFrameHost()
-        ->RequestPresentationTimeForNextFrame(std::move(visible_time_request));
+        ->RequestSuccessfulPresentationTimeForNextFrame(
+            std::move(visible_time_request));
   } else {
-    host()->RequestPresentationTimeForNextFrame(
+    host()->RequestSuccessfulPresentationTimeForNextFrame(
         std::move(visible_time_request));
   }
 }
 
 void RenderWidgetHostViewMac::
-    CancelPresentationTimeRequestForHostAndDelegate() {
+    CancelSuccessfulPresentationTimeRequestForHostAndDelegate() {
   DCHECK(!host_->is_hidden());
-  host()->CancelPresentationTimeRequest();
-  browser_compositor_->GetDelegatedFrameHost()->CancelPresentationTimeRequest();
+  host()->CancelSuccessfulPresentationTimeRequest();
+  browser_compositor_->GetDelegatedFrameHost()
+      ->CancelSuccessfulPresentationTimeRequest();
 }
 
 void RenderWidgetHostViewMac::WasOccluded() {
@@ -1614,10 +1618,6 @@ void RenderWidgetHostViewMac::ShowSharePicker(
 // RenderWidgetHostNSViewHostHelper and mojom::RenderWidgetHostNSViewHost
 // implementation:
 
-id RenderWidgetHostViewMac::GetAccessibilityElement() {
-  return GetNativeViewAccessible();
-}
-
 id RenderWidgetHostViewMac::GetRootBrowserAccessibilityElement() {
   if (auto* manager = host()->GetRootBrowserAccessibilityManager())
     return manager->GetBrowserAccessibilityRoot()->GetNativeViewAccessible();
@@ -2122,15 +2122,6 @@ void RenderWidgetHostViewMac::StartSpeaking() {
 
 void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
-}
-
-void RenderWidgetHostViewMac::GetRenderWidgetAccessibilityToken(
-    GetRenderWidgetAccessibilityTokenCallback callback) {
-  base::ProcessId pid = getpid();
-  id element_id = GetNativeViewAccessible();
-  std::vector<uint8_t> token =
-      ui::RemoteAccessibility::GetTokenForLocalElement(element_id);
-  std::move(callback).Run(pid, token);
 }
 
 void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(

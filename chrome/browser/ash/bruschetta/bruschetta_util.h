@@ -22,6 +22,8 @@ extern const char kBruschettaDisplayName[];
 extern const char kBiosPath[];
 extern const char kPflashPath[];
 
+extern const char kBruschettaPolicyId[];
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class BruschettaResult {
@@ -31,7 +33,14 @@ enum class BruschettaResult {
   kBiosNotAccessible = 3,
   kStartVmFailed = 4,
   kTimeout = 5,
-  kMaxValue = kTimeout,
+  kForbiddenByPolicy = 6,
+  kMaxValue = kForbiddenByPolicy,
+};
+
+// The launch-time policy that applies to a specific VM. This is used to
+// decide if we need to force a VM to shutdown after it's policy changed.
+struct RunningVmPolicy {
+  bool vtpm_enabled;
 };
 
 // Returns the string name of the BruschettaResult.
@@ -58,8 +67,10 @@ bool HasInstallableConfig(const Profile* profile, const std::string& config_id);
 // Returns true if Bruschetta is installed.
 bool IsInstalled(Profile* profile, const guest_os::GuestId& guest_id);
 
-// Runs the GUI installer.
-void RunInstaller(Profile* profile, const guest_os::GuestId& guest_id);
+absl::optional<RunningVmPolicy> GetLaunchPolicyForConfig(Profile* profile,
+                                                         std::string config_id);
+
+std::string GetVmUsername(const Profile* profile);
 
 }  // namespace bruschetta
 

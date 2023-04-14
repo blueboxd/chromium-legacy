@@ -82,6 +82,7 @@ const net::NetworkTrafficAnnotationTag kEarlyHintsPreloadTrafficAnnotation =
 
 network::mojom::CSPDirectiveName LinkAsAttributeToCSPDirective(
     network::mojom::LinkAsAttribute attr) {
+  // https://w3c.github.io/webappsec-csp/#csp-directives
   switch (attr) {
     case network::mojom::LinkAsAttribute::kUnspecified:
       return network::mojom::CSPDirectiveName::Unknown;
@@ -93,6 +94,8 @@ network::mojom::CSPDirectiveName LinkAsAttributeToCSPDirective(
       return network::mojom::CSPDirectiveName::ScriptSrcElem;
     case network::mojom::LinkAsAttribute::kStyleSheet:
       return network::mojom::CSPDirectiveName::StyleSrcElem;
+    case network::mojom::LinkAsAttribute::kFetch:
+      return network::mojom::CSPDirectiveName::ConnectSrc;
   }
   NOTREACHED();
   return network::mojom::CSPDirectiveName::Unknown;
@@ -131,8 +134,9 @@ bool CheckContentSecurityPolicyForPreload(
   return true;
 }
 
-network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
-    const network::mojom::LinkHeaderPtr& link) {
+absl::optional<network::mojom::RequestDestination>
+LinkAsAttributeToRequestDestination(const network::mojom::LinkHeaderPtr& link) {
+  // https://fetch.spec.whatwg.org/#concept-potential-destination-translate
   switch (link->as) {
     case network::mojom::LinkAsAttribute::kUnspecified:
       // For modulepreload, the request destination should be "script" when `as`
@@ -141,7 +145,7 @@ network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
       if (link->rel == network::mojom::LinkRelAttribute::kModulePreload) {
         return network::mojom::RequestDestination::kScript;
       }
-      return network::mojom::RequestDestination::kEmpty;
+      return absl::nullopt;
     case network::mojom::LinkAsAttribute::kImage:
       return network::mojom::RequestDestination::kImage;
     case network::mojom::LinkAsAttribute::kFont:
@@ -150,28 +154,9 @@ network::mojom::RequestDestination LinkAsAttributeToRequestDestination(
       return network::mojom::RequestDestination::kScript;
     case network::mojom::LinkAsAttribute::kStyleSheet:
       return network::mojom::RequestDestination::kStyle;
+    case network::mojom::LinkAsAttribute::kFetch:
+      return network::mojom::RequestDestination::kEmpty;
   }
-}
-
-// Used to determine a priority for a speculative subresource request.
-// TODO(crbug.com/671310): This is almost the same as GetRequestPriority() in
-// loading_predictor_tab_helper.cc and the purpose is the same. Consider merging
-// them if the logic starts to be more mature.
-net::RequestPriority CalculateRequestPriority(
-    const network::mojom::LinkHeaderPtr& link) {
-  switch (link->as) {
-    case network::mojom::LinkAsAttribute::kFont:
-    case network::mojom::LinkAsAttribute::kStyleSheet:
-      return net::HIGHEST;
-    case network::mojom::LinkAsAttribute::kScript:
-      return net::MEDIUM;
-    case network::mojom::LinkAsAttribute::kImage:
-      return net::LOWEST;
-    case network::mojom::LinkAsAttribute::kUnspecified:
-      return net::IDLE;
-  }
-  NOTREACHED();
-  return net::IDLE;
 }
 
 network::mojom::RequestMode CalculateRequestMode(
@@ -513,12 +498,13 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   if (!ShouldHandleResourceHints(link))
     return;
 
-  network::mojom::RequestDestination destination =
-      LinkAsAttributeToRequestDestination(link);
   // Step 2. If options's destination is not a destination, then return null.
   // https://html.spec.whatwg.org/multipage/semantics.html#create-a-link-request
-  if (destination == network::mojom::RequestDestination::kEmpty)
+  absl::optional<network::mojom::RequestDestination> destination =
+      LinkAsAttributeToRequestDestination(link);
+  if (!destination) {
     return;
+  }
 
   if (!CheckContentSecurityPolicyForPreload(link, content_security_policies))
     return;
@@ -535,7 +521,7 @@ void NavigationEarlyHintsManager::MaybePreloadHintedResource(
   network::ResourceRequest request;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.priority = CalculateRequestPriority(link);
-  request.destination = destination;
+  request.destination = *destination;
   request.url = link->href;
   request.site_for_cookies = site_for_cookies;
   request.request_initiator = origin_;
@@ -593,6 +579,47 @@ void NavigationEarlyHintsManager::OnPreloadComplete(
 
   // TODO(crbug.com/671310): Consider to delete `this` when there is no inflight
   // preloads.
+}
+
+// Used to determine a priority for a speculative subresource request.
+// TODO(crbug.com/671310): This is almost the same as GetRequestPriority() in
+// loading_predictor_tab_helper.cc and the purpose is the same. Consider merging
+// them if the logic starts to be more mature.
+// platform/loader/fetch/README.md in blink contains more details on
+// prioritization as well as links to all of the relevant places in the code
+// where priority is determined. If the priority logic is updated here, be sure
+// to update the other code as needed.
+net::RequestPriority NavigationEarlyHintsManager::CalculateRequestPriority(
+    const network::mojom::LinkHeaderPtr& link) {
+  // When fetchPriority is explicitly specified for preload, independent of
+  // most content types, the blink priority matches the fetchpriority value.
+  // In net priority terms that maps to MEDIUM for "high" LOWEST for "low".
+  // https://web.dev/priority-hints/#browser-priority-and-fetchpriority
+  switch (link->fetch_priority) {
+    case network::mojom::FetchPriorityAttribute::kHigh:
+      switch (link->as) {
+        case network::mojom::LinkAsAttribute::kStyleSheet:
+          return net::HIGHEST;
+        default:
+          return net::MEDIUM;
+      }
+    case network::mojom::FetchPriorityAttribute::kLow:
+      return net::LOWEST;
+    case network::mojom::FetchPriorityAttribute::kAuto:
+      switch (link->as) {
+        case network::mojom::LinkAsAttribute::kStyleSheet:
+          return net::HIGHEST;
+        case network::mojom::LinkAsAttribute::kFont:
+        case network::mojom::LinkAsAttribute::kScript:
+          return net::MEDIUM;
+        case network::mojom::LinkAsAttribute::kImage:
+        case network::mojom::LinkAsAttribute::kFetch:
+          return net::LOWEST;
+        case network::mojom::LinkAsAttribute::kUnspecified:
+          return net::IDLE;
+      }
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace content

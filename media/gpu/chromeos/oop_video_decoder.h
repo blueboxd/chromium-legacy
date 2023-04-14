@@ -43,6 +43,30 @@ class OOPVideoDecoder : public VideoDecoderMixin,
       scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       base::WeakPtr<VideoDecoderMixin::Client> client);
 
+  // The first time this is called, |oop_video_decoder| will be used to query
+  // the supported configurations of the out-of-process video decoder. When
+  // those are obtained, they will be cached and |cb| will be called with a
+  // PendingRemote that corresponds to the same pipe as |oop_video_decoder|.
+  //
+  // If a query is in progress, this method will store |cb|. |cb| will then be
+  // called with |oop_video_decoder| once the query is done.
+  //
+  // If the supported configurations are already known, this method will
+  // immediately call |cb|.
+  //
+  // Threading considerations: this method is thread- and sequence-safe. |cb|
+  // will be called on the same sequence as the one NotifySupportKnown() is
+  // called on.
+  static void NotifySupportKnown(
+      mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder,
+      base::OnceCallback<
+          void(mojo::PendingRemote<stable::mojom::StableVideoDecoder>)> cb);
+
+  // Returns the cached supported configurations of the out-of-process video
+  // decoder if known (absl::nullopt otherwise). This method is thread- and
+  // sequence-safe.
+  static absl::optional<SupportedVideoDecoderConfigs> GetSupportedConfigs();
+
   // VideoDecoderMixin implementation, VideoDecoder part.
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
@@ -83,7 +107,7 @@ class OOPVideoDecoder : public VideoDecoderMixin,
                         int32_t max_decode_requests,
                         VideoDecoderType decoder_type);
   void OnDecodeDone(uint64_t decode_id,
-                    bool is_flushing,
+                    bool is_flush_cb,
                     const DecoderStatus& status);
   void OnResetDone();
 
@@ -100,6 +124,8 @@ class OOPVideoDecoder : public VideoDecoderMixin,
   // done in the order in which Decode() is called.
   std::map<uint64_t, DecodeCB> pending_decodes_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  bool is_flushing_ GUARDED_BY_CONTEXT(sequence_checker_) = false;
 
   // |fake_timestamp_to_real_timestamp_cache_| allows us to associate Decode()
   // calls with decoded frames. On each non-flush Decode() call, we generate a
@@ -138,7 +164,7 @@ class OOPVideoDecoder : public VideoDecoderMixin,
       stable_cdm_context_receiver_ GUARDED_BY_CONTEXT(sequence_checker_);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
-  VideoDecoderType decoder_type_ GUARDED_BY_CONTEXT(sequence_checker_) =
+  VideoDecoderType remote_decoder_type_ GUARDED_BY_CONTEXT(sequence_checker_) =
       VideoDecoderType::kUnknown;
 
   mojo::Remote<stable::mojom::StableVideoDecoder> remote_decoder_

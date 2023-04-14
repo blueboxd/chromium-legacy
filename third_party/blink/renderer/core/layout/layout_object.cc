@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_map.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/first_letter_pseudo_element.h"
@@ -113,6 +114,7 @@
 #include "third_party/blink/renderer/core/paint/timing/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/timing/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -2569,41 +2571,12 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
       if (style_->HasPseudoElementStyle(pseudo) ||
           style->HasPseudoElementStyle(pseudo)) {
-        const ComputedStyle* pseudo_old_style = nullptr;
-        const ComputedStyle* pseudo_new_style = nullptr;
-
-        // TODO(rego): Refactor this code so we can call something like
-        // HighlightData()->PseudoStyle(pseudo) and avoid the switch (we could
-        // also avoid the switch in
-        // HighlightPaintingUtils::HighlightPseudoStyle().
-        switch (pseudo) {
-          case kPseudoIdTargetText:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->TargetText()
+        const ComputedStyle* pseudo_old_style =
+            style_->HighlightData() ? style_->HighlightData()->Style(pseudo)
+                                    : nullptr;
+        const ComputedStyle* pseudo_new_style =
+            style->HighlightData() ? style->HighlightData()->Style(pseudo)
                                    : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->TargetText()
-                                   : nullptr;
-            break;
-          case kPseudoIdSpellingError:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->SpellingError()
-                                   : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->SpellingError()
-                                   : nullptr;
-            break;
-          case kPseudoIdGrammarError:
-            pseudo_old_style = style_->HighlightData()
-                                   ? style_->HighlightData()->GrammarError()
-                                   : nullptr;
-            pseudo_new_style = style->HighlightData()
-                                   ? style->HighlightData()->GrammarError()
-                                   : nullptr;
-            break;
-          default:
-            NOTREACHED();
-        }
 
         if (pseudo_old_style && pseudo_new_style) {
           diff.Merge(pseudo_old_style->VisualInvalidationDiff(
@@ -2614,16 +2587,19 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
       }
     };
 
-    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled()) {
-      // TODO(rego): We don't do anything regarding ::selection, as ::selection
-      // uses its own mechanism for this (see
-      // LayoutObject::InvalidateSelectedChildrenOnStyleChange()). Maybe in the
-      // future we could detect changes here for ::selection too.
+    // See HighlightRegistry for ::highlight() paint invalidation.
+    // TODO(rego): We don't do anything regarding ::selection, as ::selection
+    // uses its own mechanism for this (see
+    // LayoutObject::InvalidateSelectedChildrenOnStyleChange()). Maybe in the
+    // future we could detect changes here for ::selection too.
+    if (UsesHighlightPseudoInheritance(kPseudoIdTargetText)) {
       HighlightPseudoUpdateDiff(kPseudoIdTargetText);
-      if (RuntimeEnabledFeatures::CSSSpellingGrammarErrorsEnabled()) {
-        HighlightPseudoUpdateDiff(kPseudoIdSpellingError);
-        HighlightPseudoUpdateDiff(kPseudoIdGrammarError);
-      }
+    }
+    if (UsesHighlightPseudoInheritance(kPseudoIdSpellingError)) {
+      HighlightPseudoUpdateDiff(kPseudoIdSpellingError);
+    }
+    if (UsesHighlightPseudoInheritance(kPseudoIdGrammarError)) {
+      HighlightPseudoUpdateDiff(kPseudoIdGrammarError);
     }
   }
 
@@ -3137,6 +3113,12 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     if (element) {
       element->EnsureToggleMap().CreateToggles(toggle_root);
     }
+  }
+
+  if (old_style &&
+      (old_style->ToggleTrigger() != StyleRef().ToggleTrigger() ||
+       old_style->ToggleVisibility() != StyleRef().ToggleVisibility())) {
+    GetDocument().EnsureCSSToggleInference().MarkNeedsRebuild();
   }
 
   if (StyleRef().AnchorName())
@@ -3890,15 +3872,6 @@ void LayoutObject::SetDescendantNeedsPaintPropertyUpdate() {
   }
 }
 
-void LayoutObject::ForceAllAncestorsNeedPaintPropertyUpdate() {
-  NOT_DESTROYED();
-  LayoutObject* ancestor = Parent();
-  while (ancestor) {
-    ancestor->SetNeedsPaintPropertyUpdate();
-    ancestor = ancestor->Parent();
-  }
-}
-
 void LayoutObject::MaybeClearIsScrollAnchorObject() {
   NOT_DESTROYED();
   if (!bitfields_.IsScrollAnchorObject())
@@ -4193,7 +4166,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       // it's based on first_line_block's style. We need to get the uncached
       // first line style based on this object's style and cache the result in
       // it.
-      if (scoped_refptr<ComputedStyle> first_line_style =
+      if (scoped_refptr<const ComputedStyle> first_line_style =
               first_line_block->GetUncachedPseudoElementStyle(
                   StyleRequest(kPseudoIdFirstLine, Style()))) {
         return StyleRef().ReplaceCachedPseudoElementStyle(
@@ -4210,7 +4183,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
             Parent()->FirstLineStyleWithoutFallback()) {
       // A first-line style is in effect. Get uncached first line style based on
       // parent_first_line_style and cache the result in this object's style.
-      if (scoped_refptr<ComputedStyle> first_line_style =
+      if (scoped_refptr<const ComputedStyle> first_line_style =
               GetUncachedPseudoElementStyle(StyleRequest(
                   kPseudoIdFirstLineInherited, parent_first_line_style))) {
         return StyleRef().AddCachedPseudoElementStyle(
@@ -4237,7 +4210,7 @@ const ComputedStyle* LayoutObject::GetCachedPseudoElementStyle(
   return element->CachedStyleForPseudoElement(pseudo);
 }
 
-scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
+scoped_refptr<const ComputedStyle> LayoutObject::GetUncachedPseudoElementStyle(
     const StyleRequest& request) const {
   NOT_DESTROYED();
   DCHECK_NE(request.pseudo_id, kPseudoIdBefore);
@@ -4289,20 +4262,31 @@ bool LayoutObject::WillRenderImage() {
   NOT_DESTROYED();
   // Without visibility we won't render (and therefore don't care about
   // animation).
-  if (StyleRef().Visibility() != EVisibility::kVisible)
+  if (StyleRef().Visibility() != EVisibility::kVisible) {
     return false;
-
+  }
   // We will not render a new image when ExecutionContext is paused
-  if (GetDocument().GetExecutionContext()->IsContextPaused())
+  if (GetDocument().GetExecutionContext()->IsContextPaused()) {
     return false;
-
+  }
   // Suspend animations when the page is not visible.
-  if (GetDocument().hidden())
+  if (GetDocument().hidden()) {
     return false;
-
+  }
   // If we're not in a window (i.e., we're dormant from being in a background
   // tab) then we don't want to render either.
-  return GetDocument().View()->IsVisible();
+  if (!GetDocument().View()->IsVisible()) {
+    return false;
+  }
+  // If paint invalidation of this object is delayed, animations can be
+  // suspended. When the object is painted the next time, the animations will
+  // be started again.
+  if (ShouldDelayFullPaintInvalidation() &&
+      base::FeatureList::IsEnabled(
+          features::kThrottleOffscreenAnimatingSvgImages)) {
+    return false;
+  }
+  return true;
 }
 
 bool LayoutObject::GetImageAnimationPolicy(
@@ -5031,14 +5015,6 @@ void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
 #if DCHECK_IS_ON()
   InvalidateVisualOverflow();
 #endif
-}
-
-bool LayoutObject::IsShapingDeferred() const {
-  if (const auto* block_flow = DynamicTo<LayoutBlockFlow>(this)) {
-    return block_flow->HasNGInlineNodeData() &&
-           block_flow->GetNGInlineNodeData()->IsShapingDeferred();
-  }
-  return false;
 }
 
 bool LayoutObject::ForceLegacyLayoutForChildren() const {

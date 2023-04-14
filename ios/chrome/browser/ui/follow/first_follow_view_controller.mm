@@ -28,16 +28,16 @@ constexpr CGFloat customSpacingAfterImage = 24;
 
 @implementation FirstFollowViewController {
   std::u16string _webSiteTitle;
-  BOOL _webSiteIsAvailable;
+  BOOL _webSiteHasActiveContent;
   FirstFollowFaviconSource _faviconSource;
 }
 
 - (instancetype)initWithTitle:(NSString*)title
-                    available:(BOOL)available
+                       active:(BOOL)active
                 faviconSource:(FirstFollowFaviconSource)faviconSource {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     _webSiteTitle = base::SysNSStringToUTF16(title);
-    _webSiteIsAvailable = available;
+    _webSiteHasActiveContent = active;
     _faviconSource = faviconSource;
   }
   return self;
@@ -55,17 +55,19 @@ constexpr CGFloat customSpacingAfterImage = 24;
 
   self.titleString =
       l10n_util::GetNSStringF(IDS_IOS_FIRST_FOLLOW_TITLE, _webSiteTitle);
-  self.secondaryTitleString =
-      l10n_util::GetNSStringF(IDS_IOS_FIRST_FOLLOW_SUBTITLE, _webSiteTitle);
   self.subtitleString = l10n_util::GetNSString(IDS_IOS_FIRST_FOLLOW_BODY);
 
-  if (_webSiteIsAvailable) {
+  if (_webSiteHasActiveContent) {
+    self.secondaryTitleString =
+        l10n_util::GetNSStringF(IDS_IOS_FIRST_FOLLOW_SUBTITLE, _webSiteTitle);
     // Go To Feed button is only displayed if the web channel is available.
     self.primaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_FOLLOW_GO_TO_FEED);
     self.secondaryActionString =
         l10n_util::GetNSString(IDS_IOS_FIRST_FOLLOW_GOT_IT);
   } else {
+    self.secondaryTitleString = l10n_util::GetNSStringF(
+        IDS_IOS_FIRST_FOLLOW_SUBTITLE_NO_CONTENT, _webSiteTitle);
     // Only one button is visible, and it is a primary action button (with a
     // solid background color).
     self.primaryActionString =

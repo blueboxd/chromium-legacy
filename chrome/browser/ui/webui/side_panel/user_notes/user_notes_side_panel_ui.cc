@@ -8,10 +8,13 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/plural_string_handler.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_page_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/side_panel_shared_resources.h"
+#include "chrome/grit/side_panel_shared_resources_map.h"
 #include "chrome/grit/side_panel_user_notes_resources.h"
 #include "chrome/grit/side_panel_user_notes_resources_map.h"
 #include "components/strings/grit/components_strings.h"
@@ -20,16 +23,21 @@
 #include "ui/base/ui_base_features.h"
 
 UserNotesSidePanelUI::UserNotesSidePanelUI(content::WebUI* web_ui)
-    : ui::MojoBubbleWebUIController(web_ui) {
+    : ui::MojoBubbleWebUIController(web_ui, true) {
   content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(),
       chrome::kChromeUIUserNotesSidePanelHost);
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
       {"add", IDS_ADD},
       {"addANote", IDS_ADD_NEW_USER_NOTE_PLACEHOLDER_TEXT},
+      {"allNotes", IDS_ALL_NOTES},
       {"cancel", IDS_CANCEL},
       {"delete", IDS_DELETE},
       {"edit", IDS_EDIT},
+      {"sortByType", IDS_BOOKMARKS_SORT_BY_TYPE},
+      {"sortNewest", IDS_BOOKMARKS_SORT_NEWEST},
+      {"sortMenuAriaLabel", IDS_USER_NOTES_SORT_MENU_A11Y_LABEL},
+      {"sortOldest", IDS_BOOKMARKS_SORT_OLDEST},
       {"title", IDS_USER_NOTE_TITLE},
       {"tooltipClose", IDS_CLOSE},
   };
@@ -45,6 +53,13 @@ UserNotesSidePanelUI::UserNotesSidePanelUI(content::WebUI* web_ui)
                               base::make_span(kSidePanelUserNotesResources,
                                               kSidePanelUserNotesResourcesSize),
                               IDR_SIDE_PANEL_USER_NOTES_USER_NOTES_HTML);
+  source->AddResourcePaths(base::make_span(kSidePanelSharedResources,
+                                           kSidePanelSharedResourcesSize));
+
+  // Add a handler to provide pluralized string.
+  auto plural_string_handler = std::make_unique<PluralStringHandler>();
+  plural_string_handler->AddLocalizedString("notesCount", IDS_NOTES_COUNT);
+  web_ui->AddMessageHandler(std::move(plural_string_handler));
 }
 
 UserNotesSidePanelUI::~UserNotesSidePanelUI() = default;

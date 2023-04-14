@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">A külső eszközök firmware-frissítésére szolgáló ablak megnyílt. <ph name="NUM_UPDATES" /> frissítés érhető el</translation>
 <translation id="1145516343487477149">Súgócikkek és a Chromebookkal kapcsolatos gyakori kérdésekre adott válaszok.</translation>
+<translation id="1167755866710282443">A kulcsok személyre szabásához nyissa meg a menüt. Az áthelyezéshez húzza a megfelelő helyre a menüt.</translation>
 <translation id="1175697296044146566">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="MANAGER" /> kezeli.</translation>
 <translation id="1175951029573070619">Átlagos (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">A következő album kiválasztása: <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-érintőpad</translation>
 <translation id="4117637339509843559">Sötét mód</translation>
+<translation id="4130035430755296270">További elrendezési lehetőségekért mozgassa tovább az egérmutatót</translation>
 <translation id="4131410914670010031">Fekete-fehér</translation>
 <translation id="4145784616224233563">HTTP-tűzfal</translation>
 <translation id="4147897805161313378">Google Fotók</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS-felbontás</translation>
 <translation id="4848429997038228357">FUT</translation>
 <translation id="4854586501323951986">Beépített érintőképernyő</translation>
+<translation id="4855250849489639581">További rendezési lehetőségekért csúsztassa ujját gyorsan lefelé</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} próbálkozás maradt.}other{<ph name="ERROR_MESSAGE" /> {0} próbálkozás maradt.}}</translation>
 <translation id="4873827928179867585">Hitelesítési algoritmus</translation>
 <translation id="4880328057631981605">Hozzáférési pont neve</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 kép</translation>
 <translation id="7177485034254901881">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="MANAGER" /> kezeli. A rendszergazdák távolról konfigurálhatják az eszközt.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
+<translation id="7180865173735832675">Testreszabás</translation>
 <translation id="7212734716605298123">Firmware-frissítések külső eszközökhöz</translation>
 <translation id="7216409898977639127">Mobilszolgáltató</translation>
 <translation id="725133483556299729">Válassza ki a kívánt e-mail-címet</translation>
@@ -880,7 +884,7 @@
 <translation id="9138630967333032450">Bal oldali Shift</translation>
 <translation id="9149391708638971077">Memóriateszt futtatása</translation>
 <translation id="9173638680043580060">Kevesebb mint 1 perc van hátra</translation>
-<translation id="917720651393141712">Tesztelés</translation>
+<translation id="917720651393141712">Tesztmérkőzés</translation>
 <translation id="9188992814426075118">A billentyűzet képes automatikusan a háttérképhez igazodni</translation>
 <translation id="9193744392140377127">APN*</translation>
 <translation id="9204237731135241582">Nem lehet csatlakozni az átjáróhoz androidos alkalmazásokról</translation>

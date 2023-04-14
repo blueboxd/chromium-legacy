@@ -8,12 +8,12 @@
  * polymer element.
  */
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 
+import {AmbientModeAlbum, TopicSource} from '../../personalization_app.mojom-webui.js';
+import {isAmbientModeAllowed, isPersonalizationJellyEnabled} from '../load_time_booleans.js';
 import {setErrorAction} from '../personalization_actions.js';
-import {AmbientModeAlbum, TopicSource} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {isNonEmptyArray} from '../utils.js';
 
@@ -45,29 +45,29 @@ export class AmbientPreviewBase extends WithPersonalizationStore {
         computed: 'computePreviewAlbums_(albums_, topicSource_)',
       },
       firstPreviewAlbum_: {
-        type: AmbientModeAlbum,
+        type: Object,
         computed: 'computeFirstPreviewAlbum_(previewAlbums_)',
       },
       loading_: {
         type: Boolean,
         computed:
-            'computeLoading_(ambientModeEnabled_, albums_, topicSource_, googlePhotosAlbumsPreviews_)',
+            'computeLoading_(isAmbientModeAllowed_, ambientModeEnabled_, albums_, topicSource_, googlePhotosAlbumsPreviews_)',
         observer: 'onLoadingChanged_',
       },
       googlePhotosAlbumsPreviews_: {
         type: Array,
         value: null,
       },
-      isAmbientSubpageUiChangeEnabled_: {
+      isPersonalizationJellyEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('isAmbientSubpageUiChangeEnabled');
+          return isPersonalizationJellyEnabled();
         },
       },
-      isAmbientModeManaged_: {
+      isAmbientModeAllowed_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('isAmbientModeManaged');
+          return isAmbientModeAllowed();
         },
       },
     };
@@ -75,13 +75,13 @@ export class AmbientPreviewBase extends WithPersonalizationStore {
 
   protected ambientModeEnabled_: boolean|null;
   protected googlePhotosAlbumsPreviews_: Url[]|null;
-  protected isAmbientSubpageUiChangeEnabled_: boolean;
+  protected isPersonalizationJellyEnabled_: boolean;
   protected previewAlbums_: AmbientModeAlbum[]|null;
   protected topicSource_: TopicSource|null;
 
   private albums_: AmbientModeAlbum[]|null;
   private firstPreviewAlbum_: AmbientModeAlbum|null;
-  private isAmbientModeManaged_: boolean;
+  private isAmbientModeAllowed_: boolean;
   private loading_: boolean;
 
   private loadingTimeoutId_: number|null = null;
@@ -104,8 +104,10 @@ export class AmbientPreviewBase extends WithPersonalizationStore {
   }
 
   private computeLoading_(): boolean {
-    return this.ambientModeEnabled_ === null || this.albums_ === null ||
-        this.topicSource_ === null || this.googlePhotosAlbumsPreviews_ === null;
+    return this.isAmbientModeAllowed_ &&
+        (this.ambientModeEnabled_ === null || this.albums_ === null ||
+         this.topicSource_ === null ||
+         this.googlePhotosAlbumsPreviews_ === null);
   }
 
   private onLoadingChanged_(value: boolean) {
@@ -149,8 +151,8 @@ export class AmbientPreviewBase extends WithPersonalizationStore {
 
     /* TODO(b/253470553): Remove this condition after Ambient subpage UI change
      * is released. */
-    if (!this.isAmbientSubpageUiChangeEnabled_) {
-      classes.push('pre-ui-change');
+    if (!this.isPersonalizationJellyEnabled_) {
+      classes.push('jelly-disabled');
     }
     return classes.join(' ');
   }

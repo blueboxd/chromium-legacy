@@ -194,7 +194,7 @@ void ServiceWorkerScriptLoaderFactory::CopyScript(
     int64_t resource_id,
     base::OnceCallback<void(int64_t, net::Error)> callback,
     int64_t new_resource_id) {
-  if (!context_ || !worker_host_) {
+  if (!context_) {
     std::move(callback).Run(new_resource_id, net::ERR_FAILED);
     return;
   }
@@ -236,6 +236,8 @@ void ServiceWorkerScriptLoaderFactory::OnCopyScriptFinished(
   }
 
   int64_t resource_size = cache_writer_->bytes_written();
+  DCHECK_EQ(cache_writer_->checksum_update_timing(),
+            ServiceWorkerCacheWriter::ChecksumUpdateTiming::kCacheMismatch);
   std::string sha256_checksum = cache_writer_->GetSha256Checksum();
   cache_writer_.reset();
   scoped_refptr<ServiceWorkerVersion> version = worker_host_->version();

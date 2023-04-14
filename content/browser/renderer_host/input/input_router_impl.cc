@@ -67,7 +67,7 @@ std::unique_ptr<blink::WebCoalescedInputEvent> ScaleEvent(
     double scale,
     const ui::LatencyInfo& latency_info) {
   std::unique_ptr<blink::WebInputEvent> event_in_viewport =
-      ui::ScaleWebInputEvent(event, scale);
+      ui::ScaleWebInputEvent(event, scale, latency_info.trace_id());
   return std::make_unique<blink::WebCoalescedInputEvent>(
       event_in_viewport ? std::move(event_in_viewport) : event.Clone(),
       std::vector<std::unique_ptr<WebInputEvent>>(),
@@ -353,7 +353,7 @@ void InputRouterImpl::SetPanAction(blink::mojom::PanAction pan_action) {
   // is set again.
   if (!client_->GetRenderWidgetHostViewBase())
     return;
-  client_->GetRenderWidgetHostViewBase()->SetHoverActionStylusWritable(
+  client_->GetRenderWidgetHostViewBase()->NotifyHoverActionStylusWritable(
       pan_action_ == blink::mojom::PanAction::kStylusWritable);
 }
 

@@ -114,7 +114,7 @@ base::ScopedFD CreatePasswordPipe(const std::string& data) {
   const size_t data_size = data.size();
 
   base::WriteFileDescriptor(pipe_write_end.get(),
-                            base::as_bytes(base::make_span(&data_size, 1)));
+                            base::as_bytes(base::make_span(&data_size, 1u)));
   base::WriteFileDescriptor(pipe_write_end.get(), data);
 
   return pipe_read_end;
@@ -365,6 +365,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
   void StartDeviceWipe() override {
     SimpleMethodCallToSessionManager(
         login_manager::kSessionManagerStartDeviceWipe);
+    for (auto& observer : observers_) {
+      observer.PowerwashRequested(/*admin_requested*/ false);
+    }
   }
 
   void StartRemoteDeviceWipe(
@@ -380,6 +383,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
     session_manager_proxy_->CallMethod(&method_call,
                                        dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                        base::DoNothing());
+    for (auto& observer : observers_) {
+      observer.PowerwashRequested(/*admin_requested*/ true);
+    }
   }
 
   void ClearForcedReEnrollmentVpd(

@@ -34,7 +34,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -125,17 +125,11 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
         type: Boolean,
         value: loadTimeData.getBoolean('showBruschetta'),
       },
-
-      isBruschettaInstalled_: {
-        type: Boolean,
-        value: loadTimeData.getBoolean('isBruschettaInstalled'),
-      },
     };
   }
 
   private browserProxy_: CrostiniBrowserProxy;
   private disableCrostiniInstall_: boolean;
-  private isBruschettaInstalled_: boolean;
 
   constructor() {
     super();
@@ -191,7 +185,7 @@ class SettingsCrostiniPageElement extends SettingsCrostiniPageElementBase {
 
   private onBruschettaSubpageTap_() {
     // This function is called on-click even if actionable=false.
-    if (this.isBruschettaInstalled_) {
+    if (this.getPref('bruschetta.installed.value')) {
       Router.getInstance().navigateTo(routes.BRUSCHETTA_DETAILS);
     }
   }

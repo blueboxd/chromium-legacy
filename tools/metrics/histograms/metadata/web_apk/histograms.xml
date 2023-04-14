@@ -70,7 +70,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.GooglePlayInstallResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2023-06-04">
+    enum="WebApkGooglePlayInstallResult" expires_after="2023-08-06">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -102,7 +102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.InstallResult" enum="WebApkInstallResult"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>eirage@chromium.org</owner>
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Install.RequestTokenDurationV2" units="ms"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>hartmanng@chromium.org</owner>
   <owner>rayankans@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
@@ -173,7 +173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Notification.Permission.Status2" enum="ContentSetting"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>hartmanng@chromium.org</owner>
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
@@ -184,7 +184,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Notification.PermissionRequestResult"
-    enum="ContentSetting" expires_after="2023-06-11">
+    enum="ContentSetting" expires_after="2023-08-20">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peconn@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
@@ -225,7 +225,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Startup.Cold.ShellLaunchToSplashscreenVisible"
-    units="ms" expires_after="2023-06-11">
+    units="ms" expires_after="2023-08-13">
   <owner>mheikal@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -262,7 +262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Update.GooglePlayUpdateResult"
-    enum="WebApkGooglePlayInstallResult" expires_after="2023-06-01">
+    enum="WebApkGooglePlayInstallResult" expires_after="2023-08-06">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -283,7 +283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Update.RequestQueued" enum="WebApkUpdateRequestQueued"
-    expires_after="2023-06-01">
+    expires_after="2023-08-08">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>
@@ -293,7 +293,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApk.Update.RequestSent" enum="WebApkUpdateRequestSent"
-    expires_after="2023-06-01">
+    expires_after="2023-08-08">
   <owner>hartmanng@chromium.org</owner>
   <owner>src/chrome/android/webapk/OWNERS</owner>
   <summary>

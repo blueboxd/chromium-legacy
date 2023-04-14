@@ -56,6 +56,10 @@ EXTENSIONS_EXPORT extern const base::FilePath::CharType
 // installed to.
 EXTENSIONS_EXPORT extern const char kInstallDirectoryName[];
 
+// The name of the directory inside the profile where unpacked (e.g. from .zip
+// file) extensions are installed to.
+EXTENSIONS_EXPORT extern const char kUnpackedInstallDirectoryName[];
+
 // The name of a temporary directory to install an extension into for
 // validation before finalizing install.
 EXTENSIONS_EXPORT extern const char kTempExtensionName[];
@@ -188,10 +192,11 @@ enum class AppLaunchSource {
   kSourceRunOnOsLogin = 24,     // App launched during OS login.
   kSourceProtocolHandler = 25,  // App launch via protocol handler.
   kSourceReparenting = 26,      // APP launch via reparenting.
+  kSourceAppHomePage = 27,      // App launch from chrome://apps (App Home).
 
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kSourceReparenting,
+  kMaxValue = kSourceAppHomePage,
 };
 
 // This enum is used for the launch type the user wants to use for an

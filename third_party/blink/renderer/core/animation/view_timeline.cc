@@ -31,13 +31,13 @@ using InsetValueSequence =
 
 namespace {
 
-double ComputeOffset(LayoutBox* subject,
-                     LayoutBox* source,
+double ComputeOffset(Element* source_element,
+                     LayoutBox* subject_layout,
+                     LayoutBox* source_layout,
                      ScrollOrientation physical_orientation) {
-  Element* source_element = DynamicTo<Element>(source->GetNode());
   MapCoordinatesFlags flags = kIgnoreScrollOffset;
-  gfx::PointF point = gfx::PointF(
-      subject->LocalToAncestorPoint(PhysicalOffset(), source, flags));
+  gfx::PointF point = gfx::PointF(subject_layout->LocalToAncestorPoint(
+      PhysicalOffset(), source_layout, flags));
 
   // We can not call the regular clientLeft/Top functions here, because we
   // may reach this function during style resolution, and clientLeft/Top
@@ -163,7 +163,7 @@ Length InsetValueToLength(const CSSValue* inset_value,
     // percentage, see IsStyleDependent.
     CSSToLengthConversionData::Flags ignored_flags = 0;
     CSSToLengthConversionData length_conversion_data(
-        subject->GetComputedStyle(), element_resolve_context.ParentStyle(),
+        subject->ComputedStyleRef(), element_resolve_context.ParentStyle(),
         element_resolve_context.RootElementStyle(), document.GetLayoutView(),
         CSSToLengthConversionData::ContainerSizes(subject),
         subject->GetComputedStyle()->EffectiveZoom(), ignored_flags);
@@ -265,10 +265,19 @@ AnimationTimeDelta ViewTimeline::CalculateIntrinsicIterationDuration(
                      ? ToFractionalOffset(animation->GetRangeEnd().value())
                      : 1;
 
-    // TODO(crbug.com1216527): Delays will also need to be incorporated once we
-    // support % delays.
     active_interval -= start;
     active_interval -= (1 - end);
+
+    // Start and end delays are proportional to the active interval.
+    double start_delay = timing.start_delay.relative_delay.value_or(0);
+    double end_delay = timing.end_delay.relative_delay.value_or(0);
+    double delay = start_delay + end_delay;
+
+    if (delay >= 1) {
+      return AnimationTimeDelta();
+    }
+
+    active_interval *= (1 - delay);
     return duration.value() * active_interval / timing.iteration_count;
   }
   return AnimationTimeDelta();
@@ -285,14 +294,17 @@ absl::optional<ScrollTimeline::ScrollOffsets> ViewTimeline::CalculateOffsets(
   LayoutBox* layout_box = subject()->GetLayoutBox();
   DCHECK(layout_box);
   Element* source = SourceInternal();
+  Node* resolved_source = ResolvedSource();
   DCHECK(source);
-  LayoutBox* source_layout = source->GetLayoutBox();
+  DCHECK(resolved_source);
+  LayoutBox* source_layout = resolved_source->GetLayoutBox();
   DCHECK(source_layout);
 
   LayoutUnit viewport_size;
 
   target_offset_ =
-      ComputeOffset(layout_box, source_layout, physical_orientation);
+      ComputeOffset(source, layout_box, source_layout, physical_orientation);
+
   if (physical_orientation == kHorizontalScroll) {
     target_size_ = layout_box->Size().Width().ToDouble();
     viewport_size = scrollable_area->LayoutContentRect().Width();
@@ -349,10 +361,14 @@ CSSNumericValue* ViewTimeline::getCurrentTime(const String& rangeName) {
     range_start.name = TimelineOffset::NamedRange::kCover;
   } else if (rangeName == "contain") {
     range_start.name = TimelineOffset::NamedRange::kContain;
-  } else if (rangeName == "enter") {
-    range_start.name = TimelineOffset::NamedRange::kEnter;
+  } else if (rangeName == "entry") {
+    range_start.name = TimelineOffset::NamedRange::kEntry;
+  } else if (rangeName == "entry-crossing") {
+    range_start.name = TimelineOffset::NamedRange::kEntryCrossing;
   } else if (rangeName == "exit") {
     range_start.name = TimelineOffset::NamedRange::kExit;
+  } else if (rangeName == "exit-crossing") {
+    range_start.name = TimelineOffset::NamedRange::kExitCrossing;
   } else {
     return nullptr;
   }
@@ -438,7 +454,7 @@ double ViewTimeline::ToFractionalOffset(
           std::max(align_subject_start_view_start, align_subject_end_view_end);
       break;
 
-    case TimelineOffset::NamedRange::kEnter:
+    case TimelineOffset::NamedRange::kEntry:
       // Represents the range during which the principal box is entering the
       // view progress visibility range.
       //   0% is equivalent to 0% of the cover range.
@@ -448,6 +464,14 @@ double ViewTimeline::ToFractionalOffset(
           std::min(align_subject_start_view_start, align_subject_end_view_end);
       break;
 
+    case TimelineOffset::NamedRange::kEntryCrossing:
+      // Represents the range during which the principal box is crossing the
+      // entry edge of the viewport.
+      //   0% is equivalent to 0% of the cover range.
+      range_start = align_subject_start_view_end;
+      range_end = align_subject_end_view_end;
+      break;
+
     case TimelineOffset::NamedRange::kExit:
       // Represents the range during which the principal box is exiting the view
       // progress visibility range.
@@ -455,6 +479,14 @@ double ViewTimeline::ToFractionalOffset(
       //   100% is equivalent to 100% of the cover range.
       range_start =
           std::max(align_subject_start_view_start, align_subject_end_view_end);
+      range_end = align_subject_end_view_start;
+      break;
+
+    case TimelineOffset::NamedRange::kExitCrossing:
+      // Represents the range during which the principal box is exiting the view
+      // progress visibility range.
+      //   100% is equivalent to 100% of the cover range.
+      range_start = align_subject_start_view_start;
       range_end = align_subject_end_view_start;
       break;
   }
@@ -468,21 +500,34 @@ double ViewTimeline::ToFractionalOffset(
   return (offset - align_subject_start_view_end) / range;
 }
 
-AnimationTimeline::TimeDelayPair ViewTimeline::TimelineOffsetsToTimeDelays(
-    const Animation* animation) const {
+AnimationTimeline::TimeDelayPair ViewTimeline::ComputeEffectiveAnimationDelays(
+    const Animation* animation,
+    const Timing& timing) const {
   absl::optional<AnimationTimeDelta> duration = GetDuration();
   if (!duration)
     return std::make_pair(AnimationTimeDelta(), AnimationTimeDelta());
-  double start_fraction =
+  double range_start =
       animation->GetRangeStart()
           ? ToFractionalOffset(animation->GetRangeStart().value())
           : 0;
-  double end_fraction =
-      animation->GetRangeEnd()
-          ? ToFractionalOffset(animation->GetRangeEnd().value())
-          : 1;
-  return std::make_pair(start_fraction * duration.value(),
-                        (1 - end_fraction) * duration.value());
+  double range_end = animation->GetRangeEnd()
+                         ? ToFractionalOffset(animation->GetRangeEnd().value())
+                         : 1;
+
+  // Timeline range is relative to cover 0% to 100% range.
+  double timeline_range = range_end - range_start;
+
+  // Animation delays are effectively insets on the animation range.
+  // Delays must be expressed as percentages. Time-based delays are ignored.
+  double start_delay =
+      timing.start_delay.relative_delay.value_or(0) * timeline_range;
+  double end_delay =
+      timing.end_delay.relative_delay.value_or(0) * timeline_range;
+
+  // TODO(kevers): Check if additional safeguards are required for delays
+  // summing > 100%.
+  return std::make_pair((range_start + start_delay) * duration.value(),
+                        (1 - range_end + end_delay) * duration.value());
 }
 
 CSSNumericValue* ViewTimeline::startOffset() const {

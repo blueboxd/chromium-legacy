@@ -22,7 +22,6 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chromeos/ash/components/dbus/dlcservice/dlcservice_client.h"
 #include "components/exo/shell_surface_util.h"
@@ -143,9 +142,9 @@ bool IsPluginvmWindowId(const std::string& window_id) {
   return base::StartsWith(window_id, kPluginVmWindowId);
 }
 
-PluginVmAvailabilitySubscription::PluginVmAvailabilitySubscription(
+PluginVmPolicySubscription::PluginVmPolicySubscription(
     Profile* profile,
-    AvailabilityChangeCallback callback)
+    base::RepeatingCallback<void(bool)> callback)
     : profile_(profile), callback_(callback) {
   DCHECK(ash::CrosSettings::IsInitialized());
   ash::CrosSettings* cros_settings = ash::CrosSettings::Get();
@@ -154,45 +153,35 @@ PluginVmAvailabilitySubscription::PluginVmAvailabilitySubscription(
   pref_change_registrar_->Init(profile->GetPrefs());
   pref_change_registrar_->Add(
       plugin_vm::prefs::kPluginVmAllowed,
-      base::BindRepeating(&PluginVmAvailabilitySubscription::OnPolicyChanged,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
       plugin_vm::prefs::kPluginVmUserId,
-      base::BindRepeating(&PluginVmAvailabilitySubscription::OnPolicyChanged,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));
   pref_change_registrar_->Add(
       plugin_vm::prefs::kPluginVmImageExists,
-      base::BindRepeating(
-          &PluginVmAvailabilitySubscription::OnImageExistsChanged,
-          base::Unretained(this)));
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
+                          base::Unretained(this)));
   device_allowed_subscription_ = cros_settings->AddSettingsObserver(
       ash::kPluginVmAllowed,
-      base::BindRepeating(&PluginVmAvailabilitySubscription::OnPolicyChanged,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));
   fake_license_subscription_ = GetFakeLicenseKeyListeners().Add(
-      base::BindRepeating(&PluginVmAvailabilitySubscription::OnPolicyChanged,
+      base::BindRepeating(&PluginVmPolicySubscription::OnPolicyChanged,
                           base::Unretained(this)));
 
   is_allowed_ = PluginVmFeatures::Get()->IsAllowed(profile);
-  is_configured_ = PluginVmFeatures::Get()->IsConfigured(profile_);
 }
 
-void PluginVmAvailabilitySubscription::OnPolicyChanged() {
+void PluginVmPolicySubscription::OnPolicyChanged() {
   bool allowed = PluginVmFeatures::Get()->IsAllowed(profile_);
   if (allowed != is_allowed_) {
     is_allowed_ = allowed;
-    callback_.Run(is_allowed_, is_configured_);
+    callback_.Run(allowed);
   }
 }
 
-void PluginVmAvailabilitySubscription::OnImageExistsChanged() {
-  bool configured = PluginVmFeatures::Get()->IsConfigured(profile_);
-  if (configured != is_configured_) {
-    is_configured_ = configured;
-    callback_.Run(is_allowed_, is_configured_);
-  }
-}
-
-PluginVmAvailabilitySubscription::~PluginVmAvailabilitySubscription() = default;
+PluginVmPolicySubscription::~PluginVmPolicySubscription() = default;
 
 }  // namespace plugin_vm

@@ -9,9 +9,9 @@
 
 #include "base/check_op.h"
 #include "base/functional/bind.h"
-#include "base/notreached.h"
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/gpu_fence_handle.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gl/gl_bindings.h"
@@ -176,9 +176,9 @@ GbmSurfaceless::~GbmSurfaceless() {
   surface_factory_->UnregisterSurface(window_->widget());
 }
 
-GbmSurfaceless::PendingFrame::PendingFrame() {}
+GbmSurfaceless::PendingFrame::PendingFrame() = default;
 
-GbmSurfaceless::PendingFrame::~PendingFrame() {}
+GbmSurfaceless::PendingFrame::~PendingFrame() = default;
 
 bool GbmSurfaceless::PendingFrame::ScheduleOverlayPlanes(
     gfx::AcceleratedWidget widget) {
@@ -226,7 +226,7 @@ EGLSyncKHR GbmSurfaceless::InsertFence(bool implicit) {
                                 EGL_SYNC_PRIOR_COMMANDS_IMPLICIT_EXTERNAL_ARM,
                                 EGL_NONE};
   return eglCreateSyncKHR(GetEGLDisplay(), EGL_SYNC_FENCE_KHR,
-                          implicit ? attrib_list : NULL);
+                          implicit ? attrib_list : nullptr);
 }
 
 void GbmSurfaceless::FenceRetired(PendingFrame* frame) {

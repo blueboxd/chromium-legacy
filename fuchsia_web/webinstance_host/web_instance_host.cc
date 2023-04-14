@@ -20,6 +20,7 @@
 #include <vector>
 
 #include "base/check.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/fuchsia/process_context.h"
 #include "base/logging.h"
@@ -32,6 +33,7 @@
 #include "base/types/expected.h"
 #include "components/fuchsia_component_support/serialize_arguments.h"
 #include "fuchsia_web/webengine/switches.h"
+#include "fuchsia_web/webinstance_host/web_instance_host_constants.h"
 #include "fuchsia_web/webinstance_host/web_instance_host_internal.h"
 
 namespace {
@@ -101,6 +103,9 @@ class InstanceBuilder {
   // protocol offers.
   void AppendOffersForServices(const std::vector<std::string>& services);
 
+  // Offers the read-only root-ssl-certificates directory from the parent.
+  void ServeRootSslCertificates();
+
   // Serves `data_directory` to the instance as the `data` read-write
   // directory.
   void ServeDataDirectory(
@@ -140,18 +145,62 @@ class InstanceBuilder {
   // directory.
   void ServeCommandLine();
 
-  // Serves `directory` as `name` in the instance's subtree as a read-only or
-  // a read-write (if `writeable`) directory. `name` is both the name of the
-  // directory and the name of the capability expected by the instance.
-  void ServeDirectory(base::StringPiece name,
-                      std::unique_ptr<vfs::internal::Directory> directory,
+  // Adds offers from `void` for any offered directories that are not being
+  // served for the invoker.
+  void OfferMissingDirectoriesFromVoid();
+
+  // The directories that are optionally offered to `web_instance.cm` based on
+  // the invoker's configuration.
+  enum class OptionalDirectory {
+    kFirst = 0,
+    kCdmData = kFirst,
+    kCommandLineConfig,
+    kContentDirectories,
+    kData,
+    kTmp,
+    kCount,
+  };
+
+  // Returns a bitmask for `directory` for use with the `served_directories_`
+  // bitfield.
+  static uint32_t directory_bitmask(OptionalDirectory directory) {
+    return 1u << static_cast<int>(directory);
+  }
+
+  // Returns true if the host will serve `directory` to the instance.
+  bool is_directory_served(OptionalDirectory directory) const {
+    return served_directories_ & directory_bitmask(directory);
+  }
+
+  // Records that `directory` will be served to the instance.
+  void set_directory_served(OptionalDirectory directory) {
+    served_directories_ |= directory_bitmask(directory);
+  }
+
+  // Returns the capability and directory name for `directory`.
+  static base::StringPiece GetDirectoryName(OptionalDirectory directory);
+
+  // Serves `directory` as `offer` in the instance's subtree as a read-only or
+  // a read-write (if `writeable`) directory.
+  void ServeDirectory(OptionalDirectory directory,
+                      std::unique_ptr<vfs::internal::Directory> fs_directory,
                       bool writeable);
+
+  // Offers the directory `directory` from `void`.
+  void OfferDirectoryFromVoid(OptionalDirectory directory);
+
+  // Offers the read-only directory capability named `name` from the parent.
+  void OfferDirectoryFromParent(base::StringPiece name);
 
   const raw_ref<fuchsia::component::Realm> realm_;
   const base::GUID id_;
   const std::string name_;
   raw_ptr<vfs::PseudoDir> instance_dir_;
   base::CommandLine args_;
+
+  // A bitfield of `directory_bitmask()` values indicating which optional
+  // directories are being served to the instance.
+  uint32_t served_directories_ = 0;
   std::vector<fuchsia::component::decl::Offer> dynamic_offers_;
   fidl::InterfaceRequest<fuchsia::web::Debug> debug_request_;
 };
@@ -213,10 +262,15 @@ void InstanceBuilder::AppendOffersForServices(
   }
 }
 
+void InstanceBuilder::ServeRootSslCertificates() {
+  DCHECK(instance_dir_);
+  OfferDirectoryFromParent("root-ssl-certificates");
+}
+
 void InstanceBuilder::ServeDataDirectory(
     fidl::InterfaceHandle<fuchsia::io::Directory> data_directory) {
   DCHECK(instance_dir_);
-  ServeDirectory("data",
+  ServeDirectory(OptionalDirectory::kData,
                  std::make_unique<vfs::RemoteDir>(std::move(data_directory)),
                  /*writeable=*/true);
 }
@@ -238,7 +292,8 @@ zx_status_t InstanceBuilder::ServeContentDirectories(
     }
   }
 
-  ServeDirectory("content-directories", std::move(content_dirs),
+  ServeDirectory(OptionalDirectory::kContentDirectories,
+                 std::move(content_dirs),
                  /*writeable=*/false);
   return ZX_OK;
 }
@@ -247,13 +302,14 @@ void InstanceBuilder::ServeCdmDataDirectory(
     fidl::InterfaceHandle<fuchsia::io::Directory> cdm_data_directory) {
   DCHECK(instance_dir_);
   ServeDirectory(
-      "cdm_data",
+      OptionalDirectory::kCdmData,
       std::make_unique<vfs::RemoteDir>(std::move(cdm_data_directory)),
       /*writeable=*/true);
 }
 
 void InstanceBuilder::ServeTmpDirectory(fuchsia::io::DirectoryHandle tmp_dir) {
-  ServeDirectory("tmp", std::make_unique<vfs::RemoteDir>(std::move(tmp_dir)),
+  ServeDirectory(OptionalDirectory::kTmp,
+                 std::make_unique<vfs::RemoteDir>(std::move(tmp_dir)),
                  /*writeable=*/true);
 }
 
@@ -266,6 +322,10 @@ Instance InstanceBuilder::Build(
     fidl::InterfaceRequest<fuchsia::io::Directory> services_request) {
   ServeCommandLine();
 
+  // Create dynamic offers from `void` for any optional directories
+  // expected by web_instance.cm that are not being provided by the invoker.
+  OfferMissingDirectoriesFromVoid();
+
   fcdecl::Child child_decl;
   child_decl.set_name(name_);
   // TODO(crbug.com/1010222): Make kWebInstanceComponentUrl a relative
@@ -273,7 +333,7 @@ Instance InstanceBuilder::Build(
   // TODO(crbug.com/1395054): Better yet, replace the with_webui component with
   // direct routing of the resources from web_engine_shell.
   child_decl.set_url(
-      base::CommandLine::ForCurrentProcess()->HasSwitch("with-webui")
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kWithWebui)
           ? kWebInstanceWithWebUiComponentUrl
           : kWebInstanceComponentUrl);
   child_decl.set_startup(fcdecl::StartupMode::LAZY);
@@ -336,17 +396,48 @@ void InstanceBuilder::ServeCommandLine() {
           }));
   ZX_DCHECK(status == ZX_OK, status);
 
-  ServeDirectory("command-line-config", std::move(config_dir),
+  ServeDirectory(OptionalDirectory::kCommandLineConfig, std::move(config_dir),
                  /*writeable=*/false);
 }
 
+void InstanceBuilder::OfferMissingDirectoriesFromVoid() {
+  for (auto directory = OptionalDirectory::kFirst;
+       directory != OptionalDirectory::kCount;
+       directory =
+           static_cast<OptionalDirectory>(static_cast<int>(directory) + 1)) {
+    if (!is_directory_served(directory)) {
+      OfferDirectoryFromVoid(directory);
+    }
+  }
+}
+
+// static
+base::StringPiece InstanceBuilder::GetDirectoryName(
+    OptionalDirectory directory) {
+  static constexpr auto kNames =
+      base::MakeFixedFlatMap<OptionalDirectory, base::StringPiece>({
+          {OptionalDirectory::kCdmData, "cdm_data"},
+          {OptionalDirectory::kCommandLineConfig, "command-line-config"},
+          {OptionalDirectory::kContentDirectories, "content-directories"},
+          {OptionalDirectory::kData, "data"},
+          {OptionalDirectory::kTmp, "tmp"},
+      });
+  static_assert(kNames.size() == static_cast<int>(OptionalDirectory::kCount));
+  return kNames.at(directory);
+}
+
 void InstanceBuilder::ServeDirectory(
-    base::StringPiece name,
-    std::unique_ptr<vfs::internal::Directory> directory,
+    OptionalDirectory directory,
+    std::unique_ptr<vfs::internal::Directory> fs_directory,
     bool writeable) {
   DCHECK(instance_dir_);
+  DCHECK(!is_directory_served(directory));
+
+  set_directory_served(directory);
+  const auto name = GetDirectoryName(directory);
+
   zx_status_t status =
-      instance_dir_->AddEntry(std::string(name), std::move(directory));
+      instance_dir_->AddEntry(std::string(name), std::move(fs_directory));
   ZX_DCHECK(status == ZX_OK, status);
 
   dynamic_offers_.push_back(fcdecl::Offer::WithDirectory(
@@ -359,6 +450,45 @@ void InstanceBuilder::ServeDirectory(
                     .set_subdir(base::StrCat({name_, "/", name}))
                     .set_dependency_type(fcdecl::DependencyType::STRONG)
                     .set_availability(fcdecl::Availability::REQUIRED))));
+}
+
+void InstanceBuilder::OfferDirectoryFromVoid(OptionalDirectory directory) {
+  DCHECK(!is_directory_served(directory));
+
+  // TODO(fxbug.dev/121722): Enable this once dynamic offer-from-void is
+  // supported in Fuchsia.
+#if 0
+  const auto name = GetDirectoryName(directory);
+  dynamic_offers_.push_back(fcdecl::Offer::WithDirectory(
+      std::move(fcdecl::OfferDirectory()
+                    .set_source(fcdecl::Ref::WithVoidType({}))
+                    .set_target_name(std::string(name))
+                    .set_dependency_type(fcdecl::DependencyType::STRONG)
+                    .set_availability(fcdecl::Availability::OPTIONAL))));
+#endif
+}
+
+void InstanceBuilder::OfferDirectoryFromParent(base::StringPiece name) {
+  DCHECK(instance_dir_);
+  dynamic_offers_.push_back(fcdecl::Offer::WithDirectory(
+      std::move(fcdecl::OfferDirectory()
+                    .set_source(fcdecl::Ref::WithParent({}))
+                    .set_source_name(std::string(name))
+                    .set_target_name(std::string(name))
+                    .set_rights(::fuchsia::io::R_STAR_DIR)
+                    .set_dependency_type(fcdecl::DependencyType::STRONG)
+                    .set_availability(fcdecl::Availability::SAME_AS_TARGET))));
+}
+
+// Route `root-ssl-certificates` from parent if networking is requested.
+void HandleRootSslCertificates(InstanceBuilder& builder,
+                               fuchsia::web::CreateContextParams& params) {
+  if ((params.features() & fuchsia::web::ContextFeatureFlags::NETWORK) !=
+      fuchsia::web::ContextFeatureFlags::NETWORK) {
+    return;
+  }
+
+  builder.ServeRootSslCertificates();
 }
 
 void HandleCdmDataDirectoryParam(InstanceBuilder& builder,
@@ -458,6 +588,8 @@ zx_status_t WebInstanceHost::CreateInstanceForContextWithCopiedArgs(
                           services);
     builder->AppendOffersForServices(services);
   }
+
+  HandleRootSslCertificates(*builder, params);
 
   HandleCdmDataDirectoryParam(*builder, params);
 

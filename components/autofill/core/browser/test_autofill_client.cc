@@ -45,6 +45,10 @@ bool TestAutofillClient::IsOffTheRecord() {
   return is_off_the_record_;
 }
 
+AutofillDownloadManager* TestAutofillClient::GetDownloadManager() {
+  return download_manager_.get();
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 TestAutofillClient::GetURLLoaderFactory() {
   return test_shared_loader_factory_;
@@ -67,9 +71,9 @@ MerchantPromoCodeManager* TestAutofillClient::GetMerchantPromoCodeManager() {
   return &mock_merchant_promo_code_manager_;
 }
 
-CreditCardCVCAuthenticator* TestAutofillClient::GetCVCAuthenticator() {
+CreditCardCvcAuthenticator* TestAutofillClient::GetCvcAuthenticator() {
   if (!cvc_authenticator_)
-    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+    cvc_authenticator_ = std::make_unique<CreditCardCvcAuthenticator>(this);
   return cvc_authenticator_.get();
 }
 
@@ -160,7 +164,7 @@ TestAutofillClient::CreateCreditCardInternalAuthenticator(
 }
 #endif
 
-void TestAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {}
+void TestAutofillClient::ShowAutofillSettings(PopupType popup_type) {}
 
 void TestAutofillClient::ShowUnmaskPrompt(
     const autofill::CreditCard& card,
@@ -302,9 +306,10 @@ bool TestAutofillClient::HasCreditCardScanFeature() {
 
 void TestAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {}
 
-bool TestAutofillClient::TryToShowFastCheckout(const FormData& form,
-                                               const FormFieldData& field,
-                                               AutofillDriver* driver) {
+bool TestAutofillClient::TryToShowFastCheckout(
+    const FormData& form,
+    const FormFieldData& field,
+    base::WeakPtr<AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -338,8 +343,8 @@ void TestAutofillClient::UpdateAutofillPopupDataListValues(
     const std::vector<std::u16string>& values,
     const std::vector<std::u16string>& labels) {}
 
-base::span<const Suggestion> TestAutofillClient::GetPopupSuggestions() const {
-  return base::span<const Suggestion>();
+std::vector<Suggestion> TestAutofillClient::GetPopupSuggestions() const {
+  return {};
 }
 
 void TestAutofillClient::PinPopupView() {}
@@ -378,10 +383,6 @@ void TestAutofillClient::DidFillOrPreviewField(
 bool TestAutofillClient::IsContextSecure() const {
   // Simplified secure context check for tests.
   return form_origin_.SchemeIs("https");
-}
-
-bool TestAutofillClient::ShouldShowSigninPromo() {
-  return false;
 }
 
 void TestAutofillClient::ExecuteCommand(int id) {}

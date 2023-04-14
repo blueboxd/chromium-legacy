@@ -80,7 +80,6 @@ class SideSearchSideContentsHelperBrowsertest : public InteractiveBrowserTest {
         base::BindRepeating([](const GURL& url) { return true; }));
     config->SetGenerateSideSearchURLCallback(
         base::BindRepeating([](const GURL& url) { return url; }));
-    config->set_is_side_panel_srp_available(true);
 
     // Create the side panel contents.
     GetTabContentsHelper()->GetSidePanelContents();
@@ -201,16 +200,8 @@ class SideSearchSideContentsHelperBrowsertest : public InteractiveBrowserTest {
 //   3. B1 automatically redirects to B2 to attempt to trap the user.
 //   4. Navigating backwards from B2 should skip back to A.
 //   5. Navigating backwards from A should skip back to the tab's initial page.
-// Flaky on Linux.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_SidePanelOpenedPagesInTheTabFrameAreNonSkippable \
-  DISABLED_SidePanelOpenedPagesInTheTabFrameAreNonSkippable
-#else
-#define MAYBE_SidePanelOpenedPagesInTheTabFrameAreNonSkippable \
-  SidePanelOpenedPagesInTheTabFrameAreNonSkippable
-#endif
 IN_PROC_BROWSER_TEST_F(SideSearchSideContentsHelperBrowsertest,
-                       MAYBE_SidePanelOpenedPagesInTheTabFrameAreNonSkippable) {
+                       SidePanelOpenedPagesInTheTabFrameAreNonSkippable) {
   const GURL initial_url = embedded_test_server()->GetURL("/initial.html");
   const GURL a_url = embedded_test_server()->GetURL("/A.html");
   const GURL b1_url = embedded_test_server()->GetURL("/B1.html");

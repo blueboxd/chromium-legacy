@@ -182,7 +182,9 @@ void AutofillProviderAndroid::OnAutofillAvailable(JNIEnv* env,
                                                   jobject formData) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (manager_ && form_) {
-    const FormData& form = form_->GetAutofillValues();
+    form_->UpdateFromJava();
+    const FormData& form = form_->form();
+
     FillOrPreviewForm(manager_.get(), form, triggered_origin_);
   }
 }
@@ -379,7 +381,7 @@ void AutofillProviderAndroid::OnServerPredictionsAvailable(
     return;
 
   if (auto* form_structure =
-          manager_->FindCachedFormByRendererId(form_->form().global_id())) {
+          manager_->FindCachedFormById(form_->form().global_id())) {
     form_->UpdateFieldTypes(*form_structure);
 
     JNIEnv* env = AttachCurrentThread();
@@ -398,7 +400,7 @@ void AutofillProviderAndroid::OnServerQueryRequestError(
     return;
 
   if (auto* form_structure =
-          manager_->FindCachedFormByRendererId(form_->form().global_id())) {
+          manager_->FindCachedFormById(form_->form().global_id())) {
     if (form_structure->form_signature() != form_signature)
       return;
 

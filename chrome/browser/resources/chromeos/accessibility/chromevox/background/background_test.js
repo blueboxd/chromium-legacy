@@ -22,6 +22,7 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
     await importModule(
         'BrailleCommandHandler',
         '/chromevox/background/braille/braille_command_handler.js');
+    await importModule('ChromeVox', '/chromevox/background/chromevox.js');
     await importModule(
         'ChromeVoxRange', '/chromevox/background/chromevox_range.js');
     await importModule(
@@ -66,6 +67,8 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
     await importModule('CursorRange', '/common/cursors/range.js');
     await importModule('EventGenerator', '/common/event_generator.js');
     await importModule('KeyCode', '/common/key_code.js');
+    await importModule(
+        'SettingsManager', '/chromevox/common/settings_manager.js');
     await importModule('LocalStorage', '/common/local_storage.js');
 
     globalThis.simulateHitTestResult = this.simulateHitTestResult;
@@ -83,9 +86,8 @@ ChromeVoxBackgroundTest = class extends ChromeVoxE2ETest {
   }
 
   simulateHitTestResult(node) {
-    return () => {
-      GestureCommandHandler.instance.pointerHandler_.handleHitTestResult(node);
-    };
+    return () => GestureCommandHandler.instance.pointerHandler_
+                     .handleHitTestResult_(node);
   }
 
   press(keyCode, modifiers) {
@@ -379,9 +381,8 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
-// crbug.com/1356181 Disable due to flaky.
 AX_TEST_F(
-    'ChromeVoxBackgroundTest', 'DISABLED_SelectSingleBasic', async function() {
+    'ChromeVoxBackgroundTest', 'SelectSingleBasic', async function() {
       const mockFeedback = this.createMockFeedback();
       await this.runWithLoadedTree(this.formsDoc);
       mockFeedback.expectSpeech('apple', 'has pop up', 'Collapsed')
@@ -562,20 +563,6 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'EarconsForControls', async function() {
       .expectEarcon(EarconId.SLIDER);
 
   await mockFeedback.replay();
-});
-
-TEST_F('ChromeVoxBackgroundTest', 'GlobsToRegExp', function() {
-  this.newCallback(async () => {
-    const module = await import('./background.js');
-    const Background = module.Background;
-    assertEquals('/^()$/', Background.globsToRegExp_([]).toString());
-    assertEquals(
-        '/^(http:\\/\\/host\\/path\\+here)$/',
-        Background.globsToRegExp_(['http://host/path+here']).toString());
-    assertEquals(
-        '/^(url1.*|u.l2|.*url3)$/',
-        Background.globsToRegExp_(['url1*', 'u?l2', '*url3']).toString());
-  })();
 });
 
 AX_TEST_F('ChromeVoxBackgroundTest', 'ShouldNotFocusIframe', async function() {
@@ -1304,19 +1291,19 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'ForceClickInPageLinks', async function() {
 // Note: this test needs the test server running because the browser
 // does not follow same-page links on data urls (because it modifies the
 // url fragment, and any change to the url is disallowed for a data url).
-// crbug.com/1356181 Disable due to flaky.
 AX_TEST_F(
-    'ChromeVoxBackgroundTestWithTestServer',
-    'DISABLED_InPageLinks', async function() {
+    'ChromeVoxBackgroundTestWithTestServer', 'InPageLinks', async function() {
       const mockFeedback = this.createMockFeedback();
       const root = await this.runWithLoadedTree(undefined, {
         url: `${
             testRunnerParams
                 .testServerBaseUrl}accessibility/in_page_links.html`,
       });
+      const link = root.find({role: RoleType.LINK});
       mockFeedback.call(doCmd('nextObject'))
           .expectSpeech('Jump', 'Internal link')
-          .call(press(KeyCode.RETURN))
+          // Use doDefault instead of press(KeyCode.RETURN) to avoid flakes.
+          .call(doDefault(link))
           .expectSpeech('Found It')
           .call(doCmd('nextHeading'))
           .expectSpeech('Continue Here', 'Heading 2');
@@ -1785,9 +1772,7 @@ AX_TEST_F(
       await mockFeedback.replay();
     });
 
-// crbug.com/1356181 Disable due to flaky.
-AX_TEST_F('ChromeVoxBackgroundTest',
-          'DISABLED_aGestureGranularity', async function() {
+AX_TEST_F('ChromeVoxBackgroundTest', 'GestureGranularity', async function() {
   const mockFeedback = this.createMockFeedback();
   const site = `
     <p>This is a test</p>
@@ -3132,9 +3117,8 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'SwipeLeftRight2', async function() {
 });
 
 // TODO(crbug.com/1228418) - Improve the generation of summaries across ChromeOS
-// crbug.com/1356181 Disable due to flaky.
 AX_TEST_F(
-    'ChromeVoxBackgroundTest', 'DISABLED_AlertDialogAutoSummaryTextContent',
+    'ChromeVoxBackgroundTest', 'AlertDialogAutoSummaryTextContent',
     async function() {
       this.resetContextualOutput();
       const mockFeedback = this.createMockFeedback();
@@ -3660,7 +3644,7 @@ AX_TEST_F('ChromeVoxBackgroundTest', 'DetailsChanged', async function() {
 
   // Make sure we're not testing reading of the hint from the button's output
   // below.
-  LocalStorage.set('useVerboseMode', false);
+  SettingsManager.set('useVerboseMode', false);
   const site = `
     <button id="click">ok</button>
     <p id="details">hello</p>
@@ -4036,10 +4020,8 @@ AX_TEST_F(
     });
 
 // Make sure navigation with touch to ListBox lands on options.
-// crbug.com/1356181 Disable due to flaky.
 AX_TEST_F(
-    'ChromeVoxBackgroundTest',
-    'DISABLED_TouchListBoxItemsNavigation', async function() {
+    'ChromeVoxBackgroundTest', 'TouchListBoxItemsNavigation', async function() {
       const mockFeedback = this.createMockFeedback();
       await this.runWithLoadedTree(this.listBoxDoc);
       mockFeedback
@@ -4088,9 +4070,10 @@ AX_TEST_F(
 
           .call(() => {
             // Link the two "windows" with next/previous focus.
-            Object.defineProperty(window1, 'nextFocus', {get: () => window2});
             Object.defineProperty(
-                window2, 'previousFocus', {get: () => window1});
+                window1, 'nextWindowFocus', {get: () => window2});
+            Object.defineProperty(
+                window2, 'previousWindowFocus', {get: () => window1});
           })
 
           // window1 -> window2.
@@ -4105,8 +4088,9 @@ AX_TEST_F(
             // Link the two "windows" with next/previous focus in a slightly
             // different way.
             Object.defineProperty(
-                window1, 'previousFocus', {get: () => window2});
-            Object.defineProperty(window2, 'nextFocus', {get: () => window1});
+                window1, 'previousWindowFocus', {get: () => window2});
+            Object.defineProperty(
+                window2, 'nextWindowFocus', {get: () => window1});
           })
 
           .call(doCmd('previousObject'))

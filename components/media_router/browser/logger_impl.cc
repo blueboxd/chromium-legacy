@@ -131,10 +131,10 @@ std::string LoggerImpl::GetLogsAsJson() const {
 }
 
 base::Value LoggerImpl::GetLogsAsValue() const {
-  base::Value entries_val(base::Value::Type::LIST);
+  base::Value::List entries_val;
   for (const auto& entry : entries_)
     entries_val.Append(AsValue(entry));
-  return entries_val;
+  return base::Value(std::move(entries_val));
 }
 
 LoggerImpl::Entry::Entry(Severity severity,
@@ -168,7 +168,7 @@ LoggerImpl::Entry::~Entry() = default;
 
 // static
 base::Value LoggerImpl::AsValue(const LoggerImpl::Entry& entry) {
-  base::Value entry_val(base::Value::Type::DICTIONARY);
+  base::Value entry_val(base::Value::Type::DICT);
   entry_val.SetKey("severity", base::Value(AsString(entry.severity)));
   entry_val.SetKey("category", base::Value(AsString(entry.category)));
   entry_val.SetKey(

@@ -46,6 +46,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 
 namespace network {
+class TriggerAttestation;
 namespace mojom {
 enum class AlternateProtocolUsage;
 enum class FetchResponseSource;
@@ -110,6 +111,9 @@ class BLINK_PLATFORM_EXPORT WebURLResponse {
 
   void SetConnectionReused(bool);
 
+  void SetTriggerAttestation(
+      const absl::optional<network::TriggerAttestation>&);
+
   void SetLoadTiming(const network::mojom::LoadTimingInfo&);
 
   base::Time ResponseTime() const;
@@ -145,7 +149,6 @@ class BLINK_PLATFORM_EXPORT WebURLResponse {
   void VisitHttpHeaderFields(WebHTTPHeaderVisitor*) const;
 
   void SetHasMajorCertificateErrors(bool);
-  void SetIsLegacyTLSVersion(bool);
   void SetHasRangeRequested(bool);
   void SetTimingAllowPassed(bool);
   bool TimingAllowPassed() const;

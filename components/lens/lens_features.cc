@@ -30,6 +30,10 @@ BASE_FEATURE(kEnableRegionSearchKeyboardShortcut,
              "LensEnableRegionSearchKeyboardShortcut",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableImageTranslate,
+             "LensEnableImageTranslate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kEnableImageSearchSidePanelFor3PDse,
              "EnableImageSearchSidePanelFor3PDse",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -45,15 +49,6 @@ BASE_FEATURE(kLensImageFormatOptimizations,
 BASE_FEATURE(kEnableContextMenuInLensSidePanel,
              "EnableContextMenuInLensSidePanel",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch{
-    &kLensStandalone, "region-search-enable-ukm-logging", true};
-
-const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch{
-    &kLensStandalone, "enable-ukm-logging", true};
-
-const base::FeatureParam<bool> kEnableSidePanelForLens{
-    &kLensStandalone, "enable-side-panel", true};
 
 constexpr base::FeatureParam<std::string> kHomepageURLForLens{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
@@ -71,7 +66,7 @@ constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensImageCompression, "dimensions-max-pixels", 1000};
 
 const base::FeatureParam<bool> kEnableLensFullscreenSearch{
-    &kLensSearchOptimizations, "enable-lens-fullscreen-search", true};
+    &kLensSearchOptimizations, "enable-lens-fullscreen-search", false};
 
 const base::FeatureParam<bool> kLensContextMenuUseAlternateText{
     &kLensSearchOptimizations, "use-lens-context-menu-alternate-text", false};
@@ -94,14 +89,6 @@ const base::FeatureParam<int> kEncodingQualityRegionSearch{
 bool GetEnableLatencyLogging() {
   return base::FeatureList::IsEnabled(kEnableLatencyLogging) &&
          base::FeatureList::IsEnabled(kLensStandalone);
-}
-
-bool GetEnableUKMLoggingForRegionSearch() {
-  return kEnableUKMLoggingForRegionSearch.Get();
-}
-
-bool GetEnableUKMLoggingForImageSearch() {
-  return kEnableUKMLoggingForImageSearch.Get();
 }
 
 int GetMaxPixelsForRegionSearch() {
@@ -135,8 +122,7 @@ bool IsLensFullscreenSearchEnabled() {
 }
 
 bool IsLensSidePanelEnabled() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         kEnableSidePanelForLens.Get();
+  return base::FeatureList::IsEnabled(kLensStandalone);
 }
 
 bool IsLensSidePanelEnabledForRegionSearch() {

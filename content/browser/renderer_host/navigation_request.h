@@ -36,8 +36,8 @@
 #include "content/browser/renderer_host/render_frame_host_csp_context.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
+#include "content/browser/renderer_host/subframe_history_navigation_throttle.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/web_package/web_bundle_handle.h"
 #include "content/common/content_export.h"
 #include "content/common/navigation_client.mojom-forward.h"
 #include "content/public/browser/allow_service_worker_result.h"
@@ -94,8 +94,6 @@ class CompositorLock;
 namespace content {
 
 class CrossOriginEmbedderPolicyReporter;
-class WebBundleHandleTracker;
-class WebBundleNavigationInfo;
 class SubresourceWebBundleNavigationInfo;
 class FrameNavigationEntry;
 class FrameTreeNode;
@@ -158,6 +156,11 @@ class CONTENT_EXPORT NavigationRequest
     // finish running the WillProcessResponse event. This is potentially
     // asynchronous.
     WILL_PROCESS_RESPONSE,
+
+    // The navigation does not require a request/response. Wait only for
+    // NavigationThrottles to finish before calling CommitNavigation(). This
+    // will only be asynchronous if a throttle defers the navigation.
+    WILL_COMMIT_WITHOUT_URL_LOADER,
 
     // The browser process has asked the renderer to commit the response
     // and is waiting for acknowledgement that it has been committed.
@@ -272,7 +275,6 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
       mojo::PendingReceiver<mojom::NavigationRendererCancellationListener>
           renderer_cancellation_listener);
 
@@ -300,7 +302,6 @@ class CONTENT_EXPORT NavigationRequest
       const std::vector<GURL>& redirects,
       const GURL& original_url,
       std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
       std::unique_ptr<SubresourceWebBundleNavigationInfo>
           subresource_web_bundle_navigation_info,
       int http_response_code);
@@ -492,8 +493,6 @@ class CONTENT_EXPORT NavigationRequest
   AssociatedRenderFrameHostType GetAssociatedRFHType() const;
 
   void SetAssociatedRFHType(AssociatedRenderFrameHostType type);
-
-  bool HasRenderFrameHost() const { return render_frame_host_.has_value(); }
 
   void set_was_discarded() { commit_params_->was_discarded = true; }
 
@@ -708,10 +707,6 @@ class CONTENT_EXPORT NavigationRequest
     return rfh_restored_from_back_forward_cache_.get();
   }
 
-  const WebBundleNavigationInfo* web_bundle_navigation_info() const {
-    return web_bundle_navigation_info_.get();
-  }
-
   // The NavigatorDelegate to notify/query for various navigation events. This
   // is always the WebContents.
   NavigatorDelegate* GetDelegate() const;
@@ -901,8 +896,9 @@ class CONTENT_EXPORT NavigationRequest
   // Note #2: Even though "javascript:" URL and RendererDebugURL fit very well
   // in this category, they don't use the NavigationRequest.
   //
-  // Note #3: Navigations that do not use a URL loader also bypass
-  //          NavigationThrottle.
+  // Note #3: Navigations that do not use a URL loader do not send the usual
+  // set of callbacks to NavigationThrottle. Instead, they send a single
+  // separate callback, WillCommitWithoutUrlLoader().
   bool NeedsUrlLoader();
 
   network::mojom::PrivateNetworkRequestPolicy private_network_request_policy()
@@ -985,15 +981,6 @@ class CONTENT_EXPORT NavigationRequest
     DCHECK(prerender_frame_tree_node_id_.has_value())
         << "Must be called after StartNavigation()";
     return prerender_frame_tree_node_id_.value();
-  }
-
-  // Return the `FencedFrameProperties` attached to this `NavigationRequest`,
-  // if present. This will only return a non-null value during
-  // embedder-initiated fenced frame navigations of a fenced frame root (or
-  // urn iframe).
-  const absl::optional<FencedFrameProperties>& GetFencedFrameProperties()
-      const {
-    return fenced_frame_properties_;
   }
 
   // Compute and return the `FencedFrameProperties` that this
@@ -1090,6 +1077,58 @@ class CONTENT_EXPORT NavigationRequest
     return browsing_context_group_swap_;
   }
 
+  // If the navigation fails before commit and |pending_navigation_api_key_| has
+  // been set, then the renderer will be notified of the pre-commit failure and
+  // provide |pending_navigation_api_key_| so that the Navigation API can fire
+  // events and reject promises.
+  // This should only be set if this request's frame initiated the navigation,
+  // because only the initiating frame has outstanding promises to reject.
+  void set_pending_navigation_api_key(absl::optional<std::string> key) {
+    pending_navigation_api_key_ = key;
+  }
+
+  // Returns the navigation token for this request if this NavigationRequest
+  // is for a history navigation, and it might be cancelled via the navigate
+  // event. In that case, any associated subframe history navigations will be
+  // deferred until this navigation commits.
+  // This may only be called if this is a main-frame same-document navigation.
+  // Will return a valid token if canceling traversals via the navigate event is
+  // enabled, this is a history navigation, a navigate event is registered in
+  // the renderer, and the frame has met the user activation requirements to be
+  // allowed to cancel the navigation.
+  // This token will then be provided to the subframe NavigationRequests via
+  // set_main_frame_same_document_history_token().
+  absl::optional<base::UnguessableToken>
+  GetNavigationTokenForDeferringSubframes();
+
+  // For subframe NavigationRequests, these set and return the main frame's
+  // NavigationRequest token, in the case that the main frame returns it from
+  // GetNavigationTokenForDeferringSubframes().
+  void set_main_frame_same_document_history_token(
+      absl::optional<base::UnguessableToken> token) {
+    main_frame_same_document_navigation_token_ = token;
+  }
+  absl::optional<base::UnguessableToken>
+  main_frame_same_document_history_token() {
+    return main_frame_same_document_navigation_token_;
+  }
+
+  // When a SubframeHistoryNavigationThrottle is created, it registers itself
+  // with the NavigationRequest for the main frame. If the main frame
+  // NavigationRequest commits, then these throttles will be resumed in
+  // UnblockPendingSubframeNavigationRequestsIfNeeded().
+  // If it is canceled instead, these throttles will all be canceled.
+  // Takes a WeakPtr because `throttle` is owned by another NavigationRequest,
+  // and that request may be canceled outside of our control, in which case
+  // `throttle` will be destroyed.
+  void AddDeferredSubframeNavigationThrottle(
+      base::WeakPtr<SubframeHistoryNavigationThrottle> throttle);
+
+  std::unique_ptr<RenderFrameHostImpl::CookieChangeListener>
+  TakeCookieChangeListener() {
+    return std::move(cookie_change_listener_);
+  }
+
  private:
   friend class NavigationRequestTest;
 
@@ -1113,7 +1152,6 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
-      std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker,
       base::WeakPtr<RenderFrameHostImpl> rfh_restored_from_back_forward_cache,
       int initiator_process_id,
       bool was_opener_suppressed,
@@ -1235,6 +1273,8 @@ class CONTENT_EXPORT NavigationRequest
   void OnRedirectChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnFailureChecksComplete(NavigationThrottle::ThrottleCheckResult result);
   void OnWillProcessResponseChecksComplete(
+      NavigationThrottle::ThrottleCheckResult result);
+  void OnWillCommitWithoutUrlLoaderChecksComplete(
       NavigationThrottle::ThrottleCheckResult result);
 
   // Runs CommitDeferringConditions.
@@ -1426,6 +1466,8 @@ class CONTENT_EXPORT NavigationRequest
       NavigationThrottle::ThrottleCheckResult result);
   void OnWillProcessResponseProcessed(
       NavigationThrottle::ThrottleCheckResult result);
+  void OnWillCommitWithoutUrlLoaderProcessed(
+      NavigationThrottle::ThrottleCheckResult result);
 
   void CancelDeferredNavigationInternal(
       NavigationThrottle::ThrottleCheckResult result);
@@ -1456,6 +1498,10 @@ class CONTENT_EXPORT NavigationRequest
   // If the result is PROCEED, then 'ReadyToCommitNavigation' will be called
   // just before calling |callback|.
   void WillProcessResponse();
+
+  // Called when no URLRequest will be needed to perform this navigation, just
+  // before commit.
+  void WillCommitWithoutUrlLoader();
 
   // Checks for attempts to navigate to a page that is already referenced more
   // than once in the frame's ancestors.  This is a helper function used by
@@ -1717,6 +1763,22 @@ class CONTENT_EXPORT NavigationRequest
   // TODO(crbug.com/1407150): Remove this when deprecation trial is complete.
   void MaybeRegisterOriginForUnpartitionedSessionStorageAccess();
 
+  // See https://crbug.com/1412365
+  void CheckSoftNavigationHeuristicsInvariants();
+
+  // Used to resume any SubframeHistoryNavigationThrottles in this FrameTree
+  // when this NavigationRequest commits.
+  // `subframe_history_navigation_throttles_` will only be populated if this
+  // IsInMainFrame().
+  void UnblockPendingSubframeNavigationRequestsIfNeeded();
+
+  // Returns if we should add/reset the `CookieChangeListener` for the current
+  // navigation.
+  bool ShouldAddCookieChangeListener();
+
+  // Returns the `StoragePartition` based on the config from the `site_info_`.
+  StoragePartition* GetStoragePartitionWithCurrentSiteInfo();
+
   // Never null. The pointee node owns this navigation request instance.
   FrameTreeNode* const frame_tree_node_;
 
@@ -1727,17 +1789,8 @@ class CONTENT_EXPORT NavigationRequest
   //  - the synchronous about:blank navigation.
   const bool is_synchronous_renderer_commit_;
 
-  // The RenderFrameHost that this navigation intends to commit in. The value
-  // will be set when we know the final RenderFrameHost that the navigation will
-  // commit in (i.e. when we receive the final network response for most
-  // navigations). Note that currently this can be reset to absl::nullopt for
-  // cross-document restarts and some failed navigations.
-  // TODO(https://crbug.com/1416916): Don't reset this on failed navigations,
-  // and ensure the NavigationRequest doesn't outlive the `render_frame_host_`
-  // picked for failed Back/Forward Cache restores.
-  // Invariant: At least one of |loader_| or |render_frame_host_| is
-  // null/absl::nullopt.
-  absl::optional<base::SafeRef<RenderFrameHostImpl>> render_frame_host_;
+  // Invariant: At least one of |loader_| or |render_frame_host_| is null.
+  raw_ptr<RenderFrameHostImpl> render_frame_host_ = nullptr;
 
   // Initialized on creation of the NavigationRequest. Sent to the renderer when
   // the navigation is ready to commit.
@@ -1956,10 +2009,6 @@ class CONTENT_EXPORT NavigationRequest
   scoped_refptr<PrefetchedSignedExchangeCache>
       prefetched_signed_exchange_cache_;
 
-  // Tracks navigations within a Web Bundle file. Used when WebBundles feature
-  // is enabled or TrustableWebBundleFileUrl switch is set.
-  const std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker_;
-
   // Timing information of loading for the navigation. Used for recording UMAs.
   NavigationHandleTiming navigation_handle_timing_;
 
@@ -1988,23 +2037,6 @@ class CONTENT_EXPORT NavigationRequest
   // Test-only callback. Called when we're ready to call CommitNavigation.
   // Unlike above, this is informational only; it does not affect the request.
   base::OnceClosure ready_to_commit_callback_for_testing_;
-
-  // The instance to process the Web Bundle that's bound to this request.
-  // Used to navigate to the main resource URL of the Web Bundle, and
-  // load it from the corresponding entry.
-  // This is created in OnStartChecksComplete() and passed to the
-  // RenderFrameHostImpl in CommitNavigation().
-  std::unique_ptr<WebBundleHandle> web_bundle_handle_;
-
-  // Keeps the Web Bundle related information when |this| is for a navigation
-  // within a Web Bundle file. Used when WebBundle feature is enabled or
-  // TrustableWebBundleFileUrl switch is set.
-  // For navigations to Web Bundle file, this is cloned from
-  // |web_bundle_handle_| in CommitNavigation(), and is passed to
-  // FrameNavigationEntry for the navigation. And for history (back / forward)
-  // navigations within the Web Bundle file, this is cloned from the
-  // FrameNavigationEntry and is used to create a WebBundleHandle.
-  std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info_;
 
   // Which proxy server was used for this navigation, if any.
   net::ProxyServer proxy_server_;
@@ -2364,6 +2396,38 @@ class CONTENT_EXPORT NavigationRequest
   // same-document navigation.
   BrowsingContextGroupSwap browsing_context_group_swap_ =
       BrowsingContextGroupSwap::CreateDefault();
+
+  // See `set_pending_navigation_api_key()` for context.
+  absl::optional<std::string> pending_navigation_api_key_;
+
+  // If this NavigationRequest is for a main-frame same-document back/forward
+  // navigation, any subframe NavigationRequests are deferred until the renderer
+  // has a chance to fire a navigate event. If the navigate
+  // event allows the navigation to proceed,
+  // UnblockPendingSubframeNavigationRequestsIfNeeded() will resume these
+  // requests
+  std::vector<base::WeakPtr<SubframeHistoryNavigationThrottle>>
+      subframe_history_navigation_throttles_;
+
+  // If this NavigationRequest is in a subframe and part of a history traversal,
+  // and the main frame is performing a same-document navigation, this token
+  // may be set if there is a possibility that JS in the main frame will cancel
+  // the history traversal via the navigate event. In that case, this token is
+  // used to look up the main frame's NavigationRequest so that it can be passed
+  // SubframeHistoryNavigationThrottle can defer this request until the main
+  // frame commits.
+  absl::optional<base::UnguessableToken>
+      main_frame_same_document_navigation_token_;
+
+  // The listener that receives cookie change events and maintains cookie change
+  // information for the domain of the URL that this `NavigationRequest` is
+  // navigating to. The listener will observe all the cookie changes starting
+  // from the navigation/redirection, and it will be moved to the
+  // `RenderFrameHostImpl` when the navigation is committed and continues
+  // observing until the destruction of the document.
+  // See `RenderFrameHostImpl::CookieChangeListener`.
+  std::unique_ptr<RenderFrameHostImpl::CookieChangeListener>
+      cookie_change_listener_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

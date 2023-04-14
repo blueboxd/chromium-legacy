@@ -160,7 +160,7 @@ Value::Value(Type type) {
     case Type::BINARY:
       data_.emplace<BlobStorage>();
       return;
-    case Type::DICTIONARY:
+    case Type::DICT:
       data_.emplace<Dict>();
       return;
     case Type::LIST:
@@ -743,6 +743,14 @@ absl::optional<Value> Value::Dict::ExtractByDottedPath(StringPiece path) {
   return extracted;
 }
 
+size_t Value::Dict::EstimateMemoryUsage() const {
+#if BUILDFLAG(ENABLE_BASE_TRACING)
+  return base::trace_event::EstimateMemoryUsage(storage_);
+#else   // BUILDFLAG(ENABLE_BASE_TRACING)
+  return 0;
+#endif  // BUILDFLAG(ENABLE_BASE_TRACING)
+}
+
 std::string Value::Dict::DebugString() const {
   return DebugStringImpl(*this);
 }
@@ -1023,38 +1031,6 @@ bool operator>=(const Value::List& lhs, const Value::List& rhs) {
   return !(lhs < rhs);
 }
 
-void Value::Append(bool value) {
-  GetList().Append(value);
-}
-
-void Value::Append(int value) {
-  GetList().Append(value);
-}
-
-void Value::Append(double value) {
-  GetList().Append(value);
-}
-
-void Value::Append(const char* value) {
-  GetList().Append(value);
-}
-
-void Value::Append(StringPiece value) {
-  GetList().Append(value);
-}
-
-void Value::Append(std::string&& value) {
-  GetList().Append(std::move(value));
-}
-
-void Value::Append(StringPiece16 value) {
-  GetList().Append(value);
-}
-
-void Value::Append(Value&& value) {
-  GetList().Append(std::move(value));
-}
-
 Value* Value::FindKey(StringPiece key) {
   return GetDict().Find(key);
 }
@@ -1095,11 +1071,11 @@ std::string* Value::FindStringKey(StringPiece key) {
 }
 
 const Value* Value::FindDictKey(StringPiece key) const {
-  return FindKeyOfType(key, Type::DICTIONARY);
+  return FindKeyOfType(key, Type::DICT);
 }
 
 Value* Value::FindDictKey(StringPiece key) {
-  return FindKeyOfType(key, Type::DICTIONARY);
+  return FindKeyOfType(key, Type::DICT);
 }
 
 const Value* Value::FindListKey(StringPiece key) const {
@@ -1186,7 +1162,7 @@ std::string* Value::FindStringPath(StringPiece path) {
 }
 
 const Value* Value::FindDictPath(StringPiece path) const {
-  return FindPathOfType(path, Type::DICTIONARY);
+  return FindPathOfType(path, Type::DICT);
 }
 
 Value* Value::FindDictPath(StringPiece path) {
@@ -1237,52 +1213,6 @@ bool Value::RemovePath(StringPiece path) {
   return GetDict().RemoveByDottedPath(path);
 }
 
-// DEPRECATED METHODS
-Value* Value::FindPath(std::initializer_list<StringPiece> path) {
-  return const_cast<Value*>(std::as_const(*this).FindPath(path));
-}
-
-Value* Value::FindPath(span<const StringPiece> path) {
-  return const_cast<Value*>(std::as_const(*this).FindPath(path));
-}
-
-const Value* Value::FindPath(std::initializer_list<StringPiece> path) const {
-  DCHECK_GE(path.size(), 2u) << "Use FindKey() for a path of length 1.";
-  return FindPath(make_span(path.begin(), path.size()));
-}
-
-const Value* Value::FindPath(span<const StringPiece> path) const {
-  const Value* cur = this;
-  for (const StringPiece& component : path) {
-    if (!cur->is_dict() || (cur = cur->FindKey(component)) == nullptr)
-      return nullptr;
-  }
-  return cur;
-}
-
-Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
-                             Type type) {
-  return const_cast<Value*>(std::as_const(*this).FindPathOfType(path, type));
-}
-
-Value* Value::FindPathOfType(span<const StringPiece> path, Type type) {
-  return const_cast<Value*>(std::as_const(*this).FindPathOfType(path, type));
-}
-
-const Value* Value::FindPathOfType(std::initializer_list<StringPiece> path,
-                                   Type type) const {
-  DCHECK_GE(path.size(), 2u) << "Use FindKeyOfType() for a path of length 1.";
-  return FindPathOfType(make_span(path.begin(), path.size()), type);
-}
-
-const Value* Value::FindPathOfType(span<const StringPiece> path,
-                                   Type type) const {
-  const Value* result = FindPath(path);
-  if (!result || result->type() != type)
-    return nullptr;
-  return result;
-}
-
 Value* Value::SetPath(std::initializer_list<StringPiece> path, Value&& value) {
   DCHECK_GE(path.size(), 2u) << "Use SetKey() for a path of length 1.";
   return SetPath(make_span(path.begin(), path.size()), std::move(value));
@@ -1301,11 +1231,12 @@ Value* Value::SetPath(span<const StringPiece> path, Value&& value) {
 
     // Use lower_bound to avoid doing the search twice for missing keys.
     const StringPiece path_component = *cur_path;
-    auto found = cur->dict().lower_bound(path_component);
-    if (found == cur->dict().end() || found->first != path_component) {
+    auto found = cur->GetDict().storage_.lower_bound(path_component);
+    if (found == cur->GetDict().storage_.end() ||
+        found->first != path_component) {
       // No key found, insert one.
-      auto inserted = cur->dict().try_emplace(
-          found, path_component, std::make_unique<Value>(Type::DICTIONARY));
+      auto inserted = cur->GetDict().storage_.try_emplace(
+          found, path_component, std::make_unique<Value>(Type::DICT));
       cur = inserted->second.get();
     } else {
       cur = found->second.get();
@@ -1319,11 +1250,11 @@ Value* Value::SetPath(span<const StringPiece> path, Value&& value) {
 }
 
 Value::dict_iterator_proxy Value::DictItems() {
-  return dict_iterator_proxy(&dict());
+  return dict_iterator_proxy(&GetDict().storage_);
 }
 
 Value::const_dict_iterator_proxy Value::DictItems() const {
-  return const_dict_iterator_proxy(&dict());
+  return const_dict_iterator_proxy(&GetDict().storage_);
 }
 
 size_t Value::DictSize() const {
@@ -1393,8 +1324,8 @@ size_t Value::EstimateMemoryUsage() const {
       return base::trace_event::EstimateMemoryUsage(GetString());
     case Type::BINARY:
       return base::trace_event::EstimateMemoryUsage(GetBlob());
-    case Type::DICTIONARY:
-      return base::trace_event::EstimateMemoryUsage(dict());
+    case Type::DICT:
+      return GetDict().EstimateMemoryUsage();
     case Type::LIST:
       return GetList().EstimateMemoryUsage();
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)

@@ -29,7 +29,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_frame.h"
-#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
+#include "media/mojo/mojom/fuchsia_media.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/client_native_pixmap_factory.h"
@@ -113,8 +113,19 @@ class TestSharedImageInterface : public gpu::SharedImageInterface {
     return gpu::Mailbox();
   }
 
+  gpu::Mailbox CreateSharedImage(viz::SharedImageFormat format,
+                                 const gfx::Size& size,
+                                 const gfx::ColorSpace& color_space,
+                                 GrSurfaceOrigin surface_origin,
+                                 SkAlphaType alpha_type,
+                                 uint32_t usage,
+                                 gpu::SurfaceHandle surface_handle) override {
+    ADD_FAILURE();
+    return gpu::Mailbox();
+  }
+
   gpu::Mailbox CreateSharedImage(
-      viz::ResourceFormat format,
+      viz::SharedImageFormat format,
       const gfx::Size& size,
       const gfx::ColorSpace& color_space,
       GrSurfaceOrigin surface_origin,

@@ -39,6 +39,7 @@ int g_next_message_id = 0;
 }  // namespace
 
 SimpleDevToolsProtocolClient::SimpleDevToolsProtocolClient() = default;
+
 SimpleDevToolsProtocolClient::SimpleDevToolsProtocolClient(
     const std::string& session_id)
     : session_id_(session_id) {}
@@ -103,7 +104,7 @@ void SimpleDevToolsProtocolClient::DispatchProtocolMessage(
           FROM_HERE,
           base::BindOnce(
               &SimpleDevToolsProtocolClient::DispatchProtocolMessageTask,
-              it->second->GetWeakPtr(), std::move(message)));
+              base::Unretained(it->second), std::move(message)));
       return;
     }
   }
@@ -111,7 +112,7 @@ void SimpleDevToolsProtocolClient::DispatchProtocolMessage(
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
       base::BindOnce(&SimpleDevToolsProtocolClient::DispatchProtocolMessageTask,
-                     GetWeakPtr(), std::move(message)));
+                     base::Unretained(this), std::move(message)));
 }
 
 void SimpleDevToolsProtocolClient::AgentHostClosed(
@@ -251,11 +252,6 @@ bool SimpleDevToolsProtocolClient::HasEventHandler(
   auto handler = std::find(handlers.cbegin(), handlers.cend(), event_callback);
 
   return handler != handlers.cend();
-}
-
-base::WeakPtr<SimpleDevToolsProtocolClient>
-SimpleDevToolsProtocolClient::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace simple_devtools_protocol_client

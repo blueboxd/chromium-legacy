@@ -66,10 +66,10 @@ using testing::ElementsAre;
 using testing::Pointee;
 using testing::UnorderedElementsAre;
 
-const char kGuid[] = "a21f010a-eac1-41fc-aee9-c06bbedfb292";
-const char kPrimaryAccountEmail[] = "syncuser@example.com";
-const char16_t kPrimaryAccountEmail16[] = u"syncuser@example.com";
-const std::string kAddressEntryIcon = "accountIcon";
+constexpr char kGuid[] = "a21f010a-eac1-41fc-aee9-c06bbedfb292";
+constexpr char kPrimaryAccountEmail[] = "syncuser@example.com";
+constexpr char16_t kPrimaryAccountEmail16[] = u"syncuser@example.com";
+constexpr char kAddressEntryIcon[] = "accountIcon";
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
@@ -875,6 +875,28 @@ TEST_F(PersonalDataManagerTest, AddUpdateRemoveProfiles) {
 
   // Verify that we've loaded the profiles from the web database.
   ExpectSameElements(profiles, personal_data_->GetProfiles());
+}
+
+TEST_F(PersonalDataManagerTest, MigrateProfileToAccount) {
+  const AutofillProfile kLocalProfile = test::GetFullProfile();
+  ASSERT_EQ(kLocalProfile.source(), AutofillProfile::Source::kLocalOrSyncable);
+  AddProfileToPersonalDataManager(kLocalProfile);
+
+  personal_data_->MigrateProfileToAccount(kLocalProfile);
+  WaitForOnPersonalDataChanged();
+  const std::vector<AutofillProfile*> profiles = personal_data_->GetProfiles();
+
+  // `kLocalProfile` should be gone and only the migrated account profile should
+  // exist.
+  ASSERT_EQ(profiles.size(), 1u);
+  const AutofillProfile kAccountProfile = *profiles[0];
+  EXPECT_EQ(kAccountProfile.source(), AutofillProfile::Source::kAccount);
+  EXPECT_EQ(kAccountProfile.initial_creator_id(),
+            AutofillProfile::kInitialCreatorOrModifierChrome);
+  EXPECT_EQ(kAccountProfile.last_modifier_id(),
+            AutofillProfile::kInitialCreatorOrModifierChrome);
+  EXPECT_NE(kLocalProfile.guid(), kAccountProfile.guid());
+  EXPECT_EQ(kLocalProfile.Compare(kAccountProfile), 0);
 }
 
 TEST_F(PersonalDataManagerTest, NoIBANsAddedIfDisabled) {
@@ -4685,100 +4707,6 @@ TEST_F(PersonalDataManagerTest, RemoveByGUID_ResetsBillingAddress) {
       EXPECT_EQ(profile1.guid(), card->billing_address_id());
     }
   }
-}
-
-TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics_NoStoredProfiles) {
-  base::HistogramTester histogram_tester;
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-  EXPECT_TRUE(personal_data_->GetProfiles().empty());
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileCount", 0, 1);
-  histogram_tester.ExpectTotalCount("Autofill.StoredProfileDisusedCount", 0);
-  histogram_tester.ExpectTotalCount("Autofill.StoredProfileUsedCount", 0);
-  histogram_tester.ExpectTotalCount("Autofill.StoredProfileUsedPercentage", 0);
-  histogram_tester.ExpectTotalCount("Autofill.StoredProfileWithoutCountryCount",
-                                    0);
-  histogram_tester.ExpectTotalCount("Autofill.DaysSinceLastUse.StoredProfile",
-                                    0);
-}
-
-TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics_NoUsedProfiles) {
-  // Add a recently used (3 days ago) profile.
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
-                       "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
-  profile0.set_use_date(AutofillClock::Now() - base::Days(200));
-  AddProfileToPersonalDataManager(profile0);
-
-  // Add a profile used a long time (200 days) ago without a country.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
-                       "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
-                       "32801", "", "15151231234");
-  profile1.set_use_date(AutofillClock::Now() - base::Days(200));
-  AddProfileToPersonalDataManager(profile1);
-
-  // Reload the database, which will log the stored profile counts.
-  base::HistogramTester histogram_tester;
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  EXPECT_EQ(2u, personal_data_->GetProfiles().size());
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileCount", 2, 1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileDisusedCount", 2,
-                                      1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileUsedCount", 0, 1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileUsedPercentage", 0,
-                                      1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.StoredProfileWithoutCountryCount", 1, 1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.DaysSinceLastUse.StoredProfile",
-                                      200, 2);
-}
-
-TEST_F(PersonalDataManagerTest, LogStoredProfileMetrics) {
-  // Add a recently used (3 days ago) profile.
-  AutofillProfile profile0(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile0, "Bob", "", "Doe", "", "Fox", "1212 Center.",
-                       "Bld. 5", "Orlando", "FL", "32801", "US", "19482937549");
-  profile0.set_use_date(AutofillClock::Now() - base::Days(3));
-  AddProfileToPersonalDataManager(profile0);
-
-  // Add a profile used a long time (200 days) ago without a country.
-  AutofillProfile profile1(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "Seb", "", "Doe", "", "ACME",
-                       "1234 Evergreen Terrace", "Bld. 5", "Springfield", "IL",
-                       "32801", "", "15151231234");
-  profile1.set_use_date(AutofillClock::Now() - base::Days(200));
-  AddProfileToPersonalDataManager(profile1);
-
-  // Reload the database, which will log the stored profile counts.
-  base::HistogramTester histogram_tester;
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  EXPECT_EQ(2u, personal_data_->GetProfiles().size());
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileCount", 2, 1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileDisusedCount", 1,
-                                      1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileUsedCount", 1, 1);
-
-  histogram_tester.ExpectUniqueSample("Autofill.StoredProfileUsedPercentage",
-                                      50, 1);
-
-  histogram_tester.ExpectUniqueSample(
-      "Autofill.StoredProfileWithoutCountryCount", 1, 1);
-
-  histogram_tester.ExpectTotalCount("Autofill.DaysSinceLastUse.StoredProfile",
-                                    2);
-  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.StoredProfile",
-                                     3, 1);
-  histogram_tester.ExpectBucketCount("Autofill.DaysSinceLastUse.StoredProfile",
-                                     200, 1);
 }
 
 TEST_F(PersonalDataManagerTest, LogStoredCreditCardMetrics) {

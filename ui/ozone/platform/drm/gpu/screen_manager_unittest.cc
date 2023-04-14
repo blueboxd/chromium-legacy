@@ -12,6 +12,7 @@
 
 #include "base/containers/contains.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/linux/gbm_buffer.h"
@@ -27,6 +28,7 @@
 #include "ui/ozone/platform/drm/gpu/screen_manager.h"
 
 namespace ui {
+
 namespace {
 
 constexpr drmModeModeInfo ConstructMode(uint16_t hdisplay, uint16_t vdisplay) {
@@ -68,10 +70,11 @@ class ScreenManagerTest : public testing::Test {
                      kDefaultMode.vdisplay);
   }
 
-  void InitializeDrmState(ui::MockDrmDevice* drm,
+  void InitializeDrmState(MockDrmDevice* drm,
                           const std::vector<CrtcState>& crtc_states,
                           bool is_atomic,
-                          bool use_modifiers_list = false) {
+                          bool use_modifiers_list = false,
+                          const std::vector<PlaneState>& movable_planes = {}) {
     size_t plane_count = crtc_states[0].planes.size();
     for (const auto& crtc_state : crtc_states) {
       ASSERT_EQ(plane_count, crtc_state.planes.size())
@@ -88,32 +91,41 @@ class ScreenManagerTest : public testing::Test {
     }
 
     auto drm_state =
-        ui::MockDrmDevice::MockDrmState::CreateStateWithAllProperties();
+        MockDrmDevice::MockDrmState::CreateStateWithAllProperties();
 
     // Set up the default format property ID for the cursor planes:
-    drm->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
-        ui::kInFormatsBlobIdBase, {DRM_FORMAT_XRGB8888}, drm_format_modifiers));
+    drm->SetPropertyBlob(MockDrmDevice::AllocateInFormatsBlob(
+        kInFormatsBlobIdBase, {DRM_FORMAT_XRGB8888}, drm_format_modifiers));
 
-    uint32_t blob_id = ui::kInFormatsBlobIdBase + 1;
+    std::vector<uint32_t> crtc_ids;
+    uint32_t blob_id = kInFormatsBlobIdBase + 1;
     for (const auto& crtc_state : crtc_states) {
       const auto& crtc = drm_state.AddCrtcAndConnector().first;
+      crtc_ids.push_back(crtc.id);
 
       for (size_t i = 0; i < crtc_state.planes.size(); ++i) {
         uint32_t new_blob_id = blob_id++;
-        drm->SetPropertyBlob(ui::MockDrmDevice::AllocateInFormatsBlob(
+        drm->SetPropertyBlob(MockDrmDevice::AllocateInFormatsBlob(
             new_blob_id, crtc_state.planes[i].formats, drm_format_modifiers));
 
         auto& plane = drm_state.AddPlane(
             crtc.id, i == 0 ? DRM_PLANE_TYPE_PRIMARY : DRM_PLANE_TYPE_OVERLAY);
-        plane.SetProp(ui::kInFormatsPropId, new_blob_id);
+        plane.SetProp(kInFormatsPropId, new_blob_id);
       }
+    }
+    for (const auto& movable_plane : movable_planes) {
+      uint32_t new_blob_id = blob_id++;
+      drm->SetPropertyBlob(MockDrmDevice::AllocateInFormatsBlob(
+          new_blob_id, movable_plane.formats, drm_format_modifiers));
+      auto& plane = drm_state.AddPlane(crtc_ids, DRM_PLANE_TYPE_OVERLAY);
+      plane.SetProp(kInFormatsPropId, new_blob_id);
     }
 
     drm->SetModifiersOverhead(modifiers_overhead_);
     drm->InitializeState(drm_state, is_atomic);
   }
 
-  void InitializeDrmStateWithDefault(ui::MockDrmDevice* drm,
+  void InitializeDrmStateWithDefault(MockDrmDevice* drm,
                                      bool is_atomic,
                                      bool use_modifiers_list = false) {
     // A Sample of CRTC states.
@@ -124,11 +136,11 @@ class ScreenManagerTest : public testing::Test {
   }
 
   void SetUp() override {
-    auto gbm = std::make_unique<ui::MockGbmDevice>();
+    auto gbm = std::make_unique<MockGbmDevice>();
     supported_modifiers_ = gbm->GetSupportedModifiers();
-    drm_ = new ui::MockDrmDevice(std::move(gbm));
-    device_manager_ = std::make_unique<ui::DrmDeviceManager>(nullptr);
-    screen_manager_ = std::make_unique<ui::ScreenManager>();
+    drm_ = new MockDrmDevice(std::move(gbm));
+    device_manager_ = std::make_unique<DrmDeviceManager>(nullptr);
+    screen_manager_ = std::make_unique<ScreenManager>();
   }
 
   void TearDown() override {
@@ -154,9 +166,9 @@ class ScreenManagerTest : public testing::Test {
   }
 
  protected:
-  scoped_refptr<ui::MockDrmDevice> drm_;
-  std::unique_ptr<ui::DrmDeviceManager> device_manager_;
-  std::unique_ptr<ui::ScreenManager> screen_manager_;
+  scoped_refptr<MockDrmDevice> drm_;
+  std::unique_ptr<DrmDeviceManager> device_manager_;
+  std::unique_ptr<ScreenManager> screen_manager_;
   std::vector<uint64_t> supported_modifiers_;
   base::flat_map<uint64_t /*modifier*/, int /*overhead*/> modifiers_overhead_{
       {DRM_FORMAT_MOD_LINEAR, 1},
@@ -187,7 +199,7 @@ TEST_F(ScreenManagerTest, CheckWithValidController) {
   EXPECT_EQ(drm_->get_test_modeset_count(), 1);
   EXPECT_EQ(drm_->get_commit_modeset_count(), 1);
 
-  ui::HardwareDisplayController* controller =
+  HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
 
   EXPECT_TRUE(controller);
@@ -585,6 +597,44 @@ TEST_F(ScreenManagerTest, CheckChangingMode) {
   EXPECT_EQ(new_mode.hdisplay, mode.hdisplay);
 }
 
+TEST_F(ScreenManagerTest, CheckChangingVrrState) {
+  InitializeDrmStateWithDefault(drm_.get(), /*is_atomic=*/true);
+  uint32_t crtc_id = drm_->crtc_property(0).id;
+  uint32_t connector_id = drm_->connector_property(0).id;
+
+  screen_manager_->AddDisplayController(drm_, crtc_id, connector_id);
+
+  // Modeset with default VRR state.
+  {
+    ScreenManager::ControllerConfigsList controllers_to_enable;
+    controllers_to_enable.emplace_back(
+        kPrimaryDisplayId, drm_, crtc_id, connector_id,
+        GetPrimaryBounds().origin(),
+        std::make_unique<drmModeModeInfo>(kDefaultMode), /*enable_vrr=*/false);
+    screen_manager_->ConfigureDisplayControllers(
+        controllers_to_enable, display::kTestModeset | display::kCommitModeset);
+
+    const HardwareDisplayController* hdc =
+        screen_manager_->GetDisplayController(GetPrimaryBounds());
+    EXPECT_EQ(0U, hdc->crtc_controllers()[0]->vrr_enabled());
+  }
+
+  // Modeset with a changed VRR state.
+  {
+    ScreenManager::ControllerConfigsList controllers_to_enable;
+    controllers_to_enable.emplace_back(
+        kPrimaryDisplayId, drm_, crtc_id, connector_id,
+        GetPrimaryBounds().origin(),
+        std::make_unique<drmModeModeInfo>(kDefaultMode), /*enable_vrr=*/true);
+    screen_manager_->ConfigureDisplayControllers(
+        controllers_to_enable, display::kTestModeset | display::kCommitModeset);
+
+    const HardwareDisplayController* hdc =
+        screen_manager_->GetDisplayController(GetPrimaryBounds());
+    EXPECT_EQ(1U, hdc->crtc_controllers()[0]->vrr_enabled());
+  }
+}
+
 TEST_F(ScreenManagerTest, CheckForControllersInMirroredMode) {
   InitializeDrmStateWithDefault(drm_.get(), /*is_atomic=*/true);
   uint32_t primary_crtc_id = drm_->crtc_property(0).id;
@@ -713,7 +763,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeModesettingWithDisplaysMode) {
   screen_manager_->ConfigureDisplayControllers(
       controllers_to_enable, display::kTestModeset | display::kCommitModeset);
 
-  ui::HardwareDisplayController* controller =
+  HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
   for (const auto& crtc : controller->crtc_controllers()) {
     if (crtc->crtc() == primary_crtc_id)
@@ -754,7 +804,7 @@ TEST_F(ScreenManagerTest, MonitorGoneInMirrorMode) {
   controllers_to_remove.emplace_back(secondary_crtc_id, drm_);
   screen_manager_->RemoveDisplayControllers(controllers_to_remove);
 
-  ui::HardwareDisplayController* controller =
+  HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
   EXPECT_TRUE(controller);
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -798,7 +848,7 @@ TEST_F(ScreenManagerTest, MonitorDisabledInMirrorMode) {
   screen_manager_->ConfigureDisplayControllers(
       controllers_to_enable, display::kTestModeset | display::kCommitModeset);
 
-  ui::HardwareDisplayController* controller =
+  HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
   EXPECT_TRUE(controller);
   EXPECT_FALSE(screen_manager_->GetDisplayController(GetSecondaryBounds()));
@@ -921,7 +971,7 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
         controllers_to_enable, display::kTestModeset | display::kCommitModeset);
   }
 
-  ui::HardwareDisplayController* controller =
+  HardwareDisplayController* controller =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
   EXPECT_TRUE(controller);
   EXPECT_FALSE(controller->IsMirrored());
@@ -942,9 +992,8 @@ TEST_F(ScreenManagerTest, CheckMirrorModeAfterBeginReEnabled) {
 }
 
 TEST_F(ScreenManagerTest, ConfigureOnDifferentDrmDevices) {
-  auto gbm_device = std::make_unique<ui::MockGbmDevice>();
-  scoped_refptr<ui::MockDrmDevice> drm2 =
-      new ui::MockDrmDevice(std::move(gbm_device));
+  auto gbm_device = std::make_unique<MockGbmDevice>();
+  scoped_refptr<MockDrmDevice> drm2 = new MockDrmDevice(std::move(gbm_device));
 
   InitializeDrmStateWithDefault(drm_.get(), /*is_atomic=*/false);
   std::vector<CrtcState> crtc_states = {
@@ -988,9 +1037,8 @@ TEST_F(ScreenManagerTest, ConfigureOnDifferentDrmDevices) {
 // treated independently.
 TEST_F(ScreenManagerTest,
        CheckProperConfigurationWithDifferentDeviceAndSameCrtc) {
-  auto gbm_device = std::make_unique<ui::MockGbmDevice>();
-  scoped_refptr<ui::MockDrmDevice> drm2 =
-      new ui::MockDrmDevice(std::move(gbm_device));
+  auto gbm_device = std::make_unique<MockGbmDevice>();
+  scoped_refptr<MockDrmDevice> drm2 = new MockDrmDevice(std::move(gbm_device));
 
   InitializeDrmStateWithDefault(drm_.get(), /*is_atomic=*/true);
   uint32_t crtc_id = drm_->crtc_property(0).id;
@@ -1019,9 +1067,9 @@ TEST_F(ScreenManagerTest,
   screen_manager_->ConfigureDisplayControllers(
       controllers_to_enable, display::kTestModeset | display::kCommitModeset);
 
-  ui::HardwareDisplayController* controller1 =
+  HardwareDisplayController* controller1 =
       screen_manager_->GetDisplayController(GetPrimaryBounds());
-  ui::HardwareDisplayController* controller2 =
+  HardwareDisplayController* controller2 =
       screen_manager_->GetDisplayController(GetSecondaryBounds());
 
   EXPECT_NE(controller1, controller2);
@@ -1034,8 +1082,8 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1060,8 +1108,8 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   gfx::Rect new_bounds = GetPrimaryBounds();
   new_bounds.Inset(gfx::Insets::TLBR(0, 0, 1, 1));
@@ -1091,8 +1139,8 @@ TEST_F(ScreenManagerTest,
 
   const size_t kWindowCount = 2;
   for (size_t i = 1; i < kWindowCount + 1; ++i) {
-    std::unique_ptr<ui::DrmWindow> window(
-        new ui::DrmWindow(i, device_manager_.get(), screen_manager_.get()));
+    std::unique_ptr<DrmWindow> window(
+        new DrmWindow(i, device_manager_.get(), screen_manager_.get()));
     window->Initialize();
     window->SetBounds(GetPrimaryBounds());
     screen_manager_->AddWindow(i, std::move(window));
@@ -1113,7 +1161,7 @@ TEST_F(ScreenManagerTest,
   EXPECT_TRUE(window1_has_controller ^ window2_has_controller);
 
   for (size_t i = 1; i < kWindowCount + 1; ++i) {
-    std::unique_ptr<ui::DrmWindow> window = screen_manager_->RemoveWindow(i);
+    std::unique_ptr<DrmWindow> window = screen_manager_->RemoveWindow(i);
     window->Shutdown();
   }
 }
@@ -1124,8 +1172,8 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
   uint32_t connector_id = drm_->connector_property(0).id;
 
   gfx::AcceleratedWidget window_id = 1;
-  std::unique_ptr<ui::DrmWindow> window(new ui::DrmWindow(
-      window_id, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(window_id, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(window_id, std::move(window));
@@ -1156,8 +1204,8 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1197,14 +1245,14 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> buffer =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(buffer, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1230,14 +1278,14 @@ TEST_F(ScreenManagerTest, DISABLED_RejectBufferWithIncompatibleModifiers) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   auto buffer = CreateBufferWithModifier(
       DRM_FORMAT_XRGB8888, I915_FORMAT_MOD_X_TILED, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(buffer, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1267,8 +1315,8 @@ TEST_F(ScreenManagerTest, ConfigureDisplayControllerShouldModesetOnce) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1552,14 +1600,14 @@ TEST_F(ScreenManagerTest, CloningPlanesOnModeset) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> buffer =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(buffer, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1590,17 +1638,17 @@ TEST_F(ScreenManagerTest, CloningMultiplePlanesOnModeset) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> primary =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
   scoped_refptr<DrmFramebuffer> overlay =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(primary, nullptr));
-  planes.push_back(ui::DrmOverlayPlane(overlay, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(primary, nullptr);
+  planes.emplace_back(overlay, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1632,14 +1680,14 @@ TEST_F(ScreenManagerTest, ModesetWithClonedPlanesNoOverlays) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> buffer =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(buffer, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(buffer, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1672,17 +1720,17 @@ TEST_F(ScreenManagerTest, ModesetWithClonedPlanesWithOverlaySucceeding) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> primary =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
   scoped_refptr<DrmFramebuffer> overlay =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(primary, nullptr));
-  planes.push_back(ui::DrmOverlayPlane(overlay, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(primary, nullptr);
+  planes.emplace_back(overlay, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1720,17 +1768,17 @@ TEST_F(ScreenManagerTest, ModesetWithClonedPlanesWithOverlayFailing) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<DrmFramebuffer> primary =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
   scoped_refptr<DrmFramebuffer> overlay =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(primary, nullptr));
-  planes.push_back(ui::DrmOverlayPlane(overlay, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(primary, nullptr);
+  planes.emplace_back(overlay, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1770,8 +1818,8 @@ TEST_F(ScreenManagerTest, ModesetWithNewBuffersOnModifiersChange) {
   uint32_t crtc_id = drm_->crtc_property(0).id;
   uint32_t connector_id = drm_->connector_property(0).id;
 
-  std::unique_ptr<ui::DrmWindow> window(
-      new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+  std::unique_ptr<DrmWindow> window(
+      new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
   window->Initialize();
   window->SetBounds(GetPrimaryBounds());
 
@@ -1779,9 +1827,9 @@ TEST_F(ScreenManagerTest, ModesetWithNewBuffersOnModifiersChange) {
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
   scoped_refptr<DrmFramebuffer> overlay =
       CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
-  ui::DrmOverlayPlaneList planes;
-  planes.push_back(ui::DrmOverlayPlane(primary, nullptr));
-  planes.push_back(ui::DrmOverlayPlane(overlay, nullptr));
+  DrmOverlayPlaneList planes;
+  planes.emplace_back(primary, nullptr);
+  planes.emplace_back(overlay, nullptr);
   window->SchedulePageFlip(std::move(planes), base::DoNothing(),
                            base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
@@ -1810,6 +1858,128 @@ TEST_F(ScreenManagerTest, ModesetWithNewBuffersOnModifiersChange) {
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();
+}
+
+TEST_F(ScreenManagerTest, PinnedPlanesAndHwMirroring) {
+  std::vector<CrtcState> crtc_states = {
+      {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
+      {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
+  };
+  std::vector<PlaneState> movable_planes = {{.formats = {DRM_FORMAT_XRGB8888}}};
+  InitializeDrmState(drm_.get(), crtc_states, /*is_atomic=*/true,
+                     /*use_modifiers_list=*/true, movable_planes);
+  uint32_t crtc_id_1 = drm_->crtc_property(0).id;
+  uint32_t connector_id_1 = drm_->connector_property(0).id;
+  uint32_t crtc_id_2 = drm_->crtc_property(1).id;
+  uint32_t connector_id_2 = drm_->connector_property(1).id;
+
+  screen_manager_->AddDisplayController(drm_, crtc_id_1, connector_id_1);
+  screen_manager_->AddDisplayController(drm_, crtc_id_2, connector_id_2);
+
+  // Set up the initial window:
+  {
+    std::unique_ptr<DrmWindow> window(
+        new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+    window->Initialize();
+    window->SetBounds(GetPrimaryBounds());
+    screen_manager_->AddWindow(1, std::move(window));
+  }
+
+  // Set up the first display only:
+  ScreenManager::ControllerConfigsList controllers_to_enable;
+  controllers_to_enable.emplace_back(
+      kPrimaryDisplayId, drm_, crtc_id_1, connector_id_1,
+      GetPrimaryBounds().origin(),
+      std::make_unique<drmModeModeInfo>(kDefaultMode));
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayControllers(
+      controllers_to_enable, display::kTestModeset | display::kCommitModeset));
+
+  // The movable plane will be associated with the first display:
+  {
+    DrmOverlayPlaneList planes;
+    planes.emplace_back(
+        CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size()), nullptr);
+    planes.emplace_back(
+        CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size()), nullptr);
+    screen_manager_->GetWindow(1)->SchedulePageFlip(
+        std::move(planes), base::DoNothing(), base::DoNothing());
+    drm_->RunCallbacks();
+  }
+
+  // We should now be able to set up a HW mirrored display:
+  controllers_to_enable.emplace_back(
+      kSecondaryDisplayId, drm_, crtc_id_2, connector_id_2,
+      GetPrimaryBounds().origin(),
+      std::make_unique<drmModeModeInfo>(kDefaultMode));
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayControllers(
+      controllers_to_enable, display::kTestModeset | display::kCommitModeset));
+
+  auto window = screen_manager_->RemoveWindow(1);
+  window->Shutdown();
+}
+
+TEST_F(ScreenManagerTest, PinnedPlanesAndModesetting) {
+  std::vector<CrtcState> crtc_states = {
+      {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
+      {.planes = {{.formats = {DRM_FORMAT_XRGB8888}}}},
+  };
+  std::vector<PlaneState> movable_planes = {{.formats = {DRM_FORMAT_XRGB8888}}};
+  InitializeDrmState(drm_.get(), crtc_states, /*is_atomic=*/true,
+                     /*use_modifiers_list=*/true, movable_planes);
+  uint32_t crtc_id_1 = drm_->crtc_property(0).id;
+  uint32_t connector_id_1 = drm_->connector_property(0).id;
+  uint32_t crtc_id_2 = drm_->crtc_property(1).id;
+  uint32_t connector_id_2 = drm_->connector_property(1).id;
+
+  screen_manager_->AddDisplayController(drm_, crtc_id_1, connector_id_1);
+  screen_manager_->AddDisplayController(drm_, crtc_id_2, connector_id_2);
+
+  // Set up the windows:
+  {
+    std::unique_ptr<DrmWindow> window(
+        new DrmWindow(1, device_manager_.get(), screen_manager_.get()));
+    std::unique_ptr<DrmWindow> window2(
+        new DrmWindow(2, device_manager_.get(), screen_manager_.get()));
+    window->Initialize();
+    window->SetBounds(GetPrimaryBounds());
+    screen_manager_->AddWindow(1, std::move(window));
+
+    window2->Initialize();
+    window2->SetBounds(GetSecondaryBounds());
+    screen_manager_->AddWindow(2, std::move(window2));
+  }
+
+  // Set up the first display only:
+  ScreenManager::ControllerConfigsList controllers_to_enable;
+  controllers_to_enable.emplace_back(
+      kPrimaryDisplayId, drm_, crtc_id_1, connector_id_1,
+      GetPrimaryBounds().origin(),
+      std::make_unique<drmModeModeInfo>(kDefaultMode));
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayControllers(
+      controllers_to_enable, display::kTestModeset | display::kCommitModeset));
+
+  // The movable plane will be associated with the first display:
+  {
+    DrmOverlayPlaneList planes;
+    planes.emplace_back(
+        CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size()), nullptr);
+    planes.emplace_back(
+        CreateBuffer(DRM_FORMAT_XRGB8888, GetPrimaryBounds().size()), nullptr);
+    screen_manager_->GetWindow(1)->SchedulePageFlip(
+        std::move(planes), base::DoNothing(), base::DoNothing());
+    drm_->RunCallbacks();
+  }
+
+  // We should now be able to set up a second display:
+  controllers_to_enable.emplace_back(
+      kSecondaryDisplayId, drm_, crtc_id_2, connector_id_2,
+      GetSecondaryBounds().origin(),
+      std::make_unique<drmModeModeInfo>(kDefaultMode));
+  EXPECT_TRUE(screen_manager_->ConfigureDisplayControllers(
+      controllers_to_enable, display::kTestModeset | display::kCommitModeset));
+
+  screen_manager_->RemoveWindow(1)->Shutdown();
+  screen_manager_->RemoveWindow(2)->Shutdown();
 }
 
 }  // namespace ui

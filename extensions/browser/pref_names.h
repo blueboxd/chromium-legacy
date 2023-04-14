@@ -43,6 +43,16 @@ extern const char kAppFullscreenAllowed[];
 // A boolean indicating if external extensions are blocked from installing.
 extern const char kBlockExternalExtensions[];
 
+// A preference for a list of Component extensions that have been
+// uninstalled/removed and should not be reloaded.
+extern const char kDeletedComponentExtensions[];
+
+// A list of app origins that will grant a long-lived background lifetime to
+// the connecting extension, if connected to them via persistent messaging
+// ports. The value is controlled by the
+// `ExtensionExtendedBackgroundLifetimeForPortConnectionsToUrls` policy.
+extern const char kExtendedBackgroundLifetimeForPortConnectionsToUrls[];
+
 // Dictionary pref that keeps track of per-extension settings. The keys are
 // extension ids.
 extern const char kExtensions[];
@@ -51,6 +61,11 @@ extern const char kExtensions[];
 // Values are expected to conform to the schema of the ExtensionManagement
 // policy.
 extern const char kExtensionManagement[];
+
+// An integer that indicates the availability of extensions that are unpublished
+// on the Chrome Web Store. More details can be found at
+// ExtensionUnpublishedAvailability.yaml
+extern const char kExtensionUnpublishedAvailability[];
 
 // Policy that indicates whether CRX2 extension updates are allowed.
 extern const char kInsecureExtensionUpdatesEnabled[];
@@ -98,10 +113,6 @@ extern const char kPinnedExtensions[];
 // on the next start of the browser.
 extern const char kStorageGarbageCollect[];
 
-// A preference for a list of Component extensions that have been
-// uninstalled/removed and should not be reloaded.
-extern const char kDeletedComponentExtensions[];
-
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_FUCHSIA)
 // A preference for whether Chrome Apps should be allowed. The default depends
@@ -109,6 +120,10 @@ extern const char kDeletedComponentExtensions[];
 // for Chrome Apps by enterprise policy.
 extern const char kChromeAppsEnabled[];
 #endif
+
+// A preference for an enterprise policy which is a temporary workaround for
+// behaviour changes to <webview>.
+extern const char kChromeAppsWebViewPermissiveBehaviorAllowed[];
 
 // Properties in kExtensions dictionaries --------------------------------------
 

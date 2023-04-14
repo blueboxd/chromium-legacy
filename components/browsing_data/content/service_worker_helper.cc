@@ -25,7 +25,7 @@ using content::StorageUsageInfo;
 namespace browsing_data {
 namespace {
 
-void GetAllOriginsInfoForServiceWorkerCallback(
+void OnGotAllStorageKeysInfoForServiceWorker(
     ServiceWorkerHelper::FetchCallback callback,
     const std::vector<StorageUsageInfo>& infos) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -54,16 +54,16 @@ ServiceWorkerHelper::~ServiceWorkerHelper() {}
 void ServiceWorkerHelper::StartFetching(FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
-  service_worker_context_->GetAllOriginsInfo(base::BindOnce(
-      &GetAllOriginsInfoForServiceWorkerCallback, std::move(callback)));
+  service_worker_context_->GetAllStorageKeysInfo(base::BindOnce(
+      &OnGotAllStorageKeysInfoForServiceWorker, std::move(callback)));
 }
 
 void ServiceWorkerHelper::DeleteServiceWorkers(const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(crbug.com/1199077): Update this when the cookie tree model understands
   // StorageKey.
-  service_worker_context_->DeleteForStorageKey(blink::StorageKey(origin),
-                                               base::DoNothing());
+  service_worker_context_->DeleteForStorageKey(
+      blink::StorageKey::CreateFirstParty(origin), base::DoNothing());
 }
 
 CannedServiceWorkerHelper::CannedServiceWorkerHelper(
@@ -101,7 +101,8 @@ void CannedServiceWorkerHelper::StartFetching(FetchCallback callback) {
 
   std::list<StorageUsageInfo> result;
   for (const auto& origin : pending_origins_)
-    result.emplace_back(blink::StorageKey(origin), 0, base::Time());
+    result.emplace_back(blink::StorageKey::CreateFirstParty(origin), 0,
+                        base::Time());
 
   std::move(callback).Run(result);
 }

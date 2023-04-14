@@ -16,7 +16,6 @@
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -291,6 +290,7 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockTest, BiodFailsBeforeLockScreenReady) {
   // Simulate a biod late start, giving us fingerprint records.
   EnrollFingerprint();
   biod_->SendRestarted();
+  biod_->SendStatusChanged(biod::BiometricsManagerStatus::INITIALIZED);
   base::RunLoop().RunUntilIdle();
 
   FingerprintState state_after_getting_records =
@@ -368,6 +368,7 @@ IN_PROC_BROWSER_TEST_F(FingerprintUnlockEnrollTest,
   // fingerprint records were previously recorded for this user.
   biod_->DestroyAllRecords(base::DoNothing());
   biod_->SendRestarted();
+  biod_->SendStatusChanged(biod::BiometricsManagerStatus::INITIALIZED);
   base::RunLoop().RunUntilIdle();
 
   FingerprintState state_after_bad_session =

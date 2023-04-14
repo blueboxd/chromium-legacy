@@ -225,6 +225,10 @@ class ASH_EXPORT WallpaperControllerImpl
                            bool show_wallpaper,
                            const base::FilePath& wallpaper_path);
 
+  // Returns false when the color extraction algorithm shouldn't be run based on
+  // system state (e.g. wallpaper image, SessionState, etc.).
+  bool ShouldCalculateColors() const;
+
   // WallpaperController:
   void SetClient(WallpaperControllerClient* client) override;
   void SetDriveFsDelegate(
@@ -233,6 +237,7 @@ class ASH_EXPORT WallpaperControllerImpl
             const base::FilePath& wallpapers,
             const base::FilePath& custom_wallpapers,
             const base::FilePath& device_policy_wallpaper) override;
+  bool CanSetUserWallpaper(const AccountId& account_id) const override;
   void SetCustomWallpaper(const AccountId& account_id,
                           const base::FilePath& file_path,
                           WallpaperLayout layout,
@@ -288,7 +293,8 @@ class ASH_EXPORT WallpaperControllerImpl
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(const AccountId& account_id) override;
+  void RemoveUserWallpaper(const AccountId& account_id,
+                           base::OnceClosure on_removed) override;
   void RemovePolicyWallpaper(const AccountId& account_id) override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
@@ -419,10 +425,12 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Implementation of |RemoveUserWallpaper|, which deletes |account_id|'s
   // custom wallpapers and directories.
-  void RemoveUserWallpaperImpl(const AccountId& account_id);
+  void RemoveUserWallpaperImpl(const AccountId& account_id,
+                               base::OnceClosure on_removed);
 
   void RemoveUserWallpaperImplWithFilesId(
       const AccountId& account_id,
+      base::OnceClosure on_removed,
       const std::string& wallpaper_files_id);
 
   // Implementation of |SetDefaultWallpaper|. Sets wallpaper to default if
@@ -431,10 +439,6 @@ class ASH_EXPORT WallpaperControllerImpl
   void SetDefaultWallpaperImpl(user_manager::UserType user_type,
                                bool show_wallpaper,
                                SetWallpaperCallback callback);
-
-  // When kiosk app is running or policy is enforced, setting a user wallpaper
-  // is not allowed.
-  bool CanSetUserWallpaper(const AccountId& account_id) const;
 
   // Returns true if the specified wallpaper is already stored in
   // |current_wallpaper_|. If |compare_layouts| is false, layout is ignored.
@@ -633,10 +637,6 @@ class ASH_EXPORT WallpaperControllerImpl
   // state.
   void OnColorCalculationComplete(const WallpaperInfo& info,
                                   const WallpaperCalculatedColors& colors);
-
-  // Returns false when the color extraction algorithm shouldn't be run based on
-  // system state (e.g. wallpaper image, SessionState, etc.).
-  bool ShouldCalculateColors() const;
 
   // The callback when decoding of the always-on-top wallpaper completes.
   void OnAlwaysOnTopWallpaperDecoded(const WallpaperInfo& info,

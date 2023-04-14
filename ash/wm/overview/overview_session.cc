@@ -44,6 +44,7 @@
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "ash/wm/overview/scoped_float_container_stacker.h"
 #include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -227,9 +228,7 @@ void OverviewSession::Init(const WindowList& windows,
 
     // Do not animate if there is any window that is being dragged in the
     // grid.
-    if (enter_exit_overview_type_ == OverviewEnterExitType::kImmediateEnter ||
-        enter_exit_overview_type_ ==
-            OverviewEnterExitType::kImmediateEnterWithoutFocus) {
+    if (ShouldEnterWithoutAnimations()) {
       overview_grid->PositionWindows(/*animate=*/false);
     } else {
       // Exit only types should not appear here:
@@ -300,6 +299,8 @@ void OverviewSession::Shutdown() {
 
   Shell::Get()->RemovePreTargetHandler(this);
   Shell::Get()->RemoveShellObserver(this);
+
+  float_container_stacker_.reset();
 
   tablet_mode_observation_.Reset();
 
@@ -790,6 +791,12 @@ void OverviewSession::OnStartingAnimationComplete(bool canceled,
 
   UpdateAccessibilityFocus();
   Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+
+  // TODO(sammiequon): This function shouldn't be called more than once but in
+  // tests with zero duration, it does. Investigate and convert to DCHECK.
+  if (!float_container_stacker_) {
+    float_container_stacker_ = std::make_unique<ScopedFloatContainerStacker>();
+  }
 }
 
 void OverviewSession::OnWindowActivating(
@@ -868,10 +875,14 @@ void OverviewSession::OnWindowActivating(
   // handle the window activation change. Check for split view mode without
   // using |SplitViewController::state_| which is updated asynchronously when
   // snapping an ARC window.
+  // We also check if `gained_active` is to-be-snapped transitional state. In
+  // the case, the window has not been attached to SplitViewController yet but
+  // will be very soon.
   SplitViewController* split_view_controller =
       SplitViewController::Get(gained_active);
   if (split_view_controller->primary_window() ||
-      split_view_controller->secondary_window()) {
+      split_view_controller->secondary_window() ||
+      split_view_controller->IsWindowInTransitionalState(gained_active)) {
     RestoreWindowActivation(false);
     return;
   }
@@ -1110,6 +1121,12 @@ bool OverviewSession::WillShowSavedDeskLibrary() const {
                             : grid_list_.front()->WillShowSavedDeskLibrary();
 }
 
+bool OverviewSession::ShouldEnterWithoutAnimations() const {
+  return enter_exit_overview_type_ == OverviewEnterExitType::kImmediateEnter ||
+         enter_exit_overview_type_ ==
+             OverviewEnterExitType::kImmediateEnterWithoutFocus;
+}
+
 void OverviewSession::UpdateAccessibilityFocus() {
   if (is_shutting_down())
     return;
@@ -1335,8 +1352,9 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     }
     case ui::VKEY_Z: {
       // Ctrl + Z undos a close all operation if the toast has not yet expired.
-      if (!is_control_down || !features::IsDesksCloseAllEnabled())
+      if (!is_control_down) {
         return;
+      }
 
       DesksController::Get()->MaybeCancelDeskRemoval();
       break;

@@ -204,6 +204,8 @@
     "transparent",
     "-webkit-link",
     "-webkit-activelink",
+    "accentcolor",
+    "accentcolortext",
     "activeborder",
     "activecaption",
     "activetext",
@@ -623,7 +625,6 @@
     "underline",
     "view",
     "wavy",
-    "-webkit-nowrap",
 
     // math-shift
     // normal
@@ -1605,8 +1606,10 @@
     // animation-[end-]delay
     // contain
     // cover
-    "enter",
+    "entry",
     "exit",
+    "entry-crossing",
+    "exit-crossing",
 
     // scroll()
     "root",

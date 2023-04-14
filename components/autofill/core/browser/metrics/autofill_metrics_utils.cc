@@ -8,7 +8,6 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/field_type_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/form_types.h"
 
 namespace autofill {
 
@@ -81,16 +80,69 @@ FieldFillingStatus GetFieldFillingStatus(const AutofillField& field) {
   return FieldFillingStatus::kManuallyFilledToDifferentType;
 }
 
-std::string GetMetricsSuffixByAutofillMethod(AutofillSuggestionMethod method) {
-  switch (method) {
-    case AutofillSuggestionMethod::KTouchToFillCreditCard:
-      return "TouchToFill";
-    case AutofillSuggestionMethod::kUnknown:
-      NOTREACHED();
-      break;
+AutofillProfileSourceCategory GetCategoryOfProfile(
+    const AutofillProfile& profile) {
+  switch (profile.source()) {
+    case AutofillProfile::Source::kLocalOrSyncable:
+      return AutofillProfileSourceCategory::kLocalOrSyncable;
+    case AutofillProfile::Source::kAccount:
+      return profile.initial_creator_id() ==
+                     AutofillProfile::kInitialCreatorOrModifierChrome
+                 ? AutofillProfileSourceCategory::kAccountChrome
+                 : AutofillProfileSourceCategory::kAccountNonChrome;
   }
-  NOTREACHED();
-  return "";
+}
+
+const char* GetProfileCategorySuffix(AutofillProfileSourceCategory category) {
+  switch (category) {
+    case AutofillProfileSourceCategory::kLocalOrSyncable:
+      return "Legacy";
+    case AutofillProfileSourceCategory::kAccountChrome:
+      return "AccountChrome";
+    case AutofillProfileSourceCategory::kAccountNonChrome:
+      return "AccountNonChrome";
+  }
+}
+
+SettingsVisibleFieldTypeForMetrics ConvertSettingsVisibleFieldTypeForMetrics(
+    ServerFieldType field_type) {
+  switch (field_type) {
+    case ServerFieldType::NAME_FULL:
+      return SettingsVisibleFieldTypeForMetrics::kName;
+
+    case ServerFieldType::EMAIL_ADDRESS:
+      return SettingsVisibleFieldTypeForMetrics::kEmailAddress;
+
+    case ServerFieldType::PHONE_HOME_WHOLE_NUMBER:
+      return SettingsVisibleFieldTypeForMetrics::kPhoneNumber;
+
+    case ServerFieldType::ADDRESS_HOME_CITY:
+      return SettingsVisibleFieldTypeForMetrics::kCity;
+
+    case ServerFieldType::ADDRESS_HOME_COUNTRY:
+      return SettingsVisibleFieldTypeForMetrics::kCountry;
+
+    case ServerFieldType::ADDRESS_HOME_ZIP:
+      return SettingsVisibleFieldTypeForMetrics::kZip;
+
+    case ServerFieldType::ADDRESS_HOME_STATE:
+      return SettingsVisibleFieldTypeForMetrics::kState;
+
+    case ServerFieldType::ADDRESS_HOME_STREET_ADDRESS:
+      return SettingsVisibleFieldTypeForMetrics::kStreetAddress;
+
+    case ServerFieldType::ADDRESS_HOME_DEPENDENT_LOCALITY:
+      return SettingsVisibleFieldTypeForMetrics::kDependentLocality;
+
+    case ServerFieldType::NAME_HONORIFIC_PREFIX:
+      return SettingsVisibleFieldTypeForMetrics::kHonorificPrefix;
+
+    case ServerFieldType::COMPANY_NAME:
+      return SettingsVisibleFieldTypeForMetrics::kCompany;
+
+    default:
+      return SettingsVisibleFieldTypeForMetrics::kUndefined;
+  }
 }
 
 }  // namespace autofill

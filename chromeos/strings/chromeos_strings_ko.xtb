@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">외부 기기용 펌웨어 업데이트 창이 열려 있습니다. 업데이트가 <ph name="NUM_UPDATES" />개 있습니다.</translation>
 <translation id="1145516343487477149">Chromebook과 관련된 일반적인 질문에 관한 도움말 및 답변 찾기</translation>
+<translation id="1167755866710282443">메뉴를 열어 키를 맞춤설정하세요. 이동하려면 메뉴를 드래그하세요.</translation>
 <translation id="1175697296044146566">이 <ph name="DEVICE_TYPE" /> 기기는 <ph name="MANAGER" />에서 관리합니다.</translation>
 <translation id="1175951029573070619">평균(<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">삭제</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">앨범 <ph name="TITLE" /> <ph name="DESC" /> 선택</translation>
 <translation id="4111761024568264522">USB 터치패드</translation>
 <translation id="4117637339509843559">어두운 모드</translation>
+<translation id="4130035430755296270">마우스를 가져가면 더 많은 레이아웃 옵션이 표시됩니다.</translation>
 <translation id="4131410914670010031">흑백</translation>
 <translation id="4145784616224233563">HTTP 방화벽</translation>
 <translation id="4147897805161313378">Google 포토</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS 변환</translation>
 <translation id="4848429997038228357">실행 중</translation>
 <translation id="4854586501323951986">내장 터치스크린</translation>
+<translation id="4855250849489639581">아래로 스와이프하면 더 많은 레이아웃 옵션이 표시됩니다</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />, 남은 시도 {0}회}other{<ph name="ERROR_MESSAGE" />, 남은 시도 {0}회}}</translation>
 <translation id="4873827928179867585">인증 알고리즘</translation>
 <translation id="4880328057631981605">액세스포인트 네임(APN)</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">이미지 1개</translation>
 <translation id="7177485034254901881">이 <ph name="DEVICE_TYPE" />은(는) <ph name="MANAGER" />에서 관리합니다. 관리자가 기기를 원격으로 구성할 수 있습니다.</translation>
 <translation id="7180611975245234373">새로고침</translation>
+<translation id="7180865173735832675">맞춤설정</translation>
 <translation id="7212734716605298123">외부 기기 펌웨어 업데이트</translation>
 <translation id="7216409898977639127">이동통신사</translation>
 <translation id="725133483556299729">이메일 선택</translation>

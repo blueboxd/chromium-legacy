@@ -27,11 +27,9 @@ const displayInfocard = (() => {
   ]);
 
   class Infocard {
-    /**
-     * @param {string} id
-     */
-    constructor(id) {
-      this._infocard = document.getElementById(id);
+    /** @param {!Element} infocardElt */
+    constructor(infocardElt) {
+      this._infocard = infocardElt;
       /** @type {HTMLSpanElement} */
       this._sizeInfo = this._infocard.querySelector('.size-info');
       /** @type {HTMLSpanElement} */
@@ -60,25 +58,26 @@ const displayInfocard = (() => {
      * @param {string} disassembly
      */
     _showDisassemblyOverlay(disassembly) {
-      const eltModal = document.getElementById('disassembly-modal');
-      const eltCode = document.getElementById('disassembly-code');
-      const eltDownload = /** @type {!HTMLAnchorElement} */ (
-          document.getElementById('disassembly-download'));
-      const eltClose = document.getElementById('disassembly-close');
+      const divModal = g_el.divDisassemblyModal;
+      const divCode = divModal.querySelector('.div-code');
+      const linkDownload = /** @type {!HTMLAnchorElement} */ (
+          divModal.querySelector('.link-download'));
+      const btnClose = /** @type {!HTMLButtonElement} */ (
+          divModal.querySelector('.btn-close'));
       const diffHtml = Diff2Html.html(disassembly, {
         drawFileList: false,
         matching: 'lines',
         outputFormat: 'side-by-side',
       });
-      eltCode.innerHTML = diffHtml;
-      eltModal.style.display = '';
+      divCode.innerHTML = diffHtml;
+      divModal.style.display = '';
       const blob = new Blob([disassembly], {type: 'text/plain'});
       const objectUrl = URL.createObjectURL(blob);
-      eltDownload.href = objectUrl;
-      eltClose.onclick = function() {
+      linkDownload.href = objectUrl;
+      btnClose.onclick = () => {
         URL.revokeObjectURL(objectUrl);
-        eltModal.style.display = 'none';
-      }
+        divModal.style.display = 'none';
+      };
     }
 
     /**
@@ -131,7 +130,7 @@ const displayInfocard = (() => {
       const elements = [];
 
       // srcPath is set only for leaf nodes.
-      if (typeof node.srcPath !== 'undefined') {
+      if (node.srcPath !== undefined) {
         const add_field = (title, text) => {
           const div = document.createElement('div');
           div.appendChild(dom.textElement('span', title, 'symbol-name-info'));
@@ -261,8 +260,9 @@ const displayInfocard = (() => {
   }
 
   class ArtifactInfocard extends Infocard {
-    constructor(id) {
-      super(id);
+    /** @param {!Element} infocardElt */
+    constructor(infocardElt) {
+      super(infocardElt);
       this._tableBody = this._infocard.querySelector('tbody');
       this._tableHeader = this._infocard.querySelector('thead');
       this._ctx = this._infocard.querySelector('canvas').getContext('2d');
@@ -304,7 +304,7 @@ const displayInfocard = (() => {
     _getTypeDescription(node, icon) {
       const depth = node.idPath.replace(/[^/]/g, '').length;
       if (depth === 0) {
-        const t = state.get('group_by');
+        const t = /** @type {string} */ (state.stGroupBy.get());
         if (t) {
           // Format, e.g., "generated_type" to "Generated type".
           return (t[0].toUpperCase() + t.slice(1)).replace(/_/g, ' ');
@@ -371,8 +371,8 @@ const displayInfocard = (() => {
      *   the total size of the symbols in the artifact.
      */
     _updateBreakdownRow(row, stats, percentage) {
-      if (stats == null || stats.size === 0) {
-        if (row.parentElement != null) {
+      if (!stats?.size) {  // Subsumes |size| === 0.
+        if (row.parentElement) {
           this._tableBody.removeChild(row);
         }
         return;
@@ -389,7 +389,7 @@ const displayInfocard = (() => {
       const sizeString = formatNumber(stats.size, 2, 2);
       const percentString = formatPercent(percentage, 2, 2);
 
-      const diffMode = state.has('diff_mode');
+      const diffMode = state.getDiffMode();
       if (diffMode && stats.added !== undefined) {
         addedColumn.removeAttribute('hidden');
         removedColumn.removeAttribute('hidden');
@@ -422,7 +422,7 @@ const displayInfocard = (() => {
       const statsEntries = Object.entries(artifactNode.childStats).sort(
         (a, b) => b[1].size - a[1].size
       );
-      const diffMode = state.has('diff_mode');
+      const diffMode = state.getDiffMode();
       let totalSize = 0;
       for (const [, stats] of statsEntries) {
         totalSize += Math.abs(stats.size);
@@ -437,7 +437,8 @@ const displayInfocard = (() => {
       // so displaying count isn't useful.
       // In non-diff view, we don't have added/removed/changed information, so
       // we just display a count.
-      if (diffMode && statsEntries[0][1].added !== undefined) {
+      if (diffMode && statsEntries.length > 0 &&
+          statsEntries[0][1].added !== undefined) {
         addedColumn.removeAttribute('hidden');
         removedColumn.removeAttribute('hidden');
         changedColumn.removeAttribute('hidden');
@@ -478,8 +479,8 @@ const displayInfocard = (() => {
     }
   }
 
-  const _artifactInfo = new ArtifactInfocard('infocard-artifact');
-  const _symbolInfo = new SymbolInfocard('infocard-symbol');
+  const _artifactInfo = new ArtifactInfocard(g_el.divInfocardArtifact);
+  const _symbolInfo = new SymbolInfocard(g_el.divInfocardSymbol);
 
   /**
    * Displays an infocard for the given symbol on the next frame.

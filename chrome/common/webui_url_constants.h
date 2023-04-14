@@ -16,6 +16,7 @@
 #include "build/chromeos_buildflags.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"
 #include "chrome/common/buildflags.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_buildflags.h"
 #include "printing/buildflags/buildflags.h"
@@ -144,15 +145,19 @@ extern const char kChromeUINewTabPageThirdPartyURL[];
 extern const char kChromeUINewTabURL[];
 extern const char kChromeUIOfflineInternalsHost[];
 extern const char kChromeUIOmniboxHost[];
+extern const char kChromeUIOmniboxURL[];
 extern const char kChromeUIOmniboxPopupHost[];
 extern const char kChromeUIOmniboxPopupURL[];
-extern const char kChromeUIOmniboxURL[];
+extern const char kChromeUISuggestInternalsHost[];
+extern const char kChromeUISuggestInternalsURL[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kChromeUIAppDisabledURL[];
 extern const char kChromeUIOsFlagsAppURL[];
 extern const char kChromeUIOsUrlAppURL[];
 #endif
 extern const char kChromeUIPasswordManagerInternalsHost[];
+extern const char kChromeUIPasswordManagerURL[];
+extern const char kChromeUIPasswordManagerCheckupURL[];
 extern const char kChromeUIPerformanceSettingsURL[];
 extern const char kChromeUIPolicyHost[];
 extern const char kChromeUIPolicyURL[];
@@ -249,6 +254,8 @@ extern const char kChromeUIReadAnythingSidePanelHost[];
 extern const char kChromeUIReadAnythingSidePanelURL[];
 extern const char kChromeUIReadLaterHost[];
 extern const char kChromeUIReadLaterURL[];
+extern const char kChromeUISearchCompanionSidePanelHost[];
+extern const char kChromeUISearchCompanionSidePanelURL[];
 extern const char kChromeUIUntrustedFeedURL[];
 extern const char kChromeUIUserNotesSidePanelHost[];
 extern const char kChromeUIUserNotesSidePanelURL[];
@@ -259,6 +266,8 @@ extern const char kChromeUIWebUITestHost[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kChromeUIGpuURL[];
 extern const char kChromeUIHistogramsURL[];
+extern const char kChromeUIKerberosInBrowserHost[];
+extern const char kChromeUIKerberosInBrowserURL[];
 extern const char kChromeUINotifGeneratorURL[];
 extern const char kChromeUINotifGeneratorHost[];
 #endif
@@ -302,6 +311,10 @@ extern const char kChromeUIDeviceEmulatorHost[];
 extern const char kChromeUIDiagnosticsAppURL[];
 extern const char kChromeUIEmojiPickerURL[];
 extern const char kChromeUIEmojiPickerHost[];
+extern const char kChromeUIEnterpriseReportingHost[];
+extern const char kChromeUIEnterpriseReportingURL[];
+extern const char kChromeUIHealthdInternalsHost[];
+extern const char kChromeUIHealthdInternalsURL[];
 extern const char kChromeUIInternetConfigDialogURL[];
 extern const char kChromeUIInternetDetailDialogURL[];
 extern const char kChromeUIInternetConfigDialogHost[];

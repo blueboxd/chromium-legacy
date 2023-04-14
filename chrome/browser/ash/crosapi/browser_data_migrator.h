@@ -55,7 +55,6 @@ class BrowserDataMigrator {
  public:
   // Represents a kind of the result status.
   enum class ResultKind {
-    kSkipped,
     kSucceeded,
     kFailed,
     kCancelled,
@@ -209,10 +208,6 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
                            MaybeRestartToMigrateWithMigrationStep);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorRestartTest,
                            MaybeRestartToMigrateMoveAfterCopy);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorRestartTest,
-                           LacrosProfileMigrationForAnyUserDisabled);
-  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorRestartTest,
-                           LacrosProfileMigrationForAnyUserDisabledForGoogler);
 
   // The common implementation of `MaybeRestartToMigrate` and
   // `MaybeRestartToMigrateWithDiskCheck`.

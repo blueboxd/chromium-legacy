@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">인터넷에 바로 연결</translation>
 <translation id="1272293450992660632">PIN 값이 일치하지 않습니다.</translation>
 <translation id="1280820357415527819">모바일 네트워크 검색 중</translation>
-<translation id="1291603679744561561">SIM 잠김</translation>
 <translation id="1293556467332435079">파일</translation>
 <translation id="1297922636971898492">현재 Google Drive를 사용할 수 없습니다. Google Drive를 다시 사용할 수 있게 되면 자동으로 업로드가 다시 시작됩니다.</translation>
 <translation id="1307931752636661898">Linux 파일을 볼 수 없음</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Parallels Desktop에 파일을 드롭하려면 파일을 Windows 파일 폴더로 이동해야 합니다.</translation>
 <translation id="1435838927755162558">Parallels Desktop과 폴더 공유</translation>
 <translation id="1439919885608649279">꽃에 둘러싸인 사람</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> 꺼내기</translation>
 <translation id="1471718551822868769">슬로바키아어</translation>
 <translation id="1482884275703521657">핀란드어</translation>
 <translation id="148466539719134488">스위스어</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">폴더 1개가 Bruschetta와 공유됨</translation>
 <translation id="2578394532502990878">타밀어(표음)</translation>
 <translation id="2579959351793446050">오리야어</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> 동기화 준비 중...</translation>
 <translation id="2602810353103180630">네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 차단함, 세부정보</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 동영상</translation>
 <translation id="2620090360073999360">현재 Google Drive에 연결할 수 없습니다.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">몽골어</translation>
 <translation id="3495304270784461826">오류가 <ph name="COUNT" />개 있습니다.</translation>
 <translation id="3509680540198371098">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 세부정보</translation>
+<translation id="3511705761158917664">항목 <ph name="NUMBER_OF_ITEMS" />개 동기화 준비 중...</translation>
 <translation id="3522708245912499433">포르투갈어</translation>
 <translation id="3524311639100184459">주의: 이 파일은 임시 파일이며 디스크 여유 공간을 확보하기 위해 자동으로 삭제될 수 있습니다.  <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">폴더</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">붙여넣기</translation>
 <translation id="3952872973865944257">텔루구어(표음)</translation>
+<translation id="3954354850384043518">진행 중</translation>
 <translation id="3958548648197196644">키위</translation>
 <translation id="3971140002794351170">모바일 프로필 다운로드, 네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">영어(영국)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">사용자 지정 네임서버</translation>
 <translation id="4465725236958772856">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, 관리자가 관리함, 연결</translation>
 <translation id="4470564870223067757">한글 두벌식</translation>
+<translation id="4474142134969976028">일치하는 결과가 없습니다.</translation>
 <translation id="4477002475007461989">루마니아어</translation>
 <translation id="4477219268485577442">불가리아어 표음</translation>
 <translation id="4508265954913339219">활성화 실패</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">이름은 <ph name="MAX_LENGTH" />자 이하여야 합니다</translation>
 <translation id="4973970068702235170">압축에 실패했습니다. 예상치 못한 오류: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">일본어</translation>
+<translation id="4987699874727873250">영어(인도)</translation>
 <translation id="4988205478593450158">'<ph name="FILE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="498902553138568924">붉은 나비</translation>
 <translation id="4992066212339426712">음소거 해제</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">최근 이미지 없음</translation>
 <translation id="7460898608667578234">우크라이나어</translation>
 <translation id="7469894403370665791">네트워크에 자동 연결</translation>
+<translation id="7481358317100446445">준비</translation>
 <translation id="7486315294984620427">Parallels Desktop에 파일을 드롭하려면 파일을 Windows 파일 폴더로 복사해야 합니다.</translation>
 <translation id="749452993132003881">히라가나</translation>
 <translation id="7495372004724182530">말라얄람어(표음)</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Google 포토에 쉽게 액세스하세요</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7663224033570512922">힌디어</translation>
+<translation id="7665680517722058469">다른 검색어를 사용해 보세요.</translation>
 <translation id="7689532716264131859">항목 <ph name="NUMBER_OF_ITEMS" />개를 휴지통으로 이동함</translation>
 <translation id="7693909743393669729">드라이브를 포맷하면 저장된 모든 데이터가 삭제되고 숨김 상태에 있는 파티션을 포함 기존 파티션이 모두 삭제됩니다. 이 작업은 되돌릴 수 없습니다.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" />을(를) 포맷할 수 없습니다.</translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">아랍어(음역)</translation>
 <translation id="8873014196523807561">항목을 복원하려면 새 폴더로 드래그하세요. 일부 항목의 원래 폴더가 삭제되었습니다</translation>
 <translation id="8874184842967597500">연결되지 않음</translation>
+<translation id="8876368061475701452">대기 중</translation>
 <translation id="8900820606136623064">헝가리어</translation>
 <translation id="8903931173357132290">졸업생</translation>
 <translation id="8912078710089354287">꼬리를 흔드는 개</translation>

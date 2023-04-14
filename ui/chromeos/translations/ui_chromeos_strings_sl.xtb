@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Naprej</translation>
 <translation id="1209796539517632982">Samodejni imenski strežniki</translation>
 <translation id="1210831758834677569">laoščina</translation>
+<translation id="1221555006497674479">Primanjkuje prostora za shranjevanje, še <ph name="REMAINING_PERCENTAGE" /> % od <ph name="TOTAL_SPACE" /> v deljenem prostoru za shranjevanje v Googlu Drive.</translation>
 <translation id="1243314992276662751">Prenesi</translation>
 <translation id="1249250836236328755">Zvrst</translation>
 <translation id="1254593899333212300">Neposredna internetna povezava</translation>
 <translation id="1272293450992660632">Vrednosti PIN se ne ujemajo.</translation>
 <translation id="1280820357415527819">Iskanje mobilnih omrežij</translation>
-<translation id="1291603679744561561">Kartica SIM je zaklenjena.</translation>
 <translation id="1293556467332435079">Datoteke</translation>
 <translation id="1297922636971898492">Google Drive trenutno ni na voljo. Ko bo spet na voljo, se bo prenos samodejno začel znova.</translation>
 <translation id="1307931752636661898">Ni si mogoče ogledati datotek za Linux</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Če želite spustiti datoteke v program Parallels Desktop, morate datoteko premakniti med datoteke sistema Windows.</translation>
 <translation id="1435838927755162558">Deljenje mape s programom Parallels Desktop</translation>
 <translation id="1439919885608649279">Oseba z rožami</translation>
+<translation id="1458457385801829801">Izvrzi <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">slovaščina</translation>
 <translation id="1482884275703521657">finščina</translation>
 <translation id="148466539719134488">švicarska</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">kitajščina (pinjin)</translation>
 <translation id="1646019627374511909">Omogočanje datotek (<ph name="NUMBER_OF_ITEMS" />) za dostop brez povezave</translation>
 <translation id="164969095109328410">Naprava Chrome</translation>
+<translation id="1661207570040737402">Porabili ste ves deljeni prostor za shranjevanje v Googlu Drive za Google Workspace.</translation>
 <translation id="1661867754829461514">Manjka PIN</translation>
 <translation id="166439687370499867">Spreminjanje omrežnih konfiguracij v skupni rabi ni dovoljeno</translation>
 <translation id="1665611772925418501">Datoteke ni bilo mogoče spremeniti.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">1 mapa je deljena z Bruschetto</translation>
 <translation id="2578394532502990878">tamilščina (fonetična)</translation>
 <translation id="2579959351793446050">odijščina</translation>
+<translation id="2587195714949534472">Priprava na sinhronizacijo datoteke <ph name="FILE_NAME" /> …</translation>
 <translation id="2602810353103180630">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, moč signala <ph name="SIGNAL_STRENGTH" /> %, blokiral skrbnik, podrobnosti</translation>
 <translation id="2614589611416690597">Videoposnetek <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Storitev Google Drive trenutno ni na voljo.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">mongolščina</translation>
 <translation id="3495304270784461826">Št. napak: <ph name="COUNT" />.</translation>
 <translation id="3509680540198371098">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" />%, podrobnosti</translation>
+<translation id="3511705761158917664">Priprava na sinhronizacijo datotek (<ph name="NUMBER_OF_ITEMS" />) …</translation>
 <translation id="3522708245912499433">portugalščina</translation>
 <translation id="3524311639100184459">Pozor: Te datoteke so začasne in bodo morda samodejno izbrisane, da se sprosti prostor na disku.  <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Mapa</translation>
@@ -347,10 +351,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Prilepi</translation>
 <translation id="3952872973865944257">teluščina (fonetična)</translation>
+<translation id="3954354850384043518">Poteka</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3971140002794351170">Profil za prenos v mobilni napravi, omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">angleščina (Združeno kraljestvo)</translation>
 <translation id="3975895378829046965">bengalščina (fonetična)</translation>
+<translation id="3999574733850440202">Nedavno odprte datoteke Microsoftove zbirke programov so bile premaknjene v OneDrive.</translation>
 <translation id="4002066346123236978">Naslov</translation>
 <translation id="4017788180641807848">angleščina (ZDA) s tipkovnico Workman</translation>
 <translation id="4019998208269143058">Pripni na hitre datoteke</translation>
@@ -406,6 +412,7 @@
 <translation id="4462159676511157176">Imenski strežniki po meri</translation>
 <translation id="4465725236958772856">Omrežje <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, upravlja ga vaš skrbnik, vzpostavitev povezave</translation>
 <translation id="4470564870223067757">Dvodelni hangulski način</translation>
+<translation id="4474142134969976028">Ni ustreznih rezultatov</translation>
 <translation id="4477002475007461989">romunščina</translation>
 <translation id="4477219268485577442">bolgarščina (fonetična)</translation>
 <translation id="4508265954913339219">Aktiviranje ni uspelo</translation>
@@ -477,6 +484,7 @@
 <translation id="4973523518332075481">Uporabite ime, ki vsebuje največ toliko znakov: <ph name="MAX_LENGTH" /></translation>
 <translation id="4973970068702235170">Ustvarjanje arhiva zip ni uspelo, nepričakovana napaka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japonščina</translation>
+<translation id="4987699874727873250">angleščina (Indija)</translation>
 <translation id="4988205478593450158">Ali ste prepričani, da želite izbrisati datoteko »<ph name="FILE_NAME" />«?</translation>
 <translation id="498902553138568924">Rdeč metulj</translation>
 <translation id="4992066212339426712">Vklopi zvok</translation>
@@ -786,6 +794,7 @@
 <translation id="7458955835361612701">Ni nedavnih slik</translation>
 <translation id="7460898608667578234">ukrajinščina</translation>
 <translation id="7469894403370665791">Samodejno vzpostavi povezavo s tem omrežjem</translation>
+<translation id="7481358317100446445">Pripravljeno</translation>
 <translation id="7486315294984620427">Če želite spustiti datoteke v program Parallels Desktop, morate datoteko kopirati med datoteke sistema Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajalščina (fonetična)</translation>
@@ -811,6 +820,7 @@
 <translation id="7655441028674523381">Preprost dostop do Googla Foto</translation>
 <translation id="7658239707568436148">Prekliči</translation>
 <translation id="7663224033570512922">hindijščina</translation>
+<translation id="7665680517722058469">Poskusite drugo iskanje</translation>
 <translation id="7689532716264131859">Št. elementov, premaknjenih v smetnjak: <ph name="NUMBER_OF_ITEMS" />.</translation>
 <translation id="7693909743393669729">Če formatirate pogon, se izbrišejo vsi podatki, shranjeni na njem, in odstranijo se vse obstoječe particije, tudi tiste, ki morda niso vidne. Tega dejanja ni mogoče razveljaviti.</translation>
 <translation id="7695430100978772476">Pogona <ph name="DRIVE_NAME" /> ni bilo mogoče formatirati</translation>
@@ -898,6 +908,7 @@
 <translation id="8300849813060516376">Storitev OTASP ni uspela</translation>
 <translation id="8312871300878166382">Prilepi v mapo</translation>
 <translation id="8329978297633540474">Golo besedilo</translation>
+<translation id="8332007959299458842">Nedavno odprte datoteke Microsoftove zbirke programov so bile premaknjene v Google Drive.</translation>
 <translation id="8335587457941836791">Odpenjanje s police</translation>
 <translation id="8335837413233998004">beloruščina</translation>
 <translation id="8336153091935557858">Včeraj <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -967,6 +978,7 @@
 <translation id="8866284467018526531">arabščina (transkripcija)</translation>
 <translation id="8873014196523807561">Če želite obnoviti te elemente, jih povlecite v novo mapo. Prvotne mape za nekatere od teh elementov so bile izbrisane.</translation>
 <translation id="8874184842967597500">Ni povezano</translation>
+<translation id="8876368061475701452">V čakalni vrsti</translation>
 <translation id="8900820606136623064">madžarščina</translation>
 <translation id="8903931173357132290">Prehod na običajen račun Google</translation>
 <translation id="8912078710089354287">Kuža, ki maha z repom</translation>

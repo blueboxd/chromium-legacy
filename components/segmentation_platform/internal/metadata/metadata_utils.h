@@ -8,6 +8,7 @@
 #include "base/time/time.h"
 #include "components/segmentation_platform/internal/database/signal_key.h"
 #include "components/segmentation_platform/internal/execution/processing/query_processor.h"
+#include "components/segmentation_platform/internal/proto/client_results.pb.h"
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
@@ -94,9 +95,12 @@ bool HasExpiredOrUnavailableResult(const proto::SegmentInfo& segment_info,
 bool HasFreshResults(const proto::SegmentInfo& segment_info,
                      const base::Time& now);
 
-// Helper method to read the time unit from the proto.
+// Helper method to read the time unit from the metadata proto.
 base::TimeDelta GetTimeUnit(
     const proto::SegmentationModelMetadata& model_metadata);
+
+// Helper method to convert the time unit to TimeDelta unit
+base::TimeDelta ConvertToTimeDelta(proto::TimeUnit time_unit);
 
 // Conversion methods between SignalKey::Kind and proto::SignalType.
 SignalKey::Kind SignalTypeToSignalKind(proto::SignalType signal_type);
@@ -120,6 +124,10 @@ std::vector<proto::UMAFeature> GetAllUmaFeatures(
 proto::PredictionResult CreatePredictionResult(
     const std::vector<float>& model_scores,
     const proto::OutputConfig& output_config,
+    base::Time timestamp);
+
+proto::ClientResult CreateClientResultFromPredResult(
+    proto::PredictionResult pred_result,
     base::Time timestamp);
 
 }  // namespace metadata_utils

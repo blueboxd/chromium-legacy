@@ -14,11 +14,13 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/aggregation_service/aggregation_service.mojom.h"
+#include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/registration_type.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/suitable_origin.h"
 #include "components/attribution_reporting/test_utils.h"
+#include "content/browser/attribution_reporting/attribution_constants.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/public/browser/navigation_handle.h"
@@ -32,6 +34,7 @@
 #include "content/shell/browser/shell.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/net_errors.h"
+#include "net/base/schemeful_site.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/default_handlers.h"
@@ -49,7 +52,7 @@ namespace content {
 
 namespace {
 
-using ::attribution_reporting::SuitableOrigin;
+using ::attribution_reporting::FilterPair;
 using ::attribution_reporting::mojom::RegistrationType;
 using ::testing::AllOf;
 using ::testing::ElementsAre;
@@ -133,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest, SourceRegistered) {
   EXPECT_EQ(source_data.size(), 1u);
   EXPECT_EQ(source_data.front().source_event_id, 5UL);
   EXPECT_EQ(source_data.front().destination,
-            *SuitableOrigin::Deserialize("https://d.test"));
+            net::SchemefulSite::Deserialize("https://d.test"));
   EXPECT_EQ(source_data.front().priority, 0);
   EXPECT_EQ(source_data.front().expiry, absl::nullopt);
   EXPECT_FALSE(source_data.front().debug_key);
@@ -182,7 +185,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
     EXPECT_EQ(source_data.size(), 1u);
     EXPECT_EQ(source_data.front().source_event_id, 5UL);
     EXPECT_EQ(source_data.front().destination,
-              *SuitableOrigin::Deserialize("https://d.test"));
+              net::SchemefulSite::Deserialize("https://d.test"));
     EXPECT_EQ(source_data.front().priority, 0);
     EXPECT_EQ(source_data.front().expiry, absl::nullopt);
     EXPECT_FALSE(source_data.front().debug_key);
@@ -509,10 +512,10 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(source_data.size(), 2u);
   EXPECT_EQ(source_data.front().source_event_id, 1UL);
   EXPECT_EQ(source_data.front().destination,
-            *SuitableOrigin::Deserialize("https://d.test"));
+            net::SchemefulSite::Deserialize("https://d.test"));
   EXPECT_EQ(source_data.back().source_event_id, 5UL);
   EXPECT_EQ(source_data.back().destination,
-            *SuitableOrigin::Deserialize("https://d.test"));
+            net::SchemefulSite::Deserialize("https://d.test"));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -546,7 +549,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(source_data.size(), 1u);
   EXPECT_EQ(source_data.back().source_event_id, 5UL);
   EXPECT_EQ(source_data.back().destination,
-            *SuitableOrigin::Deserialize("https://d.test"));
+            net::SchemefulSite::Deserialize("https://d.test"));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -594,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   http_response->set_code(net::HTTP_OK);
   http_response->AddCustomHeader("Access-Control-Allow-Origin", "*");
   http_response->AddCustomHeader(
-      "Attribution-Reporting-Register-Source",
+      kAttributionReportingRegisterSourceHeader,
       R"({"source_event_id":"5", "destination":"https://d.test"})");
   register_response->Send(http_response->ToResponseString());
   register_response->Done();
@@ -609,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(source_data.size(), 1u);
   EXPECT_EQ(source_data.back().source_event_id, 5UL);
   EXPECT_EQ(source_data.back().destination,
-            *SuitableOrigin::Deserialize("https://d.test"));
+            net::SchemefulSite::Deserialize("https://d.test"));
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
@@ -839,13 +842,12 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicTriggerBrowserTest,
   EXPECT_THAT(
       data_host->trigger_data(),
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-          /*filters=*/attribution_reporting::Filters(),
-          /*not_filters=*/attribution_reporting::Filters(),
+          FilterPair(),
           /*debug_key=*/Eq(absl::nullopt),
           EventTriggerDataListMatches(EventTriggerDataListMatcherConfig(
               ElementsAre(EventTriggerDataMatches(EventTriggerDataMatcherConfig(
                   /*data=*/7))))),
-          /*aggregatable_dedup_key=*/Eq(absl::nullopt),
+          attribution_reporting::AggregatableDedupKeyList(),
           /*debug_reporting=*/false,
           /*aggregatable_trigger_data=*/
           attribution_reporting::AggregatableTriggerDataList(),
@@ -902,36 +904,36 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_THAT(
       data_host->trigger_data(),
       ElementsAre(TriggerRegistrationMatches(TriggerRegistrationMatcherConfig(
-          /*filters=*/
-          *attribution_reporting::Filters::Create(
-              {{"w", {}}, {"x", {"y", "z"}}}),
-          /*not_filters=*/
-          *attribution_reporting::Filters::Create({{"a", {"b"}}}),
+          FilterPair{.positive = *attribution_reporting::Filters::Create(
+                         {{"w", {}}, {"x", {"y", "z"}}}),
+                     .negative = *attribution_reporting::Filters::Create(
+                         {{"a", {"b"}}})},
           /*debug_key=*/Optional(789),
           EventTriggerDataListMatches(
               EventTriggerDataListMatcherConfig(ElementsAre(
                   attribution_reporting::EventTriggerData(
                       /*data=*/1,
-                      /*priority=*/5, /*dedup_key=*/1024, /*filters=*/
-                      *attribution_reporting::Filters::Create({{"a", {"b"}}}),
-                      /*not_filters=*/
-                      *attribution_reporting::Filters::Create({{"c", {}}})),
+                      /*priority=*/5, /*dedup_key=*/1024,
+                      FilterPair{
+                          .positive = *attribution_reporting::Filters::Create(
+                              {{"a", {"b"}}}),
+                          .negative = *attribution_reporting::Filters::Create(
+                              {{"c", {}}})}),
                   attribution_reporting::EventTriggerData(
                       /*data=*/2, /*priority=*/10,
                       /*dedup_key=*/absl::nullopt,
-                      /*filters=*/attribution_reporting::Filters(),
-                      /*not_filters=*/
-                      *attribution_reporting::Filters::Create(
-                          {{"d", {"e", "f"}}, {"g", {}}}))))),
-          /*aggregatable_dedup_key=*/Optional(123),
+                      FilterPair{.negative =
+                                     *attribution_reporting::Filters::Create(
+                                         {{"d", {"e", "f"}}, {"g", {}}})})))),
+          *attribution_reporting::AggregatableDedupKeyList::Create(
+              {attribution_reporting::AggregatableDedupKey(
+                  /*dedup_key=*/123, FilterPair())}),
           /*debug_reporting=*/true,
           /*aggregatable_trigger_data=*/
           *attribution_reporting::AggregatableTriggerDataList::Create(
               {*attribution_reporting::AggregatableTriggerData::Create(
                   /*key_piece=*/absl::MakeUint128(/*high=*/0, /*low=*/1),
-                  /*source_keys=*/{"key"},
-                  /*filters=*/attribution_reporting::Filters(),
-                  /*not_filters=*/attribution_reporting::Filters())}),
+                  /*source_keys=*/{"key"}, FilterPair())}),
           /*aggregatable_values=*/
           *attribution_reporting::AggregatableValues::Create({{"key", 123}}),
           ::aggregation_service::mojom::AggregationCoordinator::kAwsCloud))));

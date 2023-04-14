@@ -45,9 +45,6 @@ export class Panel extends PanelInterface {
     /** @private {!MenuManager} */
     this.menuManager_ = new MenuManager();
 
-    /** @private {!Object<!PanelNodeMenuId, !PanelNodeMenu>} */
-    this.nodeMenuDictionary_ = {};
-
     /** @private {boolean} */
     this.originalStickyState_ = false;
 
@@ -113,7 +110,7 @@ export class Panel extends PanelInterface {
     BridgeHelper.registerHandler(
         BridgeConstants.Panel.TARGET,
         BridgeConstants.Panel.Action.ADD_MENU_ITEM,
-        itemData => this.addNodeMenuItem_(itemData));
+        itemData => this.menuManager_.addNodeMenuItem(itemData));
     BridgeHelper.registerHandler(
         BridgeConstants.Panel.TARGET,
         BridgeConstants.Panel.Action.ON_CURRENT_RANGE_CHANGED,
@@ -320,13 +317,14 @@ export class Panel extends PanelInterface {
 
       // Build the top-level menus.
       const searchMenu = this.addSearchMenu_('panel_search_menu');
-      const jumpMenu = this.addMenu_('panel_menu_jump');
-      const speechMenu = this.addMenu_('panel_menu_speech');
-      const touchMenu =
-          touchScreen ? this.addMenu_('panel_menu_touchgestures') : null;
-      const tabsMenu = this.addMenu_('panel_menu_tabs');
-      const chromevoxMenu = this.addMenu_('panel_menu_chromevox');
-      const actionsMenu = this.addMenu_('panel_menu_actions');
+      const jumpMenu = this.menuManager_.addMenu('panel_menu_jump');
+      const speechMenu = this.menuManager_.addMenu('panel_menu_speech');
+      const touchMenu = touchScreen ?
+          this.menuManager_.addMenu('panel_menu_touchgestures') :
+          null;
+      const tabsMenu = this.menuManager_.addMenu('panel_menu_tabs');
+      const chromevoxMenu = this.menuManager_.addMenu('panel_menu_chromevox');
+      const actionsMenu = this.menuManager_.addMenu('panel_menu_actions');
 
       // Add a menu item that opens the full list of ChromeBook keyboard
       // shortcuts. We want this to be at the top of the ChromeVox menu.
@@ -375,7 +373,11 @@ export class Panel extends PanelInterface {
         binding.keySeq = await KeyUtil.keySequenceToString(keySeq, true);
         const titleMsgId = CommandStore.messageForCommand(command);
         if (!titleMsgId) {
-          console.error('No localization for: ' + command);
+          // Title messages are intentionally missing for some keyboard
+          // shortcuts.
+          if (!(command in COMMANDS_WITH_NO_MSG_ID)) {
+            console.error('No localization for: ' + command);
+          }
           binding.title = '';
           continue;
         }
@@ -477,7 +479,7 @@ export class Panel extends PanelInterface {
           async () => this.onClose_());
 
       for (const menuData of ALL_PANEL_MENU_NODE_DATA) {
-        this.addNodeMenu_(menuData);
+        this.menuManager_.addNodeMenu(menuData);
       }
       await BackgroundBridge.PanelBackground.createAllNodeMenuBackgrounds(
           opt_activateMenuTitle);
@@ -513,7 +515,7 @@ export class Panel extends PanelInterface {
           this.menuManager_.getSelectedMenu(opt_activateMenuTitle);
 
       const activateFirstItem = (selectedMenu !== this.menuManager_.searchMenu);
-      this.activateMenu_(selectedMenu, activateFirstItem);
+      this.menuManager_.activateMenu(selectedMenu, activateFirstItem);
     };
 
     // The panel does not get focus immediately when we request to be full
@@ -539,25 +541,6 @@ export class Panel extends PanelInterface {
   }
 
   /**
-   * Create a new menu with the given name and add it to the menu bar.
-   * @param {string} menuMsg The msg id of the new menu to add.
-   * @return {!PanelMenu} The menu just created.
-   * @private
-   */
-  addMenu_(menuMsg) {
-    const menu = new PanelMenu(menuMsg);
-    $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener(
-        'mouseover',
-        () => this.activateMenu_(menu, true /* activateFirstItem */), false);
-    menu.menuBarItemElement.addEventListener(
-        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event), false);
-    $('menus_background').appendChild(menu.menuContainerElement);
-    this.menuManager_.menus.push(menu);
-    return menu;
-  }
-
-  /**
    * Updates the content shown on the virtual braille display.
    * @param {*=} data The data sent through the PanelCommand.
    * @private
@@ -566,7 +549,7 @@ export class Panel extends PanelInterface {
     const groups = data.groups;
     const cols = data.cols;
     const rows = data.rows;
-    const sideBySide = LocalStorage.get('brailleSideBySide');
+    const sideBySide = SettingsManager.get('brailleSideBySide');
 
     const addBorders = event => {
       const cell = event.target;
@@ -699,32 +682,6 @@ export class Panel extends PanelInterface {
   }
 
   /**
-   * Create a new node menu with the given name and add it to the menu bar.
-   * @param {!PanelNodeMenuData} menuData The title/predicate for the new menu.
-   * @private
-   */
-  addNodeMenu_(menuData) {
-    const menu = new PanelNodeMenu(menuData.titleId);
-    $('menu-bar').appendChild(menu.menuBarItemElement);
-    menu.menuBarItemElement.addEventListener(
-        'mouseover',
-        () => this.activateMenu_(menu, true /* activateFirstItem */));
-    menu.menuBarItemElement.addEventListener(
-        'mouseup', event => this.onMouseUpOnMenuTitle_(menu, event));
-    $('menus_background').appendChild(menu.menuContainerElement);
-    this.menuManager_.menus.push(menu);
-    this.nodeMenuDictionary_[menuData.menuId] = menu;
-  }
-
-  /**
-   * @param {!PanelNodeMenuItemData} itemData
-   * @private
-   */
-  addNodeMenuItem_(itemData) {
-    this.nodeMenuDictionary_[itemData.menuId].addItemFromData(itemData);
-  }
-
-  /**
    * Create a new search menu with the given name and add it to the menu bar.
    * @param {string} menuMsg The msg id of the new menu to add.
    * @return {!PanelMenu} The menu just created.
@@ -747,43 +704,18 @@ export class Panel extends PanelInterface {
     $('menu-bar').appendChild(this.menuManager_.searchMenu.menuBarItemElement);
     this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
         'mouseover',
-        () => this.activateMenu_(
+        () => this.menuManager_.activateMenu(
             this.menuManager_.searchMenu, false /* activateFirstItem */),
         false);
     this.menuManager_.searchMenu.menuBarItemElement.addEventListener(
         'mouseup',
-        event =>
-            this.onMouseUpOnMenuTitle_(this.menuManager_.searchMenu, event),
+        event => this.menuManager_.onMouseUpOnMenuTitle(
+            this.menuManager_.searchMenu, event),
         false);
     $('menus_background')
         .appendChild(this.menuManager_.searchMenu.menuContainerElement);
     this.menuManager_.menus.push(this.menuManager_.searchMenu);
     return this.menuManager_.searchMenu;
-  }
-
-  /**
-   * Activate a menu, which implies hiding the previous active menu.
-   * @param {PanelMenu} menu The new menu to activate.
-   * @param {boolean} activateFirstItem Whether or not we should activate the
-   *     menu's first item.
-   * @private
-   */
-  activateMenu_(menu, activateFirstItem) {
-    if (menu === this.menuManager_.activeMenu) {
-      return;
-    }
-
-    if (this.menuManager_.activeMenu) {
-      this.menuManager_.activeMenu.deactivate();
-      this.menuManager_.activeMenu = null;
-    }
-
-    this.menuManager_.activeMenu = menu;
-    this.pendingCallback_ = null;
-
-    if (this.menuManager_.activeMenu) {
-      this.menuManager_.activeMenu.activate(activateFirstItem);
-    }
   }
 
   /**
@@ -833,7 +765,7 @@ export class Panel extends PanelInterface {
       return;
     }
 
-    this.activateMenu_(
+    this.menuManager_.activateMenu(
         this.menuManager_.menus[activeIndex], true /* activateFirstItem */);
   }
 
@@ -895,19 +827,6 @@ export class Panel extends PanelInterface {
           this.menuManager_.activeMenu.getCallbackForElement(target);
     }
     this.closeMenusAndRestoreFocus();
-  }
-
-  /**
-   * Activate a menu whose title has been clicked. Stop event propagation at
-   * this point so we don't close the ChromeVox menus and restore focus.
-   * @param {PanelMenu} menu The menu we would like to activate.
-   * @param {Event} mouseUpEvent The mouseup event.
-   * @private
-   */
-  onMouseUpOnMenuTitle_(menu, mouseUpEvent) {
-    this.activateMenu_(menu, true /* activateFirstItem */);
-    mouseUpEvent.preventDefault();
-    mouseUpEvent.stopPropagation();
   }
 
   /**
@@ -1197,7 +1116,7 @@ export class Panel extends PanelInterface {
     const query = event.target.value.toLowerCase();
     this.menuManager_.searchMenu.clear();
     // Show the search results menu.
-    this.activateMenu_(
+    this.menuManager_.activateMenu(
         this.menuManager_.searchMenu, false /* activateFirstItem */);
     // Populate.
     if (query) {
@@ -1274,13 +1193,13 @@ export class Panel extends PanelInterface {
   }
 
   /** @private */
-  onPanLeft_() {
-    chrome.extension.getBackgroundPage()['ChromeVox'].braille.panLeft();
+  async onPanLeft_() {
+    await BackgroundBridge.Braille.panLeft();
   }
 
   /** @private */
-  onPanRight_() {
-    chrome.extension.getBackgroundPage()['ChromeVox'].braille.panRight();
+  async onPanRight_() {
+    await BackgroundBridge.Braille.panRight();
   }
 
   /** @private */
@@ -1306,6 +1225,21 @@ Panel.ACTION_TO_MSG_ID = {
   showContextMenu: 'show_context_menu',
   longClick: 'force_long_click_on_current_item',
 };
+
+const COMMANDS_WITH_NO_MSG_ID = [
+  'nativeNextCharacter',
+  'nativePreviousCharacter',
+  'nativeNextWord',
+  'nativePreviousWord',
+  'enableLogging',
+  'disableLogging',
+  'dumpTree',
+  'showActionsMenu',
+  'enableChromeVoxArcSupportForCurrentApp',
+  'disableChromeVoxArcSupportForCurrentApp',
+  'showTalkBackKeyboardShortcuts',
+  'copy',
+];
 
 window.addEventListener('load', async () => await Panel.init(), false);
 

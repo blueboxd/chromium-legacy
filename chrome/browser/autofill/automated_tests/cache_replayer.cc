@@ -32,8 +32,7 @@
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 #include "third_party/zlib/google/compression_utils.h"
 
-namespace autofill {
-namespace test {
+namespace autofill::test {
 
 using base::JSONParserOptions;
 using base::JSONReader;
@@ -226,13 +225,13 @@ bool IsSingleFormRequest(const AutofillPageQueryRequest& query) {
 
 // Validates, retrieves, and decodes node |node_name| from |request_node| and
 // returns it in |decoded_value|. Returns false if unsuccessful.
-bool RetrieveValueFromRequestNode(const base::Value& request_node,
+bool RetrieveValueFromRequestNode(const base::Value::Dict& request_node,
                                   const std::string node_name,
                                   std::string* decoded_value) {
   // Get and check field node string.
   std::string serialized_value;
   {
-    const base::Value* node = request_node.FindKey(node_name);
+    const base::Value* node = request_node.Find(node_name);
     if (!CheckNodeType(node, node_name, base::Value::Type::STRING)) {
       VLOG(1) << "Invalid Node in WPR archive";
       return false;
@@ -252,7 +251,7 @@ bool RetrieveValueFromRequestNode(const base::Value& request_node,
 
 // Gets AutofillQueryContents from WPR recorded HTTP request body for POST.
 ErrorOr<AutofillPageQueryRequest> GetAutofillQueryFromRequestNode(
-    const base::Value& request_node) {
+    const base::Value::Dict& request_node) {
   std::string decoded_request_text;
   if (!RetrieveValueFromRequestNode(request_node, "SerializedRequest",
                                     &decoded_request_text)) {
@@ -272,7 +271,7 @@ ErrorOr<AutofillPageQueryRequest> GetAutofillQueryFromRequestNode(
 // Gets AutofillQueryResponseContents from WPR recorded HTTP response body.
 // Also populates and returns the split |response_header_text|.
 ErrorOr<AutofillQueryResponse> GetAutofillResponseFromRequestNode(
-    const base::Value& request_node,
+    const base::Value::Dict& request_node,
     std::string* response_header_text) {
   std::string compressed_response_text;
   if (!RetrieveValueFromRequestNode(request_node, "SerializedResponse",
@@ -381,7 +380,7 @@ ServerCacheReplayer::Status PopulateCacheFromQueryNode(
     bool is_post_request =
         GetRequestTypeFromURL(query_node.url) == RequestType::kQueryProtoPOST;
     ErrorOr<AutofillPageQueryRequest> query_request_statusor =
-        is_post_request ? GetAutofillQueryFromRequestNode(request)
+        is_post_request ? GetAutofillQueryFromRequestNode(request.GetDict())
                         : GetAutofillQueryFromGETQueryURL(GURL(query_node.url));
     // Only proceed if successfully parse the query request proto, else drop to
     // failure space.
@@ -396,7 +395,8 @@ ServerCacheReplayer::Status PopulateCacheFromQueryNode(
       // old behavior still and skip decompression and combination steps.
       if (!split_requests_by_form || is_single_form_request) {
         std::string compressed_response_text;
-        if (RetrieveValueFromRequestNode(request, "SerializedResponse",
+        if (RetrieveValueFromRequestNode(request.GetDict(),
+                                         "SerializedResponse",
                                          &compressed_response_text)) {
           (*cache_to_fill)[key] = compressed_response_text;
           VLOG(1) << "Cached response content for key: " << key;
@@ -406,7 +406,8 @@ ServerCacheReplayer::Status PopulateCacheFromQueryNode(
         // Get AutofillQueryResponseContents and response header text.
         std::string response_header_text;
         ErrorOr<AutofillQueryResponse> query_response_statusor =
-            GetAutofillResponseFromRequestNode(request, &response_header_text);
+            GetAutofillResponseFromRequestNode(request.GetDict(),
+                                               &response_header_text);
         if (!query_response_statusor.has_value()) {
           VLOG(1) << "Unable to get AutofillQueryResponse from WPR node"
                   << "SerializedResponse for request:" << key;
@@ -436,17 +437,13 @@ ServerCacheReplayer::Status PopulateCacheFromQueryNode(
   return ServerCacheReplayer::Status{ServerCacheReplayer::StatusCode::kOk, ""};
 }
 
-// Finds the Autofill server Query node in dictionary node. Gives nullptr if
-// cannot find the node or |domain_dict| is invalid. The |domain_dict| has to
-// outlive any usage of the returned value node pointers.
+// Finds the Autofill server Query nodes in a dictionary node. The |domain| has
+// to outlive any usage of the returned value node pointers.
 std::vector<QueryNode> FindQueryNodesInDomainDict(
-    const base::Value& domain_dict,
+    const base::Value::Dict& domain,
     const std::string& url_prefix) {
-  if (!domain_dict.is_dict()) {
-    return {};
-  }
   std::vector<QueryNode> nodes;
-  for (auto pair : domain_dict.DictItems()) {
+  for (auto pair : domain) {
     if (pair.first.find(url_prefix) != std::string::npos) {
       nodes.push_back(QueryNode{GURL(pair.first), &pair.second});
     }
@@ -493,12 +490,19 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
   }
 
   {
-    const base::Value* domain_node =
-        root_node.FindPath({"Requests", kApiServerDomain});
-    std::vector<QueryNode> query_nodes =
-        domain_node
-            ? FindQueryNodesInDomainDict(*domain_node, kApiServerUrlGetPrefix)
-            : std::vector<QueryNode>();
+    std::vector<QueryNode> query_nodes;
+    const base::Value::Dict* root_node_dict = root_node.GetIfDict();
+    if (root_node_dict) {
+      const base::Value::Dict* requests = root_node_dict->FindDict("Requests");
+      if (requests) {
+        const base::Value::Dict* domain_node =
+            requests->FindDict(kApiServerDomain);
+        if (domain_node) {
+          query_nodes =
+              FindQueryNodesInDomainDict(*domain_node, kApiServerUrlGetPrefix);
+        }
+      }
+    }
 
     // Fill cache with the content of each Query node. There are 3 possible
     // situations: (1) there is a single Query node that contains POST requests
@@ -905,5 +909,4 @@ bool ServerUrlLoader::InterceptAutofillRequest(
   return false;
 }
 
-}  // namespace test
-}  // namespace autofill
+}  // namespace autofill::test

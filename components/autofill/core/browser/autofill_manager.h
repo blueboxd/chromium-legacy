@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -18,6 +19,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
+#include "base/types/pass_key.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
@@ -30,7 +32,6 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/translate/core/browser/translate_driver.h"
-#include "components/version_info/channel.h"
 
 namespace gfx {
 class RectF;
@@ -45,6 +46,7 @@ struct FormData;
 struct FormFieldData;
 class FormStructure;
 class LogManager;
+class TouchToFillDelegateImpl;
 
 // This class defines the interface should be implemented by autofill
 // implementation in browser side to interact with AutofillDriver.
@@ -65,50 +67,68 @@ class AutofillManager
   // without a corresponding OnAfterFoo() call are:
   // - if the number of cached forms exceeds `kAutofillManagerMaxFormCacheSize`;
   // - if this AutofillManager has been destroyed or reset in the meantime.
+  // - if the request in AutofillDownloadManager was not successful (i.e. no 2XX
+  //   response code or a null response body).
   //
   // The main purpose are unit tests. New pairs of events may be added as
   // needed.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnAutofillManagerDestroyed() {}
-    virtual void OnAutofillManagerReset() {}
+    virtual void OnAutofillManagerDestroyed(AutofillManager& manager) {}
+    virtual void OnAutofillManagerReset(AutofillManager& manager) {}
 
-    virtual void OnBeforeLanguageDetermined() {}
-    virtual void OnAfterLanguageDetermined() {}
+    virtual void OnBeforeLanguageDetermined(AutofillManager& manager) {}
+    virtual void OnAfterLanguageDetermined(AutofillManager& manager) {}
 
-    virtual void OnBeforeFormsSeen() {}
-    virtual void OnAfterFormsSeen() {}
+    virtual void OnBeforeFormsSeen(AutofillManager& manager,
+                                   base::span<const FormGlobalId> forms) {}
+    virtual void OnAfterFormsSeen(AutofillManager& manager,
+                                  base::span<const FormGlobalId> forms) {}
 
-    virtual void OnBeforeTextFieldDidChange() {}
-    virtual void OnAfterTextFieldDidChange() {}
+    virtual void OnBeforeTextFieldDidChange(AutofillManager& manager,
+                                            FormGlobalId form,
+                                            FieldGlobalId field) {}
+    virtual void OnAfterTextFieldDidChange(AutofillManager& manager,
+                                           FormGlobalId form,
+                                           FieldGlobalId field) {}
 
-    virtual void OnBeforeDidFillAutofillFormData() {}
-    virtual void OnAfterDidFillAutofillFormData() {}
+    virtual void OnBeforeDidFillAutofillFormData(AutofillManager& manager,
+                                                 FormGlobalId form) {}
+    virtual void OnAfterDidFillAutofillFormData(AutofillManager& manager,
+                                                FormGlobalId form) {}
 
-    virtual void OnBeforeAskForValuesToFill() {}
-    virtual void OnAfterAskForValuesToFill() {}
+    virtual void OnBeforeAskForValuesToFill(AutofillManager& manager,
+                                            FormGlobalId form,
+                                            FieldGlobalId field) {}
+    virtual void OnAfterAskForValuesToFill(AutofillManager& manager,
+                                           FormGlobalId form,
+                                           FieldGlobalId field) {}
 
-    virtual void OnBeforeJavaScriptChangedAutofilledValue() {}
-    virtual void OnAfterJavaScriptChangedAutofilledValue() {}
+    virtual void OnBeforeJavaScriptChangedAutofilledValue(
+        AutofillManager& manager,
+        FormGlobalId form,
+        FieldGlobalId field) {}
+    virtual void OnAfterJavaScriptChangedAutofilledValue(
+        AutofillManager& manager,
+        FormGlobalId form,
+        FieldGlobalId field) {}
 
-    virtual void OnBeforeFormSubmitted() {}
-    virtual void OnAfterFormSubmitted() {}
+    virtual void OnBeforeFormSubmitted(AutofillManager& manager,
+                                       FormGlobalId form) {}
+    virtual void OnAfterFormSubmitted(AutofillManager& manager,
+                                      FormGlobalId form) {}
+
+    virtual void OnBeforeLoadedServerPredictions(AutofillManager& manager) {}
+    virtual void OnAfterLoadedServerPredictions(AutofillManager& manager) {}
 
     // TODO(crbug.com/1330105): Clean up API: delete the events that don't
     // follow the OnBeforeFoo() / OnAfterFoo() pattern.
-    virtual void OnFormParsed() {}
-    virtual void OnTextFieldDidChange() {}
-    virtual void OnTextFieldDidScroll() {}
-    virtual void OnSelectControlDidChange() {}
-    virtual void OnFormSubmitted() {}
+    virtual void OnFormParsed(AutofillManager& manager) {}
+    virtual void OnTextFieldDidChange(AutofillManager& manager) {}
+    virtual void OnTextFieldDidScroll(AutofillManager& manager) {}
+    virtual void OnSelectControlDidChange(AutofillManager& manager) {}
+    virtual void OnFormSubmitted(AutofillManager& manager) {}
   };
-
-  using EnableDownloadManager =
-      base::StrongAlias<struct EnableDownloadManagerTag, bool>;
-
-  // Raw metadata uploading enabled iff this Chrome instance is on Canary or Dev
-  // channel.
-  static bool IsRawMetadataUploadingEnabled(version_info::Channel channel);
 
   // TODO(crbug.com/1151542): Move to anonymous namespace once
   // BrowserAutofillManager::OnLoadedServerPredictions() moves to
@@ -131,6 +151,11 @@ class AutofillManager
   const AutofillClient* client() const {
     DCHECK(!driver()->IsPrerendering());
     return client_;
+  }
+
+  AutofillClient* unsafe_client(
+      base::PassKey<TouchToFillDelegateImpl> pass_key) {
+    return AutofillManager::unsafe_client();
   }
 
   // Returns a WeakPtr to the leaf class.
@@ -170,9 +195,10 @@ class AutofillManager
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
   // a window relative value of |field|.
   // |bounding_box| are viewport coordinates.
-  // |touch_to_fill_eligible| indicates if the Touch To Fill surface could be
-  // used for showing suggestion. Note that it doesn't guarantee the given form
-  // input field is eligible for autofilling.
+  // |form_element_was_clicked| indicates if any of the form fields were
+  // clicked/tapped. Used to understand if the Touch To Fill or the Fast
+  // Checkout surface could be used for showing suggestions. Note that it
+  // doesn't guarantee the given form input field is eligible for autofilling.
   // Virtual for testing.
   virtual void OnAskForValuesToFill(
       const FormData& form,
@@ -282,10 +308,20 @@ class AutofillManager
 
   // Returns nullptr if no cached form structure is found with a matching
   // |form_id|. Runs in logarithmic time.
-  FormStructure* FindCachedFormByRendererId(FormGlobalId form_id) const;
+  FormStructure* FindCachedFormById(FormGlobalId form_id) const;
 
   // Returns the number of forms this Autofill handler is aware of.
   size_t NumFormsDetected() const { return form_structures_.size(); }
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void SetShouldSuppressKeyboard(bool suppress);
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual bool CanShowAutofillUi() const;
+
+  // Forwards call to the same-named `AutofillDriver` function.
+  virtual void TriggerReparseInAllFrames(
+      base::OnceCallback<void(bool success)> trigger_reparse_finished_callback);
 
   void AddObserver(Observer* observer) { observers_.AddObserver(observer); }
 
@@ -293,9 +329,11 @@ class AutofillManager
     observers_.RemoveObserver(observer);
   }
 
-  void NotifyObservers(void (Observer::*event)()) {
-    for (Observer& observer : observers_)
-      base::invoke(event, observer);
+  template <typename Functor, typename... Args>
+  void NotifyObservers(const Functor& functor, const Args&... args) {
+    for (Observer& observer : observers_) {
+      base::invoke(functor, observer, *this, args...);
+    }
   }
 
   // Returns the present form structures seen by Autofill handler.
@@ -308,7 +346,7 @@ class AutofillManager
   const AutofillDriver* driver() const { return driver_; }
 
   AutofillDownloadManager* download_manager() {
-    return download_manager_.get();
+    return client()->GetDownloadManager();
   }
 
   // The return value shouldn't be cached, retrieve it as needed.
@@ -324,17 +362,6 @@ class AutofillManager
       const std::vector<FormSignature>& queried_form_signatures) {
     OnLoadedServerPredictions(response, queried_form_signatures);
   }
-  void OnServerRequestErrorForTest(
-      FormSignature form_signature,
-      AutofillDownloadManager::RequestType request_type,
-      int http_error) {
-    OnServerRequestError(form_signature, request_type, http_error);
-  }
-
-  void set_download_manager_for_test(
-      std::unique_ptr<AutofillDownloadManager> manager) {
-    download_manager_ = std::move(manager);
-  }
 
   std::map<FormGlobalId, std::unique_ptr<FormStructure>>*
   mutable_form_structures_for_test() {
@@ -346,10 +373,7 @@ class AutofillManager
   }
 
  protected:
-  AutofillManager(AutofillDriver* driver,
-                  AutofillClient* client,
-                  version_info::Channel channel,
-                  EnableDownloadManager enable_download_manager);
+  AutofillManager(AutofillDriver* driver, AutofillClient* client);
 
   LogManager* log_manager() { return log_manager_; }
 
@@ -496,9 +520,6 @@ class AutofillManager
   void OnLoadedServerPredictions(
       std::string response,
       const std::vector<FormSignature>& queried_form_signatures) override;
-  void OnServerRequestError(FormSignature form_signature,
-                            AutofillDownloadManager::RequestType request_type,
-                            int http_error) override;
 
   // Invoked when forms from OnFormsSeen() have been parsed to
   // |form_structures|.
@@ -525,10 +546,6 @@ class AutofillManager
 
   // Our copy of the form data.
   std::map<FormGlobalId, std::unique_ptr<FormStructure>> form_structures_;
-
-  // Handles queries and uploads to Autofill servers. Will be nullptr if
-  // the download manager functionality is disabled.
-  std::unique_ptr<AutofillDownloadManager> download_manager_;
 
   // Utility for logging URL keyed metrics.
   std::unique_ptr<AutofillMetrics::FormInteractionsUkmLogger>

@@ -19,9 +19,9 @@
 #include "base/no_destructor.h"
 #include "base/posix/safe_strerror.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/trace_event/typed_macros.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/blob_utils.h"
 #include "media/capture/video/chromeos/camera_3a_controller.h"
@@ -355,7 +355,7 @@ void CameraDeviceDelegate::AllocateAndStart(
       camera_hal_delegate_->GetCameraIdFromDeviceId(
           device_descriptor_.device_id),
       device_ops_.BindNewPipeAndPassReceiver(),
-      BindToCurrentLoop(
+      base::BindPostTaskToCurrentDefault(
           base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
   device_ops_.set_disconnect_handler(base::BindOnce(
       &CameraDeviceDelegate::OnMojoConnectionError, GetWeakPtr()));
@@ -451,6 +451,16 @@ void CameraDeviceDelegate::SetPhotoOptions(
     return;
   }
 
+  // Abort if background blur does not have already the desired value.
+  if (settings->has_background_blur_mode &&
+      (!ash::features::IsVideoConferenceEnabled() ||
+       current_effects_.is_null() ||
+       settings->background_blur_mode !=
+           (current_effects_->blur_enabled ? mojom::BackgroundBlurMode::BLUR
+                                           : mojom::BackgroundBlurMode::OFF))) {
+    return;
+  }
+
   // Set the vendor tag into with given |name| and |value|. Returns true if
   // the vendor tag is set and false otherwise.
   auto to_uint8_vector = [](int32_t value) {
@@ -499,8 +509,8 @@ void CameraDeviceDelegate::SetPhotoOptions(
 
       request_manager_->SetRepeatingCaptureMetadata(
           cros::mojom::CameraMetadataTag::ANDROID_SCALER_CROP_REGION,
-          cros::mojom::EntryType::TYPE_INT32, 4,
-          SerializeMetadataValueFromSpan(base::make_span(region, 4)));
+          cros::mojom::EntryType::TYPE_INT32, std::size(region),
+          SerializeMetadataValueFromSpan<int32_t>(region));
 
       VLOG(1) << "zoom ratio:" << settings->zoom << " scaler.crop.region("
               << region[0] << "," << region[1] << "," << region[2] << ","
@@ -756,6 +766,7 @@ void CameraDeviceDelegate::OnClosed(int32_t result) {
   if (request_manager_) {
     request_manager_->RemoveResultMetadataObserver(this);
   }
+  CameraHalDispatcherImpl::GetInstance()->RemoveCameraEffectObserver(this);
   ResetMojoInterface();
   device_context_ = nullptr;
   current_blob_resolution_.SetSize(0, 0);
@@ -825,6 +836,13 @@ void CameraDeviceDelegate::Initialize() {
       std::move(callback_ops),
       base::BindOnce(&CameraDeviceDelegate::OnInitialized, GetWeakPtr()));
   request_manager_->AddResultMetadataObserver(this);
+  // The callback passed to CameraHalDispatcherImpl will be called on a
+  // different thread inside CameraHalDispatcherImpl, so we need always
+  // post the callback onto current task runner.
+  CameraHalDispatcherImpl::GetInstance()->AddCameraEffectObserver(
+      this, base::BindPostTaskToCurrentDefault(base::BindOnce(
+                &CameraDeviceDelegate::OnCameraEffectObserverAdded,
+                weak_ptr_factory_.GetWeakPtr())));
 
   // For Intel IPU6 platform, set power mode to high quality for CCA and low
   // power mode for others.
@@ -1248,7 +1266,7 @@ void CameraDeviceDelegate::OnConstructedDefaultStillCaptureRequestSettings(
     if (camera_app_device) {
       camera_app_device->ConsumeReprocessOptions(
           std::move(take_photo_callback),
-          media::BindToCurrentLoop(base::BindOnce(
+          base::BindPostTaskToCurrentDefault(base::BindOnce(
               &RequestManager::TakePhoto, request_manager_->GetWeakPtr(),
               settings.Clone())));
     } else {
@@ -1514,6 +1532,29 @@ void CameraDeviceDelegate::OnResultMetadataAvailable(
   }
 }
 
+void CameraDeviceDelegate::OnCameraEffectObserverAdded(
+    cros::mojom::EffectsConfigPtr current_effects) {
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  current_effects_ = std::move(current_effects);
+}
+
+void CameraDeviceDelegate::OnCameraEffectChanged(
+    const cros::mojom::EffectsConfigPtr& new_effects) {
+  if (!ipc_task_runner_->BelongsToCurrentThread()) {
+    ipc_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CameraDeviceDelegate::OnCameraEffectChanged,
+                                  GetWeakPtr(), new_effects.Clone()));
+    return;
+  }
+
+  DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+  if (!current_effects_.is_null() &&
+      current_effects_->blur_enabled != new_effects->blur_enabled) {
+    device_context_->OnCaptureConfigurationChanged();
+  }
+  current_effects_ = new_effects.Clone();
+}
+
 void CameraDeviceDelegate::DoGetPhotoState(
     VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
@@ -1769,14 +1810,15 @@ void CameraDeviceDelegate::DoGetPhotoState(
   // configuration setting if the feature flag is enabled.
   //
   // https://w3c.github.io/mediacapture-extensions/#exposing-mediastreamtrack-source-background-blur-support
-  if (ash::features::IsBackgroundBlurEnabled()) {
-    callback = base::BindOnce(
-        [](VideoCaptureDevice::GetPhotoStateCallback callback,
-           media::mojom::PhotoStatePtr photo_state) {
-          CameraHalDispatcherImpl::GetInstance()->GetCameraEffects(
-              std::move(callback), std::move(photo_state));
-        },
-        std::move(callback));
+  if (ash::features::IsVideoConferenceEnabled() &&
+      !current_effects_.is_null()) {
+    photo_state->supported_background_blur_modes = {
+        current_effects_->blur_enabled ? mojom::BackgroundBlurMode::BLUR
+                                       : mojom::BackgroundBlurMode::OFF};
+
+    photo_state->background_blur_mode = current_effects_->blur_enabled
+                                            ? mojom::BackgroundBlurMode::BLUR
+                                            : mojom::BackgroundBlurMode::OFF;
   }
 
   std::move(callback).Run(std::move(photo_state));

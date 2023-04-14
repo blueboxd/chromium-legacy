@@ -12,7 +12,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1131805035311359397">Jei norite patikrinti, ar slaptažodžiai apsaugoti nuo duomenų saugos pažeidimų bei kitų saugos problemų, <ph name="BEGIN_LINK" />prisijunkite prie „Chromium“<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Apie „Chromium“</translation>
 <translation id="1203500561924088507">Dėkojame už diegimą. Turite iš naujo paleisti naršyklę, prieš naudodami „<ph name="BUNDLE_NAME" />“.</translation>
-<translation id="1231839967188101156">Įjungus, „Chromium“ atlaisvina atminties iš neaktyvių skirtukų. Taip aktyviems skirtukams ir kitoms programoms suteikiama daugiau kompiuterio išteklių ir „Chromium“ veikia sparčiai. Neaktyvūs skirtukai automatiškai vėl tampa aktyvūs, kai grįžtate į juos. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Atminties taupymo priemonė paspartino „Chromium“</translation>
 <translation id="1315551408014407711">Nustatykite naują „Chromium“ profilį</translation>
 <translation id="1396446129537741364">„Chromium“ bando parodyti slaptažodžius.</translation>
@@ -34,6 +33,7 @@ Leidimai, kuriuos jau esate suteikę svetainėms ir programoms, gali būti taiko
 <translation id="185970820835152459">Galite tvarkyti „Google“ paskyras, prie kurių prisijungiate. Jūsų „Google“ paskyros naudojamos naršyklei „Chromium“, „Play“ parduotuvei, „Gmail“ ir kt. Jei norite kam nors pridėti paskyrą, pvz., šeimos grupės nariui, pridėkite naują asmenį prie „<ph name="DEVICE_TYPE" />“ įrenginio. <ph name="LINK_BEGIN" />Sužinokite daugiau<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Svetainėse gali būti saugoma su „Chromium“ susijusi informacija apie jūsų pomėgius. Pavyzdžiui, jei apsilankote svetainėje norėdami įsigyti batelius maratonui, svetainė gali prie jūsų pomėgių prisikirti maratonų bėgimą. Vėliau, apsilankius kitoje svetainėje norint užsiregistruoti į lenktynes, atsižvelgiant į jūsų pomėgius joje galės būti rodomas bėgimo batelių skelbimas.</translation>
 <translation id="1881322772814446296">Prisijungiate su valdoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Chromium“ profilį. „Chromium“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra. Galite pasirinktinai sukurti naują profilį, kad esami „Chromium“ duomenys būtų saugomi atskirai. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">Kai įvedate tekstą adreso juostoje ar paieškos laukelyje, „Chromium“ siunčia tai, ką įvedate, į „Google“ diską, kad gautų elementų pasiūlymų. Ši funkcija inkognito režimu išjungta.</translation>
 <translation id="1911763535808217981">Jei išjungsite šį nustatymą, prie „Google“ svetainių galėsite prisijungti kaip prie „Gmail“ neprisijungę prie „Chromium“</translation>
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="193439633299369377">Kad būtų galima pritaikyti naujinį, „Chromium“ OS reikia paleisti iš naujo.</translation>
@@ -116,6 +116,7 @@ Leidimai, kuriuos jau esate suteikę svetainėms ir programoms, gali būti taiko
 <translation id="3567254597502212821">Jūsų naršymo istorija, svetainių, kuriose lankėtės naudodami „Chromium“ šiame įrenginyje, įrašas.</translation>
 <translation id="3575459661164320785">Kompiuteryje yra kenkėjiškos programinės įrangos. „Chromium“ gali ją pašalinti, atkurti nustatymus ir išjungti plėtinius, kad naršyklė vėl veiktų įprastai.</translation>
 <translation id="3593091352817399191">Jau prisijungta prie kitos paskyros. Kad naršytumėte atskirai, „Chromium“ gali sukurti jums atskirą profilį.</translation>
+<translation id="363078681319665186">Jei norite gauti būsimus „Chromium“ naujinius, jums reikės 10.15 ar naujesnės „macOS“ versijos. Šiame kompiuteryje naudojama 10.13 versijos „macOS“.</translation>
 <translation id="3639635944603682591">Šio asmens naršymo duomenys bus ištrinti iš šio įrenginio. Jei norite atkurti duomenis, prisijunkite prie „Chromium“ kaip <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo.}=1{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. Inkognito langas nebus atidarytas iš naujo.}one{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langas nebus atidarytas iš naujo.}few{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langai nebus atidaryti iš naujo.}many{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito lango nebus atidaryta iš naujo.}other{Pasiekiamas naujas „Chromium“ naujinys. Jis bus pritaikytas, kai paleisite „Chromium“ iš naujo. # inkognito langų nebus atidaryta iš naujo.}}</translation>
 <translation id="3651803019964686660">Jei norite iš <ph name="ORIGIN" /> į „Android“ telefoną išsiųsti numerį, prisijunkite prie „Chromium“ abiejuose įrenginiuose.</translation>
@@ -123,12 +124,12 @@ Leidimai, kuriuos jau esate suteikę svetainėms ir programoms, gali būti taiko
 <translation id="3702352323269013324">Sužinokite daugiau apie skelbimų suasmeninimą sistemoje „Chromium“</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį}=1{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. Inkognito langas nebus atidarytas iš naujo.}one{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langas nebus atidarytas iš naujo.}few{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langai nebus atidaryti iš naujo.}many{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito lango nebus atidaryta iš naujo.}other{Administratorius prašo paleisti „Chromium“ iš naujo, kad būtų galima pritaikyti šį naujinį. # inkognito langų nebus atidaryta iš naujo.}}</translation>
 <translation id="3713809861844741608">Atidaryti nuorodą naujame „Chromium“ &amp;skirtuke</translation>
-<translation id="3728336900324680424">„Chromium“ turės prieigą prie Disko, kad galėtų teikti pasiūlymus adreso juostoje</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
 <translation id="3830894615770080216">„Chromium“ OS sistema</translation>
 <translation id="3848258323044014972">„<ph name="PAGE_TITLE" />“ – „Chromium“</translation>
 <translation id="386822487697155367">Gaukite su „Chromium“ OS susijusios pagalbos</translation>
 <translation id="3871664619793219264">Gaukite „Chromium“ naršyklės informaciją iš <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">Jei norite gauti būsimus „Chromium“ naujinius, jums reikės 10.15 ar naujesnės „macOS“ versijos. Šiame kompiuteryje naudojama 10.14 versijos „macOS“.</translation>
 <translation id="388648406173476553">Tinkinkite ir valdykite „Chromium“. Reikia atkreipti dėmesį – spustelėkite ir peržiūrėkite išsamią informaciją.</translation>
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390528597099634151">Naudotojas (<ph name="EXISTING_USER" />) jau yra prisijungęs prie šio „Chromium“ profilio. Kad naršytumėte atskirai, „Chromium“ gali sukurti jums atskirą profilį.</translation>
@@ -218,6 +219,7 @@ Leidimai, kuriuos jau esate suteikę svetainėms ir programoms, gali būti taiko
 <translation id="6072463441809498330">Paspartinkite „Chromium“</translation>
 <translation id="608006075545470555">Darbo profilio pridėjimas prie šios naršyklės</translation>
 <translation id="6096348254544841612">Tinkinkite ir valdykite „Chromium“. Pasiekiamas naujinys.</translation>
+<translation id="6102072151902574948">Kai įjungta, „Chromium“ taupo akumuliatoriaus energiją, apribodama veiklą fone ir vaizdo efektus, pvz., tolygų slinkimą ir vaizdo įrašų kadrų dažnį.</translation>
 <translation id="6119438414301547735">Leisti plėtiniui rodyti prieigos užklausas „Chromium“ įrankių juostoje</translation>
 <translation id="6120345080069858279">„Chromium“ išsaugos šį slaptažodį „Google“ paskyroje. Jums nereikia jo prisiminti.</translation>
 <translation id="6129621093834146363">Failas „<ph name="FILE_NAME" />“ pavojingas, todėl „Chromium“ jį užblokavo.</translation>
@@ -278,6 +280,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6940431691900807093">Vėliau svetainė, kurioje lankotės, gali paprašyti „Chromium“ peržiūrėti jūsų pomėgius, kad galėtų suasmeninti jums rodomus skelbimus. „Chromium“ gali bendrinti iki 3 pomėgių.</translation>
 <translation id="6964305034639999644">Atidaryti nuorodą „Chromium“ inko&amp;gnito lange</translation>
 <translation id="6978145336957848883">Nesudėtingus slaptažodžius lengva atspėti. Leiskite „Chromium“ <ph name="BEGIN_LINK" />jums sukurti ir įsiminti sudėtingus slaptažodžius<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Įjungus, „Chromium“ atlaisvina atminties iš neaktyvių skirtukų. Taip aktyviems skirtukams ir kitoms programoms suteikiama daugiau kompiuterio išteklių ir „Chromium“ veikia sparčiai. Neaktyvūs skirtukai automatiškai vėl tampa aktyvūs, kai grįžtate į juos.</translation>
 <translation id="6984667024406244807">„Chromium“ neaktyvi</translation>
 <translation id="6985329841647292029">„Chromium“ OS sąlygos</translation>
 <translation id="6990124437352146030">„Chromium“ reikia leidimo, kad galėtų naudoti mikrofoną šioje svetainėje</translation>
@@ -322,6 +325,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7790626492778995050">„<ph name="PAGE_TITLE" />“ – „Chromium Canary“</translation>
 <translation id="7828947555739565424">Šios paskyros „Chromium“ profilis jau yra šiame įrenginyje</translation>
 <translation id="7845233973568007926">Dėkojame už diegimą. Turite iš naujo paleisti kompiuterį, prieš naudodami „<ph name="BUNDLE_NAME" />“.</translation>
+<translation id="7859018312476869945">Kai įvedate tekstą adreso juostoje ar paieškos laukelyje, „Chromium“ siunčia tai, ką įvedate, į numatytąjį paieškos variklį, kad gautų geresnių pasiūlymų. Ši funkcija inkognito režimu išjungta.</translation>
 <translation id="7867198900892795913">Nepavyko atnaujinti „Chromium“ į naujausią versiją, todėl nebus pasiekiamos naujos funkcijos ir saugos pataisos.</translation>
 <translation id="7872446069773932638">Atsisiunčiama... Liko <ph name="SECONDS" /> sek.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Kaip galite tvarkyti savo duomenis:<ph name="END_BOLD" /> siekdami apsaugoti jūsų privatumą, automatiškai ištriname senesnius nei keturių savaičių pomėgius. Jums naršant toliau, pomėgiai vėl gali atsirasti sąraše. Arba galite pašalinti pomėgius, kurių „Chromium“ įtraukti neturėtų.</translation>
@@ -349,9 +353,7 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8493179195440786826">„Chromium“ versija yra pasenusi</translation>
 <translation id="8550334526674375523">Šis darbo profilis visiškai atskirtas nuo jūsų asmeninio profilio.</translation>
 <translation id="8558383651099478961">Jūsų tėvai išjungė svetainių, programų ir plėtinių leidimus sistemoje „Chromium“. Neleidžiama pridėti šio <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
-<translation id="8561285221328166383">Jei norite gauti būsimus „Chromium“ naujinius, jums reikės 10.13 ar naujesnės „macOS“ versijos. Šiame kompiuteryje naudojama 10.12 versijos „macOS“.</translation>
 <translation id="8568283329061645092">„Chromium“ gali tikrinti jūsų slaptažodžius, kai prisijungiate naudodami „Google“ paskyrą</translation>
-<translation id="8574036838419011058">Kai įjungta, „Chromium“ taupo akumuliatoriaus energiją, apribodama veiklą fone ir vaizdo efektus, pvz., tolygų slinkimą ir vaizdo įrašų kadrų dažnį. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Kaip naudojame šiuos duomenis:<ph name="END_BOLD" /> svetainėse gali būti renkama su „Chromium“ susijusi informacija apie jūsų pomėgius. Pavyzdžiui, jei apsilankote svetainėje norėdami įsigyti batelius maratonui, svetainė gali prie jūsų pomėgių prisikirti maratonų bėgimą. Vėliau, apsilankius kitoje svetainėje norint užsiregistruoti į lenktynes, atsižvelgiant į jūsų pomėgius joje galės būti rodomas bėgimo batelių skelbimas.</translation>
 <translation id="8619360774459241877">Pristatoma „Chromium“...</translation>
@@ -382,7 +384,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="9190841055450128916">„Chromium“ (mDNS-In)</translation>
 <translation id="93478295209880648">„Chromium“ gali tinkamai neveikti, nes ji nebepalaikoma naudojant „Windows XP“ arba „Windows Vista“</translation>
 <translation id="942598560705308788">Sertifikatai, kuriuos tvarko „Chromium“</translation>
-<translation id="945990405696787151">Jei norite gauti būsimus „Chromium“ naujinius, jums reikės 10.13 ar naujesnės „macOS“ versijos. Šiame kompiuteryje naudojama 10.11 versijos „OS X“.</translation>
 <translation id="965162752251293939">Kas naudoja „Chromium“?</translation>
 <translation id="967427899662692980">Patikimiausios „Chromium“ saugos užtikrinimas</translation>
 <translation id="9792300276217204">Visada išvalyti svetainių duomenis iš įrenginio uždarius „Chromium“</translation>

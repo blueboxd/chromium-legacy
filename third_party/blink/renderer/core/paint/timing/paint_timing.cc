@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
@@ -334,8 +334,11 @@ void PaintTiming::SetFirstPaintPresentation(base::TimeTicks stamp) {
   probe::PaintTiming(GetSupplementable(), "firstPaint",
                      first_paint_presentation_.since_origin().InSecondsF());
   WindowPerformance* performance = GetPerformanceInstance(GetFrame());
-  if (performance)
-    performance->AddFirstPaintTiming(first_paint_presentation_);
+  if (performance) {
+    performance->AddFirstPaintTiming(
+        first_paint_presentation_,
+        /*is_triggered_by_soft_navigation=*/first_paints_reset_);
+  }
   NotifyPaintTimingChanged();
 }
 
@@ -358,7 +361,8 @@ void PaintTiming::SetFirstContentfulPaintPresentation(base::TimeTicks stamp) {
   WindowPerformance* performance = GetPerformanceInstance(GetFrame());
   if (performance) {
     performance->AddFirstContentfulPaintTiming(
-        first_contentful_paint_presentation_);
+        first_contentful_paint_presentation_,
+        /*is_triggered_by_soft_navigation=*/first_paints_reset_);
   }
   // For soft navigations, we just want to report a performance entry, but not
   // trigger any of the other FCP observers.
@@ -383,11 +387,6 @@ void PaintTiming::SetFirstContentfulPaintPresentation(base::TimeTicks stamp) {
     base::TimeDelta fcp =
         stamp - timing_for_reporting->NavigationStartAsMonotonicTime();
     coordinator->OnFirstContentfulPaint(fcp);
-  }
-
-  if (auto* ds_controller =
-          DeferredShapingController::From(*GetSupplementable())) {
-    ds_controller->OnFirstContentfulPaint();
   }
 }
 
@@ -472,6 +471,24 @@ bool PaintTiming::IsLCPMouseoverDispatchedRecently() const {
 }
 
 void PaintTiming::SetLCPMouseoverDispatched() {
+  {
+    // TODO(https://crbug.com/1288027): Code in this scope is added for
+    // debugging purposes only. Remove it once we have a clearer picture on
+    // heuristic failures.
+    static constexpr base::TimeDelta kRecencyDelta = base::Milliseconds(500);
+    LocalFrame* frame = GetFrame();
+    if (frame && RuntimeEnabledFeatures::LCPMouseoverHeuristicsEnabled() &&
+        (lcp_mouse_over_dispatch_time_.is_null() ||
+         (clock_->NowTicks() - lcp_mouse_over_dispatch_time_) >=
+             kRecencyDelta)) {
+      if (Document* document = frame->GetDocument()) {
+        document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kOther,
+            mojom::blink::ConsoleMessageLevel::kVerbose,
+            "Mouseover event over an LCP image happened."));
+      }
+    }
+  }
   lcp_mouse_over_dispatch_time_ = clock_->NowTicks();
 }
 

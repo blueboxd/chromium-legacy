@@ -6,9 +6,9 @@
  * @fileoverview Root element of the OOBE UI Debugger.
  */
 
-import {addSingletonGetter} from 'chrome://resources/ash/common/cr_deprecated.js';
-import {MessageType, ProblemType} from 'chrome://resources/ash/common/quick_unlock/setup_pin_keyboard.js';
-import {$} from 'chrome://resources/ash/common/util.js';
+import {addSingletonGetter} from '//resources/ash/common/cr_deprecated.js';
+import {MessageType, ProblemType} from '//resources/ash/common/quick_unlock/setup_pin_keyboard.js';
+import {$} from '//resources/ash/common/util.js';
 
 import {AssistantNativeIconType} from '../../assistant_optin/utils.js';
 import {Oobe} from '../cr_ui.js';
@@ -311,13 +311,6 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
           },
         },
       ],
-    },
-    {
-      id: 'oobe-eula-md',
-      kind: ScreenKind.NORMAL,
-      // TODO: Current logic triggers switching screens in focus(), making
-      // it impossible to trigger  installation settings dialog.
-      skipScreenshots: true,
     },
     {
       id: 'demo-setup',
@@ -1562,7 +1555,10 @@ const createAssistantZippy = (type, isMinor, isNativeIcons) => {
         },
       ],
     },
-
+    {
+      id: 'touchpad-scroll',
+      kind: ScreenKind.NORMAL,
+    },
     {
       id: 'marketing-opt-in',
       kind: ScreenKind.NORMAL,

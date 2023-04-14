@@ -6,15 +6,19 @@
 #define CHROME_BROWSER_APPS_APP_DEDUPLICATION_SERVICE_APP_DEDUPLICATION_CACHE_H_
 
 #include "base/files/file_path.h"
+#include "base/functional/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/apps/app_deduplication_service/proto/deduplication_data.pb.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps::deduplication {
 
-// The AppDeduplicationCache is used to store deduplicate app data on disk and
-// read the stored data from disk. Two versions of the data will be stored to
-// the disk at a time in case reading data from the most recent version fails.
-// TODO(b/266005828): add functionality to store two versions of data.
+using GetDeduplicateDataCallback =
+    base::OnceCallback<void(absl::optional<proto::DeduplicateData>)>;
+
+// The AppDeduplicationCache is used to store deduplicate app data on disk
+// and read the stored data from disk.
 class AppDeduplicationCache {
  public:
   // `path` refers to path of the folder on disk which will store the data.
@@ -23,17 +27,18 @@ class AppDeduplicationCache {
   AppDeduplicationCache& operator=(const AppDeduplicationCache&) = delete;
   ~AppDeduplicationCache();
 
-  // Creates a file at given file path and stores duplicate data on disk.
-  // Returns true if all data is written successfully and false otherwise.
-  bool WriteDeduplicateDataToDisk(const base::FilePath& deduplicate_data_path,
-                                  proto::DeduplicateData& data);
+  // Writes data to deduplication file on disk using another thread.
+  void WriteDeduplicationCache(proto::DeduplicateData& data,
+                               base::OnceCallback<void(bool)> callback);
 
-  // Reads and returns deduplicate data from file at `deduplicate_data_path`.
-  absl::optional<proto::DeduplicateData> ReadDeduplicateDataFromDisk(
-      const base::FilePath& deduplicate_data_path);
+  // Reads data from deduplication file on disk using another thread.
+  void ReadDeduplicationCache(GetDeduplicateDataCallback callback);
 
  private:
-  base::FilePath folder_path_;
+  // Absolute path to the file where deduplication data is stored.
+  base::FilePath file_path_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace apps::deduplication

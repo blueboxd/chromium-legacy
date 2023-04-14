@@ -61,6 +61,7 @@ class AutofillProfile : public AutofillDataModel {
   AutofillProfile(const std::string& guid,
                   const std::string& origin,
                   Source source = Source::kLocalOrSyncable);
+  explicit AutofillProfile(Source source);
 
   // Server profile constructor. The type must be SERVER_PROFILE (this serves
   // to differentiate this constructor). |server_id| can be empty. If empty,
@@ -284,6 +285,11 @@ class AutofillProfile : public AutofillDataModel {
   void set_last_modifier_id(int modifier_id) {
     last_modifier_id_ = modifier_id;
   }
+
+  // Converts a kLocalOrSyncable profile to a kAccount profile and returns it.
+  // The converted profile shares the same content, but with a different GUID
+  // and with `source_` kAccount. Additional kAccount-specific metadata is set.
+  AutofillProfile ConvertToAccountProfile() const;
 
   // Checks for non-empty setting-inaccessible fields and returns all that were
   // found.

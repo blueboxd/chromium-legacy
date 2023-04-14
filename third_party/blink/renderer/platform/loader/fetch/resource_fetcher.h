@@ -37,7 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker_mode.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/web_url_loader.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/preload_key.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_scheduler.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_binding_context.h"
@@ -71,10 +72,8 @@ class KURL;
 class Resource;
 class ResourceError;
 class ResourceLoadObserver;
-class ResourceTimingInfo;
 class SubresourceWebBundle;
 class SubresourceWebBundleList;
-class WebBackForwardCacheLoaderHelper;
 class WebCodeCacheLoader;
 struct ResourceFetcherInit;
 struct ResourceLoaderOptions;
@@ -103,15 +102,15 @@ class PLATFORM_EXPORT ResourceFetcher
 
     virtual void Trace(Visitor*) const {}
 
-    // Create a WebURLLoader for given the request information and task runners.
+    // Create a URLLoader for given the request information and task runners.
     // TODO(yuzus): Take only unfreezable task runner once both
     // URLLoaderClientImpl and ResponseBodyLoader use unfreezable task runner.
-    virtual std::unique_ptr<WebURLLoader> CreateURLLoader(
+    virtual std::unique_ptr<URLLoader> CreateURLLoader(
         const ResourceRequest&,
         const ResourceLoaderOptions&,
         scoped_refptr<base::SingleThreadTaskRunner> freezable_task_runner,
         scoped_refptr<base::SingleThreadTaskRunner> unfreezable_task_runner,
-        WebBackForwardCacheLoaderHelper) = 0;
+        BackForwardCacheLoaderHelper*) = 0;
 
     // Create a code cache loader to fetch data from code caches.
     virtual std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader() = 0;
@@ -168,8 +167,8 @@ class PLATFORM_EXPORT ResourceFetcher
   }
 
   // Create a loader. This cannot be called after ClearContext is called.
-  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequestHead&,
-                                                const ResourceLoaderOptions&);
+  std::unique_ptr<URLLoader> CreateURLLoader(const ResourceRequestHead&,
+                                             const ResourceLoaderOptions&);
   // Create a code cache loader. This cannot be called after ClearContext is
   // called.
   std::unique_ptr<WebCodeCacheLoader> CreateCodeCacheLoader();
@@ -479,8 +478,25 @@ class PLATFORM_EXPORT ResourceFetcher
 
   void WarnUnusedPreloads();
 
+  // Information about a resource fetch that had started but not completed yet.
+  // Would be added to the response data when the response arrives.
+  struct PendingResourceTimingInfo {
+    base::TimeTicks start_time;
+    AtomicString initiator_type;
+    RenderBlockingBehavior render_blocking_behavior;
+    base::TimeTicks redirect_end_time;
+    bool is_null() const { return start_time.is_null(); }
+  };
+
+  // A resource fetch that was completed, scheduled to be added to the
+  // performance timeline in a batch.
+  struct ScheduledResourceTimingInfo {
+    mojom::blink::ResourceTimingInfoPtr info;
+    AtomicString initiator_type;
+  };
+
   void PopulateAndAddResourceTimingInfo(Resource* resource,
-                                        scoped_refptr<ResourceTimingInfo> info,
+                                        const PendingResourceTimingInfo& info,
                                         base::TimeTicks response_end);
   SubresourceWebBundle* GetMatchingBundle(const KURL& url) const;
 
@@ -513,11 +529,11 @@ class PLATFORM_EXPORT ResourceFetcher
 
   TaskHandle unused_preloads_timer_;
 
-  using ResourceTimingInfoMap =
-      HeapHashMap<Member<Resource>, scoped_refptr<ResourceTimingInfo>>;
-  ResourceTimingInfoMap resource_timing_info_map_;
+  using PendingResourceTimingInfoMap =
+      HeapHashMap<Member<Resource>, PendingResourceTimingInfo>;
+  PendingResourceTimingInfoMap resource_timing_info_map_;
 
-  Vector<scoped_refptr<ResourceTimingInfo>> scheduled_resource_timing_reports_;
+  Vector<ScheduledResourceTimingInfo> scheduled_resource_timing_reports_;
 
   HeapHashSet<Member<ResourceLoader>> loaders_;
   HeapHashSet<Member<ResourceLoader>> non_blocking_loaders_;

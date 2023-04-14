@@ -12,7 +12,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 <translation id="1131805035311359397">Për të kontrolluar nëse fjalëkalimet e tua janë të sigurta nga nxjerrjet e paautorizuara të të dhënave dhe probleme të tjera të sigurisë, <ph name="BEGIN_LINK" />identifikohu në Chromium<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Rreth Chromium</translation>
 <translation id="1203500561924088507">Faleminderit që e instalove. Duhet të rinisësh shfletuesin përpara se të përdorësh <ph name="BUNDLE_NAME" />.</translation>
-<translation id="1231839967188101156">Kur është aktiv, Chromium liron memorien nga skedat joaktive. Kjo u jep më shumë burime kompjuterike skedave aktive dhe aplikacioneve të tjera dhe bën që Chromium të jetë i shpejtë. Skedat e tua joaktive bëhen përsëri aktive në mënyrë automatike kur kthehesh tek ato. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">"Kursyesi i memories" e ka bërë Chromium më të shpejtë</translation>
 <translation id="1315551408014407711">Konfiguro profilin tënd të ri të Chromium</translation>
 <translation id="1396446129537741364">Chromium po përpiqet të shfaqë fjalëkalimet.</translation>
@@ -116,6 +115,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="3567254597502212821">Historiku yt i shfletimit, regjistri i sajteve që ke vizituar duke përdorur Chromium në këtë pajisje.</translation>
 <translation id="3575459661164320785">Ka një softuer keqdashës në kompjuterin tënd. Chromium mund ta heqë atë, të restaurojë cilësimet e tua dhe të çaktivizojë shtesat për të bërë që shfletuesi yt të punojë përsëri si normalisht.</translation>
 <translation id="3593091352817399191">Një llogari tjetër është identifikuar tashmë. Për ta mbajtur shfletimin tënd të ndarë, Chromium mund të krijojë profilin tënd personal për ty.</translation>
+<translation id="363078681319665186">Për të marrë përditësimet e ardhshme të Chromium, do të të duhet macOS 10.15 ose një version i mëvonshëm. Ky kompjuter përdor macOS 10.13.</translation>
 <translation id="3639635944603682591">Të dhënat e shfletimit të këtij personi do të fshihen nga kjo pajisje. Për të rikuperuar të dhënat, identifikohu në Chromium si <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Ka një përditësim të ri për Chromium dhe do të zbatohet sapo ta rinisësh.}=1{Ka një përditësim të ri për Chromium dhe do të zbatohet sapo ta rinisësh. Dritarja jote "e fshehtë" nuk do të rihapet.}other{Ka një përditësim të ri për Chromium dhe do të zbatohet sapo ta rinisësh. # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
 <translation id="3651803019964686660">Për të dërguar një numër nga <ph name="ORIGIN" /> te telefoni yt Android, identifikohu në Chromium në të dyja pajisjet.</translation>
@@ -123,12 +123,12 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="3702352323269013324">Mëso më shumë rreth personalizimit të reklamave në Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administratori yt kërkon që të hapësh përsëri Chromium për të zbatuar këtë përditësim}=1{Administratori yt kërkon që të hapësh përsëri Chromium për të zbatuar këtë përditësim Dritarja jote "e fshehtë" nuk do të rihapet.}other{Administratori yt kërkon që të hapësh përsëri Chromium për të zbatuar këtë përditësim # dritaret e tua "të fshehta" nuk do të rihapen.}}</translation>
 <translation id="3713809861844741608">Hape lidhjen në një &amp;skedë të re të Chromium</translation>
-<translation id="3728336900324680424">Chromium do të ketë qasje te "Disku" yt për të dhënë sugjerime në shiritin e adresës</translation>
 <translation id="378917192836375108">Chromium të lejon të klikosh një numër telefoni në ueb dhe ta telefonosh me Skype!</translation>
 <translation id="3830894615770080216">Sistemi ChromiumOS</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">Merr ndihmë me ChromiumOS</translation>
 <translation id="3871664619793219264">Merr gjërat e tua në shfletuesin Chromium nga <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">Për të marrë përditësimet e ardhshme të Chromium, do të të duhet macOS 10.15 ose një version i mëvonshëm. Ky kompjuter përdor macOS 10.14.</translation>
 <translation id="388648406173476553">Personalizo dhe kontrollo Chromium. Diçka ka nevojë për vëmendjen tënde - kliko për detaje.</translation>
 <translation id="3889543394854987837">Kliko emrin tënd për të hapur Chromium dhe fillo shfletimin.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> është i identifikuar tashmë në këtë profil të Chromium. Për ta mbajtur shfletimin tënd të ndarë, Chromium mund të krijojë profilin tënd personal për ty.</translation>
@@ -218,6 +218,7 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="6072463441809498330">Bëje Chromium më të shpejtë</translation>
 <translation id="608006075545470555">Shto profilin e punës në këtë shfletues</translation>
 <translation id="6096348254544841612">Personalizo dhe kontrollo Chromium. Ofrohet përditësim.</translation>
+<translation id="6102072151902574948">Kur ai është aktiv, Chromium kursen energjinë e baterisë duke kufizuar aktivitetin në sfond dhe efektet vizuale, si p.sh. lëvizjen e butë dhe shpejtësitë e kuadrove për videot.</translation>
 <translation id="6119438414301547735">Lejo që shtesat të shfaqin kërkesat për qasje në shiritin e veglave të Chromium</translation>
 <translation id="6120345080069858279">Chromium do ta ruajë këtë fjalëkalim në llogarinë tënde të Google. Nuk është nevoja ta mbash mend.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> është i rrezikshëm, prandaj Chromium e ka bllokuar.</translation>
@@ -277,6 +278,7 @@ Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër profili os
 <translation id="6940431691900807093">Më vonë, një sajt që ti viziton mund t'i kërkojë Chromium që të shikojë interesat e tua në mënyrë që të personalizojë reklamat që shikon. Chromium mund të ndajë deri në 3 interesa.</translation>
 <translation id="6964305034639999644">Hape lidhjen në një dritare të fshe&amp;htë të Chromium</translation>
 <translation id="6978145336957848883">Fjalëkalimet e dobëta mund të gjenden me lehtësi. Lejoje Chromium <ph name="BEGIN_LINK" />të krijojë dhe mbajë mend fjalëkalime të forta për ty<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Kur është aktiv, Chromium liron memorien nga skedat joaktive. Kjo u jep më shumë burime kompjuterike skedave aktive dhe aplikacioneve të tjera dhe bën që Chromium të jetë i shpejtë. Skedat e tua joaktive bëhen përsëri aktive në mënyrë automatike kur kthehesh tek ato.</translation>
 <translation id="6984667024406244807">Chromium është joaktiv</translation>
 <translation id="6985329841647292029">Kushtet e ChromiumOS</translation>
 <translation id="6990124437352146030">Chromium ka nevojë për leje për t'u qasur te mikrofoni yt për këtë sajt</translation>
@@ -321,6 +323,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">Një profil i Chromium me këtë llogari ekziston tashmë në këtë pajisje</translation>
 <translation id="7845233973568007926">Faleminderit që e instalove. Duhet të rinisësh kompjuterin përpara se të përdorësh <ph name="BUNDLE_NAME" />.</translation>
+<translation id="7859018312476869945">Kur shkruan në shiritin e adresës ose në kutinë e kërkimit, Chromium i dërgon ato që shkruan te motori i parazgjedhur i kërkimit për të marrë sugjerime më të mira. Kjo është joaktive në modalitetin "e fshehtë".</translation>
 <translation id="7867198900892795913">Chromium nuk mund të përditësohej me versionin më të fundit, kështu që të mungojnë rregullimet e sigurisë dhe funksionet e reja.</translation>
 <translation id="7872446069773932638">Po shkarkohet... Kanë mbetur edhe <ph name="SECONDS" /> sekonda</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Si mund t'i menaxhosh të dhënat e tua:<ph name="END_BOLD" /> Për të mbrojtur privatësinë tënde, ne fshijmë automatikisht interesat e tua që janë më të vjetra se 4 javë. Ndërsa vazhdon të shfletosh, një interes mund të shfaqet përsëri në listë. Ndryshe, mund të heqësh interesat që nuk dëshiron që Chromium të marrë parasysh.</translation>
@@ -348,9 +351,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8493179195440786826">Chromium nuk është i përditësuar</translation>
 <translation id="8550334526674375523">Ky profil pune është plotësisht i veçuar nga profili yt personal.</translation>
 <translation id="8558383651099478961">Prindi yt ka çaktivizuar "Lejet për sajtet, aplikacionet dhe shtesat" për Chromium. Nuk lejohet shtimi për këtë <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
-<translation id="8561285221328166383">Për të marrë përditësimet e ardhshme të Chromium, do të të duhet macOS 10.13 e lart. Ky kompjuter përdor macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google"</translation>
-<translation id="8574036838419011058">Kur ai është aktiv, Chromium kursen energjinë e baterisë duke kufizuar aktivitetin në sfond dhe efektet vizuale, si p.sh. lëvizjen e butë dhe shpejtësitë e kuadrove për videot. <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Të drejtat e autorit <ph name="YEAR" /> Autorët e Chromium. Të gjitha të drejtat të rezervuara.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Si i përdorim këto të dhëna:<ph name="END_BOLD" /> Sajtet mund të ruajnë informacione për interesat e tua në Chromium. Për shembull, nëse viziton një sajt për të blerë këpucë për një maratonë, sajti mund ta përcaktojë interesin tënd si vrapim në maratona. Më vonë, nëse viziton një sajt tjetër për t'u regjistruar për një garë, ai sajt mund të të shfaqë një reklamë për këpucë vrapimi bazuar në interesat e tua.</translation>
 <translation id="8619360774459241877">Po hapet Chromium...</translation>
@@ -381,7 +382,6 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium mund të mos funksionojë si duhet sepse nuk mbështetet më në Windows XP ose Windows Vista</translation>
 <translation id="942598560705308788">Certifikatat e menaxhuara nga Chromium</translation>
-<translation id="945990405696787151">Për të marrë përditësimet e ardhshme të Chromium, do të të duhet macOS 10.13 e lart. Ky kompjuter përdor OS X 10.11.</translation>
 <translation id="965162752251293939">Kush po e përdor Chromium?</translation>
 <translation id="967427899662692980">Merr sigurinë më të fortë të Chromium</translation>
 <translation id="9792300276217204">Pastro gjithmonë të dhënat e sajteve nga pajisja jote kur të mbyllësh Chromium</translation>

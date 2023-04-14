@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">बाह्य डिव्हाइससाठी फर्मवेअर अपडेट करण्याची विंडो खुली आहे. <ph name="NUM_UPDATES" /> अपडेट उपलब्ध आहेत.</translation>
 <translation id="1145516343487477149">मदतपर लेख आणि Chromebook शी संबंधित सामान्य प्रश्नांची उत्तरे पहा</translation>
+<translation id="1167755866710282443">की कस्टमाइझ करण्यासाठी मेनू उघडा. हलवण्यासाठी मेनू ड्रॅग करा.</translation>
 <translation id="1175697296044146566">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे.</translation>
 <translation id="1175951029573070619">सरासरी (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">काढून टाका</translation>
@@ -291,7 +292,7 @@
 <translation id="3820172043799983114">चुकीचे पिन.</translation>
 <translation id="3824259034819781947">फाइल अटॅच करा</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
-<translation id="3845880861638660475">डायलॉग बंद करण्यासाठी,<ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> प्रेस करा.</translation>
+<translation id="3845880861638660475">डायलॉग बंद करण्यासाठी,<ph name="ALT_SHORTCUT_START" />alt<ph name="ALT_SHORTCUT_END" /> + <ph name="ESC_SHORTCUT_START" />esc<ph name="ESC_SHORTCUT_END" /> दाबा.</translation>
 <translation id="385051799172605136">मागील</translation>
 <translation id="3858860766373142691">नाव</translation>
 <translation id="3862598938296403232">वर्णन आवश्यक आहे</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /><ph name="DESC" /> अल्बम निवडा</translation>
 <translation id="4111761024568264522">USB टचपॅड</translation>
 <translation id="4117637339509843559">गडद मोड</translation>
+<translation id="4130035430755296270">आणखी लेआउट पर्यायांसाठी फिरवत रहा</translation>
 <translation id="4131410914670010031">कृष्ण धवल</translation>
 <translation id="4145784616224233563">HTTP फायरवॉल</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -410,10 +412,11 @@
 <translation id="4835901797422965222">कोणतीही अ‍ॅक्टिव्ह नेटवर्क नाहीत</translation>
 <translation id="4839698083503556542">स्वतः चित्रपट तयार करा</translation>
 <translation id="484462545196658690">ऑटो</translation>
-<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> निवडले, <ph name="TOPIC_SOURCE" /> अल्बम निवडण्यासाठी एंटर प्रेस करा</translation>
+<translation id="4847902821209177679"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> निवडले, <ph name="TOPIC_SOURCE" /> अल्बम निवडण्यासाठी एंटर दाबा</translation>
 <translation id="484790837831576105">(Android) DNS रिझोल्यूशन</translation>
 <translation id="4848429997038228357">रन होत आहे</translation>
 <translation id="4854586501323951986">बिल्ट-इन टचस्क्रीन</translation>
+<translation id="4855250849489639581">आणखी लेआउट पर्यायांसाठी खाली स्वाइप करा</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} प्रयत्न शिल्लक}other{<ph name="ERROR_MESSAGE" /> {0} प्रयत्न शिल्लक}}</translation>
 <translation id="4873827928179867585">ऑथेंटिकेशन अल्गोरिदम</translation>
 <translation id="4880328057631981605">ॲक्सेसबिंदूचे नाव</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">एक इमेज</translation>
 <translation id="7177485034254901881">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे. अ‍ॅडमिनिस्ट्रेटर रिमोट पद्धतीने डिव्हाइस काँफिगर करू शकतात.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
+<translation id="7180865173735832675">कस्टमाइझ करा</translation>
 <translation id="7212734716605298123">बाह्य डिव्हाइससाठी फर्मवेअर अपडेट</translation>
 <translation id="7216409898977639127">सेल्युलर सेवा देणारा</translation>
 <translation id="725133483556299729">ईमेल निवडा</translation>
@@ -686,7 +690,7 @@
 <translation id="7308203371573257315">Chromebook मदत फोरममध्ये तज्ञांना विचारा</translation>
 <translation id="7311368985037279727">कीबोर्डचा रंग</translation>
 <translation id="7319430975418800333">A3</translation>
-<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search मध्ये परिणाम पाहण्यासाठी सर्च आणि स्पेस प्रेस करा.</translation>
+<translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search मध्ये परिणाम पाहण्यासाठी सर्च आणि स्पेस दाबा.</translation>
 <translation id="7343649194310845056">नेटवर्क डिव्हाइस</translation>
 <translation id="7359657277149375382">फाइल प्रकार</translation>
 <translation id="73631062356239394">निदानासंबंधित डेटा शेअर करा</translation>

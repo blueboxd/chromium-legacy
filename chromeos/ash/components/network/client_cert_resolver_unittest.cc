@@ -83,7 +83,7 @@ OncParsedCertificatesForPkcs12File(
   std::string pkcs12_base64_encoded;
   base::Base64Encode(pkcs12_raw, &pkcs12_base64_encoded);
 
-  base::Value onc_certificate(base::Value::Type::DICTIONARY);
+  base::Value onc_certificate(base::Value::Type::DICT);
   onc_certificate.SetKey("GUID", base::Value(guid));
   onc_certificate.SetKey("Type", base::Value("Client"));
   onc_certificate.SetKey("PKCS12", base::Value(pkcs12_base64_encoded));
@@ -93,9 +93,8 @@ OncParsedCertificatesForPkcs12File(
       onc_certificates);
 }
 
-std::string GetString(const base::Value& dict, const char* key) {
-  DCHECK(dict.is_dict());
-  const std::string* value = dict.FindStringKey(key);
+std::string GetStringFromDict(const base::Value::Dict& dict, const char* key) {
+  const std::string* value = dict.FindString(key);
   return value ? *value : std::string();
 }
 
@@ -387,7 +386,7 @@ class ClientCertResolverTest : public testing::Test,
         onc_source == ::onc::ONC_SOURCE_USER_POLICY ? kUserHash : "";
     managed_config_handler_->SetPolicy(
         onc_source, user_hash, *parsed_json,
-        /*global_network_config=*/base::Value(base::Value::Type::DICTIONARY));
+        /*global_network_config=*/base::Value(base::Value::Type::DICT));
   }
 
   void SetWifiState(const std::string& state) {
@@ -398,11 +397,11 @@ class ClientCertResolverTest : public testing::Test,
   void GetServiceProperty(const std::string& prop_name,
                           std::string* prop_value) {
     prop_value->clear();
-    const base::Value* properties =
+    const base::Value::Dict* properties =
         service_test_->GetServiceProperties(kWifiStub);
     if (!properties)
       return;
-    const std::string* value = properties->FindStringKey(prop_name);
+    const std::string* value = properties->FindString(prop_name);
     if (value)
       *prop_value = *value;
   }
@@ -725,11 +724,11 @@ TEST_F(ClientCertResolverTest, UserPolicyUsesSystemTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_USER_POLICY,
                                          &client_cert_config);
 
-  base::Value shill_properties(base::Value::Type::DICTIONARY);
+  base::Value::Dict shill_properties;
   ClientCertResolver::ResolveClientCertificateSync(
       client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
-      GetString(shill_properties, shill::kEapCertIdProperty);
+      GetStringFromDict(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
 }
 
@@ -764,11 +763,11 @@ TEST_F(ClientCertResolverTest, DevicePolicyUsesSystemTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
-  base::Value shill_properties(base::Value::Type::DICTIONARY);
+  base::Value::Dict shill_properties;
   ClientCertResolver::ResolveClientCertificateSync(
       client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
-      GetString(shill_properties, shill::kEapCertIdProperty);
+      GetStringFromDict(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(test_cert_id_, pkcs11_id);
 }
 
@@ -805,11 +804,11 @@ TEST_F(ClientCertResolverTest, DevicePolicyDoesNotUseUserTokenSync) {
   SetupCertificateConfigMatchingIssuerCN(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          &client_cert_config);
 
-  base::Value shill_properties(base::Value::Type::DICTIONARY);
+  base::Value::Dict shill_properties;
   ClientCertResolver::ResolveClientCertificateSync(
       client_cert::ConfigType::kEap, client_cert_config, &shill_properties);
   std::string pkcs11_id =
-      GetString(shill_properties, shill::kEapCertIdProperty);
+      GetStringFromDict(shill_properties, shill::kEapCertIdProperty);
   EXPECT_EQ(std::string(), pkcs11_id);
 }
 

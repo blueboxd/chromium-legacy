@@ -124,7 +124,8 @@ TEST_F(VisitAnnotationsDatabaseTest, AddContentAnnotationsForVisit) {
       u"search",
       "Alternative title",
       "en",
-      VisitContentAnnotations::PasswordState::kUnknown};
+      VisitContentAnnotations::PasswordState::kUnknown,
+      /*has_url_keyed_image=*/true};
   AddContentAnnotationsForVisit(visit_id, content_annotations);
 
   // Query for it.
@@ -153,6 +154,7 @@ TEST_F(VisitAnnotationsDatabaseTest, AddContentAnnotationsForVisit) {
             got_content_annotations.search_normalized_url);
   EXPECT_EQ(u"search", got_content_annotations.search_terms);
   EXPECT_EQ("Alternative title", got_content_annotations.alternative_title);
+  EXPECT_TRUE(got_content_annotations.has_url_keyed_image);
 }
 
 TEST_F(VisitAnnotationsDatabaseTest,
@@ -264,7 +266,8 @@ TEST_F(VisitAnnotationsDatabaseTest, UpdateContentAnnotationsForVisit) {
       u"search",
       "Alternative title",
       "en",
-      VisitContentAnnotations::PasswordState::kUnknown};
+      VisitContentAnnotations::PasswordState::kUnknown,
+      /*has_url_keyed_image=*/false};
   AddContentAnnotationsForVisit(visit_id, original);
 
   // Mutate that row.
@@ -275,6 +278,7 @@ TEST_F(VisitAnnotationsDatabaseTest, UpdateContentAnnotationsForVisit) {
       GURL("http://pagewithvisit.com?q=search2");
   modification.search_terms = u"search2";
   modification.alternative_title = "New alternative title";
+  modification.has_url_keyed_image = true;
   UpdateContentAnnotationsForVisit(visit_id, modification);
 
   // Check that the mutated version was written.
@@ -301,6 +305,7 @@ TEST_F(VisitAnnotationsDatabaseTest, UpdateContentAnnotationsForVisit) {
             GURL("http://pagewithvisit.com?q=search2"));
   EXPECT_EQ(final.search_terms, u"search2");
   EXPECT_EQ(final.alternative_title, "New alternative title");
+  EXPECT_TRUE(final.has_url_keyed_image);
 }
 
 TEST_F(
@@ -322,10 +327,8 @@ TEST_F(
   visit_1.url_for_deduping = GURL{"url_for_deduping"};
   visit_1.normalized_url = GURL{"normalized_url"};
   visit_1.url_for_display = u"url_for_display";
-  // `matches_search_query` and `hidden` shouldn't matter, they are not
-  // persisted.
+  // `matches_search_query` shouldn't matter, it isn't persisted.
   visit_1.matches_search_query = true;
-  visit_1.hidden = true;
   // Duplicate visits should be persisted.
   visit_1.duplicate_visits.push_back({3});
   visit_1.duplicate_visits.push_back({4});
@@ -379,10 +382,8 @@ TEST_F(
   EXPECT_EQ(visit_1_retrieved.url_for_deduping, GURL{"url_for_deduping"});
   EXPECT_EQ(visit_1_retrieved.normalized_url, GURL{"normalized_url"});
   EXPECT_EQ(visit_1_retrieved.url_for_display, u"url_for_display");
-  // Should not populate the non-persisted `matches_search_query` and `hidden`
-  // fields.
+  // Should not populate the non-persisted `matches_search_query` field.`
   EXPECT_EQ(visit_1_retrieved.matches_search_query, false);
-  EXPECT_EQ(visit_1_retrieved.hidden, false);
   // Should not populate `duplicate_visits`.
   EXPECT_TRUE(visit_1_retrieved.duplicate_visits.empty());
 

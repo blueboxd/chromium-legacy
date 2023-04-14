@@ -227,7 +227,7 @@ static_library("test_support") {
   }
 }
 
-if (!is_android && !is_fuchsia && !is_chromeos_ash) {
+if (!is_android && !is_fuchsia && !is_chromeos_ash && !is_ios) {
   proto_library("gl_lpm_fuzzer_proto") {
     sources = [ "command_buffer/tests/lpm/gl_lpm_fuzzer.proto" ]
 
@@ -307,6 +307,7 @@ test("gl_tests") {
     "command_buffer/service/shared_image/shared_image_representation_unittest.cc",
     "command_buffer/service/shared_image/test_utils.cc",
     "command_buffer/service/shared_image/test_utils.h",
+    "command_buffer/service/shared_image/wrapped_sk_image_backing_factory_unittest.cc",
     "command_buffer/tests/compressed_texture_test.cc",
     "command_buffer/tests/es3_misc_functions_unittest.cc",
     "command_buffer/tests/gl_bgra_mipmap_unittest.cc",
@@ -330,7 +331,6 @@ test("gl_tests") {
     "command_buffer/tests/gl_manager.h",
     "command_buffer/tests/gl_map_buffer_range_unittest.cc",
     "command_buffer/tests/gl_object_bindings_unittest.cc",
-    "command_buffer/tests/gl_oes_egl_image_unittest.cc",
     "command_buffer/tests/gl_offscreen_surface_unittest.cc",
     "command_buffer/tests/gl_oob_attrib_unittest.cc",
     "command_buffer/tests/gl_pointcoord_unittest.cc",
@@ -612,7 +612,7 @@ test("gpu_unittests") {
     sources += [ "ipc/service/image_decode_accelerator_stub_unittest.cc" ]
   }
 
-  if (is_mac) {
+  if (is_apple) {
     sources += [
       "ipc/common/gpu_memory_buffer_impl_io_surface_unittest.cc",
       "ipc/service/gpu_memory_buffer_factory_io_surface_unittest.cc",

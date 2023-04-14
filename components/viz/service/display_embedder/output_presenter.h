@@ -130,12 +130,8 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
       const OverlayProcessorInterface::OutputSurfaceOverlayPlane& plane,
       Image* image,
       bool is_submitted) = 0;
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_OZONE)
-  using OverlayPlaneCandidate = OverlayCandidate;
-#elif BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_APPLE)
   using OverlayPlaneCandidate = CALayerOverlay;
-#elif BUILDFLAG(IS_WIN)
-  using OverlayPlaneCandidate = DCLayerOverlayCandidate;
 #else
   // Default.
   using OverlayPlaneCandidate = OverlayCandidate;
@@ -150,7 +146,7 @@ class VIZ_SERVICE_EXPORT OutputPresenter {
   virtual void SetGpuVSyncEnabled(bool enabled) {}
   virtual void SetVSyncDisplayID(int64_t display_id) {}
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   virtual void SetCALayerErrorCode(gfx::CALayerResult ca_layer_error_code) {}
 #endif
 };

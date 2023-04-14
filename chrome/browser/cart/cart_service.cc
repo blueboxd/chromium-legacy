@@ -89,11 +89,6 @@ absl::optional<base::Value> JSONToDictionary(int resource_id) {
   return value;
 }
 
-bool IsExpired(const cart_db::ChromeCartContentProto& proto) {
-  return (base::Time::Now() - base::Time::FromDoubleT(proto.timestamp()))
-             .InDays() > 14;
-}
-
 const re2::RE2& GetSkipCartExtractionPattern() {
   re2::RE2::Options options;
   options.set_case_sensitive(false);
@@ -334,6 +329,13 @@ const GURL CartService::AppendUTM(const GURL& base_url) {
                                             kUTMCampaignChromeCartTag);
 }
 
+void CartService::HasActiveCartForURL(const GURL& url,
+                                      base::OnceCallback<void(bool)> callback) {
+  LoadCart(eTLDPlusOne(url),
+           base::BindOnce(&CartService::HasActiveCartForURLCallback,
+                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CartService::ShouldShowDiscountConsent(
     base::OnceCallback<void(bool)> callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
@@ -425,6 +427,25 @@ void CartService::RecordDiscountConsentStatusAtLoad(bool should_show_consent) {
           static_cast<int>(current_variation));
     }
   }
+}
+
+bool CartService::IsCartExpired(const cart_db::ChromeCartContentProto& proto) {
+  return (base::Time::Now() - base::Time::FromDoubleT(proto.timestamp()))
+             .InDays() > kCartExpirationTimeInDays;
+}
+
+void CartService::HasActiveCartForURLCallback(
+    base::OnceCallback<void(bool)> callback,
+    bool success,
+    std::vector<CartDB::KeyAndValue> proto_pairs) {
+  // Check if there is a cart for the corresponding domain and
+  // if the cart has not expired.
+  if (!success || proto_pairs.size() == 0) {
+    std::move(callback).Run(false);
+    return;
+  }
+  DCHECK(proto_pairs.size() == 1);
+  std::move(callback).Run(!IsCartExpired(proto_pairs[0].second));
 }
 
 void CartService::ShouldShowDiscountConsentCallback(
@@ -847,7 +868,7 @@ void CartService::OnLoadCarts(CartDB::LoadCallback callback,
   std::set<std::string> merchants_to_erase;
   for (CartDB::KeyAndValue kv : proto_pairs) {
     const GURL& cart_url(GURL(kv.second.merchant_cart_url()));
-    if (IsExpired(kv.second) || ShouldSkip(cart_url)) {
+    if (IsCartExpired(kv.second) || ShouldSkip(cart_url)) {
       // Removed carts should remain removed.
       if (!kv.second.is_removed()) {
         DeleteCart(cart_url, true);

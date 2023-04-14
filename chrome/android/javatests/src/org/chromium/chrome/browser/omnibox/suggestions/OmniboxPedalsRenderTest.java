@@ -19,7 +19,6 @@ import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.night_mode.ChromeNightModeTestUtils;
@@ -112,15 +111,14 @@ public class OmniboxPedalsRenderTest {
     private AutocompleteMatch createDummyPedalSuggestion(String name, @OmniboxPedalType int id) {
         return AutocompleteMatchBuilder.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
                 .setDisplayText(name)
-                .setOmniboxPedal(new OmniboxPedal(id, "hints", "suggestionContents",
-                        "accessibilitySuffix", "accessibilityHint", GURL.emptyGURL()))
+                .setActions(Arrays.asList(new OmniboxPedal(id, "hints", "suggestionContents",
+                        "accessibilitySuffix", "accessibilityHint", GURL.emptyGURL())))
                 .build();
     }
 
     @Test
     @MediumTest
     @Feature("RenderTest")
-    @DisabledTest(message = "crbug.com/1348691")
     public void testRunChromeSafetyCheckPedal() throws IOException, InterruptedException {
         List<AutocompleteMatch> suggestionsList = new ArrayList<>();
         suggestionsList.add(
@@ -137,7 +135,6 @@ public class OmniboxPedalsRenderTest {
     @Test
     @MediumTest
     @Feature("RenderTest")
-    @DisabledTest(message = "crbug.com/1348691")
     public void testPlayChromeDinoGamePedal() throws IOException, InterruptedException {
         List<AutocompleteMatch> suggestionsList = new ArrayList<>();
         suggestionsList.add(

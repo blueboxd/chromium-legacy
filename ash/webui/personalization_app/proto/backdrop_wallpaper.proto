@@ -45,6 +45,17 @@ message Image {
 
   // The type of this image in the unit.
   optional ImageType image_type = 7;
+
+  message Description {
+    // A title for this image, e.g. "Artwork by [Artist]".
+    optional string title = 1;
+    // Detailed description text for this image.
+    optional string content = 2;
+  }
+
+  // Supplemental description of the image.
+  // TODO(b/250617579) replace with real value.
+  optional Description description = 100;
 }
 
 // A logical grouping of images e.g. landscapes or space photography.
@@ -52,12 +63,17 @@ message Collection {
   // The unique id for the collection.
   optional string collection_id = 1;
 
-  // A localized description of the collection e.g. "Landscapes" or "Kunst".
+  // A localized name of the collection e.g. "Landscapes" or "Kunst".
   optional string collection_name = 2;
 
   // A list of representative images for the collection. Currently only a single
   // image will be returned.
   repeated Image preview = 3;
+
+  // Supplemental description of the collection e.g.
+  // "Celebrate [Holiday] with Google".
+  // TODO(b/250617579) replace with real value.
+  optional string description = 100;
 }
 
 message GetCollectionsRequest {

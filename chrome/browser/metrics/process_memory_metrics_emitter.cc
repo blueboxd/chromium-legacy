@@ -39,6 +39,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/browser_metrics.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/memory_instrumentation.h"
@@ -46,6 +47,7 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/child_process_binding_types.h"
+#include "base/android/meminfo_dump_provider.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -531,6 +533,15 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"web_cache/Other_resources", "WebCache.OtherResources", MetricSize::kSmall,
      kEffectiveSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetWebCache_OtherResources},
+#if BUILDFLAG(IS_ANDROID)
+    {base::android::MeminfoDumpProvider::kDumpName, "AndroidOtherPss",
+     MetricSize::kLarge, base::android::MeminfoDumpProvider::kPssMetricName,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {base::android::MeminfoDumpProvider::kDumpName, "AndroidOtherPrivateDirty",
+     MetricSize::kLarge,
+     base::android::MeminfoDumpProvider::kPrivateDirtyMetricName,
+     EmitTo::kSizeInUmaOnly, nullptr},
+#endif
 };
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -919,8 +930,11 @@ void EmitRendererMemoryMetrics(
     int number_of_extensions,
     const absl::optional<base::TimeDelta>& uptime,
     bool record_uma) {
+  // If the renderer doesn't host a single page, no page_info will be passed in,
+  // and there's no single URL to associate its memory with.
   ukm::SourceId ukm_source_id =
-      page_info ? page_info->ukm_source_id : ukm::UkmRecorder::GetNewSourceID();
+      page_info ? page_info->ukm_source_id : ukm::NoURLSourceId();
+
   Memory_Experimental builder(ukm_source_id);
   builder.SetProcessType(static_cast<int64_t>(
       memory_instrumentation::mojom::ProcessType::RENDERER));

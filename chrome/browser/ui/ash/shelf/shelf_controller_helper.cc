@@ -23,9 +23,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_shelf_utils.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -37,6 +35,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/navigation_entry.h"
+#include "extensions/browser/extension_util.h"
 #include "net/base/url_util.h"
 
 namespace {

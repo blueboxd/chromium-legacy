@@ -15,7 +15,7 @@ extern NSString* const kAppStoreRatingTotalDaysOnChromeKey;
 // a session in the past 7 days in NSUserDefaults.
 extern NSString* const kAppStoreRatingActiveDaysInPastWeekKey;
 
-// Key used to store the the latest date the App Store Rating promo was
+// Key used to store the latest date the App Store Rating promo was
 // requested for display for the user.
 extern NSString* const kAppStoreRatingLastShownPromoDayKey;
 

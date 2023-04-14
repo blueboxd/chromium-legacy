@@ -5,11 +5,13 @@
 #include <string>
 #include <vector>
 
+#include "base/check_deref.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_api.h"
@@ -109,12 +111,7 @@ class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
  protected:
   void RunGetLanguageListTest();
 
-  virtual void InitFeatures() {
-#if BUILDFLAG(IS_WIN)
-    // Force Windows hybrid spellcheck to be enabled.
-    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
-#endif  // BUILDFLAG(IS_WIN)
-  }
+  virtual void InitFeatures() {}
 
 #if BUILDFLAG(IS_WIN)
   virtual void AddSpellcheckLanguagesForTesting(
@@ -302,12 +299,10 @@ class LanguageSettingsPrivateApiGetLanguageListTest
  protected:
   void InitFeatures() override {
 #if BUILDFLAG(IS_WIN)
-    // Force Windows hybrid spellcheck to be enabled, and disable the delayed
-    // init feature since that case is tested in
+    // Disable the delayed init feature since that case is tested in
     // LanguageSettingsPrivateApiTestDelayInit below.
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker},
-        /*disabled_features=*/{spellcheck::kWinDelaySpellcheckServiceInit});
+    feature_list_.InitAndDisableFeature(
+        spellcheck::kWinDelaySpellcheckServiceInit);
 #endif  // BUILDFLAG(IS_WIN)
   }
 };
@@ -397,13 +392,13 @@ void LanguageSettingsPrivateApiTest::RunGetLanguageListTest() {
   size_t languages_to_test_found_count = 0;
   for (auto& language_val : result->GetList()) {
     EXPECT_TRUE(language_val.is_dict());
-    std::string* language_code_ptr = language_val.FindStringKey("code");
+    std::string* language_code_ptr = language_val.GetDict().FindString("code");
     ASSERT_NE(nullptr, language_code_ptr);
     std::string language_code = *language_code_ptr;
     EXPECT_FALSE(language_code.empty());
 
     const absl::optional<bool> maybe_supports_spellcheck =
-        language_val.FindBoolKey("supportsSpellcheck");
+        language_val.GetDict().FindBool("supportsSpellcheck");
     const bool supports_spellcheck = maybe_supports_spellcheck.has_value()
                                          ? maybe_supports_spellcheck.value()
                                          : false;
@@ -422,7 +417,7 @@ void LanguageSettingsPrivateApiTest::RunGetLanguageListTest() {
     // Check that zh and zh-HK aren't shown as supporting UI.
     if (language_code == "zh" || language_code == "zh-HK") {
       const absl::optional<bool> maybe_supports_ui =
-          language_val.FindBoolKey("supportsUI");
+          language_val.GetDict().FindBool("supportsUI");
       const bool supports_ui =
           maybe_supports_ui.has_value() ? maybe_supports_ui.value() : false;
       EXPECT_FALSE(supports_ui) << language_code << " should not support UI";
@@ -541,35 +536,39 @@ TEST_F(LanguageSettingsPrivateApiTest, GetInputMethodListsTest) {
 
   auto function = base::MakeRefCounted<
       LanguageSettingsPrivateGetInputMethodListsFunction>();
-  absl::optional<base::Value> result =
+  absl::optional<base::Value> result_val =
       api_test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
                                                        profile());
 
-  ASSERT_TRUE(result) << function->GetError();
-  ASSERT_TRUE(result->is_dict());
+  ASSERT_TRUE(result_val) << function->GetError();
+  ASSERT_TRUE(result_val->is_dict());
 
-  base::Value* input_methods = result->FindListKey("thirdPartyExtensionImes");
+  const base::Value::Dict& result = result_val->GetDict();
+  const base::Value::List* input_methods =
+      result.FindList("thirdPartyExtensionImes");
   ASSERT_NE(input_methods, nullptr);
-  EXPECT_EQ(3u, input_methods->GetList().size());
+  EXPECT_EQ(3u, input_methods->size());
 
-  for (auto& input_method : input_methods->GetList()) {
-    base::Value* ime_tags_ptr = input_method.FindListKey("tags");
+  for (auto& input_method_val : *input_methods) {
+    const base::Value::Dict& input_method = input_method_val.GetDict();
+    const base::Value::List* ime_tags_ptr = input_method.FindList("tags");
     ASSERT_NE(nullptr, ime_tags_ptr);
 
     // Check tags contain input method's display name
-    base::Value* ime_name_ptr = input_method.FindKey("displayName");
-    EXPECT_TRUE(base::Contains(ime_tags_ptr->GetList(), *ime_name_ptr));
+    const base::Value* ime_name_ptr = input_method.Find("displayName");
+    EXPECT_TRUE(base::Contains(*ime_tags_ptr, CHECK_DEREF(ime_name_ptr)));
 
     // Check tags contain input method's language codes' display names
-    base::Value* ime_language_codes_ptr =
-        input_method.FindListKey("languageCodes");
+    const base::Value::List* ime_language_codes_ptr =
+        input_method.FindList("languageCodes");
     ASSERT_NE(nullptr, ime_language_codes_ptr);
-    for (auto& language_code : ime_language_codes_ptr->GetList()) {
+    for (auto& language_code : *ime_language_codes_ptr) {
       std::u16string language_display_name = l10n_util::GetDisplayNameForLocale(
           language_code.GetString(), "en", true);
-      if (!language_display_name.empty())
-        EXPECT_TRUE(base::Contains(ime_tags_ptr->GetList(),
-                                   base::Value(language_display_name)));
+      if (!language_display_name.empty()) {
+        EXPECT_TRUE(
+            base::Contains(*ime_tags_ptr, base::Value(language_display_name)));
+      }
     }
   }
 
@@ -722,10 +721,8 @@ class LanguageSettingsPrivateApiTestDelayInit
   void InitFeatures() override {
     // Force Windows hybrid spellcheck and delayed initialization of the
     // spellcheck service to be enabled.
-    feature_list_.InitWithFeatures(
-        /*enabled_features=*/{spellcheck::kWinUseBrowserSpellChecker,
-                              spellcheck::kWinDelaySpellcheckServiceInit},
-        /*disabled_features=*/{});
+    feature_list_.InitAndEnableFeature(
+        spellcheck::kWinDelaySpellcheckServiceInit);
   }
 
   void AddSpellcheckLanguagesForTesting(

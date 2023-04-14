@@ -33,7 +33,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Stability.Android.MinidumpUploadingTime" units="ms"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>shaktisahu@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Stability.Android.SystemExitReason"
-    enum="AndroidProcessExitReason" expires_after="2023-06-04">
+    enum="AndroidProcessExitReason" expires_after="2023-08-08">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -299,6 +299,7 @@ chromium-metrics-reviews@google.com.
   <owner>rkaplow@chromium.org</owner>
   <owner>src/base/metrics/OWNERS</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <improvement direction="LOWER_IS_BETTER"/>
   <summary>
     Collects various counters related to stability. The majority of them are
     crash types.
@@ -306,7 +307,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.DebugScenario.Navigation" enum="DebugScenario"
-    expires_after="2023-04-23">
+    expires_after="2023-08-08">
   <owner>nasko@chromium.org</owner>
   <owner>altimin@chromium.org</owner>
   <summary>

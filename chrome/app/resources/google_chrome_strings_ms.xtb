@@ -51,7 +51,6 @@
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome sudah usang</translation>
 <translation id="1919130412786645364">Benarkan log masuk Chrome</translation>
-<translation id="1952239763774043237">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan macOS 10.13 atau yang lebih baharu. Komputer ini menggunakan macOS 10.12.</translation>
 <translation id="1953553007165777902">Memuat turun... <ph name="MINUTE" /> minit lagi</translation>
 <translation id="2018528049276128029">Setiap profil menyimpan maklumat Chrome profil itu sendiri seperti penanda halaman, sejarah, kata laluan dan pelbagai lagi</translation>
 <translation id="2018879682492276940">Pemasangan gagal. Sila cuba lagi.</translation>
@@ -184,6 +183,7 @@
 <translation id="4335235004908507846">Chrome dapat membantu untuk memastikan anda selamat daripada pelanggaran data, sambungan tidak elok dan pelbagai lagi</translation>
 <translation id="4343195214584226067"><ph name="EXTENSION_NAME" /> telah ditambahkan pada Chrome</translation>
 <translation id="4384570495110188418">Chrome tidak dapat menyemak kata laluan anda kerana anda tidak log masuk</translation>
+<translation id="4393248995085527349">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan macOS 10.15 atau yang lebih baharu. Komputer ini menggunakan macOS 10.13.</translation>
 <translation id="4427306783828095590">Perlindungan yang dipertingkatkan melakukan pelbagai lagi perkara untuk menyekat pancingan data dan perisian hasad</translation>
 <translation id="4450664632294415862">Chrome - Log Masuk Rangkaian - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Terdapat operasi lain sedang dijalankan pada Google Chrome. Sila cuba sebentar lagi.</translation>
@@ -213,7 +213,6 @@
 <translation id="4970880042055371251">Versi Chrome OS</translation>
 <translation id="4970947549776831107">Chrome menyekat fail ini kerana jenis fail ini berbahaya</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan macOS 10.13 atau yang lebih baharu. Komputer ini menggunakan OS X 10.11.</translation>
 <translation id="5098668839038261629">Apabila dihidupkan, anda juga akan dilog keluar daripada Chrome</translation>
 <translation id="5132929315877954718">Temui apl, permainan, sambungan dan tema hebat untuk Google Chrome.</translation>
 <translation id="5139423532931106058">Sesuaikan profil Chrome anda</translation>
@@ -237,6 +236,7 @@
 <translation id="5678190148303298925">{COUNT,plural, =0{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini}=1{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini. Tetingkap Inkognito anda tidak dapat dibuka semula.}other{Pentadbir anda meminta anda melancarkan semula Chrome untuk menggunakan kemas kini ini. # tetingkap Inkognito anda tidak dapat dibuka semula.}}</translation>
 <translation id="5686916850681061684">Sesuaikan dan kawal Google Chrome. Perhatian anda diperlukan - klik untuk mendapatkan butiran.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Apabila dihidupkan, Chrome mengosongkan memori daripada tab yang tidak aktif. Ini memberi tab aktif dan apl lain lebih banyak sumber komputer dan memastikan Chrome pantas. Tab anda yang tidak aktif menjadi aktif semula secara automatik apabila anda kembali kepada tab tersebut.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome akan dimulakan semula dalam 1 saat}other{Google Chrome akan dimulakan semula dalam # saat}}</translation>
 <translation id="5727531838415286053">Jika Chrome telah meletakkan anda secara rawak dalam percubaan aktif, sejarah penyemakan imbas anda mempengaruhi iklan yang anda lihat dan minat seperti yang dianggarkan di bawah. Untuk melindungi privasi anda, Chrome memadamkan minat anda secara bergilir setiap bulan. Minat akan dimuat semula melainkan anda mengalih keluar minat anda.</translation>
 <translation id="5736850870166430177">Jika tapak cuba mencuri kata laluan anda atau apabila anda memuat turun fail yang berbahaya, Chrome juga mungkin menghantar URL, termasuk sedikit kandungan halaman, kepada Penyemakan Imbas Selamat</translation>
@@ -247,10 +247,12 @@
 <translation id="5895138241574237353">Mulakan Semula</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - Log Masuk Rangkaian</translation>
 <translation id="5924017743176219022">Menyambung ke Internet...</translation>
+<translation id="5932997892801542621">Apabila anda menaip dalam bar alamat atau kotak carian, Chrome menghantar perkara yang anda taip kepada Google Drive untuk mendapatkan cadangan item. Tetapan ini dimatikan dalam Inkognito.</translation>
 <translation id="5940385492829620908">Web, penanda halaman dan barangan Chrome anda yang lain tinggal di sini.</translation>
 <translation id="5941711191222866238">Minimumkan</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
 <translation id="6003112304606738118">Memuat turun… <ph name="HOURS" /> jam lagi</translation>
+<translation id="6010556343189461180">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan macOS 10.15 atau yang lebih baharu. Komputer ini menggunakan macOS 10.14.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome akan ditutup sekarang.}=1{Chrome akan ditutup dalam masa 1 saat.}other{Chrome akan ditutup dalam masa # saat.}}</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6070348360322141662">Untuk keselamatan tambahan, Google Chrome akan menyulitkan data anda</translation>
@@ -316,7 +318,6 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="7410958280246779049">Chrome menyekat fail ini kerana fail ini berbahaya</translation>
 <translation id="7426611252293106642">Google Chrome mungkin tidak berfungsi dengan betul kerana tidak disokong pada edaran Linux ini lagi</translation>
 <translation id="7481213027396403996">Dapatkan keselamatan Chrome yang paling kukuh</translation>
-<translation id="7486227612705979895">Chrome akan mengakses Drive anda untuk membuat cadangan dalam bar alamat</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119">Pemasang <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google Chrome OS Flex</translation>
@@ -359,7 +360,6 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="8286862437124483331">Google Chrome cuba menunjukkan kata laluan. Taip kata laluan Windows anda untuk membenarkannya.</translation>
 <translation id="828798499196665338">Ibu/bapa anda telah mematikan "Kebenaran untuk laman web, apl dan sambungan" untuk Chrome. Tindakan mendayakan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak dibenarkan.</translation>
 <translation id="8290100596633877290">Alamak! Google Chrome mengalami ranap sistem. Lancarkan semula sekarang?</translation>
-<translation id="8341646175450781745">Apabila dihidupkan, Chrome mengosongkan memori daripada tab yang tidak aktif. Ini memberikan tab aktif dan apl lain lebih banyak sumber komputer dan memastikan Chrome pantas. Tab anda yang tidak aktif menjadi aktif semula secara automatik apabila anda kembali kepada tab tersebut. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />hantar maklum balas<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Fail ini berbahaya, maka Chrome telah menyekatnya.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Cara kami menggunakan data ini:<ph name="END_BOLD" /> Laman boleh menyimpan maklumat tentang minat anda menggunakan Chrome. Contohnya, jika anda melawat laman untuk membeli kasut untuk maraton, laman tersebut mungkin mentakrifkan minat anda sebagai larian maraton. Kemudian, jika anda melawati laman lain untuk mendaftar perlumbaan, laman tersebut boleh memaparkan kepada anda iklan kasut untuk berlari berdasarkan minat anda.</translation>
 <translation id="8370517070665726704">Hak Cipta <ph name="YEAR" /> Google LLC. Hak cipta terpelihara.</translation>
@@ -390,6 +390,7 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="8686817260976772516">Dengan profil Chrome anda dapat mengasingkan semua bahan Chrome anda. Buat profil untuk rakan dan keluarga atau asingkan antara bahan kerja dengan bahan untuk keseronokan.</translation>
 <translation id="8712767363896337380">Kemas kini hampir selesai! Lancarkan semula Chrome untuk menyelesaikan kemas kini.</translation>
 <translation id="873133009373065397">Google Chrome tidak dapat menentukan atau menetapkan penyemak imbas lalai</translation>
+<translation id="8765470054473112089">Apabila anda menaip dalam bar alamat atau kotak carian, Chrome menghantar perkara yang anda taip ke enjin carian lalai anda untuk mendapatkan cadangan yang lebih baik. Tetapan ini dimatikan dalam Inkognito.</translation>
 <translation id="8821043148920470810">Untuk mendapatkan kemaskinian Google Chrome yang akan datang, anda memerlukan Windows 10 atau yang lebih baharu. Komputer ini menggunakan Windows 7.</translation>
 <translation id="8823341990149967727">Chrome sudah Usang</translation>
 <translation id="8825634023950448068">Untuk melindungi privasi anda, kami memadamkan minat anda yang disimpan melebihi 4 minggu secara automatik. Semasa anda terus menyemak imbas, minat itu mungkin muncul semula dalam senarai. Jika Chrome tersilap atau anda tidak mahu melihat iklan tertentu, anda boleh mengalih keluar minat itu.</translation>
@@ -403,7 +404,6 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="8986207147630327271">Anda menambahkan profil kerja pada penyemak imbas ini dan memberi pentadbir anda kawalan terhadap profil kerja sahaja.</translation>
 <translation id="8989968390305463310">Sejarah penyemakan imbas anda mempengaruhi iklan yang anda lihat dan minat seperti yang dianggarkan di bawah. Untuk melindungi privasi anda, Chrome memadamkan minat anda secara automatik secara bergilir setiap bulan. Minat akan dimuat semula melainkan anda mengalih keluar minat anda.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Kemas kini Chrome tersedia}=1{Kemas kini Chrome tersedia}other{Kemas kini Chrome telah tersedia selama # hari}}</translation>
-<translation id="9003498785844995646">Apabila dihidupkan, Chrome menjimatkan kuasa bateri dengan mengehadkan aktiviti latar belakang dan kesan visual, seperti tatal lancar dan kadar bingkai video. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /> atau <ph name="BEGIN_LINK_2" />hantar maklum balas<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Sistem Chrome OS Flex</translation>
 <translation id="9067395829937117663">Google Chrome memerlukan Windows 7 atau lebih tinggi.</translation>
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
@@ -414,6 +414,7 @@ Kebenaran yang telah anda berikan kepada laman web dan apl mungkin dikenakan pad
 <translation id="93760716455950538">Mulakan semula Chrome OS Flex</translation>
 <translation id="940313311831216333">Untuk mengakses bahan Chrome anda pada semua peranti anda, log masuk, kemudian hidupkan penyegerakan.</translation>
 <translation id="943390475793766444">Chrome mengesyorkan pengimbasan fail ini kerana fail ini mungkin berbahaya.</translation>
+<translation id="963650557422347554">Apabila dihidupkan, Chrome menjimatkan kuasa bateri dengan mengehadkan aktiviti latar dan kesan visual, seperti tatal lancar dan kadar bingkai video.</translation>
 <translation id="989369509083708165">Google Chrome ialah penyemak imbas lalai anda</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> boleh digunakan untuk beralih antara profil Chrome</translation>
 </translationbundle>

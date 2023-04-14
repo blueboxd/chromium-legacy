@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
+#include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 #include "content/public/browser/document_service.h"
 #include "content/public/browser/visibility.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -43,6 +44,9 @@ class NavigationPredictor
                      mojo::PendingReceiver<AnchorElementMetricsHost> receiver);
 
  private:
+  friend class MockNavigationPredictorForTesting;
+  using AnchorId = base::StrongAlias<class AnchorId, uint32_t>;
+
   NavigationPredictor(content::RenderFrameHost& render_frame_host,
                       mojo::PendingReceiver<AnchorElementMetricsHost> receiver);
   ~NavigationPredictor() override;
@@ -53,6 +57,13 @@ class NavigationPredictor
   void ReportAnchorElementsEnteredViewport(
       std::vector<blink::mojom::AnchorElementEnteredViewportPtr> elements)
       override;
+  void ReportAnchorElementsLeftViewport(
+      std::vector<blink::mojom::AnchorElementLeftViewportPtr> elements)
+      override;
+  void ReportAnchorElementPointerOver(
+      blink::mojom::AnchorElementPointerOverPtr pointer_over_event) override;
+  void ReportAnchorElementPointerOut(
+      blink::mojom::AnchorElementPointerOutPtr hover_event) override;
   void ReportNewAnchorElements(
       std::vector<blink::mojom::AnchorElementMetricsPtr> elements) override;
 
@@ -77,16 +88,26 @@ class NavigationPredictor
   // |ratio_area|.
   int GetLinearBucketForRatioArea(int value) const;
 
+  // Returns UserInteractionsData for the current page.
+  PageAnchorsMetricsObserver::UserInteractionsData& GetUserInteractionsData()
+      const;
+
   // A count of clicks to prevent reporting more than 10 clicks to UKM.
   size_t clicked_count_ = 0;
 
-  // For each anchor ID that we track, the index that this anchor will have in
-  // the UKM logs.
-  std::unordered_map<uint32_t, blink::mojom::AnchorElementMetricsPtr> anchors_;
+  // Stores the anchor element metrics for each anchor ID that we track.
+  std::unordered_map<AnchorId,
+                     blink::mojom::AnchorElementMetricsPtr,
+                     typename AnchorId::Hasher>
+      anchors_;
 
-  // For each anchor ID that we track, the index that this anchor will have in
-  // the UKM logs.
-  std::unordered_map<uint32_t, int> tracked_anchor_id_to_index_;
+  // The time between navigation start and the last time user clicked on a link.
+  absl::optional<base::TimeDelta> navigation_start_to_click_;
+
+  // Mapping between the anchor ID for the anchors that we track and the index
+  // that this anchor will have in the UKM logs.
+  std::unordered_map<AnchorId, int, typename AnchorId::Hasher>
+      tracked_anchor_id_to_index_;
 
   // URLs that were sent to the prediction service.
   std::set<GURL> predicted_urls_;

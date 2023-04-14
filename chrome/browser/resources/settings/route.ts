@@ -132,9 +132,9 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
   if (!loadTimeData.getBoolean('isGuest')) {
     r.PEOPLE = r.BASIC.createSection(
         '/people', 'people', loadTimeData.getString('peoplePageTitle'));
+    // <if expr="not chromeos_ash">
     r.SIGN_OUT = r.PEOPLE.createChild('/signOut');
     r.SIGN_OUT.isNavigableDialog = true;
-    // <if expr="not chromeos_ash">
     r.IMPORT_DATA = r.PEOPLE.createChild('/importData');
     r.IMPORT_DATA.isNavigableDialog = true;
     // </if>
@@ -255,7 +255,7 @@ function createBrowserSettingsRoutes(): SettingsRoutes {
     if (visibility.performance !== false &&
         ((loadTimeData.getBoolean('highEfficiencyModeAvailable')) ||
          (loadTimeData.getBoolean('batterySaverModeAvailable')))) {
-      r.PERFORMANCE = r.ADVANCED!.createSection(
+      r.PERFORMANCE = r.BASIC.createSection(
           '/performance', 'performance',
           loadTimeData.getString('performancePageTitle'));
     }

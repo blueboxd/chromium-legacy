@@ -8,11 +8,16 @@
  */
 import {CursorRange} from '../../../common/cursors/range.js';
 import {ChromeVoxRange, ChromeVoxRangeObserver} from '../chromevox_range.js';
+import {ChromeVoxPrefs} from '../prefs.js';
 
 import {LogStore} from './log_store.js';
 
 /** @implements {ChromeVoxRangeObserver} */
 export class LogUrlWatcher {
+  static init() {
+    ChromeVoxPrefs.instance.enableOrDisableLogUrlWatcher_();
+  }
+
   static create() {
     if (LogUrlWatcher.instance) {
       return;

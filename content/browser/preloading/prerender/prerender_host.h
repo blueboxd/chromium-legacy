@@ -132,6 +132,7 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   bool IsHidden() override;
   FrameTree* LoadingTree() override;
   int GetOuterDelegateFrameTreeNodeId() override;
+  RenderFrameHostImpl* GetProspectiveOuterDocument() override;
   bool IsPortal() override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source) override;
 
@@ -157,6 +158,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
 
   // Returns false if prerendering hasn't been started.
   bool StartPrerendering();
+
+  // Called from PrerenderHostRegistry::DidStartNavigation(). It may reset
+  // `is_ready_for_activation_` flag when the main frame navigation happens in
+  // a prerendered page.
+  void DidStartNavigation(NavigationHandle* navigation_handle);
 
   // Called from PrerenderHostRegistry::DidFinishNavigation(). If the navigation
   // request is for the main frame and doesn't have an error, then the host will

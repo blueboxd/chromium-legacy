@@ -12,7 +12,7 @@
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_image_native_pixmap.h"
+#include "ui/gl/gl_image_gl_texture.h"
 #include "ui/gl/scoped_binders.h"
 
 namespace media {
@@ -85,8 +85,8 @@ VaapiStatus VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
     return VaapiStatus::Codes::kBadContext;
 
   // TODO(b/220336463): plumb the right color space.
-  auto image = gl::GLImageNativePixmap::CreateFromTexture(visible_size_, format,
-                                                          texture_id_);
+  auto image = gl::GLImageGLTexture::CreateFromTexture(visible_size_, format,
+                                                       texture_id_);
   // Create an EGLImage from a gl texture
   if (!image) {
     DLOG(ERROR) << "Failed to initialize eglimage from texture id: "
@@ -118,10 +118,7 @@ VaapiStatus VaapiPictureNativePixmapEgl::Allocate(gfx::BufferFormat format) {
     return VaapiStatus::Codes::kNoBufferHandle;
   }
 
-  if (!image->BindTexImage(texture_target_)) {
-    DLOG(ERROR) << "Failed to bind texture to GLImage";
-    return VaapiStatus::Codes::kFailedToBindImage;
-  }
+  image->BindTexImage(texture_target_);
 
   // The |va_surface_| created from |native_pixmap_dmabuf| shares the ownership
   // of the buffer. So the only reason to keep a reference on the image is

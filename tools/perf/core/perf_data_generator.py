@@ -17,7 +17,6 @@ from __future__ import print_function
 
 import argparse
 import collections
-import copy
 import csv
 import filecmp
 import json
@@ -34,7 +33,6 @@ from core import benchmark_utils
 from core import bot_platforms
 from core import path_util
 from core import undocumented_benchmarks as ub_module
-
 path_util.AddTelemetryToPath()
 
 from telemetry import decorators
@@ -92,7 +90,6 @@ class TEST_TYPES(object):
   TELEMETRY = 2
 
   ALL = (GENERIC, GTEST, TELEMETRY)
-
 
 # This is an opt-in list for tester which will skip the perf data handling.
 # The perf data will be handled on a separated 'processor' VM.
@@ -471,22 +468,6 @@ BUILDERS = {
                 },
             },
             {
-                'name': 'resource_sizes_chrome_modern_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-                'resultdb': {
-                    'has_native_resultdb_integration': True,
-                },
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-                'resultdb': {
-                    'has_native_resultdb_integration': True,
-                },
-            },
-            {
                 'name': 'resource_sizes_trichrome_google',
                 'isolate': 'resource_sizes_trichrome_google',
                 'type': TEST_TYPES.GENERIC,
@@ -566,22 +547,6 @@ BUILDERS = {
             {
                 'name': 'resource_sizes_monochrome_public_minimal_apks',
                 'isolate': 'resource_sizes_monochrome_public_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-                'resultdb': {
-                    'has_native_resultdb_integration': True,
-                },
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_minimal_apks',
-                'type': TEST_TYPES.GENERIC,
-                'resultdb': {
-                    'has_native_resultdb_integration': True,
-                },
-            },
-            {
-                'name': 'resource_sizes_chrome_modern_public_minimal_apks',
-                'isolate': 'resource_sizes_chrome_modern_public_minimal_apks',
                 'type': TEST_TYPES.GENERIC,
                 'resultdb': {
                     'has_native_resultdb_integration': True,
@@ -933,6 +898,66 @@ BUILDERS = {
             'os': 'Android',
             'device_type': 'sunfish',
             'device_os': 'RQ1D.201205.012',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel6-perf': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_bundle',
+        }],
+        'platform':
+        'android-trichrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'oriole',
+            'device_os': 'TP1A.220624.021',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel6-perf-pgo': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_bundle',
+        }],
+        'platform':
+        'android-trichrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'oriole',
+            'device_os': 'TP1A.220624.021',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel6-pro-perf': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_bundle',
+        }],
+        'platform':
+        'android-trichrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'raven',
+            'device_os': 'TP1A.220624.021',
+            'device_os_flavor': 'google',
+        },
+    },
+    'android-pixel6-pro-perf-pgo': {
+        'tests': [{
+            'isolate':
+            'performance_test_suite_android_clank_trichrome_bundle',
+        }],
+        'platform':
+        'android-trichrome-bundle',
+        'dimension': {
+            'pool': 'chrome.tests.perf',
+            'os': 'Android',
+            'device_type': 'raven',
+            'device_os': 'TP1A.220624.021',
             'device_os_flavor': 'google',
         },
     },
@@ -1494,41 +1519,9 @@ _TESTER_SERVICE_ACCOUNT = (
     'chrome-tester@chops-service-accounts.iam.gserviceaccount.com')
 
 
-def _generate_pinpoint_builders_dict(builder):
-  result = {}
-  for key in builder:
-    content = copy.deepcopy(builder[key])
-    additional_compile_targets = content.get('additional_compile_targets', [])
-    additional_compile_targets = list(
-        filter(lambda x: x not in ['chromium_builder_perf', 'chromedriver'],
-               additional_compile_targets))
-    if additional_compile_targets:
-      content['additional_compile_targets'] = additional_compile_targets
-    elif 'additional_compile_targets' in content:
-      del content['additional_compile_targets']
-    tests = content.get('tests', [])
-    tests = list(
-        filter(
-            lambda x: not (x.get('name') == 'chrome_sizes' or x.get('name', '').
-                           startswith('resource_sizes')), tests))
-    if tests:
-      content['tests'] = tests
-    elif 'tests' in content:
-      del content['tests']
-    if content:
-      result[key] = content
-  return result
-
-
 def update_all_builders(file_path):
-  return (_update_builders(BUILDERS, file_path)
-          and is_perf_benchmarks_scheduling_valid(file_path, sys.stderr))
-
-
-def update_all_pinpoint_builders(file_path):
-  return (_update_builders(_generate_pinpoint_builders_dict(BUILDERS),
-                           file_path) and is_perf_benchmarks_scheduling_valid(
-                               file_path, sys.stderr, is_waterfall=False))
+  return (_update_builders(BUILDERS, file_path) and
+          is_perf_benchmarks_scheduling_valid(file_path, sys.stderr))
 
 
 def update_all_fyi_builders(file_path):
@@ -1622,14 +1615,15 @@ GTEST_BENCHMARKS = {
     ),
 }
 
+
 RESOURCE_SIZES_METADATA = BenchmarkMetadata(
-    'agrieve@chromium.org, jbudorick@chromium.org', 'Build',
+    'agrieve@chromium.org, jbudorick@chromium.org',
+    'Build',
     ('https://chromium.googlesource.com/chromium/src/+/HEAD/'
      'tools/binary_size/README.md#resource_sizes_py'))
 
+
 OTHER_BENCHMARKS = {
-    'resource_sizes_chrome_modern_minimal_apks': RESOURCE_SIZES_METADATA,
-    'resource_sizes_chrome_modern_public_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_monochrome_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_monochrome_public_minimal_apks': RESOURCE_SIZES_METADATA,
     'resource_sizes_trichrome': RESOURCE_SIZES_METADATA,
@@ -1637,6 +1631,7 @@ OTHER_BENCHMARKS = {
     'resource_sizes_system_webview_bundle': RESOURCE_SIZES_METADATA,
     'resource_sizes_system_webview_google_bundle': RESOURCE_SIZES_METADATA,
 }
+
 
 OTHER_BENCHMARKS.update({
     'chrome_sizes':
@@ -1677,6 +1672,7 @@ SYSTEM_HEALTH_BENCHMARKS = set([
     'system_health.memory_desktop',
     'system_health.memory_mobile',
 ])
+
 
 # Valid test suite (benchmark) names should match this regex.
 RE_VALID_TEST_SUITE_NAME = r'^[\w._-]+$'
@@ -1738,9 +1734,8 @@ def get_scheduled_non_telemetry_benchmarks(perf_waterfall_file):
   return test_names
 
 
-def is_perf_benchmarks_scheduling_valid(perf_waterfall_file,
-                                        outstream,
-                                        is_waterfall=True):
+def is_perf_benchmarks_scheduling_valid(
+    perf_waterfall_file, outstream):
   """Validates that all existing benchmarks are properly scheduled.
 
   Return: True if all benchmarks are properly scheduled, False otherwise.
@@ -1755,15 +1750,14 @@ def is_perf_benchmarks_scheduling_valid(perf_waterfall_file,
   for test_name in all_perf_gtests - scheduled_non_telemetry_tests:
     error_messages.append(
         'Benchmark %s is tracked but not scheduled on any perf waterfall '
-        'builders. Either schedule or remove it from GTEST_BENCHMARKS.' %
-        test_name)
+        'builders. Either schedule or remove it from GTEST_BENCHMARKS.'
+        % test_name)
 
-  if is_waterfall:
-    for test_name in all_perf_other_tests - scheduled_non_telemetry_tests:
-      error_messages.append(
-          'Benchmark %s is tracked but not scheduled on any perf waterfall '
-          'builders. Either schedule or remove it from OTHER_BENCHMARKS.' %
-          test_name)
+  for test_name in all_perf_other_tests - scheduled_non_telemetry_tests:
+    error_messages.append(
+        'Benchmark %s is tracked but not scheduled on any perf waterfall '
+        'builders. Either schedule or remove it from OTHER_BENCHMARKS.'
+        % test_name)
 
   for test_name in scheduled_non_telemetry_tests.difference(
       all_perf_gtests, all_perf_other_tests):
@@ -1840,14 +1834,14 @@ def update_benchmark_csv(file_path):
     ])
   if undocumented_benchmarks != ub_module.UNDOCUMENTED_BENCHMARKS:
     error_message = (
-        'The list of known undocumented benchmarks does not reflect the actual '
-        'ones.\n')
+      'The list of known undocumented benchmarks does not reflect the actual '
+      'ones.\n')
     if undocumented_benchmarks - ub_module.UNDOCUMENTED_BENCHMARKS:
       error_message += (
           'New undocumented benchmarks found. Please document them before '
-          'enabling on perf waterfall: %s' %
-          (','.join(b for b in undocumented_benchmarks -
-                    ub_module.UNDOCUMENTED_BENCHMARKS)))
+          'enabling on perf waterfall: %s' % (
+            ','.join(b for b in undocumented_benchmarks -
+                     ub_module.UNDOCUMENTED_BENCHMARKS)))
     if ub_module.UNDOCUMENTED_BENCHMARKS - undocumented_benchmarks:
       error_message += (
           'These benchmarks are already documented. Please remove them from '
@@ -1872,10 +1866,10 @@ def update_system_health_stories(filepath):
   Updates tools/perf/system_health_stories.csv containing the current set
   of system health stories.
   """
-  header_data = [[
-      'AUTOGENERATED FILE DO NOT EDIT'
-  ], ['See //tools/perf/core/perf_data_generator.py to make changes'],
-                 ['Story', 'Description', 'Platforms', 'Tags']]
+  header_data = [['AUTOGENERATED FILE DO NOT EDIT'],
+      ['See //tools/perf/core/perf_data_generator.py to make changes'],
+      ['Story', 'Description', 'Platforms', 'Tags']
+  ]
 
   stories = {}
   for benchmark_name in sorted(SYSTEM_HEALTH_BENCHMARKS):
@@ -1944,20 +1938,20 @@ def generate_telemetry_args(tester_config, platform):
   elif tester_config['platform'] == 'lacros':
     browser_name = 'lacros-chrome'
   elif (tester_config['platform'] == 'win'
-        and tester_config['target_bits'] == 64):
+    and tester_config['target_bits'] == 64):
     browser_name = 'release_x64'
   elif tester_config['platform'] == 'fuchsia-wes':
     browser_name = 'web-engine-shell'
   elif tester_config['platform'] == 'fuchsia-chrome':
     browser_name = 'fuchsia-chrome'
   else:
-    browser_name = 'release'
+    browser_name ='release'
   test_args = [
-      '-v',
-      '--browser=%s' % browser_name,
-      '--upload-results',
-      '--test-shard-map-filename=%s' % platform.shards_map_file_name,
-      '--ignore-benchmark-exit-code',
+    '-v',
+    '--browser=%s' % browser_name,
+    '--upload-results',
+    '--test-shard-map-filename=%s' % platform.shards_map_file_name,
+    '--ignore-benchmark-exit-code',
   ]
   if platform.run_reference_build:
     test_args.append('--run-ref-build')
@@ -1974,8 +1968,7 @@ def generate_gtest_args(test_name):
   # step's name. This is not always the same as the test binary's name (see
   # crbug.com/870692).
   return [
-      '--gtest-benchmark-name',
-      test_name,
+    '--gtest-benchmark-name', test_name,
   ]
 
 
@@ -2000,10 +1993,12 @@ def generate_performance_test(tester_config, test, builder_name):
   test_args += test.get('extra_args', [])
 
   result = {
-      'args': test_args,
-      'isolate_name': isolate_name,
-      'name': test_name,
-      'override_compile_targets': [isolate_name]
+    'args': test_args,
+    'isolate_name': isolate_name,
+    'name': test_name,
+    'override_compile_targets': [
+      isolate_name
+    ]
   }
 
   if test.get('resultdb'):
@@ -2094,8 +2089,8 @@ def generate_builder_config(condensed_config, builder_name):
         other_tests.append(generated_script)
       else:
         raise ValueError(
-            'perf_data_generator.py does not understand test type %s.' %
-            test_type)
+            'perf_data_generator.py does not understand test type %s.'
+                % test_type)
     gtest_tests.sort(key=lambda x: x['name'])
     telemetry_tests.sort(key=lambda x: x['name'])
     other_tests.sort(key=lambda x: x['name'])
@@ -2112,8 +2107,6 @@ def generate_builder_config(condensed_config, builder_name):
 # relative to chromium src and should use posix path separators (i.e. '/').
 ALL_UPDATERS_AND_FILES = [
     (update_all_builders, 'testing/buildbot/chromium.perf.json'),
-    (update_all_pinpoint_builders,
-     'testing/buildbot/chromium.perf.pinpoint.json'),
     (update_all_fyi_builders, 'testing/buildbot/chromium.perf.fyi.json'),
     (update_all_calibration_builders,
      'testing/buildbot/chromium.perf.calibration.json'),

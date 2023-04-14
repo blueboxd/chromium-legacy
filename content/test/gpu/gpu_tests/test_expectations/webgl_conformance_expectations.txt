@@ -59,6 +59,8 @@
 # tags: [ oop-c no-oop-c ]
 # WebGPU Backend Validation
 # tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# Clang coverage
+# tags: [ clang-coverage no-clang-coverage ]
 # results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
@@ -353,7 +355,7 @@ crbug.com/1371306 [ fuchsia fuchsia-board-sherlock ] conformance/textures/misc/t
 crbug.com/478572 [ win angle-d3d9 passthrough ] deqp/data/gles2/shaders/functions.html [ Failure ]
 
 # The functions test have been persistently flaky on D3D9
-crbug.com/956134 [ win angle-d3d9 ] conformance/extensions/webgl-depth-texture.html [ Failure ]
+crbug.com/956134 [ angle-d3d9 intel-0x9bc5 release-x64 target-cpu-64 win ] conformance/extensions/webgl-depth-texture.html [ Failure ]
 
 ## Win / AMD RX 5500 XT failures ##
 
@@ -364,19 +366,16 @@ crbug.com/1152599 [ win amd-0x7340 angle-d3d11 ] conformance/rendering/polygon-o
 ## D3D9 / AMD RX 5500 XT / Passthrough command decoder ##
 
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/ogles/GL/* [ RetryOnFailure ]
-crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/more/glsl/arrayOutOfBounds.html [ RetryOnFailure ]
 crbug.com/1159126 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/uniforms/* [ RetryOnFailure ]
 crbug.com/1361088 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-rgb-rgb-unsigned_byte.html [ Skip ]
 crbug.com/1361088 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ Skip ]
 crbug.com/1362937 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/uniforms/uniform-values-per-program.html [ Failure ]
 crbug.com/1362937 [ win amd-0x7340 angle-d3d9 passthrough ] conformance/uniforms/uniform-default-values.html [ Failure ]
-crbug.com/1362937 [ win amd-0x7340 angle-d3d9 passthrough ] deqp/data/gles2/shaders/conditionals.html [ Failure ]
-crbug.com/1362937 [ win amd-0x7340 angle-d3d9 passthrough ] deqp/data/gles2/shaders/conversions_matrix_combine.html [ Failure ]
 
 ## win10 / angle-d3d11 / Passthrough command decoder failures ##
 
-crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
-crbug.com/1378372 [ win10 angle-d3d11 passthrough ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
+crbug.com/1378372 [ angle-d3d11 nvidia-0x2184 passthrough release target-cpu-32 win10 ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Failure ]
+crbug.com/1378372 [ angle-d3d11 nvidia-0x2184 passthrough release target-cpu-32 win10 ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Failure ]
 
 ## Vulkan / Win / NVIDIA / Passthrough command decoder ##
 
@@ -464,7 +463,7 @@ crbug.com/angleproject/5038 [ android-pie android-shield-android-tv no-passthrou
 crbug.com/1165751 [ android-nougat ] conformance/glsl/bugs/vector-matrix-constructor-scalarization.html [ Failure ]
 
 # These video tests appear to be flaky.
-crbug.com/834933 [ android android-chromium ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
+crbug.com/834933 [ android-chromium android-s android-sm-a235m angle-disabled no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 
 # These video tests are flakey on many configurations.
 crbug.com/1347077 [ android-nexus-5x android-nougat angle-opengles passthrough qualcomm renderer-skia-gl target-cpu-64 ] conformance/textures/misc/video-rotation.html [ Failure ]
@@ -511,7 +510,6 @@ crbug.com/1288590 [ android android-pixel-6 ] conformance/misc/shader-precision-
 crbug.com/1288603 [ android android-pixel-6 passthrough angle-opengles ] conformance/extensions/angle-instanced-arrays-out-of-bounds.html [ Failure ]
 crbug.com/1357064 [ android android-pixel-6 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 
-crbug.com/1288595 [ android android-pixel-6 passthrough ] conformance/canvas/render-after-resize-test.html [ Failure ]
 
 ## Misc failures ##
 
@@ -533,11 +531,6 @@ crbug.com/1372155 [ android android-sm-a135m ] conformance/offscreencanvas/conte
 crbug.com/1372155 [ android android-sm-a135m no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1372155 [ android android-sm-a135m ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
 crbug.com/1372149 [ android android-sm-a235m no-passthrough ] conformance/rendering/blending.html [ Failure ]
-
-# Flaky crash on Samsung A23
-# finder:disable-stale Nature of crash may cause stale result finder to remove these
-crbug.com/1383609 [ android android-sm-a235m ] WebglExtension_* [ RetryOnFailure ]
-# finder:enable-stale
 
 ############
 # ChromeOS #

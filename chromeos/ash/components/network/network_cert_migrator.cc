@@ -69,7 +69,7 @@ class NetworkCertMigrator::MigrationTask
   }
 
   void MigrateNetwork(const std::string& service_path,
-                      absl::optional<base::Value> properties) {
+                      absl::optional<base::Value::Dict> properties) {
     if (!cert_migrator_) {
       VLOG(2) << "NetworkCertMigrator already destroyed. Aborting migration.";
       return;
@@ -80,22 +80,24 @@ class NetworkCertMigrator::MigrationTask
       return;
     }
 
-    base::Value new_properties =
+    base::Value::Dict new_properties =
         MigrateClientCertProperties(service_path, *properties);
-    if (new_properties.DictEmpty())
+    if (new_properties.empty()) {
       return;
+    }
     SendPropertiesToShill(service_path, new_properties);
   }
 
-  base::Value MigrateClientCertProperties(const std::string& service_path,
-                                          const base::Value& properties) {
-    base::Value result(base::Value::Type::DICTIONARY);
+  base::Value::Dict MigrateClientCertProperties(
+      const std::string& service_path,
+      const base::Value::Dict& properties) {
+    base::Value::Dict result;
 
     int configured_slot_id = -1;
     std::string pkcs11_id;
     client_cert::ConfigType config_type = client_cert::ConfigType::kNone;
     client_cert::GetClientCertFromShillProperties(
-        properties.GetDict(), &config_type, &configured_slot_id, &pkcs11_id);
+        properties, &config_type, &configured_slot_id, &pkcs11_id);
     if (config_type == client_cert::ConfigType::kNone || pkcs11_id.empty()) {
       return result;
     }
@@ -111,7 +113,7 @@ class NetworkCertMigrator::MigrationTask
       LOG(WARNING) << "No matching cert found, removing the certificate "
                       "configuration from network "
                    << service_path;
-      client_cert::SetEmptyShillProperties(config_type, result.GetDict());
+      client_cert::SetEmptyShillProperties(config_type, result);
       return result;
     }
     if (real_slot_id == -1) {
@@ -123,7 +125,7 @@ class NetworkCertMigrator::MigrationTask
       VLOG(1) << "Network " << service_path
               << " is configured with no or an incorrect slot id.";
       client_cert::SetShillProperties(config_type, real_slot_id, pkcs11_id,
-                                      result.GetDict());
+                                      result);
     }
     return result;
   }
@@ -145,7 +147,7 @@ class NetworkCertMigrator::MigrationTask
   }
 
   void SendPropertiesToShill(const std::string& service_path,
-                             const base::Value& properties) {
+                             const base::Value::Dict& properties) {
     ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(service_path), properties, base::DoNothing(),
         base::BindOnce(&LogError, service_path));

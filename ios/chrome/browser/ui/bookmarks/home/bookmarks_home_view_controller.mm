@@ -43,8 +43,8 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_cell_title_edit_delegate.h"
-#import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_shared_state.h"
@@ -58,8 +58,8 @@
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
 #import "ios/chrome/browser/ui/menu/browser_action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
-#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
+#import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_illustrated_empty_view.h"
@@ -125,7 +125,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 @interface BookmarksHomeViewController () <
     BookmarksCoordinatorDelegate,
-    BookmarksFolderChooserViewControllerDelegate,
+    BookmarksFolderChooserCoordinatorDelegate,
     BookmarksHomeConsumer,
     BookmarksHomeSharedStateObserver,
     BookmarkModelBridgeObserver,
@@ -136,13 +136,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     UISearchControllerDelegate,
     UISearchResultsUpdating,
     UITableViewDataSource,
-    UITableViewDelegate> {
-  // Bridge to register for bookmark changes.
-  std::unique_ptr<BookmarkModelBridge> _bridge;
-
-  // The root node, whose child nodes are shown in the bookmark table view.
-  const bookmarks::BookmarkNode* _rootNode;
-}
+    UITableViewDelegate>
 
 // Shared state between BookmarksHome classes.  Used as a temporary refactoring
 // aid.
@@ -160,10 +154,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 // The mediator that provides data for this view controller.
 @property(nonatomic, strong) BookmarksHomeMediator* mediator;
 
-// The view controller used to pick a folder in which to move the selected
-// bookmarks.
+// TODO(crbug.com/1402758): Move this to BookmarksHomeCoordinator.
+// A reference to the presented folder chooser.
 @property(nonatomic, strong)
-    BookmarksFolderChooserViewController* folderSelector;
+    BookmarksFolderChooserCoordinator* folderChooserCoordinator;
 
 // FaviconLoader is a keyed service that uses LargeIconService to retrieve
 // favicon images.
@@ -219,7 +213,16 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 @end
 
-@implementation BookmarksHomeViewController
+@implementation BookmarksHomeViewController {
+  // Bridge to register for bookmark changes.
+  std::unique_ptr<BookmarkModelBridge> _bridge;
+
+  // The root node, whose child nodes are shown in the bookmark table view.
+  const bookmarks::BookmarkNode* _rootNode;
+  // The bookmark node that was choosen by an entity outside of the Bookmarks UI
+  // and is selected when the view is loaded.
+  const bookmarks::BookmarkNode* _externalBookmark;
+}
 
 #pragma mark - Initializer
 
@@ -261,6 +264,21 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode {
   _rootNode = rootNode;
+}
+
+- (void)setExternalBookmark:(const bookmarks::BookmarkNode*)node {
+  _externalBookmark = node;
+}
+
+- (BOOL)canDismiss {
+  if (self.folderChooserCoordinator &&
+      ![self.folderChooserCoordinator canDismiss]) {
+    return NO;
+  }
+  if (self.bookmarksCoordinator && ![self.bookmarksCoordinator canDismiss]) {
+    return NO;
+  }
+  return YES;
 }
 
 - (NSArray<BookmarksHomeViewController*>*)cachedViewControllerStack {
@@ -495,6 +513,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   self.searchController.searchBar.userInteractionEnabled = YES;
 
+  [self editExternalBookmarkIfSet];
+
   DCHECK(self.bookmarks->loaded());
   DCHECK([self isViewLoaded]);
 }
@@ -631,23 +651,17 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Opens the folder move editor for the given node.
 - (void)moveNodes:(const std::set<const BookmarkNode*>&)nodes {
-  DCHECK(!self.folderSelector);
+  DCHECK(!_folderChooserCoordinator);
   DCHECK(nodes.size() > 0);
   const BookmarkNode* editedNode = *(nodes.begin());
   const BookmarkNode* selectedFolder = editedNode->parent();
-  self.folderSelector = [[BookmarksFolderChooserViewController alloc]
-      initWithBookmarkModel:self.bookmarks
-           allowsNewFolders:YES
-                editedNodes:nodes
-               allowsCancel:YES
-             selectedFolder:selectedFolder
-                    browser:self.browser];
-  self.folderSelector.delegate = self;
-  self.folderSelector.snackbarCommandsHandler = self.snackbarCommandsHandler;
-  UINavigationController* navController = [[BookmarkNavigationController alloc]
-      initWithRootViewController:self.folderSelector];
-  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
-  [self presentViewController:navController animated:YES completion:NULL];
+  _folderChooserCoordinator = [[BookmarksFolderChooserCoordinator alloc]
+      initWithBaseViewController:self.navigationController
+                         browser:_browser
+                     hiddenNodes:nodes];
+  _folderChooserCoordinator.selectedFolder = selectedFolder;
+  _folderChooserCoordinator.delegate = self;
+  [_folderChooserCoordinator start];
 }
 
 // Deletes the current node.
@@ -898,37 +912,42 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   [self refreshContents];
 }
 
-#pragma mark - BookmarksFolderChooserViewControllerDelegate
+#pragma mark - BookmarksFolderChooserCoordinatorDelegate
 
-- (void)folderPicker:(BookmarksFolderChooserViewController*)folderPicker
-    didFinishWithFolder:(const BookmarkNode*)folder {
+- (void)bookmarksFolderChooserCoordinatorDidConfirm:
+            (BookmarksFolderChooserCoordinator*)coordinator
+                                 withSelectedFolder:
+                                     (const bookmarks::BookmarkNode*)folder {
+  DCHECK(_folderChooserCoordinator);
   DCHECK(folder);
-  DCHECK(!folder->is_url());
-  DCHECK_GE(folderPicker.editedNodes.size(), 1u);
 
+  // Copy the list of edited nodes from BookmarksFolderChooserCoordinator
+  // as the reference may become invalid when `_folderChooserCoordinator`
+  // is set to nil (if `self` holds the last reference to the object).
+  std::set<const bookmarks::BookmarkNode*> editedNodes =
+      _folderChooserCoordinator.editedNodes;
+
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
+
+  DCHECK(!folder->is_url());
+  DCHECK_GE(editedNodes.size(), 1u);
+
+  [self setTableViewEditing:NO];
   [self.snackbarCommandsHandler
       showSnackbarMessage:bookmark_utils_ios::MoveBookmarksWithUndoToast(
-                              folderPicker.editedNodes, self.bookmarks, folder,
+                              std::move(editedNodes), self.bookmarks, folder,
                               self.browserState)];
-
-  [self setTableViewEditing:NO];
-  [self.navigationController dismissViewControllerAnimated:YES completion:NULL];
-  self.folderSelector.delegate = nil;
-  self.folderSelector = nil;
 }
 
-- (void)folderPickerDidCancel:
-    (BookmarksFolderChooserViewController*)folderPicker {
+- (void)bookmarksFolderChooserCoordinatorDidCancel:
+    (BookmarksFolderChooserCoordinator*)coordinator {
+  DCHECK(_folderChooserCoordinator);
+  [_folderChooserCoordinator stop];
+  _folderChooserCoordinator.delegate = nil;
+  _folderChooserCoordinator = nil;
   [self setTableViewEditing:NO];
-  [self.navigationController dismissViewControllerAnimated:YES completion:NULL];
-  self.folderSelector.delegate = nil;
-  self.folderSelector = nil;
-}
-
-- (void)folderPickerDidDismiss:
-    (BookmarksFolderChooserViewController*)folderPicker {
-  self.folderSelector.delegate = nil;
-  self.folderSelector = nil;
 }
 
 #pragma mark - BookmarksCoordinatorDelegate
@@ -936,11 +955,6 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 - (void)bookmarksCoordinatorWillCommitTitleOrURLChange:
     (BookmarksCoordinator*)coordinator {
   [self setTableViewEditing:NO];
-}
-
-- (void)bookmarksCoordinatorDidStop:(BookmarksCoordinator*)coordinator {
-  // TODO(crbug.com/805182): Use this method to tear down
-  // `self.bookmarksCoordinator`.
 }
 
 #pragma mark - BookmarkModelBridgeObserver
@@ -1419,10 +1433,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
            title:(NSString*)title
        indexPath:(NSIndexPath*)indexPath {
   UIView* cellView = [self.tableView cellForRowAtIndexPath:indexPath];
-  ActivityParams* params =
-      [[ActivityParams alloc] initWithURL:URL
-                                    title:title
-                                 scenario:ActivityScenario::BookmarkEntry];
+  SharingParams* params =
+      [[SharingParams alloc] initWithURL:URL
+                                   title:title
+                                scenario:SharingScenario::BookmarkEntry];
   self.sharingCoordinator =
       [[SharingCoordinator alloc] initWithBaseViewController:self
                                                      browser:self.browser
@@ -1620,6 +1634,30 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   }
   // Toggle edit mode.
   [self setTableViewEditing:!self.sharedState.currentlyInEditMode];
+}
+
+// Displays the UITableView edit mode and selects the row containing the
+// `_externalBookmark`.
+- (void)editExternalBookmarkIfSet {
+  if (!_externalBookmark) {
+    return;
+  }
+
+  [self setTableViewEditing:YES];
+  NSArray<NSIndexPath*>* paths = [self.tableViewModel
+      indexPathsForItemType:BookmarksHomeItemTypeBookmark
+          sectionIdentifier:BookmarksHomeSectionIdentifierBookmarks];
+  for (id path in paths) {
+    BookmarksHomeNodeItem* node =
+        base::mac::ObjCCastStrict<BookmarksHomeNodeItem>(
+            [self.tableViewModel itemAtIndexPath:path]);
+    if (node.bookmarkNode == _externalBookmark) {
+      [self.tableView selectRowAtIndexPath:path
+                                  animated:NO
+                            scrollPosition:UITableViewScrollPositionMiddle];
+      break;
+    }
+  }
 }
 
 #pragma mark - ContextBarStates

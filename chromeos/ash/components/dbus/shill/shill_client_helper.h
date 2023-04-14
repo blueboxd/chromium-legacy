@@ -87,6 +87,11 @@ class ShillClientHelper {
   void CallValueMethod(dbus::MethodCall* method_call,
                        chromeos::DBusMethodCallback<base::Value> callback);
 
+  // Calls a method with a value dictionary result.
+  void CallDictValueMethod(
+      dbus::MethodCall* method_call,
+      chromeos::DBusMethodCallback<base::Value::Dict> callback);
+
   // Calls a method without results with error callback.
   void CallVoidMethodWithErrorCallback(dbus::MethodCall* method_call,
                                        base::OnceClosure callback,
@@ -103,9 +108,9 @@ class ShillClientHelper {
                                          ErrorCallback error_callback);
 
   // Calls a method with a dictionary value result with error callback.
-  void CallValueMethodWithErrorCallback(
+  void CallDictValueMethodWithErrorCallback(
       dbus::MethodCall* method_call,
-      base::OnceCallback<void(base::Value result)> callback,
+      base::OnceCallback<void(base::Value::Dict result)> callback,
       ErrorCallback error_callback);
 
   // Calls a method with a boolean array result with error callback.
@@ -117,20 +122,17 @@ class ShillClientHelper {
 
   // Appends the value to the writer as a variant. If |value| is a dictionary it
   // will be written as a string -> variant dictionary, a{sv}. If |value| is a
-  // List then it must be a List of String values and is written as type 'as'.
+  // List then it will be written either as a List of String values, 'as', or a
+  // List of Dictionary values, 'aa{ss}', depending on the type of the values in
+  // the list.
   static void AppendValueDataAsVariant(dbus::MessageWriter* writer,
+                                       const std::string& name,
                                        const base::Value& value);
 
   // Appends a string-to-variant dictionary to the writer as an '{sv}' array.
   // Each value is written using AppendValueDataAsVariant.
   static void AppendServiceProperties(dbus::MessageWriter* writer,
-                                      const base::Value& dictionary);
-
-  // Helper method to check for a dictionary result in GetProperties calls.
-  static void OnGetProperties(
-      const dbus::ObjectPath& device_path,
-      chromeos::DBusMethodCallback<base::Value> callback,
-      absl::optional<base::Value> result);
+                                      const base::Value::Dict& dictionary);
 
  protected:
   // Reference / Ownership management. If the number of active refs (observers

@@ -22,7 +22,6 @@
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "content/app/mojo/mojo_init.h"
 #include "content/child/child_process.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
@@ -38,13 +37,12 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/blink.h"
 #include "tools/v8_context_snapshot/buildflags.h"
 #include "v8/include/v8.h"
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
@@ -58,37 +56,6 @@
 using blink::WebString;
 
 namespace {
-
-class DummyTaskRunner : public base::SingleThreadTaskRunner {
- public:
-  DummyTaskRunner() : thread_id_(base::PlatformThread::CurrentId()) {}
-
-  DummyTaskRunner(const DummyTaskRunner&) = delete;
-  DummyTaskRunner& operator=(const DummyTaskRunner&) = delete;
-
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override {
-    // Drop the delayed task.
-    return false;
-  }
-
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override {
-    // Drop the delayed task.
-    return false;
-  }
-
-  bool RunsTasksInCurrentSequence() const override {
-    return thread_id_ == base::PlatformThread::CurrentId();
-  }
-
- protected:
-  ~DummyTaskRunner() override {}
-
-  base::PlatformThreadId thread_id_;
-};
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if BUILDFLAG(USE_V8_CONTEXT_SNAPSHOT)
@@ -108,7 +75,7 @@ namespace content {
 
 TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     TestBlinkWebUnitTestSupport::SchedulerType scheduler_type) {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
 
@@ -148,9 +115,6 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport(
     base::test::TaskEnvironment::CreateThreadPool();
     base::ThreadPoolInstance::Get()->StartWithDefaultParams();
   }
-
-  // Initialize mojo firstly to enable Blink initialization to use it.
-  InitializeMojo();
 
   // Set V8 flags.
   v8::V8::SetFlagsFromString(v8_flags.c_str(), v8_flags.size());

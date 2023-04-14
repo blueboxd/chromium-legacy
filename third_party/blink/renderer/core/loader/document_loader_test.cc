@@ -14,8 +14,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_encoding_data.h"
 #include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -24,10 +22,12 @@
 #include "third_party/blink/renderer/core/testing/scoped_fake_plugin_registry.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 
@@ -78,14 +78,14 @@ class DecodedBodyLoader : public StaticDataNavigationBodyLoader {
   std::unique_ptr<DecodedDataPassthroughClient> client_;
 };
 
-class BodyLoaderTestDelegate : public WebURLLoaderTestDelegate {
+class BodyLoaderTestDelegate : public URLLoaderTestDelegate {
  public:
   explicit BodyLoaderTestDelegate(
       std::unique_ptr<StaticDataNavigationBodyLoader> body_loader)
       : body_loader_(std::move(body_loader)),
         body_loader_raw_(body_loader_.get()) {}
 
-  // WebURLLoaderTestDelegate overrides:
+  // URLLoaderTestDelegate overrides:
   bool FillNavigationParamsResponse(WebNavigationParams* params) override {
     params->response = WebURLResponse(params->url);
     params->response.SetMimeType("text/html");
@@ -127,17 +127,17 @@ class DocumentLoaderTest : public testing::TestWithParam<bool> {
     url_test_helpers::RegisterMockedURLLoad(
         url_test_helpers::ToKURL("http://192.168.1.1/foo.html"),
         test::CoreTestDataPath("foo.html"), WebString::FromUTF8("text/html"),
-        WebURLLoaderMockFactory::GetSingletonInstance(),
+        URLLoaderMockFactory::GetSingletonInstance(),
         network::mojom::IPAddressSpace::kPrivate);
     url_test_helpers::RegisterMockedURLLoad(
         url_test_helpers::ToKURL("https://192.168.1.1/foo.html"),
         test::CoreTestDataPath("foo.html"), WebString::FromUTF8("text/html"),
-        WebURLLoaderMockFactory::GetSingletonInstance(),
+        URLLoaderMockFactory::GetSingletonInstance(),
         network::mojom::IPAddressSpace::kPrivate);
     url_test_helpers::RegisterMockedURLLoad(
         url_test_helpers::ToKURL("http://somethinglocal/foo.html"),
         test::CoreTestDataPath("foo.html"), WebString::FromUTF8("text/html"),
-        WebURLLoaderMockFactory::GetSingletonInstance(),
+        URLLoaderMockFactory::GetSingletonInstance(),
         network::mojom::IPAddressSpace::kLocal);
   }
 
@@ -149,7 +149,7 @@ class DocumentLoaderTest : public testing::TestWithParam<bool> {
 
   class ScopedLoaderDelegate {
    public:
-    ScopedLoaderDelegate(WebURLLoaderTestDelegate* delegate) {
+    explicit ScopedLoaderDelegate(URLLoaderTestDelegate* delegate) {
       url_test_helpers::SetLoaderDelegate(delegate);
     }
     ~ScopedLoaderDelegate() { url_test_helpers::SetLoaderDelegate(nullptr); }
@@ -166,12 +166,13 @@ INSTANTIATE_TEST_SUITE_P(DocumentLoaderTest,
                          ::testing::Bool());
 
 TEST_P(DocumentLoaderTest, SingleChunk) {
-  class TestDelegate : public WebURLLoaderTestDelegate {
+  class TestDelegate : public URLLoaderTestDelegate {
    public:
-    void DidReceiveData(WebURLLoaderClient* original_client,
+    void DidReceiveData(URLLoaderClient* original_client,
                         const char* data,
-                        int data_length) override {
-      EXPECT_EQ(34, data_length) << "foo.html was not served in a single chunk";
+                        size_t data_length) override {
+      EXPECT_EQ(34u, data_length)
+          << "foo.html was not served in a single chunk";
       original_client->DidReceiveData(data, data_length);
     }
   } delegate;
@@ -187,15 +188,17 @@ TEST_P(DocumentLoaderTest, SingleChunk) {
 // Test normal case of DocumentLoader::dataReceived(): data in multiple chunks,
 // with no reentrancy.
 TEST_P(DocumentLoaderTest, MultiChunkNoReentrancy) {
-  class TestDelegate : public WebURLLoaderTestDelegate {
+  class TestDelegate : public URLLoaderTestDelegate {
    public:
-    void DidReceiveData(WebURLLoaderClient* original_client,
+    void DidReceiveData(URLLoaderClient* original_client,
                         const char* data,
-                        int data_length) override {
-      EXPECT_EQ(34, data_length) << "foo.html was not served in a single chunk";
+                        size_t data_length) override {
+      EXPECT_EQ(34u, data_length)
+          << "foo.html was not served in a single chunk";
       // Chunk the reply into one byte chunks.
-      for (int i = 0; i < data_length; ++i)
+      for (size_t i = 0; i < data_length; ++i) {
         original_client->DidReceiveData(&data[i], 1);
+      }
     }
   } delegate;
 
@@ -211,10 +214,10 @@ TEST_P(DocumentLoaderTest, MultiChunkWithReentrancy) {
   // 2. The middle part of the response, which is dispatched to
   //    BodyDataReceived() reentrantly.
   // 3. The final chunk, which is dispatched normally at the top-level.
-  class MainFrameClient : public WebURLLoaderTestDelegate,
+  class MainFrameClient : public URLLoaderTestDelegate,
                           public frame_test_helpers::TestWebFrameClient {
    public:
-    // WebURLLoaderTestDelegate overrides:
+    // URLLoaderTestDelegate overrides:
     bool FillNavigationParamsResponse(WebNavigationParams* params) override {
       params->response = WebURLResponse(params->url);
       params->response.SetMimeType("application/x-webkit-test-webplugin");
@@ -232,9 +235,8 @@ TEST_P(DocumentLoaderTest, MultiChunkWithReentrancy) {
 
     void Serve() {
       {
-        // Serve the first byte to the real WebURLLoaderCLient, which
-        // should trigger frameDetach() due to committing a provisional
-        // load.
+        // Serve the first byte to the real URLLoaderClient, which should
+        // trigger frameDetach() due to committing a provisional load.
         base::AutoReset<bool> dispatching(&dispatching_did_receive_data_, true);
         DispatchOneByte();
       }
@@ -534,8 +536,9 @@ TEST_P(DocumentLoaderTest, NavigationToAboutBlank) {
   params->storage_key = local_frame->DomWindow()->GetStorageKey();
   local_frame->Loader().CommitNavigation(std::move(params), nullptr);
 
-  EXPECT_EQ(BlinkStorageKey(SecurityOrigin::Create(requestor_url)),
-            local_frame->DomWindow()->GetStorageKey());
+  EXPECT_EQ(
+      BlinkStorageKey::CreateFirstParty(SecurityOrigin::Create(requestor_url)),
+      local_frame->DomWindow()->GetStorageKey());
 }
 
 TEST_P(DocumentLoaderTest, SameOriginNavigation) {
@@ -550,13 +553,14 @@ TEST_P(DocumentLoaderTest, SameOriginNavigation) {
       WebNavigationParams::CreateWithHTMLBufferForTesting(
           SharedBuffer::Create(), same_origin_url);
   params->requestor_origin = WebSecurityOrigin::Create(WebURL(requestor_url));
-  params->storage_key =
-      BlinkStorageKey(SecurityOrigin::Create(same_origin_url));
+  params->storage_key = BlinkStorageKey::CreateFirstParty(
+      SecurityOrigin::Create(same_origin_url));
   LocalFrame* local_frame =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   local_frame->Loader().CommitNavigation(std::move(params), nullptr);
 
-  EXPECT_EQ(BlinkStorageKey(SecurityOrigin::Create(same_origin_url)),
+  EXPECT_EQ(BlinkStorageKey::CreateFirstParty(
+                SecurityOrigin::Create(same_origin_url)),
             local_frame->DomWindow()->GetStorageKey());
 
   EXPECT_TRUE(local_frame->Loader()
@@ -576,13 +580,14 @@ TEST_P(DocumentLoaderTest, CrossOriginNavigation) {
       WebNavigationParams::CreateWithHTMLBufferForTesting(
           SharedBuffer::Create(), other_origin_url);
   params->requestor_origin = WebSecurityOrigin::Create(WebURL(requestor_url));
-  params->storage_key =
-      BlinkStorageKey(SecurityOrigin::Create(other_origin_url));
+  params->storage_key = BlinkStorageKey::CreateFirstParty(
+      SecurityOrigin::Create(other_origin_url));
   LocalFrame* local_frame =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   local_frame->Loader().CommitNavigation(std::move(params), nullptr);
 
-  EXPECT_EQ(BlinkStorageKey(SecurityOrigin::Create(other_origin_url)),
+  EXPECT_EQ(BlinkStorageKey::CreateFirstParty(
+                SecurityOrigin::Create(other_origin_url)),
             local_frame->DomWindow()->GetStorageKey());
 
   EXPECT_FALSE(local_frame->Loader()
@@ -605,9 +610,7 @@ TEST_P(DocumentLoaderTest, StorageKeyFromNavigationParams) {
 
   url::Origin origin;
   auto nonce = base::UnguessableToken::Create();
-  StorageKey storage_key_to_commit = StorageKey::CreateWithOptionalNonce(
-      origin, net::SchemefulSite(origin), &nonce,
-      mojom::AncestorChainBit::kSameSite);
+  StorageKey storage_key_to_commit = StorageKey::CreateWithNonce(origin, nonce);
   params->storage_key = storage_key_to_commit;
 
   LocalFrame* local_frame =
@@ -635,18 +638,18 @@ TEST_P(DocumentLoaderTest, StorageKeyCrossSiteFromNavigationParams) {
 
   net::SchemefulSite top_level_site =
       net::SchemefulSite(url::Origin::Create(GURL("https://foo.com")));
-  StorageKey storage_key_to_commit = StorageKey::CreateWithOptionalNonce(
-      url::Origin::Create(GURL(other_origin_url)), top_level_site, nullptr,
-      mojom::AncestorChainBit::kCrossSite);
+  StorageKey storage_key_to_commit =
+      StorageKey::Create(url::Origin::Create(GURL(other_origin_url)),
+                         top_level_site, mojom::AncestorChainBit::kCrossSite);
   params->storage_key = storage_key_to_commit;
 
   LocalFrame* local_frame =
       To<LocalFrame>(web_view_impl->GetPage()->MainFrame());
   local_frame->Loader().CommitNavigation(std::move(params), nullptr);
 
-  EXPECT_EQ(BlinkStorageKey(SecurityOrigin::Create(other_origin_url),
-                            BlinkSchemefulSite(top_level_site), nullptr,
-                            mojom::AncestorChainBit::kCrossSite),
+  EXPECT_EQ(BlinkStorageKey::Create(SecurityOrigin::Create(other_origin_url),
+                                    BlinkSchemefulSite(top_level_site),
+                                    mojom::AncestorChainBit::kCrossSite),
             local_frame->DomWindow()->GetStorageKey());
 }
 

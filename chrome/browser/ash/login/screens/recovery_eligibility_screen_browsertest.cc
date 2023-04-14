@@ -31,7 +31,7 @@ namespace ash {
 class RecoveryEligibilityScreenTest : public OobeBaseTest {
  public:
   RecoveryEligibilityScreenTest() {
-    feature_list_.InitAndEnableFeature(features::kCryptohomeRecoverySetup);
+    feature_list_.InitAndEnableFeature(features::kCryptohomeRecovery);
   }
 
   ~RecoveryEligibilityScreenTest() override = default;
@@ -128,9 +128,9 @@ IN_PROC_BROWSER_TEST_F(RecoveryEligibilityScreenTest, UnmanagedUser) {
   EXPECT_TRUE(LoginDisplayHost::default_host()
                   ->GetWizardContextForTesting()
                   ->recovery_setup.ask_about_recovery_consent);
-  EXPECT_TRUE(LoginDisplayHost::default_host()
-                  ->GetWizardContextForTesting()
-                  ->recovery_setup.recovery_factor_opted_in);
+  EXPECT_FALSE(LoginDisplayHost::default_host()
+                   ->GetWizardContextForTesting()
+                   ->recovery_setup.recovery_factor_opted_in);
 
   ContinueScreenExit();
   EXPECT_EQ(result_.value(), RecoveryEligibilityScreen::Result::PROCEED);

@@ -19,7 +19,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/containers/lru_cache.h"
 #include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
@@ -32,7 +31,6 @@
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
 #include "net/base/network_handle.h"
-#include "net/base/proxy_server.h"
 #include "net/log/net_log_with_source.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_chromium_client_stream.h"
@@ -304,7 +302,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // stream could not be made.
     std::unique_ptr<WebSocketQuicStreamAdapter>
     CreateWebSocketQuicStreamAdapter(
-        WebSocketQuicStreamAdapter::Delegate* delegate);
+        WebSocketQuicStreamAdapter::Delegate* delegate,
+        base::OnceCallback<void(std::unique_ptr<WebSocketQuicStreamAdapter>)>
+            callback,
+        const NetworkTrafficAnnotationTag& traffic_annotation);
 #endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
    private:
@@ -437,6 +438,14 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     State next_state_;
 
     const NetworkTrafficAnnotationTag traffic_annotation_;
+
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+    // For creation of streams for WebSockets over HTTP/3
+    bool for_websockets_ = false;
+    raw_ptr<WebSocketQuicStreamAdapter::Delegate> websocket_adapter_delegate_;
+    base::OnceCallback<void(std::unique_ptr<WebSocketQuicStreamAdapter>)>
+        start_websocket_callback_;
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
 
     base::WeakPtrFactory<StreamRequest> weak_factory_{this};
   };
@@ -602,7 +611,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       int max_migrations_to_non_default_network_on_path_degrading,
       int yield_after_packets,
       quic::QuicTime::Delta yield_after_duration,
-      bool headers_include_h2_stream_dependency,
       int cert_verify_flags,
       const quic::QuicConfig& config,
       std::unique_ptr<QuicCryptoClientConfigHandle> crypto_config,
@@ -698,10 +706,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       const spdy::SpdyStreamPrecedence& precedence,
       quiche::QuicheReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override;
-  void UnregisterStreamPriority(quic::QuicStreamId id, bool is_static) override;
-  void UpdateStreamPriority(
-      quic::QuicStreamId id,
-      const quic::QuicStreamPriority& new_priority) override;
   void OnHttp3GoAway(uint64_t id) override;
   void OnAcceptChFrameReceivedViaAlps(
       const quic::AcceptChFrame& frame) override;
@@ -923,11 +927,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   const std::set<std::string>& GetDnsAliasesForSessionKey(
       const QuicSessionKey& key) const;
 
-#if BUILDFLAG(ENABLE_WEBSOCKETS)
-  std::unique_ptr<WebSocketQuicStreamAdapter> CreateWebSocketQuicStreamAdapter(
-      WebSocketQuicStreamAdapter::Delegate* delegate);
-#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
-
  protected:
   // quic::QuicSession methods:
   bool ShouldCreateIncomingStream(quic::QuicStreamId id) override;
@@ -1051,6 +1050,18 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   void LogZeroRttStats();
 
+#if BUILDFLAG(ENABLE_WEBSOCKETS)
+  std::unique_ptr<WebSocketQuicStreamAdapter>
+  CreateWebSocketQuicStreamAdapterImpl(
+      WebSocketQuicStreamAdapter::Delegate* delegate);
+
+  std::unique_ptr<WebSocketQuicStreamAdapter> CreateWebSocketQuicStreamAdapter(
+      WebSocketQuicStreamAdapter::Delegate* delegate,
+      base::OnceCallback<void(std::unique_ptr<WebSocketQuicStreamAdapter>)>
+          callback,
+      StreamRequest* stream_request);
+#endif  // BUILDFLAG(ENABLE_WEBSOCKETS)
+
   QuicSessionKey session_key_;
   bool require_confirmation_;
   bool migrate_session_early_v2_;
@@ -1143,11 +1154,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // True if read errors should be ignored. Set when migration on write error is
   // posted and unset until the first packet is written after migration.
   bool ignore_read_error_ = false;
-
-  // If true, client headers will include HTTP/2 stream dependency info derived
-  // from spdy::SpdyStreamPrecedence.
-  bool headers_include_h2_stream_dependency_;
-  Http2PriorityDependencies priority_dependency_state_;
 
   bool attempted_zero_rtt_ = false;
 

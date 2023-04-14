@@ -54,7 +54,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1874309113135274312">Version bêta de Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
 <translation id="1919130412786645364">Autoriser la connexion à Chrome</translation>
-<translation id="1952239763774043237">Vous devez disposer de macOS 10.13 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS 10.12 qui est installée sur cet ordinateur.</translation>
 <translation id="1953553007165777902">Téléchargement… <ph name="MINUTE" /> minute(s) restante(s)</translation>
 <translation id="2018528049276128029">Chaque profil possède ses propres informations Chrome, comme des favoris, un historique, des mots de passe, etc.</translation>
 <translation id="2018879682492276940">Échec de l'installation. Veuillez réessayer.</translation>
@@ -187,6 +186,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4335235004908507846">Chrome peut vous aider à vous protéger, entre autres, contre les violations de données et les extensions malveillantes</translation>
 <translation id="4343195214584226067">L'extension <ph name="EXTENSION_NAME" /> a été ajoutée à Chrome</translation>
 <translation id="4384570495110188418">Chrome ne peut pas vérifier vos mots de passe, car vous n'êtes pas connecté</translation>
+<translation id="4393248995085527349">Vous devez disposer de macOS 10.15 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS 10.13 qui est installée sur cet ordinateur.</translation>
 <translation id="4427306783828095590">La protection renforcée assure une meilleure protection contre l'hameçonnage et les logiciels malveillants</translation>
 <translation id="4450664632294415862">Chrome - Connexion au réseau - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Une autre opération est en cours dans Google Chrome. Veuillez réessayer ultérieurement.</translation>
@@ -216,7 +216,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4970880042055371251">Version de Chrome OS</translation>
 <translation id="4970947549776831107">Chrome a bloqué ce fichier, car ce type de fichier est dangereux</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">Vous devez disposer de macOS 10.13 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS X 10.11 qui est installée sur cet ordinateur.</translation>
 <translation id="5098668839038261629">Si l'option est activée, vous serez également déconnecté de Chrome</translation>
 <translation id="5132929315877954718">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Google Chrome.</translation>
 <translation id="5139423532931106058">Personnalisez votre profil Chrome</translation>
@@ -244,6 +243,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5678190148303298925">{COUNT,plural, =0{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour}=1{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que la fenêtre de navigation privée ne sera pas rouverte.}one{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que la fenêtre de navigation privée (#) ne sera pas rouverte.}other{Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour. Sachez que les # fenêtres de navigation privée ne seront pas rouvertes.}}</translation>
 <translation id="5686916850681061684">Personnalisez et contrôlez Google Chrome. Une action de votre part est requise. Cliquez pour en savoir plus.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">Lorsque cette option est activée, Chrome libère de la mémoire dans les onglets inactifs. Ainsi, les onglets actifs et d'autres applis peuvent utiliser davantage de ressources, et Chrome reste rapide. Vos onglets inactifs redeviennent actifs lorsque vous les consultez.</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome va redémarrer dans 1 seconde}one{Google Chrome va redémarrer dans # seconde}other{Google Chrome va redémarrer dans # secondes}}</translation>
 <translation id="5727531838415286053">Si Chrome vous a intégré aléatoirement à un essai actif, votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime vos centres d'intérêt tous les mois. Les centres d'intérêt s'actualisent, sauf si vous les supprimez.</translation>
 <translation id="5736850870166430177">Si un site tente de voler votre mot de passe ou si vous téléchargez un fichier dangereux, Chrome peut également envoyer les URL concernées, y compris des extraits du contenu des pages, à la fonctionnalité de navigation sécurisée</translation>
@@ -258,6 +258,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="5941711191222866238">Réduire</translation>
 <translation id="5941830788786076944">Définir Google Chrome comme navigateur par défaut</translation>
 <translation id="6003112304606738118">Téléchargement… <ph name="HOURS" /> heure(s) restante(s)</translation>
+<translation id="6010556343189461180">Vous devez disposer de macOS 10.15 ou d'une version ultérieure pour recevoir les futures mises à jour de Google Chrome. Or, c'est la version macOS 10.14 qui est installée sur cet ordinateur.</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome va se fermer.}=1{Chrome va se fermer dans 1 seconde.}one{Chrome va se fermer dans # seconde.}other{Chrome va se fermer dans # secondes.}}</translation>
 <translation id="6040143037577758943">Fermer</translation>
 <translation id="6070348360322141662">Pour plus de sécurité, vos données seront chiffrées dans Google Chrome</translation>
@@ -323,7 +324,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="7410958280246779049">Chrome a bloqué ce fichier, car il est dangereux</translation>
 <translation id="7426611252293106642">Google Chrome risque de ne pas fonctionner correctement, car la compatibilité n'est plus assurée sur cette distribution Linux</translation>
 <translation id="7481213027396403996">Renforcer la sécurité de Chrome</translation>
-<translation id="7486227612705979895">Chromium va accéder à votre Drive pour proposer des suggestions dans la barre d'adresse</translation>
 <translation id="7535429826459677826">Google Chrome pour les développeurs</translation>
 <translation id="7583399374488819119">Programme d'installation de <ph name="COMPANY_NAME" /></translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -366,7 +366,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8286862437124483331">Google Chrome tente d'afficher les mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="828798499196665338">Ton parent a désactivé l'option "Autorisations des sites, applications et extensions" pour Chrome. Tu ne peux pas activer cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8290100596633877290">Google Chrome est bloqué. Voulez-vous le relancer maintenant ?</translation>
-<translation id="8341646175450781745">Lorsque cette option est activée, Chrome libère de la mémoire dans les onglets inactifs. Ainsi, les onglets actifs et d'autres applis peuvent utiliser davantage de ressources, et Chrome reste rapide. Vos onglets inactifs redeviennent actifs lorsque vous les consultez. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envoyer des commentaires<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">Chrome a bloqué ce fichier, car ce dernier est dangereux.</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />Comment nous utilisons ces données<ph name="END_BOLD" /> : les sites peuvent stocker des informations sur vos centres d'intérêt dans Chrome. Par exemple, si vous allez sur un site afin d'acheter des chaussures pour un marathon, le site peut définir le marathon comme l'un de vos centres d'intérêt. Ensuite, si vous consultez un autre site pour vous enregistrer pour une course, ce site peut diffuser une annonce pour des chaussures de running en se basant sur vos centres d'intérêt.</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
@@ -397,6 +396,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8686817260976772516">Utilisez les profils Chrome pour dissocier toutes vos données Chrome. Créez des profils pour vos amis et votre famille, ou créez un profil pour travailler et un autre pour vous divertir.</translation>
 <translation id="8712767363896337380">Presque à jour ! Relancez Chrome pour terminer la mise à jour.</translation>
 <translation id="873133009373065397">Impossible d'identifier ou de définir le navigateur par défaut avec Google Chrome</translation>
+<translation id="8765470054473112089">Lorsque vous saisissez du texte dans la barre d'adresse ou le champ de recherche, Chrome envoie le contenu saisi à votre moteur de recherche par défaut pour obtenir de meilleures suggestions. Ce paramètre est désactivé en navigation privée.</translation>
 <translation id="8821043148920470810">Pour recevoir les futures mises à jour de Google Chrome, vous devez disposer de Windows 10 ou d'une version ultérieure. Cet ordinateur utilise Windows 7.</translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="8825634023950448068">Pour protéger votre confidentialité, nous supprimons automatiquement vos centres d'intérêt s'ils datent de plus de quatre semaines. Au fil de votre navigation, un centre d'intérêt peut réapparaître dans la liste. Si Chrome se trompe ou que vous ne voulez pas voir certaines annonces, vous pouvez supprimer un centre d'intérêt.</translation>
@@ -410,7 +410,6 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="8986207147630327271">Vous êtes sur le point d'ajouter un profil professionnel à ce navigateur et d'en donner le contrôle à votre administrateur.</translation>
 <translation id="8989968390305463310">Votre historique de navigation influe sur les annonces que vous voyez et les centres d'intérêt estimés ci-dessous. Pour protéger votre confidentialité, Chrome supprime automatiquement vos centres d'intérêt tous les mois. Les centres d'intérêt peuvent s'actualiser, sauf si vous les supprimez.</translation>
 <translation id="8999208279178790196">{0,plural, =0{Une mise à jour de Chrome est disponible}=1{Une mise à jour de Chrome est disponible}one{Une mise à jour de Chrome est disponible depuis # jour}other{Une mise à jour de Chrome est disponible depuis # jours}}</translation>
-<translation id="9003498785844995646">Lorsque cette option est activée, Chrome préserve l'autonomie de la batterie en limitant l'activité et les effets visuels en arrière-plan, comme le défilement fluide et la fréquence d'images vidéo. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /> ou <ph name="BEGIN_LINK_2" />envoyer des commentaires<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">Système ChromeOS Flex</translation>
 <translation id="9067395829937117663">Vous devez disposer de Windows 7 ou version ultérieure pour utiliser Google Chrome.</translation>
 <translation id="911206726377975832">Supprimer également vos données de navigation ?</translation>
@@ -421,6 +420,7 @@ Les autorisations que vous avez déjà accordées aux sites Web et aux applis pe
 <translation id="93760716455950538">Redémarrer ChromeOS Flex</translation>
 <translation id="940313311831216333">Pour retrouver vos données Chrome sur tous vos appareils, connectez-vous, puis activez la synchronisation.</translation>
 <translation id="943390475793766444">Chrome recommande d'analyser ce fichier, car il est peut-être dangereux.</translation>
+<translation id="963650557422347554">Lorsque cette option est activée, Chrome préserve l'autonomie de la batterie en limitant l'activité et les effets visuels en arrière-plan, comme le défilement fluide et la fréquence d'images vidéo.</translation>
 <translation id="989369509083708165">Google Chrome est votre navigateur par défaut</translation>
 <translation id="989816563149873169"><ph name="SHORTCUT" /> permet de passer d'un profil Chrome à un autre</translation>
 </translationbundle>

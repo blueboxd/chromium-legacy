@@ -20,7 +20,8 @@ import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {GooglePhotosEnablementState, WallpaperCollection, WallpaperImage} from '../personalization_app.mojom-webui.js';
+import {GooglePhotosEnablementState, WallpaperCollection, WallpaperImage} from '../../personalization_app.mojom-webui.js';
+import {isDarkLightModeEnabled, isGooglePhotosIntegrationEnabled} from '../load_time_booleans.js';
 import {Paths, PersonalizationRouter} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getCountText, isImageDataUrl, isNonEmptyArray, isSelectionEvent} from '../utils.js';
@@ -67,6 +68,7 @@ interface OnlineTile {
   count: string;
   disabled: boolean;
   id: string;
+  info: string;
   name: string;
   preview: Url[];
   type: TileType.IMAGE_ONLINE;
@@ -363,8 +365,7 @@ export class WallpaperCollections extends WithPersonalizationStore {
     // second tile is reserved for Google Photos, provided that the integration
     // is enabled. The tile index of other collections must be `offset` so as
     // not to occupy reserved space.
-    const offset =
-        loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled') ? 2 : 1;
+    const offset = isGooglePhotosIntegrationEnabled() ? 2 : 1;
 
     if (this.tiles_.length < collections.length + offset) {
       this.push(
@@ -376,9 +377,6 @@ export class WallpaperCollections extends WithPersonalizationStore {
     if (this.tiles_.length > collections.length + offset) {
       this.splice('tiles_', collections.length + offset);
     }
-
-    const isDarkLightModeEnabled =
-        loadTimeData.getBoolean('isDarkLightModeEnabled');
 
     collections.forEach((collection, i) => {
       const index = i + offset;
@@ -394,8 +392,8 @@ export class WallpaperCollections extends WithPersonalizationStore {
       if (tile.type !== TileType.IMAGE_ONLINE || count !== tile.count) {
         // Return all the previews in D/L mode to display the split view.
         // Otherwise, only the first preview is needed.
-        const preview = isDarkLightModeEnabled ? collection.previews :
-                                                 [collection.previews[0]];
+        const preview = isDarkLightModeEnabled() ? collection.previews :
+                                                   [collection.previews[0]];
 
         const newTile: OnlineTile = {
           count,
@@ -403,6 +401,7 @@ export class WallpaperCollections extends WithPersonalizationStore {
           // load and the user cannot select it.
           disabled: imageCounts[collection.id] === null,
           id: collection.id,
+          info: collection.description,
           name: collection.name,
           preview,
           type: TileType.IMAGE_ONLINE,

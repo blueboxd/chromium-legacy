@@ -12,7 +12,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 <translation id="1131805035311359397">Pasahitzak datuen isilpekotasunaren urratzeen eta beste segurtasun-arazoen aurka babestuta dauden egiaztatzeko, <ph name="BEGIN_LINK" />hasi saioa Chromium-en<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Chromium arakatzaileari buruz</translation>
 <translation id="1203500561924088507">Eskerrik asko instalatzeagatik. <ph name="BUNDLE_NAME" /> erabiltzeko, arakatzailea berrabiarazi behar duzu.</translation>
-<translation id="1231839967188101156">Aktibatuta dagoenean, Chromium-ek tokia egiten du fitxa inaktiboen memorian. Horrela, fitxa aktiboek eta gainerako aplikazioek ordenagailuaren baliabide gehiago izango dituzte, eta bizkorrago ibiliko da Chromium. Fitxa inaktiboak haietara itzultzen zarenean aktibatuko dira berriro. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Memoria-aurreztaileak Chromium bizkortu du</translation>
 <translation id="1315551408014407711">Konfiguratu Chromium-eko profil berria</translation>
 <translation id="1396446129537741364">Chromium pasahitzak erakusten saiatzen ari da.</translation>
@@ -34,6 +33,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="185970820835152459">Saioa hasita daukaten Google-ko kontuak kudea ditzakezu. Google-ko kontuak Chromium arakatzaile, Play Store, Gmail eta abarrerako erabiltzen dira. Kontu bat beste norbaitentzat gehitu nahi baduzu (adibidez, familiako kide batentzat), gehitu beste pertsona bat <ph name="DEVICE_TYPE" /> gailuan. <ph name="LINK_BEGIN" />Lortu informazio gehiago<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">Webguneek zure interesei buruzko informazioa gorde dezakete Chromium-en; esaterako, webgune batera joaten bazara maratoi baterako oinetakoak erostera, baliteke webgune horrek "maratoiak" definitzea interes gisa. Ondorioz, beranduago beste webgune batera joaten bazara lasterketa batean izena emateko, litekeena da webgune horrek lasterketetarako oinetakoekin erlazionatutako iragarki bat erakustea zure interesetan oinarrituta.</translation>
 <translation id="1881322772814446296">Kontu kudeatu batekin hasten ari zara saioa eta kontuaren administratzaileari zure Chromium profila kontrolatzeko ahalmena ematera zoaz. Chromium aplikazioan dituzun datuak, esaterako, aplikazioak, laster-markak, historia, pasahitzak eta beste ezarpen batzuk betiko lotuko zaizkio <ph name="USER_NAME" /> erabiltzaileari. Google-ko kontuetako Panelaren bidez ezabatu ahalko dituzu datu horiek, baina ezingo dituzu beste kontu batekin lotu. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">Helbide-barran edo bilaketa-koadroan zerbait idazten duzunean, Chromium-ek Google Drive-ra bidaltzen du, elementuen iradokizunak lortzeko. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="1911763535808217981">Aukera hau desaktibatzen baduzu, Google-ren webguneetan saioa hasi ahalko duzu (adibidez, Gmail-en) Chromium-en saioa hasi beharrik gabe</translation>
 <translation id="1929939181775079593">Chromium-ek ez du eranzuten. Berrabiarazi nahi duzu?</translation>
 <translation id="193439633299369377">Eguneratzea aplikatzeko, berrabiarazi egin behar da Chromium OS.</translation>
@@ -116,6 +116,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="3567254597502212821">Zure arakatze-historia eta gailu hau erabili bitartean Chromium-en bidez bisitatutako webguneen erregistro bat.</translation>
 <translation id="3575459661164320785">Software kaltegarria duzu ordenagailuan. Chromium-ek hura kendu, ezarpenak leheneratu eta luzapenak desgai ditzake, arakatzaileak ohiko moduan funtziona dezan berriro.</translation>
 <translation id="3593091352817399191">Beste kontu batek dagoeneko hasita dauka saioa. Arakatze-jarduerak bereizita edukitzeko, Chromium-ek profil bat sor dezake zuretzat.</translation>
+<translation id="363078681319665186">Etorkizunean Chromium-en eguneratzeak eskuratzeko, macOS 10.15 edo berriago bat beharko duzu. Ordenagailu hau macOS 10.13 erabiltzen ari da.</translation>
 <translation id="3639635944603682591">Pertsona honen arakatze-datuak gailutik ezabatuko dira. Datuak berreskuratzeko, hasi saioa Chromium-en <ph name="USER_EMAIL" /> gisa.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Chromium-en eguneratze bat erabilgarri dago eta sistema eragilea berrabiarazten duzunean aplikatuko da.}=1{Chromium-en eguneratze bat erabilgarri dago eta sistema eragilea berrabiarazten duzunean aplikatuko da. Ezkutuko moduko leihoa ez da berriro irekiko.}other{Chromium-en eguneratze bat erabilgarri dago eta sistema eragilea berrabiarazten duzunean aplikatuko da. Ezkutuko moduko # leihoak ez dira berriro irekiko.}}</translation>
 <translation id="3651803019964686660">Zenbaki bat <ph name="ORIGIN" /> webgunetik Android-eko telefonora bidaltzeko, hasi Chromium-eko saioa bi gailuetan.</translation>
@@ -123,12 +124,12 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="3702352323269013324">Lortu Chromium-eko iragarkiak pertsonalizatzeari buruzko informazio gehiago</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Chromium berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko}=1{Chromium berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko leihoa ez da berriro irekiko.}other{Chromium berrabiarazteko eskatu dizu administratzaileak, eguneratzea aplikatzeko. Ezkutuko moduko # leihoak ez dira berriro irekiko.}}</translation>
 <translation id="3713809861844741608">Ireki esteka Chromium-eko beste &amp;fitxa batean</translation>
-<translation id="3728336900324680424">Chromium-ek zure Drive unitatea atzituko du helbide-barran iradokizunak egiteko</translation>
 <translation id="378917192836375108">Chromium-ekin, telefono-zenbakietan klik egin dezakezu Skype bidez deitzeko!</translation>
 <translation id="3830894615770080216">Chromium OS sistema</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">Lortu Chromium OS erabiltzeko laguntza</translation>
 <translation id="3871664619793219264">Eskuratu Chromium arakatzaileko gauzak <ph name="ACCOUNT_EMAIL" /> bidez</translation>
+<translation id="387966568917439637">Etorkizunean Chromium-en eguneratzeak eskuratzeko, macOS 10.15 edo berriago bat beharko duzu. Ordenagailu hau macOS 10.14 erabiltzen ari da.</translation>
 <translation id="388648406173476553">Pertsonalizatu eta kontrolatu Chromium. Zure arreta behar duen zerbait dago. Sakatu informazio gehiago ikusteko.</translation>
 <translation id="3889543394854987837">Chromium irekitzeko eta arakatzen hasteko, egin klik zure izenean.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> erabiltzaileak Chromium-eko profil honetan hasi du saioa dagoeneko. Arakatze-datuak bereizita edukitzeko, Chromium-ek profil bat sor dezake zuretzat.</translation>
@@ -218,6 +219,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6072463441809498330">Bizkortu Chromium</translation>
 <translation id="608006075545470555">Gehitu laneko profila arakatzaile honetan</translation>
 <translation id="6096348254544841612">Pertsonalizatu eta kontrolatu Chromium. Eguneratze bat erabilgarri dago.</translation>
+<translation id="6102072151902574948">Aktibatuta dagoenean, Chromium-ek bateria aurrezten du atzeko planoko jarduerak eta efektu bisualak (esaterako, korritze leuna eta bideoen irudi-abiadurak) mugatuta.</translation>
 <translation id="6119438414301547735">Eman Chromium-eko tresna-barran sarbide-eskaerak erakusteko baimena luzapenari</translation>
 <translation id="6120345080069858279">Chromium-ek Google-ko kontuan gordeko du pasahitz hau. Ez duzu gogoratu beharko.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> arriskutsua da; horregatik, blokeatu egin du Chromium-ek.</translation>
@@ -277,6 +279,7 @@ Baliteke eginbide batzuk erabilgarri ez egotea. Adierazi beste profil-direktorio
 <translation id="6940431691900807093">Beranduago, bisitatzen duzun webgune batek zure interesak ikusteko eska diezaioke Chromium-i, agertzen zaizkizun iragarkiak pertsonalizatze aldera. Chromium-ek hiru interes parteka ditzake gehienez.</translation>
 <translation id="6964305034639999644">Ireki esteka Chromium-eko &amp;ezkutuko moduko leiho batean</translation>
 <translation id="6978145336957848883">Seguruak ez diren pasahitzak erraz asmatzen dira. Utzi Chromium-i <ph name="BEGIN_LINK" />pasahitz konplexuak sortzen eta gogoratzen<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Aktibatuta dagoenean, Chromium-ek tokia egiten du fitxa inaktiboen memorian. Horrela, fitxa aktiboek eta gainerako aplikazioek ordenagailuaren baliabide gehiago izango dituzte, eta bizkorrago ibiliko da Chromium. Fitxa inaktiboak haietara itzultzen zarenean aktibatuko dira berriro.</translation>
 <translation id="6984667024406244807">Chromium inaktibo dago</translation>
 <translation id="6985329841647292029">Chromium OS-ren baldintzak</translation>
 <translation id="6990124437352146030">Chromium-ek webgune honen izenean mikrofonoa erabiltzeko baimena behar du</translation>
@@ -321,6 +324,7 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">Badago kontu honen Chromium-eko profil bat gailu honetan</translation>
 <translation id="7845233973568007926">Eskerrik asko instalatzeagatik. <ph name="BUNDLE_NAME" /> erabiltzeko, ordenagailua berrabiarazi behar duzu.</translation>
+<translation id="7859018312476869945">Helbide-barran edo bilaketa-koadroan zerbait idazten duzunean, Chromium-ek bilatzaile lehenetsira bidaltzen du, iradokizun hobeak lortzeko. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="7867198900892795913">Ezin izan da eguneratu Chromium azken bertsiora; beraz, ez dituzu erabilgarri eginbide berriak eta segurtasun-konponketak.</translation>
 <translation id="7872446069773932638">Deskargatzen… <ph name="SECONDS" /> segundo geratzen dira.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Nola kudea ditzakezu datuak?<ph name="END_BOLD" /> Zure pribatutasuna babesteko, lau aste baino gehiago dituzten interesak automatikoki ezabatzen ditugu. Arakatzen jarraitu ahala, baliteke interes bat berriro agertzea zerrendan. Bestela, Chromium-ek aintzat hartzea nahi ez duzun interesak ken ditzakezu.</translation>
@@ -348,9 +352,7 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="8493179195440786826">Chromium zaharkituta dago</translation>
 <translation id="8550334526674375523">Laneko profila eta profil pertsonala guztiz bereizita daude.</translation>
 <translation id="8558383651099478961">Zure gurasoak "Webguneen, aplikazioen eta luzapenen baimenak" desaktibatu ditu Chromium-en. Ezin da gehitu <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
-<translation id="8561285221328166383">Etorkizunean Chromium-en eguneratzeak eskuratzeko, macOS 10.13 edo bertsio berriago bat beharko duzu. Ordenagailu hau macOS 10.12 erabiltzen ari da.</translation>
 <translation id="8568283329061645092">Google-ko kontu batekin saioa hasten duzunean egiazta ditzake Chromium-ek pasahitzak</translation>
-<translation id="8574036838419011058">Aktibatuta dagoenean, Chromium-ek bateria aurrezten du atzeko planoko jarduerak eta efektu bisualak (esaterako, korritze leuna eta bideoen irudi-abiadurak) mugatuta. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Chromium-en egileak. Eskubide guztiak erreserbatuta.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Nola erabiltzen ditugu datu horiek?<ph name="END_BOLD" /> Webguneek zure interesei buruzko informazioa gorde dezakete Chromium-en; esaterako, webgune batera joaten bazara maratoi baterako oinetakoak erostera, baliteke webgune horrek "maratoiak" definitzea interes gisa. Ondorioz, beranduago beste webgune batera joaten bazara lasterketa batean izena emateko, litekeena da webgune horrek lasterketetarako oinetakoekin erlazionatutako iragarki bat erakustea zure interesetan oinarrituta.</translation>
 <translation id="8619360774459241877">Chromium abiarazten…</translation>
@@ -381,7 +383,6 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium-ek agian ez du behar bezala funtzionatuko, jada ez baita bateragarria Windows XP eta Windows Vista-rekin</translation>
 <translation id="942598560705308788">Chromium-ek kudeatutako ziurtagiriak</translation>
-<translation id="945990405696787151">Etorkizunean Chromium-en eguneratzeak eskuratzeko, macOS 10.13 edo bertsio berriago bat beharko duzu. Ordenagailu hau OS X 10.11 erabiltzen ari da.</translation>
 <translation id="965162752251293939">Nor erabiltzen ari da Chromium?</translation>
 <translation id="967427899662692980">Lortu Chromium-en segurtasun-aukerarik sendoena</translation>
 <translation id="9792300276217204">Chromium ixten duzunean, garbitu beti webguneetako datuak gailutik</translation>

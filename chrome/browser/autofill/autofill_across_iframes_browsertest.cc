@@ -74,10 +74,7 @@ constexpr char kCvc[] = "123";
 class TestAutofillManager : public BrowserAutofillManager {
  public:
   TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-      : BrowserAutofillManager(driver,
-                               client,
-                               "en-US",
-                               EnableDownloadManager(false)) {}
+      : BrowserAutofillManager(driver, client, "en-US") {}
 
   static TestAutofillManager* GetForRenderFrameHost(
       content::RenderFrameHost* rfh) {
@@ -112,10 +109,10 @@ class TestAutofillManager : public BrowserAutofillManager {
  private:
   TestAutofillManagerWaiter did_autofill_{
       *this,
-      {&AutofillManager::Observer::OnAfterDidFillAutofillFormData}};
+      {AutofillManagerEvent::kDidFillAutofillFormData}};
   TestAutofillManagerWaiter form_submitted_{
       *this,
-      {&AutofillManager::Observer::OnAfterFormSubmitted}};
+      {AutofillManagerEvent::kFormSubmitted}};
   absl::optional<FormData> submitted_form_;
 };
 
@@ -412,7 +409,7 @@ class AutofillAcrossIframesTest : public InProcessBrowserTest {
   content::ContentMockCertVerifier cert_verifier_;
   // Maps relative paths to HTML content.
   std::map<std::string, std::string> pages_;
-  TestAutofillManagerFutureInjectors<TestAutofillManager> injectors_;
+  TestAutofillManagerInjector<TestAutofillManager> autofill_manager_injector_;
 };
 
 // Test fixture for basic filling, in particular for testing the security policy

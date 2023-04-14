@@ -31,7 +31,7 @@
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1647582022260550163">确定要重置权限并清除 Cookie 和网站数据吗？</translation>
 <translation id="1660204651932907780">允许网站播放声音（推荐）</translation>
-<translation id="1677097821151855053">系统会使用 Cookie 和其他网站数据来记住您，以便实现某些功能或目的（例如帮您登录或向您展示个性化广告）。如需管理所有网站的 Cookie，请查看<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
+<translation id="1677097821151855053">系统会使用 Cookie 和其他网站数据来记住您，以便实现某些功能或目的（例如帮您登录或向您展示个性化广告）。如需管理所有网站的 Cookie，请参阅<ph name="BEGIN_LINK" />设置<ph name="END_LINK" />。</translation>
 <translation id="1688867105868176567">要清除网站数据吗？</translation>
 <translation id="169515064810179024">禁止网站使用移动传感器</translation>
 <translation id="1717218214683051432">移动传感器</translation>
@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">离开</translation>
 <translation id="2687403674020088961">阻止所有 Cookie（不建议）</translation>
-<translation id="2704606927547763573">已复制</translation>
 <translation id="2713106313042589954">关闭摄像头</translation>
 <translation id="2717722538473713889">电子邮件地址</translation>
 <translation id="2750481671343847896">网站可以显示来自身份服务的登录提示。</translation>
@@ -262,7 +261,7 @@
 <translation id="5876056640971328065">暂停视频</translation>
 <translation id="5884085660368669834">网站偏好设置</translation>
 <translation id="5887687176710214216">上次访问时间：昨天</translation>
-<translation id="5916664084637901428">已启用</translation>
+<translation id="5916664084637901428">启用</translation>
 <translation id="5922853908706496913">正在共享您的屏幕</translation>
 <translation id="5922967540311291836">阻止第三方 Cookie：</translation>
 <translation id="5939518447894949180">重置</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7804248752222191302">有一个网站正在使用您的摄像头</translation>
+<translation id="7807060072011926525">由 Google 提供</translation>
 <translation id="7835852323729233924">正在播放媒体</translation>
 <translation id="783819812427904514">将视频取消静音</translation>
 <translation id="7846076177841592234">取消选择</translation>

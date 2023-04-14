@@ -200,12 +200,10 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   default_font_description.SetComputedSize(FontFaceSet::kDefaultFontSize);
 
   builder.SetFontDescription(default_font_description);
-  scoped_refptr<ComputedStyle> style = builder.TakeStyle();
+  scoped_refptr<const ComputedStyle> style = builder.TakeStyle();
 
-  GetDocument()->GetStyleEngine().ComputeFont(*GetDocument()->documentElement(),
-                                              style.get(), *parsed_style);
-
-  font = style->GetFont();
+  font = GetDocument()->GetStyleEngine().ComputeFont(
+      *GetDocument()->documentElement(), *style, *parsed_style);
 
   // StyleResolver::ComputeFont() should have set the document's FontSelector
   // to |style|.
@@ -254,17 +252,7 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
 }
 
 void FontFaceSetDocument::AlignTimeoutWithLCPGoal(FontFace* font_face) {
-  bool is_loading = font_face->LoadStatus() == FontFace::kLoading;
-  bool affected = font_face->CssFontFace()->UpdatePeriod();
-  // We only count loading font faces, so that unused fonts are excluded. This
-  // is especially useful when the page uses a font library, where most of the
-  // fonts are unused.
-  if (is_loading && font_face->display() == "auto") {
-    font_display_auto_align_histogram_.SetHasFontDisplayAuto();
-    if (affected) {
-      font_display_auto_align_histogram_.CountAffected();
-    }
-  }
+  font_face->CssFontFace()->UpdatePeriod();
 }
 
 void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
@@ -280,7 +268,6 @@ void FontFaceSetDocument::LCPLimitReached(TimerBase*) {
   for (FontFace* font_face : non_css_connected_faces_) {
     AlignTimeoutWithLCPGoal(font_face);
   }
-  font_display_auto_align_histogram_.Record();
 }
 
 void FontFaceSetDocument::Trace(Visitor* visitor) const {
@@ -305,20 +292,6 @@ void FontFaceSetDocument::FontLoadHistogram::Record() {
     base::UmaHistogramBoolean("WebFont.HadBlankText", status_ == kHadBlankText);
     status_ = kReported;
   }
-}
-
-void FontFaceSetDocument::FontDisplayAutoAlignHistogram::Record() {
-  if (!base::FeatureList::IsEnabled(
-          features::kAlignFontDisplayAutoTimeoutWithLCPGoal)) {
-    return;
-  }
-  if (!has_font_display_auto_ || reported_) {
-    return;
-  }
-  base::UmaHistogramCounts100(
-      "WebFont.Clients.AlignFontDisplayAuto.FontFacesAffected",
-      affected_count_);
-  reported_ = true;
 }
 
 }  // namespace blink

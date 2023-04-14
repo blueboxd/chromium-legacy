@@ -5,6 +5,7 @@
 import * as AcceleratorTypes from 'chrome://resources/mojo/ui/base/accelerators/mojom/accelerator.mojom-webui.js';
 
 import * as AcceleratorInfoTypes from '../mojom-webui/ash/public/mojom/accelerator_info.mojom-webui.js';
+import {SearchHandlerInterface, SearchResult} from '../mojom-webui/ash/webui/shortcut_customization_ui/backend/search/search.mojom-webui.js';
 import {AcceleratorConfigurationProviderInterface, AcceleratorsUpdatedObserverRemote} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 
@@ -171,6 +172,19 @@ export type LayoutInfo =
  * version or the app version ({@link LayoutInfo}).
  */
 export type MojoLayoutInfo = AcceleratorInfoTypes.AcceleratorLayoutInfo;
+
+/**
+ * Type alias for the Mojo version of SearchResult.
+ */
+export type MojoSearchResult = SearchResult;
+
+/**
+ * Type alias for the ShortcutSearchHandlerInterface.
+ * TODO(longbowei): Add parameters to search() function.
+ */
+export interface ShortcutSearchHandlerInterface extends SearchHandlerInterface {
+  search(): Promise<{results: MojoSearchResult[]}>;
+}
 
 /**
  * Type alias for the ShortcutProviderInterface.

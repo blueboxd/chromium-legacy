@@ -42,7 +42,7 @@ class GLTextureHolder {
   bool UploadFromMemory(const SkPixmap& pixmap);
 
   // Readback pixels from GL texture to `pixmap`.
-  bool ReadbackToMemory(SkPixmap& pixmap);
+  bool ReadbackToMemory(const SkPixmap& pixmap);
 
   // Returns a promise image for the GL texture.
   sk_sp<SkPromiseImageTexture> GetPromiseImage(
@@ -65,7 +65,7 @@ class GLTextureHolder {
   bool is_passthrough_;
   bool context_lost_ = false;
 
-  gles2::Texture* texture_ = nullptr;
+  raw_ptr<gles2::Texture> texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
   GLFormatDesc format_desc_;
   raw_ptr<gl::ProgressReporter> progress_reporter_ = nullptr;

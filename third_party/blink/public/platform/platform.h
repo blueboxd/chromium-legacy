@@ -96,7 +96,6 @@ class GpuVideoAcceleratorFactories;
 namespace network {
 namespace mojom {
 class URLLoaderFactory;
-class URLLoaderFactoryInterfaceBase;
 }
 class PendingSharedURLLoaderFactory;
 }
@@ -136,7 +135,6 @@ class WebResourceRequestSenderDelegate;
 class WebSandboxSupport;
 class WebSecurityOrigin;
 class WebThemeEngine;
-class WebURLLoaderFactory;
 class WebVideoCaptureImplManager;
 struct WebContentSecurityPolicyHeader;
 
@@ -257,12 +255,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual bool IsLockedToSite() const { return false; }
 
   // Network -------------------------------------------------------------
-
-  // Returns a new WebURLLoaderFactory that wraps the given
-  // network::mojom::URLLoaderFactory.
-  virtual std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
-      CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
-          url_loader_factory);
 
   // Returns the default User-Agent string, it can either full User-Agent string
   // or reduced User-Agent string based on policy setting.

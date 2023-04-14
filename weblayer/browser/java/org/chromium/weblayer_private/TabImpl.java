@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private;
 
+import static org.chromium.cc.mojom.RootScrollOffsetUpdateFrequency.ALL_UPDATES;
+
 import android.Manifest.permission;
 import android.app.Activity;
 import android.content.pm.PackageManager;
@@ -48,8 +50,10 @@ import org.chromium.components.webapps.AddToHomescreenCoordinator;
 import org.chromium.components.webapps.AppBannerManager;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
-import org.chromium.content_public.browser.GestureStateListenerWithScroll;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.MessagePayload;
+import org.chromium.content_public.browser.MessagePort;
+import org.chromium.content_public.browser.MessagePort.MessageCallback;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.SelectionClient;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -110,6 +114,7 @@ public final class TabImpl extends ITab.Stub {
     private TabViewAndroidDelegate mViewAndroidDelegate;
     private GoogleAccountsCallbackProxy mGoogleAccountsCallbackProxy;
     private ExternalIntentInIncognitoCallbackProxy mExternalIntentInIncognitoCallbackProxy;
+    private MessagePort[] mChannel;
     // BrowserImpl this TabImpl is in.
     @NonNull
     private BrowserImpl mBrowser;
@@ -140,7 +145,15 @@ public final class TabImpl extends ITab.Stub {
     private Set<FaviconCallbackProxy> mFaviconCallbackProxies = new HashSet<>();
 
     // Only non-null if scroll offsets have been requested.
-    private @Nullable GestureStateListenerWithScroll mGestureStateListenerWithScroll;
+    private @Nullable GestureStateListener mGestureStateListener;
+
+    private HeaderVerificationStatus mHeaderVerification;
+
+    enum HeaderVerificationStatus {
+        PENDING,
+        NOT_VALIDATED,
+        VALIDATED,
+    }
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {
@@ -203,6 +216,22 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    class NativeStringCallback implements Callback<String> {
+        private IStringCallback mCallback;
+
+        NativeStringCallback(IStringCallback callback) {
+            mCallback = callback;
+        }
+
+        @Override
+        public void onResult(String result) {
+            try {
+                mCallback.onResult(result);
+            } catch (RemoteException e) {
+            }
+        }
+    }
+
     public static TabImpl fromWebContents(WebContents webContents) {
         if (webContents == null || webContents.isDestroyed()) return null;
         return TabImplJni.get().fromWebContents(webContents);
@@ -247,17 +276,14 @@ public final class TabImpl extends ITab.Stub {
             }
 
             @Override
-            public void didStartNavigationNoop(NavigationHandle navigationHandle) {
-                if (!navigationHandle.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void viewportFitChanged(@WebContentsObserver.ViewportFitType int value) {
                 ensureDisplayCutoutController();
                 mDisplayCutoutController.setViewportFit(value);
             }
         };
         mWebContents.addObserver(mWebContentsObserver);
+
+        mHeaderVerification = HeaderVerificationStatus.PENDING;
 
         mMediaStreamManager = new MediaStreamManager(this);
 
@@ -284,7 +310,7 @@ public final class TabImpl extends ITab.Stub {
                             throw new APICallException(e);
                         }
                     }
-                });
+                }, ALL_UPDATES);
     }
 
     private void doInitAfterSettingContainerView() {
@@ -309,6 +335,10 @@ public final class TabImpl extends ITab.Stub {
 
     public ITabClient getClient() {
         return mClient;
+    }
+
+    public void setHeaderVerification(HeaderVerificationStatus headerVerification) {
+        mHeaderVerification = headerVerification;
     }
 
     /**
@@ -606,8 +636,8 @@ public final class TabImpl extends ITab.Stub {
     public void setScrollOffsetsEnabled(boolean enabled) {
         StrictModeWorkaround.apply();
         if (enabled) {
-            if (mGestureStateListenerWithScroll == null) {
-                mGestureStateListenerWithScroll = new GestureStateListenerWithScroll() {
+            if (mGestureStateListener == null) {
+                mGestureStateListener = new GestureStateListener() {
                     @Override
                     public void onScrollOffsetOrExtentChanged(
                             int scrollOffsetY, int scrollExtentY) {
@@ -619,12 +649,12 @@ public final class TabImpl extends ITab.Stub {
                     }
                 };
                 GestureListenerManager.fromWebContents(mWebContents)
-                        .addListener(mGestureStateListenerWithScroll);
+                        .addListener(mGestureStateListener, ALL_UPDATES);
             }
-        } else if (mGestureStateListenerWithScroll != null) {
+        } else if (mGestureStateListener != null) {
             GestureListenerManager.fromWebContents(mWebContents)
-                    .removeListener(mGestureStateListenerWithScroll);
-            mGestureStateListenerWithScroll = null;
+                    .removeListener(mGestureStateListener);
+            mGestureStateListener = null;
         }
     }
 
@@ -713,6 +743,11 @@ public final class TabImpl extends ITab.Stub {
     @Override
     public void executeScript(String script, boolean useSeparateIsolate, IStringCallback callback) {
         StrictModeWorkaround.apply();
+        if (mHeaderVerification == HeaderVerificationStatus.VALIDATED) {
+            TabImplJni.get().executeScript(
+                    mNativeTab, script, useSeparateIsolate, new NativeStringCallback(callback));
+            return;
+        }
 
         WebLayerOriginVerificationScheduler originVerifier =
                 WebLayerOriginVerificationScheduler.getInstance();
@@ -730,17 +765,8 @@ public final class TabImpl extends ITab.Stub {
                 } catch (RemoteException e) {
                 }
             }
-
-            Callback<String> nativeCallback = new Callback<String>() {
-                @Override
-                public void onResult(String result) {
-                    try {
-                        callback.onResult(result);
-                    } catch (RemoteException e) {
-                    }
-                }
-            };
-            TabImplJni.get().executeScript(mNativeTab, script, useSeparateIsolate, nativeCallback);
+            TabImplJni.get().executeScript(
+                    mNativeTab, script, useSeparateIsolate, new NativeStringCallback(callback));
         });
     }
 
@@ -948,6 +974,31 @@ public final class TabImpl extends ITab.Stub {
     private void handleCloseFromWebContents() throws RemoteException {
         if (getBrowser() == null) return;
         getBrowser().destroyTab(this);
+    }
+
+    private String getAppOrigin() {
+        // TODO(rayankans): Consider exposing the embedder app's fingerprints as well.
+        return "app://" + mBrowser.getContext().getPackageName();
+    }
+
+    @Override
+    public void postMessage(String message, String targetOrigin) {
+        StrictModeWorkaround.apply();
+        mChannel = mWebContents.createMessageChannel();
+        mChannel[0].setMessageCallback(new MessageCallback() {
+            @Override
+            public void onMessage(MessagePayload messagePayload, MessagePort[] sentPorts) {
+                try {
+                    // TODO(rayankans): Convert the byte buffer to a string as well.
+                    mClient.onPostMessage(messagePayload.getAsString(),
+                            mWebContents.getVisibleUrl().getOrigin().getSpec());
+                } catch (RemoteException e) {
+                }
+            }
+        }, null);
+        // TODO(rayankans): Work out channel lifetime so the web content can hold on to the port.
+        mWebContents.postMessageToMainFrame(new MessagePayload(message), getAppOrigin(),
+                targetOrigin, new MessagePort[] {mChannel[1]});
     }
 
     @Override

@@ -448,10 +448,35 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCtap2_1Version[];
 
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionHmacSecret[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredProtect[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlob[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionCredBlob[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionMinPINLength[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionDevicePublicKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRF[];
+
+// Constants for the prf extension
+constexpr size_t kExtensionPRFOutputSize = 32;
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFEnabled[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFEval[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFEvalByCredential[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFFirst[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFResults[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionPRFSecond[];
+
+// Constants for the largeBlob extension
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobBlob[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kExtensionLargeBlobOriginalSize[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobRead[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobSupport[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kExtensionLargeBlobSupportPreferred[];
+COMPONENT_EXPORT(DEVICE_FIDO)
+extern const char kExtensionLargeBlobSupportRequired[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobSupported[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobWrite[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kExtensionLargeBlobWritten[];
 
 // Map keys for the device public key extension.
 COMPONENT_EXPORT(DEVICE_FIDO)

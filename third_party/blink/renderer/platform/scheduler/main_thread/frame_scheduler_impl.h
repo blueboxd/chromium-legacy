@@ -22,6 +22,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/back_forward_cache_disabling_feature_tracker.h"
+#include "third_party/blink/renderer/platform/scheduler/common/task_priority.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_group_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
@@ -104,13 +105,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 
-  // Returns a wrapper around an instance of MainThreadTaskQueue.
-  // TODO(crbug.com/860545): Decide whether this method should be removed.
-  std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingTaskRunnerHandle() override;
-
-  std::unique_ptr<WebResourceLoadingTaskRunnerHandle>
-  CreateResourceLoadingMaybeUnfreezableTaskRunnerHandle() override;
   AgentGroupScheduler* GetAgentGroupScheduler() override;
   PageScheduler* GetPageScheduler() const override;
   void DidStartProvisionalLoad() override;
@@ -172,8 +166,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   // Computes the priority of |task_queue| if it is associated to this frame
   // scheduler. Note that the main thread's policy should be upto date to
   // compute the correct priority.
-  base::sequence_manager::TaskQueue::QueuePriority ComputePriority(
-      MainThreadTaskQueue* task_queue) const;
+  TaskPriority ComputePriority(MainThreadTaskQueue* task_queue) const;
 
   ukm::SourceId GetUkmSourceId() override;
   ukm::UkmRecorder* GetUkmRecorder();
@@ -262,9 +255,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   void OnAddedAggressiveThrottlingOptOut();
   void OnRemovedAggressiveThrottlingOptOut();
 
-  std::unique_ptr<ResourceLoadingTaskRunnerHandleImpl>
-  CreateResourceLoadingTaskRunnerHandleImpl();
-
   FrameTaskQueueController* FrameTaskQueueControllerForTest() {
     return frame_task_queue_controller_.get();
   }
@@ -338,9 +328,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   BackForwardCacheDisablingFeatureTracker
       back_forward_cache_disabling_feature_tracker_;
 
-  base::sequence_manager::TaskQueue::QueuePriority
-      default_loading_task_priority_ =
-          base::sequence_manager::TaskQueue::QueuePriority::kNormalPriority;
+  TaskPriority default_loading_task_priority_ = TaskPriority::kNormalPriority;
 
   // These are the states of the Page.
   // They should be accessed via GetPageScheduler()->SetPageState().

@@ -321,7 +321,7 @@ TEST_P(UkmServiceTest, PersistAndPurge) {
   EXPECT_TRUE(client_.uploader()->is_uploading());
   // Flushes the generated log to disk and generates a new entry.
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 2);
   service.Purge();
   EXPECT_EQ(GetPersistedLogCount(), 0);
@@ -344,7 +344,7 @@ TEST_P(UkmServiceTest, Purge) {
 
   // Purge should delete data, so there shouldn't be anything left to upload.
   service.Purge();
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(0, GetPersistedLogCount());
 }
 
@@ -387,7 +387,9 @@ TEST_P(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   // Makes sure that the serialized ukm report can be parsed.
   ASSERT_TRUE(UkmService::LogCanBeParsed(serialized_log));
   metrics::LogMetadata log_metadata;
-  unsent_log_store->StoreLog(serialized_log, log_metadata);
+  unsent_log_store->StoreLog(
+      serialized_log, log_metadata,
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
 
   // Do extension purging.
   service.PurgeExtensionsData();
@@ -470,7 +472,9 @@ TEST_P(UkmServiceTest, PurgeAppDataFromUnsentLogStore) {
   // Make sure that the serialized ukm report can be parsed.
   ASSERT_TRUE(UkmService::LogCanBeParsed(serialized_log));
   metrics::LogMetadata log_metadata;
-  unsent_log_store->StoreLog(serialized_log, log_metadata);
+  unsent_log_store->StoreLog(
+      serialized_log, log_metadata,
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
 
   // Do app data purging.
   service.PurgeAppsData();
@@ -561,7 +565,9 @@ TEST_P(UkmServiceTest, PurgeMsbbDataFromUnsentLogStore) {
   // Make sure that the serialized ukm report can be parsed.
   ASSERT_TRUE(UkmService::LogCanBeParsed(serialized_log));
   metrics::LogMetadata log_metadata;
-  unsent_log_store->StoreLog(serialized_log, log_metadata);
+  unsent_log_store->StoreLog(
+      serialized_log, log_metadata,
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
 
   // Purge MSBB data.
   service.PurgeMsbbData();
@@ -606,7 +612,7 @@ TEST_P(UkmServiceTest, SourceSerialization) {
   SourceId id = GetAllowlistedSourceId(0);
   recorder.RecordNavigation(id, navigation_data);
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
@@ -633,7 +639,7 @@ TEST_P(UkmServiceTest, AddEntryWithEmptyMetrics) {
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   ASSERT_EQ(1, GetPersistedLogCount());
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.entries_size());
@@ -657,7 +663,7 @@ TEST_P(UkmServiceTest, MetricsProviderTest) {
   service.UpdateRecording(UkmConsentState(MSBB));
   service.EnableReporting();
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
@@ -689,7 +695,7 @@ TEST_P(UkmServiceTest, SystemProfileTest) {
   SourceId id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
@@ -733,7 +739,7 @@ TEST_P(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
   SourceId id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   // Verify that the synced user's noised birth year and gender were added to
@@ -766,7 +772,7 @@ TEST_P(UkmServiceTest,
   SourceId id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   // Verify that the synced user's noised birth year and gender are not in the
@@ -797,7 +803,7 @@ TEST_P(UkmServiceTest, DontAddUserDemograhicsWhenFeatureDisabled) {
   SourceId id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   // Verify that the synced user's noised birth year and gender are not in the
@@ -860,18 +866,18 @@ TEST_P(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   EXPECT_TRUE(task_runner_->HasPendingTask());
   // Neither rotation or Flush should generate logs
   task_runner_->RunPendingTasks();
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
   SourceId id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   TestEvent1(id).Record(&service);
   // Includes an Entry, so will persist.
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 2);
 
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
@@ -879,11 +885,11 @@ TEST_P(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   // Do not keep the source in the recorder after the current log.
   recorder.MarkSourceForDeletion(id);
   // Includes a Source and an Entry, so will persist.
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 3);
 
   // The recorder contains no Sources or Entries thus will not create a new log.
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 3);
 }
 
@@ -913,7 +919,7 @@ TEST_P(UkmServiceTest, RecordRedirectedUrl) {
                           GURL("https://google.com/final")};
   recorder.RecordNavigation(id, navigation_data);
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
 
   Report proto_report = GetPersistedReport();
@@ -941,7 +947,7 @@ TEST_P(UkmServiceTest, RecordSessionId) {
   auto id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   auto proto_report = GetPersistedReport();
@@ -966,7 +972,7 @@ TEST_P(UkmServiceTest, SourceSize) {
     recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   }
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   auto proto_report = GetPersistedReport();
@@ -1014,7 +1020,7 @@ TEST_P(UkmServiceTest, SourceURLLength) {
       "https://example.com/" + std::string(10000, 'a');
   recorder.UpdateSourceURL(id, GURL(long_string));
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   auto proto_report = GetPersistedReport();
@@ -1024,99 +1030,84 @@ TEST_P(UkmServiceTest, SourceURLLength) {
 }
 
 TEST_P(UkmServiceTest, UnreferencedNonAllowlistedSources) {
-  // We will be testing with KeepNonAllowlistedSourcesThatMatch both off and on.
-  for (bool keep_non_allowlisted_sources_that_match : {true, false}) {
-    const GURL kURL("https://google.com/foobar");
+  const GURL kURL("https://google.com/foobar");
 
-    // Set the 'MaxKeptSources' value to 3 so it is easier to test.
-    ScopedUkmFeatureParams params(
-        {{"MaxKeptSources", "3"},
-         {"KeepNonAllowlistedSourcesThatMatch",
-          keep_non_allowlisted_sources_that_match ? "true" : "false"}});
+  ClearPrefs();
+  UkmService service(&prefs_, &client_,
+                     std::make_unique<MockDemographicMetricsProvider>());
+  TestRecordingHelper recorder(&service);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.UpdateRecording(UkmConsentState(UkmConsentType::MSBB));
+  service.EnableReporting();
 
-    ClearPrefs();
-    UkmService service(&prefs_, &client_,
-                       std::make_unique<MockDemographicMetricsProvider>());
-    TestRecordingHelper recorder(&service);
-    EXPECT_EQ(0, GetPersistedLogCount());
-    service.Initialize();
-    task_runner_->RunUntilIdle();
-    service.UpdateRecording(UkmConsentState(UkmConsentType::MSBB));
-    service.EnableReporting();
+  // Record with Allowlisted ID to allowlist the URL.
+  // Use a larger ID to make it last in the proto.
+  SourceId allowlisted_id = GetAllowlistedSourceId(100);
+  recorder.UpdateSourceURL(allowlisted_id, kURL);
 
-    // Record with Allowlisted ID to allowlist the URL.
-    // Use a larger ID to make it last in the proto.
-    SourceId allowlisted_id = GetAllowlistedSourceId(100);
-    recorder.UpdateSourceURL(allowlisted_id, kURL);
-
-    std::vector<SourceId> ids;
-    base::TimeTicks last_time = base::TimeTicks::Now();
-    for (int i = 1; i < 7; ++i) {
-      // Wait until base::TimeTicks::Now() no longer equals |last_time|. This
-      // ensures each source has a unique timestamp to avoid flakes. Should take
-      // between 1-15ms per documented resolution of base::TimeTicks.
-      while (base::TimeTicks::Now() == last_time) {
-        base::PlatformThread::Sleep(base::Milliseconds(1));
-      }
-
-      ids.push_back(GetNonAllowlistedSourceId(i));
-      recorder.UpdateSourceURL(ids.back(), kURL);
-      last_time = base::TimeTicks::Now();
+  std::vector<SourceId> ids;
+  base::TimeTicks last_time = base::TimeTicks::Now();
+  for (int i = 1; i < 7; ++i) {
+    // Wait until base::TimeTicks::Now() no longer equals |last_time|. This
+    // ensures each source has a unique timestamp to avoid flakes. Should take
+    // between 1-15ms per documented resolution of base::TimeTicks.
+    while (base::TimeTicks::Now() == last_time) {
+      base::PlatformThread::Sleep(base::Milliseconds(1));
     }
 
-    // Record a non-allowlisted source with a URL that does not match any
-    // allowlisted source.
-    ids.push_back(GetNonAllowlistedSourceId(7));
-    recorder.UpdateSourceURL(ids.back(), GURL("https://google.com/foobar1"));
-
-    TestEvent1(ids[0]).Record(&service);
-    TestEvent2(ids[2]).Record(&service);
-    TestEvent3(ids[2]).Record(&service);
-    TestEvent3(ids[3]).Record(&service);
-
-    service.Flush();
-    EXPECT_EQ(1, GetPersistedLogCount());
-    auto proto_report = GetPersistedReport();
-
-    // 1 allowlisted source and 7 non-allowlisted source.
-    EXPECT_EQ(8, proto_report.source_counts().observed());
-    // The one allowlisted source is of navigation type.
-    EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
-    EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
-
-    EXPECT_EQ(3, proto_report.source_counts().deferred_sources());
-    EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
-
-    ASSERT_EQ(4, proto_report.sources_size());
-    EXPECT_EQ(ids[0], proto_report.sources(0).id());
-    EXPECT_EQ(kURL.spec(), proto_report.sources(0).urls(0).url());
-    EXPECT_EQ(ids[2], proto_report.sources(1).id());
-    EXPECT_EQ(kURL.spec(), proto_report.sources(1).urls(0).url());
-    // Since MaxKeptSources is 3, only Sources 5, 4, 3 should be retained.
-    // Log entries under 0, 1, 3 and 4. Log them in reverse order - which
-    // shouldn't affect source ordering in the output.
-    //  - Source 0 should not be re-transmitted since it was sent before.
-    //  - Source 1 should not be transmitted due to MaxKeptSources param.
-    //  - Sources 3 and 4 should be transmitted since they were not sent before.
-    TestEvent1(ids[4]).Record(&service);
-    TestEvent1(ids[3]).Record(&service);
-    TestEvent1(ids[1]).Record(&service);
-    TestEvent1(ids[0]).Record(&service);
-
-    service.Flush();
-    EXPECT_EQ(2, GetPersistedLogCount());
-    proto_report = GetPersistedReport();
-
-    EXPECT_EQ(0, proto_report.source_counts().observed());
-    EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
-    EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
-
-    EXPECT_EQ(keep_non_allowlisted_sources_that_match ? 3 : 1,
-              proto_report.source_counts().deferred_sources());
-
-    EXPECT_EQ(3, proto_report.source_counts().carryover_sources());
-    ASSERT_EQ(2, proto_report.sources_size());
+    ids.push_back(GetNonAllowlistedSourceId(i));
+    recorder.UpdateSourceURL(ids.back(), kURL);
+    last_time = base::TimeTicks::Now();
   }
+
+  TestEvent1(ids[0]).Record(&service);
+  TestEvent2(ids[2]).Record(&service);
+  TestEvent3(ids[2]).Record(&service);
+  TestEvent3(ids[3]).Record(&service);
+
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
+  EXPECT_EQ(1, GetPersistedLogCount());
+  auto proto_report = GetPersistedReport();
+
+  // 1 allowlisted source and 6 non-allowlisted source.
+  EXPECT_EQ(7, proto_report.source_counts().observed());
+  // The one allowlisted source is of navigation type.
+  EXPECT_EQ(1, proto_report.source_counts().navigation_sources());
+  EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+
+  EXPECT_EQ(4, proto_report.source_counts().deferred_sources());
+  EXPECT_EQ(0, proto_report.source_counts().carryover_sources());
+
+  ASSERT_EQ(4, proto_report.sources_size());
+  EXPECT_EQ(ids[0], proto_report.sources(0).id());
+  EXPECT_EQ(kURL.spec(), proto_report.sources(0).urls(0).url());
+  EXPECT_EQ(ids[2], proto_report.sources(1).id());
+  EXPECT_EQ(kURL.spec(), proto_report.sources(1).urls(0).url());
+  // Since MaxKeptSources is 3, only Sources 5, 4, 3 should be retained.
+  // Log entries under 0, 1, 3 and 4. Log them in reverse order - which
+  // shouldn't affect source ordering in the output.
+  //  - Source 0 should not be re-transmitted since it was sent before.
+  //  - Source 1 should not be transmitted due to MaxKeptSources param.
+  //  - Sources 3 and 4 should be transmitted since they were not sent before.
+  TestEvent1(ids[4]).Record(&service);
+  TestEvent1(ids[3]).Record(&service);
+  TestEvent1(ids[1]).Record(&service);
+  TestEvent1(ids[0]).Record(&service);
+
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
+  EXPECT_EQ(2, GetPersistedLogCount());
+  proto_report = GetPersistedReport();
+
+  EXPECT_EQ(0, proto_report.source_counts().observed());
+  EXPECT_EQ(0, proto_report.source_counts().navigation_sources());
+  EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
+
+  EXPECT_EQ(2, proto_report.source_counts().deferred_sources());
+
+  EXPECT_EQ(4, proto_report.source_counts().carryover_sources());
+  ASSERT_EQ(3, proto_report.sources_size());
 }
 
 TEST_P(UkmServiceTest, NonAllowlistedUrls) {
@@ -1154,7 +1145,7 @@ TEST_P(UkmServiceTest, NonAllowlistedUrls) {
     recorder.UpdateSourceURL(nonallowlist_id, test.url);
     TestEvent1(nonallowlist_id).Record(&service);
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     ASSERT_EQ(1, GetPersistedLogCount());
     auto proto_report = GetPersistedReport();
 
@@ -1186,7 +1177,7 @@ TEST_P(UkmServiceTest, NonAllowlistedUrls) {
     SourceId nonallowlist_id2 = GetNonAllowlistedSourceId(101);
     recorder.UpdateSourceURL(nonallowlist_id2, test.url);
     TestEvent1(nonallowlist_id2).Record(&service);
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     ASSERT_EQ(2, GetPersistedLogCount());
     proto_report = GetPersistedReport();
 
@@ -1233,7 +1224,7 @@ TEST_P(UkmServiceTest, AllowlistIdType) {
 
     TestEvent1(id).Record(&service);
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(1, GetPersistedLogCount());
     Report proto_report = GetPersistedReport();
 
@@ -1299,7 +1290,7 @@ TEST_P(UkmServiceTest, SupportedSchemes) {
       ++expected_kept_count;
   }
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
   Report proto_report = GetPersistedReport();
 
@@ -1355,7 +1346,7 @@ TEST_P(UkmServiceTest, SupportedSchemesNoExtensions) {
       ++expected_kept_count;
   }
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(GetPersistedLogCount(), 1);
   Report proto_report = GetPersistedReport();
 
@@ -1385,7 +1376,7 @@ TEST_P(UkmServiceTest, SanitizeUrlAuthParams) {
   auto id = GetAllowlistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://username:password@example.com/"));
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   auto proto_report = GetPersistedReport();
@@ -1427,7 +1418,7 @@ TEST_P(UkmServiceTest, SanitizeChromeUrlParams) {
     auto id = GetAllowlistedSourceId(0);
     recorder.UpdateSourceURL(id, GURL(test.url));
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(1, GetPersistedLogCount());
 
     auto proto_report = GetPersistedReport();
@@ -1455,7 +1446,7 @@ TEST_P(UkmServiceTest, MarkSourceForDeletion) {
   SourceId id2 = GetAllowlistedSourceId(2);
   recorder.UpdateSourceURL(id2, GURL("https://www.example2.com/"));
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   int logs_count = 0;
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
@@ -1470,13 +1461,13 @@ TEST_P(UkmServiceTest, MarkSourceForDeletion) {
   // we might have associated entries. It will no longer be in further report at
   // the following cycle.
   service.MarkSourceForDeletion(id1);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
   proto_report = GetPersistedReport();
   ASSERT_EQ(3, proto_report.sources_size());
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
   proto_report = GetPersistedReport();
@@ -1526,7 +1517,7 @@ TEST_P(UkmServiceTest, PurgeNonCarriedOverSources) {
       extension_id,
       GURL("chrome-extension://bhcnanendmgjjeghamaccjnochlnhcgj"));
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   int logs_count = 0;
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
@@ -1541,7 +1532,7 @@ TEST_P(UkmServiceTest, PurgeNonCarriedOverSources) {
   EXPECT_EQ(web_identity_id, proto_report.sources(5).id());
   EXPECT_EQ(extension_id, proto_report.sources(6).id());
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(++logs_count, GetPersistedLogCount());
 
   // Sources of HISTORY_ID, WEBAPK_ID, PAYMENT_APP_ID, WEB_IDENTITY_ID,and
@@ -1567,7 +1558,7 @@ TEST_P(UkmServiceTest, IdentifiabilityMetricsDontExplode) {
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   builders::Identifiability(id).SetStudyGeneration_626(0).Record(&service);
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   ASSERT_EQ(1, GetPersistedLogCount());
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.entries_size());
@@ -1608,7 +1599,7 @@ TEST_P(UkmServiceTest, FilterCanRemoveMetrics) {
   // This event is discarded because its only metric gets stripped out.
   TestEvent1(id).SetNet_CacheBytes2(0).Record(&service);
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   ASSERT_EQ(1, GetPersistedLogCount());
   Report proto_report = GetPersistedReport();
   ASSERT_EQ(1, proto_report.entries_size());
@@ -1662,7 +1653,7 @@ TEST_P(UkmServiceTest, FilterRejectsEvent) {
   TestEvent1(id).SetCpuTime(0).Record(&service);
   TestEvent2(id).SetDownloadService(3).Record(&service);
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   ASSERT_EQ(1, GetPersistedLogCount());
   Report proto_report = GetPersistedReport();
   EXPECT_EQ(1, proto_report.entries_size());
@@ -1721,7 +1712,7 @@ TEST_P(UkmServiceTest, PruneUnseenFirst) {
     TestEvent1(ids[0]).Record(&service);
     TestEvent1(ids[4]).Record(&service);
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(1, GetPersistedLogCount());
     auto proto_report = GetPersistedReport();
 
@@ -1757,7 +1748,7 @@ TEST_P(UkmServiceTest, PruneUnseenFirst) {
     TestEvent1(ids[2]).Record(&service);
     TestEvent1(ids[4]).Record(&service);
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(2, GetPersistedLogCount());
     proto_report = GetPersistedReport();
 
@@ -1832,7 +1823,7 @@ TEST_P(UkmServiceTest, PruneAppIDLast) {
       last_time = base::TimeTicks::Now();
     }
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(1, GetPersistedLogCount());
     auto proto_report = GetPersistedReport();
 
@@ -1857,7 +1848,7 @@ TEST_P(UkmServiceTest, PruneAppIDLast) {
     // via age which will be 3, so 0, 3, 4 are kept.
     // Otherwise, it will be entirely based on age, which is 2,3,4.
 
-    service.Flush();
+    service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
     EXPECT_EQ(2, GetPersistedLogCount());
     proto_report = GetPersistedReport();
 
@@ -1908,9 +1899,13 @@ TEST_P(UkmServiceTest, PurgeLogsOnClonedInstallDetected) {
   // Store various logs.
   metrics::UnsentLogStore* test_log_store =
       service.reporting_service_for_testing().ukm_log_store();
-  test_log_store->StoreLog("dummy log data", metrics::LogMetadata());
+  test_log_store->StoreLog(
+      "dummy log data", metrics::LogMetadata(),
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   test_log_store->StageNextLog();
-  test_log_store->StoreLog("more dummy log data", metrics::LogMetadata());
+  test_log_store->StoreLog(
+      "more dummy log data", metrics::LogMetadata(),
+      metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_TRUE(test_log_store->has_staged_log());
   EXPECT_TRUE(test_log_store->has_unsent_logs());
 
@@ -2012,7 +2007,7 @@ TEST_P(UkmServiceTestWithIndependentAppKM, RejectWhenNotConsented) {
     TestEvent1(source_ids.back()).Record(&service);
   }
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
   EXPECT_EQ(1, GetPersistedLogCount());
 
   // Has the sources and entries associated with AppIDs.
@@ -2107,7 +2102,7 @@ TEST_P(UkmServiceTestWithIndependentAppKMFullConsent, VerifyAllAndNoneConsent) {
     TestEvent1(source_ids.back()).Record(&service);
   }
 
-  service.Flush();
+  service.Flush(metrics::MetricsLogsEventManager::CreateReason::kUnknown);
 
   EXPECT_EQ(GetPersistedLogCount(), static_cast<int>(has_consent));
 

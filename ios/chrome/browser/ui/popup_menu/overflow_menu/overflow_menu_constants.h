@@ -5,8 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_OVERFLOW_MENU_CONSTANTS_H_
 #define IOS_CHROME_BROWSER_UI_POPUP_MENU_OVERFLOW_MENU_OVERFLOW_MENU_CONSTANTS_H_
 
-#import <UIKit/UIKit.h>
-
 #import <string>
 
 namespace overflow_menu {
@@ -21,23 +19,16 @@ enum class Destination {
   Settings = 7,
   WhatsNew = 8,
   SpotlightDebugger = 9,
+  PriceNotifications = 10,
 };
 
 // Ingests `destination` string representation and returns corresponding
 // overflow_menu::Destination enum.
 Destination DestinationForStringName(std::string destination);
 
-// Ingests `destination` NSString* representation and returns corresponding
-// overflow_menu::Destination enum.
-Destination DestinationForNSStringName(NSString* destination);
-
 // Ingests overflow_menu::Destination `destination` and returns its string
 // representation.
 std::string StringNameForDestination(Destination destination);
-
-// Ingests overflow_menu::Destination `destination` and returns its NSString*
-// representation.
-NSString* NSStringNameForDestination(Destination destination);
 
 // Ingests overflow_menu::Destination `destination` and records the
 // corresponding UMA action.

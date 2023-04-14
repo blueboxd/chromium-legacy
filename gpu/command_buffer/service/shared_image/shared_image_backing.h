@@ -63,6 +63,8 @@ class MemoryTypeTracker;
 class SharedImageFactory;
 class VaapiDependenciesFactory;
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class SharedImageBackingType {
   kTest = 0,
   kExternalVkImage = 1,
@@ -82,6 +84,7 @@ enum class SharedImageBackingType {
   kIOSurface = 15,
   kDCompSurface = 16,
   kDXGISwapChain = 17,
+  kMaxValue = kDXGISwapChain
 };
 
 #if BUILDFLAG(IS_WIN)
@@ -174,8 +177,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // `SHARED_IMAGE_USAGE_CPU_UPLOAD`.
   virtual bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps);
 
-  // Reads back pixels from GPU texture into memory in `pixmap`.
-  virtual bool ReadbackToMemory(SkPixmap& pixmap);
+  // Reads back pixels from GPU texture into memory. `pixmaps` should have one
+  // pixmap per plane.
+  virtual bool ReadbackToMemory(const std::vector<SkPixmap>& pixmaps);
 
   // Copy from the backing's GPU texture to its GpuMemoryBuffer if present. This
   // is needed on Windows where the renderer process can only create shared

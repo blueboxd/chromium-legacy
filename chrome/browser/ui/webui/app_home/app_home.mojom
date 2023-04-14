@@ -41,7 +41,12 @@ struct AppInfo {
   bool is_locally_installed;
   // Whether the app open in a app window or as a browser tab.
   bool open_in_window;
-
+  // Whether this app can be uninstalled by user.
+  bool may_uninstall;
+  // If this app is a deprecated chrome app.
+  bool is_deprecated_app;
+  // If this is an extension that came from the web store.
+  url.mojom.Url? store_page_url;
 };
 
 struct ClickEvent {
@@ -58,10 +63,12 @@ interface PageHandlerFactory {
                     pending_receiver<PageHandler> handler);
 };
 
-// Following APIs are only called from `chrome://apps` page.
+// Renderer to browser interface to support chrome://apps WebUI.
 interface PageHandler {
   // Get all apps' information that defined in `AppInfo`.
   GetApps() => (array<AppInfo> app_list);
+  // Gets the i18n'ed string for the label for removing deprecated apps.
+  GetDeprecationLinkString() => (string link_string);
   // Uninstall app for specific `app_id`.
   UninstallApp(string app_id);
   // Open app’s site setting page.
@@ -72,7 +79,7 @@ interface PageHandler {
   // `source` is the launch source used for metrics reporting,
   // see `AppLaunchBucket` in extension_constants.h for more detail.
   // `click_event` is used for determining launch container for apps.
-  LaunchApp(string app_id, int32 source, ClickEvent? click_event);
+  LaunchApp(string app_id, ClickEvent? click_event);
   // Used to set the Run On OS Login Modes from the frontend of an app.
   SetRunOnOsLoginMode(string app_id, RunOnOsLoginMode run_on_os_login_mode);
   // Open the deprecated apps dialog.
@@ -92,6 +99,4 @@ interface Page {
   AddApp(AppInfo app_info);
   // Inform frontend that an app is uninstalled.
   RemoveApp(AppInfo app_info);
-  // Inform frontend that an extension app is enabled.
-  EnableExtensionApp(string extension_app_id);
 };

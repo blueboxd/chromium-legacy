@@ -9,14 +9,14 @@
 
 #include "ash/accelerators/accelerator_alias_converter.h"
 #include "ash/public/cpp/accelerator_configuration.h"
-#include "ash/public/mojom/accelerator_keys.mojom.h"
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_layout_table.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/remote_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "ui/base/accelerators/accelerator_map.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/chromeos/events/keyboard_capability.h"
 #include "ui/events/devices/input_device.h"
@@ -89,7 +89,7 @@ class AcceleratorConfigurationProvider
           shortcut_customization::mojom::AcceleratorConfigurationProvider>
           receiver);
 
-  void InitializeNonConfigurableAccelerators(NonConfigurableActionsMap);
+  void InitializeNonConfigurableAccelerators(NonConfigurableActionsMap mapping);
 
   const NonConfigurableActionsMap& GetNonConfigurableAcceleratorsForTesting() {
     return non_configurable_actions_mapping_;
@@ -103,6 +103,7 @@ class AcceleratorConfigurationProvider
 
  private:
   friend class AcceleratorConfigurationProviderTest;
+  using NonConfigAcceleratorActionMap = ui::AcceleratorMap<AcceleratorActionId>;
 
   void OnAcceleratorsUpdated(mojom::AcceleratorSource source,
                              const ActionIdToAcceleratorsMap& mapping);
@@ -135,6 +136,14 @@ class AcceleratorConfigurationProvider
       receiver_{this};
 
   AcceleratorConfiguration* ash_accelerator_configuration_;
+
+  // One accelerator action ID can potentially have multiple accelerators
+  // associated with it.
+  ActionIdToAcceleratorsMap id_to_non_configurable_accelerators_;
+
+  // A map from accelerators to AcceleratorActions, used as a reverse lookup for
+  // standard non-configurable accelerators.
+  NonConfigAcceleratorActionMap non_configurable_accelerator_to_id_;
 
   mojo::Remote<shortcut_customization::mojom::AcceleratorsUpdatedObserver>
       accelerators_updated_observers_;

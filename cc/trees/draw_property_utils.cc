@@ -773,10 +773,10 @@ std::pair<gfx::MaskFilterInfo, bool> GetMaskFilterInfoPair(
 
   auto result =
       std::make_pair(node->mask_filter_info, node->is_fast_rounded_corner);
-
-  if (!result.first.ApplyTransform(to_target))
+  result.first.ApplyTransform(to_target);
+  if (result.first.IsEmpty()) {
     return kEmptyMaskFilterInfoPair;
-
+  }
   return result;
 }
 
@@ -997,11 +997,11 @@ void ComputeInitialRenderSurfaceList(LayerTreeImpl* layer_tree_impl,
     bool skip_layer = !is_root && (skip_draw_properties_computation ||
                                    skip_for_invertibility);
 
-    TransformNode* transform_noe =
+    TransformNode* transform_node =
         property_trees->transform_tree_mutable().Node(
             layer->transform_tree_index());
     const bool has_will_change_transform_hint =
-        transform_noe && transform_noe->will_change_transform;
+        transform_node && transform_node->will_change_transform;
     // Raster layers that are animated but currently have a non-invertible
     // matrix, or layers that have a will-change transform hint and might
     // animate to not be backface visible soon.

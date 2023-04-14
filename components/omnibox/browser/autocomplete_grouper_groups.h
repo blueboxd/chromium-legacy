@@ -11,6 +11,8 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "third_party/omnibox_proto/groups.pb.h"
 
+using PMatches = std::vector<AutocompleteMatch*>;
+
 // `Group` class and subclasses used to compose `Section`s.
 
 // Group containing matches with the given `GroupId`s, limited per `GroupId` and
@@ -25,9 +27,13 @@ class Group {
   };
   using GroupIdLimitsAndCounts = std::map<omnibox::GroupId, LimitAndCount>;
 
-  Group(size_t limit, GroupIdLimitsAndCounts group_id_limits_and_counts);
+  Group(size_t limit,
+        GroupIdLimitsAndCounts group_id_limits_and_counts,
+        bool is_default = false);
   // Construct a `Group` with just 1 `GroupId`.
   Group(size_t limit, omnibox::GroupId group_id);
+  Group(const Group& group);
+  Group& operator=(const Group& group);
   virtual ~Group();
 
   // Returns if `match` can be added to this `Group`. Checks if the `GroupId` of
@@ -35,22 +41,16 @@ class Group {
   // limit for the `GroupId` of the match.
   virtual bool CanAdd(const AutocompleteMatch& match) const;
   // Adds `match` to this `Group` and increments this `Group`'s total count and
-  // the count for the `GroupId` of the match.
-  // `CanAdd()` should be verified by the caller.
+  // the count for the `GroupId` of the match. `CanAdd()` should be verified by
+  // the caller.
   void Add(const AutocompleteMatch& match);
-  // Increments this `Group`'s total count and the count for the `GroupId` of
-  // the match but does not add `match` to this `Group`.
-  void Count(const AutocompleteMatch& match);
-  // Adjusts the `Group`'s total limit and the limits for the `GroupId`s in the
-  // `Group` based on the number of matches counted and the given max limit.
-  // Ensures that the limits are less than or equal to their original values.
-  // Resets the `Group`'s total count and the counts for the `GroupId`s in the
-  // `Group` so that matches can actually be added to the `Group`.
-  void AdjustLimitsAndResetCounts(size_t max_limit);
 
-  size_t limit() { return limit_; }
+  size_t limit() const { return limit_; }
   void set_limit(size_t limit) { limit_ = limit; }
-  const ACMatches& matches() { return matches_; }
+  const GroupIdLimitsAndCounts& group_id_limits_and_counts() const {
+    return group_id_limits_and_counts_;
+  }
+  const PMatches& matches() const { return matches_; }
 
  private:
   // Max number of matches this `Group` can contain.
@@ -60,16 +60,10 @@ class Group {
   // The limit and count per `GroupId`.
   GroupIdLimitsAndCounts group_id_limits_and_counts_;
   // The matches this `Group` contains.
-  ACMatches matches_;
-};
-
-// Group containing up to 1 match that's `allowed_to_be_default` with the
-// `GroupId`s `omnibox::GROUP_STARTER_PACK`, `omnibox::GROUP_SEARCH`, or
-// `omnibox::GROUP_OTHER_NAVS`.
-class DefaultGroup : public Group {
- public:
-  DefaultGroup();
-  bool CanAdd(const AutocompleteMatch& match) const override;
+  PMatches matches_;
+  // Whether is a default `Group`, i.e., allows only matches that are
+  // `allowed_to_be_default_match`.
+  bool is_default_{false};
 };
 
 #endif  // COMPONENTS_OMNIBOX_BROWSER_AUTOCOMPLETE_GROUPER_GROUPS_H_

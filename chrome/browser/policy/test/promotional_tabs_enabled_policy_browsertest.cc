@@ -18,6 +18,7 @@
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -115,15 +116,63 @@ class PromotionalTabsEnabledPolicyWelcomeTest
       const PromotionalTabsEnabledPolicyWelcomeTest&) = delete;
 
  protected:
-  PromotionalTabsEnabledPolicyWelcomeTest() = default;
+  PromotionalTabsEnabledPolicyWelcomeTest() {
+    scoped_feature_list_.InitAndEnableFeature(kForYouFre);
+  }
   ~PromotionalTabsEnabledPolicyWelcomeTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kForceFirstRun);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyWelcomeTest, RunTest) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_GE(tab_strip->count(), 1);
+  const auto& url = tab_strip->GetWebContentsAt(0)->GetLastCommittedURL();
+
+  // Only the NTP should show, regardless of the policy state.
+  EXPECT_EQ(tab_strip->count(), 1);
+  if (url.possibly_invalid_spec() != chrome::kChromeUINewTabURL) {
+    EXPECT_PRED2(search::IsNTPOrRelatedURL, url, browser()->profile());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    PromotionalTabsEnabledPolicyWelcomeTest,
+    ::testing::Values(PolicyTest::BooleanPolicy::kNotConfigured,
+                      PolicyTest::BooleanPolicy::kFalse,
+                      PolicyTest::BooleanPolicy::kTrue));
+
+// Tests that the PromotionalTabsEnabled policy properly suppresses the welcome
+// page for browser first-runs.
+class PromotionalTabsEnabledPolicyWelcomeNoFreTest
+    : public PromotionalTabsEnabledPolicyTest {
+ public:
+  PromotionalTabsEnabledPolicyWelcomeNoFreTest(
+      const PromotionalTabsEnabledPolicyWelcomeNoFreTest&) = delete;
+  PromotionalTabsEnabledPolicyWelcomeNoFreTest& operator=(
+      const PromotionalTabsEnabledPolicyWelcomeNoFreTest&) = delete;
+
+ protected:
+  PromotionalTabsEnabledPolicyWelcomeNoFreTest() {
+    scoped_feature_list_.InitAndDisableFeature(kForYouFre);
+  }
+  ~PromotionalTabsEnabledPolicyWelcomeNoFreTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kForceFirstRun);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyWelcomeNoFreTest, RunTest) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_GE(tab_strip->count(), 1);
   const auto& url = tab_strip->GetWebContentsAt(0)->GetLastCommittedURL();
@@ -147,7 +196,7 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyWelcomeTest, RunTest) {
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    PromotionalTabsEnabledPolicyWelcomeTest,
+    PromotionalTabsEnabledPolicyWelcomeNoFreTest,
     ::testing::Values(PolicyTest::BooleanPolicy::kNotConfigured,
                       PolicyTest::BooleanPolicy::kFalse,
                       PolicyTest::BooleanPolicy::kTrue));
@@ -179,14 +228,14 @@ class PromotionalTabsEnabledPolicyWhatsNewTest
     // already been seen. This is necessary because welcome/onboarding takes
     // precedence over What's New.
     std::string json;
-    base::Value prefs(base::Value::Type::DICTIONARY);
-    prefs.SetBoolPath(prefs::kHasSeenWelcomePage, true);
+    base::Value::Dict prefs;
+    prefs.SetByDottedPath(prefs::kHasSeenWelcomePage, true);
     // Set the session startup pref to NewTab. This enables consistent test
     // expectations across platforms - we should always expect to see the NTP.
     // Without this line, on ChromeOS only, the default type is LAST, which
     // tries to restore the last session and suppresses the NTP.
-    prefs.SetIntPath(prefs::kRestoreOnStartup,
-                     SessionStartupPref::kPrefValueNewTab);
+    prefs.SetByDottedPath(prefs::kRestoreOnStartup,
+                          SessionStartupPref::kPrefValueNewTab);
     base::JSONWriter::Write(prefs, &json);
 
     base::FilePath default_dir =
@@ -199,9 +248,9 @@ class PromotionalTabsEnabledPolicyWhatsNewTest
         default_dir.Append(chrome::kPreferencesFilename), json));
 
     // Also set the version for What's New in the local state.
-    base::Value local_state(base::Value::Type::DICTIONARY);
-    local_state.SetIntPath(prefs::kLastWhatsNewVersion,
-                           WhatsNewVersionForPref());
+    base::Value::Dict local_state;
+    local_state.SetByDottedPath(prefs::kLastWhatsNewVersion,
+                                WhatsNewVersionForPref());
     std::string local_state_string;
     base::JSONWriter::Write(local_state, &local_state_string);
     ASSERT_TRUE(

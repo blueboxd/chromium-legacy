@@ -36,7 +36,6 @@ CONTENT_EXPORT
   // The interface exported to views::Views that embed this as a sub-view.
   raw_ptr<ui::ViewsHostableView> _viewsHostableView;
 
-  base::scoped_nsobject<WebDragSource> _dragSource;
   BOOL _mouseDownCanMoveWindow;
 
   // Utility to copy screenshots to a usable directory for PWAs. This utility
@@ -45,6 +44,14 @@ CONTENT_EXPORT
   // https://crbug.com/1148078
   std::unique_ptr<remote_cocoa::DroppedScreenShotCopierMac>
       _droppedScreenShotCopier;
+
+  // Drag variables.
+  base::scoped_nsobject<WebDragSource> _dragSource;
+  NSDragOperation _dragOperation;
+  NSPoint _dragOffset;
+  CGFloat _dragImageHeight;
+
+  gfx::Rect _windowControlsOverlayRect;
 }
 
 // Set or un-set the mojo interface through which to communicate with the
@@ -69,7 +76,8 @@ CONTENT_EXPORT
 - (void)startDragWithDropData:(const content::DropData&)dropData
             dragOperationMask:(NSDragOperation)operationMask
                         image:(NSImage*)image
-                       offset:(NSPoint)offset;
+                       offset:(NSPoint)offset
+                 isPrivileged:(BOOL)isPrivileged;
 - (void)clearViewsHostableView;
 - (void)viewDidBecomeFirstResponder:(NSNotification*)notification;
 
@@ -85,6 +93,8 @@ CONTENT_EXPORT
 // Updates the WCVC's web contents's visibility state. The update may occur
 // immediately or in the near future.
 - (void)updateWebContentsVisibility:(remote_cocoa::mojom::Visibility)visibility;
+
+- (void)updateWindowControlsOverlay:(const gfx::Rect&)boundingRect;
 
 @end
 

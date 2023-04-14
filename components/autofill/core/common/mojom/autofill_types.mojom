@@ -125,16 +125,26 @@ enum SubmissionIndicatorEvent {
 };
 
 enum SubmissionSource {
-  NONE,                      // No submission signal was detected.
-  SAME_DOCUMENT_NAVIGATION,  // The form was removed in same document
-                             // navigation.
-  XHR_SUCCEEDED,             // The form was removed when XHR succeeded.
-  FRAME_DETACHED,            // The subframe or non primary main frame
-                             // containing the form was detached.
-  DOM_MUTATION_AFTER_XHR,    // The form was removed after XHR.
-  PROBABLY_FORM_SUBMITTED,   // The form was probably submitted since new page
-                             // is loaded.
-  FORM_SUBMISSION,           // Normal form submission.
+  // No submission signal was detected.
+  NONE,
+  // After a same document navigation finished, the last interacted form became
+  // inaccessible or was removed.
+  SAME_DOCUMENT_NAVIGATION,
+  // Immediately after a successful XHR, the last interacted form became
+  // inaccessible or was removed.
+  XHR_SUCCEEDED,
+  // The subframe or non-primary main frame containing the form was detached.
+  FRAME_DETACHED,
+  // After a successful XHR, the last interacted form became inaccessible or was
+  // removed (this is an asynchronous sibling of XHR_SUCCEEDED).
+  DOM_MUTATION_AFTER_XHR,
+  // A mainframe navigation was started which was initiated in the content area
+  // (i.e. not clicking on a bookmark or typing a URL in the omnibar), not by
+  // a link click. Only observed after the user interacted with a form.
+  PROBABLY_FORM_SUBMITTED,
+  // Normal form submission (i.e. user presses the submit button and no
+  // JavaScript is involved). Observed via RenderFrameObserver::WillSubmitForm.
+  FORM_SUBMISSION,
 };
 
 enum FocusedFieldType {
@@ -164,14 +174,9 @@ enum ButtonTitleType {
 // Describes various criteria (e.g. there are empty fields in the form) that
 // affect whether a form is ready for submission. Don't change IDs as they are
 // used for metrics.
-// TODO(crbug.com/1299394): Which criteria will be used for the actual launch
-// is a subject to change. For now, we collect metrics to test two versions:
-// - |kFieldAfterPasswordField| is the criterion to enable submission in the
-//   regular launch.
-// - |kTwoFields| is the criterion to enable submission in the conservative
-//   launch.
-// After the launch, passing the state to the browser will be useless.
-// Therefore, the enum will be removed.
+// TODO(crbug.com/1283004): Basically, the browser needs just a boolean: submit
+// or not. Once related projects (crbug.com/1393043, crbug.com/1319364) are
+// done or archived, this enum can be removed.
 enum SubmissionReadinessState {
   // No information received. Supposed to be unused on Android.
   kNoInformation = 0,
@@ -181,7 +186,11 @@ enum SubmissionReadinessState {
   kError = 1,
 
   // Various blockers of forms submission.
-  // The username field is not found.
+  // There is only a sole password field.
+  // TODO(crbug.com/1319364): For now this entry doesn't trigger submission,
+  // but ideally Touch-To-Fill should be able to log a user in with just one
+  // tap, i.e. TTF should submit both single username and single password
+  // forms.
   kNoUsernameField = 2,
   // There are fields between username and password fields.
   kFieldBetweenUsernameAndPassword = 3,
@@ -197,6 +206,13 @@ enum SubmissionReadinessState {
   // The most conservative criterion for submission.
   // There are only two visible fields: username and password.
   kTwoFields = 7,
+
+  // There is only a sole username field.
+  // TODO(crbug.com/1319364): For now this entry doesn't trigger submission,
+  // but ideally Touch-To-Fill should be able to log a user in with just one
+  // tap, i.e. TTF should submit both single username and single password
+  // forms.
+  kNoPasswordField = 8,
 };
 
 // autofill::FrameToken (components/autofill/core/common/unique_ids.h)

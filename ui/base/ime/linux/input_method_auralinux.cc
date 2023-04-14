@@ -349,7 +349,16 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
 
   auto* client = GetTextInputClient();
   bool has_client = client != nullptr;
-  context_->UpdateFocus(has_client, old_text_input_type, text_input_type_);
+  TextInputClient::FocusReason reason;
+  if (client) {
+    reason = client->GetFocusReason();
+  } else {
+    reason = text_input_type_ == TEXT_INPUT_TYPE_NONE
+                 ? TextInputClient::FocusReason::FOCUS_REASON_NONE
+                 : TextInputClient::FocusReason::FOCUS_REASON_OTHER;
+  }
+  context_->UpdateFocus(has_client, old_text_input_type, text_input_type_,
+                        reason);
 
   TextInputMode mode = TEXT_INPUT_MODE_DEFAULT;
   int flags = TEXT_INPUT_FLAG_NONE;
@@ -632,7 +641,9 @@ bool InputMethodAuraLinux::NeedInsertChar(
 
 ui::EventDispatchDetails InputMethodAuraLinux::SendFakeProcessKeyEvent(
     ui::KeyEvent* event) const {
-  KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, event->flags());
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_PROCESSKEY, event->code(),
+                         event->flags(), ui::DomKey::PROCESS,
+                         event->time_stamp());
   ui::EventDispatchDetails details = DispatchKeyEventPostIME(&key_event);
   if (key_event.stopped_propagation())
     event->StopPropagation();

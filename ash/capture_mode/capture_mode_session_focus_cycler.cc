@@ -258,6 +258,11 @@ CaptureModeSessionFocusCycler::HighlightableView::CreatePathGenerator() {
   return nullptr;
 }
 
+void CaptureModeSessionFocusCycler::HighlightableView::
+    InvalidateFocusRingPath() {
+  needs_highlight_path_ = true;
+}
+
 void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
   has_focus_ = true;
 
@@ -277,10 +282,13 @@ void CaptureModeSessionFocusCycler::HighlightableView::PseudoFocus() {
     // has focus which won't be happening since our widgets are not activatable.
     focus_ring_->SetHasFocusPredicate(
         [&](views::View* view) { return view->GetVisible() && has_focus_; });
+  }
 
-    auto path_generator = CreatePathGenerator();
-    if (path_generator)
+  if (needs_highlight_path_) {
+    if (auto path_generator = CreatePathGenerator()) {
       focus_ring_->SetPathGenerator(std::move(path_generator));
+    }
+    needs_highlight_path_ = false;
   }
 
   focus_ring_->Layout();
@@ -307,10 +315,26 @@ void CaptureModeSessionFocusCycler::HighlightableView::ClickView() {
   DCHECK(view);
 
   views::Button* button = views::Button::AsButton(view);
-  if (!button)
+  if (!button) {
     return;
-  button->AcceleratorPressed(ui::Accelerator(ui::VKEY_SPACE, /*modifiers=*/0));
+  }
+
+  // `button` such as the close button or the capture button may be destroyed
+  // after `AcceleratorPressed`, which will cause UAF. Use a `WeakPtr` to detect
+  // this and skip `NotifyAccessibilityEvent` in this case.
+  auto weak_ptr = weak_ptr_factory_.GetWeakPtr();
+
+  if (button->AcceleratorPressed(
+          ui::Accelerator(ui::VKEY_SPACE, /*modifiers=*/0)) &&
+      weak_ptr) {
+    button->NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
+  }
 }
+
+CaptureModeSessionFocusCycler::HighlightableView::HighlightableView() = default;
+
+CaptureModeSessionFocusCycler::HighlightableView::~HighlightableView() =
+    default;
 
 // -----------------------------------------------------------------------------
 // CaptureModeSessionFocusCycler::HighlightableWindow:
@@ -634,15 +658,31 @@ void CaptureModeSessionFocusCycler::OnWidgetDestroying(views::Widget* widget) {
   // Return immediately if the widget is closing by the closing of `session_`.
   if (session_->is_shutting_down())
     return;
+
   // Remove focus if one of the menu-related groups is currently focused.
+  bool should_update_focus = false;
   if (current_focus_group_ == FocusGroup::kPendingSettings ||
-      current_focus_group_ == FocusGroup::kSettingsMenu ||
-      current_focus_group_ == FocusGroup::kPendingRecordingType ||
-      current_focus_group_ == FocusGroup::kRecordingTypeMenu) {
-    // When one of the menus is closed while focus is in or about to be in it,
+      current_focus_group_ == FocusGroup::kSettingsMenu) {
+    // If the settings menu is closed while focus is in or about to be in it,
     // we manually put the focus back on the settings button.
     current_focus_group_ = FocusGroup::kSettingsClose;
     focus_index_ = 0u;
+    should_update_focus = true;
+  } else if (current_focus_group_ == FocusGroup::kPendingRecordingType ||
+             current_focus_group_ == FocusGroup::kRecordingTypeMenu) {
+    // Similarly, if the recording type menu is closed while focus is in or
+    // about to be in it, we manually focus the drop down button as long as it
+    // still exists.
+    auto* capture_label_view = session_->capture_label_view_;
+    if (capture_label_view && capture_label_view->GetWidget()->IsVisible() &&
+        capture_label_view->IsRecordingTypeDropDownButtonVisible()) {
+      current_focus_group_ = FocusGroup::kCaptureButton;
+      focus_index_ = 1u;
+      should_update_focus = true;
+    }
+  }
+
+  if (should_update_focus) {
     const auto highlightable_views = GetGroupItems(current_focus_group_);
     DCHECK_EQ(highlightable_views.size(), 2u);
     scoped_a11y_overrider_->MaybeUpdateA11yOverrideWindow(

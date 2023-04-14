@@ -1,9 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html $i18n{chromeRefresh2023Attribute}>
   <head>
     <meta charset="utf-8">
     <title>cr-toggle demo</title>
     <link rel="stylesheet" href="demo.css">
+    <style>
+      html[chrome-refresh-2023] .row:has(cr-toggle[dark]) {
+        display: none;
+      }
+    </style>
   </head>
   <body>
     <dom-bind>
@@ -22,8 +27,15 @@
           </div>
 
           <div class="row">
-            <cr-toggle aria-label="Disabled toggle" disabled></cr-toggle>
-            <span aria-hidden="true">Disabled toggle</span>
+            <cr-toggle aria-label="Disabled checked toggle" disabled checked>
+            </cr-toggle>
+            <span aria-hidden="true">Disabled checked toggle</span>
+          </div>
+
+          <div class="row">
+            <cr-toggle aria-label="Disabled unchecked toggle" disabled>
+            </cr-toggle>
+            <span aria-hidden="true">Disabled unchecked toggle</span>
           </div>
 
           <div class="row">

@@ -101,9 +101,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnHadFormInteractionChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
-  void OnHadUserEditsChanged(
-      const performance_manager::FrameNode* frame_node) override {}
-  // Ignored.
   void OnIsAudibleChanged(
       const performance_manager::FrameNode* frame_node) override {}
   // Ignored.
@@ -162,9 +159,6 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   // Ignored.
   void OnHadFormInteractionChanged(
       const performance_manager::PageNode* page_node) override {}
-  // Ignored
-  void OnHadUserEditsChanged(
-      const performance_manager::PageNode* page_node) override {}
   // Ignored.
   void OnTitleUpdated(const performance_manager::PageNode* page_node) override {
   }
@@ -178,6 +172,10 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnPageStateChanged(
       const performance_manager::PageNode* page_node,
       performance_manager::PageNode::PageState old_state) override {}
+  // Ignored.
+  void OnAboutToBeDiscarded(
+      const performance_manager::PageNode* page_node,
+      const performance_manager::PageNode* new_page_node) override {}
 
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(

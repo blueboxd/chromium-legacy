@@ -73,8 +73,6 @@ static_library("renderer") {
     "instant_restricted_id_cache.h",
     "loadtimes_extension_bindings.cc",
     "loadtimes_extension_bindings.h",
-    "media/chrome_key_systems.cc",
-    "media/chrome_key_systems.h",
     "media/flash_embed_rewrite.cc",
     "media/flash_embed_rewrite.h",
     "media/media_feeds.cc",
@@ -178,6 +176,7 @@ static_library("renderer") {
     "//components/spellcheck:buildflags",
     "//components/subresource_filter/content/renderer",
     "//components/subresource_filter/core/common",
+    "//components/supervised_user/core/common:buildflags",
     "//components/sync/driver",
     "//components/translate/content/renderer",
     "//components/translate/core/common",
@@ -291,6 +290,13 @@ static_library("renderer") {
     deps += [ "//third_party/widevine/cdm:headers" ]
   }
 
+  if (enable_library_cdms || is_win || is_android) {
+    sources += [
+      "media/chrome_key_systems.cc",
+      "media/chrome_key_systems.h",
+    ]
+  }
+
   if (safe_browsing_mode != 0) {
     deps +=
         [ "//components/safe_browsing/content/renderer/phishing_classifier" ]
@@ -396,6 +402,8 @@ static_library("renderer") {
       "accessibility/ax_tree_distiller.h",
       "accessibility/read_anything_app_controller.cc",
       "accessibility/read_anything_app_controller.h",
+      "accessibility/read_anything_app_model.cc",
+      "accessibility/read_anything_app_model.h",
       "media/chrome_speech_recognition_client.cc",
       "media/chrome_speech_recognition_client.h",
       "searchbox/searchbox.cc",

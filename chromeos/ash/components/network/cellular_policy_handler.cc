@@ -6,6 +6,7 @@
 
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "base/value_iterators.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_euicc_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_manager_client.h"
 #include "chromeos/ash/components/dbus/hermes/hermes_profile_client.h"
@@ -44,7 +45,7 @@ constexpr base::TimeDelta kCellularDeviceWaitTime = base::Seconds(30);
 
 CellularPolicyHandler::InstallPolicyESimRequest::InstallPolicyESimRequest(
     const std::string& smdp_address,
-    const base::Value& onc_config)
+    const base::Value::Dict& onc_config)
     : smdp_address(smdp_address),
       onc_config(onc_config.Clone()),
       retry_backoff(&kRetryBackoffPolicy) {}
@@ -80,7 +81,7 @@ void CellularPolicyHandler::Init(
 }
 
 void CellularPolicyHandler::InstallESim(const std::string& smdp_address,
-                                        const base::Value& onc_config) {
+                                        const base::Value::Dict& onc_config) {
   PushRequestAndProcess(
       std::make_unique<InstallPolicyESimRequest>(smdp_address, onc_config));
 }
@@ -197,7 +198,7 @@ void CellularPolicyHandler::SetupESim(const dbus::ObjectPath& euicc_path) {
   NET_LOG(EVENT) << "Attempt setup policy eSIM profile with SMDP address: "
                  << GetCurrentSmdpAddress()
                  << " on euicc path: " << euicc_path.value();
-  base::Value new_shill_properties = GetNewShillProperties();
+  base::Value::Dict new_shill_properties = GetNewShillProperties();
   absl::optional<dbus::ObjectPath> profile_path =
       FindExistingMatchingESimProfile();
   if (profile_path) {
@@ -233,12 +234,12 @@ void CellularPolicyHandler::SetupESim(const dbus::ObjectPath& euicc_path) {
       remaining_install_requests_.front()->retry_backoff.failure_count() == 0);
 }
 
-base::Value CellularPolicyHandler::GetNewShillProperties() {
+base::Value::Dict CellularPolicyHandler::GetNewShillProperties() {
   const NetworkProfile* profile =
       network_profile_handler_->GetProfileForUserhash(
           /*userhash=*/std::string());
   const std::string* guid =
-      remaining_install_requests_.front()->onc_config.FindStringKey(
+      remaining_install_requests_.front()->onc_config.FindString(
           ::onc::network_config::kGUID);
   DCHECK(guid);
 

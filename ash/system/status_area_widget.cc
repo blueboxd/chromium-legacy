@@ -32,6 +32,7 @@
 #include "ash/system/palette/palette_tray.h"
 #include "ash/system/phonehub/phone_hub_tray.h"
 #include "ash/system/session/logout_button_tray.h"
+#include "ash/system/status_area_animation_controller.h"
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/status_area_overflow_button_tray.h"
 #include "ash/system/tray/tray_background_view.h"
@@ -132,10 +133,8 @@ void StatusAreaWidget::Initialize() {
   stop_recording_button_tray_ =
       AddTrayButton(std::make_unique<StopRecordingButtonTray>(shelf_));
 
-  if (features::IsProjectorAnnotatorEnabled()) {
-    projector_annotation_tray_ =
-        AddTrayButton(std::make_unique<ProjectorAnnotationTray>(shelf_));
-  }
+  projector_annotation_tray_ =
+      AddTrayButton(std::make_unique<ProjectorAnnotationTray>(shelf_));
 
   palette_tray_ = AddTrayButton(std::make_unique<PaletteTray>(shelf_));
 
@@ -187,6 +186,11 @@ void StatusAreaWidget::Initialize() {
 
   EnsureTrayOrder();
 
+  if (features::IsQsRevampEnabled()) {
+    animation_controller_ = std::make_unique<StatusAreaAnimationController>(
+        notification_center_tray());
+  }
+
   UpdateAfterLoginStatusChange(
       Shell::Get()->session_controller()->login_status());
   UpdateLayout(/*animate=*/false);
@@ -206,6 +210,12 @@ StatusAreaWidget::~StatusAreaWidget() {
   // observer will lead to a crash.
   if (features::IsQsRevampEnabled() && notification_center_tray_)
     notification_center_tray_->RemoveObserver(this);
+
+  // If QsRevamp flag is enabled, reset `animation_controller_` before
+  // destroying `notification_center_tray_` so that we don't run into a UaF.
+  if (features::IsQsRevampEnabled()) {
+    animation_controller_.reset(nullptr);
+  }
   status_area_widget_delegate_->Shutdown();
 }
 

@@ -19,9 +19,7 @@ namespace {
 
 // Cue layout values.
 constexpr float kCornerRadius = 2;
-constexpr int kCueYOffset = 6;
 constexpr int kCueWidth = 48;
-constexpr int kCueHeight = 4;
 
 // Cue timing values.
 constexpr base::TimeDelta kCueDismissTimeout = base::Seconds(6);
@@ -32,7 +30,7 @@ constexpr SkColor kCueColor = SK_ColorGRAY;
 }  // namespace
 
 TabletModeMultitaskCue::TabletModeMultitaskCue() {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   Shell::Get()->activation_client()->AddObserver(this);
 
   // If an app window is active before switching to tablet mode, show the cue.
@@ -99,6 +97,9 @@ void TabletModeMultitaskCue::MaybeShowCue(aura::Window* active_window) {
 
   cue_dismiss_timer_.Start(FROM_HERE, kCueDismissTimeout, this,
                            &TabletModeMultitaskCue::OnTimerFinished);
+
+  // Show the education nudge a maximum of three times with 24h in between.
+  nudge_controller_.MaybeShowNudge(window_);
 }
 
 void TabletModeMultitaskCue::DismissCue() {
@@ -111,6 +112,9 @@ void TabletModeMultitaskCue::DismissCue() {
   }
 
   cue_layer_.reset();
+
+  // The education nudge should not appear without the cue.
+  nudge_controller_.DismissNudge();
 }
 
 void TabletModeMultitaskCue::OnWindowDestroying(aura::Window* window) {

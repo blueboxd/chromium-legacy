@@ -58,6 +58,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/zip_io_task.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/recent_disk_source.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
@@ -214,7 +215,8 @@ std::vector<std::pair<base::FilePath, bool>> SearchByPattern(
     const base::FilePath& root,
     const std::string& query,
     size_t max_results,
-    const base::Time& min_timestamp) {
+    const base::Time& min_timestamp,
+    ash::RecentSource::FileType file_type) {
   std::vector<std::pair<base::FilePath, bool>> prefix_matches;
   std::vector<std::pair<base::FilePath, bool>> other_matches;
 
@@ -226,6 +228,9 @@ std::vector<std::pair<base::FilePath, bool>> SearchByPattern(
   for (base::FilePath path = enumerator.Next(); !path.empty();
        path = enumerator.Next()) {
     if (enumerator.GetInfo().GetLastModifiedTime() < min_timestamp) {
+      continue;
+    }
+    if (!ash::RecentDiskSource::MatchesFileType(path, file_type)) {
       continue;
     }
     if (base::StartsWith(path.BaseName().value(), query,
@@ -709,43 +714,89 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetSizeStats(
 }
 
 ExtensionFunction::ResponseAction
-FileManagerPrivateGetDriveQuotaMetadataFunction::Run() {
+FileManagerPrivateInternalGetDriveQuotaMetadataFunction::Run() {
+  using extensions::api::file_manager_private_internal::GetDriveQuotaMetadata::
+      Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
   Profile* const profile = Profile::FromBrowserContext(browser_context());
+  scoped_refptr<storage::FileSystemContext> file_system_context =
+      file_manager::util::GetFileSystemContextForRenderFrameHost(
+          profile, render_frame_host());
+  const GURL url = GURL(params->url);
+  file_system_url_ = file_system_context->CrackURLInFirstPartyContext(url);
+
   drive::DriveIntegrationService* integration_service =
       drive::util::GetIntegrationServiceByProfile(profile);
   if (!integration_service) {
     return RespondNow(Error("Drive not available"));
   }
-  integration_service->GetPooledQuotaUsage(base::BindOnce(
-      &FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata,
-      this));
+  integration_service->GetPooledQuotaUsage(
+      base::BindOnce(&FileManagerPrivateInternalGetDriveQuotaMetadataFunction::
+                         OnGetPooledQuotaUsage,
+                     this));
 
   return RespondLater();
 }
 
-void FileManagerPrivateGetDriveQuotaMetadataFunction::OnGetDriveQuotaMetadata(
-    drive::FileError error,
-    drivefs::mojom::PooledQuotaUsagePtr usage) {
+void FileManagerPrivateInternalGetDriveQuotaMetadataFunction::
+    OnGetPooledQuotaUsage(drive::FileError error,
+                          drivefs::mojom::PooledQuotaUsagePtr usage) {
   if (error != drive::FileError::FILE_ERROR_OK) {
     Respond(WithArguments());
     return;
   }
 
-  api::file_manager_private::DriveQuotaMetadata quotaMetadata;
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+  drive::DriveIntegrationService* integration_service =
+      drive::util::GetIntegrationServiceByProfile(profile);
+  if (!integration_service) {
+    return Respond(Error("Drive not available"));
+  }
 
-  quotaMetadata.user_type =
+  quotaMetadata_.user_type =
       usage->user_type == drivefs::mojom::UserType::kUnmanaged
           ? api::file_manager_private::UserType::USER_TYPE_KUNMANAGED
           : api::file_manager_private::UserType::USER_TYPE_KORGANIZATION;
-  quotaMetadata.used_user_bytes = static_cast<double>(usage->used_user_bytes);
-  quotaMetadata.total_user_bytes = static_cast<double>(usage->total_user_bytes);
-  quotaMetadata.organization_limit_exceeded =
+  quotaMetadata_.used_bytes = static_cast<double>(usage->used_user_bytes);
+  quotaMetadata_.total_bytes = static_cast<double>(usage->total_user_bytes);
+  quotaMetadata_.organization_limit_exceeded =
       usage->organization_limit_exceeded;
-  quotaMetadata.organization_name = usage->organization_name;
+  quotaMetadata_.organization_name = usage->organization_name;
 
-  Respond(ArgumentList(
-      api::file_manager_private::GetDriveQuotaMetadata::Results::Create(
-          quotaMetadata)));
+  if (integration_service->IsSharedDrive(file_system_url_.path())) {
+    // Init quota to unlimited if no quota set.
+    quotaMetadata_.total_bytes = -1;
+    quotaMetadata_.used_bytes = 0;
+    integration_service->GetMetadata(
+        file_system_url_.path(),
+        base::BindOnce(
+            &FileManagerPrivateInternalGetDriveQuotaMetadataFunction::
+                OnGetMetadata,
+            this));
+    return;
+  }
+
+  Respond(
+      ArgumentList(api::file_manager_private_internal::GetDriveQuotaMetadata::
+                       Results::Create(quotaMetadata_)));
+}
+
+void FileManagerPrivateInternalGetDriveQuotaMetadataFunction::OnGetMetadata(
+    drive::FileError error,
+    drivefs::mojom::FileMetadataPtr metadata) {
+  if (error == drive::FileError::FILE_ERROR_OK &&
+      metadata->shared_drive_quota) {
+    quotaMetadata_.used_bytes =
+        metadata->shared_drive_quota->quota_bytes_used_in_drive;
+    quotaMetadata_.total_bytes =
+        metadata->shared_drive_quota->individual_quota_bytes_total;
+  }
+
+  Respond(
+      ArgumentList(api::file_manager_private_internal::GetDriveQuotaMetadata::
+                       Results::Create(quotaMetadata_)));
 }
 
 ExtensionFunction::ResponseAction
@@ -1388,61 +1439,60 @@ FileManagerPrivateInternalSearchFilesFunction::Run() {
     return RespondNow(Error("maxResults must be non-negative"));
   }
 
-  base::FilePath root;
+  base::FilePath root_path;
 
   Profile* profile = Profile::FromBrowserContext(browser_context());
   const std::string root_url = search_params.root_url.value_or("");
   if (root_url.empty()) {
-    root = file_manager::util::GetMyFilesFolderForProfile(profile);
+    root_path = file_manager::util::GetMyFilesFolderForProfile(profile);
   } else {
     const scoped_refptr<storage::FileSystemContext> file_system_context =
         file_manager::util::GetFileSystemContextForRenderFrameHost(
             profile, render_frame_host());
     const storage::FileSystemURL url =
         file_system_context->CrackURLInFirstPartyContext(GURL(root_url));
-    root = url.path();
+    root_path = url.path();
+  }
+
+  ash::RecentSource::FileType file_type;
+  if (!file_manager::util::ToRecentSourceFileType(search_params.category,
+                                                  &file_type)) {
+    return RespondNow(Error("Cannot convert category to file type"));
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
-          &SearchByPattern, root, search_params.query,
+          &SearchByPattern, root_path, search_params.query,
           base::internal::checked_cast<size_t>(search_params.max_results),
-          base::Time::FromJsTime(search_params.timestamp)),
+          base::Time::FromJsTime(search_params.timestamp), file_type),
       base::BindOnce(
-          &FileManagerPrivateInternalSearchFilesFunction::OnSearchByPattern,
+          &FileManagerPrivateInternalSearchFilesFunction::OnSearchByPatternDone,
           this));
 
   return RespondLater();
 }
 
-void FileManagerPrivateInternalSearchFilesFunction::OnSearchByPattern(
+void FileManagerPrivateInternalSearchFilesFunction::OnSearchByPatternDone(
     const std::vector<std::pair<base::FilePath, bool>>& results) {
-  Profile* const profile = Profile::FromBrowserContext(browser_context());
-  auto my_files_path = file_manager::util::GetMyFilesFolderForProfile(profile);
-
-  GURL url;
-  base::FilePath my_files_virtual_path;
-  if (!file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
-          profile, my_files_path, source_url(), &url) ||
-      !storage::ExternalMountPoints::GetSystemInstance()->GetVirtualPath(
-          my_files_path, &my_files_virtual_path)) {
-    Respond(Error("My files is not mounted"));
-    return;
-  }
-  const std::string fs_name = my_files_virtual_path.value();
-  const std::string fs_root = base::StrCat({url.spec(), "/"});
-
   base::Value::List entries;
   for (const auto& result : results) {
-    base::FilePath fs_path("/");
-    if (!my_files_path.AppendRelativePath(result.first, &fs_path)) {
+    std::string mount_name;
+    std::string file_system_name;
+    std::string full_path;
+    if (!file_manager::util::ExtractMountNameFileSystemNameFullPath(
+            result.first, &mount_name, &file_system_name, &full_path)) {
+      DLOG(WARNING) << "Unable to extract details from "
+                    << result.first.value();
       continue;
     }
+    std::string fs_root =
+        storage::GetExternalFileSystemRootURIString(source_url(), mount_name);
+
     base::Value::Dict entry;
-    entry.Set("fileSystemName", fs_name);
+    entry.Set("fileSystemName", file_system_name);
     entry.Set("fileSystemRoot", fs_root);
-    entry.Set("fileFullPath", fs_path.AsUTF8Unsafe());
+    entry.Set("fileFullPath", full_path);
     entry.Set("fileIsDirectory", result.second);
     entries.Append(std::move(entry));
   }
@@ -1573,7 +1623,8 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
     case file_manager::io_task::OperationType::kEmptyTrash:
       if (is_trash_enabled) {
         task = std::make_unique<file_manager::io_task::EmptyTrashIOTask>(
-            blink::StorageKey(render_frame_host()->GetLastCommittedOrigin()),
+            blink::StorageKey::CreateFirstParty(
+                render_frame_host()->GetLastCommittedOrigin()),
             profile, file_system_context,
             /*base_path=*/base::FilePath(), show_notification);
       }
@@ -1639,6 +1690,51 @@ FileManagerPrivateCancelIOTaskFunction::Run() {
   }
 
   volume_manager->io_task_controller()->Cancel(params->task_id);
+  return RespondNow(WithArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateResumeIOTaskFunction::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  using extensions::api::file_manager_private::ResumeIOTask::Params;
+  const std::unique_ptr<Params> params(Params::Create(args()));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
+  if (!volume_manager || !volume_manager->io_task_controller()) {
+    return RespondNow(Error("Cannot find VolumeManager"));
+  }
+
+  if (params->task_id <= 0) {
+    return RespondNow(Error("Invalid task id"));
+  }
+
+  file_manager::io_task::ResumeParams io_task_resume_params;
+  io_task_resume_params.conflict_resolve =
+      params->params.conflict_resolve.value_or("");
+  io_task_resume_params.conflict_apply_to_all =
+      params->params.conflict_apply_to_all.value_or(false);
+
+  volume_manager->io_task_controller()->Resume(
+      params->task_id, std::move(io_task_resume_params));
+
+  return RespondNow(WithArguments());
+}
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateProgressPausedTasksFunction::Run() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  VolumeManager* const volume_manager =
+      VolumeManager::Get(Profile::FromBrowserContext(browser_context()));
+  if (!volume_manager || !volume_manager->io_task_controller()) {
+    return RespondNow(Error("Cannot find VolumeManager"));
+  }
+
+  volume_manager->io_task_controller()->ProgressPausedTasks();
+
   return RespondNow(WithArguments());
 }
 

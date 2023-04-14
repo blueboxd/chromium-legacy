@@ -38,11 +38,9 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_ash.h"
 #include "chrome/browser/lifetime/termination_notification.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/ash/components/system/devicemode.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
@@ -987,7 +985,7 @@ InputMethodManagerImpl::InputMethodManagerImpl(
     }
   }
 
-  if (chromeos::IsRunningAsSystemCompositor()) {
+  if (base::SysInfo::IsRunningOnChromeOS()) {
     keyboard_ = std::make_unique<ImeKeyboardImpl>(
         ui::OzonePlatform::GetInstance()->GetInputController());
   } else {

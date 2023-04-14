@@ -68,17 +68,17 @@ class MockJSFeature : public web::TextFragmentsJavaScriptFeature {
 };
 
 base::Value ValueForTestURL() {
-  base::Value val(base::Value::Type::LIST);
+  base::Value::List list;
 
-  base::Value text1(base::Value::Type::DICTIONARY);
-  text1.SetStringKey("textStart", "text 1");
-  base::Value text2(base::Value::Type::DICTIONARY);
-  text2.SetStringKey("textStart", "text 2");
+  base::Value::Dict text1;
+  text1.Set("textStart", "text 1");
+  base::Value::Dict text2;
+  text2.Set("textStart", "text 2");
 
-  val.Append(std::move(text1));
-  val.Append(std::move(text2));
+  list.Append(std::move(text1));
+  list.Append(std::move(text2));
 
-  return val;
+  return base::Value(std::move(list));
 }
 
 }  // namespace
@@ -162,8 +162,8 @@ class TextFragmentsManagerImplTest : public WebTest {
   }
 
   void AddMainWebFrame(TextFragmentsManagerImpl* fragments_mgr) {
-    FakeWebFramesManager* frames_mgr =
-        static_cast<FakeWebFramesManager*>(web_state_->GetWebFramesManager());
+    FakeWebFramesManager* frames_mgr = static_cast<FakeWebFramesManager*>(
+        web_state_->GetPageWorldWebFramesManager());
     frames_mgr->AddWebFrame(
         FakeWebFrame::CreateMainWebFrame(GURL("https://chromium.org")));
     fragments_mgr->WebFrameDidBecomeAvailable(web_state_,

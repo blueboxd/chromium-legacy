@@ -24,10 +24,9 @@
 #include "third_party/blink/public/mojom/widget/record_content_to_visible_time_request.mojom.h"
 #include "ui/android/ui_android_export.h"
 
-namespace cc {
+namespace cc::slim {
 class SurfaceLayer;
-enum class SurfaceDrawStatus;
-}  // namespace cc
+}
 
 namespace viz {
 class HostFrameSinkManager;
@@ -98,7 +97,9 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   bool HasDelegatedContent() const;
 
-  cc::SurfaceLayer* content_layer_for_testing() { return content_layer_.get(); }
+  cc::slim::SurfaceLayer* content_layer_for_testing() {
+    return content_layer_.get();
+  }
 
   const viz::FrameSinkId& GetFrameSinkId() const;
 
@@ -134,10 +135,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Called to request the presentation time for the next frame or cancel any
   // requests when the RenderWidget's visibility state is not changing. If the
   // visibility state is changing call WasHidden or WasShown instead.
-  void RequestPresentationTimeForNextFrame(
+  void RequestSuccessfulPresentationTimeForNextFrame(
       blink::mojom::RecordContentToVisibleTimeRequestPtr
           content_to_visible_time_request);
-  void CancelPresentationTimeRequest();
+  void CancelSuccessfulPresentationTimeRequest();
 
   // Returns the ID for the current Surface. Returns an invalid ID if no
   // surface exists (!HasDelegatedContent()).
@@ -162,11 +163,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
  private:
   // FrameEvictorClient implementation.
-  void EvictDelegatedFrame(
-      const std::vector<viz::SurfaceId>& surface_ids) override;
-  std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction() const override;
-  viz::SurfaceId GetCurrentSurfaceId() const override;
-  viz::SurfaceId GetPreNavigationSurfaceId() const override;
+  void EvictDelegatedFrame() override;
 
   // viz::HostFrameSinkClient implementation.
   void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override;
@@ -179,10 +176,10 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
 
   // We cannot guarantee to be attached to `registered_parent_compositor_` when
-  // either WasShown or RequestPresentationTimeForNextFrame is called. In such
-  // cases we enqueue the request and attempt again to send it once the
+  // either WasShown or RequestSuccessfulPresentationTimeForNextFrame is called.
+  // In such cases we enqueue the request and attempt again to send it once the
   // compositor has been attached.
-  void PostRequestPresentationTimeForNextFrame(
+  void PostRequestSuccessfulPresentationTimeForNextFrame(
       blink::mojom::RecordContentToVisibleTimeRequestPtr
           content_to_visible_time_request);
 
@@ -196,7 +193,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   float top_controls_visible_height_ = 0.f;
 
-  scoped_refptr<cc::SurfaceLayer> content_layer_;
+  scoped_refptr<cc::slim::SurfaceLayer> content_layer_;
 
   // Whether we've received a frame from the renderer since navigating.
   // Only used when surface synchronization is on.

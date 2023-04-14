@@ -11,7 +11,6 @@
 <translation id="1472013873724362412">无法在 Chromium 上登录您的帐号。请与您的网域管理员联系，或使用普通的 Google 帐号登录。</translation>
 <translation id="1507010443238049608">帮助我们改进 Chromium 的功能和性能</translation>
 <translation id="1531155317299575425">显示意在引导用户登录 Chromium 的提示。</translation>
-<translation id="1584569488888892906">Chromium 不仅简便安全，而且速度更胜从前</translation>
 <translation id="1617663976202781617">Chromium 同步功能中的数据</translation>
 <translation id="1722370509450468186">您的密码将会保存到您的帐号 (<ph name="EMAIL" />) 中。</translation>
 <translation id="1736662517232558588">已清除 Chromium 数据</translation>
@@ -61,10 +60,12 @@
 <translation id="4985291216379576555">已离线，Chromium 无法检查是否有更新</translation>
 <translation id="4996471330284142407">借助比以前更简单、更安全、更快速的 Chromium 提高工作效率。</translation>
 <translation id="4999538639245140991">由于您要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
+<translation id="5048795749726991615">若要在其他应用中轻松获取您已保存的密码，请使用 Chromium 的自动填充功能</translation>
 <translation id="5171868502429358653">登录 Chromium</translation>
 <translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5308226104666789935">Chromium 无法检查是否有更新</translation>
 <translation id="5396916991083608703">将 Chromium 设为默认浏览器？</translation>
+<translation id="5453478652154926037">Chromium 无法检查您的密码。</translation>
 <translation id="5521125884468363740">要查看您在其他设备上用 Chromium 打开的标签页，请登录帐号并开启同步功能</translation>
 <translation id="5522297504975449419">您将无法再使用某些 Chromium 功能。</translation>
 <translation id="5573014823074921752">Chromium 提示。要查看更多的标签页选项，请轻触并按住工具栏（位于屏幕底部或顶部）中的“显示标签页”按钮。</translation>
@@ -88,8 +89,8 @@
 <translation id="7018284295775193585">Chromium 无法更新</translation>
 <translation id="7045244423563602563">定制您的专属 Chromium</translation>
 <translation id="7099326575020694068">Chromium 无法在分割视图模式下使用您的相机</translation>
-<translation id="7108914401277488191">Chromium 助您事半功倍</translation>
 <translation id="7118091470949186573">当您点按消息、文档和其他应用中的链接时，可以使用 Chromium 打开链接啦。</translation>
+<translation id="7165402419892018581">选择使用 Chromium 的自动填充功能</translation>
 <translation id="7175400662502680481">您的密码遭遇了数据泄露。密码管理器建议您立即更改此密码。</translation>
 <translation id="7208566199746267865">为节省您的时间，Chromium 已将您的 Google 帐号同步到网络上。您可在“设置”中添加或移除帐号。</translation>
 <translation id="725427773388857052">Chromium 有助于保护您免受数据泄露、不安全网站等问题的影响。</translation>
@@ -104,6 +105,7 @@
 <translation id="7746854981345936341">Chromium 提示。现在屏幕底部会显示“后退”、“前进”和“搜索”等按钮。</translation>
 <translation id="7763454117143368771">使用 Chromium 作为默认浏览器不仅可让您免受危险网站的侵害，还可保护您的密码</translation>
 <translation id="7812317783196516890">您已登录，且正在将您的数据同步到由 <ph name="DOMAIN" /> 管理的帐号。此网域的管理员现在可以专门针对该帐号设置用户规范，这可能会改变 Chromium 的行为。</translation>
+<translation id="7859018312476869945">当您在地址栏或搜索框中输入内容时，Chromium 会将您输入的内容发送给默认搜索引擎，以便为您提供更好的建议。在无痕模式下，此设置处于关闭状态。</translation>
 <translation id="786327964234957808">您正要将同步帐号从 <ph name="USER_EMAIL1" /> 切换到 <ph name="USER_EMAIL2" />。您现有的 Chromium 数据由 <ph name="DOMAIN" /> 管理。切换同步帐号后，您的数据将从这台设备上删除，但仍会保留在 <ph name="USER_EMAIL1" /> 中。</translation>
 <translation id="7890287942691234100">开始使用 Chromium 扫描器</translation>
 <translation id="7928628054454574139">每当您点按其他应用中的链接时，系统都会使用 Chromium 打开相应链接</translation>
@@ -113,6 +115,7 @@
 <translation id="8073677936375100957">从这部设备中清除您的 Chromium 数据？</translation>
 <translation id="8240981428553046115">Chromium 无法检查是否有更新。请稍后再试。</translation>
 <translation id="8409374867500149834">Chromium 正在为您提供极强大的安全保护，帮助您防范有害网站</translation>
+<translation id="8460301378281140593">在 iPhone 的“设置”中，打开“密码选项”，然后选择“Chromium”</translation>
 <translation id="858114650497379505">您可在 iPhone 上的其他应用内使用已保存至密码管理器的密码。</translation>
 <translation id="8586442755830160949">版权所有<ph name="YEAR" /> The Chromium Authors。保留所有权利。</translation>
 <translation id="865600487977764604">保护您在 Chromium 中免受安全威胁，登录状态下还可让您更安全地使用其他 Google 应用。</translation>

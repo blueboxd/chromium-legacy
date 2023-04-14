@@ -4,13 +4,16 @@
 
 #include "components/cast_streaming/browser/cast_streaming_session.h"
 
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "components/cast_streaming/browser/stream_consumer.h"
 #include "components/cast_streaming/public/config_conversions.h"
+#include "components/cast_streaming/public/features.h"
 #include "media/base/demuxer_stream.h"
+#include "media/base/media_switches.h"
 #include "media/base/timestamp_constants.h"
 #include "media/mojo/common/mojo_decoder_buffer_converter.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -53,7 +56,8 @@ StreamingInitializationInfo CreateMirroringInitializationInfo(
                               receivers.video_receiver);
   }
 
-  return {session, std::move(audio_stream_info), std::move(video_stream_info)};
+  return {session, std::move(audio_stream_info), std::move(video_stream_info),
+          /* is_remoting = */ false};
 }
 
 }  // namespace
@@ -82,8 +86,10 @@ CastStreamingSession::ReceiverSessionClient::ReceiverSessionClient(
 
   if (renderer_controls) {
     playback_command_dispatcher_ = std::make_unique<PlaybackCommandDispatcher>(
-        task_runner,
-        std::move(renderer_controls.value().control_configuration));
+        task_runner, std::move(renderer_controls.value().control_configuration),
+        base::BindRepeating(
+            &CastStreamingSession::ReceiverSessionClient::OnFlushUntil,
+            weak_factory_.GetWeakPtr()));
     playback_command_dispatcher_->RegisterCommandSource(
         std::move(renderer_controls.value().external_renderer_controls));
   }
@@ -181,7 +187,8 @@ CastStreamingSession::ReceiverSessionClient::InitializeAudioConsumer(
       base::BindRepeating(&CastStreamingSession::Client::OnAudioBufferReceived,
                           base::Unretained(client_)),
       base::BindRepeating(&base::OneShotTimer::Reset,
-                          base::Unretained(&data_timeout_timer_)));
+                          base::Unretained(&data_timeout_timer_)),
+      initialization_info.is_remoting);
 
   return data_pipe_consumer;
 }
@@ -213,7 +220,8 @@ CastStreamingSession::ReceiverSessionClient::InitializeVideoConsumer(
       base::BindRepeating(&CastStreamingSession::Client::OnVideoBufferReceived,
                           base::Unretained(client_)),
       base::BindRepeating(&base::OneShotTimer::Reset,
-                          base::Unretained(&data_timeout_timer_)));
+                          base::Unretained(&data_timeout_timer_)),
+      initialization_info.is_remoting);
 
   return data_pipe_consumer;
 }
@@ -231,6 +239,15 @@ void CastStreamingSession::ReceiverSessionClient::StartStreamingSession(
         &CastStreamingSession::ReceiverSessionClient::StartStreamingSession,
         weak_factory_.GetWeakPtr(), std::move(initialization_info));
     return;
+  }
+
+  // If audio is not supported on this receiver, disable it to avoid AV-sync
+  // issues arising from waiting for audio frames before starting playback.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioOutput)) {
+    LOG(WARNING) << "Disabling audio for this session due to non-support by "
+                    "the hosting product instance";
+    initialization_info.audio_stream_info = absl::nullopt;
   }
 
   // This is necessary in case the offer message had no audio and no video
@@ -335,19 +352,25 @@ void CastStreamingSession::ReceiverSessionClient::OnReceiversDestroying(
     playback_command_dispatcher_->OnRemotingSessionEnded();
   }
 
+  preloaded_audio_buffer_ = absl::nullopt;
+  preloaded_video_buffer_ = absl::nullopt;
+
   switch (reason) {
     case ReceiversDestroyingReason::kEndOfSession:
       client_->OnSessionEnded();
       break;
     case ReceiversDestroyingReason::kRenegotiated:
       if (playback_command_dispatcher_) {
-        DCHECK(!is_flush_pending_);
-
-        DVLOG(1) << "Calling Flush()";
-        is_flush_pending_ = true;
-        playback_command_dispatcher_->Flush(base::BindOnce(
-            &CastStreamingSession::ReceiverSessionClient::OnFlushComplete,
-            weak_factory_.GetWeakPtr()));
+        if (is_flush_pending_) {
+          DLOG(WARNING)
+              << "Skipping call to Flush() because one is already in progress";
+        } else {
+          DVLOG(1) << "Calling Flush()";
+          is_flush_pending_ = true;
+          playback_command_dispatcher_->Flush(base::BindOnce(
+              &CastStreamingSession::ReceiverSessionClient::OnFlushComplete,
+              weak_factory_.GetWeakPtr()));
+        }
       }
       client_->OnSessionReinitializationPending();
       break;
@@ -361,6 +384,17 @@ void CastStreamingSession::ReceiverSessionClient::OnFlushComplete() {
   is_flush_pending_ = false;
   if (start_session_cb_) {
     std::move(start_session_cb_).Run();
+  }
+}
+
+void CastStreamingSession::ReceiverSessionClient::OnFlushUntil(
+    uint32_t audio_count,
+    uint32_t video_count) {
+  if (audio_consumer_) {
+    audio_consumer_->FlushUntil(audio_count);
+  }
+  if (video_consumer_) {
+    video_consumer_->FlushUntil(video_count);
   }
 }
 

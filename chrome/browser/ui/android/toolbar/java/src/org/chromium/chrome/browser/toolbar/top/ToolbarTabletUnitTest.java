@@ -15,6 +15,7 @@ import android.app.Activity;
 import android.os.Looper;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,15 +32,20 @@ import org.robolectric.shadows.ShadowToast;
 
 import org.chromium.base.FeatureList;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarCoordinatorTablet;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.status.StatusCoordinator;
+import org.chromium.chrome.browser.toolbar.HomeButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.ui.widget.ToastManager;
+import org.chromium.ui.widget.ToastManagerJni;
 
 import java.util.ArrayList;
 
@@ -51,6 +57,10 @@ import java.util.ArrayList;
 public final class ToolbarTabletUnitTest {
     @Rule
     public TestRule mFeaturesProcessorRule = new Features.JUnitProcessor();
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+    @Mock
+    private ToastManager.Natives mToastManagerJni;
     @Mock
     private LocationBarCoordinator mLocationBar;
     @Mock
@@ -61,8 +71,14 @@ public final class ToolbarTabletUnitTest {
     private MenuButtonCoordinator mMenuButtonCoordinator;
     @Mock
     private View mContainerView;
+
     private Activity mActivity;
     private ToolbarTablet mToolbarTablet;
+    private LinearLayout mToolbarTabletLayout;
+    private HomeButton mHomeButton;
+    private ImageButton mReloadingButton;
+    private ImageButton mBackButton;
+    private ImageButton mForwardButton;
 
     @Before
     public void setUp() {
@@ -76,11 +92,46 @@ public final class ToolbarTabletUnitTest {
         LocationBarLayout locationBarLayout = mToolbarTablet.findViewById(R.id.location_bar);
         locationBarLayout.setStatusCoordinatorForTesting(mStatusCoordinator);
         mToolbarTablet.setMenuButtonCoordinatorForTesting(mMenuButtonCoordinator);
+        mToolbarTabletLayout =
+                (LinearLayout) mToolbarTablet.findViewById(R.id.toolbar_tablet_layout);
+        mHomeButton = mToolbarTablet.findViewById(R.id.home_button);
+        mBackButton = mToolbarTablet.findViewById(R.id.back_button);
+        mForwardButton = mToolbarTablet.findViewById(R.id.forward_button);
+        mReloadingButton = mToolbarTablet.findViewById(R.id.refresh_button);
+        mJniMocker.mock(ToastManagerJni.TEST_HOOKS, mToastManagerJni);
     }
 
     @After
     public void tearDown() {
         disableGridTabSwitcher();
+    }
+
+    @Test
+    @DisableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
+    public void testButtonPosition() {
+        mToolbarTablet.onFinishInflate();
+        assertEquals("Home button position is not as expected", mHomeButton,
+                mToolbarTabletLayout.getChildAt(0));
+        assertEquals("Back button position is not as expected", mBackButton,
+                mToolbarTabletLayout.getChildAt(1));
+        assertEquals("Forward button position is not as expected", mForwardButton,
+                mToolbarTabletLayout.getChildAt(2));
+        assertEquals("Reloading button position is not as expected", mReloadingButton,
+                mToolbarTabletLayout.getChildAt(3));
+    }
+
+    @Test
+    @EnableFeatures(ChromeFeatureList.TAB_STRIP_REDESIGN)
+    public void testButtonPositionForTSR() {
+        mToolbarTablet.onFinishInflate();
+        assertEquals("Back button position is not as expected for Tab Strip Redesign", mBackButton,
+                mToolbarTabletLayout.getChildAt(0));
+        assertEquals("Forward button position is not as expected for Tab Strip Redesign",
+                mForwardButton, mToolbarTabletLayout.getChildAt(1));
+        assertEquals("Reloading button position is not as expected for Tab Strip Redesign",
+                mReloadingButton, mToolbarTabletLayout.getChildAt(2));
+        assertEquals("Home button position is not as expected for Tab Strip Redesign", mHomeButton,
+                mToolbarTabletLayout.getChildAt(3));
     }
 
     @Test

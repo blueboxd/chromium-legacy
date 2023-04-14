@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/system_tray_client.h"
 #include "ash/quick_pair/common/account_key_failure.h"
@@ -177,9 +178,9 @@ void FastPairPairerImpl::StartPairing() {
                       << ((bt_device != nullptr) ? "Yes" : "No") << ".";
 
       if (bt_device && bt_device->IsBonded()) {
-        QP_LOG(INFO) << __func__
-                     << ": Trying to pair to device that is already paired; "
-                        "returning success.";
+        QP_LOG(VERBOSE) << __func__
+                        << ": Trying to pair to device that is already paired; "
+                           "returning success.";
         RecordProtocolPairingStep(FastPairProtocolPairingSteps::kAlreadyPaired,
                                   *device_);
         AttemptRecordingFastPairEngagementFlow(
@@ -189,7 +190,7 @@ void FastPairPairerImpl::StartPairing() {
         std::move(paired_callback_).Run(device_);
 
         if (!bt_device->IsConnected()) {
-          QP_LOG(INFO) << __func__ << ": connecting a paired device";
+          QP_LOG(VERBOSE) << __func__ << ": connecting a paired device";
           create_bond_start_time_ = base::TimeTicks::Now();
           create_bond_timeout_timer_.Start(
               FROM_HERE, kCreateBondTimeout,
@@ -261,13 +262,10 @@ void FastPairPairerImpl::StartPairing() {
 }
 
 void FastPairPairerImpl::OnConnectDevice(device::BluetoothDevice* device) {
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
   RecordProtocolPairingStep(FastPairProtocolPairingSteps::kDeviceConnected,
                             *device_);
   RecordConnectDeviceResult(/*success=*/true);
-  // The device ID can change between device discovery and connection, so
-  // ensure that device images are mapped to the current device ID.
-  FastPairRepository::Get()->FetchDeviceImages(device_);
 }
 
 void FastPairPairerImpl::OnConnectError(const std::string& error_message) {
@@ -283,7 +281,7 @@ void FastPairPairerImpl::OnConnectError(const std::string& error_message) {
 
 void FastPairPairerImpl::ConfirmPasskey(device::BluetoothDevice* device,
                                         uint32_t passkey) {
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
   RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPasskeyNegotiated,
                             *device_);
 
@@ -319,7 +317,7 @@ void FastPairPairerImpl::ConfirmPasskey(device::BluetoothDevice* device,
 void FastPairPairerImpl::OnPasskeyResponse(
     std::vector<uint8_t> response_bytes,
     absl::optional<PairFailure> failure) {
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
   RecordWritePasskeyCharacteristicResult(/*success=*/!failure.has_value());
   RecordProtocolPairingStep(
       FastPairProtocolPairingSteps::kRecievedPasskeyResponse, *device_);
@@ -411,7 +409,7 @@ void FastPairPairerImpl::OnParseDecryptedPasskey(
     return;
   }
 
-  QP_LOG(INFO) << __func__ << ": Passkeys match, confirming pairing";
+  QP_LOG(VERBOSE) << __func__ << ": Passkeys match, confirming pairing";
   pairing_device->ConfirmPairing();
   // DevicePairedChanged() is expected to be called following pairing
   // confirmation.
@@ -422,9 +420,9 @@ void FastPairPairerImpl::AttemptSendAccountKey() {
   // pairing. For subsequent pairing, we have to save the account key
   // locally so that we can refer to it in API calls to the server.
   if (device_->protocol() == Protocol::kFastPairSubsequent) {
-    QP_LOG(INFO) << __func__
-                 << ": Saving Account Key locally for subsequent pair";
-    FastPairRepository::Get()->AssociateAccountKeyLocally(device_);
+    QP_LOG(VERBOSE) << __func__
+                    << ": Saving Account Key locally for subsequent pair";
+    FastPairRepository::Get()->WriteAccountAssociationToLocalRegistry(device_);
 
     // If the Saved Devices feature is enabled and we are utilizing a "loose"
     // interpretation of a user's opt-in status, then we will opt-in the user
@@ -479,19 +477,37 @@ void FastPairPairerImpl::AttemptSendAccountKey() {
   // It's possible that the user has opted to initial pair to a device that
   // already has an account key saved. We check to see if this is the case
   // before writing a new account key.
-  FastPairRepository::Get()->IsDeviceSavedToAccount(
-      device_->classic_address().value(),
-      base::BindOnce(&FastPairPairerImpl::OnIsDeviceSavedToAccount,
-                     weak_ptr_factory_.GetWeakPtr()));
+  // (b/266953410) This check is performed previously in the Retroactive Pairing
+  // Flow, in `RetroactivePairingDetectorImpl::DevicePairedChanged`. To avoid
+  // making this redundant request to Footprints, |IsDeviceSavedToAccount| is
+  // called only in the Initial Pair scenario.
+  if (device_->protocol() != Protocol::kFastPairRetroactive) {
+    FastPairRepository::Get()->IsDeviceSavedToAccount(
+        device_->classic_address().value(),
+        base::BindOnce(&FastPairPairerImpl::OnIsDeviceSavedToAccount,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    // If the BLE address has rotated writing the account key is guaranteed to
+    // fail. Instead of proceeding, call the callback and return.
+    if (ash::features::IsFastPairBleRotationEnabled() &&
+        fast_pair_handshake_->DidBleAddressRotate()) {
+      // TODO (b/268055837): add metric for when we get in this scenario.
+      QP_LOG(VERBOSE) << __func__ << ": BLE Address rotated, running callback";
+      fast_pair_handshake_->RunBleAddressRotationCallback();
+      return;
+    }
+    WriteAccountKey();
+  }
 }
 
 void FastPairPairerImpl::OnCheckOptInStatus(
     nearby::fastpair::OptInStatus status) {
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
 
   if (status != nearby::fastpair::OptInStatus::STATUS_OPTED_IN) {
-    QP_LOG(INFO) << __func__
-                 << ": User is not opted in to save devices to their account";
+    QP_LOG(VERBOSE)
+        << __func__
+        << ": User is not opted in to save devices to their account";
     std::move(pairing_procedure_complete_).Run(device_);
     return;
   }
@@ -511,13 +527,13 @@ void FastPairPairerImpl::OnIsDeviceSavedToAccount(
     // If the device is saved to Footprints, don't write a new account key to
     // the device, and return that we've finished the pairing procedure
     // successfully. We could rework some of our APIs here so that we can call
-    // AssociateAccountKeyLocally similar to how we handle Subsequent pairing
-    // above. However, the first time a not discoverable advertisement for this
-    // device is found we'll add the account key to our SavedDeviceRegistry as
-    // expected.
-    QP_LOG(INFO) << __func__
-                 << ": Device is already saved, skipping write account key. "
-                    "Pairing procedure complete.";
+    // `WriteAccountAssociationToLocalRegistry` similar to how we handle
+    // Subsequent pairing above. However, the first time a not discoverable
+    // advertisement for this device is found we'll add the account key to our
+    // SavedDeviceRegistry as expected.
+    QP_LOG(VERBOSE) << __func__
+                    << ": Device is already saved, skipping write account key. "
+                       "Pairing procedure complete.";
 
     if (device_->protocol() == Protocol::kFastPairInitial) {
       RecordInitialSuccessFunnelFlow(
@@ -565,8 +581,29 @@ void FastPairPairerImpl::OnWriteAccountKey(
     return;
   }
 
-  FastPairRepository::Get()->AssociateAccountKey(
-      device_, std::vector<uint8_t>(account_key.begin(), account_key.end()));
+  if (ash::features::IsFastPairSavedDevicesNicknamesEnabled() &&
+      device_->classic_address().has_value() &&
+      adapter_->GetDevice(device_->classic_address().value())) {
+    device_->set_display_name(
+        (adapter_->GetDevice(device_->classic_address().value()))->GetName());
+  }
+
+  const std::vector<uint8_t> account_key_vec(account_key.begin(),
+                                             account_key.end());
+
+  device_->set_account_key(account_key_vec);
+  if (!FastPairRepository::Get()->WriteAccountAssociationToLocalRegistry(
+          device_)) {
+    QP_LOG(WARNING) << "Failed to write account association to Local Registry.";
+  }
+
+  // Devices in the Retroactive Pair scenario are not written to Footprints
+  // on account key write, but when the user hits 'Save' on the retroactive pair
+  // notification.
+  if (device_->protocol() != Protocol::kFastPairRetroactive) {
+    FastPairRepository::Get()->WriteAccountAssociationToFootprints(
+        device_, account_key_vec);
+  }
 
   // If the Saved Devices feature is enabled and we are utilizing a "loose"
   // interpretation of a user's opt-in status, then we will opt-in the user
@@ -584,7 +621,7 @@ void FastPairPairerImpl::OnWriteAccountKey(
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
-  QP_LOG(INFO)
+  QP_LOG(VERBOSE)
       << __func__
       << ": Account key written to device. Pairing procedure complete.";
 
@@ -642,12 +679,24 @@ void FastPairPairerImpl::DevicePairedChanged(device::BluetoothAdapter* adapter,
     return;
   }
 
-  if (device->GetAddress() == device_->ble_address() ||
-      device->GetAddress() == device_->classic_address()) {
-    QP_LOG(INFO) << __func__ << ": Completing pairing procedure " << device_;
+  if ((device_->classic_address().has_value() &&
+       device->GetAddress() == device_->classic_address().value()) ||
+      device->GetAddress() == device_->ble_address()) {
+    QP_LOG(VERBOSE) << __func__ << ": Completing pairing procedure " << device_;
 
     RecordProtocolPairingStep(FastPairProtocolPairingSteps::kPairingComplete,
                               *device_);
+
+    // V1 devices do not set the classic_address() field anywhere else, which is
+    // needed to map device addresses to persisted device images. Set the
+    // classic address here, which has to happen before paired_callback_ is
+    // fired. V2 devices can also set a missing classic address here, although
+    // that is not expected to happen.
+    if (!device_->classic_address() &&
+        device->GetAddressType() ==
+            device::BluetoothDevice::AddressType::ADDR_TYPE_PUBLIC) {
+      device_->set_classic_address(device->GetAddress());
+    }
 
     std::move(paired_callback_).Run(device_);
 
@@ -665,17 +714,17 @@ void FastPairPairerImpl::DevicePairedChanged(device::BluetoothAdapter* adapter,
         device_->version().value() == DeviceFastPairVersion::kHigherThanV1 &&
         pairing_flow_ == FastPairPairingFlow::kConnectDevice) {
       StopCreateBondTimer(__func__);
-      QP_LOG(INFO) << __func__
-                   << ": Stopping create bond timer and attempting to send "
-                      "account key for ConnectDevice flow";
+      QP_LOG(VERBOSE) << __func__
+                      << ": Stopping create bond timer and attempting to send "
+                         "account key for ConnectDevice flow";
       adapter_->RemovePairingDelegate(this);
       AttemptSendAccountKey();
     } else if (pairing_procedure_complete_ && device_->version().has_value() &&
                device_->version().value() == DeviceFastPairVersion::kV1) {
       // This covers the case where we are pairing a v1 device and are using the
       // Bluetooth pairing dialog to do it.
-      QP_LOG(INFO) << __func__
-                   << ": pairing procedure completed for V1 device.";
+      QP_LOG(VERBOSE) << __func__
+                      << ": pairing procedure completed for V1 device.";
       std::move(pairing_procedure_complete_).Run(device_);
     }
   }
@@ -692,7 +741,7 @@ void FastPairPairerImpl::OnPairConnected(
     return;
   }
 
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
 
   if (error) {
     QP_LOG(WARNING) << __func__
@@ -746,7 +795,7 @@ void FastPairPairerImpl::OnConnected(
     return;
   }
 
-  QP_LOG(INFO) << __func__;
+  QP_LOG(VERBOSE) << __func__;
   RecordPairDeviceResult(/*success=*/!error.has_value());
 
   if (error) {
@@ -763,10 +812,6 @@ void FastPairPairerImpl::OnConnected(
 
   RecordProtocolPairingStep(FastPairProtocolPairingSteps::kDeviceConnected,
                             *device_);
-
-  // The device ID can change between device discovery and connection, so
-  // ensure that device images are mapped to the current device ID.
-  FastPairRepository::Get()->FetchDeviceImages(device_);
 
   QP_LOG(INFO) << __func__ << ": starting account key write for `Pair` flow";
   adapter_->RemovePairingDelegate(this);

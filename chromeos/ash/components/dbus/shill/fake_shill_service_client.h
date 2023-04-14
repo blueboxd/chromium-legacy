@@ -42,14 +42,14 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(
       const dbus::ObjectPath& service_path,
-      chromeos::DBusMethodCallback<base::Value> callback) override;
+      chromeos::DBusMethodCallback<base::Value::Dict> callback) override;
   void SetProperty(const dbus::ObjectPath& service_path,
                    const std::string& name,
                    const base::Value& value,
                    base::OnceClosure callback,
                    ErrorCallback error_callback) override;
   void SetProperties(const dbus::ObjectPath& service_path,
-                     const base::Value& properties,
+                     const base::Value::Dict& properties,
                      base::OnceClosure callback,
                      ErrorCallback error_callback) override;
   void ClearProperty(const dbus::ObjectPath& service_path,
@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                                   ErrorCallback error_callback) override;
   void GetLoadableProfileEntries(
       const dbus::ObjectPath& service_path,
-      chromeos::DBusMethodCallback<base::Value> callback) override;
+      chromeos::DBusMethodCallback<base::Value::Dict> callback) override;
   void GetWiFiPassphrase(const dbus::ObjectPath& service_path,
                          StringCallback callback,
                          ErrorCallback error_callback) override;
@@ -106,27 +106,29 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
                               const std::string& state,
                               const std::string& ipconfig_path,
                               bool visible) override;
-  base::Value* SetServiceProperties(const std::string& service_path,
-                                    const std::string& guid,
-                                    const std::string& name,
-                                    const std::string& type,
-                                    const std::string& state,
-                                    bool visible) override;
+  base::Value::Dict* SetServiceProperties(const std::string& service_path,
+                                          const std::string& guid,
+                                          const std::string& name,
+                                          const std::string& type,
+                                          const std::string& state,
+                                          bool visible) override;
   void RemoveService(const std::string& service_path) override;
   bool SetServiceProperty(const std::string& service_path,
                           const std::string& property,
                           const base::Value& value) override;
-  const base::Value* GetServiceProperties(
+  const base::Value::Dict* GetServiceProperties(
       const std::string& service_path) const override;
   bool ClearConfiguredServiceProperties(
       const std::string& service_path) override;
   std::string FindServiceMatchingGUID(const std::string& guid) override;
   std::string FindSimilarService(
-      const base::Value& template_service_properties) override;
+      const base::Value::Dict& template_service_properties) override;
   void ClearServices() override;
   void SetConnectBehavior(const std::string& service_path,
                           const base::RepeatingClosure& behavior) override;
   void SetErrorForNextConnectionAttempt(const std::string& error_name) override;
+  void SetErrorForNextSetPropertiesAttempt(
+      const std::string& error_name) override;
   void SetRequestPortalState(const std::string& state) override;
   void SetHoldBackServicePropertyUpdates(bool hold_back) override;
   void SetRequireServiceToGetProperties(
@@ -140,8 +142,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& service_path,
                                       const std::string& property);
-  base::Value* GetModifiableServiceProperties(const std::string& service_path,
-                                              bool create_if_missing);
+  base::Value::Dict* GetModifiableServiceProperties(
+      const std::string& service_path,
+      bool create_if_missing);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
   void SetOtherServicesOffline(const std::string& service_path);
   void SetCellularActivated(const dbus::ObjectPath& service_path,
@@ -149,7 +152,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
   void ContinueConnect(const std::string& service_path);
   void SetDefaultFakeTrafficCounters();
 
-  base::Value stub_services_{base::Value::Type::DICTIONARY};
+  base::Value::Dict stub_services_;
 
   // Per network service, stores a closure that is executed on each connection
   // attempt. The callback can for example modify the services properties in
@@ -158,6 +161,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillServiceClient
 
   // If set the next Connect call will fail with this error_name.
   absl::optional<std::string> connect_error_name_;
+
+  // If set the next SetProperties call will fail with this error_name.
+  absl::optional<std::string> set_properties_error_name_;
 
   // Optional state to set after a call to RequestPortalDetection.
   absl::optional<std::string> request_portal_state_;

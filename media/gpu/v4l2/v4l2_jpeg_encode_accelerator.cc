@@ -16,8 +16,9 @@
 #include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
-#include "media/base/bind_to_current_loop.h"
+#include "base/task/thread_pool.h"
 #include "media/gpu/chromeos/fourcc.h"
 #include "media/gpu/chromeos/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
@@ -1584,6 +1585,10 @@ size_t V4L2JpegEncodeAccelerator::EncodedInstanceDmaBuf::FinalizeJpegImage(
           std::move(output_gmb_handle), output_gmb_buffer_size,
           gfx::BufferFormat::R_8, gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
           base::DoNothing());
+  if (!output_gmb_buffer) {
+    VLOGF(1) << "Failed to import gmb buffer";
+    return 0;
+  }
 
   bool isMapped = output_gmb_buffer->Map();
   if (!isMapped) {
@@ -1809,26 +1814,29 @@ V4L2JpegEncodeAccelerator::V4L2JpegEncodeAccelerator(
     const scoped_refptr<base::SingleThreadTaskRunner>& io_task_runner)
     : io_task_runner_(io_task_runner),
       client_(nullptr),
-      encoder_thread_("V4L2JpegEncodeThread"),
+      weak_factory_for_encoder_(this),
       weak_factory_(this) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DETACH_FROM_SEQUENCE(encoder_sequence_);
   weak_ptr_ = weak_factory_.GetWeakPtr();
+  weak_ptr_for_encoder_ = weak_factory_for_encoder_.GetWeakPtr();
 }
 
 V4L2JpegEncodeAccelerator::~V4L2JpegEncodeAccelerator() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (encoder_thread_.IsRunning()) {
+  if (encoder_task_runner_) {
+    base::WaitableEvent waiter;
+    // base::Unretained(this) is safe because we wait DestroyTask() is done.
     encoder_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::DestroyTask,
-                                  base::Unretained(this)));
-    encoder_thread_.Stop();
+                                  base::Unretained(this), &waiter));
+    waiter.Wait();
   }
   weak_factory_.InvalidateWeakPtrs();
 }
 
-void V4L2JpegEncodeAccelerator::DestroyTask() {
+void V4L2JpegEncodeAccelerator::DestroyTask(base::WaitableEvent* waiter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_);
 
   while (!encoded_instances_.empty()) {
@@ -1840,6 +1848,9 @@ void V4L2JpegEncodeAccelerator::DestroyTask() {
     encoded_instances_dma_buf_.front()->DestroyTask();
     encoded_instances_dma_buf_.pop();
   }
+
+  weak_factory_for_encoder_.InvalidateWeakPtrs();
+  waiter->Signal();
 }
 
 void V4L2JpegEncodeAccelerator::VideoFrameReady(int32_t task_id,
@@ -1889,20 +1900,21 @@ void V4L2JpegEncodeAccelerator::InitializeAsync(
     chromeos_camera::JpegEncodeAccelerator::InitCB init_cb) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
 
-  if (!encoder_thread_.Start()) {
-    VLOGF(1) << "encoder thread failed to start";
-    io_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(std::move(init_cb), THREAD_CREATION_FAILED));
-    return;
-  }
-
   client_ = client;
-  encoder_task_runner_ = encoder_thread_.task_runner();
+
+  // base::WithBaseSyncPrimitives() and base::MayBlock() are necessary to
+  // synchronously destroy encoder variables on |encoder_task_runner_| in
+  // dedestructor.
+  encoder_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::WithBaseSyncPrimitives(),
+       base::MayBlock()});
+  DCHECK(encoder_task_runner_);
 
   encoder_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::InitializeTask,
-                                base::Unretained(this), client,
-                                BindToCurrentLoop(std::move(init_cb))));
+      FROM_HERE,
+      base::BindOnce(&V4L2JpegEncodeAccelerator::InitializeTask,
+                     weak_ptr_for_encoder_, client,
+                     base::BindPostTaskToCurrentDefault(std::move(init_cb))));
 }
 
 size_t V4L2JpegEncodeAccelerator::GetMaxCodedBufferSize(
@@ -1965,7 +1977,7 @@ void V4L2JpegEncodeAccelerator::Encode(
 
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::EncodeTaskLegacy,
-                                base::Unretained(this), std::move(job_record)));
+                                weak_ptr_for_encoder_, std::move(job_record)));
 }
 
 void V4L2JpegEncodeAccelerator::EncodeWithDmaBuf(
@@ -2011,7 +2023,7 @@ void V4L2JpegEncodeAccelerator::EncodeWithDmaBuf(
 
   encoder_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::EncodeTask,
-                                base::Unretained(this), std::move(job_record)));
+                                weak_ptr_for_encoder_, std::move(job_record)));
 }
 
 void V4L2JpegEncodeAccelerator::EncodeTaskLegacy(
@@ -2128,7 +2140,7 @@ void V4L2JpegEncodeAccelerator::ServiceDeviceTaskLegacy() {
     encoder_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&V4L2JpegEncodeAccelerator::ServiceDeviceTaskLegacy,
-                       base::Unretained(this)));
+                       weak_ptr_for_encoder_));
   }
 }
 
@@ -2151,7 +2163,7 @@ void V4L2JpegEncodeAccelerator::ServiceDeviceTask() {
       !encoded_instances_dma_buf_.front()->input_job_queue_.empty()) {
     encoder_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&V4L2JpegEncodeAccelerator::ServiceDeviceTask,
-                                  base::Unretained(this)));
+                                  weak_ptr_for_encoder_));
   }
 }
 

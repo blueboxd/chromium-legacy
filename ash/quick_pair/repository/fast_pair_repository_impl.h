@@ -23,7 +23,6 @@ class DeviceImageInfo;
 
 namespace device {
 class BluetoothAdapter;
-class BluetoothDevice;
 }  // namespace device
 
 namespace nearby {
@@ -35,7 +34,7 @@ class UserReadDevicesResponse;
 namespace ash {
 namespace quick_pair {
 
-class DeviceIdMap;
+class DeviceAddressMap;
 class DeviceImageStore;
 class DeviceMetadataFetcher;
 class FastPairImageDecoder;
@@ -54,7 +53,7 @@ class FastPairRepositoryImpl : public FastPairRepository,
       std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher,
       std::unique_ptr<FootprintsFetcher> footprints_fetcher,
       std::unique_ptr<FastPairImageDecoder> image_decoder,
-      std::unique_ptr<DeviceIdMap> device_id_map,
+      std::unique_ptr<DeviceAddressMap> device_address_map,
       std::unique_ptr<DeviceImageStore> device_image_store,
       std::unique_ptr<SavedDeviceRegistry> saved_device_registry,
       std::unique_ptr<PendingWriteStore> pending_write_store);
@@ -69,9 +68,11 @@ class FastPairRepositoryImpl : public FastPairRepository,
                         CheckAccountKeysCallback callback) override;
   bool IsAccountKeyPairedLocally(
       const std::vector<uint8_t>& account_key) override;
-  void AssociateAccountKey(scoped_refptr<Device> device,
-                           const std::vector<uint8_t>& account_key) override;
-  bool AssociateAccountKeyLocally(scoped_refptr<Device> device) override;
+  void WriteAccountAssociationToFootprints(
+      scoped_refptr<Device> device,
+      const std::vector<uint8_t>& account_key) override;
+  bool WriteAccountAssociationToLocalRegistry(
+      scoped_refptr<Device> device) override;
   void DeleteAssociatedDevice(const std::string& mac_address,
                               DeleteAssociatedDeviceCallback callback) override;
   void DeleteAssociatedDeviceByAccountKey(
@@ -81,9 +82,9 @@ class FastPairRepositoryImpl : public FastPairRepository,
   absl::optional<std::string> GetDeviceDisplayNameFromCache(
       std::vector<uint8_t> account_key) override;
   bool PersistDeviceImages(scoped_refptr<Device> device) override;
-  bool EvictDeviceImages(const device::BluetoothDevice* device) override;
+  bool EvictDeviceImages(const std::string& mac_address) override;
   absl::optional<bluetooth_config::DeviceImageInfo> GetImagesForDevice(
-      const std::string& device_id) override;
+      const std::string& mac_address) override;
   void CheckOptInStatus(CheckOptInStatusCallback callback) override;
   void UpdateOptInStatus(nearby::fastpair::OptInStatus opt_in_status,
                          UpdateOptInStatusCallback callback) override;
@@ -121,18 +122,19 @@ class FastPairRepositoryImpl : public FastPairRepository,
                                 const std::vector<uint8_t> account_key,
                                 DeviceMetadata* device_metadata,
                                 bool has_retryable_error);
-  void WriteDeviceToFootprints(const std::string& hex_model_id,
-                               const std::string& mac_address,
-                               const std::vector<uint8_t>& account_key,
-                               absl::optional<Protocol> device_protocol,
-                               DeviceMetadata* metadata,
-                               bool has_retryable_error);
-  void OnWriteDeviceToFootprintsComplete(
+  void WriteAccountAssociationToFootprintsWithMetadata(
+      const std::string& hex_model_id,
+      const std::string& mac_address,
+      const absl::optional<std::string>& display_name,
+      const std::vector<uint8_t>& account_key,
+      absl::optional<Protocol> device_protocol,
+      DeviceMetadata* metadata,
+      bool has_retryable_error);
+  void OnWriteAccountAssociationToFootprintsComplete(
       const std::string& mac_address,
       const std::vector<uint8_t>& account_key,
       absl::optional<Protocol> device_protocol,
       bool success);
-
   void OnCheckOptInStatus(
       CheckOptInStatusCallback callback,
       absl::optional<nearby::fastpair::UserReadDevicesResponse> user_devices);
@@ -179,7 +181,7 @@ class FastPairRepositoryImpl : public FastPairRepository,
   std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher_;
   std::unique_ptr<FootprintsFetcher> footprints_fetcher_;
   std::unique_ptr<FastPairImageDecoder> image_decoder_;
-  std::unique_ptr<DeviceIdMap> device_id_map_;
+  std::unique_ptr<DeviceAddressMap> device_address_map_;
   std::unique_ptr<DeviceImageStore> device_image_store_;
   std::unique_ptr<SavedDeviceRegistry> saved_device_registry_;
   std::unique_ptr<PendingWriteStore> pending_write_store_;

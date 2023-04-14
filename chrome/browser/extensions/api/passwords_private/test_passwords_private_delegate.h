@@ -19,7 +19,6 @@ namespace extensions {
 class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
  public:
   TestPasswordsPrivateDelegate();
-  ~TestPasswordsPrivateDelegate() override;
 
   // PasswordsPrivateDelegate implementation.
   void GetSavedPasswordsList(UiEntriesCallback callback) override;
@@ -96,6 +95,8 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   void SwitchBiometricAuthBeforeFillingState(
       content::WebContents* web_contents) override;
   void ShowAddShortcutDialog(content::WebContents* web_contents) override;
+  void ShowExportedFileInShell(content::WebContents* web_contents,
+                               std::string file_path) override;
 
   void SetProfile(Profile* profile);
   void SetOptedInForAccountStorage(bool opted_in);
@@ -133,6 +134,13 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
   bool get_add_shortcut_dialog_shown() const {
     return add_shortcut_dialog_shown_;
   }
+
+  bool get_exported_file_shown_in_shell() const {
+    return exported_file_shown_in_shell_;
+  }
+
+ protected:
+  ~TestPasswordsPrivateDelegate() override;
 
  private:
   void SendSavedPasswordsList();
@@ -186,6 +194,9 @@ class TestPasswordsPrivateDelegate : public PasswordsPrivateDelegate {
 
   // Used to track whether shortcut creation dialog was shown.
   bool add_shortcut_dialog_shown_ = false;
+
+  // used to track whether the exported file was shown in shell.
+  bool exported_file_shown_in_shell_ = false;
 };
 }  // namespace extensions
 

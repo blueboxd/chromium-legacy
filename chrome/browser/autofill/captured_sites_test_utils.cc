@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base_switches.h"
+#include "base/check_deref.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/guid.h"
@@ -57,6 +58,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
@@ -122,6 +124,7 @@ and then write commands into it:
   $ echo where   >%1$s  # prints the current position
   $ echo show -1 >%1$s  # prints last 1 actions
   $ echo show 1  >%1$s  # prints next 1 actions
+  $ echo failure >%1$s  # unpauses execution until failure
   $ echo help    >%1$s  # prints this text
 )";
   LOG(INFO) << base::StringPrintf(msg,
@@ -166,6 +169,7 @@ enum class ExecutionCommandType {
   kSkipAction,
   kShowAction,
   kWhereAmI,
+  kRunUntilFailure
 };
 
 struct ExecutionCommand {
@@ -205,6 +209,11 @@ std::vector<ExecutionCommand> ReadExecutionCommands(
         commands.push_back({ExecutionCommandType::kShowAction, GetParamOr(1)});
       } else if (base::StartsWith(command, "where")) {
         commands.push_back({ExecutionCommandType::kWhereAmI});
+      } else if (base::StartsWith(command, "failure")) {
+        commands.push_back({ExecutionCommandType::kRunUntilFailure});
+        // also add an absolute max limit (like a" run" command).
+        commands.push_back({ExecutionCommandType::kAbsoluteLimit,
+                            std::numeric_limits<int>::max()});
       } else if (base::StartsWith(command, "help")) {
         PrintDebugInstructions(command_file_path);
       }
@@ -220,6 +229,8 @@ struct ExecutionState {
   int limit = std::numeric_limits<int>::max();
   // The number of actions to be executed.
   int length = 0;
+  // Whether to stop at a step if a failure is detected.
+  bool pause_on_failure = false;
 };
 
 // Blockingly reads the commands from |command_file_path| and executes them.
@@ -264,6 +275,12 @@ ExecutionState ProcessCommands(ExecutionState execution_state,
           LOG(INFO) << "Next action is at position " << execution_state.index
                     << ", limit (excl) is at " << execution_state.limit
                     << ", last (excl) is at " << execution_state.length;
+          break;
+        }
+        case ExecutionCommandType::kRunUntilFailure: {
+          LOG(INFO) << "Will stop when a failure is found.";
+          execution_state.pause_on_failure = true;
+          break;
         }
       }
     }
@@ -354,7 +371,7 @@ std::vector<CapturedSiteParams> GetCapturedSites(
     }
   }
   // Parse json text content to json value node.
-  base::Value root_node;
+  base::Value::Dict root_node;
   {
     auto value_with_error = JSONReader::ReadAndReturnValueWithError(
         json_text, JSONParserOptions::JSON_PARSE_RFC);
@@ -364,29 +381,36 @@ std::vector<CapturedSiteParams> GetCapturedSites(
                    << value_with_error.error().message;
       return sites;
     }
-    root_node = std::move(*value_with_error);
+    root_node = std::move(*value_with_error).TakeDict();
   }
-  base::Value* list_node = root_node.FindListKey("tests");
+  const base::Value::List* list_node = root_node.FindList("tests");
   if (!list_node) {
     LOG(WARNING) << "No tests found in `testcases.json` config";
     return sites;
   }
 
   bool also_run_disabled = testing::FLAGS_gtest_also_run_disabled_tests == 1;
-  for (auto& item : list_node->GetList()) {
-    if (!item.is_dict())
+  for (auto& item_val : *list_node) {
+    if (!item_val.is_dict()) {
       continue;
+    }
+    const base::Value::Dict& item = item_val.GetDict();
     CapturedSiteParams param;
-    param.site_name = *(item.FindStringKey("site_name"));
-    if (item.FindKey("scenario_dir"))
-      param.scenario_dir = *(item.FindStringKey("scenario_dir"));
-    param.is_disabled = item.FindBoolKey("disabled").value_or(false);
-    if (item.FindKey("bug_number"))
-      param.bug_number = item.FindIntKey("bug_number");
+    param.site_name = CHECK_DEREF(item.FindString("site_name"));
+
+    if (const std::string* scenario_dir = item.FindString("scenario_dir")) {
+      param.scenario_dir = *scenario_dir;
+    }
+    param.is_disabled = item.FindBool("disabled").value_or(false);
+
+    const absl::optional<int> bug_number = item.FindInt("bug_number");
+    if (bug_number) {
+      param.bug_number = bug_number.value();
+    }
     if (param.is_disabled && !also_run_disabled)
       continue;
 
-    const std::string* expectation_string = item.FindStringKey("expectation");
+    const std::string* expectation_string = item.FindString("expectation");
     if (expectation_string && *expectation_string == "FAIL") {
       param.expectation = kFail;
     } else {
@@ -891,13 +915,14 @@ bool TestRecipeReplayer::OverrideAutofillClock(
     return false;
   }
 
-  base::Value* time_value = parsed_json->FindKey("DeterministicTimeSeedMs");
+  const absl::optional<double> time_value =
+      parsed_json->GetDict().FindDouble("DeterministicTimeSeedMs");
   if (!time_value) {
     VLOG(1) << kClockNotSetMessage << "No DeterministicTimeSeedMs found";
     return false;
   }
   // wpr archive stores time seed in ms, clock is set in seconds.
-  test_clock_.SetNow(base::Time::FromDoubleT(time_value->GetDouble() / 1000));
+  test_clock_.SetNow(base::Time::FromDoubleT(*time_value / 1000));
   return true;
 }
 
@@ -1089,6 +1114,14 @@ bool TestRecipeReplayer::ReplayRecordedActions(
   }
 
   while (execution_state.index < execution_state.length) {
+    if (execution_state.pause_on_failure &&
+        (testing::Test::HasNonfatalFailure() ||
+         testing::Test::HasFatalFailure() || validation_failures_.size() > 0)) {
+      // If set to pause on a failure, move limit to current, but then reset
+      // `pause_on_failure` so it can continue if the user requests.
+      execution_state.limit = execution_state.index;
+      execution_state.pause_on_failure = false;
+    }
     if (command_file_path.has_value()) {
       while (execution_state.limit <= execution_state.index) {
         bool thread_finished = false;

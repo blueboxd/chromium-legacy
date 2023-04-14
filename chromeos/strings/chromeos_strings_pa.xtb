@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">ਬਾਹਰੀ ਡੀਵਾਈਸਾਂ ਲਈ ਅੱਪਡੇਟ ਫ਼ਰਮਵੇਅਰ ਵਿੰਡੋ ਖੁੱਲ੍ਹੀ ਹੈ। <ph name="NUM_UPDATES" /> ਅੱਪਡੇਟ ਉਪਲਬਧ ਹਨ।</translation>
 <translation id="1145516343487477149">ਮਦਦ ਲੇਖ ਅਤੇ Chromebook ਸੰਬੰਧੀ ਆਮ ਸਵਾਲਾਂ ਦੇ ਜਵਾਬ ਲੱਭੋ</translation>
+<translation id="1167755866710282443">ਕੁੰਜੀਆਂ ਨੂੰ ਵਿਉਂਤਬੱਧ ਕਰਨ ਲਈ ਮੀਨੂ ਖੋਲ੍ਹੋ। ਲਿਜਾਉਣ ਲਈ ਮੀਨੂ ਨੂੰ ਘਸੀਟੋ।</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> ਵੱਲੋਂ ਇਸ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ।</translation>
 <translation id="1175951029573070619">ਔਸਤ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">ਹਟਾਓ</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">ਐਲਬਮ ਚੁਣੋ <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB ਟੱਚਪੈਡ</translation>
 <translation id="4117637339509843559">ਗੂੜ੍ਹਾ ਮੋਡ</translation>
+<translation id="4130035430755296270">ਖਾਕੇ ਸੰਬੰਧੀ ਹੋਰ ਵਿਕਲਪਾਂ ਲਈ ਕਰਸਰ ਘੁਮਾਉਂਦੇ ਰਹੋ</translation>
 <translation id="4131410914670010031">ਕਾਲਾ ਅਤੇ ਚਿੱਟਾ</translation>
 <translation id="4145784616224233563">HTTP ਫ਼ਾਇਰਵਾਲ</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS ਰੈਜ਼ੋਲਿਊਸ਼ਨ</translation>
 <translation id="4848429997038228357">ਚੱਲ ਰਿਹਾ ਹੈ</translation>
 <translation id="4854586501323951986">ਬਿਲਟ-ਇਨ ਟੱਚਸਕ੍ਰੀਨ</translation>
+<translation id="4855250849489639581">ਖਾਕੇ ਸੰਬੰਧੀ ਹੋਰ ਵਿਕਲਪਾਂ ਲਈ ਹੇਠਾਂ ਵੱਲ ਸਵਾਈਪ ਕਰੋ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ਕੋਸ਼ਿਸ਼ ਬਾਕੀ}one{<ph name="ERROR_MESSAGE" /> {0} ਕੋਸ਼ਿਸ਼ ਬਾਕੀ}other{<ph name="ERROR_MESSAGE" /> {0} ਕੋਸ਼ਿਸ਼ਾਂ ਬਾਕੀ}}</translation>
 <translation id="4873827928179867585">ਪ੍ਰਮਾਣੀਕਰਨ ਐਲਗੋਰਿਦਮ</translation>
 <translation id="4880328057631981605">ਐਕਸੈੱਸ ਪੁਆਇੰਟ ਨਾਮ</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 ਚਿੱਤਰ</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> ਵੱਲੋਂ ਇਸ <ph name="DEVICE_TYPE" /> ਦਾ ਪ੍ਰਬੰਧਨ ਕੀਤਾ ਜਾਂਦਾ ਹੈ। ਸ਼ਾਇਦ ਪ੍ਰਸ਼ਾਸਕ ਰਿਮੋਟਲੀ ਡੀਵਾਈਸ ਦਾ ਸੰਰੂਪਣ ਕਰ ਸਕਦੇ ਹਨ।</translation>
 <translation id="7180611975245234373">ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
+<translation id="7180865173735832675">ਵਿਉਂਤਬੱਧ ਕਰੋ</translation>
 <translation id="7212734716605298123">ਬਾਹਰੀ ਡੀਵਾਈਸਾਂ ਲਈ ਫ਼ਰਮਵੇਅਰ ਅੱਪਡੇਟ</translation>
 <translation id="7216409898977639127">ਸੈਲਿਊਲਰ ਪ੍ਰਦਾਨਕ</translation>
 <translation id="725133483556299729">ਈਮੇਲ ਚੁਣੋ</translation>

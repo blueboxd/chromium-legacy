@@ -41,6 +41,10 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView,
   bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const override;
+  gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const override;
+  void LayoutWebAppWindowTitle(const gfx::Rect& available_space,
+                               views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateFullscreenTopUI() override;
@@ -81,19 +85,11 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewMacTest,
                            GetCenteredTitleBounds);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewMacTest,
-                           GetWebAppFrameToolbarAvailableBounds);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewMacTest,
                            GetCaptionButtonPlaceholderBounds);
 
   static gfx::Rect GetCenteredTitleBounds(gfx::Rect frame,
                                           gfx::Rect available_space,
                                           int preferred_title_width);
-
-  static gfx::Rect GetWebAppFrameToolbarAvailableBounds(
-      bool is_rtl,
-      const gfx::Size& frame,
-      int y,
-      int caption_button_container_width);
   static gfx::Rect GetCaptionButtonPlaceholderBounds(
       const gfx::Rect& frame,
       const gfx::Insets& caption_button_insets);

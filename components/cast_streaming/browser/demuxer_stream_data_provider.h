@@ -95,10 +95,22 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
   // response to the ongoing GetBuffer() request.
   void ProvideBuffer(media::mojom::DecoderBufferPtr buffer) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    DCHECK(buffer);
 
-    if (preload_buffeer_cb_) {
-      std::move(preload_buffeer_cb_).Run(std::move(buffer));
+    // Only occurs on a FlushUntil() call. If preloading is ongoing, that will
+    // occur as part of the next GetBuffer() call.
+    if (!buffer) {
+      if (current_callback_) {
+        std::move(current_callback_).Run(nullptr);
+      }
+      return;
+    }
+
+    if (preload_buffer_cb_) {
+      std::move(preload_buffer_cb_).Run(std::move(buffer));
+      if (current_callback_) {
+        request_buffer_.Run(base::BindOnce(
+            &DemuxerStreamClient::OnNoBuffersAvailable, client_));
+      }
       return;
     }
 
@@ -123,9 +135,15 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
   using PreloadBufferCB =
       base::OnceCallback<void(media::mojom::DecoderBufferPtr)>;
   void PreloadBuffer(PreloadBufferCB callback) {
-    DCHECK(!preload_buffeer_cb_);
+    // Check if another preload call is already in progress. This should only
+    // occur if a new config was received before the old preload call could be
+    // completed.
+    if (preload_buffer_cb_) {
+      DLOG(WARNING) << "Overwriting previous preload_buffer_cb_";
+    }
+
     DCHECK(!current_callback_);
-    preload_buffeer_cb_ = std::move(callback);
+    preload_buffer_cb_ = std::move(callback);
     request_buffer_.Run(
         base::BindOnce(&DemuxerStreamClient::OnNoBuffersAvailable, client_));
   }
@@ -169,14 +187,12 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
     }
 
     // If preloading is already ongoing, then a new buffer request isn't needed.
-    // Instead just replace the preloading callback with a real GetBuffer()
-    // callback.
-    if (!preload_buffeer_cb_) {
+    // Instead just continue the preloading callback which will call this
+    // upon completion.
+    if (!preload_buffer_cb_) {
       request_buffer_.Run(
           base::BindOnce(&DemuxerStreamClient::OnNoBuffersAvailable, client_));
     }
-
-    preload_buffeer_cb_.Reset();
   }
 
   void EnableBitstreamConverter(
@@ -194,7 +210,7 @@ class DemuxerStreamDataProvider : public DemuxerStreamTraits<TMojoReceiverType>,
   // and all GetBuffer() calls prior to this change should be blocked.
   bool is_new_stream_info_pending_ = false;
 
-  PreloadBufferCB preload_buffeer_cb_;
+  PreloadBufferCB preload_buffer_cb_;
 
   // The most recently set config.
   ConfigType config_;

@@ -15,7 +15,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/cert_verifier_configuration.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/common/channel_info.h"
@@ -43,11 +43,16 @@ TrialComparisonCertVerifierController::TrialComparisonCertVerifierController(
     return;
   }
 
-  pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kSafeBrowsingScoutReportingEnabled,
+  base::RepeatingClosure refresh_state_callback =
       base::BindRepeating(&TrialComparisonCertVerifierController::RefreshState,
-                          base::Unretained(this)));
+                          base::Unretained(this));
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(prefs::kSafeBrowsingEnabled,
+                             refresh_state_callback);
+  pref_change_registrar_.Add(prefs::kSafeBrowsingEnhanced,
+                             refresh_state_callback);
+  pref_change_registrar_.Add(prefs::kSafeBrowsingScoutReportingEnabled,
+                             refresh_state_callback);
 }
 
 TrialComparisonCertVerifierController::

@@ -53,9 +53,8 @@ var OSSettingsDevicePageV3Test = class extends OSSettingsV3BrowserTest {
   }
 };
 
-// TODO(crbug.com/1403981): Test is flaky on chromeos dbg builds.
 TEST_F(
-    'OSSettingsDevicePageV3Test', 'DISABLED_All',
+    'OSSettingsDevicePageV3Test', 'All',
     () => mocha.grep('/^((?!arrow_key_arrangement_disabled).)*$/').run());
 
 // TODO(crbug.com/1347746): move this to the generic test lists below after the
@@ -388,7 +387,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['FakeInputDeviceSettings', 'fake_input_device_settings_provider_test.js'],
  ['FilesPage', 'os_files_page_test.js'],
  ['FingerprintPage', 'fingerprint_browsertest_chromeos.js'],
- ['FindShortcutBehaviorTest', 'find_shortcut_behavior_test.js'],
  ['GoogleAssistantPage', 'google_assistant_page_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
  ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
@@ -426,6 +424,7 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.js'],
  ['LockScreenPage', 'lock_screen_tests.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.js'],
+ ['ManageUsersPage', 'manage_users_page_tests.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.js'],
  // TODO(b/208932892): Re-enable once flakiness is fixed.
  // ['MultideviceFeatureItem', 'multidevice_feature_item_tests.js'],
@@ -500,6 +499,25 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['PeoplePage', 'os_people_page_test.js'],
  ['PeoplePageQuickUnlock', 'quick_unlock_authenticate_browsertest_chromeos.js'],
  [
+   'PerDeviceKeyboard', 'per_device_keyboard_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'PerDeviceKeyboardRemapKeys', 'per_device_keyboard_remap_keys_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']}
+ ],
+ [
+   'PerDeviceKeyboardSubsection',
+   'per_device_keyboard_subsection_test.js',
+   {enabled: ['ash::features::kInputDeviceSettingsSplit']},
+ ],
+ ['PerDeviceMouseSubsection', 'per_device_mouse_subsection_test.js'],
+ [
+   'PerDevicePointingStickSubsection',
+   'per_device_pointing_stick_subsection_test.js'
+ ],
+ ['PerDeviceTouchpadSubsection', 'per_device_touchpad_subsection_test.js'],
+ [
    'PersonalizationPageWithPersonalizationHub',
    'personalization_page_with_personalization_hub_test.js',
  ],
@@ -537,7 +555,6 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['TimezoneSelector', 'timezone_selector_test.js'],
  ['TimezoneSubpage', 'timezone_subpage_test.js'],
  ['TtsSubpage', 'tts_subpage_test.js'],
- ['UserPage', 'user_page_tests.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, featureList) {
@@ -592,6 +609,11 @@ function registerTest(testName, module, featureList) {
     TEST_F(className, 'OfficialBuild' || 'All', () => {
       mocha.grep('SearchFeedback_OfficialBuild').run();
     });
+    GEN('#endif');
+  } else if (testName === 'OsSettingsPage') {
+    // TODO(crbug.com/1411677): times out (flaky) debug builds
+    GEN('#if defined(NDEBUG)');
+    TEST_F(className, 'All', () => mocha.run());
     GEN('#endif');
   } else {
     TEST_F(className, 'All', () => mocha.run());

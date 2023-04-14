@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/crypto.h"
+#include "third_party/blink/renderer/platform/heap/cross_thread_persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cached_metadata.h"
@@ -162,9 +163,8 @@ class ResourceScriptStreamer::ScriptDecoder {
       std::unique_ptr<ParkableStringImpl::SecureDigest> digest,
       CrossThreadOnceClosure main_thread_continuation) {
     if (response_body_loader_client) {
-      response_body_loader_client->DidReceiveDecodedData(
-          decoded_data, std::make_unique<ScriptResource::ScriptDecodedDataInfo>(
-                            std::move(digest)));
+      response_body_loader_client->DidReceiveDecodedData(decoded_data,
+                                                         std::move(digest));
     }
 
     std::move(main_thread_continuation).Run();

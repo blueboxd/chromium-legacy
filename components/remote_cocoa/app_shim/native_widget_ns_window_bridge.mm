@@ -664,11 +664,23 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
   // In headless mode the platform window is always hidden, so instead of
   // changing its visibility state just maintain a local flag to track the
   // expected visibility state and lie to the upper layer pretending the
-  // window did change its visibility state.
+  // window did change its visibility and activation state.
   if (headless_mode_window_) {
     headless_mode_window_->visibility_state =
         new_state != WindowVisibilityState::kHideWindow;
     host_->OnVisibilityChanged(headless_mode_window_->visibility_state);
+    if (new_state == WindowVisibilityState::kShowAndActivateWindow) {
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              [](WeakPtrNSObject* handle) {
+                if (auto* bridge = ui::WeakPtrNSObjectFactory<
+                        NativeWidgetNSWindowBridge>::Get(handle)) {
+                  bridge->OnWindowKeyStatusChangedTo(/*is_key*/ true);
+                }
+              },
+              ns_weak_factory_.handle()));
+    }
     return;
   }
 
@@ -912,6 +924,12 @@ void NativeWidgetNSWindowBridge::EnableImmersiveFullscreen(
       ns_window(), GetFromId(fullscreen_overlay_widget_id)->ns_window(),
       std::move(callback));
   immersive_mode_controller_->Enable();
+
+  // Reveal locks can outlive immersive_mode_controller_, re-establish any
+  // outstanding locks.
+  for (int i = 0; i < immersive_fullscreen_reveal_lock_count_; ++i) {
+    immersive_mode_controller_->RevealLock();
+  }
 }
 
 void NativeWidgetNSWindowBridge::DisableImmersiveFullscreen() {
@@ -933,12 +951,15 @@ void NativeWidgetNSWindowBridge::OnTopContainerViewBoundsChanged(
 }
 
 void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealLock() {
+  ++immersive_fullscreen_reveal_lock_count_;
   if (immersive_mode_controller_) {
     immersive_mode_controller_->RevealLock();
   }
 }
 
 void NativeWidgetNSWindowBridge::ImmersiveFullscreenRevealUnlock() {
+  --immersive_fullscreen_reveal_lock_count_;
+  DCHECK(immersive_fullscreen_reveal_lock_count_ >= 0);
   if (immersive_mode_controller_) {
     immersive_mode_controller_->RevealUnlock();
   }
@@ -954,6 +975,11 @@ void NativeWidgetNSWindowBridge::SetCanGoForward(bool can_go_forward) {
 
 void NativeWidgetNSWindowBridge::OnWindowWillClose() {
   fullscreen_controller_.OnWindowWillClose();
+  // Immersive full screen needs to be disabled synchronously when the window
+  // is closing. So disable it right away, rather than waiting for the browser
+  // process to signal us to disable immersive fullscreen after being informed
+  // of the window closing.
+  DisableImmersiveFullscreen();
 
   [window_ setCommandHandler:nil];
   [window_ setCommandDispatcherDelegate:nil];
@@ -1629,11 +1655,22 @@ void NativeWidgetNSWindowBridge::UpdateWindowGeometry() {
 }
 
 void NativeWidgetNSWindowBridge::MoveChildrenTo(
-    NativeWidgetNSWindowBridge* target) {
+    NativeWidgetNSWindowBridge* target,
+    bool anchored_only) {
   // Make a copy of `child_windows_` because it will be updated during the loop.
   std::vector<NativeWidgetNSWindowBridge*> child_windows(child_windows_);
   for (NativeWidgetNSWindowBridge* child : child_windows) {
     if (child != target) {
+      // If anchored_only is true, skip windows that are not anchored to the
+      // target window.
+      if (anchored_only) {
+        bool contained = false;
+        child->host()->BubbleAnchorViewContainedInWidget(target->id_,
+                                                         &contained);
+        if (!contained) {
+          continue;
+        }
+      }
       child->SetParent(target->id_);
       child->host()->OnWindowParentChanged(target->id_);
     }

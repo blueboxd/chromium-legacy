@@ -10,6 +10,8 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/ssl/https_only_mode_navigation_throttle.h"
 #include "chrome/browser/ssl/https_only_mode_upgrade_interceptor.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -957,6 +959,8 @@ class HttpsOnlyModePrefsBrowserTest : public InProcessBrowserTest {
 
   base::HistogramTester* histograms() { return &histograms_; }
 
+  base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
+
  private:
   base::test::ScopedFeatureList feature_list_;
   base::HistogramTester histograms_;
@@ -997,4 +1001,52 @@ IN_PROC_BROWSER_TEST_F(HttpsOnlyModePrefsBrowserTest, PrefStatesRecorded) {
   CreateIncognitoBrowser();
   histograms()->ExpectTotalCount(
       "Security.HttpsFirstMode.SettingEnabledAtStartup", 1);
+}
+
+// Tests for enabling HTTPS-Only Mode for Advanced Protection users.
+class HttpsOnlyModeForAdvancedProtectionBrowserTest
+    : public HttpsOnlyModePrefsBrowserTest,
+      public testing::WithParamInterface<
+          bool /* is_enabled_for_advanced_protection */> {
+  void SetUp() override {
+    if (is_enabled_for_advanced_protection()) {
+      feature_list()->InitWithFeatures(
+          {features::kHttpsOnlyMode,
+           features::kHttpsFirstModeForAdvancedProtectionUsers},
+          {});
+    } else {
+      feature_list()->InitWithFeatures(
+          {features::kHttpsOnlyMode},
+          {features::kHttpsFirstModeForAdvancedProtectionUsers});
+    }
+    InProcessBrowserTest::SetUp();
+  }
+
+ protected:
+  bool is_enabled_for_advanced_protection() const { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    HttpsOnlyModeForAdvancedProtectionBrowserTest,
+    testing::Bool() /* is_enabled_for_advanced_protection */);
+
+// Tests that HFM is enabled if the user is under Advanced Protection.
+IN_PROC_BROWSER_TEST_P(HttpsOnlyModeForAdvancedProtectionBrowserTest,
+                       AdvancedProtectionEnabled) {
+  safe_browsing::AdvancedProtectionStatusManager* ap_manager =
+      safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+          browser()->profile());
+
+  EXPECT_FALSE(ap_manager->IsUnderAdvancedProtection());
+  EXPECT_FALSE(GetPref());
+
+  ap_manager->SetAdvancedProtectionStatusForTesting(true);
+  if (is_enabled_for_advanced_protection()) {
+    EXPECT_TRUE(GetPref());
+  } else {
+    EXPECT_FALSE(GetPref());
+  }
+
+  // TODO(crbug.com/1414633): Check that the HFM UI setting is locked.
 }

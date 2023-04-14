@@ -92,7 +92,7 @@ class TestShillThirdPartyVpnDriverClient
     : public ash::FakeShillThirdPartyVpnDriverClient {
  public:
   void SetParameters(const std::string& object_path_value,
-                     const base::Value& parameters,
+                     const base::Value::Dict& parameters,
                      StringCallback callback,
                      ErrorCallback error_callback) override {
     set_parameters_counter_++;
@@ -125,7 +125,7 @@ class TestShillThirdPartyVpnDriverClient
   }
 
   int set_parameters_counter_ = 0;
-  base::Value parameters_;
+  base::Value::Dict parameters_;
   int update_connection_state_counter_ = 0;
   uint32_t connection_state_;
   int send_packet_counter_ = 0;
@@ -311,10 +311,10 @@ class VpnProviderApiTestAsh : public VpnProviderApiTestBase {
 
   bool HasService(const std::string& service_path) const {
     std::string profile_path;
-    base::Value properties =
+    absl::optional<base::Value::Dict> properties =
         ash::ShillProfileClient::Get()->GetTestInterface()->GetService(
             service_path, &profile_path);
-    return properties.is_dict();
+    return properties.has_value();
   }
 
   void SendPlatformError(const std::string& extension_id,
@@ -439,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, ConfigPersistence) {
 
   ash::NetworkHandler::Get()
       ->network_configuration_handler()
-      ->CreateShillConfiguration(base::Value(std::move(properties)),
+      ->CreateShillConfiguration(std::move(properties),
                                  base::BindOnce(DoNothingSuccessCallback),
                                  base::BindOnce(DoNothingFailureCallback));
   content::RunAllPendingInMessageLoop();
@@ -536,7 +536,7 @@ IN_PROC_BROWSER_TEST_F(VpnProviderApiTest, VpnSuccess) {
             test_client_->update_connection_state_counter_);
   for (size_t i = 0; i < std::size(kParameterValues); ++i) {
     const std::string* value =
-        test_client_->parameters_.FindStringKey(kParameterKeys[i]);
+        test_client_->parameters_.FindString(kParameterKeys[i]);
     ASSERT_TRUE(value);
     EXPECT_EQ(kParameterValues[i], *value);
   }

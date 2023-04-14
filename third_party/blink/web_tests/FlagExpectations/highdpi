@@ -1,4 +1,4 @@
-# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Win Win10.20h2 Win11 ]
+# tags: [ Android Fuchsia Linux Mac Mac10.13 Mac11 Mac12 Mac13 Mac13-arm64 Win Win10.20h2 Win11 ]
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
@@ -70,6 +70,9 @@ crbug.com/1353771 virtual/view-transition/external/wpt/css/css-view-transitions/
 crbug.com/1353771 virtual/view-transition/external/wpt/css/css-view-transitions/old-content-with-overflow-zoomed.html [ Failure ]
 crbug.com/1353771 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/content-with-clip-max-texture-size.html [ Failure ]
 crbug.com/1353771 virtual/view-transition/external/wpt/css/css-view-transitions/element-with-overflow.html [ Failure ]
+crbug.com/1412910 virtual/view-transition/external/wpt/css/css-view-transitions/fractional-translation-from-position.html [ Failure ]
+crbug.com/1414855 virtual/view-transition/external/wpt/css/css-view-transitions/new-content-captures-spans.html [ Failure ]
+crbug.com/1414855 virtual/view-transition-wide-gamut/external/wpt/css/css-view-transitions/new-content-captures-spans.html [ Failure ]
 
 crbug.com/1314903 external/wpt/css/css-sizing/contain-intrinsic-size/animation/contain-intrinsic-size-interpolation.html [ Failure ]
 
@@ -452,9 +455,6 @@ crbug.com/1315309 external/wpt/resize-observer/scrollbars-2.html [ Failure ]
 crbug.com/1196414 compositing/gestures/gesture-tapHighlight-imagemap.html [ Failure ]
 
 crbug.com/1310040 virtual/gpu-rasterization-disable-yuv/images/yuv-decode-eligible/color-profile-layer.html [ Failure Pass ]
-
-crbug.com/1405163 virtual/view-transition/external/wpt/css/css-view-transitions/content-with-child-with-transparent-background.html [ Failure ]
-crbug.com/1405163 virtual/view-transition/external/wpt/css/css-view-transitions/content-with-transparent-background.html [ Failure ]
 
 crbug.com/1324618 external/wpt/css/css-images/object-view-box-fit-fill* [ Pass ]
 

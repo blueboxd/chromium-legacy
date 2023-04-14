@@ -131,6 +131,7 @@ class Attr;
 class BeforeUnloadEventListener;
 class CDATASection;
 class CSSStyleSheet;
+class CSSToggleInference;
 class CanvasFontCache;
 class ChromeClient;
 class Comment;
@@ -882,8 +883,6 @@ class CORE_EXPORT Document : public ContainerNode,
   KURL CompleteURLWithOverride(const String&,
                                const KURL& base_url_override) const;
 
-  const KURL& WebBundleClaimedUrl() const { return web_bundle_claimed_url_; }
-
   // Determines whether a new document should take on the same origin as that of
   // the document which created it.
   static bool ShouldInheritSecurityOriginFromOwner(const KURL&);
@@ -1198,6 +1197,9 @@ class CORE_EXPORT Document : public ContainerNode,
   ScriptPromise requestStorageAccess(ScriptState* script_state);
   ScriptPromise requestStorageAccessForOrigin(ScriptState* script_state,
                                               const AtomicString& site);
+  // Returns whether the window has obtained storage access. Must be called on
+  // active documents.
+  bool HasStorageAccess() const;
 
   // Fragment directive API, currently used to feature detect text-fragments.
   // https://wicg.github.io/scroll-to-text-fragment/#feature-detectability
@@ -1534,10 +1536,12 @@ class CORE_EXPORT Document : public ContainerNode,
   void AttachCompositorTimeline(cc::AnimationTimeline*) const;
 
   void AddToTopLayer(Element*, const Element* before = nullptr);
-  void RemoveFromTopLayer(Element*);
+  void RemoveFromTopLayerImmediately(Element*);
   const HeapVector<Member<Element>>& TopLayerElements() const {
     return top_layer_elements_;
   }
+  void ScheduleForTopLayerRemoval(Element*);
+  void RemoveFinishedTopLayerElements();
 
   HTMLDialogElement* ActiveModalDialog() const;
 
@@ -1555,13 +1559,17 @@ class CORE_EXPORT Document : public ContainerNode,
   }
   void SetPopoverPointerdownTarget(const HTMLElement*);
 
+  HeapHashSet<WeakMember<Element>>& ElementsWithCSSToggles() {
+    return elements_with_css_toggles_;
+  }
   // Add an element to the set of elements that, because of CSS toggle
   // creation, need style recalc done later.
   void AddToRecalcStyleForToggle(Element* element);
-
   // Call SetNeedsStyleRecalc for elements from AddToRecalcStyleForToggle;
   // return whether any calls were made.
   bool SetNeedsStyleRecalcForToggles();
+  CSSToggleInference* GetCSSToggleInference() { return css_toggle_inference_; }
+  CSSToggleInference& EnsureCSSToggleInference();
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1630,12 +1638,13 @@ class CORE_EXPORT Document : public ContainerNode,
   static void SetForceSynchronousParsingForTesting(bool);
   static bool ForceSynchronousParsingForTesting();
 
+#if DCHECK_IS_ON()
   void IncrementNodeCount() { node_count_++; }
   void DecrementNodeCount() {
     DCHECK_GT(node_count_, 0);
     node_count_--;
   }
-  int NodeCount() const { return node_count_; }
+#endif  // DCHECK_IS_ON()
 
   SnapCoordinator& GetSnapCoordinator();
   void PerformScrollSnappingTasks();
@@ -2165,9 +2174,9 @@ class CORE_EXPORT Document : public ContainerNode,
   Member<LocalDOMWindow> dom_window_;
 
   // For Documents given a dom_window_ at creation that are not Shutdown(),
-  // execution_context_ and dom_window_ will be equal.
+  // execution_context_ and dom_window_ will be equal and non-null.
   // For Documents given a dom_window_ at creation that are Shutdown(),
-  // execution_context_ will be nullptr.
+  // execution_context_ and dom_window_ will both be nullptr.
   // For Documents not given a dom_window_ at creation, execution_context_
   // will be the LocalDOMWindow where script will execute (which may be nullptr
   // in unit tests).
@@ -2200,8 +2209,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   KURL base_element_url_;   // The URL set by the <base> element.
   KURL cookie_url_;         // The URL to use for cookie access.
-
-  KURL web_bundle_claimed_url_;
 
   AtomicString base_target_;
 
@@ -2391,6 +2398,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // stack and is thus the one that will be visually on top.
   HeapVector<Member<Element>> top_layer_elements_;
 
+  // top_layer_elements_ to be removed when top-layer computes to none.
+  HeapHashSet<Member<Element>> top_layer_elements_pending_removal_;
+
   // The stack of currently-displayed `popover=auto` elements. Elements in the
   // stack go from earliest (bottom-most) to latest (top-most).
   HeapVector<Member<HTMLElement>> popover_stack_;
@@ -2400,9 +2410,13 @@ class CORE_EXPORT Document : public ContainerNode,
   // are still running.
   HeapHashSet<Member<HTMLElement>> popovers_waiting_to_hide_;
 
+  // Elements that have CSS Toggles.
+  HeapHashSet<WeakMember<Element>> elements_with_css_toggles_;
   // Elements that need to be restyled because a toggle was created on them,
   // or a prior sibling, during the previous restyle.
   HeapHashSet<Member<Element>> elements_needing_style_recalc_for_toggle_;
+  // The inference engine for CSS toggles.
+  Member<CSSToggleInference> css_toggle_inference_;
 
   int load_event_delay_count_;
 
@@ -2454,7 +2468,9 @@ class CORE_EXPORT Document : public ContainerNode,
 
   Member<IntersectionObserverController> intersection_observer_controller_;
 
-  int node_count_;
+#if DCHECK_IS_ON()
+  int node_count_ = 0;
+#endif
 
   Member<SnapCoordinator> snap_coordinator_;
 

@@ -43,6 +43,7 @@ source_set("tab_grid") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs:features",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/tabs_search",
     "//ios/chrome/browser/tabs_search:tabs_search_factory",
     "//ios/chrome/browser/ui:feature_flags",
@@ -66,10 +67,11 @@ source_set("tab_grid") {
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui",
     "//ios/chrome/browser/ui/recent_tabs:synced_sessions",
     "//ios/chrome/browser/ui/sharing",
-    "//ios/chrome/browser/ui/sharing/activity_services",
+    "//ios/chrome/browser/ui/sharing:public",
     "//ios/chrome/browser/ui/snackbar",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/chrome/browser/ui/tab_switcher:tab_utils",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu",
@@ -92,6 +94,8 @@ source_set("tab_grid") {
     "//ui/base",
     "//ui/gfx",
   ]
+
+  frameworks = [ "UniformTypeIdentifiers.framework" ]
 }
 
 source_set("tab_collection_commands") {
@@ -161,6 +165,7 @@ source_set("tab_grid_ui") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/tabs:features",
+    "//ios/chrome/browser/tabs/inactive_tabs:features",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/default_promo:utils",
@@ -273,6 +278,7 @@ source_set("eg2_tests") {
     "//base",
     "//components/bookmarks/common",
     "//ios/chrome/app/strings",
+    "//ios/chrome/browser/metrics:eg_test_support+eg2",
     "//ios/chrome/browser/ui:feature_flags",
     "//ios/chrome/browser/ui/bookmarks:eg_test_support+eg2",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",

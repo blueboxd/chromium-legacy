@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="1143896152279775643">Sandi Anda akan disimpan ke Pengelola Sandi Google untuk <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Bantu Sempurnakan Fitur dan Performa Chrome</translation>
+<translation id="1352919863522755794">Pengelola Sandi Google tidak dapat memeriksa sandi Anda. Coba periksa koneksi internet Anda.</translation>
 <translation id="1462727070346936664">Login untuk mengoptimalkan penggunaan Chrome.</translation>
 <translation id="1479202195792305274">Chrome dapat memeriksa sandi saat Anda login dengan Akun Google.</translation>
 <translation id="1493827051843127077">Setel Chrome sebagai browser default untuk menyinkronkan tab, sandi, dan info pembayaran di semua perangkat Anda</translation>
@@ -12,17 +13,16 @@
 <translation id="1682483655351012182">Sinkronkan Data Chrome Anda</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Akun ini dan semua data yang tidak disimpan akan dihapus dari Chrome dan Google app lainnya di perangkat ini.</translation>
-<translation id="1968388653333775699">Tingkatkan Produktivitas dengan Chrome</translation>
 <translation id="2009224836393115614">Chrome tidak dapat memeriksa sandi Anda. Coba periksa koneksi internet Anda.</translation>
 <translation id="2056123005618757196">Tingkatkan produktivitas dengan Google Chrome yang lebih praktis, aman, dan cepat.</translation>
 <translation id="2147651015520127414">Chrome memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini.</translation>
 <translation id="2199719347983604670">Data dari sinkronisasi Chrome</translation>
-<translation id="2313070403598893276">Google Chrome mudah digunakan, aman, dan lebih cepat</translation>
 <translation id="2339201583852607431">Sandi akan disimpan di Akun Google Anda (<ph name="EMAIL" />).</translation>
 <translation id="2342919707875585281">Chrome membagikan lokasi Anda ke situs yang diizinkan.</translation>
 <translation id="2347208864470321755">Saat fitur ini diaktifkan, Chrome akan menawarkan untuk menerjemahkan halaman yang ditulis dalam bahasa lain menggunakan Google Terjemahan. <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
 <translation id="2427791862912929107">Chrome memiliki berbagai fitur yang dapat membantu Anda mengelola data internet dan seberapa cepat Anda dapat memuat halaman web.
 <ph name="BEGIN_LINK" />Pelajari lebih lanjut<ph name="END_LINK" /></translation>
+<translation id="2444854139071078915">Untuk mendapatkan sandi tersimpan dengan mudah di aplikasi lain, gunakan Chrome untuk Isi Otomatis</translation>
 <translation id="2561231791489583059">Gunakan Chrome sebagai browser default agar Anda tetap terlindungi dari situs berbahaya &amp; sandi Anda tetap aman</translation>
 <translation id="2574249610672786438">Untuk melihat tab Chrome Anda dari perangkat lain, login ke semua perangkat Anda</translation>
 <translation id="2576431527583832481">Chrome jadi semakin baik! Versi baru telah tersedia.</translation>
@@ -31,6 +31,7 @@
 <translation id="2689064829982324496">Untuk logout dari Akun Google Anda di semua situs, <ph name="BEGIN_LINK" />logout dari Chrome<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome tidak dapat memeriksa update. Coba lagi nanti.</translation>
 <translation id="2732745070297234559">Chrome tidak dapat memeriksa semua sandi. Coba lagi besok.</translation>
+<translation id="2767464022270041271">Tidak ada sandi tersimpan. Pengelola Sandi Google dapat memeriksa sandi Anda jika Anda menyimpannya.</translation>
 <translation id="2869959624320573933">Login ke Chrome</translation>
 <translation id="2957447865124070833">Pilih <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Karena Anda logout dari akun yang dikelola oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chrome Anda akan dihapus dari perangkat ini. Data Anda akan tetap tersedia di Akun Google Anda.</translation>
@@ -59,15 +60,18 @@
 <translation id="4698415050768537821">Chrome tidak dapat memeriksa semua sandi. Coba lagi besok atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Untuk membantu meningkatkan kualitas aplikasi, Chrome akan mengirimkan data penggunaan dan error ke Google. <ph name="BEGIN_LINK" />Kelola<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Tidak didukung di Chrome Beta</translation>
+<translation id="4840404732697892756">Pengelola Sandi Google dapat memeriksa sandi jika Anda login dengan Akun Google Anda.</translation>
 <translation id="5030102366287574140">Chrome dapat membantu Anda agar tetap aman dari pelanggaran data, situs yang tidak aman, dan lainnya.</translation>
 <translation id="5108659628347594808">Buat Chrome Menjadi Lebih Baik</translation>
 <translation id="5119391094379141756">Pilih Chrome</translation>
 <translation id="5162467219239570114">Versi Chrome sudah usang. Jika tidak tersedia update di <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, mungkin saja perangkat Anda tidak lagi mendukung versi baru Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome tidak dapat menggunakan kamera karena sedang digunakan aplikasi lain</translation>
 <translation id="5460571915754665838">4. Pilih Chrome</translation>
+<translation id="5492504007368565877">Pengelola Sandi Google tidak dapat memeriksa sandi Anda.</translation>
 <translation id="5552137475244467770">Chrome memeriksa sandi Anda secara berkala berdasarkan daftar sandi yang telah diterbitkan secara online. Saat pemeriksaan dilakukan, sandi dan nama pengguna Anda dienkripsi, sehingga tidak dapat dibaca oleh siapa pun, termasuk Google.</translation>
 <translation id="5639704535586432836">Buka Setelan &gt; Privasi &gt; Kamera &gt; Google Chrome, lalu aktifkan kamera.</translation>
 <translation id="5642200033778930880">Google Chrome tidak dapat menggunakan kamera dalam mode Layar Terpisah</translation>
+<translation id="5661521615548540542">Pengelola Sandi Google tidak dapat memeriksa semua sandi. Coba lagi nanti.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline, Chrome tidak dapat memeriksa update</translation>
 <translation id="5716154293141027663">Membuka Chrome setiap kali Anda mengetuk link di aplikasi lainnya</translation>
@@ -87,6 +91,7 @@
 <translation id="6709398533399187136">Sandi Anda terekspos dalam pelanggaran data. Pengelola Sandi Google merekomendasikan untuk mengubahnya sekarang.</translation>
 <translation id="6822673484890854830">Chrome tidak dapat memeriksa semua sandi. Coba lagi nanti.</translation>
 <translation id="6964931465519938134">Anda sekarang dapat menggunakan Chrome kapan saja dengan mengetuk link di pesan, dokumen, dan aplikasi lainnya.</translation>
+<translation id="6975725306479268850">Pilih Chrome untuk Isi Otomatis</translation>
 <translation id="701356708427365932">Pelajari menu Chrome yang baru</translation>
 <translation id="7059914902409643750">Sesuaikan Chrome dengan Selera Anda</translation>
 <translation id="7124339256045485976">Pastikan Chrome selalu terupdate</translation>
@@ -107,6 +112,7 @@
 <translation id="7754633291442704733">Organisasi Anda <ph name="DOMAIN" /> akan memiliki akses ke data, bookmark, histori, sandi, dan setelan Chrome lainnya yang Anda simpan di akun ini. Jika logout, data Anda akan dihapus dari perangkat ini.  Namun, data akan tetap disimpan di Akun Google terkelola Anda dan tersedia untuk organisasi Anda. Organisasi juga dapat menetapkan kebijakan pengguna khusus untuk akun tersebut yang dapat mengubah perilaku Chrome.</translation>
 <translation id="7780154209050837198">Untuk mengoptimalkan Chrome, login ke Chrome dengan Akun Google Anda.</translation>
 <translation id="7855730255114109580">Ini adalah Google Chrome versi terbaru</translation>
+<translation id="7939179037291298976">Dari Setelan iPhone, buka "Password Options", lalu pilih "Chrome"</translation>
 <translation id="8022947259858476807">Gunakan Chrome secara default untuk membuka link, menelusuri dari widget, dan mengisi otomatis sandi di aplikasi lainnya</translation>
 <translation id="81358522153858150">Chrome kini mendukung kebijakan pengguna untuk akun terkelola Anda</translation>
 <translation id="8160472928944011082">Chrome tidak dapat diupdate</translation>
@@ -120,9 +126,12 @@
   2. Ketuk Aplikasi Browser Default
   3. Pilih Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8603022514504485810">Pengelola Sandi Google tidak dapat memeriksa semua sandi. Coba lagi besok atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="8736550665979974340">Tetap Aman dengan Google Chrome</translation>
+<translation id="8765470054473112089">Saat Anda mengetik di kolom URL atau kotak penelusuran, Chrome akan mengirimkan hal yang Anda ketik ke mesin telusur default untuk mendapatkan saran yang lebih baik. Fitur ini nonaktif dalam mode Samaran.</translation>
 <translation id="8772179140489533211">Menampilkan perintah untuk login ke Chrome.</translation>
 <translation id="8788269841521769222">Anda tidak perlu mengingat sandi ini. Sandi akan disimpan ke Pengelola Sandi Google untuk <ph name="EMAIL" /></translation>
+<translation id="8857676124663337448">Pengelola Sandi Google tidak dapat memeriksa semua sandi. Coba lagi besok.</translation>
 <translation id="8897749957032330183">Sandi disimpan ke Pengelola Sandi Google di perangkat ini.</translation>
 <translation id="8969290730818637510">Jika aktif:
 <ph name="BEGIN_INDENT" />  • Membantu Chrome menjadi lebih baik bagi pengguna lain seperti Anda.<ph name="END_INDENT" />

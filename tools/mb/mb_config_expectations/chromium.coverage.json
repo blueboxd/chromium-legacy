@@ -48,8 +48,7 @@
       "symbol_level": 0,
       "target_os": "fuchsia",
       "use_clang_coverage": true,
-      "use_remoteexec": true,
-      "use_v2_script_default": false
+      "use_remoteexec": true
     }
   },
   "ios-simulator-code-coverage": {
@@ -98,9 +97,8 @@
       "is_debug": false,
       "optimize_webui": false,
       "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_goma": true,
-      "use_javascript_coverage": true
+      "use_javascript_coverage": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-code-coverage": {

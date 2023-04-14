@@ -15,7 +15,7 @@
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_match_cell_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_view_views.h"
-#include "components/omnibox/browser/actions/omnibox_pedal.h"
+#include "components/omnibox/browser/actions/omnibox_action.h"
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/vector_icons.h"
@@ -121,7 +121,7 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
         color_provider->GetColor(GetOmniboxBackgroundColorId(theme_state_));
     SetBackground(CreateBackgroundFromPainter(
         views::Painter::CreateRoundRectWith1PxBorderPainter(
-            fill_color, stroke_color, GetCornerRadius())));
+            fill_color, stroke_color, GetCornerRadiusValue())));
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -141,8 +141,9 @@ class OmniboxSuggestionRowButton : public views::MdTextButton {
  private:
   raw_ptr<const gfx::VectorIcon> icon_;
   raw_ptr<OmniboxPopupViewViews> popup_contents_view_;
-  OmniboxPopupSelection selection_;
   OmniboxPartState theme_state_ = OmniboxPartState::NORMAL;
+
+  OmniboxPopupSelection selection_;
 };
 
 BEGIN_METADATA(OmniboxSuggestionRowButton, views::MdTextButton)
@@ -166,6 +167,17 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
           views::kMarginsKey,
           gfx::Insets::VH(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
                                  views::DISTANCE_RELATED_BUTTON_HORIZONTAL)));
+  BuildViews();
+}
+
+void OmniboxSuggestionButtonRowView::BuildViews() {
+  // Clear and reset existing views.
+  {
+    RemoveAllChildViews();
+    keyword_button_ = nullptr;
+    tab_switch_button_ = nullptr;
+    action_buttons_.clear();
+  }
 
   // For all of these buttons, the visibility set from UpdateFromModel().
   // The Keyword and Pedal buttons also get their text from there, since the
@@ -190,19 +202,42 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
               model_index_, OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH)));
   tab_switch_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACC_TAB_SWITCH_BUTTON));
-  pedal_button_ = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
-      base::BindRepeating(&OmniboxSuggestionButtonRowView::ButtonPressed,
-                          base::Unretained(this),
-                          OmniboxPopupSelection::FOCUSED_BUTTON_ACTION),
-      std::u16string(), OmniboxPedal::GetDefaultVectorIcon(),
-      popup_contents_view_,
-      OmniboxPopupSelection(model_index_,
-                            OmniboxPopupSelection::FOCUSED_BUTTON_ACTION)));
+
+  if (!HasMatch()) {
+    // Skip remaining code that depends on `match()`.
+    return;
+  }
+
+  // Only create buttons for existent actions.
+  for (size_t action_index = 0; action_index < match().actions.size();
+       action_index++) {
+    auto* button = AddChildView(std::make_unique<OmniboxSuggestionRowButton>(
+        base::BindRepeating(&OmniboxSuggestionButtonRowView::ButtonPressed,
+                            base::Unretained(this),
+                            OmniboxPopupSelection::FOCUSED_BUTTON_ACTION),
+        std::u16string(), match().actions[action_index]->GetVectorIcon(),
+        popup_contents_view_,
+        OmniboxPopupSelection(model_index_,
+                              OmniboxPopupSelection::FOCUSED_BUTTON_ACTION,
+                              action_index)));
+    action_buttons_.push_back(button);
+  }
 }
 
 OmniboxSuggestionButtonRowView::~OmniboxSuggestionButtonRowView() = default;
 
 void OmniboxSuggestionButtonRowView::UpdateFromModel() {
+  if (!HasMatch()) {
+    // Skip remaining code that depends on `match()`.
+    return;
+  }
+
+  // Only build views if there was a structural change. Without this check,
+  // performance could be impacted by frequent unnecessary rebuilds.
+  if (action_buttons_.size() != match().actions.size()) {
+    BuildViews();
+  }
+
   SetPillButtonVisibility(keyword_button_, OmniboxPopupSelection::KEYWORD_MODE);
   if (keyword_button_->GetVisible()) {
     std::u16string keyword;
@@ -220,19 +255,25 @@ void OmniboxSuggestionButtonRowView::UpdateFromModel() {
   SetPillButtonVisibility(tab_switch_button_,
                           OmniboxPopupSelection::FOCUSED_BUTTON_TAB_SWITCH);
 
-  SetPillButtonVisibility(pedal_button_,
-                          OmniboxPopupSelection::FOCUSED_BUTTON_ACTION);
-  if (pedal_button_->GetVisible()) {
-    const auto pedal_strings = match().action->GetLabelStrings();
-    pedal_button_->SetText(pedal_strings.hint);
-    pedal_button_->SetTooltipText(pedal_strings.suggestion_contents);
-    pedal_button_->SetAccessibleName(pedal_strings.accessibility_hint);
-    pedal_button_->SetIcon(match().action->GetVectorIcon());
+  for (const auto& action_button : action_buttons_) {
+    SetPillButtonVisibility(action_button,
+                            OmniboxPopupSelection::FOCUSED_BUTTON_ACTION);
+    if (action_button->GetVisible()) {
+      const OmniboxAction* action =
+          match().actions[action_button->selection().action_index].get();
+      const auto label_strings = action->GetLabelStrings();
+      action_button->SetText(label_strings.hint);
+      action_button->SetTooltipText(label_strings.suggestion_contents);
+      action_button->SetAccessibleName(label_strings.accessibility_hint);
+      action_button->SetIcon(action->GetVectorIcon());
+    }
   }
 
-  bool is_any_button_visible = keyword_button_->GetVisible() ||
-                               pedal_button_->GetVisible() ||
-                               tab_switch_button_->GetVisible();
+  bool is_any_button_visible =
+      keyword_button_->GetVisible() || tab_switch_button_->GetVisible() ||
+      base::ranges::any_of(action_buttons_, [](const auto& action_button) {
+        return action_button->GetVisible();
+      });
   SetVisible(is_any_button_visible);
 }
 
@@ -250,19 +291,28 @@ void OmniboxSuggestionButtonRowView::SelectionStateChanged() {
 void OmniboxSuggestionButtonRowView::SetThemeState(
     OmniboxPartState theme_state) {
   keyword_button_->SetThemeState(theme_state);
-  pedal_button_->SetThemeState(theme_state);
   tab_switch_button_->SetThemeState(theme_state);
+  for (const auto& action_button : action_buttons_) {
+    action_button->SetThemeState(theme_state);
+  }
 }
 
 views::Button* OmniboxSuggestionButtonRowView::GetActiveButton() const {
   std::vector<OmniboxSuggestionRowButton*> buttons{
-      keyword_button_, tab_switch_button_, pedal_button_};
+      keyword_button_,
+      tab_switch_button_,
+  };
+  buttons.insert(buttons.end(), action_buttons_.begin(), action_buttons_.end());
 
   // Find the button that matches model selection.
   auto selected_button =
       base::ranges::find(buttons, popup_contents_view_->GetSelection(),
                          &OmniboxSuggestionRowButton::selection);
   return selected_button == buttons.end() ? nullptr : *selected_button;
+}
+
+bool OmniboxSuggestionButtonRowView::HasMatch() const {
+  return model_->result().size() > model_index_;
 }
 
 const AutocompleteMatch& OmniboxSuggestionButtonRowView::match() const {

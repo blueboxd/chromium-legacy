@@ -5,21 +5,21 @@
 #ifndef CONTENT_BROWSER_DIRECT_SOCKETS_DIRECT_SOCKETS_SERVICE_IMPL_H_
 #define CONTENT_BROWSER_DIRECT_SOCKETS_DIRECT_SOCKETS_SERVICE_IMPL_H_
 
-#include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/document_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/base/address_list.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "net/dns/public/host_resolver_results.h"
 #include "third_party/blink/public/mojom/direct_sockets/direct_sockets.mojom.h"
 
-namespace network::mojom {
+namespace network {
+class SimpleHostResolver;
+namespace mojom {
 class NetworkContext;
-}  // namespace network::mojom
+}  // namespace mojom
+}  // namespace network
 
 namespace content {
 
@@ -35,19 +35,21 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
       RenderFrameHost*,
       mojo::PendingReceiver<blink::mojom::DirectSocketsService> receiver);
 
-  static content::DirectSocketsDelegate* GetDelegate();
-
   // blink::mojom::DirectSocketsService:
-  void OpenTcpSocket(
-      blink::mojom::DirectSocketOptionsPtr options,
+  void OpenTCPSocket(
+      blink::mojom::DirectTCPSocketOptionsPtr options,
       mojo::PendingReceiver<network::mojom::TCPConnectedSocket> socket,
       mojo::PendingRemote<network::mojom::SocketObserver> observer,
-      OpenTcpSocketCallback callback) override;
-  void OpenUdpSocket(
-      blink::mojom::DirectSocketOptionsPtr options,
+      OpenTCPSocketCallback callback) override;
+  void OpenUDPSocket(
+      blink::mojom::DirectUDPSocketOptionsPtr options,
       mojo::PendingReceiver<network::mojom::RestrictedUDPSocket> receiver,
       mojo::PendingRemote<network::mojom::UDPSocketListener> listener,
-      OpenUdpSocketCallback callback) override;
+      OpenUDPSocketCallback callback) override;
+  void OpenTCPServerSocket(
+      blink::mojom::DirectTCPServerSocketOptionsPtr options,
+      mojo::PendingReceiver<network::mojom::TCPServerSocket> socket,
+      OpenTCPServerSocketCallback callback) override;
 
   // Testing:
   static void SetNetworkContextForTesting(network::mojom::NetworkContext*);
@@ -59,23 +61,27 @@ class CONTENT_EXPORT DirectSocketsServiceImpl
 
   network::mojom::NetworkContext* GetNetworkContext() const;
 
-  void OnResolveCompleteForTcpSocket(
-      blink::mojom::DirectSocketOptionsPtr,
+  void OnResolveCompleteForTCPSocket(
+      blink::mojom::DirectTCPSocketOptionsPtr,
       mojo::PendingReceiver<network::mojom::TCPConnectedSocket>,
       mojo::PendingRemote<network::mojom::SocketObserver>,
-      OpenTcpSocketCallback,
+      OpenTCPSocketCallback,
       int result,
-      const absl::optional<net::AddressList>& resolved_addresses);
+      const net::ResolveErrorInfo&,
+      const absl::optional<net::AddressList>& resolved_addresses,
+      const absl::optional<net::HostResolverEndpointResults>&);
 
-  void OnResolveCompleteForUdpSocket(
-      blink::mojom::DirectSocketOptionsPtr,
+  void OnResolveCompleteForUDPSocket(
+      blink::mojom::DirectUDPSocketOptionsPtr,
       mojo::PendingReceiver<network::mojom::RestrictedUDPSocket>,
       mojo::PendingRemote<network::mojom::UDPSocketListener>,
-      OpenUdpSocketCallback,
+      OpenUDPSocketCallback,
       int result,
-      const absl::optional<net::AddressList>& resolved_addresses);
+      const net::ResolveErrorInfo&,
+      const absl::optional<net::AddressList>& resolved_addresses,
+      const absl::optional<net::HostResolverEndpointResults>&);
 
-  base::WeakPtrFactory<DirectSocketsServiceImpl> weak_ptr_factory_{this};
+  std::unique_ptr<network::SimpleHostResolver> resolver_;
 };
 
 }  // namespace content

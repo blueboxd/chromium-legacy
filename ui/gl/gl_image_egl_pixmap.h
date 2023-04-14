@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/x/glx.h"
 #include "ui/gl/gl_export.h"
@@ -28,7 +29,10 @@ class GL_EXPORT GLImageEGLPixmap : public GLImage {
 
   // Overridden from GLImage:
   gfx::Size GetSize() override;
-  bool BindTexImage(unsigned target) override;
+
+  // Binds image to texture currently bound to |target|. Returns true on
+  // success.
+  bool BindTexImage(unsigned target);
 
   // Releases the image that was bound via BindTexImage().
   void ReleaseEGLImage();

@@ -209,7 +209,7 @@ void GuestViewBase::InitWithWebContents(const base::Value::Dict& create_params,
 
   // Observe guest zoom changes.
   auto* zoom_controller = zoom::ZoomController::FromWebContents(web_contents());
-  zoom_controller->AddObserver(this);
+  zoom_controller_observations_.AddObservation(zoom_controller);
 
   // Give the derived class an opportunity to perform additional initialization.
   DidInitialize(create_params);
@@ -410,6 +410,15 @@ void GuestViewBase::DidAttach() {
 
 WebContents* GuestViewBase::GetOwnerWebContents() {
   return owner_web_contents_;
+}
+
+content::RenderFrameHost* GuestViewBase::GetProspectiveOuterDocument() {
+  DCHECK(!attached());
+  // TODO(crbug.com/769461): We should be more specific here and return the
+  // owner RenderFrameHost rather than assume it's the owner's primary main
+  // frame.
+  return owner_web_contents() ? owner_web_contents()->GetPrimaryMainFrame()
+                              : nullptr;
 }
 
 const GURL& GuestViewBase::GetOwnerSiteURL() const {
@@ -635,11 +644,6 @@ void GuestViewBase::UpdatePreferredSize(WebContents* target_web_contents,
   }
 }
 
-content::WebContents* GuestViewBase::GetResponsibleWebContents(
-    content::WebContents* source) {
-  return owner_web_contents();
-}
-
 void GuestViewBase::UpdateTargetURL(WebContents* source, const GURL& url) {
   if (!attached() || !embedder_web_contents()->GetDelegate())
     return;
@@ -693,6 +697,11 @@ void GuestViewBase::AttachToOuterWebContentsFrame(
              WebContents::FromRenderFrameHost(embedder_frame), embedder_frame,
              element_instance_id, is_full_page_plugin,
              std::move(completion_callback), std::move(attachment_callback));
+}
+
+void GuestViewBase::OnZoomControllerDestroyed(zoom::ZoomController* source) {
+  DCHECK(zoom_controller_observations_.IsObservingSource(source));
+  zoom_controller_observations_.RemoveObservation(source);
 }
 
 void GuestViewBase::OnZoomChanged(
@@ -858,7 +867,7 @@ void GuestViewBase::StartTrackingEmbedderZoomLevel() {
   if (!embedder_zoom_controller)
     return;
   // Listen to the embedder's zoom changes.
-  embedder_zoom_controller->AddObserver(this);
+  zoom_controller_observations_.AddObservation(embedder_zoom_controller);
 
   // Set the guest's initial zoom level to be equal to the embedder's.
   SetGuestZoomLevelToMatchEmbedder();
@@ -876,8 +885,10 @@ void GuestViewBase::StopTrackingEmbedderZoomLevel() {
   if (!embedder_zoom_controller)
     return;
 
-  // It is safe to remove an observer that was never registed.
-  embedder_zoom_controller->RemoveObserver(this);
+  if (zoom_controller_observations_.IsObservingSource(
+          embedder_zoom_controller)) {
+    zoom_controller_observations_.RemoveObservation(embedder_zoom_controller);
+  }
 }
 
 void GuestViewBase::UpdateGuestSize(const gfx::Size& new_size,

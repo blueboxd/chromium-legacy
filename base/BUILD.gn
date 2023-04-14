@@ -47,6 +47,11 @@ if (is_mac) {
   import("//third_party/protobuf/proto_library.gni")
 }
 
+if (is_apple) {
+  # Buildflags to control time behavior on iOS in file shared with mac.
+  import("//base/time/buildflags/buildflags.gni")
+}
+
 declare_args() {
   # Indicates if the Location object contains the source code information
   # (file, function, line). False means only the program counter (and currently
@@ -88,6 +93,14 @@ assert(!is_nacl || is_nacl_saigo,
 assert(!is_win || is_clang,
        "only clang-cl is supported on Windows, see https://crbug.com/988071")
 
+if (is_apple) {
+  assert(!use_blink || enable_mach_absolute_time_ticks,
+         "use_blink requires mach absolute time ticks")
+
+  assert(!is_mac || enable_mach_absolute_time_ticks,
+         "mac requires mach absolute time ticks")
+}
+
 # Determines whether libevent should be dep.
 dep_libevent = !is_fuchsia && !is_win && !is_mac && !is_nacl
 
@@ -122,9 +135,16 @@ if (is_win) {
   # ldflags in GN aren't automatically inherited.
   config("base_win_linker_flags") {
     ldflags = [
+      # Linking with shcore.lib causes the shcore api forwarder dll to load.
+      "/DELAYLOAD:api-ms-win-shcore-scaling-l1-1-1.dll",
+
+      # Linking with OneCore.lib causes the next two dlls to load.
+      "/DELAYLOAD:api-ms-win-power-base-l1-1-0.dll",
+      "/DELAYLOAD:api-ms-win-power-setting-l1-1-0.dll",
       "/DELAYLOAD:cfgmgr32.dll",
       "/DELAYLOAD:powrprof.dll",
       "/DELAYLOAD:setupapi.dll",
+      "/DELAYLOAD:shcore.dll",
     ]
   }
 }
@@ -281,8 +301,6 @@ component("base") {
     "containers/unique_ptr_adapters.h",
     "containers/util.h",
     "containers/vector_buffer.h",
-    "cpu.cc",
-    "cpu.h",
     "cpu_reduction_experiment.cc",
     "cpu_reduction_experiment.h",
     "critical_closure.h",
@@ -302,8 +320,6 @@ component("base") {
     "debug/asan_service.h",
     "debug/buffered_dwarf_reader.cc",
     "debug/buffered_dwarf_reader.h",
-    "debug/crash_logging.cc",
-    "debug/crash_logging.h",
     "debug/debugger.cc",
     "debug/debugger.h",
     "debug/dump_without_crashing.cc",
@@ -313,8 +329,6 @@ component("base") {
     "debug/leak_annotations.h",
     "debug/profiler.cc",
     "debug/profiler.h",
-    "debug/stack_trace.cc",
-    "debug/stack_trace.h",
     "debug/task_trace.cc",
     "debug/task_trace.h",
     "environment.cc",
@@ -324,29 +338,15 @@ component("base") {
     "feature_list.h",
     "features.cc",
     "features.h",
-    "file_descriptor_store.cc",
-    "file_descriptor_store.h",
     "file_version_info.h",
     "files/dir_reader_fallback.h",
     "files/file.cc",
     "files/file.h",
-    "files/file_enumerator.cc",
-    "files/file_enumerator.h",
     "files/file_error_or.h",
     "files/file_path.cc",
     "files/file_path.h",
-    "files/file_path_watcher.cc",
-    "files/file_path_watcher.h",
-    "files/file_proxy.cc",
-    "files/file_proxy.h",
     "files/file_tracing.cc",
     "files/file_tracing.h",
-    "files/file_util.cc",
-    "files/file_util.h",
-    "files/important_file_writer.cc",
-    "files/important_file_writer.h",
-    "files/important_file_writer_cleaner.cc",
-    "files/important_file_writer_cleaner.h",
     "files/memory_mapped_file.cc",
     "files/memory_mapped_file.h",
     "files/platform_file.h",
@@ -354,8 +354,6 @@ component("base") {
     "files/safe_base_name.h",
     "files/scoped_file.cc",
     "files/scoped_file.h",
-    "files/scoped_temp_dir.cc",
-    "files/scoped_temp_dir.h",
     "format_macros.h",
     "functional/bind.h",
     "functional/bind_internal.h",
@@ -381,8 +379,6 @@ component("base") {
     "hash/legacy_hash.cc",
     "hash/legacy_hash.h",
     "json/json_common.h",
-    "json/json_file_value_serializer.cc",
-    "json/json_file_value_serializer.h",
     "json/json_parser.cc",
     "json/json_parser.h",
     "json/json_reader.cc",
@@ -408,13 +404,6 @@ component("base") {
     "logging.h",
     "memory/aligned_memory.cc",
     "memory/aligned_memory.h",
-    "memory/discardable_memory.cc",
-    "memory/discardable_memory.h",
-    "memory/discardable_memory_allocator.cc",
-    "memory/discardable_memory_allocator.h",
-    "memory/discardable_memory_internal.h",
-    "memory/discardable_shared_memory.cc",
-    "memory/discardable_shared_memory.h",
     "memory/free_deleter.h",
     "memory/memory_pressure_listener.cc",
     "memory/memory_pressure_listener.h",
@@ -475,8 +464,6 @@ component("base") {
     "message_loop/message_pump_default.h",
     "message_loop/message_pump_for_io.h",
     "message_loop/message_pump_for_ui.h",
-    "message_loop/message_pump_glib.cc",
-    "message_loop/message_pump_glib.h",
     "message_loop/message_pump_type.h",
     "message_loop/timer_slack.h",
     "message_loop/work_id_provider.cc",
@@ -533,8 +520,6 @@ component("base") {
     "metrics/user_metrics.cc",
     "metrics/user_metrics.h",
     "metrics/user_metrics_action.h",
-    "native_library.cc",
-    "native_library.h",
     "no_destructor.h",
     "notreached.h",
     "observer_list.h",
@@ -546,11 +531,7 @@ component("base") {
     "observer_list_types.h",
     "one_shot_event.cc",
     "one_shot_event.h",
-    "os_compat_nacl.cc",
-    "os_compat_nacl.h",
     "parameter_pack.h",
-    "path_service.cc",
-    "path_service.h",
     "pending_task.cc",
     "pending_task.h",
     "pickle.cc",
@@ -579,20 +560,10 @@ component("base") {
     "process/current_process_test.h",
     "process/environment_internal.cc",
     "process/environment_internal.h",
-    "process/kill.cc",
-    "process/kill.h",
-    "process/launch.cc",
-    "process/launch.h",
-    "process/memory.cc",
-    "process/memory.h",
     "process/process.h",
     "process/process_handle.cc",
     "process/process_handle.h",
     "process/process_info.h",
-    "process/process_iterator.cc",
-    "process/process_iterator.h",
-    "process/process_metrics.cc",
-    "process/process_metrics.h",
     "process/process_metrics_iocounters.h",
     "profiler/frame.cc",
     "profiler/frame.h",
@@ -622,7 +593,6 @@ component("base") {
     "profiler/unwinder.h",
     "rand_util.cc",
     "rand_util.h",
-    "rand_util_nacl.cc",
     "ranges/algorithm.h",
     "ranges/functional.h",
     "ranges/ranges.h",
@@ -641,8 +611,6 @@ component("base") {
     "scoped_environment_variable_override.h",
     "scoped_generic.h",
     "scoped_multi_source_observation.h",
-    "scoped_native_library.cc",
-    "scoped_native_library.h",
     "scoped_observation.h",
     "scoped_observation_traits.h",
     "scoped_observation_traits_internal.h",
@@ -701,8 +669,6 @@ component("base") {
     "substring_set_matcher/substring_set_matcher.h",
     "supports_user_data.cc",
     "supports_user_data.h",
-    "sync_socket.cc",
-    "sync_socket.h",
     "synchronization/atomic_flag.cc",
     "synchronization/atomic_flag.h",
     "synchronization/condition_variable.h",
@@ -715,9 +681,6 @@ component("base") {
     "sys_byteorder.h",
     "syslog_logging.cc",
     "syslog_logging.h",
-    "system/sys_info.cc",
-    "system/sys_info.h",
-    "system/sys_info_internal.h",
     "system/system_monitor.cc",
     "system/system_monitor.h",
     "task/bind_post_task.h",
@@ -830,8 +793,6 @@ component("base") {
     "task/thread_pool/delayed_task_manager.h",
     "task/thread_pool/environment_config.cc",
     "task/thread_pool/environment_config.h",
-    "task/thread_pool/initialization_util.cc",
-    "task/thread_pool/initialization_util.h",
     "task/thread_pool/job_task_source.cc",
     "task/thread_pool/job_task_source.h",
     "task/thread_pool/pooled_parallel_task_runner.cc",
@@ -1004,24 +965,13 @@ component("base") {
   if (is_posix) {
     sources += [
       "debug/debugger_posix.cc",
-      "debug/stack_trace_posix.cc",
       "file_descriptor_posix.cc",
       "file_descriptor_posix.h",
       "files/dir_reader_posix.h",
-      "files/file_descriptor_watcher_posix.cc",
-      "files/file_descriptor_watcher_posix.h",
-      "files/file_enumerator_posix.cc",
       "files/file_posix.cc",
-      "files/file_util_posix.cc",
       "files/memory_mapped_file_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.h",
-      "memory/madv_free_discardable_memory_posix.cc",
-      "memory/madv_free_discardable_memory_posix.h",
-      "memory/page_size_posix.cc",
       "message_loop/watchable_io_message_pump_posix.cc",
       "message_loop/watchable_io_message_pump_posix.h",
-      "native_library_posix.cc",
       "posix/eintr_wrapper.h",
       "posix/file_descriptor_shuffle.cc",
       "posix/file_descriptor_shuffle.h",
@@ -1029,378 +979,14 @@ component("base") {
       "posix/global_descriptors.h",
       "posix/safe_strerror.cc",
       "posix/safe_strerror.h",
-      "posix/unix_domain_socket.cc",
-      "posix/unix_domain_socket.h",
-      "process/kill_posix.cc",
-      "process/launch_posix.cc",
       "process/process_handle_posix.cc",
-      "process/process_metrics_posix.cc",
-      "process/process_posix.cc",
-      "profiler/module_cache_posix.cc",
-      "rand_util_posix.cc",
       "strings/string_util_posix.h",
-      "strings/sys_string_conversions_posix.cc",
-      "sync_socket_posix.cc",
       "synchronization/condition_variable_posix.cc",
       "synchronization/lock_impl_posix.cc",
-      "synchronization/waitable_event_posix.cc",
-      "synchronization/waitable_event_watcher_posix.cc",
-      "system/sys_info_posix.cc",
-      "threading/platform_thread_internal_posix.cc",
-      "threading/platform_thread_internal_posix.h",
       "threading/platform_thread_posix.cc",
       "threading/thread_local_storage_posix.cc",
+      "time/time_conversion_posix.cc",
       "timer/hi_res_timer_manager_posix.cc",
-    ]
-
-    if (!is_nacl && !is_apple) {
-      sources += [
-        "profiler/stack_base_address_posix.cc",
-        "profiler/stack_base_address_posix.h",
-        "profiler/stack_copier_signal.cc",
-        "profiler/stack_copier_signal.h",
-        "profiler/stack_sampler_posix.cc",
-        "profiler/thread_delegate_posix.cc",
-        "profiler/thread_delegate_posix.h",
-      ]
-    }
-  }
-
-  if (is_win) {
-    sources += [
-      "debug/debugger_win.cc",
-      "debug/gdi_debug_util_win.cc",
-      "debug/gdi_debug_util_win.h",
-      "debug/handle_hooks_win.cc",
-      "debug/handle_hooks_win.h",
-      "debug/invalid_access_win.cc",
-      "debug/invalid_access_win.h",
-      "debug/stack_trace_win.cc",
-      "enterprise_util.cc",
-      "enterprise_util.h",
-      "enterprise_util_win.cc",
-      "file_version_info_win.cc",
-      "file_version_info_win.h",
-      "files/file_path_watcher_win.cc",
-      "files/file_util_win.cc",
-      "files/file_win.cc",
-      "files/memory_mapped_file_win.cc",
-      "logging_win.cc",
-      "logging_win.h",
-      "memory/page_size_win.cc",
-      "message_loop/message_pump_win.cc",
-      "message_loop/message_pump_win.h",
-      "native_library_win.cc",
-      "power_monitor/battery_level_provider_win.cc",
-      "power_monitor/power_monitor_device_source_win.cc",
-      "power_monitor/speed_limit_observer_win.cc",
-      "power_monitor/speed_limit_observer_win.h",
-      "process/kill_win.cc",
-      "process/launch_win.cc",
-      "process/memory_win.cc",
-      "process/process_handle_win.cc",
-      "process/process_info_win.cc",
-      "process/process_iterator_win.cc",
-      "process/process_metrics_win.cc",
-      "process/process_win.cc",
-      "profiler/module_cache_win.cc",
-      "profiler/native_unwinder_win.cc",
-      "profiler/native_unwinder_win.h",
-      "profiler/stack_sampler_win.cc",
-      "profiler/suspendable_thread_delegate_win.cc",
-      "profiler/suspendable_thread_delegate_win.h",
-      "scoped_clear_last_error_win.cc",
-      "strings/strcat_win.cc",
-      "strings/strcat_win.h",
-      "strings/string_number_conversions_win.cc",
-      "strings/string_number_conversions_win.h",
-      "strings/string_split_win.cc",
-      "strings/string_split_win.h",
-      "strings/string_util_win.cc",
-      "strings/string_util_win.h",
-      "strings/sys_string_conversions_win.cc",
-      "sync_socket_win.cc",
-      "synchronization/condition_variable_win.cc",
-      "synchronization/lock_impl_win.cc",
-      "synchronization/waitable_event_watcher_win.cc",
-      "synchronization/waitable_event_win.cc",
-      "threading/platform_thread_win.cc",
-      "threading/platform_thread_win.h",
-      "threading/thread_local_storage_win.cc",
-      "timer/hi_res_timer_manager_win.cc",
-      "win/access_control_list.cc",
-      "win/access_control_list.h",
-      "win/access_token.cc",
-      "win/access_token.h",
-      "win/async_operation.h",
-      "win/atl.h",
-      "win/atl_throw.cc",
-      "win/atl_throw.h",
-      "win/com_init_balancer.cc",
-      "win/com_init_balancer.h",
-      "win/com_init_check_hook.cc",
-      "win/com_init_check_hook.h",
-      "win/com_init_util.cc",
-      "win/com_init_util.h",
-      "win/core_winrt_util.cc",
-      "win/core_winrt_util.h",
-      "win/current_module.h",
-      "win/dark_mode_support.cc",
-      "win/dark_mode_support.h",
-      "win/default_apps_util.cc",
-      "win/default_apps_util.h",
-      "win/embedded_i18n/language_selector.cc",
-      "win/embedded_i18n/language_selector.h",
-      "win/enum_variant.cc",
-      "win/enum_variant.h",
-      "win/event_trace_consumer.h",
-      "win/event_trace_controller.cc",
-      "win/event_trace_controller.h",
-      "win/event_trace_provider.cc",
-      "win/event_trace_provider.h",
-      "win/hstring_compare.cc",
-      "win/hstring_compare.h",
-      "win/hstring_reference.cc",
-      "win/hstring_reference.h",
-      "win/i18n.cc",
-      "win/i18n.h",
-      "win/iat_patch_function.cc",
-      "win/iat_patch_function.h",
-      "win/map.h",
-      "win/message_window.cc",
-      "win/message_window.h",
-      "win/nt_status.cc",
-      "win/nt_status.h",
-      "win/object_watcher.cc",
-      "win/object_watcher.h",
-      "win/patch_util.cc",
-      "win/patch_util.h",
-      "win/pe_image_reader.cc",
-      "win/pe_image_reader.h",
-      "win/post_async_results.h",
-      "win/process_startup_helper.cc",
-      "win/process_startup_helper.h",
-      "win/propvarutil.h",
-      "win/reference.h",
-      "win/registry.cc",
-      "win/registry.h",
-      "win/resource_util.cc",
-      "win/resource_util.h",
-      "win/scoped_bstr.cc",
-      "win/scoped_bstr.h",
-      "win/scoped_co_mem.h",
-      "win/scoped_com_initializer.cc",
-      "win/scoped_com_initializer.h",
-      "win/scoped_gdi_object.h",
-      "win/scoped_handle.cc",
-      "win/scoped_handle.h",
-      "win/scoped_handle_verifier.cc",
-      "win/scoped_handle_verifier.h",
-      "win/scoped_hdc.h",
-      "win/scoped_hglobal.h",
-      "win/scoped_hstring.cc",
-      "win/scoped_hstring.h",
-      "win/scoped_localalloc.h",
-      "win/scoped_process_information.cc",
-      "win/scoped_process_information.h",
-      "win/scoped_propvariant.h",
-      "win/scoped_safearray.h",
-      "win/scoped_select_object.h",
-      "win/scoped_variant.cc",
-      "win/scoped_variant.h",
-      "win/scoped_windows_thread_environment.h",
-      "win/scoped_winrt_initializer.cc",
-      "win/scoped_winrt_initializer.h",
-      "win/security_descriptor.cc",
-      "win/security_descriptor.h",
-      "win/security_util.cc",
-      "win/security_util.h",
-      "win/shlwapi.h",
-      "win/shortcut.cc",
-      "win/shortcut.h",
-      "win/sid.cc",
-      "win/sid.h",
-      "win/sphelper.h",
-      "win/startup_information.cc",
-      "win/startup_information.h",
-      "win/variant_util.h",
-      "win/variant_vector.cc",
-      "win/variant_vector.h",
-      "win/vector.cc",
-      "win/vector.h",
-      "win/win_handle_types.h",
-      "win/win_handle_types_list.inc",
-      "win/win_util.cc",
-      "win/win_util.h",
-      "win/wincrypt_shim.h",
-      "win/windows_defines.inc",
-      "win/windows_h_disallowed.h",
-      "win/windows_types.h",
-      "win/windows_undefines.inc",
-      "win/windows_version.cc",
-      "win/windows_version.h",
-      "win/windowsx_shim.h",
-      "win/winrt_foundation_helpers.h",
-      "win/winrt_storage_util.cc",
-      "win/winrt_storage_util.h",
-      "win/wmi.cc",
-      "win/wmi.h",
-      "win/wrapped_window_proc.cc",
-      "win/wrapped_window_proc.h",
-    ]
-  }
-
-  if (is_mac) {
-    sources += [
-      "allocator/partition_allocator/shim/allocator_interception_mac.h",
-      "allocator/partition_allocator/shim/allocator_interception_mac.mm",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
-      "enterprise_util.cc",
-      "enterprise_util.h",
-      "enterprise_util_mac.mm",
-      "file_version_info_mac.h",
-      "file_version_info_mac.mm",
-      "files/file_path_watcher_mac.cc",
-      "files/file_util_mac.mm",
-      "mac/authorization_util.h",
-      "mac/authorization_util.mm",
-      "mac/backup_util.h",
-      "mac/backup_util.mm",
-      "mac/bundle_locations.h",
-      "mac/bundle_locations.mm",
-      "mac/call_with_eh_frame.cc",
-      "mac/call_with_eh_frame.h",
-      "mac/call_with_eh_frame_asm.S",
-      "mac/close_nocancel.cc",
-      "mac/dispatch_source_mach.cc",
-      "mac/dispatch_source_mach.h",
-      "mac/foundation_util.h",
-      "mac/foundation_util.mm",
-      "mac/launch_application.h",
-      "mac/launch_application.mm",
-      "mac/launchd.cc",
-      "mac/launchd.h",
-      "mac/mac_logging.h",
-      "mac/mac_logging.mm",
-      "mac/mac_util.h",
-      "mac/mac_util.mm",
-      "mac/mach_logging.cc",
-      "mac/mach_logging.h",
-      "mac/mach_port_rendezvous.cc",
-      "mac/mach_port_rendezvous.h",
-      "mac/os_crash_dumps.cc",
-      "mac/os_crash_dumps.h",
-      "mac/scoped_aedesc.h",
-      "mac/scoped_authorizationref.h",
-      "mac/scoped_authorizationref.mm",
-      "mac/scoped_block.h",
-      "mac/scoped_cffiledescriptorref.h",
-      "mac/scoped_cftyperef.h",
-      "mac/scoped_dispatch_object.h",
-      "mac/scoped_ionotificationportref.h",
-      "mac/scoped_ioobject.h",
-      "mac/scoped_ioplugininterface.h",
-      "mac/scoped_launch_data.h",
-      "mac/scoped_mach_msg_destroy.h",
-      "mac/scoped_mach_port.cc",
-      "mac/scoped_mach_port.h",
-      "mac/scoped_mach_vm.cc",
-      "mac/scoped_mach_vm.h",
-      "mac/scoped_nsautorelease_pool.h",
-      "mac/scoped_nsautorelease_pool.mm",
-      "mac/scoped_nsobject.h",
-      "mac/scoped_objc_class_swizzler.h",
-      "mac/scoped_objc_class_swizzler.mm",
-      "mac/scoped_sending_event.h",
-      "mac/scoped_sending_event.mm",
-      "message_loop/message_pump_mac.h",
-      "message_loop/message_pump_mac.mm",
-      "native_library_mac.mm",
-      "power_monitor/battery_level_provider_mac.mm",
-      "power_monitor/battery_state_sampler_mac.cc",
-      "power_monitor/iopm_power_source_sampling_event_source.cc",
-      "power_monitor/iopm_power_source_sampling_event_source.h",
-      "power_monitor/power_monitor_device_source_mac.mm",
-      "power_monitor/thermal_state_observer_mac.h",
-      "power_monitor/thermal_state_observer_mac.mm",
-      "process/kill_mac.cc",
-      "process/launch_mac.cc",
-      "process/memory_mac.mm",
-      "process/port_provider_mac.cc",
-      "process/port_provider_mac.h",
-      "process/process_handle_mac.cc",
-      "process/process_info_mac.cc",
-      "process/process_iterator_mac.cc",
-      "process/process_mac.cc",
-      "process/process_metrics_mac.cc",
-      "profiler/frame_pointer_unwinder.cc",
-      "profiler/frame_pointer_unwinder.h",
-      "profiler/module_cache_mac.cc",
-      "profiler/stack_sampler_mac.cc",
-      "profiler/suspendable_thread_delegate_mac.cc",
-      "profiler/suspendable_thread_delegate_mac.h",
-      "strings/sys_string_conversions_mac.mm",
-      "synchronization/waitable_event_mac.cc",
-      "synchronization/waitable_event_watcher_mac.cc",
-      "threading/platform_thread_mac.mm",
-      "threading/atomic.c",
-    ]
-  }
-
-  if (is_ios) {
-    sources += [
-      "critical_closure_internal_ios.mm",
-      "ios/block_types.h",
-      "ios/device_util.h",
-      "ios/device_util.mm",
-      "ios/ios_util.h",
-      "ios/ios_util.mm",
-      "ios/ns_error_util.h",
-      "ios/ns_error_util.mm",
-      "ios/ns_range.h",
-      "ios/scoped_critical_action.h",
-      "ios/scoped_critical_action.mm",
-      "native_library_ios.mm",
-      "process/launch_ios.cc",
-      "process/process_metrics_ios.cc",
-      "profiler/module_cache_mac.cc",
-      "profiler/stack_sampler_ios.cc",
-    ]
-    if (is_cronet_build) {
-      sources += [
-        "message_loop/message_pump_io_ios.cc",
-        "message_loop/message_pump_io_ios.h",
-      ]
-    } else {
-      sources += [
-        "message_loop/message_pump_kqueue.cc",
-        "message_loop/message_pump_kqueue.h",
-      ]
-    }
-
-    if (ios_stack_profiler_enabled) {
-      sources += [
-        "profiler/frame_pointer_unwinder.cc",
-        "profiler/frame_pointer_unwinder.h",
-        "profiler/suspendable_thread_delegate_mac.cc",
-        "profiler/suspendable_thread_delegate_mac.h",
-      ]
-    }
-  }
-
-  if (is_android) {
-    sources += [
-      "debug/stack_trace_android.cc",
-      "files/file_util_android.cc",
-      "files/scoped_file_android.cc",
-      "message_loop/message_pump_android.cc",
-      "message_loop/message_pump_android.h",
-      "os_compat_android.cc",
-      "os_compat_android.h",
-      "process/process_android.cc",
-      "profiler/stack_sampler_android.cc",
-      "threading/platform_thread_android.cc",
     ]
   }
 
@@ -1430,50 +1016,6 @@ component("base") {
     ]
   }
 
-  if (!is_nacl) {
-    sources += [
-      "base_paths.cc",
-      "base_paths.h",
-      "metrics/persistent_histogram_storage.cc",
-      "metrics/persistent_histogram_storage.h",
-    ]
-
-    if (is_win) {
-      sources += [
-        "base_paths_win.cc",
-        "base_paths_win.h",
-      ]
-    }
-
-    if (is_mac) {
-      sources += [
-        "base_paths_mac.h",
-        "base_paths_mac.mm",
-      ]
-    }
-
-    if (is_android) {
-      sources += [
-        "base_paths_android.cc",
-        "base_paths_android.h",
-      ]
-    }
-
-    if (is_posix) {
-      sources += [ "base_paths_posix.h" ]
-    }
-
-    if (is_linux || is_chromeos) {
-      sources += [
-        "base_paths_posix.cc",
-        "debug/elf_reader.cc",
-        "debug/elf_reader.h",
-        "stack_canary_linux.cc",
-        "stack_canary_linux.h",
-      ]
-    }
-  }
-
   all_dependent_configs = []
   defines = [ "BASE_IMPLEMENTATION" ]
   data = []
@@ -1494,10 +1036,20 @@ component("base") {
     "//base/allocator/partition_allocator:raw_ptr",
     "//base/third_party/double_conversion",
     "//base/third_party/dynamic_annotations",
+    "//build:blink_buildflags",
     "//build:branding_buildflags",
     "//build/config/compiler:compiler_buildflags",
     "//third_party/modp_b64",
   ]
+
+  # `raw_ptr` cannot be made a component due to CRT symbol issues.
+  # Its gateway to being a component is through `//base`, so we have
+  # to provide the appropriate `#define` here.
+  defines += [ "IS_RAW_PTR_IMPL" ]
+
+  if (is_apple) {
+    deps += [ "//base/time/buildflags:buildflags" ]
+  }
 
   if (build_rust_json_reader) {
     deps += [ "//third_party/rust/serde_json_lenient/v0_1/wrapper" ]
@@ -1624,10 +1176,6 @@ component("base") {
 
   # Android.
   if (is_android) {
-    sources -= [
-      "debug/stack_trace_posix.cc",
-      "profiler/stack_sampler_posix.cc",
-    ]
     sources += [
       "android/android_hardware_buffer_compat.cc",
       "android/android_hardware_buffer_compat.h",
@@ -1675,6 +1223,8 @@ component("base") {
       "android/library_loader/library_prefetcher_hooks.cc",
       "android/locale_utils.cc",
       "android/locale_utils.h",
+      "android/meminfo_dump_provider.cc",
+      "android/meminfo_dump_provider.h",
       "android/memory_pressure_listener_android.cc",
       "android/memory_pressure_listener_android.h",
       "android/path_service_android.cc",
@@ -1705,9 +1255,19 @@ component("base") {
       "android/timezone_utils.h",
       "android/unguessable_token_android.cc",
       "android/unguessable_token_android.h",
+      "debug/stack_trace_android.cc",
+      "files/file_util_android.cc",
+      "files/scoped_file_android.cc",
       "memory/platform_shared_memory_mapper_android.cc",
       "memory/platform_shared_memory_region_android.cc",
+      "message_loop/message_pump_android.cc",
+      "message_loop/message_pump_android.h",
+      "os_compat_android.cc",
+      "os_compat_android.h",
+      "process/process_android.cc",
+      "profiler/stack_sampler_android.cc",
       "system/sys_info_android.cc",
+      "threading/platform_thread_android.cc",
 
       # Android uses some Linux sources.
       "debug/elf_reader.cc",
@@ -1832,12 +1392,8 @@ component("base") {
       "file_descriptor_posix.cc",
       "file_descriptor_posix.h",
       "files/dir_reader_posix.h",
-      "files/file_descriptor_watcher_posix.cc",
-      "files/file_descriptor_watcher_posix.h",
-      "files/file_enumerator_posix.cc",
       "files/file_posix.cc",
       "files/file_util_fuchsia.cc",
-      "files/file_util_posix.cc",
       "files/memory_mapped_file_posix.cc",
       "fuchsia/default_job.cc",
       "fuchsia/default_job.h",
@@ -1868,7 +1424,6 @@ component("base") {
       "fuchsia/startup_context.h",
       "fuchsia/system_info.cc",
       "fuchsia/system_info.h",
-      "memory/page_size_posix.cc",
       "memory/platform_shared_memory_mapper_fuchsia.cc",
       "memory/platform_shared_memory_region_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",
@@ -1890,13 +1445,10 @@ component("base") {
       "process/process_handle_fuchsia.cc",
       "process/process_iterator_fuchsia.cc",
       "process/process_metrics_fuchsia.cc",
-      "process/process_metrics_posix.cc",
       "profiler/module_cache_posix.cc",
-      "profiler/stack_sampler_posix.cc",
       "rand_util_fuchsia.cc",
       "strings/string_util_posix.h",
       "strings/sys_string_conversions_posix.cc",
-      "sync_socket_posix.cc",
       "synchronization/condition_variable_posix.cc",
       "synchronization/lock_impl_posix.cc",
       "synchronization/waitable_event_posix.cc",
@@ -1915,12 +1467,12 @@ component("base") {
     # by public //base headers, which requires they be on the include path.
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.process.lifecycle",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.runner:fuchsia.component.runner_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl:fuchsia.intl_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io:fuchsia.io_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.process.lifecycle:fuchsia.process.lifecycle_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async",
       "//third_party/fuchsia-sdk/sdk/pkg/fdio",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
@@ -1932,10 +1484,10 @@ component("base") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo:fuchsia.buildinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo:fuchsia.hwinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media:fuchsia.media_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async-loop-default",
@@ -1985,79 +1537,163 @@ component("base") {
       "debug/stack_trace_nacl.cc",
       "files/file_path_watcher_stub.cc",
       "memory/page_size_nacl.cc",
+      "os_compat_nacl.cc",
+      "os_compat_nacl.h",
       "process/process_stubs.cc",
-      "profiler/stack_sampler_posix.cc",
+      "rand_util_nacl.cc",
       "sync_socket_nacl.cc",
       "system/sys_info_nacl.cc",
       "threading/platform_thread_linux.cc",
     ]
-
-    sources -= [
+  } else {
+    sources += [
+      "base_paths.cc",
+      "base_paths.h",
       "cpu.cc",
+      "cpu.h",
       "debug/crash_logging.cc",
       "debug/crash_logging.h",
       "debug/stack_trace.cc",
-      "debug/stack_trace_posix.cc",
-      "files/file_descriptor_watcher_posix.cc",
-      "files/file_descriptor_watcher_posix.h",
+      "debug/stack_trace.h",
       "files/file_enumerator.cc",
-      "files/file_enumerator_posix.cc",
+      "files/file_enumerator.h",
       "files/file_proxy.cc",
+      "files/file_proxy.h",
       "files/file_util.cc",
       "files/file_util.h",
-      "files/file_util_posix.cc",
       "files/important_file_writer.cc",
       "files/important_file_writer.h",
       "files/important_file_writer_cleaner.cc",
       "files/important_file_writer_cleaner.h",
       "files/scoped_temp_dir.cc",
+      "files/scoped_temp_dir.h",
       "json/json_file_value_serializer.cc",
       "json/json_file_value_serializer.h",
       "memory/discardable_memory.cc",
       "memory/discardable_memory.h",
       "memory/discardable_memory_allocator.cc",
       "memory/discardable_memory_allocator.h",
-      "memory/discardable_shared_memory.cc",
-      "memory/discardable_shared_memory.h",
-      "memory/madv_free_discardable_memory_allocator_posix.cc",
-      "memory/madv_free_discardable_memory_allocator_posix.h",
-      "memory/madv_free_discardable_memory_posix.cc",
-      "memory/madv_free_discardable_memory_posix.h",
-      "memory/page_size_posix.cc",
+      "memory/discardable_memory_internal.h",
+      "metrics/persistent_histogram_storage.cc",
+      "metrics/persistent_histogram_storage.h",
       "native_library.cc",
-      "native_library_posix.cc",
+      "native_library.h",
       "path_service.cc",
-      "posix/unix_domain_socket.cc",
-      "process/kill.cc",
-      "process/kill.h",
-      "process/kill_posix.cc",
-      "process/launch.cc",
-      "process/launch.h",
-      "process/launch_posix.cc",
-      "process/memory.cc",
-      "process/memory.h",
-      "process/process_iterator.cc",
-      "process/process_iterator.h",
+      "path_service.h",
       "process/process_metrics.cc",
-      "process/process_metrics_posix.cc",
-      "process/process_posix.cc",
-      "profiler/module_cache_posix.cc",
-      "rand_util_posix.cc",
+      "process/process_metrics.h",
       "scoped_native_library.cc",
-      "sync_socket_posix.cc",
+      "scoped_native_library.h",
       "system/sys_info.cc",
-      "system/sys_info_posix.cc",
+      "system/sys_info.h",
+      "system/sys_info_internal.h",
       "task/thread_pool/initialization_util.cc",
       "task/thread_pool/initialization_util.h",
     ]
-  } else {
-    # Remove NaCl stuff.
-    sources -= [
-      "os_compat_nacl.cc",
-      "os_compat_nacl.h",
-      "rand_util_nacl.cc",
-    ]
 
+    if (is_win) {
+      sources += [
+        "base_paths_win.cc",
+        "base_paths_win.h",
+      ]
+    }
+
+    if (is_mac) {
+      sources += [
+        "base_paths_mac.h",
+        "base_paths_mac.mm",
+      ]
+    }
+
+    if (is_android) {
+      sources += [
+        "base_paths_android.cc",
+        "base_paths_android.h",
+      ]
+    }
+
+    if (is_posix) {
+      sources += [
+        "base_paths_posix.h",
+        "memory/madv_free_discardable_memory_allocator_posix.cc",
+        "memory/madv_free_discardable_memory_allocator_posix.h",
+        "memory/madv_free_discardable_memory_posix.cc",
+        "memory/madv_free_discardable_memory_posix.h",
+        "posix/unix_domain_socket.cc",
+        "posix/unix_domain_socket.h",
+        "rand_util_posix.cc",
+        "system/sys_info_posix.cc",
+      ]
+    }
+
+    if (is_posix || is_fuchsia) {
+      sources += [
+        "files/file_descriptor_watcher_posix.cc",
+        "files/file_descriptor_watcher_posix.h",
+        "files/file_enumerator_posix.cc",
+        "files/file_util_posix.cc",
+        "memory/page_size_posix.cc",
+      ]
+    }
+
+    if ((is_posix && !is_ios) || is_fuchsia) {
+      sources += [
+        "process/process_metrics_posix.cc",
+        "sync_socket_posix.cc",
+      ]
+    }
+
+    if (is_posix && !is_apple) {
+      sources += [
+        "native_library_posix.cc",
+        "posix/can_lower_nice_to.cc",
+        "posix/can_lower_nice_to.h",
+        "process/launch_posix.cc",
+        "profiler/module_cache_posix.cc",
+        "profiler/stack_base_address_posix.cc",
+        "profiler/stack_base_address_posix.h",
+        "profiler/stack_copier_signal.cc",
+        "profiler/stack_copier_signal.h",
+        "profiler/thread_delegate_posix.cc",
+        "profiler/thread_delegate_posix.h",
+      ]
+    }
+
+    if (is_posix && !is_android) {
+      sources += [ "debug/stack_trace_posix.cc" ]
+    }
+
+    if (is_posix && !is_ios) {
+      sources += [
+        "process/kill_posix.cc",
+        "process/process_posix.cc",
+      ]
+    }
+
+    if (use_blink) {
+      sources += [
+        "memory/discardable_shared_memory.cc",
+        "memory/discardable_shared_memory.h",
+        "process/kill.cc",
+        "process/kill.h",
+        "process/launch.cc",
+        "process/launch.h",
+        "process/memory.cc",
+        "process/memory.h",
+        "process/process_iterator.cc",
+        "process/process_iterator.h",
+      ]
+    }
+
+    if (is_linux || is_chromeos) {
+      sources += [
+        "base_paths_posix.cc",
+        "debug/elf_reader.cc",
+        "debug/elf_reader.h",
+        "stack_canary_linux.cc",
+        "stack_canary_linux.h",
+      ]
+    }
     if (use_partition_alloc) {
       # Add stuff that doesn't work in NaCl.
       sources += [
@@ -2082,19 +1718,193 @@ component("base") {
   # Windows.
   if (is_win) {
     sources += [
+      "debug/debugger_win.cc",
+      "debug/gdi_debug_util_win.cc",
+      "debug/gdi_debug_util_win.h",
+      "debug/handle_hooks_win.cc",
+      "debug/handle_hooks_win.h",
+      "debug/invalid_access_win.cc",
+      "debug/invalid_access_win.h",
+      "debug/stack_trace_win.cc",
+      "enterprise_util.cc",
+      "enterprise_util.h",
+      "enterprise_util_win.cc",
+      "file_version_info_win.cc",
+      "file_version_info_win.h",
       "files/file_enumerator_win.cc",
+      "files/file_path_watcher_win.cc",
+      "files/file_util_win.cc",
+      "files/file_win.cc",
+      "files/memory_mapped_file_win.cc",
+      "logging_win.cc",
+      "logging_win.h",
+      "memory/page_size_win.cc",
       "memory/platform_shared_memory_mapper_win.cc",
       "memory/platform_shared_memory_region_win.cc",
+      "message_loop/message_pump_win.cc",
+      "message_loop/message_pump_win.h",
+      "native_library_win.cc",
+      "power_monitor/battery_level_provider_win.cc",
+      "power_monitor/power_monitor_device_source_win.cc",
+      "power_monitor/speed_limit_observer_win.cc",
+      "power_monitor/speed_limit_observer_win.h",
+      "process/kill_win.cc",
+      "process/launch_win.cc",
+      "process/memory_win.cc",
+      "process/process_handle_win.cc",
+      "process/process_info_win.cc",
+      "process/process_iterator_win.cc",
+      "process/process_metrics_win.cc",
+      "process/process_win.cc",
+      "profiler/module_cache_win.cc",
+      "profiler/native_unwinder_win.cc",
+      "profiler/native_unwinder_win.h",
+      "profiler/stack_sampler_win.cc",
+      "profiler/suspendable_thread_delegate_win.cc",
+      "profiler/suspendable_thread_delegate_win.h",
       "profiler/win32_stack_frame_unwinder.cc",
       "profiler/win32_stack_frame_unwinder.h",
       "rand_util_win.cc",
+      "scoped_clear_last_error_win.cc",
+      "strings/strcat_win.cc",
+      "strings/strcat_win.h",
+      "strings/string_number_conversions_win.cc",
+      "strings/string_number_conversions_win.h",
+      "strings/string_split_win.cc",
+      "strings/string_split_win.h",
+      "strings/string_util_win.cc",
+      "strings/string_util_win.h",
+      "strings/sys_string_conversions_win.cc",
+      "sync_socket_win.cc",
+      "synchronization/condition_variable_win.cc",
+      "synchronization/lock_impl_win.cc",
+      "synchronization/waitable_event_watcher_win.cc",
+      "synchronization/waitable_event_win.cc",
       "system/sys_info_win.cc",
+      "threading/platform_thread_win.cc",
+      "threading/platform_thread_win.h",
+      "threading/thread_local_storage_win.cc",
       "time/time_win.cc",
-    ]
-
-    sources -= [
-      "file_descriptor_store.cc",
-      "file_descriptor_store.h",
+      "timer/hi_res_timer_manager_win.cc",
+      "win/access_control_list.cc",
+      "win/access_control_list.h",
+      "win/access_token.cc",
+      "win/access_token.h",
+      "win/async_operation.h",
+      "win/atl.h",
+      "win/atl_throw.cc",
+      "win/atl_throw.h",
+      "win/com_init_balancer.cc",
+      "win/com_init_balancer.h",
+      "win/com_init_check_hook.cc",
+      "win/com_init_check_hook.h",
+      "win/com_init_util.cc",
+      "win/com_init_util.h",
+      "win/core_winrt_util.cc",
+      "win/core_winrt_util.h",
+      "win/current_module.h",
+      "win/dark_mode_support.cc",
+      "win/dark_mode_support.h",
+      "win/default_apps_util.cc",
+      "win/default_apps_util.h",
+      "win/embedded_i18n/language_selector.cc",
+      "win/embedded_i18n/language_selector.h",
+      "win/enum_variant.cc",
+      "win/enum_variant.h",
+      "win/event_trace_consumer.h",
+      "win/event_trace_controller.cc",
+      "win/event_trace_controller.h",
+      "win/event_trace_provider.cc",
+      "win/event_trace_provider.h",
+      "win/hstring_compare.cc",
+      "win/hstring_compare.h",
+      "win/hstring_reference.cc",
+      "win/hstring_reference.h",
+      "win/i18n.cc",
+      "win/i18n.h",
+      "win/iat_patch_function.cc",
+      "win/iat_patch_function.h",
+      "win/map.h",
+      "win/message_window.cc",
+      "win/message_window.h",
+      "win/nt_status.cc",
+      "win/nt_status.h",
+      "win/object_watcher.cc",
+      "win/object_watcher.h",
+      "win/patch_util.cc",
+      "win/patch_util.h",
+      "win/pe_image_reader.cc",
+      "win/pe_image_reader.h",
+      "win/post_async_results.h",
+      "win/process_startup_helper.cc",
+      "win/process_startup_helper.h",
+      "win/propvarutil.h",
+      "win/reference.h",
+      "win/registry.cc",
+      "win/registry.h",
+      "win/resource_util.cc",
+      "win/resource_util.h",
+      "win/scoped_bstr.cc",
+      "win/scoped_bstr.h",
+      "win/scoped_co_mem.h",
+      "win/scoped_com_initializer.cc",
+      "win/scoped_com_initializer.h",
+      "win/scoped_gdi_object.h",
+      "win/scoped_handle.cc",
+      "win/scoped_handle.h",
+      "win/scoped_handle_verifier.cc",
+      "win/scoped_handle_verifier.h",
+      "win/scoped_hdc.h",
+      "win/scoped_hglobal.h",
+      "win/scoped_hstring.cc",
+      "win/scoped_hstring.h",
+      "win/scoped_localalloc.h",
+      "win/scoped_process_information.cc",
+      "win/scoped_process_information.h",
+      "win/scoped_propvariant.h",
+      "win/scoped_safearray.h",
+      "win/scoped_select_object.h",
+      "win/scoped_variant.cc",
+      "win/scoped_variant.h",
+      "win/scoped_windows_thread_environment.h",
+      "win/scoped_winrt_initializer.cc",
+      "win/scoped_winrt_initializer.h",
+      "win/security_descriptor.cc",
+      "win/security_descriptor.h",
+      "win/security_util.cc",
+      "win/security_util.h",
+      "win/shlwapi.h",
+      "win/shortcut.cc",
+      "win/shortcut.h",
+      "win/sid.cc",
+      "win/sid.h",
+      "win/sphelper.h",
+      "win/startup_information.cc",
+      "win/startup_information.h",
+      "win/variant_util.h",
+      "win/variant_vector.cc",
+      "win/variant_vector.h",
+      "win/vector.cc",
+      "win/vector.h",
+      "win/win_handle_types.h",
+      "win/win_handle_types_list.inc",
+      "win/win_util.cc",
+      "win/win_util.h",
+      "win/wincrypt_shim.h",
+      "win/windows_defines.inc",
+      "win/windows_h_disallowed.h",
+      "win/windows_types.h",
+      "win/windows_undefines.inc",
+      "win/windows_version.cc",
+      "win/windows_version.h",
+      "win/windowsx_shim.h",
+      "win/winrt_foundation_helpers.h",
+      "win/winrt_storage_util.cc",
+      "win/winrt_storage_util.h",
+      "win/wmi.cc",
+      "win/wmi.h",
+      "win/wrapped_window_proc.cc",
+      "win/wrapped_window_proc.h",
     ]
 
     deps += [ "//base/win:base_win_buildflags" ]
@@ -2107,9 +1917,12 @@ component("base") {
 
     libs += [
       "cfgmgr32.lib",
+      "ntdll.lib",
+      "onecore.lib",
       "powrprof.lib",
       "propsys.lib",
       "setupapi.lib",
+      "shcore.lib",
       "userenv.lib",
       "wbemuuid.lib",
       "winmm.lib",
@@ -2126,23 +1939,84 @@ component("base") {
     ]
   }
 
+  if (!is_win) {
+    sources += [
+      "file_descriptor_store.cc",
+      "file_descriptor_store.h",
+    ]
+  }
+
   # Desktop Mac.
   if (is_mac) {
-    sources -= [ "process/launch_posix.cc" ]
     sources += [
+      "allocator/partition_allocator/shim/allocator_interception_mac.h",
+      "allocator/partition_allocator/shim/allocator_interception_mac.mm",
+      "allocator/partition_allocator/shim/malloc_zone_functions_mac.cc",
+      "allocator/partition_allocator/shim/malloc_zone_functions_mac.h",
+      "enterprise_util.cc",
+      "enterprise_util.h",
+      "enterprise_util_mac.mm",
       "files/file_path_watcher_fsevents.cc",
       "files/file_path_watcher_fsevents.h",
       "files/file_path_watcher_kqueue.cc",
       "files/file_path_watcher_kqueue.h",
-      "mac/scoped_typeref.h",
-      "memory/platform_shared_memory_mapper_mac.cc",
-      "memory/platform_shared_memory_region_mac.cc",
+      "files/file_path_watcher_mac.cc",
+      "mac/authorization_util.h",
+      "mac/authorization_util.mm",
+      "mac/close_nocancel.cc",
+      "mac/dispatch_source_mach.cc",
+      "mac/dispatch_source_mach.h",
+      "mac/launch_application.h",
+      "mac/launch_application.mm",
+      "mac/launchd.cc",
+      "mac/launchd.h",
+      "mac/mac_util.h",
+      "mac/mac_util.mm",
+      "mac/mach_port_rendezvous.cc",
+      "mac/mach_port_rendezvous.h",
+      "mac/os_crash_dumps.cc",
+      "mac/os_crash_dumps.h",
+      "mac/scoped_aedesc.h",
+      "mac/scoped_authorizationref.h",
+      "mac/scoped_authorizationref.mm",
+      "mac/scoped_cffiledescriptorref.h",
+      "mac/scoped_cftyperef.h",
+      "mac/scoped_dispatch_object.h",
+      "mac/scoped_ionotificationportref.h",
+      "mac/scoped_ioobject.h",
+      "mac/scoped_ioplugininterface.h",
+      "mac/scoped_launch_data.h",
+      "mac/scoped_mach_msg_destroy.h",
+      "mac/scoped_sending_event.h",
+      "mac/scoped_sending_event.mm",
       "message_loop/message_pump_kqueue.cc",
       "message_loop/message_pump_kqueue.h",
+      "native_library_mac.mm",
+      "power_monitor/battery_level_provider_mac.mm",
+      "power_monitor/battery_state_sampler_mac.cc",
+      "power_monitor/iopm_power_source_sampling_event_source.cc",
+      "power_monitor/iopm_power_source_sampling_event_source.h",
+      "power_monitor/power_monitor_device_source_mac.mm",
+      "power_monitor/thermal_state_observer_mac.h",
+      "power_monitor/thermal_state_observer_mac.mm",
+      "process/kill_mac.cc",
+      "process/launch_mac.cc",
+      "process/memory_mac.mm",
+      "process/port_provider_mac.cc",
+      "process/port_provider_mac.h",
+      "process/process_handle_mac.cc",
+      "process/process_info_mac.cc",
+      "process/process_iterator_mac.cc",
+      "process/process_mac.cc",
+      "process/process_metrics_mac.cc",
+      "profiler/frame_pointer_unwinder.cc",
+      "profiler/frame_pointer_unwinder.h",
+      "profiler/stack_sampler_mac.cc",
+      "profiler/suspendable_thread_delegate_mac.cc",
+      "profiler/suspendable_thread_delegate_mac.h",
+      "synchronization/waitable_event_watcher_mac.cc",
       "system/sys_info_mac.mm",
-      "time/time_conversion_posix.cc",
       "time/time_exploded_posix.cc",
-      "time/time_mac.mm",
     ]
 
     libs += [
@@ -2160,85 +2034,12 @@ component("base") {
 
   # Mac or iOS.
   if (is_apple) {
-    sources -= [
-      "native_library_posix.cc",
-      "profiler/module_cache_posix.cc",
-      "strings/sys_string_conversions_posix.cc",
-      "synchronization/waitable_event_posix.cc",
-      "synchronization/waitable_event_watcher_posix.cc",
-      "threading/platform_thread_internal_posix.cc",
-    ]
-  }
-
-  # Linux.
-  if (is_linux || is_chromeos) {
-    # TODO(brettw) this will need to be parameterized at some point.
-    linux_configs = []
-    if (use_glib) {
-      linux_configs += [ "//build/config/linux:glib" ]
-    }
-
-    configs += linux_configs
-    all_dependent_configs += linux_configs
-
     sources += [
-      "nix/mime_util_xdg.cc",
-      "nix/mime_util_xdg.h",
-      "nix/xdg_util.cc",
-      "nix/xdg_util.h",
-      "system/sys_info_linux.cc",
-    ]
-
-    defines += [ "USE_SYMBOLIZE" ]
-
-    # These dependencies are not required on Android, and in the case
-    # of xdg_mime must be excluded due to licensing restrictions.
-    deps += [
-      "//base/third_party/symbolize",
-      "//base/third_party/xdg_mime",
-      "//base/third_party/xdg_user_dirs",
-    ]
-  } else {
-    if (!is_android) {
-      sources -= [
-        "linux_util.cc",
-        "linux_util.h",
-      ]
-    }
-  }
-
-  # iOS
-  if (is_ios) {
-    sources -= [
-      "files/file_path_watcher.cc",
-      "files/file_path_watcher.h",
-      "memory/discardable_shared_memory.cc",
-      "memory/discardable_shared_memory.h",
-      "process/kill.cc",
-      "process/kill.h",
-      "process/kill_posix.cc",
-      "process/launch.cc",
-      "process/launch.h",
-      "process/launch_posix.cc",
-      "process/memory.cc",
-      "process/memory.h",
-      "process/process_iterator.cc",
-      "process/process_iterator.h",
-      "process/process_metrics_posix.cc",
-      "process/process_posix.cc",
-      "sync_socket.h",
-      "sync_socket_posix.cc",
-      "synchronization/waitable_event_watcher.h",
-    ]
-    sources += [
-      "base_paths_mac.h",
-      "base_paths_mac.mm",
       "file_version_info_mac.h",
       "file_version_info_mac.mm",
       "files/file_util_mac.mm",
       "mac/backup_util.h",
       "mac/backup_util.mm",
-      "mac/bridging.h",
       "mac/bundle_locations.h",
       "mac/bundle_locations.mm",
       "mac/call_with_eh_frame.cc",
@@ -2265,17 +2066,109 @@ component("base") {
       "memory/platform_shared_memory_region_mac.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
-      "power_monitor/power_monitor_device_source_ios.mm",
-      "process/memory_stubs.cc",
-      "process/process_stubs.cc",
+      "profiler/module_cache_mac.cc",
       "strings/sys_string_conversions_mac.mm",
       "synchronization/waitable_event_mac.cc",
-      "system/sys_info_ios.mm",
+      "system/sys_info_apple.mm",
       "threading/platform_thread_mac.mm",
-      "time/time_conversion_posix.cc",
+      "threading/atomic.c",
       "time/time_mac.mm",
     ]
+  }
 
+  # Linux.
+  if (is_linux || is_chromeos) {
+    # TODO(brettw) this will need to be parameterized at some point.
+    linux_configs = []
+    if (use_glib) {
+      linux_configs += [ "//build/config/linux:glib" ]
+    }
+
+    configs += linux_configs
+    all_dependent_configs += linux_configs
+    sources += [ "system/sys_info_linux.cc" ]
+    if (!is_cronet_build) {
+      # These dependencies are not required on Android, and in the case
+      # of xdg_mime must be excluded due to licensing restrictions.
+      sources += [
+        "nix/mime_util_xdg.cc",
+        "nix/mime_util_xdg.h",
+        "nix/xdg_util.cc",
+        "nix/xdg_util.h",
+      ]
+      defines += [ "USE_SYMBOLIZE" ]
+      deps += [
+        "//base/third_party/symbolize",
+        "//base/third_party/xdg_mime",
+        "//base/third_party/xdg_user_dirs",
+      ]
+    }
+  } else {
+    if (!is_android) {
+      sources -= [
+        "linux_util.cc",
+        "linux_util.h",
+      ]
+    }
+  }
+
+  # iOS
+  if (is_ios) {
+    sources += [
+      "base_paths_mac.h",
+      "base_paths_mac.mm",
+      "critical_closure_internal_ios.mm",
+      "ios/block_types.h",
+      "ios/device_util.h",
+      "ios/device_util.mm",
+      "ios/ios_util.h",
+      "ios/ios_util.mm",
+      "ios/ns_error_util.h",
+      "ios/ns_error_util.mm",
+      "ios/ns_range.h",
+      "ios/scoped_critical_action.h",
+      "ios/scoped_critical_action.mm",
+      "mac/bridging.h",
+      "native_library_ios.mm",
+      "power_monitor/power_monitor_device_source_ios.mm",
+      "process/launch_ios.cc",
+      "process/process_metrics_ios.cc",
+      "process/process_stubs.cc",
+      "profiler/stack_sampler_ios.cc",
+      "system/sys_info_ios.mm",
+    ]
+
+    if (use_blink) {
+      sources += [
+        "process/memory_mac.mm",
+        "process/process_iterator_ios.mm",
+        "sync_socket_posix.cc",
+        "synchronization/waitable_event_watcher_mac.cc",
+      ]
+    } else {
+      sources += [ "process/memory_stubs.cc" ]
+    }
+
+    if (is_cronet_build) {
+      sources += [
+        "message_loop/message_pump_io_ios.cc",
+        "message_loop/message_pump_io_ios.h",
+      ]
+    } else {
+      sources += [
+        "message_loop/message_pump_kqueue.cc",
+        "message_loop/message_pump_kqueue.h",
+      ]
+    }
+
+    if (ios_stack_profiler_enabled) {
+      sources += [
+        "profiler/frame_pointer_unwinder.cc",
+        "profiler/frame_pointer_unwinder.h",
+        "profiler/suspendable_thread_delegate_mac.cc",
+        "profiler/suspendable_thread_delegate_mac.h",
+      ]
+    }
     if (use_allocator_shim) {
       sources += [
         "allocator/partition_allocator/shim/allocator_interception_mac.h",
@@ -2299,6 +2192,15 @@ component("base") {
     }
 
     frameworks += [ "UIKit.framework" ]
+  }
+
+  if (use_blink) {
+    sources += [
+      "files/file_path_watcher.cc",
+      "files/file_path_watcher.h",
+      "sync_socket.cc",
+      "sync_socket.h",
+    ]
   }
 
   if (dep_libevent) {
@@ -2330,7 +2232,11 @@ component("base") {
 
   if (is_posix && !is_apple) {
     sources += [
-      "time/time_conversion_posix.cc",
+      "strings/sys_string_conversions_posix.cc",
+      "synchronization/waitable_event_posix.cc",
+      "synchronization/waitable_event_watcher_posix.cc",
+      "threading/platform_thread_internal_posix.cc",
+      "threading/platform_thread_internal_posix.h",
       "time/time_exploded_posix.cc",
       "time/time_now_posix.cc",
     ]
@@ -2353,11 +2259,8 @@ component("base") {
     }
   }
 
-  if (is_posix && !is_apple && !is_nacl) {
-    sources += [
-      "posix/can_lower_nice_to.cc",
-      "posix/can_lower_nice_to.h",
-    ]
+  if ((is_posix && !is_apple && !is_android) || is_fuchsia) {
+    sources += [ "profiler/stack_sampler_posix.cc" ]
   }
 
   if ((is_posix && !is_apple && !is_android && !is_chromeos) || is_fuchsia) {
@@ -2370,8 +2273,8 @@ component("base") {
     sources += [ "time/time_android.cc" ]
   }
 
-  if (!use_glib) {
-    sources -= [
+  if (use_glib) {
+    sources += [
       "message_loop/message_pump_glib.cc",
       "message_loop/message_pump_glib.h",
     ]
@@ -3027,7 +2930,7 @@ if (is_fuchsia) {
       "//testing/gtest",
     ]
     public_deps = [
-      ":testfidl",
+      ":testfidl_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
@@ -3044,7 +2947,9 @@ if (is_fuchsia) {
       "//base/test:test_support",
       "//testing/gtest",
     ]
-    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger" ]
+    public_deps = [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+    ]
   }
 }
 
@@ -3080,6 +2985,7 @@ test("base_unittests") {
     "allocator/dispatcher/testing/observer_mock.h",
     "allocator/dispatcher/testing/tools.h",
     "allocator/dispatcher/tls_unittest.cc",
+    "allocator/partition_allocator/pointers/raw_ptr_test_support.h",
     "allocator/partition_allocator/pointers/raw_ptr_unittest.cc",
     "allocator/partition_allocator/pointers/raw_ref_unittest.cc",
     "at_exit_unittest.cc",
@@ -3468,6 +3374,10 @@ test("base_unittests") {
     "//testing/buildbot/filters:base_unittests_filters",
   ]
 
+  if (is_android && enable_chrome_android_internal) {
+    data_deps += [ "//clank/build/bot/filters:base_unittests_filters" ]
+  }
+
   if (toolchain_has_rust) {
     deps += [ "//build/rust:cxx_cppdeps" ]
   }
@@ -3553,6 +3463,8 @@ test("base_unittests") {
     if (enable_cet_shadow_stack) {
       sources += [ "win/cet_shadow_stack_unittest.cc" ]
     }
+
+    libs = [ "ntdll.lib" ]
   }
 
   if (is_linux || is_chromeos) {
@@ -3587,8 +3499,11 @@ test("base_unittests") {
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",
       "strings/sys_string_conversions_mac_unittest.mm",
-      "time/time_mac_unittest.mm",
     ]
+  }
+
+  if (is_apple && enable_mach_absolute_time_ticks) {
+    sources += [ "time/time_mac_unittest.mm" ]
   }
 
   if (is_posix) {
@@ -3670,6 +3585,7 @@ test("base_unittests") {
       "android/linker/linker_jni.cc",
       "android/linker/linker_jni.h",
       "android/linker/linker_unittest.cc",
+      "android/meminfo_dump_provider_unittest.cc",
       "android/path_utils_unittest.cc",
       "android/radio_utils_unittest.cc",
       "android/reached_addresses_bitset_unittest.cc",
@@ -3894,12 +3810,12 @@ test("base_unittests") {
       ":test_interface_impl",
       ":test_log_listener_safe",
       ":testfidl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.buildinfo:fuchsia.buildinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hwinfo:fuchsia.hwinfo_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl:fuchsia.intl_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger:fuchsia.logger_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mem:fuchsia.mem_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/async",
       "//third_party/fuchsia-sdk/sdk/pkg/async-default",
       "//third_party/fuchsia-sdk/sdk/pkg/fdio",
@@ -4091,6 +4007,7 @@ if (is_android || is_robolectric) {
       "android/java/src/org/chromium/base/library_loader/LibraryLoader.java",
       "android/java/src/org/chromium/base/library_loader/LibraryPrefetcher.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
+      "android/java/src/org/chromium/base/memory/MemoryInfoBridge.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/StatisticsRecorderAndroid.java",
       "android/java/src/org/chromium/base/process_launcher/ChildProcessService.java",
@@ -4287,11 +4204,13 @@ if (is_android) {
       "android/java/src/org/chromium/base/lifetime/DestroyChecker.java",
       "android/java/src/org/chromium/base/lifetime/Destroyable.java",
       "android/java/src/org/chromium/base/memory/JavaHeapDumpGenerator.java",
+      "android/java/src/org/chromium/base/memory/MemoryInfoBridge.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureCallback.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureMonitor.java",
       "android/java/src/org/chromium/base/memory/MemoryPressureUma.java",
       "android/java/src/org/chromium/base/memory/MemoryPurgeManager.java",
       "android/java/src/org/chromium/base/metrics/CachingUmaRecorder.java",
+      "android/java/src/org/chromium/base/metrics/HistogramBucket.java",
       "android/java/src/org/chromium/base/metrics/NativeUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/NoopUmaRecorder.java",
       "android/java/src/org/chromium/base/metrics/RecordHistogram.java",
@@ -4361,6 +4280,7 @@ if (is_android) {
       "//base/test:test_support_java",
       "//build/android:build_java",
       "//third_party/android_support_test_runner:runner_java",
+      "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
       "//third_party/junit:junit",
@@ -4390,6 +4310,10 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/task/SingleThreadTaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/task/TaskRunnerImplTest.java",
       "android/javatests/src/org/chromium/base/test/metrics/HistogramTestRuleTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherTestBase.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherTransitionToNativeTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherWithNativeTest.java",
+      "android/javatests/src/org/chromium/base/test/metrics/HistogramWatcherWithoutNativeTest.java",
       "android/javatests/src/org/chromium/base/util/GarbageCollectionTestUtilsTest.java",
     ]
 
@@ -4435,6 +4359,7 @@ if (is_android) {
       "//build/android:build_java",
       "//third_party/accessibility_test_framework:accessibility_test_framework_java",
       "//third_party/android_deps:espresso_java",
+      "//third_party/android_deps:guava_android_java",
       "//third_party/android_sdk:android_test_base_java",
       "//third_party/android_sdk:android_test_mock_java",
       "//third_party/android_support_test_runner:runner_java",
@@ -4509,6 +4434,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
       "test/android/javatests/src/org/chromium/base/test/util/Features.java",
       "test/android/javatests/src/org/chromium/base/test/util/FeaturesBase.java",
+      "test/android/javatests/src/org/chromium/base/test/util/HistogramWatcher.java",
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferences.java",
       "test/android/javatests/src/org/chromium/base/test/util/InMemorySharedPreferencesContext.java",
       "test/android/javatests/src/org/chromium/base/test/util/InstrumentationUtils.java",
@@ -4582,6 +4508,7 @@ if (is_android) {
       "android/junit/src/org/chromium/base/LifetimeAssertTest.java",
       "android/junit/src/org/chromium/base/LogTest.java",
       "android/junit/src/org/chromium/base/MathUtilsTest.java",
+      "android/junit/src/org/chromium/base/PathUtilsTest.java",
       "android/junit/src/org/chromium/base/PiiEliderTest.java",
       "android/junit/src/org/chromium/base/PromiseTest.java",
       "android/junit/src/org/chromium/base/TimeUtilsTest.java",
@@ -4633,6 +4560,7 @@ if (is_android) {
       ":base_junit_test_support",
       "//base/test:test_support_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
+      "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_runner_java",
       "//third_party/hamcrest:hamcrest_java",
     ]
@@ -4719,6 +4647,13 @@ fuzzer_test("base_json_reader_fuzzer") {
 fuzzer_test("base_json_string_escape_fuzzer") {
   sources = [ "json/string_escape_fuzzer.cc" ]
   deps = [ "//base" ]
+}
+
+fuzzer_test("base_activity_analyzer_fuzzer") {
+  sources = [ "debug/activity_analyzer_fuzzer.cc" ]
+  deps = [ "//base" ]
+  dict = "debug/activity_analyzer_fuzzer.dict"
+  seed_corpus = "test/data/activity_analyzer_fuzzer"
 }
 
 if (is_mac) {
@@ -4825,6 +4760,7 @@ source_set("partition_alloc_test_support") {
     "allocator/partition_allocator/extended_api.cc",
     "allocator/partition_allocator/extended_api.h",
     "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_for_testing.h",
+    "allocator/partition_allocator/partition_alloc_for_testing.h",
   ]
   if (is_posix) {
     sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_posix_for_testing.cc" ]

@@ -24,6 +24,10 @@ BASE_FEATURE(kEnableFeedBackgroundRefresh,
              "EnableFeedBackgroundRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kEnableFeedForegroundRefresh,
+             "EnableFeedForegroundRefresh",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCreateDiscoverFeedServiceEarly,
              "CreateDiscoverFeedServiceEarly",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -43,6 +47,10 @@ BASE_FEATURE(kEnableFeedCardMenuSignInPromo,
 BASE_FEATURE(kEnableFeedAblation,
              "EnableFeedAblation",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableFeedExperimentTagging,
+             "EnableFeedExperimentTagging",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
 // should enable feed background refresh. This is used because registering for
@@ -65,6 +73,11 @@ const char kBackgroundRefreshIntervalInSeconds[] =
     "BackgroundRefreshIntervalInSeconds";
 const char kBackgroundRefreshMaxAgeInSeconds[] =
     "BackgroundRefreshMaxAgeInSeconds";
+
+const char kEnableFeedRefreshPostFeedSession[] =
+    "EnableFeedRefreshPostFeedSession";
+const char kEnableFeedRefreshOnAppBackgrounding[] =
+    "EnableFeedRefreshOnAppBackgrounding";
 
 bool IsWebChannelsEnabled() {
   return base::FeatureList::IsEnabled(kEnableWebChannels);
@@ -179,6 +192,18 @@ double GetBackgroundRefreshMaxAgeInSeconds() {
       /*default=*/0);
 }
 
+bool IsFeedRefreshPostFeedSessionEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kEnableFeedForegroundRefresh, kEnableFeedRefreshPostFeedSession,
+      /*default=*/false);
+}
+
+bool IsFeedRefreshOnAppBackgroundingEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kEnableFeedForegroundRefresh, kEnableFeedRefreshOnAppBackgrounding,
+      /*default=*/false);
+}
+
 bool IsFeedBottomSignInPromoEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedBottomSignInPromo);
 }
@@ -189,4 +214,8 @@ bool IsFeedCardMenuSignInPromoEnabled() {
 
 bool IsFeedAblationEnabled() {
   return base::FeatureList::IsEnabled(kEnableFeedAblation);
+}
+
+bool IsFeedExperimentTaggingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableFeedExperimentTagging);
 }

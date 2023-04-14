@@ -20,6 +20,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     blockedSites: BlockedSite[],
     checkStatus: chrome.passwordsPrivate.PasswordCheckStatus,
     insecureCredentials: chrome.passwordsPrivate.PasswordUiEntry[],
+    credentialWithReusedPassword: chrome.passwordsPrivate.PasswordUiEntryList[],
   };
 
   listeners: {
@@ -40,17 +41,22 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       'exportPasswords',
       'getBlockedSitesList',
       'getCredentialGroups',
+      'getCredentialsWithReusedPassword',
       'getInsecureCredentials',
       'getPasswordCheckStatus',
       'getSavedPasswordList',
       'muteInsecureCredential',
       'recordPasswordCheckInteraction',
       'removeBlockedSite',
+      'removeSavedPassword',
       'requestCredentialsDetails',
       'requestExportProgressStatus',
       'requestPlaintextPassword',
       'showAddShortcutDialog',
+      'showExportedFileInShell',
       'startBulkPasswordCheck',
+      'switchBiometricAuthBeforeFillingState',
+      'undoRemoveSavedPasswordOrException',
       'unmuteInsecureCredential',
     ]);
 
@@ -61,6 +67,7 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
       blockedSites: [],
       checkStatus: makePasswordCheckStatus({}),
       insecureCredentials: [],
+      credentialWithReusedPassword: [],
     };
 
     // Holds listeners so they can be called when needed.
@@ -134,6 +141,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     return Promise.resolve(this.data.insecureCredentials.slice());
   }
 
+  getCredentialsWithReusedPassword() {
+    this.methodCalled('getCredentialsWithReusedPassword');
+    return Promise.resolve(this.data.credentialWithReusedPassword.slice());
+  }
+
   startBulkPasswordCheck() {
     this.methodCalled('startBulkPasswordCheck');
     if (this.data.checkStatus.state ===
@@ -180,6 +192,11 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
     return Promise.resolve('plainTextPassword');
   }
 
+  removeSavedPassword(
+      id: number, fromStores: chrome.passwordsPrivate.PasswordStoreSet) {
+    this.methodCalled('removeSavedPassword', {id, fromStores});
+  }
+
   removeBlockedSite(id: number) {
     this.methodCalled('removeBlockedSite', id);
   }
@@ -207,5 +224,17 @@ export class TestPasswordManagerProxy extends TestBrowserProxy implements
 
   cancelExportPasswords() {
     this.methodCalled('cancelExportPasswords');
+  }
+
+  switchBiometricAuthBeforeFillingState() {
+    this.methodCalled('switchBiometricAuthBeforeFillingState');
+  }
+
+  undoRemoveSavedPasswordOrException() {
+    this.methodCalled('undoRemoveSavedPasswordOrException');
+  }
+
+  showExportedFileInShell() {
+    this.methodCalled('showExportedFileInShell');
   }
 }

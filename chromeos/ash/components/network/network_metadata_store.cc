@@ -5,12 +5,15 @@
 #include "chromeos/ash/components/network/network_metadata_store.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_switches.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/network/network_configuration_handler.h"
@@ -46,8 +49,9 @@ const char kEnableTrafficCountersAutoReset[] =
 const char kDayOfTrafficCountersAutoReset[] =
     "day_of_traffic_counters_auto_reset";
 
+constexpr base::TimeDelta kDefaultOverrideAge = base::Days(1);
 // Wait two weeks before overwriting the creation timestamp for a given
-// network
+// network.
 constexpr base::TimeDelta kTwoWeeks = base::Days(14);
 
 std::string GetPath(const std::string& guid, const std::string& subkey) {
@@ -71,6 +75,24 @@ bool IsApnListValid(const base::Value::List& list) {
   }
 
   return true;
+}
+
+base::TimeDelta ComputeMigrationMinimumAge() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kHiddenNetworkMigrationAge)) {
+    return kTwoWeeks;
+  }
+
+  int age_in_days = -1;
+  const std::string ascii =
+      command_line->GetSwitchValueASCII(switches::kHiddenNetworkMigrationAge);
+
+  if (ascii.empty() || !base::StringToInt(ascii, &age_in_days) ||
+      age_in_days < 0) {
+    return kDefaultOverrideAge;
+  }
+  return base::Days(age_in_days);
 }
 
 }  // namespace
@@ -193,7 +215,7 @@ void NetworkMetadataStore::FixSyncedHiddenNetworks() {
     base::Value::Dict dict;
     dict.Set(shill::kWifiHiddenSsid, false);
     network_configuration_handler_->SetShillProperties(
-        network->path(), base::Value(std::move(dict)), base::DoNothing(),
+        network->path(), std::move(dict), base::DoNothing(),
         base::BindOnce(&NetworkMetadataStore::OnDisableHiddenError,
                        weak_ptr_factory_.GetWeakPtr()));
   }
@@ -324,24 +346,23 @@ void NetworkMetadataStore::UpdateExternalModifications(
 void NetworkMetadataStore::OnConfigurationModified(
     const std::string& service_path,
     const std::string& guid,
-    const base::Value* set_properties) {
+    const base::Value::Dict* set_properties) {
   if (!set_properties) {
     return;
   }
 
   SetPref(guid, kIsFromSync, base::Value(false));
 
-  const base::Value::Dict& set_properties_dict = set_properties->GetDict();
-  if (set_properties_dict.Find(shill::kProxyConfigProperty)) {
+  if (set_properties->Find(shill::kProxyConfigProperty)) {
     UpdateExternalModifications(guid, shill::kProxyConfigProperty);
   }
-  if (set_properties_dict.FindByDottedPath(
+  if (set_properties->FindByDottedPath(
           base::StringPrintf("%s.%s", shill::kStaticIPConfigProperty,
                              shill::kNameServersProperty))) {
     UpdateExternalModifications(guid, shill::kNameServersProperty);
   }
 
-  if (set_properties_dict.Find(shill::kPassphraseProperty)) {
+  if (set_properties->Find(shill::kPassphraseProperty)) {
     // Only clear last connected if the passphrase changes.  Other settings
     // (autoconnect, dns, etc.) won't affect the ability to connect to a
     // network.
@@ -418,23 +439,26 @@ base::Time NetworkMetadataStore::UpdateAndRetrieveWiFiTimestamp(
     return base::Time::Now().UTCMidnight();
   }
 
-  const base::Value* creation_timestamp =
+  const base::Value* creation_timestamp_pref =
       GetPref(network_guid, kCreationTimestamp);
   const base::Time current_timestamp = base::Time::Now().UTCMidnight();
 
-  if (creation_timestamp &&
-      base::Time::FromDoubleT(creation_timestamp->GetDouble()) + kTwoWeeks <=
-          current_timestamp) {
+  if (!creation_timestamp_pref) {
+    SetPref(network_guid, kCreationTimestamp,
+            base::Value(current_timestamp.ToDoubleT()));
+    return current_timestamp;
+  }
+
+  const base::Time creation_timestamp =
+      base::Time::FromDoubleT(creation_timestamp_pref->GetDouble());
+  const base::TimeDelta minimum_age = ComputeMigrationMinimumAge();
+
+  if (creation_timestamp + minimum_age <= current_timestamp) {
     SetPref(network_guid, kCreationTimestamp,
             base::Value(base::Time::UnixEpoch().ToDoubleT()));
     return base::Time::UnixEpoch();
   }
-  if (!creation_timestamp) {
-    SetPref(network_guid, kCreationTimestamp,
-            base::Value(current_timestamp.ToDoubleT()));
-  }
-
-  return current_timestamp;
+  return creation_timestamp;
 }
 
 bool NetworkMetadataStore::GetIsConfiguredBySync(

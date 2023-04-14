@@ -592,8 +592,10 @@ absl_cc_library(
     absl::base
     absl::config
     absl::exponential_biased
+    absl::raw_logging_internal
     absl::sample_recorder
     absl::synchronization
+    absl::time
 )
 
 absl_cc_test(
@@ -704,7 +706,9 @@ absl_cc_library(
     absl::container_common
     absl::container_memory
     absl::core_headers
+    absl::dynamic_annotations
     absl::endian
+    absl::hash
     absl::hash_policy_traits
     absl::hashtable_debug_hooks
     absl::hashtablez_sampler

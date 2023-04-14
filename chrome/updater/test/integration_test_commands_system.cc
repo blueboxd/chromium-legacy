@@ -57,7 +57,8 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void PrintLog() const override { RunCommand("print_log"); }
 
   void CopyLog() const override {
-    const absl::optional<base::FilePath> path = GetDataDirPath(updater_scope_);
+    const absl::optional<base::FilePath> path =
+        GetInstallDirectory(updater_scope_);
     ASSERT_TRUE(path);
     if (path)
       updater::test::CopyLog(*path);
@@ -90,6 +91,17 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
     updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
+  }
+
+  void ExpectUpdateCheckSequence(
+      ScopedServer* test_server,
+      const std::string& app_id,
+      const std::string& install_data_index,
+      const base::Version& from_version,
+      const base::Version& to_version) const override {
+    updater::test::ExpectUpdateCheckSequence(updater_scope_, test_server,
+                                             app_id, install_data_index,
+                                             from_version, to_version);
   }
 
   void ExpectUpdateSequence(ScopedServer* test_server,
@@ -186,9 +198,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 
   void Update(const std::string& app_id,
-              const std::string& install_data_index) const override {
+              const std::string& install_data_index,
+              bool do_update_check_only) const override {
     RunCommand("update", {Param("app_id", app_id),
-                          Param("install_data_index", install_data_index)});
+                          Param("install_data_index", install_data_index),
+                          Param("do_update_check_only",
+                                do_update_check_only ? "true" : "false")});
   }
 
   void UpdateAll() const override { RunCommand("update_all", {}); }

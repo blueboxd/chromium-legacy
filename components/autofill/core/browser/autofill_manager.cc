@@ -24,14 +24,14 @@
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "google_apis/google_api_keys.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace autofill {
 
 namespace {
 
-// Creates a reply callback for ParseFormAsync().
+// ParsingCallback(), NotifyObserversCallback(), and NotifyNoObserversCallback()
+// assemble the reply callback for ParseFormAsync().
 //
 // An event
 //   AutofillManager::OnFoo(const FormData& form, args...)
@@ -40,26 +40,58 @@ namespace {
 //   AutofillManager::OnFooImpl(const FormData& form, args...)
 // unless the AutofillManager has been destructed or reset in the meantime.
 //
-// ParsingCallback(&AutofillManager::OnFooImpl, args...) creates the
-// corresponding callback to be passed to ParseFormAsync().
+// For some events, AutofillManager::Observer::On{Before,After}Foo() must be
+// called before/after AutofillManager::OnFooImpl().
 //
-// The `after_event` is supposed to be &Observer::OnAfterFoo (or nullptr if no
-// such event exists). The callback notifies the observers of `after_event`.
+// The corresponding callback for ParseFormAsync() is assembled by
+//   ParsingCallback(&AutofillManager::OnFooImpl, ...)
+//       .Then(NotifyNoObserversCallback())
+// or
+//   ParsingCallback(&AutofillManager::OnFooImpl, ...)
+//       .Then(NotifyObserversCallback(&Observer::OnAfterFoo, ...))
+//
+// `.Then(NotifyNoObserversCallback())` is needed in the first case to discard
+// the return type of ParsingCallback().
 template <typename Functor, typename... Args>
-base::OnceCallback<void(AutofillManager&, const FormData&)> ParsingCallback(
-    Functor&& functor,
-    void (AutofillManager::Observer::*after_event)(),
-    Args&&... args) {
+base::OnceCallback<AutofillManager&(AutofillManager&, const FormData&)>
+ParsingCallback(Functor&& functor, Args&&... args) {
   return base::BindOnce(
-      [](Functor&& functor, void (AutofillManager::Observer::*after_event)(),
-         std::remove_reference_t<Args&&>... args, AutofillManager& self,
-         const FormData& form) {
+      [](Functor&& functor, std::remove_reference_t<Args&&>... args,
+         AutofillManager& self, const FormData& form) -> AutofillManager& {
         base::invoke(std::forward<Functor>(functor), self, form,
                      std::forward<Args>(args)...);
-        if (after_event)
-          self.NotifyObservers(after_event);
+        return self;
       },
-      std::forward<Functor>(functor), after_event, std::forward<Args>(args)...);
+      std::forward<Functor>(functor), std::forward<Args>(args)...);
+}
+
+// See ParsingCallback().
+template <typename Functor, typename... Args>
+base::OnceCallback<void(AutofillManager&)> NotifyObserversCallback(
+    Functor&& functor,
+    Args&&... args) {
+  return base::BindOnce(
+      [](Functor&& functor, std::remove_reference_t<Args&&>... args,
+         AutofillManager& self) {
+        self.NotifyObservers(std::forward<Functor>(functor),
+                             std::forward<Args>(args)...);
+      },
+      std::forward<Functor>(functor), std::forward<Args>(args)...);
+}
+
+// See ParsingCallback().
+base::OnceCallback<void(AutofillManager&)> NotifyNoObserversCallback() {
+  return base::DoNothingAs<void(AutofillManager&)>();
+}
+
+// Collects the FormGlobalIds of `forms`.
+std::vector<FormGlobalId> GetFormGlobalIds(base::span<const FormData> forms) {
+  std::vector<FormGlobalId> form_ids;
+  form_ids.reserve(forms.size());
+  for (const FormData& form : forms) {
+    form_ids.push_back(form.global_id());
+  }
+  return form_ids;
 }
 
 // Returns the AutofillField* corresponding to |field| in |form| or nullptr,
@@ -96,19 +128,6 @@ bool CachedFormNeedsUpdate(const FormData& live_form,
   return false;
 }
 
-std::string GetAPIKeyForUrl(version_info::Channel channel) {
-  // First look if we can get API key from command line flag.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kAutofillAPIKey))
-    return command_line.GetSwitchValueASCII(switches::kAutofillAPIKey);
-
-  // Get the API key from Chrome baked keys.
-  if (channel == version_info::Channel::STABLE)
-    return google_apis::GetAPIKey();
-  return google_apis::GetNonStableAPIKey();
-}
-
 }  // namespace
 
 // static
@@ -129,28 +148,11 @@ void AutofillManager::LogAutofillTypePredictionsAvailable(
                       << std::move(buffer);
 }
 
-// static
-bool AutofillManager::IsRawMetadataUploadingEnabled(
-    version_info::Channel channel) {
-  return channel == version_info::Channel::CANARY ||
-         channel == version_info::Channel::DEV;
-}
-
-AutofillManager::AutofillManager(AutofillDriver* driver,
-                                 AutofillClient* client,
-                                 version_info::Channel channel,
-                                 EnableDownloadManager enable_download_manager)
+AutofillManager::AutofillManager(AutofillDriver* driver, AutofillClient* client)
     : driver_(driver),
       client_(client),
       log_manager_(client ? client->GetLogManager() : nullptr),
       form_interactions_ukm_logger_(CreateFormInteractionsUkmLogger()) {
-  if (enable_download_manager) {
-    download_manager_ = std::make_unique<AutofillDownloadManager>(
-        client, GetAPIKeyForUrl(channel),
-        AutofillDownloadManager::IsRawMetadataUploadingEnabled(
-            IsRawMetadataUploadingEnabled(channel)),
-        log_manager_);
-  }
   if (client) {
     translate::TranslateDriver* translate_driver = client->GetTranslateDriver();
     if (translate_driver) {
@@ -259,9 +261,9 @@ void AutofillManager::FillCreditCardForm(const FormData& form,
     FillCreditCardFormImpl(form, field, credit_card, cvc);
     return;
   }
-  ParseFormAsync(
-      form, ParsingCallback(&AutofillManager::FillCreditCardFormImpl,
-                            /*after_event=*/nullptr, field, credit_card, cvc));
+  ParseFormAsync(form, ParsingCallback(&AutofillManager::FillCreditCardFormImpl,
+                                       field, credit_card, cvc)
+                           .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::FillProfileForm(const AutofillProfile& profile,
@@ -271,9 +273,9 @@ void AutofillManager::FillProfileForm(const AutofillProfile& profile,
     FillProfileFormImpl(form, field, profile);
     return;
   }
-  ParseFormAsync(form,
-                 ParsingCallback(&AutofillManager::FillProfileFormImpl,
-                                 /*after_event=*/nullptr, field, profile));
+  ParseFormAsync(form, ParsingCallback(&AutofillManager::FillProfileFormImpl,
+                                       field, profile)
+                           .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::OnDidFillAutofillFormData(
@@ -282,28 +284,32 @@ void AutofillManager::OnDidFillAutofillFormData(
   if (!IsValidFormData(form))
     return;
 
-  NotifyObservers(&Observer::OnBeforeDidFillAutofillFormData);
+  NotifyObservers(&Observer::OnBeforeDidFillAutofillFormData, form.global_id());
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     OnDidFillAutofillFormDataImpl(form, timestamp);
-    NotifyObservers(&Observer::OnAfterDidFillAutofillFormData);
+    NotifyObservers(&Observer::OnAfterDidFillAutofillFormData,
+                    form.global_id());
     return;
   }
   ParseFormAsync(
       form,
       ParsingCallback(&AutofillManager::OnDidFillAutofillFormDataImpl,
-                      &Observer::OnAfterDidFillAutofillFormData, timestamp));
+                      timestamp)
+          .Then(NotifyObserversCallback(
+              &Observer::OnAfterDidFillAutofillFormData, form.global_id())));
 }
 
 void AutofillManager::OnFormSubmitted(const FormData& form,
                                       const bool known_success,
                                       const mojom::SubmissionSource source) {
-  if (!IsValidFormData(form))
+  if (!IsValidFormData(form)) {
     return;
+  }
 
-  NotifyObservers(&Observer::OnBeforeFormSubmitted);
+  NotifyObservers(&Observer::OnBeforeFormSubmitted, form.global_id());
   NotifyObservers(&Observer::OnFormSubmitted);
   OnFormSubmittedImpl(form, known_success, source);
-  NotifyObservers(&Observer::OnAfterFormSubmitted);
+  NotifyObservers(&Observer::OnAfterFormSubmitted, form.global_id());
 }
 
 void AutofillManager::OnFormsSeen(
@@ -323,13 +329,14 @@ void AutofillManager::OnFormsSeen(
   if (!ShouldParseForms(updated_forms))
     return;
 
-  NotifyObservers(&Observer::OnBeforeFormsSeen);
+  NotifyObservers(&Observer::OnBeforeFormsSeen,
+                  GetFormGlobalIds(updated_forms));
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     std::vector<FormData> parsed_forms;
     for (const FormData& form : updated_forms) {
       const auto parse_form_start_time = AutofillTickClock::NowTicks();
       FormStructure* cached_form_structure =
-          FindCachedFormByRendererId(form.global_id());
+          FindCachedFormById(form.global_id());
 
       // Not updating signatures of credit card forms is legacy behaviour. We
       // believe that the signatures are kept stable for voting purposes.
@@ -355,7 +362,8 @@ void AutofillManager::OnFormsSeen(
     }
     if (!parsed_forms.empty())
       OnFormsParsed(parsed_forms);
-    NotifyObservers(&Observer::OnAfterFormsSeen);
+    NotifyObservers(&Observer::OnAfterFormsSeen,
+                    GetFormGlobalIds(parsed_forms));
     return;
   }
   DCHECK(base::FeatureList::IsEnabled(features::kAutofillParseAsync));
@@ -363,7 +371,8 @@ void AutofillManager::OnFormsSeen(
                                const std::vector<FormData>& parsed_forms) {
     if (!parsed_forms.empty())
       self.OnFormsParsed(parsed_forms);
-    self.NotifyObservers(&Observer::OnAfterFormsSeen);
+    self.NotifyObservers(&Observer::OnAfterFormsSeen,
+                         GetFormGlobalIds(parsed_forms));
   };
   ParseFormsAsync(updated_forms, base::BindOnce(ProcessParsedForms));
 }
@@ -378,8 +387,7 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
   std::vector<FormStructure*> queryable_forms;
   DenseSet<FormType> form_types;
   for (const FormData& form : forms) {
-    FormStructure* form_structure =
-        FindCachedFormByRendererId(form.global_id());
+    FormStructure* form_structure = FindCachedFormById(form.global_id());
     if (!form_structure) {
       NOTREACHED();
       continue;
@@ -419,8 +427,11 @@ void AutofillManager::OnFormsParsed(const std::vector<FormData>& forms) {
 
   // Query the server if at least one of the forms was parsed.
   if (!queryable_forms.empty() && download_manager()) {
-    download_manager()->StartQueryRequest(
-        queryable_forms, driver()->IsolationInfo(), GetWeakPtr());
+    NotifyObservers(&Observer::OnBeforeLoadedServerPredictions);
+    if (!download_manager()->StartQueryRequest(
+            queryable_forms, driver()->IsolationInfo(), GetWeakPtr())) {
+      NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
+    }
   }
 }
 
@@ -431,17 +442,21 @@ void AutofillManager::OnTextFieldDidChange(const FormData& form,
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  NotifyObservers(&Observer::OnBeforeTextFieldDidChange);
+  NotifyObservers(&Observer::OnBeforeTextFieldDidChange, form.global_id(),
+                  field.global_id());
   NotifyObservers(&Observer::OnTextFieldDidChange);
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     OnTextFieldDidChangeImpl(form, field, bounding_box, timestamp);
-    NotifyObservers(&Observer::OnAfterTextFieldDidChange);
+    NotifyObservers(&Observer::OnAfterTextFieldDidChange, form.global_id(),
+                    field.global_id());
     return;
   }
-  ParseFormAsync(form,
-                 ParsingCallback(&AutofillManager::OnTextFieldDidChangeImpl,
-                                 &Observer::OnAfterTextFieldDidChange, field,
-                                 bounding_box, timestamp));
+  ParseFormAsync(
+      form,
+      ParsingCallback(&AutofillManager::OnTextFieldDidChangeImpl, field,
+                      bounding_box, timestamp)
+          .Then(NotifyObserversCallback(&Observer::OnAfterTextFieldDidChange,
+                                        form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnTextFieldDidScroll(const FormData& form,
@@ -455,9 +470,10 @@ void AutofillManager::OnTextFieldDidScroll(const FormData& form,
     OnTextFieldDidScrollImpl(form, field, bounding_box);
     return;
   }
-  ParseFormAsync(form,
-                 ParsingCallback(&AutofillManager::OnTextFieldDidScrollImpl,
-                                 /*after_event=*/nullptr, field, bounding_box));
+  ParseFormAsync(
+      form, ParsingCallback(&AutofillManager::OnTextFieldDidScrollImpl, field,
+                            bounding_box)
+                .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::OnSelectControlDidChange(const FormData& form,
@@ -473,7 +489,8 @@ void AutofillManager::OnSelectControlDidChange(const FormData& form,
   }
   ParseFormAsync(form,
                  ParsingCallback(&AutofillManager::OnSelectControlDidChangeImpl,
-                                 /*after_event=*/nullptr, field, bounding_box));
+                                 field, bounding_box)
+                     .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::OnAskForValuesToFill(
@@ -485,7 +502,8 @@ void AutofillManager::OnAskForValuesToFill(
   if (!IsValidFormData(form) || !IsValidFormFieldData(field))
     return;
 
-  NotifyObservers(&Observer::OnBeforeAskForValuesToFill);
+  NotifyObservers(&Observer::OnBeforeAskForValuesToFill, form.global_id(),
+                  field.global_id());
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)
 #if BUILDFLAG(IS_ANDROID)
       // TODO(crbug.com/1379149) Asynchronous parsing breaks Touch To Fill's
@@ -498,14 +516,17 @@ void AutofillManager::OnAskForValuesToFill(
     OnAskForValuesToFillImpl(form, field, bounding_box,
                              autoselect_first_suggestion,
                              form_element_was_clicked);
-    NotifyObservers(&Observer::OnAfterAskForValuesToFill);
+    NotifyObservers(&Observer::OnAfterAskForValuesToFill, form.global_id(),
+                    field.global_id());
     return;
   }
   ParseFormAsync(
       form,
-      ParsingCallback(&AutofillManager::OnAskForValuesToFillImpl,
-                      &Observer::OnAfterAskForValuesToFill, field, bounding_box,
-                      autoselect_first_suggestion, form_element_was_clicked));
+      ParsingCallback(&AutofillManager::OnAskForValuesToFillImpl, field,
+                      bounding_box, autoselect_first_suggestion,
+                      form_element_was_clicked)
+          .Then(NotifyObserversCallback(&Observer::OnAfterAskForValuesToFill,
+                                        form.global_id(), field.global_id())));
 }
 
 void AutofillManager::OnFocusOnFormField(const FormData& form,
@@ -518,9 +539,9 @@ void AutofillManager::OnFocusOnFormField(const FormData& form,
     OnFocusOnFormFieldImpl(form, field, bounding_box);
     return;
   }
-  ParseFormAsync(form,
-                 ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl,
-                                 /*after_event=*/nullptr, field, bounding_box));
+  ParseFormAsync(form, ParsingCallback(&AutofillManager::OnFocusOnFormFieldImpl,
+                                       field, bounding_box)
+                           .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::OnFocusNoLongerOnForm(bool had_interacted_form) {
@@ -548,8 +569,8 @@ void AutofillManager::OnSelectFieldOptionsDidChange(const FormData& form) {
     return;
   }
   ParseFormAsync(
-      form, ParsingCallback(&AutofillManager::OnSelectFieldOptionsDidChangeImpl,
-                            /*after_event=*/nullptr));
+      form, ParsingCallback(&AutofillManager::OnSelectFieldOptionsDidChangeImpl)
+                .Then(NotifyNoObserversCallback()));
 }
 
 void AutofillManager::OnJavaScriptChangedAutofilledValue(
@@ -559,16 +580,21 @@ void AutofillManager::OnJavaScriptChangedAutofilledValue(
   if (!IsValidFormData(form))
     return;
 
-  NotifyObservers(&Observer::OnBeforeAskForValuesToFill);
+  NotifyObservers(&Observer::OnBeforeJavaScriptChangedAutofilledValue,
+                  form.global_id(), field.global_id());
   if (!base::FeatureList::IsEnabled(features::kAutofillParseAsync)) {
     OnJavaScriptChangedAutofilledValueImpl(form, field, old_value);
-    NotifyObservers(&Observer::OnAfterAskForValuesToFill);
+    NotifyObservers(&Observer::OnAfterJavaScriptChangedAutofilledValue,
+                    form.global_id(), field.global_id());
     return;
   }
   ParseFormAsync(
       form,
       ParsingCallback(&AutofillManager::OnJavaScriptChangedAutofilledValueImpl,
-                      &Observer::OnAfterAskForValuesToFill, field, old_value));
+                      field, old_value)
+          .Then(NotifyObserversCallback(
+              &Observer::OnAfterJavaScriptChangedAutofilledValue,
+              form.global_id(), field.global_id())));
 }
 
 // Returns true if |live_form| does not match |cached_form|.
@@ -577,7 +603,7 @@ bool AutofillManager::GetCachedFormAndField(const FormData& form,
                                             FormStructure** form_structure,
                                             AutofillField** autofill_field) {
   // Maybe find an existing FormStructure that corresponds to |form|.
-  FormStructure* cached_form = FindCachedFormByRendererId(form.global_id());
+  FormStructure* cached_form = FindCachedFormById(form.global_id());
   if (cached_form) {
     if (base::FeatureList::IsEnabled(features::kAutofillParseAsync) ||
         !CachedFormNeedsUpdate(form, *cached_form)) {
@@ -639,10 +665,23 @@ size_t AutofillManager::FindCachedFormsBySignature(
   return hits_num;
 }
 
-FormStructure* AutofillManager::FindCachedFormByRendererId(
-    FormGlobalId form_id) const {
+FormStructure* AutofillManager::FindCachedFormById(FormGlobalId form_id) const {
   auto it = form_structures_.find(form_id);
   return it != form_structures_.end() ? it->second.get() : nullptr;
+}
+
+void AutofillManager::SetShouldSuppressKeyboard(bool suppress) {
+  driver_->SetShouldSuppressKeyboard(suppress);
+}
+
+bool AutofillManager::CanShowAutofillUi() const {
+  return driver_->CanShowAutofillUi();
+}
+
+void AutofillManager::TriggerReparseInAllFrames(
+    base::OnceCallback<void(bool success)> trigger_reparse_finished_callback) {
+  driver_->TriggerReparseInAllFrames(
+      std::move(trigger_reparse_finished_callback));
 }
 
 void AutofillManager::ParseFormsAsync(
@@ -677,7 +716,7 @@ void AutofillManager::ParseFormsAsync(
     DCHECK_LE(num_managed_forms, kAutofillManagerMaxFormCacheSize);
 
     if (FormStructure* cached_form_structure =
-            FindCachedFormByRendererId(form_data.global_id())) {
+            FindCachedFormById(form_data.global_id())) {
       // We need to keep the server data if available. We need to use them while
       // determining the heuristics.
       form_structure->RetrieveFromCache(
@@ -781,7 +820,7 @@ void AutofillManager::ParseFormAsync(
   }
 
   if (FormStructure* cached_form_structure =
-          FindCachedFormByRendererId(form_data.global_id())) {
+          FindCachedFormById(form_data.global_id())) {
     if (!CachedFormNeedsUpdate(form_data, *cached_form_structure)) {
       std::move(callback).Run(*this, form_data);
       return;
@@ -925,8 +964,10 @@ void AutofillManager::OnLoadedServerPredictions(
 
   // If there are no current forms corresponding to the queried signatures, drop
   // the query response.
-  if (queried_forms.empty())
+  if (queried_forms.empty()) {
+    NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
     return;
+  }
 
   // Parse and store the server predictions.
   FormStructure::ParseApiQueryResponse(
@@ -953,11 +994,7 @@ void AutofillManager::OnLoadedServerPredictions(
   // Forward form structures to the password generation manager to detect
   // account creation forms.
   PropagateAutofillPredictions(queried_forms);
+  NotifyObservers(&Observer::OnAfterLoadedServerPredictions);
 }
-
-void AutofillManager::OnServerRequestError(
-    FormSignature form_signature,
-    AutofillDownloadManager::RequestType request_type,
-    int http_error) {}
 
 }  // namespace autofill

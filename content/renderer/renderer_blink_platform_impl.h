@@ -204,10 +204,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver,
       scoped_refptr<base::SequencedTaskRunner> task_runner) override;
   std::string GetNameForHistogram(const char* name) override;
-  std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
-      blink::CrossVariantMojoRemote<
-          network::mojom::URLLoaderFactoryInterfaceBase> url_loader_factory)
-      override;
   std::unique_ptr<media::MediaLog> GetMediaLog(
       blink::MediaInspectorContext* inspector_context,
       scoped_refptr<base::SingleThreadTaskRunner> owner_task_runner,

@@ -180,11 +180,6 @@ public class EphemeralTabMediator {
             }
 
             @Override
-            public void didStartNavigationNoop(NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void titleWasSet(String title) {
                 mSheetContent.updateTitle(title);
                 onTitleSet(mSheetContent, title);
@@ -202,11 +197,6 @@ public class EphemeralTabMediator {
                             .show();
                     mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
                 }
-            }
-
-            @Override
-            public void didFinishNavigationNoop(NavigationHandle navigation) {
-                if (navigation.isInPrimaryMainFrame()) return;
             }
         };
     }

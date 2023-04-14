@@ -87,7 +87,7 @@ AppServiceProxyBase::InnerIconLoader::LoadIconFromIconKey(
         allow_placeholder_icon, std::move(callback));
   }
 
-  if (host_->ShouldReadIcons()) {
+  if (host_->ShouldReadIcons(app_type)) {
     host_->ReadIcons(app_type, app_id, size_hint_in_dip, icon_key.Clone(),
                      icon_type, std::move(callback));
     return nullptr;
@@ -184,7 +184,7 @@ BrowserAppLauncher* AppServiceProxyBase::BrowserAppLauncher() {
 }
 
 apps::PreferredAppsListHandle& AppServiceProxyBase::PreferredAppsList() {
-  return preferred_apps_list_;
+  return preferred_apps_impl_->preferred_apps_list();
 }
 
 void AppServiceProxyBase::RegisterPublisher(AppType app_type,
@@ -196,46 +196,15 @@ void AppServiceProxyBase::UnregisterPublisher(AppType app_type) {
   publishers_.erase(app_type);
 }
 
-void AppServiceProxyBase::InitializePreferredAppsForAllSubscribers() {
-  preferred_apps_list_.Init(
-      preferred_apps_impl_->preferred_apps_list().GetValue());
-}
-
-void AppServiceProxyBase::OnPreferredAppsChanged(
-    PreferredAppChangesPtr changes) {
-  preferred_apps_list_.ApplyBulkUpdate(std::move(changes));
-}
-
-void AppServiceProxyBase::OnPreferredAppSet(
-    const std::string& app_id,
-    IntentFilterPtr intent_filter,
-    IntentPtr intent,
-    ReplacedAppPreferences replaced_app_preferences) {
-  for (const auto& iter : publishers_) {
-    iter.second->OnPreferredAppSet(
-        app_id, intent_filter ? intent_filter->Clone() : nullptr,
-        intent ? intent->Clone() : nullptr,
-        CloneIntentFiltersMap(replaced_app_preferences));
-  }
-}
-
 void AppServiceProxyBase::OnSupportedLinksPreferenceChanged(
     const std::string& app_id,
     bool open_in_app) {
-  for (const auto& iter : publishers_) {
-    iter.second->OnSupportedLinksPreferenceChanged(app_id, open_in_app);
+  AppType app_type = AppRegistryCache().GetAppType(app_id);
+  if (!base::Contains(publishers_, app_type)) {
+    return;
   }
-}
 
-void AppServiceProxyBase::OnSupportedLinksPreferenceChanged(
-    AppType app_type,
-    const std::string& app_id,
-    bool open_in_app) {
   publishers_[app_type]->OnSupportedLinksPreferenceChanged(app_id, open_in_app);
-}
-
-bool AppServiceProxyBase::HasPublisher(AppType app_type) {
-  return base::Contains(publishers_, app_type);
 }
 
 absl::optional<IconKey> AppServiceProxyBase::GetIconKey(
@@ -585,20 +554,16 @@ void AppServiceProxyBase::AddPreferredApp(const std::string& app_id,
   if (app_id == apps_util::kUseBrowserForLink) {
     std::vector<IntentFilterPtr> filters;
     filters.push_back(std::move(intent_filter));
-    preferred_apps_impl_->SetSupportedLinksPreference(AppType::kUnknown, app_id,
+    preferred_apps_impl_->SetSupportedLinksPreference(app_id,
                                                       std::move(filters));
     return;
   }
 
-  if (apps_util::IsSupportedLinkForApp(app_id, intent_filter)) {
-    SetSupportedLinksPreference(app_id);
-    return;
-  }
+  // AddPreferredApp currently only supports adding preferences for link
+  // intents.
+  DCHECK(apps_util::IsSupportedLinkForApp(app_id, intent_filter));
 
-  preferred_apps_list_.AddPreferredApp(app_id, intent_filter);
-  preferred_apps_impl_->AddPreferredApp(
-      app_registry_cache_.GetAppType(app_id), app_id, std::move(intent_filter),
-      intent->Clone(), /*from_publisher=*/false);
+  SetSupportedLinksPreference(app_id);
 }
 
 void AppServiceProxyBase::SetSupportedLinksPreference(
@@ -622,16 +587,14 @@ void AppServiceProxyBase::SetSupportedLinksPreference(
   DCHECK(!app_id.empty());
 
   preferred_apps_impl_->SetSupportedLinksPreference(
-      app_registry_cache_.GetAppType(app_id), app_id,
-      std::move(all_link_filters));
+      app_id, std::move(all_link_filters));
 }
 
 void AppServiceProxyBase::RemoveSupportedLinksPreference(
     const std::string& app_id) {
   DCHECK(!app_id.empty());
 
-  preferred_apps_impl_->RemoveSupportedLinksPreference(
-      app_registry_cache_.GetAppType(app_id), app_id);
+  preferred_apps_impl_->RemoveSupportedLinksPreference(app_id);
 }
 
 void AppServiceProxyBase::SetWindowMode(const std::string& app_id,
@@ -706,7 +669,7 @@ void AppServiceProxyBase::OnLaunched(LaunchCallback callback,
   std::move(callback).Run(std::move(launch_result));
 }
 
-bool AppServiceProxyBase::ShouldReadIcons() {
+bool AppServiceProxyBase::ShouldReadIcons(AppType app_type) {
   return false;
 }
 

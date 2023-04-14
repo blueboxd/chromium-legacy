@@ -106,6 +106,8 @@ uint32_t BufferFormatToIOSurfacePixelFormat(gfx::BufferFormat format) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
+      // MacOS and iOS use ANGLE and do the conversion themselves and BGRA is
+      // the most optimal format.
       return 'BGRA';
     case gfx::BufferFormat::RGBA_F16:
       return 'RGhA';

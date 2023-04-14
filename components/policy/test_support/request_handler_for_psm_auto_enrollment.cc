@@ -69,13 +69,18 @@ RequestHandlerForPsmAutoEnrollment::LoadTestData() {
           .AppendASCII("test_data.binarypb");
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  CHECK(base::PathExists(path_to_test_data))
-      << " path_to_test_data: " << path_to_test_data;
+
+  auto test_data = std::make_unique<RlweTestData>();
+  if (!base::PathExists(path_to_test_data)) {
+    LOG(WARNING) << "Path to psm test data does not exist (this is expected in "
+                    "tast tests, but not in unit tests: "
+                 << path_to_test_data;
+    return test_data;
+  }
 
   std::string serialized_test_data;
   CHECK(base::ReadFileToString(path_to_test_data, &serialized_test_data));
 
-  auto test_data = std::make_unique<RlweTestData>();
   CHECK(test_data->ParseFromString(serialized_test_data));
 
   return test_data;

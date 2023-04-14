@@ -23,7 +23,7 @@ namespace em = enterprise_management;
 
 // The type for variables containing an error from DM Server response.
 using CertProvisioningResponseErrorType =
-    enterprise_management::ClientCertificateProvisioningResponse::Error;
+    em::ClientCertificateProvisioningResponse::Error;
 
 namespace {
 
@@ -62,6 +62,10 @@ bool CheckCommonClientCertProvisioningResponse(
   }
 
   return true;
+}
+
+std::vector<uint8_t> StrToBytes(const std::string& val) {
+  return std::vector<uint8_t>(val.begin(), val.end());
 }
 
 }  // namespace
@@ -199,7 +203,7 @@ void CertProvisioningClientImpl::DownloadCert(
 
 void CertProvisioningClientImpl::FillCommonRequestData(
     ProvisioningProcess provisioning_process,
-    enterprise_management::ClientCertificateProvisioningRequest& out_request) {
+    em::ClientCertificateProvisioningRequest& out_request) {
   out_request.set_certificate_scope(
       CertScopeToString(provisioning_process.cert_scope));
   out_request.set_cert_profile_id(
@@ -252,8 +256,7 @@ void CertProvisioningClientImpl::OnNextActionResponse(
 void CertProvisioningClientImpl::OnStartCsrResponse(
     StartCsrCallback callback,
     policy::DeviceManagementStatus status,
-    const enterprise_management::ClientCertificateProvisioningResponse&
-        response) {
+    const em::ClientCertificateProvisioningResponse& response) {
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 
@@ -297,10 +300,10 @@ void CertProvisioningClientImpl::OnStartCsrResponse(
                                           : empty_str;
 
     // Everything is ok, run |callback| with data.
-    return std::move(callback).Run(status, response_error, try_later,
-                                   invalidation_topic, va_challenge,
-                                   start_csr_response.hashing_algorithm(),
-                                   start_csr_response.data_to_sign());
+    return std::move(callback).Run(
+        status, response_error, try_later, invalidation_topic, va_challenge,
+        start_csr_response.hashing_algorithm(),
+        StrToBytes(start_csr_response.data_to_sign()));
   } while (false);
 
   // Something went wrong. Return error via |status|, |response_error|,
@@ -308,14 +311,13 @@ void CertProvisioningClientImpl::OnStartCsrResponse(
   const std::string empty_str;
   em::HashingAlgorithm hash_algo = {};
   return std::move(callback).Run(status, response_error, try_later, empty_str,
-                                 empty_str, hash_algo, empty_str);
+                                 empty_str, hash_algo, std::vector<uint8_t>());
 }
 
 void CertProvisioningClientImpl::OnFinishCsrResponse(
     FinishCsrCallback callback,
     policy::DeviceManagementStatus status,
-    const enterprise_management::ClientCertificateProvisioningResponse&
-        response) {
+    const em::ClientCertificateProvisioningResponse& response) {
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 
@@ -338,8 +340,7 @@ void CertProvisioningClientImpl::OnFinishCsrResponse(
 void CertProvisioningClientImpl::OnDownloadCertResponse(
     DownloadCertCallback callback,
     policy::DeviceManagementStatus status,
-    const enterprise_management::ClientCertificateProvisioningResponse&
-        response) {
+    const em::ClientCertificateProvisioningResponse& response) {
   absl::optional<CertProvisioningResponseErrorType> response_error;
   absl::optional<int64_t> try_later;
 

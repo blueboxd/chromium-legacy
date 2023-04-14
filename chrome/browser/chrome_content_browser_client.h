@@ -236,8 +236,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       override;
   bool ShouldUrlUseApplicationIsolationLevel(
       content::BrowserContext* browser_context,
-      const GURL& url,
-      bool origin_matches_flag) override;
+      const GURL& url) override;
   bool IsIsolatedContextAllowedForUrl(content::BrowserContext* browser_context,
                                       const GURL& lock_url) override;
   bool IsGetDisplayMediaSetSelectAllScreensAllowed(
@@ -314,6 +313,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsAttributionReportingOperationAllowed(
       content::BrowserContext* browser_context,
       AttributionReportingOperation operation,
+      content::RenderFrameHost* rfh,
       const url::Origin* impression_origin,
       const url::Origin* conversion_origin,
       const url::Origin* reporting_origin) override;
@@ -845,6 +845,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsFileSystemURLNavigationAllowed(
       content::BrowserContext* browser_context,
       const GURL& url) override;
+
+  bool AreIsolatedWebAppsEnabled(
+      content::BrowserContext* browser_context) override;
 
  protected:
   static bool HandleWebUI(GURL* url, content::BrowserContext* browser_context);

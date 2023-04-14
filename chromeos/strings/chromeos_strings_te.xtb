@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">బాహ్య పరికరాలకు ఫర్మ్‌వేర్‌‌ను అప్‌డేట్ చేసే విండో తెరిచి ఉంది. <ph name="NUM_UPDATES" /> అప్‌డేట్‌లు అందుబాటులో ఉన్నాయి.</translation>
 <translation id="1145516343487477149">సాధారణ Chromebook ప్రశ్నలకు సహాయక ఆర్టికల్స్, సమాధానాలను కనుగొంటుంది</translation>
+<translation id="1167755866710282443">కీలను అనుకూలీకరించడానికి మెనూను తెరవండి. తరలించడానికి మెనూను లాగండి.</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> ద్వారా ఈ <ph name="DEVICE_TYPE" /> మేనేజ్ చేయబడుతోంది.</translation>
 <translation id="1175951029573070619">మోస్తరుగా ఉంది (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">తీసివేయండి</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> ఆల్బమ్‌ను ఎంచుకోండి</translation>
 <translation id="4111761024568264522">USB టచ్‌ప్యాడ్</translation>
 <translation id="4117637339509843559">డార్క్ మోడ్</translation>
+<translation id="4130035430755296270">మరిన్ని లేఅవుట్ ఆప్షన్‌ల కోసం మౌస్ కర్సర్‌ని ఉంచడం కొనసాగించండి</translation>
 <translation id="4131410914670010031">నలుపు మరియు తెలుపు</translation>
 <translation id="4145784616224233563">HTTP ఫైర్‌వాల్</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS రిజల్యూషన్</translation>
 <translation id="4848429997038228357">రన్ అవుతోంది</translation>
 <translation id="4854586501323951986">బిల్ట్-ఇన్ టచ్‌స్క్రీన్</translation>
+<translation id="4855250849489639581">మరిన్ని లేఅవుట్ ఆప్షన్‌ల కోసం కిందికి స్వైప్ చేయండి</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ప్రయత్నం మిగిలి ఉంది}other{<ph name="ERROR_MESSAGE" /> {0} ప్రయత్నాలు మిగిలి ఉన్నాయి}}</translation>
 <translation id="4873827928179867585">ప్రామాణీకరణ అల్గారిథమ్</translation>
 <translation id="4880328057631981605">యాక్సెస్ స్థానం పేరు</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">డిస్‌ప్లే బ్రైట్‌నెస్‌ను పెంచండి</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
 <translation id="5784136236926853061">అధిక HTTPS ప్రతిస్పందన సమయం</translation>
+<translation id="5826644637650799838">ఆర్ట్ గురించి</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించండి</translation>
 <translation id="583281660410589416">తెలియని</translation>
 <translation id="5843706793424741864">ఫారెన్‌హీట్</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 ఇమేజ్</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" />, ఈ <ph name="DEVICE_TYPE" />ను మేనేజ్ చేస్తోంది. అడ్మినిస్ట్రేటర్‌లు పరికరాన్ని రిమోట్‌గా కాన్ఫిగర్ చేయవచ్చు.</translation>
 <translation id="7180611975245234373">రిఫ్రెష్ చేయండి</translation>
+<translation id="7180865173735832675">అనుకూలంగా మార్చండి</translation>
 <translation id="7212734716605298123">బాహ్య పరికరాల కోసం ఫర్మ్‌వేర్ అప్‌డేట్‌లు</translation>
 <translation id="7216409898977639127">సెల్యులార్ ప్రదాత</translation>
 <translation id="725133483556299729">ఈమెయిల్‌ను ఎంచుకోండి</translation>

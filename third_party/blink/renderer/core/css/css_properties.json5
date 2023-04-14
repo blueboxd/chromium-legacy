@@ -621,14 +621,6 @@
       valid_type: "bool",
     },
 
-    // - tree_scoped_value: true
-    // Whether the property takes a tree-scoped reference as its value.
-    // https://drafts.csswg.org/css-scoping/#css-tree-scoped-reference
-    tree_scoped_value: {
-      default: false,
-      valid_type: "bool",
-    },
-
     // Whether changing this property is so independent that we can apply
     // a change to them incrementally on top of the old style. This happens
     // only when inline style is changed. Conceptually, this could be a blocklist,
@@ -663,6 +655,17 @@
     // we should fix all of these and remove the flag.
     idempotent: {
       default: true,
+      valid_type: "bool",
+    },
+
+    // If true, this property will accept a CSSNumericLiteralValue
+    // (created by a fast-path parser), with no restrictions on range.
+    // (NaN and infinities will be sent through the normal ParseSingleValue
+    // path.) A typical case is the properties that can accept an alpha value;
+    // percent values will take the slow paths, but simple numbers will be sent
+    // directly through.
+    accepts_numeric_literal: {
+      default: false,
       valid_type: "bool",
     },
 
@@ -921,7 +924,6 @@
       },
       keywords: ["none", "auto"],
       typedom_types: ["Keyword"],
-      tree_scoped_value: true,
       separator: ",",
       valid_for_marker: true,
       runtime_flag: "CSSScrollTimeline",
@@ -1594,6 +1596,20 @@
       valid_for_position_fallback: true,
     },
     {
+      name: "anchor-default",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal" ],
+      include_paths: ["third_party/blink/renderer/core/style/scoped_css_name.h"],
+      type_name: "ScopedCSSName",
+      wrapper_pointer_name: "Persistent",
+      default_value: "nullptr",
+      field_group: "*",
+      field_template: "external",
+      converter: "ConvertAnchorDefault",
+      keywords: ["none"],
+      typedom_types: ["Keyword"],
+      runtime_flag: "CSSAnchorPositioning",
+    },
+    {
       name: "anchor-name",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal" ],
       include_paths: ["third_party/blink/renderer/core/style/scoped_css_name.h"],
@@ -1610,8 +1626,8 @@
     {
       name: "anchor-scroll",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal" ],
-      include_paths: ["third_party/blink/renderer/core/style/anchor_scroll_value.h"],
-      type_name: "AnchorScrollValue",
+      include_paths: ["third_party/blink/renderer/core/style/anchor_specifier_value.h"],
+      type_name: "AnchorSpecifierValue",
       wrapper_pointer_name: "Persistent",
       default_value: "nullptr",
       field_group: "*",
@@ -2541,7 +2557,6 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       type_name: "ScopedCSSNameList",
       wrapper_pointer_name: "Persistent",
-      tree_scoped_value: true,
       default_value: "nullptr",
       field_group: "*",
       field_template: "external",
@@ -2733,6 +2748,7 @@
       default_value: "1",
       converter: "ConvertAlpha",
       typedom_types: ["Number"],
+      accepts_numeric_literal: true,
     },
     {
       name: "fill-rule",
@@ -2856,6 +2872,7 @@
       converter: "ConvertAlpha",
       typedom_types: ["Number"],
       supports_incremental_style: true,
+      accepts_numeric_literal: true,
     },
     {
       name: "grid-auto-columns",
@@ -3298,6 +3315,7 @@
       field_group: "svg->inherited_resources",
       field_template: "pointer",
       type_name: "StyleSVGResource",
+      include_paths: ["third_party/blink/renderer/core/style/style_svg_resource.h"],
       wrapper_pointer_name: "scoped_refptr",
       default_value: "nullptr",
       name_for_methods: "MarkerEndResource",
@@ -3312,6 +3330,7 @@
       field_group: "svg->inherited_resources",
       field_template: "pointer",
       type_name: "StyleSVGResource",
+      include_paths: ["third_party/blink/renderer/core/style/style_svg_resource.h"],
       wrapper_pointer_name: "scoped_refptr",
       default_value: "nullptr",
       name_for_methods: "MarkerMidResource",
@@ -3326,6 +3345,7 @@
       field_group: "svg->inherited_resources",
       field_template: "pointer",
       type_name: "StyleSVGResource",
+      include_paths: ["third_party/blink/renderer/core/style/style_svg_resource.h"],
       wrapper_pointer_name: "scoped_refptr",
       default_value: "nullptr",
       name_for_methods: "MarkerStartResource",
@@ -3576,6 +3596,7 @@
       valid_for_first_line: true,
       valid_for_cue: true,
       supports_incremental_style: true,
+      accepts_numeric_literal: true,
     },
     {
       name: "order",
@@ -4393,7 +4414,6 @@
       default_value: "nullptr",
       type_name: "ScopedCSSNameList",
       wrapper_pointer_name: "Persistent",
-      tree_scoped_value: true,
       converter: "ConvertViewTimelineName",
       separator: ",",
       runtime_flag: "CSSScrollTimeline",
@@ -4408,6 +4428,7 @@
       type_name: "float",
       computed_style_custom_functions: ["setter"],
       typedom_types: ["Number"],
+      accepts_numeric_literal: true,
     },
     {
       name: "shape-margin",
@@ -4491,6 +4512,7 @@
       default_value: "1",
       converter: "ConvertAlpha",
       typedom_types: ["Number"],
+      accepts_numeric_literal: true,
     },
     {
       name: "stroke",
@@ -4589,6 +4611,7 @@
       default_value: "1",
       converter: "ConvertAlpha",
       typedom_types: ["Number"],
+      accepts_numeric_literal: true,
     },
     {
       name: "stroke-width",
@@ -4875,9 +4898,9 @@
       field_group: "*",
       field_size: 4,
       field_template: "primitive",
-      default_value: "kTextUnderlinePositionAuto",
-      name_for_methods: "TextUnderlinePosition",
-      type_name: "unsigned",
+      default_value: "TextUnderlinePosition::kAuto",
+      getter: "GetTextUnderlinePosition",
+      type_name: "TextUnderlinePosition",
       converter: "ConvertTextUnderlinePosition",
       keywords: ["auto", "from-font", "under", "left", "right"],
       typedom_types: ["Keyword"],
@@ -5152,7 +5175,6 @@
       default_value: "nullptr",
       type_name: "ScopedCSSNameList",
       wrapper_pointer_name: "Persistent",
-      tree_scoped_value: true,
       converter: "ConvertViewTimelineName",
       separator: ",",
       runtime_flag: "CSSViewTimeline",
@@ -5304,6 +5326,7 @@
       field_template: "primitive",
       default_value: "0.0f",
       type_name: "float",
+      accepts_numeric_literal: true,
     },
     {
       name: "-webkit-box-ordinal-group",
@@ -5849,7 +5872,7 @@
       inherited: true,
       field_group: "*",
       field_template: "keyword",
-      keywords: ["auto", "none", "text", "all"],
+      keywords: ["auto", "none", "text", "all", "contain"],
       typedom_types: ["Keyword"],
       default_value: "auto",
     },
@@ -5858,12 +5881,15 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       independent: false,  // Actually true, but setting it to false saves a precious bit in ComputedStyleBase.
       inherited: true,
-      field_template: "bitset_keyword",
+      // This property is "keyword" but use "primitive" to use `EWhiteSpace` defined manually.
+      field_template: "primitive",
+      field_size: 4,  // Ensure this is in sync with `kEWhiteSpaceBits`.
+      include_paths: ["third_party/blink/renderer/core/css/white_space.h"],
       keywords: [
-        "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap", "break-spaces"
+        "normal", "pre", "pre-wrap", "pre-line", "nowrap", "break-spaces"
       ],
       typedom_types: ["Keyword"],
-      default_value: "normal",
+      default_value: "EWhiteSpace::kNormal",
       valid_for_cue: true,
       valid_for_marker: true,
     },

@@ -484,22 +484,6 @@ inline bool IsNonFocusableFocusScopeOwner(Element& element) {
          IsA<HTMLSlotElement>(element);
 }
 
-inline int AdjustedTabIndex(Element& element) {
-  if (IsNonKeyboardFocusableShadowHost(element))
-    return 0;
-  if (element.DelegatesFocus() || IsA<HTMLSlotElement>(element)) {
-    // We can't use Element::tabIndex(), which returns -1 for invalid or
-    // missing values.
-    return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
-  }
-  bool default_focusable =
-      element.SupportsFocus() ||
-      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-       IsScrollableNode(&element));
-  return element.GetIntegralAttribute(html_names::kTabindexAttr,
-                                      default_focusable ? 0 : -1);
-}
-
 inline bool ShouldVisit(Element& element) {
   return element.IsKeyboardFocusable() || element.DelegatesFocus() ||
          IsNonFocusableFocusScopeOwner(element);
@@ -513,8 +497,10 @@ Element* ScopedFocusNavigation::FindElementWithExactTabIndex(
                                ? MoveToNext()
                                : MoveToPrevious()) {
     Element* current = CurrentElement();
-    if (ShouldVisit(*current) && AdjustedTabIndex(*current) == tab_index)
+    if (ShouldVisit(*current) &&
+        FocusController::AdjustedTabIndex(*current) == tab_index) {
       return current;
+    }
   }
   return nullptr;
 }
@@ -525,7 +511,7 @@ Element* ScopedFocusNavigation::NextElementWithGreaterTabIndex(int tab_index) {
   Element* winner = nullptr;
   for (; CurrentElement(); MoveToNext()) {
     Element* current = CurrentElement();
-    int current_tab_index = AdjustedTabIndex(*current);
+    int current_tab_index = FocusController::AdjustedTabIndex(*current);
     if (ShouldVisit(*current) && current_tab_index > tab_index) {
       if (!winner || current_tab_index < winning_tab_index) {
         winner = current;
@@ -544,7 +530,7 @@ Element* ScopedFocusNavigation::PreviousElementWithLowerTabIndex(
   Element* winner = nullptr;
   for (; CurrentElement(); MoveToPrevious()) {
     Element* current = CurrentElement();
-    int current_tab_index = AdjustedTabIndex(*current);
+    int current_tab_index = FocusController::AdjustedTabIndex(*current);
     if (ShouldVisit(*current) && current_tab_index < tab_index &&
         current_tab_index > winning_tab_index) {
       winner = current;
@@ -558,14 +544,16 @@ Element* ScopedFocusNavigation::PreviousElementWithLowerTabIndex(
 Element* ScopedFocusNavigation::NextFocusableElement() {
   Element* current = CurrentElement();
   if (current) {
-    int tab_index = AdjustedTabIndex(*current);
+    int tab_index = FocusController::AdjustedTabIndex(*current);
     // If an element is excluded from the normal tabbing cycle, the next
     // focusable element is determined by tree order.
     if (tab_index < 0) {
       for (MoveToNext(); CurrentElement(); MoveToNext()) {
         current = CurrentElement();
-        if (ShouldVisit(*current) && AdjustedTabIndex(*current) >= 0)
+        if (ShouldVisit(*current) &&
+            FocusController::AdjustedTabIndex(*current) >= 0) {
           return current;
+        }
       }
     } else {
       // First try to find an element with the same tabindex as start that comes
@@ -588,7 +576,7 @@ Element* ScopedFocusNavigation::NextFocusableElement() {
   // 2) comes first in the scope, if there's a tie.
   MoveToFirst();
   if (Element* winner = NextElementWithGreaterTabIndex(
-          current ? AdjustedTabIndex(*current) : 0)) {
+          current ? FocusController::AdjustedTabIndex(*current) : 0)) {
     return winner;
   }
 
@@ -606,7 +594,7 @@ Element* ScopedFocusNavigation::PreviousFocusableElement() {
   Element* current = CurrentElement();
   if (current) {
     MoveToPrevious();
-    tab_index = AdjustedTabIndex(*current);
+    tab_index = FocusController::AdjustedTabIndex(*current);
   } else {
     MoveToLast();
     tab_index = 0;
@@ -617,8 +605,10 @@ Element* ScopedFocusNavigation::PreviousFocusableElement() {
   if (tab_index < 0) {
     for (; CurrentElement(); MoveToPrevious()) {
       current = CurrentElement();
-      if (ShouldVisit(*current) && AdjustedTabIndex(*current) >= 0)
+      if (ShouldVisit(*current) &&
+          FocusController::AdjustedTabIndex(*current) >= 0) {
         return current;
+      }
     }
   } else {
     if (Element* winner = FindElementWithExactTabIndex(
@@ -646,7 +636,7 @@ Element* FindFocusableElementRecursivelyForward(
     if (found->DelegatesFocus()) {
       // If tabindex is positive, invalid, or missing, find focusable element
       // inside its shadow tree.
-      if (AdjustedTabIndex(*found) >= 0 &&
+      if (FocusController::AdjustedTabIndex(*found) >= 0 &&
           IsShadowHostWithoutCustomFocusLogic(*found)) {
         ScopedFocusNavigation inner_scope =
             ScopedFocusNavigation::OwnedByShadowHost(*found, owner_map);
@@ -696,8 +686,10 @@ Element* FindFocusableElementRecursivelyBackward(
 
     // If delegatesFocus is true and tabindex is negative, skip the whole shadow
     // tree under the shadow host.
-    if (found->DelegatesFocus() && AdjustedTabIndex(*found) < 0)
+    if (found->DelegatesFocus() &&
+        FocusController::AdjustedTabIndex(*found) < 0) {
       continue;
+    }
 
     // Now |found| is on a non focusable scope owner (a shadow host or a slot).
     // Find focusable element in descendant scope. If not found, find the next
@@ -1218,7 +1210,7 @@ Element* FocusController::FindFocusableElement(mojom::blink::FocusType type,
   return FindFocusableElementAcrossFocusScopes(type, scope, owner_map);
 }
 
-Element* FocusController::NextFocusableElementForIME(
+Element* FocusController::NextFocusableElementForImeAndAutofill(
     Element* element,
     mojom::blink::FocusType focus_type) {
   // TODO(ajith.v) Due to crbug.com/781026 when next/previous element is far
@@ -1268,6 +1260,13 @@ Element* FocusController::NextFocusableElementForIME(
         DynamicTo<HTMLFormControlElement>(next_element);
     if (!next_form_control_element)
       continue;
+    // If it is a submit button, then it is likely the end of the current form
+    // (i.e. no next input field to be focused). This return is especially
+    // important in a combined form where a single <form> element encloses
+    // several user forms (e.g. signin + signup).
+    if (next_form_control_element->CanBeSuccessfulSubmitButton()) {
+      return nullptr;
+    }
     if (next_form_control_element->formOwner() != form_owner ||
         next_form_control_element->IsDisabledOrReadOnly())
       continue;
@@ -1443,6 +1442,24 @@ void FocusController::NotifyFocusChangedObservers() const {
       focus_changed_observers_;
   for (const auto& it : observers)
     it->FocusedFrameChanged();
+}
+
+// static
+int FocusController::AdjustedTabIndex(const Element& element) {
+  if (IsNonKeyboardFocusableShadowHost(element)) {
+    return 0;
+  }
+  if (element.DelegatesFocus() || IsA<HTMLSlotElement>(element)) {
+    // We can't use Element::tabIndex(), which returns -1 for invalid or
+    // missing values.
+    return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
+  }
+  bool default_focusable =
+      element.SupportsFocus() ||
+      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
+       IsScrollableNode(&element));
+  return element.GetIntegralAttribute(html_names::kTabindexAttr,
+                                      default_focusable ? 0 : -1);
 }
 
 void FocusController::Trace(Visitor* visitor) const {

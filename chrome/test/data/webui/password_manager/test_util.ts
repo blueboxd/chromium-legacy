@@ -129,6 +129,13 @@ export function makePasswordManagerPrefs():
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: true,
     },
+    // <if expr="is_win or is_macosx">
+    {
+      key: 'password_manager.biometric_authentication_filling',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: true,
+    },
+    // </if>
   ];
 }
 
@@ -162,11 +169,11 @@ export function makeInsecureCredential(params: InsecureCredentialsParams):
   return {
     id: id || 0,
     storedIn: chrome.passwordsPrivate.PasswordStoreSet.DEVICE,
-    changePasswordUrl: `http://${url}/`,
+    changePasswordUrl: `https://${url}/`,
     urls: {
-      signonRealm: `http://${url}/`,
+      signonRealm: `https://${url}/`,
       shown: url,
-      link: `http://${url}/`,
+      link: `https://${url}/`,
     },
     username: username,
     note: '',

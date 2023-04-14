@@ -90,6 +90,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossBatteryManagerClient
   void BatteryInfoUpdated(std::string remote_address,
                           BatterySet battery_set) override;
 
+  // Registers battery callback to daemon after callback methods are exported.
+  void OnMethodsExported();
+
   // Handle BatteryManager RegisterCallback result.
   void BatteryCallbackRegistered(DBusResult<uint32_t> result);
 
@@ -99,7 +102,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossBatteryManagerClient
   // Path used for battery api calls by this class.
   dbus::ObjectPath battery_manager_adapter_path_;
 
-  // Service which implements the GattClient interface.
+  // Service which implements the BatteryManagerClient interface.
   std::string service_name_;
 
   // List of observers interested in battery event notifications.

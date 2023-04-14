@@ -19,7 +19,9 @@ class MockAXTreeDistiller : public AXTreeDistiller {
       : AXTreeDistiller(render_frame, base::NullCallback()) {}
   MOCK_METHOD(void,
               Distill,
-              (const ui::AXTree& tree, const ui::AXTreeUpdate& snapshot),
+              (const ui::AXTree& tree,
+               const ui::AXTreeUpdate& snapshot,
+               const ukm::SourceId& ukm_source_id),
               (override));
 };
 
@@ -127,7 +129,7 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   }
 
   void OnActiveAXTreeIDChanged(const ui::AXTreeID& tree_id) {
-    controller_->OnActiveAXTreeIDChanged(tree_id);
+    controller_->OnActiveAXTreeIDChanged(tree_id, ukm::kInvalidSourceId);
   }
 
   void OnAXTreeDistilled(const std::vector<ui::AXNodeID>& content_node_ids) {
@@ -144,6 +146,14 @@ class ReadAnythingAppControllerTest : public ChromeRenderViewTest {
   }
 
   ui::AXNodeID RootId() { return controller_->RootId(); }
+
+  ui::AXNodeID StartNodeId() { return controller_->StartNodeId(); }
+
+  int StartOffset() { return controller_->StartOffset(); }
+
+  ui::AXNodeID EndNodeId() { return controller_->EndNodeId(); }
+
+  int EndOffset() { return controller_->EndOffset(); }
 
   bool DisplayNodeIdsContains(ui::AXNodeID ax_node_id) {
     return base::Contains(controller_->display_node_ids_, ax_node_id);
@@ -220,10 +230,12 @@ TEST_F(ReadAnythingAppControllerTest, Theme) {
   float font_size = 18.0;
   SkColor foreground = SkColorSetRGB(0x33, 0x36, 0x39);
   SkColor background = SkColorSetRGB(0xFD, 0xE2, 0x93);
-  int letter_spacing = 0;  // enum value, kTight
-  float letter_spacing_value = -0.05;
-  int line_spacing = 1;  // enum value, kDefault
-  float line_spacing_value = 1.15;
+  int letter_spacing =
+      static_cast<int>(read_anything::mojom::LetterSpacing::kDefaultValue);
+  float letter_spacing_value = 0.0;
+  int line_spacing =
+      static_cast<int>(read_anything::mojom::LineSpacing::kDefaultValue);
+  float line_spacing_value = 1.5;
   SetThemeForTesting(font_name, font_size, foreground, background, line_spacing,
                      letter_spacing);
   EXPECT_EQ(font_name, FontName());
@@ -364,7 +376,7 @@ TEST_F(ReadAnythingAppControllerTest, GetTextContent_NoSelection) {
   EXPECT_EQ(more_text_content, GetTextContent(4));
 }
 
-TEST_F(ReadAnythingAppControllerTest, GetTextContent_With2NodeSelection) {
+TEST_F(ReadAnythingAppControllerTest, GetTextContent_WithSelection) {
   std::string text_content_1 = "Hello";
   std::string text_content_2 = " world";
   std::string text_content_3 = " friend";
@@ -392,75 +404,9 @@ TEST_F(ReadAnythingAppControllerTest, GetTextContent_With2NodeSelection) {
   AccessibilityEventReceived({update});
   OnAXTreeDistilled({});
   EXPECT_EQ("Hello world friend", GetTextContent(1));
-  EXPECT_EQ("ello", GetTextContent(2));
-  EXPECT_EQ(" wo", GetTextContent(3));
-  EXPECT_EQ(" friend", GetTextContent(4));
-}
-
-TEST_F(ReadAnythingAppControllerTest, GetTextContent_With3NodeSelection) {
-  std::string text_content_1 = "Hello";
-  std::string text_content_2 = " world";
-  std::string text_content_3 = " friend";
-  ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update);
-  update.nodes.resize(3);
-  update.nodes[0].id = 2;
-  update.nodes[1].id = 3;
-  update.nodes[2].id = 4;
-  update.nodes[0].role = ax::mojom::Role::kStaticText;
-  update.nodes[0].SetName(text_content_1);
-  update.nodes[0].SetNameFrom(ax::mojom::NameFrom::kContents);
-  update.nodes[1].role = ax::mojom::Role::kStaticText;
-  update.nodes[1].SetName(text_content_2);
-  update.nodes[1].SetNameFrom(ax::mojom::NameFrom::kContents);
-  update.nodes[2].role = ax::mojom::Role::kStaticText;
-  update.nodes[2].SetName(text_content_3);
-  update.nodes[2].SetNameFrom(ax::mojom::NameFrom::kContents);
-  // Create selection from node 2-4.
-  update.tree_data.sel_anchor_object_id = 2;
-  update.tree_data.sel_focus_object_id = 4;
-  update.tree_data.sel_anchor_offset = 1;
-  update.tree_data.sel_focus_offset = 3;
-  update.tree_data.sel_is_backward = false;
-  AccessibilityEventReceived({update});
-  OnAXTreeDistilled({});
-  EXPECT_EQ("Hello world friend", GetTextContent(1));
-  EXPECT_EQ("ello", GetTextContent(2));
-  EXPECT_EQ(" world", GetTextContent(3));
-  EXPECT_EQ(" fr", GetTextContent(4));
-}
-
-TEST_F(ReadAnythingAppControllerTest, GetTextContent_WithBackwardSelection) {
-  std::string text_content_1 = "Hello";
-  std::string text_content_2 = " world";
-  std::string text_content_3 = " friend";
-  ui::AXTreeUpdate update;
-  SetUpdateTreeID(&update);
-  update.nodes.resize(3);
-  update.nodes[0].id = 2;
-  update.nodes[1].id = 3;
-  update.nodes[2].id = 4;
-  update.nodes[0].role = ax::mojom::Role::kStaticText;
-  update.nodes[0].SetName(text_content_1);
-  update.nodes[0].SetNameFrom(ax::mojom::NameFrom::kContents);
-  update.nodes[1].role = ax::mojom::Role::kStaticText;
-  update.nodes[1].SetName(text_content_2);
-  update.nodes[1].SetNameFrom(ax::mojom::NameFrom::kContents);
-  update.nodes[2].role = ax::mojom::Role::kStaticText;
-  update.nodes[2].SetName(text_content_3);
-  update.nodes[2].SetNameFrom(ax::mojom::NameFrom::kContents);
-  // Create backward selection from node 4-3.
-  update.tree_data.sel_anchor_object_id = 4;
-  update.tree_data.sel_focus_object_id = 3;
-  update.tree_data.sel_anchor_offset = 5;
-  update.tree_data.sel_focus_offset = 2;
-  update.tree_data.sel_is_backward = true;
-  AccessibilityEventReceived({update});
-  OnAXTreeDistilled({});
-  EXPECT_EQ("Hello world friend", GetTextContent(1));
   EXPECT_EQ("Hello", GetTextContent(2));
-  EXPECT_EQ("orld", GetTextContent(3));
-  EXPECT_EQ(" frie", GetTextContent(4));
+  EXPECT_EQ(" world", GetTextContent(3));
+  EXPECT_EQ(" friend", GetTextContent(4));
 }
 
 TEST_F(ReadAnythingAppControllerTest, GetUrl) {
@@ -1028,4 +974,70 @@ TEST_F(ReadAnythingAppControllerTest,
   EXPECT_CALL(page_handler_, OnSelectionChange).Times(0);
   OnSelectionChange(2, 0, 3, 1);
   page_handler_.FlushForTesting();
+}
+
+TEST_F(ReadAnythingAppControllerTest, Selection_Forward) {
+  // Create selection from node 3-4.
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.tree_data.sel_anchor_object_id = 3;
+  update.tree_data.sel_focus_object_id = 4;
+  update.tree_data.sel_anchor_offset = 0;
+  update.tree_data.sel_focus_offset = 1;
+  update.tree_data.sel_is_backward = false;
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(3, StartNodeId());
+  EXPECT_EQ(4, EndNodeId());
+  EXPECT_EQ(0, StartOffset());
+  EXPECT_EQ(1, EndOffset());
+}
+
+TEST_F(ReadAnythingAppControllerTest, Selection_Backward) {
+  // Create backward selection from node 4-3.
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.tree_data.sel_anchor_object_id = 4;
+  update.tree_data.sel_focus_object_id = 3;
+  update.tree_data.sel_anchor_offset = 1;
+  update.tree_data.sel_focus_offset = 0;
+  update.tree_data.sel_is_backward = true;
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+  EXPECT_EQ(3, StartNodeId());
+  EXPECT_EQ(4, EndNodeId());
+  EXPECT_EQ(0, StartOffset());
+  EXPECT_EQ(1, EndOffset());
+}
+
+TEST_F(ReadAnythingAppControllerTest, Selection_IgnoredNode) {
+  // Make 4 ignored and give 3 some text content.
+  ui::AXTreeUpdate update;
+  SetUpdateTreeID(&update);
+  update.root_id = 1;
+  update.nodes.resize(2);
+  update.nodes[0].id = 3;
+  update.nodes[1].id = 4;
+  update.nodes[0].role = ax::mojom::Role::kStaticText;
+  update.nodes[0].SetName("Hello");
+  update.nodes[0].SetNameFrom(ax::mojom::NameFrom::kContents);
+  update.nodes[1].role = ax::mojom::Role::kNone;  // This node is ignored.
+  AccessibilityEventReceived({update});
+  OnAXTreeDistilled({});
+
+  // Create selection from node 2-4, where 4 is ignored.
+  ui::AXTreeUpdate update_2;
+  SetUpdateTreeID(&update_2);
+  update_2.tree_data.sel_anchor_object_id = 2;
+  update_2.tree_data.sel_focus_object_id = 4;
+  update_2.tree_data.sel_anchor_offset = 0;
+  update_2.tree_data.sel_focus_offset = 0;
+  update_2.tree_data.sel_is_backward = false;
+  AccessibilityEventReceived({update_2});
+  OnAXTreeDistilled({});
+
+  EXPECT_EQ(2, StartNodeId());
+  EXPECT_EQ(3, EndNodeId());
+  EXPECT_EQ(0, StartOffset());
+  EXPECT_EQ(5, EndOffset());  // The length of the word 'Hello'.
 }

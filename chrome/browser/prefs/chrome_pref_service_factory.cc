@@ -55,6 +55,7 @@
 #include "components/search_engines/default_search_manager.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync_preferences/pref_model_associator.h"
@@ -297,15 +298,16 @@ std::unique_ptr<ProfilePrefStoreManager> CreateProfilePrefStoreManager(
                                                    legacy_device_id);
 }
 
-void PrepareFactory(sync_preferences::PrefServiceSyncableFactory* factory,
-                    const base::FilePath& pref_filename,
-                    policy::PolicyService* policy_service,
-                    SupervisedUserSettingsService* supervised_user_settings,
-                    scoped_refptr<PersistentPrefStore> user_pref_store,
-                    scoped_refptr<PrefStore> extension_prefs,
-                    scoped_refptr<PersistentPrefStore> standalone_browser_prefs,
-                    bool async,
-                    policy::BrowserPolicyConnector* policy_connector) {
+void PrepareFactory(
+    sync_preferences::PrefServiceSyncableFactory* factory,
+    const base::FilePath& pref_filename,
+    policy::PolicyService* policy_service,
+    supervised_user::SupervisedUserSettingsService* supervised_user_settings,
+    scoped_refptr<PersistentPrefStore> user_pref_store,
+    scoped_refptr<PrefStore> extension_prefs,
+    scoped_refptr<PersistentPrefStore> standalone_browser_prefs,
+    bool async,
+    policy::BrowserPolicyConnector* policy_connector) {
   factory->SetManagedPolicies(policy_service, policy_connector);
   factory->SetRecommendedPolicies(policy_service, policy_connector);
 
@@ -383,7 +385,7 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     mojo::PendingRemote<prefs::mojom::TrackedPreferenceValidationDelegate>
         validation_delegate,
     policy::PolicyService* policy_service,
-    SupervisedUserSettingsService* supervised_user_settings,
+    supervised_user::SupervisedUserSettingsService* supervised_user_settings,
     scoped_refptr<PrefStore> extension_prefs,
     scoped_refptr<user_prefs::PrefRegistrySyncable> pref_registry,
     policy::BrowserPolicyConnector* connector,

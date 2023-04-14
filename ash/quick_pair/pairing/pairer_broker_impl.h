@@ -31,7 +31,6 @@ namespace quick_pair {
 
 class Device;
 class FastPairPairer;
-class FastPairUnpairHandler;
 
 class PairerBrokerImpl final : public PairerBroker {
  public:
@@ -47,7 +46,10 @@ class PairerBrokerImpl final : public PairerBroker {
   bool IsPairing() override;
   void StopPairing() override;
 
+  friend class PairerBrokerImplTest;
+
  private:
+  void OnBleAddressRotation(scoped_refptr<Device> device);
   void PairFastPairDevice(scoped_refptr<Device> device);
   void OnFastPairDeviceBonded(scoped_refptr<Device> device);
   void OnFastPairBondingFailure(scoped_refptr<Device> device,
@@ -67,16 +69,16 @@ class PairerBrokerImpl final : public PairerBroker {
 
   void EraseHandshakeAndFromPairers(scoped_refptr<Device> device);
 
-  // The key for all the following maps is a device BLE address.
+  // The key for all the following maps is a device model id.
   base::flat_map<std::string, std::unique_ptr<FastPairPairer>>
       fast_pair_pairers_;
   base::flat_map<std::string, int> pair_failure_counts_;
   base::flat_map<std::string, bool>
       did_handshake_previously_complete_successfully_map_;
   base::flat_map<std::string, int> num_handshake_attempts_;
+  base::flat_map<std::string, std::string> model_id_to_current_ble_address_map_;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
-  std::unique_ptr<FastPairUnpairHandler> fast_pair_unpair_handler_;
   base::ObserverList<Observer> observers_;
 
   // Timer to provide a delay after cancelling pairing.

@@ -12,10 +12,12 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/path_service.h"
@@ -56,6 +58,9 @@
 #include "chrome/browser/ui/views/page_info/page_info_view_factory.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/file_handler_launch_dialog_view.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_toolbar_button_container.h"
+#include "chrome/browser/ui/views/web_apps/frame_toolbar/window_controls_overlay_toggle_button.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
@@ -90,6 +95,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -180,6 +186,8 @@ Site InstallableSiteToSite(InstallableSite site) {
       return Site::kStandalone;
     case InstallableSite::kMinimalUi:
       return Site::kMinimalUi;
+    case InstallableSite::kTabbed:
+      return Site::kTabbed;
     case InstallableSite::kStandaloneNestedA:
       return Site::kStandaloneNestedA;
     case InstallableSite::kStandaloneNestedB:
@@ -256,6 +264,12 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
       .app_name = "Site B",
       .wco_not_enabled_title = u"Site B",
       .icon_color = SK_ColorBLACK}},
+    {Site::kTabbed,
+     {.relative_url = "/webapps_integration/tabbed/basic.html",
+      .relative_manifest_id = "webapps_integration/tabbed/basic.html",
+      .app_name = "Tabbed",
+      .wco_not_enabled_title = u"Tabbed",
+      .icon_color = SK_ColorRED}},
     {Site::kNotPromotable,
      {.relative_url = "/webapps_integration/not_promotable/basic.html",
       .relative_manifest_id = "webapps_integration/not_promotable/basic.html",
@@ -346,6 +360,8 @@ base::flat_map<Display, DisplayConfig> g_display_configs = {
      {.manifest_url_param = "?manifest=manifest_browser.json"}},
     {Display::kMinimalUi,
      {.manifest_url_param = "?manifest=manifest_minimal_ui.json"}},
+    {Display::kTabbed,
+     {.manifest_url_param = "?manifest=manifest_tabbed.json"}},
     {Display::kStandalone, {.manifest_url_param = "?manifest=basic.json"}},
     {Display::kWco,
      {.manifest_url_param =
@@ -421,7 +437,9 @@ class BrowserAddedWaiter final : public BrowserListObserver {
   BrowserAddedWaiter() { BrowserList::AddObserver(this); }
   ~BrowserAddedWaiter() override { BrowserList::RemoveObserver(this); }
 
-  void Wait() { run_loop_.Run(); }
+  void Wait(const base::Location& location = base::Location::Current()) {
+    run_loop_.Run(location);
+  }
 
   // BrowserListObserver
   void OnBrowserAdded(Browser* browser) override {
@@ -948,10 +966,17 @@ void WebAppIntegrationTestDriver::AwaitManifestUpdate(Site site) {
   if (!previous_manifest_updates_.contains(app_id)) {
     waiting_for_update_id_ = app_id;
     waiting_for_update_run_loop_ = std::make_unique<base::RunLoop>();
-    Browser* browser = GetBrowserForAppId(profile(), app_id);
-    while (browser != nullptr) {
-      delegate_->CloseBrowserSynchronously(browser);
-      browser = GetBrowserForAppId(profile(), app_id);
+    // Only close windows if immediate updating is not enabled.
+    if (!base::FeatureList::IsEnabled(
+            features::kWebAppManifestImmediateUpdating)) {
+      Browser* browser = GetBrowserForAppId(profile(), app_id);
+      while (browser != nullptr) {
+        if (browser == app_browser_) {
+          app_browser_ = nullptr;
+        }
+        delegate_->CloseBrowserSynchronously(browser);
+        browser = GetBrowserForAppId(profile(), app_id);
+      }
     }
     waiting_for_update_run_loop_->Run();
     waiting_for_update_run_loop_.reset();
@@ -984,11 +1009,28 @@ void WebAppIntegrationTestDriver::CloseCustomToolbar() {
 }
 
 void WebAppIntegrationTestDriver::ClosePwa() {
-  if (!BeforeStateChangeAction(__FUNCTION__))
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
     return;
+  }
   ASSERT_TRUE(app_browser()) << "No current app browser";
+
+  ui_test_utils::BrowserChangeObserver close_observer(
+      app_browser(),
+      ui_test_utils::BrowserChangeObserver::ChangeType::kRemoved);
   app_browser()->window()->Close();
-  ui_test_utils::WaitForBrowserToClose(app_browser());
+  close_observer.Wait();
+  app_browser_ = nullptr;
+
+  AfterStateChangeAction();
+}
+
+void WebAppIntegrationTestDriver::MaybeClosePwa() {
+  if (!BeforeStateChangeAction(__FUNCTION__)) {
+    return;
+  }
+  if (app_browser()) {
+    ClosePwa();
+  }
   AfterStateChangeAction();
 }
 
@@ -1160,10 +1202,10 @@ void WebAppIntegrationTestDriver::InstallSubApp(
 
   std::string sub_url = GetSiteConfiguration(subapp).relative_url;
   // The argument of add() is a dictionary-valued dictionary:
-  // { $unhashed_app_id : {'install_url' : $install_url} }
-  // In our case, both $unhashed_app_id and $install_url are sub_url.
+  // { $unhashed_app_id : {'installURL' : $installURL} }
+  // In our case, both $unhashed_app_id and $installURL are sub_url.
   base::Value::Dict inner_dict;
-  inner_dict.Set("install_url", sub_url);
+  inner_dict.Set("installURL", sub_url);
   base::Value::Dict outer_dict;
   outer_dict.Set(sub_url, std::move(inner_dict));
 
@@ -2428,36 +2470,69 @@ void WebAppIntegrationTestDriver::CheckFilesLoadedInSite(
   if (!BeforeStateCheckAction(__FUNCTION__)) {
     return;
   }
-  AppId app_id = GetAppIdBySiteMode(site);
 
-  // TODO(cliffordcheng): Wait for multiple browsers and
-  //                      support multiple client file handling.
-  DisplayMode display_mode =
-      provider()->registrar_unsafe().GetAppEffectiveDisplayMode(app_id);
-  content::WebContents* web_contents;
-  if (display_mode == blink::mojom::DisplayMode::kBrowser) {
-    web_contents = browser()->tab_strip_model()->GetActiveWebContents();
-  } else {
-    web_contents = app_browser()->tab_strip_model()->GetActiveWebContents();
-  }
+  std::vector<std::string> expected_foo_files;
+  std::vector<std::string> expected_bar_files;
+  std::vector<std::string> found_foo_files;
+  std::vector<std::string> found_bar_files;
+  const std::string foo_file_extension = GetFileExtension(FileExtension::kFoo);
+  const std::string bar_file_extension = GetFileExtension(FileExtension::kBar);
 
-  base::flat_set<std::string> expected_content_list;
   std::vector<base::FilePath> file_paths = GetTestFilePaths(files_options);
   for (const base::FilePath& path : file_paths) {
     std::string content;
     base::ScopedAllowBlockingForTesting scoped_allow_blocking;
     base::ReadFileToString(path, &content);
-    expected_content_list.insert(content);
+
+    if (base::EndsWith(path.AsUTF8Unsafe(), foo_file_extension)) {
+      expected_foo_files.push_back(content);
+    } else if (base::EndsWith(path.AsUTF8Unsafe(), bar_file_extension)) {
+      expected_bar_files.push_back(content);
+    }
   }
 
-  base::Value test_contents =
-      EvalJs(web_contents, "launchFinishedPromise").ExtractList();
-  auto& test_content_list = test_contents.GetList();
-  for (const auto& test_content : test_content_list) {
-    EXPECT_TRUE(std::find(expected_content_list.begin(),
-                          expected_content_list.end(),
-                          test_content) != expected_content_list.end());
+  auto* browser_list = BrowserList::GetInstance();
+  // Opening multiple files at the same time can result in multiple app windows.
+  // All browser windows are checked.
+  for (Browser* browser : *browser_list) {
+    for (int i = 0; i < browser->tab_strip_model()->GetTabCount(); i++) {
+      auto site_config = GetSiteConfiguration(site);
+      content::WebContents* web_contents =
+          browser->tab_strip_model()->GetWebContentsAt(i);
+
+      if (!WebAppTabHelper::GetAppId(web_contents)) {
+        continue;
+      }
+
+      static const std::string kFooHandler = "foo_handler.html";
+      static const std::string kBarHandler = "bar_handler.html";
+      AppId app_id = *WebAppTabHelper::GetAppId(web_contents);
+      std::string url_str = web_contents->GetURL().spec();
+
+      if (app_id != GetAppIdBySiteMode(site) ||
+          !(base::EndsWith(url_str, kFooHandler) ||
+            base::EndsWith(url_str, kBarHandler))) {
+        continue;
+      }
+
+      base::Value test_contents =
+          EvalJs(web_contents, "launchFinishedPromise").ExtractList();
+      auto& test_content_list = test_contents.GetList();
+
+      for (const auto& test_content : test_content_list) {
+        if (base::EndsWith(url_str, kFooHandler)) {
+          found_foo_files.push_back(test_content.GetString());
+        } else {
+          DCHECK(base::EndsWith(url_str, kBarHandler));
+          found_bar_files.push_back(test_content.GetString());
+        }
+      }
+    }
   }
+  ASSERT_THAT(expected_foo_files,
+              ::testing::UnorderedElementsAreArray(found_foo_files));
+  ASSERT_THAT(expected_bar_files,
+              ::testing::UnorderedElementsAreArray(found_bar_files));
   AfterStateCheckAction();
 }
 
@@ -2737,6 +2812,15 @@ void WebAppIntegrationTestDriver::CheckWindowControlsOverlayToggle(
                                                 GetAppIdBySiteMode(site)));
   EXPECT_EQ(app_browser()->app_controller()->AppUsesWindowControlsOverlay(),
             is_shown == IsShown::kShown);
+  WebAppFrameToolbarView* toolbar =
+      BrowserView::GetBrowserViewForBrowser(app_browser())
+          ->web_app_frame_toolbar_for_testing();
+  ASSERT_EQ(toolbar->get_right_container_for_testing()
+                    ->window_controls_overlay_toggle_button() &&
+                toolbar->get_right_container_for_testing()
+                    ->window_controls_overlay_toggle_button()
+                    ->GetVisible(),
+            is_shown == IsShown::kShown);
   AfterStateCheckAction();
 }
 
@@ -2756,7 +2840,9 @@ void WebAppIntegrationTestDriver::CheckWindowDisplayMinimal() {
   if (!BeforeStateCheckAction(__FUNCTION__))
     return;
   DCHECK(app_browser());
-  DCHECK(app_browser()->app_controller()->AsWebAppBrowserController());
+  web_app::AppBrowserController* app_controller =
+      app_browser()->app_controller();
+  DCHECK(app_controller->AsWebAppBrowserController());
   absl::optional<AppState> app_state = GetStateForAppId(
       after_state_change_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
@@ -2767,10 +2853,40 @@ void WebAppIntegrationTestDriver::CheckWindowDisplayMinimal() {
   DisplayMode window_display_mode =
       web_contents->GetDelegate()->GetDisplayMode(web_contents);
 
-  EXPECT_TRUE(app_browser()->app_controller()->HasMinimalUiButtons());
+  EXPECT_TRUE(app_controller->HasMinimalUiButtons());
+  EXPECT_FALSE(app_controller->AppUsesTabbed());
+
   EXPECT_EQ(app_state->effective_display_mode,
             blink::mojom::DisplayMode::kMinimalUi);
   EXPECT_EQ(window_display_mode, blink::mojom::DisplayMode::kMinimalUi);
+  AfterStateCheckAction();
+}
+
+void WebAppIntegrationTestDriver::CheckWindowDisplayTabbed() {
+  if (!BeforeStateCheckAction(__FUNCTION__)) {
+    return;
+  }
+  DCHECK(app_browser());
+
+  web_app::AppBrowserController* app_controller =
+      app_browser()->app_controller();
+  DCHECK(app_controller->AsWebAppBrowserController());
+  absl::optional<AppState> app_state = GetStateForAppId(
+      after_state_change_action_state_.get(), profile(), active_app_id_);
+  ASSERT_TRUE(app_state.has_value());
+
+  content::WebContents* web_contents =
+      app_browser()->tab_strip_model()->GetActiveWebContents();
+  DCHECK(web_contents);
+  DisplayMode window_display_mode =
+      web_contents->GetDelegate()->GetDisplayMode(web_contents);
+
+  EXPECT_FALSE(app_controller->HasMinimalUiButtons());
+  EXPECT_TRUE(app_controller->AppUsesTabbed());
+
+  EXPECT_EQ(app_state->effective_display_mode,
+            blink::mojom::DisplayMode::kTabbed);
+  EXPECT_EQ(window_display_mode, blink::mojom::DisplayMode::kTabbed);
   AfterStateCheckAction();
 }
 
@@ -2778,7 +2894,10 @@ void WebAppIntegrationTestDriver::CheckWindowDisplayStandalone() {
   if (!BeforeStateCheckAction(__FUNCTION__))
     return;
   DCHECK(app_browser());
-  DCHECK(app_browser()->app_controller()->AsWebAppBrowserController());
+
+  web_app::AppBrowserController* app_controller =
+      app_browser()->app_controller();
+  DCHECK(app_controller->AsWebAppBrowserController());
   absl::optional<AppState> app_state = GetStateForAppId(
       after_state_change_action_state_.get(), profile(), active_app_id_);
   ASSERT_TRUE(app_state.has_value());
@@ -2789,7 +2908,9 @@ void WebAppIntegrationTestDriver::CheckWindowDisplayStandalone() {
   DisplayMode window_display_mode =
       web_contents->GetDelegate()->GetDisplayMode(web_contents);
 
-  EXPECT_FALSE(app_browser()->app_controller()->HasMinimalUiButtons());
+  EXPECT_FALSE(app_controller->HasMinimalUiButtons());
+  EXPECT_FALSE(app_controller->AppUsesTabbed());
+
   EXPECT_EQ(app_state->effective_display_mode,
             blink::mojom::DisplayMode::kStandalone);
   EXPECT_EQ(window_display_mode, blink::mojom::DisplayMode::kStandalone);
@@ -3562,6 +3683,8 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   enabled_features.push_back(features::kDesktopPWAsEnforceWebAppSettingsPolicy);
   enabled_features.push_back(features::kRecordWebAppDebugInfo);
   enabled_features.push_back(blink::features::kDesktopPWAsSubApps);
+  enabled_features.push_back(features::kDesktopPWAsTabStrip);
+  enabled_features.push_back(features::kDesktopPWAsTabStripSettings);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   disabled_features.push_back(features::kWebAppsCrosapi);
   disabled_features.push_back(ash::features::kLacrosPrimary);

@@ -7,9 +7,7 @@
 #include <limits>
 #include <utility>
 
-#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
-#include "components/cbor/writer.h"
 #include "device/fido/device_response_converter.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -31,11 +29,53 @@ bool IsGetAssertionOptionMapFormatCorrect(
 
 bool AreGetAssertionRequestMapKeysCorrect(
     const cbor::Value::MapValue& request_map) {
-  return base::ranges::all_of(
-      request_map, [](const auto& param) {
-        return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
-                param.first.GetInteger() <= 7u);
-      });
+  return base::ranges::all_of(request_map, [](const auto& param) {
+    return (param.first.is_integer() && 1u <= param.first.GetInteger() &&
+            param.first.GetInteger() <= 7u);
+  });
+}
+
+cbor::Value::MapValue PRFInputToCBOR(const PRFInput& input) {
+  cbor::Value::MapValue ret;
+  ret.emplace(kExtensionPRFFirst,
+              std::vector<uint8_t>(input.salt1.begin(), input.salt1.end()));
+  if (input.salt2) {
+    ret.emplace(kExtensionPRFSecond,
+                std::vector<uint8_t>(input.salt2->begin(), input.salt2->end()));
+  }
+  return ret;
+}
+
+bool CBORToPRFValue(const cbor::Value& v, std::array<uint8_t, 32>* out) {
+  if (!v.is_bytestring()) {
+    return false;
+  }
+  return fido_parsing_utils::ExtractArray(v.GetBytestring(), 0, out);
+}
+
+absl::optional<PRFInput> CBORToPRFInput(const cbor::Value& v) {
+  if (!v.is_map()) {
+    return absl::nullopt;
+  }
+  const cbor::Value::MapValue& map = v.GetMap();
+  const auto first_it = map.find(cbor::Value(kExtensionPRFFirst));
+  if (first_it == map.end()) {
+    return absl::nullopt;
+  }
+
+  PRFInput ret;
+  if (!CBORToPRFValue(first_it->second, &ret.salt1)) {
+    return absl::nullopt;
+  }
+
+  const auto second_it = map.find(cbor::Value(kExtensionPRFSecond));
+  if (second_it != map.end()) {
+    ret.salt2.emplace();
+    if (!CBORToPRFValue(second_it->second, &ret.salt2.value())) {
+      return absl::nullopt;
+    }
+  }
+  return ret;
 }
 }  // namespace
 
@@ -46,10 +86,21 @@ CtapGetAssertionOptions::CtapGetAssertionOptions(CtapGetAssertionOptions&&) =
     default;
 CtapGetAssertionOptions::~CtapGetAssertionOptions() = default;
 
-CtapGetAssertionOptions::PRFInput::PRFInput() = default;
-CtapGetAssertionOptions::PRFInput::PRFInput(const PRFInput&) = default;
-CtapGetAssertionOptions::PRFInput::PRFInput(PRFInput&&) = default;
-CtapGetAssertionOptions::PRFInput::~PRFInput() = default;
+PRFInput::PRFInput() = default;
+PRFInput::PRFInput(const PRFInput&) = default;
+PRFInput::PRFInput(PRFInput&&) = default;
+PRFInput& PRFInput::operator=(const PRFInput&) = default;
+PRFInput::~PRFInput() = default;
+
+bool operator<(const PRFInput& a, const PRFInput& b) {
+  if (!a.credential_id.has_value()) {
+    return b.credential_id.has_value();
+  }
+  if (!b.credential_id.has_value()) {
+    return false;
+  }
+  return a.credential_id.value() < b.credential_id.value();
+}
 
 CtapGetAssertionRequest::HMACSecret::HMACSecret(
     base::span<const uint8_t, kP256X962Length> in_public_key_x962,
@@ -183,18 +234,87 @@ absl::optional<CtapGetAssertionRequest> CtapGetAssertionRequest::Parse(
         if (!request.device_public_key) {
           return absl::nullopt;
         }
+      } else if (extension_id == kExtensionPRF) {
+        if (!extension.second.is_map()) {
+          return absl::nullopt;
+        }
+        const cbor::Value::MapValue& prf = extension.second.GetMap();
+        const auto eval_it = prf.find(cbor::Value(kExtensionPRFEval));
+        if (eval_it != prf.end()) {
+          absl::optional<PRFInput> input = CBORToPRFInput(eval_it->second);
+          if (!input) {
+            return absl::nullopt;
+          }
+          request.prf_inputs.emplace_back(std::move(*input));
+        }
+        const auto by_cred_it =
+            prf.find(cbor::Value(kExtensionPRFEvalByCredential));
+        if (by_cred_it != prf.end()) {
+          if (!by_cred_it->second.is_map()) {
+            return absl::nullopt;
+          }
+          const cbor::Value::MapValue& by_cred = by_cred_it->second.GetMap();
+          for (const auto& cred : by_cred) {
+            absl::optional<PRFInput> input = CBORToPRFInput(cred.second);
+            if (!input || !cred.first.is_bytestring()) {
+              return absl::nullopt;
+            }
+            input->credential_id = cred.first.GetBytestring();
+            if (input->credential_id->empty()) {
+              return absl::nullopt;
+            }
+            request.prf_inputs.emplace_back(std::move(*input));
+          }
+        }
+        std::sort(request.prf_inputs.begin(), request.prf_inputs.end());
+      } else if (extension_id == kExtensionLargeBlob) {
+        if (!extension.second.is_map()) {
+          return absl::nullopt;
+        }
+        const cbor::Value::MapValue& large_blob_ext = extension.second.GetMap();
+        const auto read_it =
+            large_blob_ext.find(cbor::Value(kExtensionLargeBlobRead));
+        const bool has_read = read_it != large_blob_ext.end();
+
+        const auto write_it =
+            large_blob_ext.find(cbor::Value(kExtensionLargeBlobWrite));
+        const bool has_write = write_it != large_blob_ext.end();
+
+        const auto original_size_it =
+            large_blob_ext.find(cbor::Value(kExtensionLargeBlobOriginalSize));
+        const bool has_original_size = original_size_it != large_blob_ext.end();
+
+        if ((has_read && !read_it->second.is_bool()) ||
+            (has_write && !write_it->second.is_bytestring()) ||
+            (has_original_size && !original_size_it->second.is_unsigned())) {
+          return absl::nullopt;
+        }
+
+        if (has_read && !has_write && !has_original_size) {
+          request.large_blob_extension_read = read_it->second.GetBool();
+        } else if (!has_read && has_write && has_original_size) {
+          request.large_blob_extension_write.emplace(
+              write_it->second.GetBytestring(),
+              base::checked_cast<size_t>(
+                  original_size_it->second.GetUnsigned()));
+        } else {
+          // No other combinations of keys are acceptable.
+          return absl::nullopt;
+        }
       }
     }
   }
 
   const auto option_it = request_map.find(cbor::Value(5));
   if (option_it != request_map.end()) {
-    if (!option_it->second.is_map())
+    if (!option_it->second.is_map()) {
       return absl::nullopt;
+    }
 
     const auto& option_map = option_it->second.GetMap();
-    if (!IsGetAssertionOptionMapFormatCorrect(option_map))
+    if (!IsGetAssertionOptionMapFormatCorrect(option_map)) {
       return absl::nullopt;
+    }
 
     const auto user_presence_option =
         option_map.find(cbor::Value(kUserPresenceMapKey));
@@ -280,6 +400,25 @@ AsCTAPRequestValuePair(const CtapGetAssertionRequest& request) {
     extensions.emplace(kExtensionLargeBlobKey, cbor::Value(true));
   }
 
+  if (request.large_blob_extension_read) {
+    DCHECK(!request.large_blob_key);
+    cbor::Value::MapValue large_blob_ext;
+    large_blob_ext.emplace(kExtensionLargeBlobRead, true);
+    extensions.emplace(kExtensionLargeBlob, std::move(large_blob_ext));
+  }
+
+  if (request.large_blob_extension_write) {
+    DCHECK(!request.large_blob_key);
+    const LargeBlob& large_blob = *request.large_blob_extension_write;
+    cbor::Value::MapValue large_blob_ext;
+    large_blob_ext.emplace(kExtensionLargeBlobWrite,
+                           large_blob.compressed_data);
+    large_blob_ext.emplace(
+        kExtensionLargeBlobOriginalSize,
+        base::checked_cast<int64_t>(large_blob.original_size));
+    extensions.emplace(kExtensionLargeBlob, std::move(large_blob_ext));
+  }
+
   if (request.hmac_secret) {
     const auto& hmac_secret = *request.hmac_secret;
     cbor::Value::MapValue hmac_extension;
@@ -297,6 +436,22 @@ AsCTAPRequestValuePair(const CtapGetAssertionRequest& request) {
   if (request.device_public_key) {
     extensions.emplace(kExtensionDevicePublicKey,
                        request.device_public_key->ToCBOR());
+  }
+
+  if (!request.prf_inputs.empty()) {
+    cbor::Value::MapValue prf;
+    cbor::Value::MapValue by_cred;
+    for (const auto& input : request.prf_inputs) {
+      if (!input.credential_id.has_value()) {
+        prf.emplace(kExtensionPRFEval, PRFInputToCBOR(input));
+      } else {
+        by_cred.emplace(*input.credential_id, PRFInputToCBOR(input));
+      }
+    }
+    if (!by_cred.empty()) {
+      prf.emplace(kExtensionPRFEvalByCredential, std::move(by_cred));
+    }
+    extensions.emplace(kExtensionPRF, std::move(prf));
   }
 
   if (!extensions.empty()) {

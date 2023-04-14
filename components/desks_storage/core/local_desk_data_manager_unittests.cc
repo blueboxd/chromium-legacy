@@ -23,9 +23,9 @@
 #include "build/build_config.h"
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
+#include "components/desks_storage/core/desk_storage_metrics_util.h"
 #include "components/desks_storage/core/desk_template_util.h"
 #include "components/desks_storage/core/desk_test_util.h"
-#include "components/desks_storage/core/local_desk_data_manager_metrics_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/app_types.h"
@@ -121,6 +121,13 @@ void VerifyEntryDeletedCorrectly(DeskModel::DeleteEntryStatus status) {
 void VerifyEntryAddedFailure(DeskModel::AddOrUpdateEntryStatus status,
                              std::unique_ptr<ash::DeskTemplate> new_entry) {
   EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kFailure);
+}
+
+// Verifies that the status passed into it is kInvalidArgument
+void VerifyEntryAddedErrorInvalidArgument(
+    DeskModel::AddOrUpdateEntryStatus status,
+    std::unique_ptr<ash::DeskTemplate> new_entry) {
+  EXPECT_EQ(status, DeskModel::AddOrUpdateEntryStatus::kInvalidArgument);
 }
 
 void VerifyEntryAddedErrorHitMaximumLimit(
@@ -979,6 +986,14 @@ TEST_F(LocalDeskDataManagerTest, CanRecordFileSizeMetrics) {
   histogram_tester.ExpectTotalCount(kTemplateSizeHistogramName, 1u);
   histogram_tester.ExpectTotalCount(kSaveAndRecallTemplateSizeHistogramName,
                                     1u);
+}
+
+TEST_F(LocalDeskDataManagerTest, AddUnknownDeskTypeShouldFail) {
+  data_manager_->AddOrUpdateEntry(
+      MakeTestDeskTemplate(1u, ash::DeskTemplateType::kUnknown),
+      base::BindOnce(&VerifyEntryAddedErrorInvalidArgument));
+
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace desks_storage

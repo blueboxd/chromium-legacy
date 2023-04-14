@@ -93,7 +93,7 @@ class ShillClientUnittestBase : public testing::Test {
   void SendPlatformMessageSignal(dbus::Signal* signal);
 
   // Sends packet received signal to the tested client.
-  void SendPacketReceievedSignal(dbus::Signal* signal);
+  void SendPacketReceivedSignal(dbus::Signal* signal);
 
   // Sends property changed signal to the tested client.
   void SendPropertyChangedSignal(dbus::Signal* signal);
@@ -134,33 +134,12 @@ class ShillClientUnittestBase : public testing::Test {
 
   // Expects the reader to have a string-to-variant dictionary.
   static void ExpectValueDictionaryArgument(
-      const base::Value* expected_dictionary,
+      const base::Value::Dict* expected_dictionary,
       bool string_valued,
       dbus::MessageReader* reader);
 
-  // Creates a dictionary Value with example Service properties.
-  static base::Value CreateExampleServiceProperties();
-
-  // Expects the call status to be SUCCESS.
-  static void ExpectNoResultValue(bool result);
-
-  static void ExpectObjectPathResultWithoutStatus(
-      const dbus::ObjectPath& expected_result,
-      const dbus::ObjectPath& result);
-
-  static void ExpectBoolResultWithoutStatus(bool expected_result, bool result);
-
-  static void ExpectStringResultWithoutStatus(
-      const std::string& expected_result,
-      const std::string& result);
-
-  // Checks the result and expects the call status to be SUCCESS.
-  static void ExpectValueResult(const base::Value* expected_result,
-                                absl::optional<base::Value> result);
-
-  // Expects the |expected_result| to match the |result|.
-  static void ExpectValueResultWithoutStatus(const base::Value* expected_result,
-                                             base::Value result);
+  // Creates a dictionary with example Service properties.
+  static base::Value::Dict CreateExampleServiceProperties();
 
   // A message loop to emulate asynchronous behavior.
   base::test::SingleThreadTaskEnvironment task_environment_;

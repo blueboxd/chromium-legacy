@@ -65,7 +65,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   ~StyleResolver();
   void Dispose();
 
-  scoped_refptr<ComputedStyle> ResolveStyle(
+  scoped_refptr<const ComputedStyle> ResolveStyle(
       Element*,
       const StyleRecalcContext&,
       const StyleRequest& = StyleRequest());
@@ -73,15 +73,14 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   // Return a reference to the initial style singleton.
   const ComputedStyle& InitialStyle() const;
 
-  // Create a new ComputedStyle copy based on the initial style singleton.
-  scoped_refptr<ComputedStyle> CreateComputedStyle() const;
+  // Create a new ComputedStyleBuilder based on the initial style singleton.
   ComputedStyleBuilder CreateComputedStyleBuilder() const;
 
   // Create a ComputedStyle for initial styles to be used as the basis for the
   // root element style. In addition to initial values things like zoom, font,
   // forced color mode etc. is set.
   ComputedStyleBuilder InitialStyleBuilderForElement() const;
-  scoped_refptr<ComputedStyle> InitialStyleForElement() const {
+  scoped_refptr<const ComputedStyle> InitialStyleForElement() const {
     return InitialStyleBuilderForElement().TakeStyle();
   }
   float InitialZoom() const;
@@ -98,7 +97,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       uint32_t page_index,
       const AtomicString& page_name);
   scoped_refptr<const ComputedStyle> StyleForText(Text*);
-  scoped_refptr<ComputedStyle> StyleForViewport();
+  scoped_refptr<const ComputedStyle> StyleForViewport();
   scoped_refptr<const ComputedStyle> StyleForFormattedText(
       bool is_text_run,
       const ComputedStyle& parent_style,
@@ -140,9 +139,14 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   // state, instead we should pass a context object during recalcStyle.
   SelectorFilter& GetSelectorFilter() { return selector_filter_; }
 
-  StyleRuleKeyframes* FindKeyframesRule(const Element*,
-                                        const Element* animating_element,
-                                        const AtomicString& animation_name);
+  struct FindKeyframesRuleResult {
+    StyleRuleKeyframes* rule = nullptr;
+    const TreeScope* tree_scope = nullptr;
+    STACK_ALLOCATED();
+  };
+  FindKeyframesRuleResult FindKeyframesRule(const Element*,
+                                            const Element* animating_element,
+                                            const AtomicString& animation_name);
 
   // These methods will give back the set of rules that matched for a given
   // element (or a pseudo-element).
@@ -169,7 +173,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   Element* FindContainerForElement(Element*, const ContainerSelector&);
 
-  void ComputeFont(Element&, ComputedStyle*, const CSSPropertyValueSet&);
+  Font ComputeFont(Element&, const ComputedStyle&, const CSSPropertyValueSet&);
 
   // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
   void InvalidateMatchedPropertiesCache();
@@ -195,7 +199,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                            const Font&,
                                            const CSSValue&);
 
-  scoped_refptr<ComputedStyle> StyleForInterpolations(
+  scoped_refptr<const ComputedStyle> StyleForInterpolations(
       Element& element,
       ActiveInterpolationsMap& animations);
 
@@ -204,7 +208,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   // ticked to the current time. Ticking the animations is required to ensure
   // smooth retargeting of transitions.
   // https://drafts.csswg.org/css-transitions-1/#before-change-style
-  scoped_refptr<ComputedStyle> BeforeChangeStyleForTransitionUpdate(
+  scoped_refptr<const ComputedStyle> BeforeChangeStyleForTransitionUpdate(
       Element& element,
       const ComputedStyle& base_style,
       ActiveInterpolationsMap& transition_interpolations);

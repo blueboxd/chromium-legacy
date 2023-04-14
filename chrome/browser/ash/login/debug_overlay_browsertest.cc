@@ -34,7 +34,8 @@ std::string ElementsInPanel(const std::string& panel) {
 class DebugOverlayTest : public OobeBaseTest {
  public:
   DebugOverlayTest() {
-    feature_list_.InitAndEnableFeature(features::kOobeChoobe);
+    feature_list_.InitWithFeatures(
+        {ash::features::kOobeChoobe, ash::features::kOobeTouchpadScroll}, {});
   }
 
   ~DebugOverlayTest() override = default;

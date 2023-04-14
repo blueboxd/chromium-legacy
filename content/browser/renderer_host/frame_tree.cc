@@ -223,6 +223,17 @@ FrameTree::~FrameTree() {
 #endif
 }
 
+void FrameTree::ForEachRenderViewHost(
+    base::FunctionRef<void(RenderViewHostImpl*)> on_host) {
+  if (speculative_render_view_host_) {
+    on_host(speculative_render_view_host_.get());
+  }
+
+  for (auto& rvh : render_view_host_map_) {
+    on_host(rvh.second);
+  }
+}
+
 void FrameTree::MakeSpeculativeRVHCurrent() {
   CHECK(speculative_render_view_host_);
 
@@ -992,7 +1003,7 @@ const blink::StorageKey FrameTree::GetSessionStorageKey(
       unpartitioned_session_storage_origins_.end()) {
     // If the storage key matches a participating origin we need to return the
     // first-party version for use in binding session storage.
-    return blink::StorageKey(storage_key.origin());
+    return blink::StorageKey::CreateFirstParty(storage_key.origin());
   }
   return storage_key;
 }

@@ -19,7 +19,9 @@ group("resources") {
     "audio:resources",
     "desk_api:resources",
     "emoji_picker:resources",
+    "enterprise_reporting:resources",
     "gaia_action_buttons:resources",
+    "healthd_internals:resources",
     "launcher_internals:resources",
     "lock_screen_reauth:resources",
     "login:conditional_resources",
@@ -38,11 +40,11 @@ grit("app_icon_resources") {
   source = "app_icon/app_icon_resources.grd"
   defines = chrome_grit_defines
   outputs = [
-    "grit/app_icon_resources.h",
-    "grit/app_icon_resources_map.cc",
-    "grit/app_icon_resources_map.h",
-    "app_icon_resources_100_percent.pak",
-    "app_icon_resources_200_percent.pak",
+    "grit/chromeos_app_icon_resources.h",
+    "grit/chromeos_app_icon_resources_map.cc",
+    "grit/chromeos_app_icon_resources_map.h",
+    "chromeos_app_icon_resources_100_percent.pak",
+    "chromeos_app_icon_resources_200_percent.pak",
   ]
   output_dir = "$root_gen_dir/chrome"
 }

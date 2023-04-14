@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Naprijed</translation>
 <translation id="1209796539517632982">Serveri s automatskim nazivima</translation>
 <translation id="1210831758834677569">laoški</translation>
+<translation id="1221555006497674479">Malo je prostora za pohranu. Preostalo je <ph name="REMAINING_PERCENTAGE" />% od <ph name="TOTAL_SPACE" /> dijeljene pohrane na disku.</translation>
 <translation id="1243314992276662751">Otpremi</translation>
 <translation id="1249250836236328755">Žanr</translation>
 <translation id="1254593899333212300">Direktna internetska veza</translation>
 <translation id="1272293450992660632">Vrijednosti PIN-a se ne podudaraju.</translation>
 <translation id="1280820357415527819">Traženje mobilnih mreža</translation>
-<translation id="1291603679744561561">SIM je zaključan</translation>
 <translation id="1293556467332435079">Fajlovi</translation>
 <translation id="1297922636971898492">Google Disk trenutno nije dostupan. Otpremanje će se automatski ponovo pokrenuti čim Google Disk bude opet na raspolaganju.</translation>
 <translation id="1307931752636661898">Nije moguće prikazati Linux fajlove</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Da ispustite fajlove u Parallels Desktop, fajl se mora premjestiti u fajlove Windowsa.</translation>
 <translation id="1435838927755162558">Dijeljenje foldera pomoću aplikacije Parallels Desktop</translation>
 <translation id="1439919885608649279">Osoba s cvijećem</translation>
+<translation id="1458457385801829801">Izbaci <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">slovački</translation>
 <translation id="1482884275703521657">finski</translation>
 <translation id="148466539719134488">švicarska</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">kineski pinyin</translation>
 <translation id="1646019627374511909">Postavljanje dostupnosti van mreže za fajlove (njih <ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="164969095109328410">Chrome uređaj</translation>
+<translation id="1661207570040737402">Iskoristili ste svu svoju pohranu Dijeljenog diska Google Workspacea.</translation>
 <translation id="1661867754829461514">PIN nedostaje</translation>
 <translation id="166439687370499867">Nije dozvoljena promjena konfiguracije dijeljene mreže</translation>
 <translation id="1665611772925418501">Izmjena ovog fajla nije uspjela.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">1 folder se dijeli s Bruschettom</translation>
 <translation id="2578394532502990878">tamilski fonetski</translation>
 <translation id="2579959351793446050">odija</translation>
+<translation id="2587195714949534472">Priprema za sinhronizaciju fajla <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, blokirao vaš administrator, detalji</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> videozapis</translation>
 <translation id="2620090360073999360">Trenutno nije moguće pristupiti usluzi Google Disk.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">mongolski</translation>
 <translation id="3495304270784461826">Broj grešaka: <ph name="COUNT" /></translation>
 <translation id="3509680540198371098">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, detalji</translation>
+<translation id="3511705761158917664">Priprema za sinhronizaciju <ph name="NUMBER_OF_ITEMS" /> stavke/i...</translation>
 <translation id="3522708245912499433">portugalski</translation>
 <translation id="3524311639100184459">Oprez: Ovi fajlovi su privremeni i moguće je da će se automatski izbrisati radi oslobađanja prostora na disku.  <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -347,6 +351,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Zalijepi</translation>
 <translation id="3952872973865944257">telugu fonetski</translation>
+<translation id="3954354850384043518">U toku</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3971140002794351170">Preuzimanje profila mobilnog uređaja, mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">engleski (UK)</translation>
@@ -406,6 +411,7 @@
 <translation id="4462159676511157176">Serveri prilagođenog imena</translation>
 <translation id="4465725236958772856">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, upravlja vaš administrator, poveži</translation>
 <translation id="4470564870223067757">Hangul, 2 reda</translation>
+<translation id="4474142134969976028">Nema podudarnih rezultata</translation>
 <translation id="4477002475007461989">rumunski</translation>
 <translation id="4477219268485577442">bugarski, fonetski</translation>
 <translation id="4508265954913339219">Aktivacija nije uspjela</translation>
@@ -477,6 +483,7 @@
 <translation id="4973523518332075481">Unesite naziv čiji maksimalan broj znakova je <ph name="MAX_LENGTH" /> ili manje</translation>
 <translation id="4973970068702235170">Izrada zip arhive nije uspjelo. Neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japanski</translation>
+<translation id="4987699874727873250">engleski (Indija)</translation>
 <translation id="4988205478593450158">Jeste li sigurni da želite izbrisati fajl "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Crveni leptir</translation>
 <translation id="4992066212339426712">Uključi zvuk</translation>
@@ -786,6 +793,7 @@
 <translation id="7458955835361612701">Nema nedavnih slika</translation>
 <translation id="7460898608667578234">Ukrajinska</translation>
 <translation id="7469894403370665791">Automatski se poveži na ovu mrežu</translation>
+<translation id="7481358317100446445">Spremno</translation>
 <translation id="7486315294984620427">Da ispustite fajlove u Parallels Desktop, fajl se mora kopirati u fajlove Windowsa.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajalamski fonetski</translation>
@@ -811,6 +819,7 @@
 <translation id="7655441028674523381">S lakoćom pristupite Google Fotografijama</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7663224033570512922">hindi</translation>
+<translation id="7665680517722058469">Pretražite nešto drugo</translation>
 <translation id="7689532716264131859">Stavke su premještene u otpad (ukupno <ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="7693909743393669729">Formatiranjem diska ćete izbrisati sve podatke koje ste na njega pohranili, a također ćete ukloniti sve postojeće particije, uključujući particije koje možda nisu vidljive. Ovu radnju nije moguće opozvati.</translation>
 <translation id="7695430100978772476">Formatiranje diska <ph name="DRIVE_NAME" /> nije uspjelo</translation>
@@ -967,6 +976,7 @@
 <translation id="8866284467018526531">arapski (transliteracija)</translation>
 <translation id="8873014196523807561">Da vratite ove stavke, prevucite ih u novi folder. Izvorni folderi nekih od ovih stavki su izbrisani.</translation>
 <translation id="8874184842967597500">Nije povezano</translation>
+<translation id="8876368061475701452">U redu čekanja</translation>
 <translation id="8900820606136623064">Mađarska</translation>
 <translation id="8903931173357132290">Diplomac</translation>
 <translation id="8912078710089354287">Pas maše repom</translation>

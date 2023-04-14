@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/renderer/core/animation/timeline_offset.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -203,7 +204,7 @@ static inline void FilterProperties(
       continue;
     }
     if (property.Id() == CSSPropertyID::kVariable) {
-      AtomicString name = property.Name().ToAtomicString();
+      const AtomicString& name = property.CustomPropertyName();
       if (seen_custom_properties.Contains(name)) {
         continue;
       }
@@ -338,8 +339,7 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
     const CSSParserContext* context,
     StyleSheetContents* style_sheet,
     CSSDeferPropertyParsing defer_property_parsing,
-    bool allow_import_rules,
-    std::unique_ptr<CachedCSSTokenizer> cached_tokenizer) {
+    bool allow_import_rules) {
   absl::optional<LocalFrameUkmAggregator::ScopedUkmHierarchicalTimer> timer;
   if (context->GetDocument() && context->GetDocument()->View()) {
     if (auto* metrics_aggregator =
@@ -354,15 +354,8 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
 
   TRACE_EVENT_BEGIN0("blink,blink_style",
                      "CSSParserImpl::parseStyleSheet.parse");
-  absl::optional<CSSTokenizerWrapper> tokenizer;
-  absl::optional<CSSTokenizer> uncached_tokenizer;
-  if (cached_tokenizer) {
-    tokenizer.emplace(*cached_tokenizer);
-  } else {
-    uncached_tokenizer.emplace(string);
-    tokenizer.emplace(*uncached_tokenizer);
-  }
-  CSSParserTokenStream stream(*tokenizer);
+  CSSTokenizer tokenizer(string);
+  CSSParserTokenStream stream(tokenizer);
   CSSParserImpl parser(context, style_sheet);
   if (defer_property_parsing == CSSDeferPropertyParsing::kYes) {
     parser.lazy_state_ = MakeGarbageCollected<CSSLazyParsingState>(
@@ -388,7 +381,7 @@ ParseSheetResult CSSParserImpl::ParseStyleSheet(
   TRACE_EVENT_END0("blink,blink_style", "CSSParserImpl::parseStyleSheet.parse");
 
   TRACE_EVENT_END2("blink,blink_style", "CSSParserImpl::parseStyleSheet",
-                   "tokenCount", tokenizer->TokenCount(), "length",
+                   "tokenCount", tokenizer.TokenCount(), "length",
                    string.length());
   return result;
 }
@@ -946,7 +939,7 @@ StyleRule* CSSParserImpl::CreateImplicitNestedRule(
   parent_selector.SetLastInTagHistory(true);
   parent_selector.SetLastInSelectorList(true);
   return StyleRule::Create(
-      base::span<CSSSelector>{&parent_selector, 1},
+      base::span<CSSSelector>{&parent_selector, 1u},
       CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
@@ -1859,8 +1852,10 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream,
     if (RuntimeEnabledFeatures::CSSNestingEnabled() &&
         MayContainNestedRules(lazy_state_->SheetText(), block_start_offset,
                               block_length)) {
-      CSSTokenizer tokenizer(lazy_state_->SheetText(), block_start_offset + 1);
+      CSSTokenizer tokenizer(lazy_state_->SheetText(), block_start_offset);
       CSSParserTokenStream block_stream(tokenizer);
+      CSSParserTokenStream::BlockGuard sub_guard(
+          block_stream);  // Consume the {, and open the block stack.
       return ConsumeStyleRuleContents(selector_vector, block_stream);
     }
 
@@ -2185,15 +2180,15 @@ std::unique_ptr<Vector<KeyframeOffset>> CSSParserImpl::ConsumeKeyframeKeyList(
     const CSSParserToken& token = range.Peek();
     if (token.GetType() == kPercentageToken && token.NumericValue() >= 0 &&
         token.NumericValue() <= 100) {
-      result->push_back(KeyframeOffset(Timing::TimelineNamedRange::kNone,
+      result->push_back(KeyframeOffset(TimelineOffset::NamedRange::kNone,
                                        token.NumericValue() / 100));
       range.ConsumeIncludingWhitespace();
     } else if (token.GetType() == kIdentToken) {
       if (EqualIgnoringASCIICase(token.Value(), "from")) {
-        result->push_back(KeyframeOffset(Timing::TimelineNamedRange::kNone, 0));
+        result->push_back(KeyframeOffset(TimelineOffset::NamedRange::kNone, 0));
         range.ConsumeIncludingWhitespace();
       } else if (EqualIgnoringASCIICase(token.Value(), "to")) {
-        result->push_back(KeyframeOffset(Timing::TimelineNamedRange::kNone, 1));
+        result->push_back(KeyframeOffset(TimelineOffset::NamedRange::kNone, 1));
         range.ConsumeIncludingWhitespace();
       } else {
         auto* range_name_percent = To<CSSValueList>(
@@ -2204,12 +2199,12 @@ std::unique_ptr<Vector<KeyframeOffset>> CSSParserImpl::ConsumeKeyframeKeyList(
         }
 
         auto range_name = To<CSSIdentifierValue>(range_name_percent->Item(0))
-                              .ConvertTo<Timing::TimelineNamedRange>();
+                              .ConvertTo<TimelineOffset::NamedRange>();
         auto percent =
             To<CSSPrimitiveValue>(range_name_percent->Item(1)).GetFloatValue();
 
         if (!RuntimeEnabledFeatures::CSSViewTimelineEnabled() &&
-            range_name != Timing::TimelineNamedRange::kNone) {
+            range_name != TimelineOffset::NamedRange::kNone) {
           return nullptr;
         }
 

@@ -29,6 +29,18 @@ TEST_F('SidePanelBookmarksListTest', 'All', function() {
   mocha.run();
 });
 
+var SidePanelPowerBookmarksContextMenuTest =
+    class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://bookmarks-side-panel.top-chrome/test_loader.html?module=side_panel/bookmarks/power_bookmarks_context_menu_test.js';
+  }
+};
+
+TEST_F('SidePanelPowerBookmarksContextMenuTest', 'All', function() {
+  mocha.run();
+});
+
 var SidePanelPowerBookmarksEditDialogTest = class extends SidePanelBrowserTest {
   /** @override */
   get browsePreload() {
@@ -47,7 +59,8 @@ var SidePanelPowerBookmarksListTest = class extends SidePanelBrowserTest {
   }
 };
 
-TEST_F('SidePanelPowerBookmarksListTest', 'All', function() {
+// TODO(crbug.com/1410117): Flaky across multiple builders. Re-enable this test.
+TEST_F('SidePanelPowerBookmarksListTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
@@ -146,5 +159,43 @@ var UserNotesAppTest = class extends SidePanelBrowserTest {
 };
 
 TEST_F('UserNotesAppTest', 'All', function() {
+  mocha.run();
+});
+
+var UserNoteOverviewsListTest = class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://user-notes-side-panel.top-chrome/test_loader.html?module=side_panel/user_notes/user_note_overviews_list_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          ['user_notes::kUserNotes', 'power_bookmarks::kPowerBookmarkBackend']
+    };
+  }
+};
+
+TEST_F('UserNoteOverviewsListTest', 'All', function() {
+  mocha.run();
+});
+
+var UserNotesListTest = class extends SidePanelBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://user-notes-side-panel.top-chrome/test_loader.html?module=side_panel/user_notes/user_notes_list_test.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled:
+          ['user_notes::kUserNotes', 'power_bookmarks::kPowerBookmarkBackend']
+    };
+  }
+};
+
+TEST_F('UserNotesListTest', 'All', function() {
   mocha.run();
 });

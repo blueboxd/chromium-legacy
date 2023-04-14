@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">براہ راست انٹرنیٹ کنکشن</translation>
 <translation id="1272293450992660632">‏PIN کی اقدار مماثل نہیں ہیں۔</translation>
 <translation id="1280820357415527819">موبائل نیٹ ورکس کو تلاش کیا جا رہا ہے</translation>
-<translation id="1291603679744561561">‏SIM مقفل ہو گیا</translation>
 <translation id="1293556467332435079">فائلیں</translation>
 <translation id="1297922636971898492">‏Google Drive ابھی دستیاب نہیں ہے۔ Google Drive واپس آ جانے پر اپ لوڈنگ خود بخود دوبارہ شروع ہو جائے گی۔</translation>
 <translation id="1307931752636661898">‏Linux فائلز دیکھنے سے قاصر</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">‏فائلز کو Parallels Desktop میں ڈراپ کرنے کے لیے، فائل کو Windows کی فائلز میں منتقل کرنا ضروری ہے۔</translation>
 <translation id="1435838927755162558">‏Parallels ڈیسک ٹاپ کے ساتھ فولڈر کا اشتراک کریں</translation>
 <translation id="1439919885608649279">پھول لیے ہوئے شخص</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> خارج کریں</translation>
 <translation id="1471718551822868769">سلاواکی</translation>
 <translation id="1482884275703521657">فنّش</translation>
 <translation id="148466539719134488">سوئس</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">‏Bruschetta کے ساتھ 1 فولڈر کا اشتراک کیا گیا</translation>
 <translation id="2578394532502990878">تمل فونیٹک</translation>
 <translation id="2579959351793446050">اڑیہ</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> کو مطابقت پذیری کرنے کی تیاری ہو رہی ہے...</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" /> میں سے <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" /> نیٹ ورک، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، آپ کے منتظم کے ذریعے مسدود کردہ، تفاصیل</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> ویڈیو</translation>
 <translation id="2620090360073999360">‏اس وقت Google Drive تک رسائی نہیں ہو سکتی ہے۔</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">منگؤلی</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> خرابیاں۔</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، <ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />%، تفصیلات</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کو مطابقت پذیری کرنے کی تیاری ہو رہی ہے...</translation>
 <translation id="3522708245912499433">پُرتگالی</translation>
 <translation id="3524311639100184459">احتیاط: یہ فائلز عارضی ہیں اور ڈسک میں جگہ خالی کرنے کیلئے انہیں خودکار طور پر حذف کیا جا سکتا ہے۔  <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">فولڈر</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">پیسٹ کریں</translation>
 <translation id="3952872973865944257">تیلگو فونیٹک</translation>
+<translation id="3954354850384043518">پیشرفت میں ہے</translation>
 <translation id="3958548648197196644">کیوی</translation>
 <translation id="3971140002794351170">موبائل پروفائل ڈاؤن لوڈ کریں، نیٹ ورک <ph name="NETWORK_INDEX" /> از <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">انگریزی (برطانیہ)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">حسب  ضرورت نام سرورز</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" /> میں سے نیٹ ورک <ph name="NETWORK_INDEX" />، <ph name="NETWORK_NAME" />، آپ کے منتظم کے زیر انتظام ہے، منسلک کریں</translation>
 <translation id="4470564870223067757">‏Hangul 2 سیٹ</translation>
+<translation id="4474142134969976028">کوئی مماثل نتیجہ نہیں ہے</translation>
 <translation id="4477002475007461989">رومانیائی</translation>
 <translation id="4477219268485577442">بلغاریائی فونیٹک</translation>
 <translation id="4508265954913339219">فعالیت ناکام ہو گئی</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">ایک ایسا نام استعمال کریں جو <ph name="MAX_LENGTH" /> یا اس سے کم حروف پر مشتمل ہو</translation>
 <translation id="4973970068702235170">زِپ کرنے کا عمل ناکام، غیر متوقع خرابی: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">جاپانی</translation>
+<translation id="4987699874727873250">انگریزی (ہندوستان)</translation>
 <translation id="4988205478593450158">کیا آپ واقعی "<ph name="FILE_NAME" />" کو حذف کرنا چاہتے ہیں؟</translation>
 <translation id="498902553138568924">سرخ تتلی</translation>
 <translation id="4992066212339426712">آواز چلائیں</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">حالیہ کوئی تصویر نہیں ہے</translation>
 <translation id="7460898608667578234">يُوکرينی</translation>
 <translation id="7469894403370665791">اس نیٹ ورک سے خودکار طور پر منسلک ہوں</translation>
+<translation id="7481358317100446445">تیار ہے</translation>
 <translation id="7486315294984620427">‏فائلز کو Parallels Desktop میں ڈراپ کرنے کے لیے، فائل کو Windows کی فائلز میں کاپی کرنا ضروری ہے۔</translation>
 <translation id="749452993132003881">ہیراگنا</translation>
 <translation id="7495372004724182530">ملیالم فونیٹک</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">‏Google تصاویر تک آسانی سے رسائی حاصل کریں</translation>
 <translation id="7658239707568436148">منسوخ کریں</translation>
 <translation id="7663224033570512922">ہندی</translation>
+<translation id="7665680517722058469">کوئی دوسری تلاش آزمائیں</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> آئٹمز کوڑے دان میں منتقل کئے گئے</translation>
 <translation id="7693909743393669729">ڈرائیو کو فارمیٹ کرنے سے اس پر اسٹور کردہ تمام ڈیٹا حذف ہو جائے گا اور سبھی موجودہ پارٹیشنز ہٹ جائيں گے، بشمول وہ پارٹیشنز جو شاید دکھائی نہ دے رہے ہوں۔ اس عمل کو کالعدم نہیں کیا جا سکتا۔</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> کو فارمیٹ نہیں کیا جا سکا</translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">عربی نقل حرفی</translation>
 <translation id="8873014196523807561">ان آئٹمز کو بحال کرنے کے لیے، انہیں ایک نئے فولڈر میں گھسیٹیں۔ ان میں سے کچھ آئٹمز کے اصل فولڈرز کو حذف کر دیا گیا ہے۔</translation>
 <translation id="8874184842967597500">منسلک نہیں</translation>
+<translation id="8876368061475701452">قطار بند</translation>
 <translation id="8900820606136623064">ہنگیرین</translation>
 <translation id="8903931173357132290">گریجویٹ</translation>
 <translation id="8912078710089354287">دُم ہلاتا ہوا کتا</translation>

@@ -4,7 +4,7 @@
 
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardObserverInterface, Mouse, MouseObserverInterface, PointingStick, PointingStickObserverInterface, Touchpad, TouchpadObserverInterface} from './input_device_settings_types.js';
+import {InputDeviceSettingsProviderInterface, Keyboard, KeyboardObserverInterface, KeyboardSettings, Mouse, MouseObserverInterface, MouseSettings, PointingStick, PointingStickObserverInterface, PointingStickSettings, Touchpad, TouchpadObserverInterface, TouchpadSettings} from './input_device_settings_types.js';
 
 /**
  * @fileoverview
@@ -29,6 +29,10 @@ class FakeMethodState {
     return promise;
   }
 
+  getResult(): any {
+    return this.result;
+  }
+
   setResult(result: any) {
     this.result = result;
   }
@@ -43,6 +47,11 @@ export class FakeMethodResolver {
 
   register(methodName: string): void {
     this.methodMap.set(methodName, new FakeMethodState());
+  }
+
+  getResult<K extends keyof InputDeviceType, T>(methodName: K):
+      InputDeviceType[K] extends T? InputDeviceType[K]: never {
+    return this.getState(methodName).getResult();
   }
 
   setResult<K extends keyof InputDeviceType, T>(
@@ -105,6 +114,46 @@ export class FakeInputDeviceSettingsProvider implements
 
   getConnectedPointingStickSettings(): Promise<PointingStick[]> {
     return this.methods.resolveMethod('fakePointingSticks');
+  }
+
+  setKeyboardSettings(id: number, settings: KeyboardSettings): void {
+    const keyboards = this.methods.getResult('fakeKeyboards');
+    for (const keyboard of keyboards) {
+      if (keyboard.id === id) {
+        keyboard.settings = settings;
+      }
+    }
+    this.methods.setResult('fakeKeyboards', keyboards);
+  }
+
+  setMouseSettings(id: number, settings: MouseSettings): void {
+    const mice = this.methods.getResult('fakeMice');
+    for (const mouse of mice) {
+      if (mouse.id === id) {
+        mouse.settings = settings;
+      }
+    }
+    this.methods.setResult('fakeMice', mice);
+  }
+
+  setTouchpadSettings(id: number, settings: TouchpadSettings): void {
+    const touchpads = this.methods.getResult('fakeTouchpads');
+    for (const touchpad of touchpads) {
+      if (touchpad.id === id) {
+        touchpad.settings = settings;
+      }
+    }
+    this.methods.setResult('fakeTouchpads', touchpads);
+  }
+
+  setPointingStickSettings(id: number, settings: PointingStickSettings): void {
+    const pointingSticks = this.methods.getResult('fakePointingSticks');
+    for (const pointingStick of pointingSticks) {
+      if (pointingStick.id === id) {
+        pointingStick.settings = settings;
+      }
+    }
+    this.methods.setResult('fakePointingSticks', pointingSticks);
   }
 
   observeKeyboardSettings(_observer: KeyboardObserverInterface): void {

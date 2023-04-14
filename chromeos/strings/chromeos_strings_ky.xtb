@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Тышкы түзмөктөрдө орнотулган программаны жаңыртуу терезеси ачык. <ph name="NUM_UPDATES" /> жаңыртуу бар.</translation>
 <translation id="1145516343487477149">Chromebook тууралуу көп берилүүчү суроолорго жоопторду жана макалаларды табасыз</translation>
+<translation id="1167755866710282443">Баскычтарды тууралоо үчүн менюну ачыңыз. Жылдыруу үчүн менюну сүйрөңүз.</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> түзмөгүн <ph name="MANAGER" /> башкарат.</translation>
 <translation id="1175951029573070619">Орточо (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Алып салуу</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Альбом тандаңыз <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB сенсордук тактасы</translation>
 <translation id="4117637339509843559">Караңгы режим</translation>
+<translation id="4130035430755296270">Дагы башка калыптарды көрүү үчүн үстүнө алып келиңиз</translation>
 <translation id="4131410914670010031">Ак-кара</translation>
 <translation id="4145784616224233563">HTTP тармактык коргоосу</translation>
 <translation id="4147897805161313378">Google Фото</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS дааналыгы</translation>
 <translation id="4848429997038228357">АТКАРЫЛУУДА</translation>
 <translation id="4854586501323951986">Кыстарылган сенсордук экран</translation>
+<translation id="4855250849489639581">Дагы башка калыптарды көрүү үчүн экранды ылдый сүрүңүз</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} аракет калды}other{<ph name="ERROR_MESSAGE" /> {0} аракет калды}}</translation>
 <translation id="4873827928179867585">Аутентификациянын алгоритми</translation>
 <translation id="4880328057631981605">Жетки чекитинин аты</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 сүрөт</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> түзмөгүн <ph name="MANAGER" /> башкарат. Администраторлор түзмөктү алыстан конфигурациялай алышат.</translation>
 <translation id="7180611975245234373">Жаңылоо</translation>
+<translation id="7180865173735832675">Өзгөчөлөштүрүү</translation>
 <translation id="7212734716605298123">Тышкы түзмөктөр үчүн орнотулган программанын жаңыртуулары</translation>
 <translation id="7216409898977639127">Интернет провайдери</translation>
 <translation id="725133483556299729">Электрондук почта дарегин тандоо</translation>

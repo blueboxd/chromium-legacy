@@ -639,11 +639,15 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
     base::Value::Dict d;
     d.Set("stage", ToString(progress.stage));
     d.Set("free_space", ToString(HumanReadableSize(progress.free_space)));
+    d.Set("required_space",
+          ToString(HumanReadableSize(progress.required_space)));
     d.Set("bytes_to_pin", ToString(HumanReadableSize(progress.bytes_to_pin)));
     d.Set("pinned_bytes", ToString(HumanReadableSize(progress.pinned_bytes)));
     d.Set("files_to_pin", ToString(progress.files_to_pin));
     d.Set("pinned_files", ToString(progress.pinned_files));
     d.Set("failed_files", ToString(progress.failed_files));
+    d.Set("syncing_files", ToString(progress.syncing_files));
+    d.Set("skipped_files", ToString(progress.skipped_files));
     MaybeCallJavascript("onBulkPinningProgress", base::Value(std::move(d)));
   }
 

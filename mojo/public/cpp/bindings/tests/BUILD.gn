@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("tests") {
@@ -30,7 +31,6 @@ source_set("tests") {
     "hash_unittest.cc",
     "idle_tracking_unittest.cc",
     "interface_unittest.cc",
-    "js_interface_binder_unittest.cc",
     "lazy_serialization_unittest.cc",
     "map_unittest.cc",
     "message_queue.cc",
@@ -67,7 +67,6 @@ source_set("tests") {
     ":test_extra_cpp_template_mojom",
     ":test_mojom",
     ":test_mojom__generate_message_ids",
-    ":test_mojom_js_interface_binder_js_interface_binder_impl",
     "//base/test:test_support",
     "//mojo/core/test:test_support",
     "//mojo/public/cpp/bindings",
@@ -85,7 +84,7 @@ source_set("tests") {
 
   data = [ "//mojo/public/interfaces/bindings/tests/data/validation/" ]
 
-  if (is_ios) {
+  if (!use_blink) {
     assert_no_deps = [ "//third_party/blink/*" ]
   } else {
     sources += [
@@ -100,7 +99,7 @@ source_set("tests") {
   }
 }
 
-if (!is_ios) {
+if (use_blink) {
   source_set("for_blink_tests") {
     testonly = true
 
@@ -187,25 +186,6 @@ mojom("test_mojom") {
       traits_headers = [ "default_construct_unittest_mojom_traits.h" ]
     },
   ]
-}
-
-mojom("test_mojom_js_interface_binder") {
-  testonly = true
-  sources = [ "js_interface_binder_unittest.test-mojom" ]
-
-  public_deps = [
-    ":test_mojom_js_interface_binder_secondary",
-    "//mojo/public/mojom/base",
-  ]
-
-  js_interface_binder = true
-}
-
-mojom("test_mojom_js_interface_binder_secondary") {
-  testonly = true
-  sources = [ "js_interface_binder_secondary_unittest.test-mojom" ]
-
-  public_deps = [ "//mojo/public/mojom/base" ]
 }
 
 source_set("perftests") {

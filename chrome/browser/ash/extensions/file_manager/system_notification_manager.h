@@ -136,7 +136,7 @@ class SystemNotificationManager {
       const std::u16string& message);
 
   /**
-   * Returns an instance of an 'ash' Notiifcation with progress value.
+   * Returns an instance of an 'ash' Notification with progress value.
    */
   std::unique_ptr<message_center::Notification> CreateProgressNotification(
       const std::string& notification_id,
@@ -145,22 +145,24 @@ class SystemNotificationManager {
       int progress);
 
   /**
-   * Returns an instance of an 'ash' Notification with progress value and Cancel
-   * button bound to CancelTaskId(task_id, ...);
+   * Returns an instance of an 'ash' Notification with IOTask progress value.
    */
   std::unique_ptr<message_center::Notification>
   CreateIOTaskProgressNotification(file_manager::io_task::IOTaskId task_id,
                                    const std::string& notification_id,
                                    const std::u16string& title,
                                    const std::u16string& message,
+                                   const bool paused,
                                    int progress);
 
   /**
-   * Click handler for the IO Task progress notification. Cancels the IO Task.
+   * Click handler for the IOTask progress notification.
    */
-  void CancelTaskId(file_manager::io_task::IOTaskId task_id,
-                    const std::string& notification_id,
-                    absl::optional<int> button_index);
+  void HandleIOTaskProgressNotificationClick(
+      file_manager::io_task::IOTaskId task_id,
+      const std::string& notification_id,
+      const bool paused,
+      absl::optional<int> button_index);
 
   /**
    *  Returns an instance of an 'ash' Notification with title and message
@@ -290,16 +292,19 @@ class SystemNotificationManager {
   std::map<std::string, enum SystemNotificationManagerMountStatus>
       mount_status_;
 
+  // User profile.
   Profile* const profile_;
-  // Reference to non-owned DriveFS event router.
-  DriveFsEventRouter* drivefs_event_router_;
+
+  // Application name (used for notification display source).
+  std::u16string const app_name_;
+
+  // DriveFS event router: not owned.
+  DriveFsEventRouter* drivefs_event_router_ = nullptr;
 
   // IOTaskController is owned by VolumeManager.
-  file_manager::io_task::IOTaskController* io_task_controller_;
+  file_manager::io_task::IOTaskController* io_task_controller_ = nullptr;
 
-  // Cache the application name (used for notification display source).
-  std::u16string app_name_;
-
+  // base::WeakPtr{this} factory.
   base::WeakPtrFactory<SystemNotificationManager> weak_ptr_factory_{this};
 };
 

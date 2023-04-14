@@ -38,9 +38,10 @@ class CORE_EXPORT CSSParser {
 
  public:
   // As well as regular rules, allows @import and @namespace but not @charset
-  static StyleRuleBase* ParseRule(const CSSParserContext*,
-                                  StyleSheetContents*,
-                                  const String&);
+  static StyleRuleBase* ParseRule(const CSSParserContext* context,
+                                  StyleSheetContents* style_sheet,
+                                  StyleRule* parent_rule_for_nesting,
+                                  const String& rule);
 
   static ParseSheetResult ParseSheet(
       const CSSParserContext*,
@@ -48,8 +49,7 @@ class CORE_EXPORT CSSParser {
       const String&,
       CSSDeferPropertyParsing defer_property_parsing =
           CSSDeferPropertyParsing::kNo,
-      bool allow_import_rules = true,
-      std::unique_ptr<CachedCSSTokenizer> tokenizer = nullptr);
+      bool allow_import_rules = true);
   // See CSSSelectorParser for lifetime of the returned value.
   static base::span<CSSSelector> ParseSelector(
       const CSSParserContext*,

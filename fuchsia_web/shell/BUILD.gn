@@ -66,12 +66,6 @@ fuchsia_component("web_engine_shell_for_web_instance_host_component") {
   data_deps = [ ":web_engine_shell_exec" ]
 }
 
-fuchsia_component("web_engine_shell_component_v1") {
-  testonly = true
-  manifest = "web_engine_shell.cmx"
-  data_deps = [ ":web_engine_shell_exec" ]
-}
-
 fuchsia_package("web_engine_shell_pkg") {
   testonly = true
 
@@ -79,7 +73,6 @@ fuchsia_package("web_engine_shell_pkg") {
   package_name = "web_engine_shell"
   deps = [
     ":web_engine_shell_component",
-    ":web_engine_shell_component_v1",
     ":web_engine_shell_for_web_instance_host_component",
   ]
 }
@@ -112,10 +105,9 @@ executable("web_engine_shell_exec") {
     "//base",
     "//components/fuchsia_component_support:annotations_manager",
     "//fuchsia_web/common",
+    "//fuchsia_web/common/test:test_support",
     "//fuchsia_web/webinstance_host:webinstance_host",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component.decl",
-    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.component:fuchsia.component_hlcpp",
     "//third_party/fuchsia-sdk/sdk/pkg/fdio",
     "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
     "//third_party/fuchsia-sdk/sdk/pkg/sys_component_cpp_testing",

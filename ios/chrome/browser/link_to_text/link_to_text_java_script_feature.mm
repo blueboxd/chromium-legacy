@@ -32,11 +32,11 @@ bool IsKnownAmpCache(web::WebFrame* frame) {
   return origin.DomainIs("ampproject.org") || origin.DomainIs("bing-amp.com");
 }
 
-LinkToTextResponse* ParseResponse(web::WebState* web_state,
+LinkToTextResponse* ParseResponse(base::WeakPtr<web::WebState> web_state,
                                   const base::ElapsedTimer& timer,
                                   const base::Value* value) {
   return [LinkToTextResponse linkToTextResponseWithValue:value
-                                                webState:web_state
+                                                webState:web_state.get()
                                                  latency:timer.Elapsed()];
 }
 
@@ -44,7 +44,7 @@ LinkToTextResponse* ParseResponse(web::WebState* web_state,
 
 LinkToTextJavaScriptFeature::LinkToTextJavaScriptFeature()
     : JavaScriptFeature(
-          ContentWorld::kAnyContentWorld,
+          web::ContentWorld::kIsolatedWorld,
           {FeatureScript::CreateWithFilename(
               kScriptName,
               FeatureScript::InjectionTime::kDocumentStart,
@@ -66,9 +66,9 @@ void LinkToTextJavaScriptFeature::GetLinkToText(
   base::ElapsedTimer link_generation_timer;
 
   RunGenerationJS(
-      web_state->GetWebFramesManager()->GetMainWebFrame(),
+      web_state->GetPageWorldWebFramesManager()->GetMainWebFrame(),
       base::BindOnce(&LinkToTextJavaScriptFeature::HandleResponse,
-                     weak_ptr_factory_.GetWeakPtr(), web_state,
+                     weak_ptr_factory_.GetWeakPtr(), web_state->GetWeakPtr(),
                      std::move(link_generation_timer), std::move(callback)));
 }
 
@@ -97,21 +97,23 @@ bool LinkToTextJavaScriptFeature::ShouldAttemptIframeGeneration(
 }
 
 void LinkToTextJavaScriptFeature::HandleResponse(
-    web::WebState* web_state,
+    base::WeakPtr<web::WebState> web_state,
     base::ElapsedTimer link_generation_timer,
     base::OnceCallback<void(LinkToTextResponse*)> final_callback,
     const base::Value* response) {
   LinkToTextResponse* parsed_response = [LinkToTextResponse
       linkToTextResponseWithValue:response
-                         webState:web_state
+                         webState:web_state.get()
                           latency:link_generation_timer.Elapsed()];
   absl::optional<shared_highlighting::LinkGenerationError> error =
       [parsed_response error];
 
   std::vector<web::WebFrame*> amp_frames;
-  if (ShouldAttemptIframeGeneration(error, web_state->GetLastCommittedURL())) {
-    base::ranges::copy_if(web_state->GetWebFramesManager()->GetAllWebFrames(),
-                          std::back_inserter(amp_frames), IsKnownAmpCache);
+  if (web_state &&
+      ShouldAttemptIframeGeneration(error, web_state->GetLastCommittedURL())) {
+    base::ranges::copy_if(
+        web_state->GetPageWorldWebFramesManager()->GetAllWebFrames(),
+        std::back_inserter(amp_frames), IsKnownAmpCache);
   }
 
   // Empty indicates we're not attempting AMP generation (e.g., succeeded or

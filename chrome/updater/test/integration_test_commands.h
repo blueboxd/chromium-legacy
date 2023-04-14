@@ -40,6 +40,12 @@ class IntegrationTestCommands
   virtual void ExpectActive(const std::string& app_id) const = 0;
   virtual void ExpectNotActive(const std::string& app_id) const = 0;
   virtual void ExpectSelfUpdateSequence(ScopedServer* test_server) const = 0;
+  virtual void ExpectUpdateCheckSequence(
+      ScopedServer* test_server,
+      const std::string& app_id,
+      const std::string& install_data_index,
+      const base::Version& from_version,
+      const base::Version& to_version) const = 0;
   virtual void ExpectUpdateSequence(ScopedServer* test_server,
                                     const std::string& app_id,
                                     const std::string& install_data_index,
@@ -70,8 +76,11 @@ class IntegrationTestCommands
   virtual void RunWake(int exit_code) const = 0;
   virtual void RunWakeAll() const = 0;
   virtual void RunWakeActive(int exit_code) const = 0;
+
   virtual void Update(const std::string& app_id,
-                      const std::string& install_data_index) const = 0;
+                      const std::string& install_data_index,
+                      bool do_update_check_only) const = 0;
+
   virtual void UpdateAll() const = 0;
   virtual void DeleteUpdaterDirectory() const = 0;
   virtual void PrintLog() const = 0;

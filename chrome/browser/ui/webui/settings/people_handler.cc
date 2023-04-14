@@ -18,10 +18,12 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_metrics.h"
+#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -77,7 +79,6 @@ using content::WebContents;
 using l10n_util::GetStringFUTF16;
 using l10n_util::GetStringUTF16;
 using signin::ConsentLevel;
-using signin_util::UserSignoutSetting;
 
 namespace {
 
@@ -202,8 +203,9 @@ bool IsChangePrimaryAccountAllowed(Profile* profile, const std::string& email) {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
 
-  if (UserSignoutSetting::GetForProfile(profile)
-          ->IsClearPrimaryAccountAllowed() ||
+  if (ChromeSigninClientFactory::GetForProfile(profile)
+          ->IsClearPrimaryAccountAllowed(
+              identity_manager->HasPrimaryAccount(ConsentLevel::kSync)) ||
       !identity_manager->HasPrimaryAccount(ConsentLevel::kSignin)) {
     return true;
   }
@@ -622,7 +624,7 @@ void PeopleHandler::HandleTurnOnSync(const base::Value::List& args) {
 void PeopleHandler::HandleTurnOffSync(const base::Value::List& args) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
   DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kSync));
-  DCHECK(UserSignoutSetting::GetForProfile(profile_)
+  DCHECK(ChromeSigninClientFactory::GetForProfile(profile_)
              ->IsRevokeSyncConsentAllowed());
 
   identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
@@ -666,11 +668,8 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
   DCHECK(is_syncing || !delete_profile)
       << "Deleting the profile should only be offered if the user is "
          "syncing.";
-
-  UserSignoutSetting* signout_setting =
-      UserSignoutSetting::GetForProfile(profile_);
-
-  if (!signout_setting->IsRevokeSyncConsentAllowed()) {
+  auto* signin_client = ChromeSigninClientFactory::GetForProfile(profile_);
+  if (is_syncing && !signin_client->IsRevokeSyncConsentAllowed()) {
     // If the user can't revoke sync the profile must be destroyed.
     if (delete_profile && delete_profile_allowed) {
       webui::DeleteProfileAtPath(profile_path,
@@ -682,7 +681,7 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
   }
 
   bool is_clear_primary_account_allowed =
-      signout_setting->IsClearPrimaryAccountAllowed();
+      signin_client->IsClearPrimaryAccountAllowed(is_syncing);
   if (!is_syncing && !is_clear_primary_account_allowed) {
     // 'Signout' should not be offered in the UI if clear primary account is not
     // allowed.
@@ -697,7 +696,7 @@ void PeopleHandler::HandleSignout(const base::Value::List& args) {
                      : signin_metrics::SignoutDelete::kKeeping;
 
   if (is_syncing && !is_clear_primary_account_allowed) {
-    DCHECK(signout_setting->IsRevokeSyncConsentAllowed());
+    DCHECK(signin_client->IsRevokeSyncConsentAllowed());
     identity_manager->GetPrimaryAccountMutator()->RevokeSyncConsent(
         signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
         delete_metric);
@@ -925,19 +924,17 @@ base::Value::Dict PeopleHandler::GetSyncStatusDictionary() const {
   // dialog on turn off sync. This is no longer needed since users are allowed
   // to turn off sync. Enterprise team to decide whether to show the delete
   // profile dialog on signout.
-  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+  if (identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     CoreAccountInfo primary_account_info =
-        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSync);
-
-    bool is_managed =
-        identity_manager->FindExtendedAccountInfo(primary_account_info)
-            .IsManaged();
+        identity_manager->GetPrimaryAccountInfo(signin::ConsentLevel::kSignin);
 
     // If there is no one logged in or if the profile name is empty then the
     // domain name is empty. This happens in browser tests.
-    if (is_managed && !primary_account_info.email.empty())
+    if (chrome::enterprise_util::UserAcceptedAccountManagement(profile_) &&
+        !primary_account_info.email.empty()) {
       sync_status.Set("domain",
                       gaia::ExtractDomainName(primary_account_info.email));
+    }
   }
 
   // This is intentionally not using GetSyncService(), in order to access more

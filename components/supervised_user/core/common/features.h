@@ -7,7 +7,7 @@
 
 #include "base/feature_list.h"
 
-namespace supervised_users {
+namespace supervised_user {
 
 BASE_DECLARE_FEATURE(kWebFilterInterstitialRefresh);
 
@@ -16,6 +16,9 @@ extern const char kLocalWebApprovalsPreferredButtonLocal[];
 extern const char kLocalWebApprovalsPreferredButtonRemote[];
 
 BASE_DECLARE_FEATURE(kAllowHistoryDeletionForChildAccounts);
+BASE_DECLARE_FEATURE(kSynchronousSignInChecking);
+
+BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnThirdParty);
 
 // Returns whether refreshed version of the website filter interstitial is
 // enabled.
@@ -35,6 +38,10 @@ bool IsLocalWebApprovalThePreferredButton();
 // Returns whether to use the new Api for fetching.
 bool IsKidsManagementServiceEnabled();
 
-}  // namespace supervised_users
+// Returns whether the First Run Experience will rely on checking the sign-in
+// status synchronously - http://b/264382308.
+bool IsSynchronousSignInCheckingEnabled();
+
+}  // namespace supervised_user
 
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_COMMON_FEATURES_H_

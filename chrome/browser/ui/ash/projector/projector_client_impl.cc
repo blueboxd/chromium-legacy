@@ -12,6 +12,7 @@
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/check.h"
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/flat_set.h"
@@ -20,7 +21,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,6 +38,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/media_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -113,8 +114,6 @@ ash::OnDeviceToServerSpeechRecognitionFallbackReason GetFallbackReason(
 
 // static
 void ProjectorClientImpl::InitForProjectorAnnotator(views::WebView* web_view) {
-  if (!ash::features::IsProjectorAnnotatorEnabled())
-    return;
   web_view->LoadInitialURL(GURL(ash::kChromeUITrustedAnnotatorUrl));
 }
 
@@ -181,6 +180,7 @@ void ProjectorClientImpl::StartSpeechRecognition() {
 
   speech_recognizer_ = std::make_unique<SpeechRecognitionRecognizerClientImpl>(
       weak_ptr_factory_.GetWeakPtr(), ProfileManager::GetActiveUserProfile(),
+      media::AudioDeviceDescription::kDefaultDeviceId,
       media::mojom::SpeechRecognitionOptions::New(
           media::mojom::SpeechRecognitionMode::kCaption,
           /*enable_formatting=*/true, locale,

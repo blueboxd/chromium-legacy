@@ -17,6 +17,7 @@
     {
       protocol: [
         "fuchsia.web.Context",
+        "fuchsia.web.Debug",
         "fuchsia.web.FrameHost",
       ]
     }
@@ -25,6 +26,7 @@
     {
       protocol: [
         "fuchsia.web.Context",
+        "fuchsia.web.Debug",
         "fuchsia.web.FrameHost",
       ],
       from: "self",
@@ -47,6 +49,7 @@
       directory: "config-data",
       rights: [ "r*" ],
       path: "/config/data",
+      availability: "optional",
     },
     // fuchsia.web/CreateContextParams.data_directory.
     {
@@ -60,6 +63,7 @@
       directory: "root-ssl-certificates",
       rights: [ "r*" ],
       path: "/config/ssl",
+      availability: "optional",
     },
     // fuchsia.web/CreateContextParams.content_directories.
     {

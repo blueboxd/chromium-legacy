@@ -41,7 +41,9 @@ TestInterestGroupBuilder::TestInterestGroupBuilder(url::Origin owner,
           /*trusted_bidding_signals_keys=*/absl::nullopt,
           /*user_bidding_signals=*/absl::nullopt,
           /*ads=*/absl::nullopt,
-          /*ad_components=*/absl::nullopt) {}
+          /*ad_components=*/absl::nullopt,
+          /*ad_sizes=*/{},
+          /*size_groups=*/{}) {}
 
 TestInterestGroupBuilder::~TestInterestGroupBuilder() = default;
 
@@ -149,7 +151,7 @@ TestInterestGroupBuilder& TestInterestGroupBuilder::SetAds(
   return *this;
 }
 
-TestInterestGroupBuilder& TestInterestGroupBuilder::SetAdComponentss(
+TestInterestGroupBuilder& TestInterestGroupBuilder::SetAdComponents(
     absl::optional<std::vector<InterestGroup::Ad>> ad_components) {
   interest_group_.ad_components = std::move(ad_components);
   return *this;

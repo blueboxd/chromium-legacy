@@ -174,17 +174,10 @@ void OverlayProcessorUsingStrategy::ProcessForOverlays(
   // CALayers because the framebuffer would be missing the removed quads'
   // contents.
   if (render_pass->copy_requests.empty()) {
-    if (features::IsOverlayPrioritizationEnabled()) {
-      success = AttemptWithStrategiesPrioritized(
-          output_color_matrix, render_pass_backdrop_filters, resource_provider,
-          render_passes, &surface_damage_rect_list, output_surface_plane,
-          candidates, content_bounds, damage_rect);
-    } else {
-      success = AttemptWithStrategies(
-          output_color_matrix, render_pass_backdrop_filters, resource_provider,
-          render_passes, &surface_damage_rect_list, output_surface_plane,
-          candidates, content_bounds);
-    }
+    success = AttemptWithStrategies(
+        output_color_matrix, render_pass_backdrop_filters, resource_provider,
+        render_passes, &surface_damage_rect_list, output_surface_plane,
+        candidates, content_bounds, damage_rect);
   }
   LogCheckOverlaySupportMetrics();
 
@@ -438,36 +431,7 @@ void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
     output_surface_plane->reset();
 }
 
-bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
-    const SkM44& output_color_matrix,
-    const OverlayProcessorInterface::FilterOperationsMap&
-        render_pass_backdrop_filters,
-    DisplayResourceProvider* resource_provider,
-    AggregatedRenderPassList* render_pass_list,
-    SurfaceDamageRectList* surface_damage_rect_list,
-    OverlayProcessorInterface::OutputSurfaceOverlayPlane* primary_plane,
-    OverlayCandidateList* candidates,
-    std::vector<gfx::Rect>* content_bounds) {
-  last_successful_strategy_ = nullptr;
-  for (const auto& strategy : strategies_) {
-    if (strategy->Attempt(output_color_matrix, render_pass_backdrop_filters,
-                          resource_provider, render_pass_list,
-                          surface_damage_rect_list, primary_plane, candidates,
-                          content_bounds)) {
-      // This function is used by underlay strategy to mark the primary plane as
-      // enable_blending.
-      strategy->AdjustOutputSurfaceOverlay(primary_plane);
-      LogStrategyEnumUMA(strategy->GetUMAEnum());
-      last_successful_strategy_ = strategy.get();
-      return true;
-    }
-  }
-
-  LogStrategyEnumUMA(OverlayStrategy::kNoStrategyUsed);
-  return false;
-}
-
-void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
+void OverlayProcessorUsingStrategy::SortProposedOverlayCandidates(
     std::vector<OverlayProposedCandidate>* proposed_candidates) {
   // Removes trackers for candidates that are no longer being rendered.
   for (auto it = tracked_candidates_.begin();
@@ -566,7 +530,7 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
       });
 }
 
-bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
+bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
     const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -580,10 +544,10 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
   last_successful_strategy_ = nullptr;
   std::vector<OverlayProposedCandidate> proposed_candidates;
   for (const auto& strategy : strategies_) {
-    strategy->ProposePrioritized(
-        output_color_matrix, render_pass_backdrop_filters, resource_provider,
-        render_pass_list, surface_damage_rect_list, primary_plane,
-        &proposed_candidates, content_bounds);
+    strategy->Propose(output_color_matrix, render_pass_backdrop_filters,
+                      resource_provider, render_pass_list,
+                      surface_damage_rect_list, primary_plane,
+                      &proposed_candidates, content_bounds);
   }
 
   size_t num_proposed_pre_sort = proposed_candidates.size();
@@ -591,7 +555,7 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
       "Viz.DisplayCompositor.OverlayNumProposedCandidates",
       num_proposed_pre_sort);
 
-  SortProposedOverlayCandidatesPrioritized(&proposed_candidates);
+  SortProposedOverlayCandidates(&proposed_candidates);
   if (proposed_candidates.size() == 0) {
     LogStrategyEnumUMA(num_proposed_pre_sort != 0
                            ? OverlayStrategy::kNoStrategyFailMin
@@ -614,7 +578,7 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
     if (candidate.candidate.requires_overlay)
       has_required_overlay = true;
 
-    bool used_overlay = candidate.strategy->AttemptPrioritized(
+    bool used_overlay = candidate.strategy->Attempt(
         output_color_matrix, render_pass_backdrop_filters, resource_provider,
         render_pass_list, surface_damage_rect_list, primary_plane, candidates,
         content_bounds, candidate);
@@ -643,7 +607,7 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
              new_scale_factor < 1.0f; new_scale_factor += kScaleAdjust) {
           float zoom_scale = new_scale_factor / scale_factor;
           ScaleCandidateSrcRect(org_src_rect, zoom_scale, &candidate.candidate);
-          if (candidate.strategy->AttemptPrioritized(
+          if (candidate.strategy->Attempt(
                   output_color_matrix, render_pass_backdrop_filters,
                   resource_provider, render_pass_list, surface_damage_rect_list,
                   primary_plane, candidates, content_bounds, candidate)) {

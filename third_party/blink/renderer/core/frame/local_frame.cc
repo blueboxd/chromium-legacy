@@ -66,7 +66,6 @@
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -483,9 +482,60 @@ void LocalFrame::Navigate(FrameLoadRequest& request,
     probe::FrameClearedScheduledNavigation(this);
 }
 
+// Much of this function is redundant with the browser process
+// (NavigationRequest::ShouldReplaceCurrentEntryForSameUrlNavigation), but in
+// the event that this navigation is handled synchronously because it is
+// same-document, we need to apply it immediately. Also, we will synchronously
+// fire the NavigateEvent, which exposes whether the navigation will push or
+// replace to JS.
+bool LocalFrame::ShouldReplaceForSameUrlNavigation(
+    const FrameLoadRequest& request) {
+  const KURL& request_url = request.GetResourceRequest().Url();
+  if (request_url != GetDocument()->Url()) {
+    return false;
+  }
+
+  // Forms should push even to the same URL.
+  if (request.Form()) {
+    return false;
+  }
+
+  // Don't replace if the navigation originated from a cross-origin iframe (so
+  // that cross-origin iframes can't guess the URL of this frame based on
+  // whether a history entry was added).
+  if (request.GetOriginWindow() &&
+      !request.GetOriginWindow()->GetSecurityOrigin()->CanAccess(
+          DomWindow()->GetSecurityOrigin())) {
+    return false;
+  }
+
+  // WebUI URLs and non-current-tab navigations go through the OpenURL path
+  // rather than the BeginNavigation path, which converts same-URL navigations
+  // to reloads if not already marked replacing. Defer to the browser process
+  // in those cases.
+  if (SchemeRegistry::IsWebUIScheme(request_url.Protocol()) ||
+      request.GetNavigationPolicy() != kNavigationPolicyCurrentTab) {
+    return false;
+  }
+
+  return true;
+}
+
 bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
     const FrameLoadRequest& request,
     WebFrameLoadType frame_load_type) {
+  if (frame_load_type != WebFrameLoadType::kStandard) {
+    return false;
+  }
+
+  // When a navigation is requested via the navigation API with
+  // { history: "push" } specified, this should override all implicit
+  // conversions to a replacing navigation.
+  if (request.ForceHistoryPush() == mojom::blink::ForceHistoryPush::kYes) {
+    DCHECK(!ShouldMaintainTrivialSessionHistory());
+    return false;
+  }
+
   // Non-user navigation before the page has finished firing onload should not
   // create a new back/forward item. The spec only explicitly mentions this in
   // the context of navigating an iframe.
@@ -494,8 +544,13 @@ bool LocalFrame::NavigationShouldReplaceCurrentHistoryEntry(
       !HasTransientUserActivation(this) &&
       request.ClientRedirectReason() != ClientNavigationReason::kAnchorClick)
     return true;
-  return frame_load_type == WebFrameLoadType::kStandard &&
-         ShouldMaintainTrivialSessionHistory();
+
+  // In most cases, we will treat a navigation to the current URL as replacing.
+  if (ShouldReplaceForSameUrlNavigation(request)) {
+    return true;
+  }
+
+  return ShouldMaintainTrivialSessionHistory();
 
   // TODO(http://crbug.com/1197384): We may want to assert that
   // WebFrameLoadType is never kStandard in prerendered pages/portals before
@@ -700,8 +755,7 @@ void LocalFrame::AddResourceTimingEntryFromNonNavigatedFrame(
   auto* local_dom_window = DomWindow();
   DOMWindowPerformance::performance(*local_dom_window)
       ->AddResourceTiming(std::move(timing),
-                          ConvertElementTypeToInitiatorType(initiator_type),
-                          local_dom_window);
+                          ConvertElementTypeToInitiatorType(initiator_type));
 }
 
 const SecurityContext* LocalFrame::GetSecurityContext() const {
@@ -1473,6 +1527,10 @@ String LocalFrame::SelectedText() const {
   return Selection().SelectedText();
 }
 
+String LocalFrame::SelectedText(const TextIteratorBehavior& behavior) const {
+  return Selection().SelectedText(behavior);
+}
+
 String LocalFrame::SelectedTextForClipboard() const {
   if (!GetDocument())
     return g_empty_string;
@@ -1984,10 +2042,13 @@ LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   return LocalFrame::LazyLoadImageSetting::kEnabledExplicit;
 }
 
-WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
-  if (!url_loader_factory_)
-    url_loader_factory_ = Client()->CreateURLLoaderFactory();
-  return url_loader_factory_.get();
+scoped_refptr<network::SharedURLLoaderFactory>
+LocalFrame::GetURLLoaderFactory() {
+  return Client()->GetURLLoaderFactory();
+}
+
+std::unique_ptr<URLLoader> LocalFrame::CreateURLLoaderForTesting() {
+  return Client()->CreateURLLoaderForTesting();
 }
 
 WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {
@@ -2380,7 +2441,6 @@ void LocalFrame::NotifyUserActivation(
                                                       notification_type);
   Client()->NotifyUserActivation();
   NotifyUserActivationInFrameTree(notification_type);
-  DomWindow()->history_user_activation_state().Activate();
 }
 
 bool LocalFrame::ConsumeTransientUserActivation(
@@ -2391,6 +2451,17 @@ bool LocalFrame::ConsumeTransientUserActivation(
         mojom::blink::UserActivationNotificationType::kNone);
   }
   return ConsumeTransientUserActivationInFrameTree();
+}
+
+void LocalFrame::ConsumeHistoryUserActivation() {
+  // Notify the frame in the browser process, which will consume the activation
+  // in all frames of the page (consistent with the loop below).
+  GetLocalFrameHostRemote().DidConsumeHistoryUserActivation();
+  for (Frame* node = &Tree().Top(); node; node = node->Tree().TraverseNext()) {
+    if (LocalFrame* local_frame_node = DynamicTo<LocalFrame>(node)) {
+      local_frame_node->history_user_activation_state_.Consume();
+    }
+  }
 }
 
 namespace {
@@ -3112,8 +3183,8 @@ void LocalFrame::AdvanceFocusForIME(mojom::blink::FocusType focus_type) {
     return;
 
   Element* next_element =
-      GetPage()->GetFocusController().NextFocusableElementForIME(element,
-                                                                 focus_type);
+      GetPage()->GetFocusController().NextFocusableElementForImeAndAutofill(
+          element, focus_type);
   if (!next_element)
     return;
 

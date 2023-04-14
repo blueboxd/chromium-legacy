@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ash/arc/input_overlay/actions/action_tap.h"
 
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
+#include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -18,23 +20,27 @@
 
 namespace arc::input_overlay {
 namespace {
-// UI specs.
-constexpr int kLabelPositionToSide = 36;
-constexpr int kLabelMargin = 2;
 
-// Create |ActionLabel| for |ActionTap|.
-std::unique_ptr<ActionLabel> CreateActionLabel(InputElement& input_element) {
-  std::unique_ptr<ActionLabel> label;
-  if (IsKeyboardBound(input_element)) {
-    DCHECK_EQ(1u, input_element.keys().size());
-    label = ActionLabel::CreateTextActionLabel(
-        GetDisplayText(input_element.keys()[0]));
-  } else if (IsMouseBound(input_element)) {
-    label = ActionLabel::CreateImageActionLabel(input_element.mouse_action());
-  } else {
-    label = ActionLabel::CreateTextActionLabel(kUnknownBind);
+gfx::Size GetBoundingBoxOfChildren(views::View* view) {
+  int x = 0;
+  int y = 0;
+  for (auto* child : view->children()) {
+    x = std::max(x, child->bounds().right());
+    y = std::max(y, child->bounds().bottom());
   }
-  return label;
+  return gfx::Size(x, y);
+}
+
+bool IsOnEdgeLeft(int x, int margin) {
+  return x <= margin;
+}
+
+bool IsOnEdgeRight(int x, int margin, int width) {
+  return x >= width - margin;
+}
+
+bool IsOnEdgeTop(int y, int margin) {
+  return y <= margin;
 }
 
 }  // namespace
@@ -52,27 +58,21 @@ class ActionTap::ActionTapView : public ActionView {
   ~ActionTapView() override = default;
 
   void SetViewContent(BindingOption binding_option) override {
-    InputElement* input_binding = nullptr;
-    switch (binding_option) {
-      case BindingOption::kCurrent:
-        input_binding = action_->current_input();
-        break;
-      case BindingOption::kOriginal:
-        input_binding = action_->original_input();
-        break;
-      case BindingOption::kPending:
-        input_binding = action_->pending_input();
-        break;
-      default:
-        NOTREACHED();
-    }
+    InputElement* input_binding =
+        GetInputBindingByBindingOption(action_, binding_option);
     if (!input_binding)
       return;
 
     if (labels_.empty()) {
       // Create new action label when initializing.
-      auto label = CreateActionLabel(*input_binding);
-      labels_.emplace_back(AddChildView(std::move(label)));
+      TapLabelPosition position = allow_reposition_
+                                      ? TapLabelPosition::kNone
+                                      : (action_->on_left_or_middle_side()
+                                             ? TapLabelPosition::kBottomRight
+                                             : TapLabelPosition::kBottomLeft);
+      labels_ = ActionLabel::Show(this, ActionType::TAP, *input_binding,
+                                  action_->GetUIRadius(), allow_reposition_,
+                                  position);
     } else if (!IsInputBound(*input_binding)) {
       // Action label exists but without any bindings.
       labels_[0]->SetTextActionLabel(
@@ -132,36 +132,62 @@ class ActionTap::ActionTapView : public ActionView {
     menu_entry_->RequestFocus();
   }
 
-  void AddTouchPoint() override { ActionView::AddTouchPoint(ActionType::TAP); }
+  void AddTouchPoint() override {
+    ActionView::AddTouchPoint(ActionType::TAP);
+    SetSize(GetBoundingBoxOfChildren(this));
+  }
+
+  void MayUpdateLabelPosition(bool moving) override {
+    DCHECK_EQ(labels_.size(), 1u);
+
+    labels_[0]->UpdateLabelPositionType(
+        GetTapLabelPosition(GetTouchCenterInWindow()));
+    if (!moving)
+      SetSize(GetBoundingBoxOfChildren(this));
+  }
 
   void ChildPreferredSizeChanged(View* child) override {
     DCHECK_EQ(1u, labels_.size());
-    if (static_cast<ActionLabel*>(child) != labels_[0])
-      return;
-
-    int radius = action_->GetUIRadius();
-    auto* label = labels_[0];
-    auto label_size = label->CalculatePreferredSize();
-    int width = std::max(
-        radius * 2, radius * 2 - kLabelPositionToSide + label_size.width());
-    if (action_->on_left_or_middle_side()) {
-      label->SetPosition(
-          gfx::Point(label_size.width() > kLabelPositionToSide
-                         ? width - label_size.width()
-                         : width - kLabelPositionToSide,
-                     radius * 2 - label_size.height() - kLabelMargin));
-      center_.set_x(radius);
-      center_.set_y(radius);
-    } else {
-      label->SetPosition(
-          gfx::Point(0, radius * 2 - label_size.height() - kLabelMargin));
-      center_.set_x(width - radius);
-      center_.set_y(radius);
-    }
     UpdateTrashButtonPosition();
-    label->SetSize(label_size);
-    SetSize(gfx::Size(width, radius * 2));
+    if (allow_reposition_) {
+      MayUpdateLabelPosition(false);
+    } else {
+      int radius = action_->GetUIRadius();
+      int width = std::max(radius * 2, GetBoundingBoxOfChildren(this).width());
+      SetSize(gfx::Size(width, radius * 2));
+    }
     SetPositionFromCenterPosition(action_->GetUICenterPosition());
+  }
+
+ private:
+  TapLabelPosition GetTapLabelPosition(const gfx::Point& touch_point_center) {
+    const auto point_size = TouchPoint::GetSize(ActionType::TAP);
+    const auto label_size = labels_[0]->size();
+    const int x_margin =
+        label_size.width() + point_size.width() / 2 + kOffsetToTouchPoint;
+    const int y_margin =
+        label_size.height() + point_size.height() / 2 + kOffsetToTouchPoint;
+    const int x = touch_point_center.x();
+    const int y = touch_point_center.y();
+
+    if (IsOnEdgeLeft(x, x_margin)) {
+      return IsOnEdgeTop(y, y_margin) ? TapLabelPosition::kBottomRight
+                                      : TapLabelPosition::kTopRight;
+    }
+
+    const int available_width = parent()->width();
+    if (IsOnEdgeRight(x, x_margin, available_width)) {
+      return IsOnEdgeTop(y, y_margin) ? TapLabelPosition::kBottomLeft
+                                      : TapLabelPosition::kTopLeft;
+    }
+
+    if (IsOnEdgeTop(y, y_margin)) {
+      return x <= available_width / 2 ? TapLabelPosition::kBottomLeft
+                                      : TapLabelPosition::kBottomRight;
+    }
+
+    return x <= available_width / 2 ? TapLabelPosition::kTopLeft
+                                    : TapLabelPosition::kTopRight;
   }
 };
 

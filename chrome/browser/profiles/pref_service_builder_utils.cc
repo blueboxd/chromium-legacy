@@ -30,6 +30,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_value_store.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/network_service_instance.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -37,8 +38,8 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/content_settings/content_settings_supervised_provider.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
@@ -94,7 +95,8 @@ std::unique_ptr<sync_preferences::PrefServiceSyncable> CreatePrefService(
     SimpleFactoryKey* key,
     const base::FilePath& path,
     bool async_prefs) {
-  SupervisedUserSettingsService* supervised_user_settings = nullptr;
+  supervised_user::SupervisedUserSettingsService* supervised_user_settings =
+      nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   supervised_user_settings =
       SupervisedUserSettingsServiceFactory::GetForKey(key);

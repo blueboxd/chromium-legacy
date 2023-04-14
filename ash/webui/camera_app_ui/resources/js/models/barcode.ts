@@ -5,7 +5,7 @@
 import {assertInstanceof} from '../assert.js';
 import * as Comlink from '../lib/comlink.js';
 
-import {clearAsyncInterval, setAsyncInterval} from './async_interval.js';
+import {AsyncIntervalRunner} from './async_interval.js';
 import {BarcodeWorker} from './barcode_worker.js';
 
 // The delay interval between consecutive barcode detections.
@@ -26,7 +26,7 @@ const BARCODE_WORKER = Comlink.wrap<BarcodeWorker>(
  * A barcode scanner to detect barcodes from a camera stream.
  */
 export class BarcodeScanner {
-  private intervalId: number|null = null;
+  private scanRunner: AsyncIntervalRunner|null = null;
 
   /**
    * @param video The video to be scanned for barcode.
@@ -41,12 +41,12 @@ export class BarcodeScanner {
    * already started would be no-op.
    */
   start(): void {
-    if (this.intervalId !== null) {
+    if (this.scanRunner !== null) {
       return;
     }
-    this.intervalId = setAsyncInterval(async () => {
+    this.scanRunner = new AsyncIntervalRunner(async (stopped) => {
       const code = await this.scan();
-      if (code !== null) {
+      if (!stopped.isSignaled() && code !== null) {
         this.callback(code);
       }
     }, SCAN_INTERVAL);
@@ -56,18 +56,18 @@ export class BarcodeScanner {
    * Stops scanning barcodes.
    */
   stop(): void {
-    if (this.intervalId === null) {
+    if (this.scanRunner === null) {
       return;
     }
-    clearAsyncInterval(this.intervalId);
-    this.intervalId = null;
+    this.scanRunner.stop();
+    this.scanRunner = null;
   }
 
   /**
    * Grabs the current video frame for scanning. If the video resolution is too
    * high, the image would be scaled and/or cropped from the center.
    */
-  private async grabFrameForScan(): Promise<ImageBitmap> {
+  private grabFrameForScan(): Promise<ImageBitmap> {
     const {videoWidth: vw, videoHeight: vh} = this.video;
     if (vw <= MAX_SCAN_SIZE && vh <= MAX_SCAN_SIZE) {
       return createImageBitmap(this.video);
@@ -89,7 +89,7 @@ export class BarcodeScanner {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(this.video, sx, sy, sw, sh, 0, 0, scanSize, scanSize);
-    return canvas.transferToImageBitmap();
+    return Promise.resolve(canvas.transferToImageBitmap());
   }
 
   /**

@@ -147,6 +147,40 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
 }  // namespace
 
 // static
+media::mojom::SharedImageFormatType EnumTraits<
+    media::mojom::SharedImageFormatType,
+    media::SharedImageFormatType>::ToMojom(media::SharedImageFormatType type) {
+  switch (type) {
+    case media::SharedImageFormatType::kLegacy:
+      return media::mojom::SharedImageFormatType::kLegacy;
+    case media::SharedImageFormatType::kSharedImageFormat:
+      return media::mojom::SharedImageFormatType::kSharedImageFormat;
+    case media::SharedImageFormatType::kSharedImageFormatExternalSampler:
+      return media::mojom::SharedImageFormatType::
+          kSharedImageFormatExternalSampler;
+  }
+}
+
+// static
+bool EnumTraits<media::mojom::SharedImageFormatType,
+                media::SharedImageFormatType>::
+    FromMojom(media::mojom::SharedImageFormatType input,
+              media::SharedImageFormatType* out) {
+  switch (input) {
+    case media::mojom::SharedImageFormatType::kLegacy:
+      *out = media::SharedImageFormatType::kLegacy;
+      return true;
+    case media::mojom::SharedImageFormatType::kSharedImageFormat:
+      *out = media::SharedImageFormatType::kSharedImageFormat;
+      return true;
+    case media::mojom::SharedImageFormatType::kSharedImageFormatExternalSampler:
+      *out = media::SharedImageFormatType::kSharedImageFormatExternalSampler;
+      return true;
+  }
+  return false;
+}
+
+// static
 media::mojom::VideoFrameDataPtr StructTraits<media::mojom::VideoFrameDataView,
                                              scoped_refptr<media::VideoFrame>>::
     data(const scoped_refptr<media::VideoFrame>& input) {
@@ -231,17 +265,14 @@ bool StructTraits<media::mojom::VideoFrameDataView,
 
     auto layout = media::VideoFrameLayout::CreateWithPlanes(format, coded_size,
                                                             std::move(planes));
-    if (!layout || !layout->FitsInContiguousBufferOfSize(mapping.size())) {
+    if (!layout) {
       DLOG(ERROR) << "Invalid layout";
       return false;
     }
-
     frame = media::VideoFrame::WrapExternalYuvDataWithLayout(
         *layout, visible_rect, natural_size, addr[0], addr[1], addr[2],
         timestamp);
-    if (frame) {
-      frame->BackWithOwnedSharedMemory(std::move(region), std::move(mapping));
-    }
+    frame->BackWithOwnedSharedMemory(std::move(region), std::move(mapping));
   } else if (data.is_gpu_memory_buffer_data()) {
     media::mojom::GpuMemoryBufferVideoFrameDataDataView gpu_memory_buffer_data;
     data.GetGpuMemoryBufferDataDataView(&gpu_memory_buffer_data);
@@ -316,9 +347,8 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     return false;
   }
 
-  if (!frame) {
+  if (!frame)
     return false;
-  }
 
   media::VideoFrameMetadata metadata;
   if (!input.ReadMetadata(&metadata))
@@ -335,6 +365,12 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadHdrMetadata(&hdr_metadata))
     return false;
   frame->set_hdr_metadata(std::move(hdr_metadata));
+
+  media::SharedImageFormatType shared_image_format_type;
+  if (!input.ReadSharedImageFormatType(&shared_image_format_type)) {
+    return false;
+  }
+  frame->set_shared_image_format_type(shared_image_format_type);
 
   *output = std::move(frame);
   return true;

@@ -34,7 +34,12 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/test/layer_animator_test_controller.h"
+#include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/event.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -62,6 +67,14 @@ class TestAuraSurface : public AuraSurface {
     return last_sent_occlusion_state_;
   }
   int num_occlusion_updates() const { return num_occlusion_updates_; }
+
+  MOCK_METHOD(void,
+              OnTooltipShown,
+              (Surface * surface,
+               const std::u16string& text,
+               const gfx::Rect& bounds),
+              (override));
+  MOCK_METHOD(void, OnTooltipHidden, (Surface * surface), (override));
 
  protected:
   void SendOcclusionFraction(float occlusion_fraction) override {
@@ -114,6 +127,7 @@ class MockSurfaceDelegate : public SurfaceDelegate {
   MOCK_METHOD(void, UnsetCanGoBack, (), (override));
   MOCK_METHOD(void, SetPip, (), (override));
   MOCK_METHOD(void, UnsetPip, (), (override));
+  MOCK_METHOD(void, SetFloat, (), (override));
   MOCK_METHOD(void,
               SetAspectRatio,
               (const gfx::SizeF& aspect_ratio),
@@ -410,6 +424,193 @@ TEST_F(ZAuraSurfaceTest, CanSetFullscreenModeToImmersive) {
   EXPECT_CALL(delegate, SetUseImmersiveForFullscreen(true));
 
   aura_surface().SetFullscreenMode(ZAURA_SURFACE_FULLSCREEN_MODE_IMMERSIVE);
+}
+
+// Test without setting surfaces on SetUp().
+using ZAuraSurfaceCustomTest = test::ExoTestBase;
+
+class MockSurfaceObserver : public SurfaceObserver {
+ public:
+  MockSurfaceObserver() = default;
+  MockSurfaceObserver(const MockSurfaceObserver&) = delete;
+  MockSurfaceObserver& operator=(const MockSurfaceObserver&) = delete;
+  ~MockSurfaceObserver() override = default;
+
+  MOCK_METHOD(void, OnSurfaceDestroying, (Surface * surface), (override));
+  MOCK_METHOD(void,
+              OnTooltipShown,
+              (Surface * surface,
+               const std::u16string& text,
+               const gfx::Rect& bounds),
+              (override));
+  MOCK_METHOD(void, OnTooltipHidden, (Surface * surface), (override));
+};
+
+TEST_F(ZAuraSurfaceCustomTest, ShowTooltipFromCursor) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+
+  Surface* surface = shell_surface->root_surface();
+  auto aura_surface = std::make_unique<TestAuraSurface>(surface);
+
+  shell_surface->GetWidget()->GetNativeWindow()->SetBounds(
+      gfx::Rect(0, 0, 10, 10));
+  shell_surface->GetWidget()->GetNativeWindow()->Show();
+  surface->window()->SetBounds(gfx::Rect(5, 5, 10, 10));
+  surface->window()->Show();
+  surface->window()->SetCapture();
+
+  MockSurfaceObserver observer;
+  surface->AddSurfaceObserver(&observer);
+
+  // Move mouse over the window to show tooltip.
+  // This is required since Ash needs to know which window is targeted for a
+  // given tooltip.
+  gfx::Point mouse_position = gfx::Point(6, 6);
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(mouse_position);
+
+  const char* text = "my tooltip";
+  gfx::Rect expected_tooltip_position =
+      gfx::Rect(mouse_position, gfx::Size(77, 24));
+  views::corewm::TooltipAura::AdjustToCursor(&expected_tooltip_position);
+  aura::Window::ConvertRectToTarget(surface->window(),
+                                    surface->window()->GetToplevelWindow(),
+                                    &expected_tooltip_position);
+
+  EXPECT_CALL(observer, OnTooltipShown(surface, base::UTF8ToUTF16(text),
+                                       expected_tooltip_position));
+  aura_surface->ShowTooltip(text, gfx::Point(),
+                            ZAURA_SURFACE_TOOLTIP_TRIGGER_CURSOR,
+                            base::TimeDelta(), base::TimeDelta());
+
+  surface->RemoveSurfaceObserver(&observer);
+}
+
+TEST_F(ZAuraSurfaceCustomTest, ShowTooltipFromKeyboard) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({10, 10}).BuildShellSurface();
+
+  Surface* surface = shell_surface->root_surface();
+  auto aura_surface = std::make_unique<TestAuraSurface>(surface);
+
+  shell_surface->GetWidget()->GetNativeWindow()->SetBounds(
+      gfx::Rect(0, 0, 10, 10));
+  shell_surface->GetWidget()->GetNativeWindow()->Show();
+  surface->window()->SetBounds(gfx::Rect(0, 0, 10, 10));
+  surface->window()->Show();
+
+  MockSurfaceObserver observer;
+  surface->AddSurfaceObserver(&observer);
+
+  const char* text = "my tooltip";
+  gfx::Point anchor_point = surface->window()->bounds().bottom_center();
+  gfx::Size expected_tooltip_size = gfx::Size(77, 24);
+  // Calculate expected tooltip position. For keyboard tooltip, it should be
+  // shown right below and in the center of tooltip target window while it must
+  // fit inside the display bounds.
+  gfx::Rect expected_tooltip_position =
+      gfx::Rect(anchor_point, expected_tooltip_size);
+  expected_tooltip_position.Offset(-expected_tooltip_size.width() / 2, 0);
+  gfx::Rect display_bounds(display::Screen::GetScreen()
+                               ->GetDisplayNearestPoint(anchor_point)
+                               .bounds());
+  expected_tooltip_position.AdjustToFit(display_bounds);
+  aura::Window::ConvertRectToTarget(surface->window(),
+                                    surface->window()->GetToplevelWindow(),
+                                    &expected_tooltip_position);
+
+  EXPECT_CALL(observer, OnTooltipShown(surface, base::UTF8ToUTF16(text),
+                                       expected_tooltip_position));
+  aura_surface->ShowTooltip(text, anchor_point,
+                            ZAURA_SURFACE_TOOLTIP_TRIGGER_KEYBOARD,
+                            base::TimeDelta(), base::TimeDelta());
+
+  surface->RemoveSurfaceObserver(&observer);
+}
+
+TEST_F(ZAuraSurfaceCustomTest, ShowTooltipOnMenuFromCursor) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({10, 10}).SetAsMenu().BuildShellSurface();
+
+  Surface* surface = shell_surface->root_surface();
+  auto aura_surface = std::make_unique<TestAuraSurface>(surface);
+
+  shell_surface->GetWidget()->GetNativeWindow()->SetBounds(
+      gfx::Rect(0, 0, 10, 10));
+  shell_surface->GetWidget()->GetNativeWindow()->Show();
+  surface->window()->SetBounds(gfx::Rect(5, 5, 10, 10));
+  surface->window()->Show();
+  surface->window()->SetCapture();
+
+  MockSurfaceObserver observer;
+  surface->AddSurfaceObserver(&observer);
+
+  // Move mouse over the window to show tooltip.
+  // This is required since Ash needs to know which window is targeted for a
+  // given tooltip.
+  gfx::Point mouse_position = gfx::Point(6, 6);
+  auto* generator = GetEventGenerator();
+  generator->MoveMouseTo(mouse_position);
+
+  const char* text = "my tooltip";
+  // Size of the tooltip depends on the text to show.
+  gfx::Rect expected_tooltip_position =
+      gfx::Rect(mouse_position, gfx::Size(77, 24));
+  views::corewm::TooltipAura::AdjustToCursor(&expected_tooltip_position);
+  aura::Window::ConvertRectToTarget(surface->window(),
+                                    surface->window()->GetToplevelWindow(),
+                                    &expected_tooltip_position);
+
+  EXPECT_CALL(observer, OnTooltipShown(surface, base::UTF8ToUTF16(text),
+                                       expected_tooltip_position));
+  aura_surface->ShowTooltip(text, gfx::Point(),
+                            ZAURA_SURFACE_TOOLTIP_TRIGGER_CURSOR,
+                            base::TimeDelta(), base::TimeDelta());
+
+  surface->RemoveSurfaceObserver(&observer);
+}
+
+TEST_F(ZAuraSurfaceCustomTest, ShowTooltipOnMenuFromKeyboard) {
+  std::unique_ptr<ShellSurface> shell_surface =
+      test::ShellSurfaceBuilder({10, 10}).SetAsMenu().BuildShellSurface();
+
+  Surface* surface = shell_surface->root_surface();
+  auto aura_surface = std::make_unique<TestAuraSurface>(surface);
+
+  shell_surface->GetWidget()->GetNativeWindow()->SetBounds(
+      gfx::Rect(0, 0, 10, 10));
+  shell_surface->GetWidget()->GetNativeWindow()->Show();
+  surface->window()->SetBounds(gfx::Rect(0, 0, 10, 10));
+  surface->window()->Show();
+
+  MockSurfaceObserver observer;
+  surface->AddSurfaceObserver(&observer);
+
+  const char* text = "my tooltip";
+  gfx::Point anchor_point = surface->window()->bounds().bottom_center();
+  gfx::Size expected_tooltip_size = gfx::Size(77, 24);
+  // Calculate expected tooltip position. For keyboard tooltip, it should be
+  // shown right below and in the center of tooltip target window while it must
+  // fit inside the display bounds.
+  gfx::Rect expected_tooltip_position =
+      gfx::Rect(anchor_point, expected_tooltip_size);
+  expected_tooltip_position.Offset(-expected_tooltip_size.width() / 2, 0);
+  gfx::Rect display_bounds(display::Screen::GetScreen()
+                               ->GetDisplayNearestPoint(anchor_point)
+                               .bounds());
+  expected_tooltip_position.AdjustToFit(display_bounds);
+  aura::Window::ConvertRectToTarget(surface->window(),
+                                    surface->window()->GetToplevelWindow(),
+                                    &expected_tooltip_position);
+
+  EXPECT_CALL(observer, OnTooltipShown(surface, base::UTF8ToUTF16(text),
+                                       expected_tooltip_position));
+  aura_surface->ShowTooltip(text, anchor_point,
+                            ZAURA_SURFACE_TOOLTIP_TRIGGER_KEYBOARD,
+                            base::TimeDelta(), base::TimeDelta());
+
+  surface->RemoveSurfaceObserver(&observer);
 }
 
 class MockAuraOutput : public AuraOutput {

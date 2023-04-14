@@ -86,7 +86,8 @@ ScriptPromise DOMScheduler::postTask(
   // Always honor the priority and the task signal if given.
   DOMTaskQueue* task_queue;
   AbortSignal* signal = options->hasSignal() ? options->signal() : nullptr;
-  if (!options->hasPriority() && signal && IsA<DOMTaskSignal>(signal)) {
+  if (!options->hasPriority() && signal && IsA<DOMTaskSignal>(signal) &&
+      !To<DOMTaskSignal>(signal)->HasFixedPriority()) {
     // If only a signal is given, and it is a TaskSignal rather than an
     // basic AbortSignal, use it.
     DOMTaskSignal* task_signal = To<DOMTaskSignal>(signal);
@@ -98,10 +99,15 @@ ScriptPromise DOMScheduler::postTask(
   } else {
     // Otherwise, use the appropriate task queue from
     // |fixed_priority_task_queues_|.
-    WebSchedulingPriority priority =
-        options->hasPriority() ? WebSchedulingPriorityFromString(AtomicString(
-                                     IDLEnumAsString(options->priority())))
-                               : kDefaultPriority;
+    WebSchedulingPriority priority = kDefaultPriority;
+    if (options->hasPriority()) {
+      priority = WebSchedulingPriorityFromString(
+          AtomicString(IDLEnumAsString(options->priority())));
+    } else if (signal && IsA<DOMTaskSignal>(signal)) {
+      DCHECK(To<DOMTaskSignal>(signal)->HasFixedPriority());
+      priority = WebSchedulingPriorityFromString(
+          To<DOMTaskSignal>(signal)->priority());
+    }
     task_queue = fixed_priority_task_queues_[static_cast<int>(priority)];
   }
 
@@ -166,14 +172,14 @@ void DOMScheduler::CreateTaskQueueFor(DOMTaskSignal* signal) {
   DCHECK(scheduler);
   WebSchedulingPriority priority =
       WebSchedulingPriorityFromString(signal->priority());
+  auto* handle = signal->AddPriorityChangeAlgorithm(
+      WTF::BindRepeating(&DOMScheduler::OnPriorityChange,
+                         WrapWeakPersistent(this), WrapWeakPersistent(signal)));
   std::unique_ptr<WebSchedulingTaskQueue> task_queue =
       scheduler->CreateWebSchedulingTaskQueue(priority);
   signal_to_task_queue_map_.insert(
-      signal,
-      MakeGarbageCollected<DOMTaskQueue>(std::move(task_queue), priority));
-  signal->AddPriorityChangeAlgorithm(
-      WTF::BindRepeating(&DOMScheduler::OnPriorityChange,
-                         WrapWeakPersistent(this), WrapWeakPersistent(signal)));
+      signal, MakeGarbageCollected<DOMTaskQueue>(std::move(task_queue),
+                                                 priority, handle));
 }
 
 void DOMScheduler::OnPriorityChange(DOMTaskSignal* signal) {
@@ -187,11 +193,17 @@ void DOMScheduler::OnPriorityChange(DOMTaskSignal* signal) {
 
 DOMScheduler::DOMTaskQueue::DOMTaskQueue(
     std::unique_ptr<WebSchedulingTaskQueue> task_queue,
-    WebSchedulingPriority priority)
+    WebSchedulingPriority priority,
+    DOMTaskSignal::AlgorithmHandle* priority_change_handle)
     : web_scheduling_task_queue_(std::move(task_queue)),
       task_runner_(web_scheduling_task_queue_->GetTaskRunner()),
-      priority_(priority) {
+      priority_(priority),
+      priority_change_handle_(priority_change_handle) {
   DCHECK(task_runner_);
+}
+
+void DOMScheduler::DOMTaskQueue::Trace(Visitor* visitor) const {
+  visitor->Trace(priority_change_handle_);
 }
 
 void DOMScheduler::DOMTaskQueue::SetPriority(WebSchedulingPriority priority) {

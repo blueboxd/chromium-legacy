@@ -136,7 +136,12 @@ export class DriveSearchContentScanner extends ContentScanner {
         return;
       }
       chrome.fileManagerPrivate.searchDrive(
-          {query: this.query_, nextFeed: ''}, (entries, nextFeed) => {
+          {
+            query: this.query_,
+            category: chrome.fileManagerPrivate.FileCategory.ALL,
+            nextFeed: '',
+          },
+          (entries, nextFeed) => {
             if (chrome.runtime.lastError) {
               console.error(chrome.runtime.lastError.message);
             }
@@ -250,21 +255,28 @@ export class SearchV2ContentScanner extends ContentScanner {
   }
 
   /**
-   * @returns {function(Entry): boolean} A function to filter by file type.
-   * @private
+   * For the given options returns the category of files to which the search
+   * should be limited (e.g., images, videos, etc.).
    */
-  getTypeFilter_() {
+  getDesiredCategory_() {
     switch (this.options_.type) {
       case SearchFileType.AUDIO:
-        return FileType.isAudio;
+        return chrome.fileManagerPrivate.FileCategory.AUDIO;
       case SearchFileType.DOCUMENTS:
-        return FileType.isDocument;
+        return chrome.fileManagerPrivate.FileCategory.DOCUMENT;
       case SearchFileType.IMAGES:
-        return FileType.isImage;
+        return chrome.fileManagerPrivate.FileCategory.IMAGE;
       case SearchFileType.VIDEOS:
-        return FileType.isVideo;
+        return chrome.fileManagerPrivate.FileCategory.VIDEO;
       default:
-        return (entry) => true;
+        return chrome.fileManagerPrivate.FileCategory.ALL;
+    }
+  }
+
+  isSearchingRoot_() {
+    if (this.options_.location === SearchLocation.EVERYWHERE ||
+        this.options_.location === SearchLocation.THIS_CHROMEBOOK) {
+      return true;
     }
   }
 
@@ -273,13 +285,11 @@ export class SearchV2ContentScanner extends ContentScanner {
    * @private
    */
   isSearchingLocal_() {
-    if (this.options_.location === SearchLocation.EVERYWHERE ||
-        this.options_.location === SearchLocation.THIS_CHROMEBOOK) {
+    if (this.isSearchingRoot_()) {
       return true;
     }
     if (this.options_.location === SearchLocation.THIS_FOLDER) {
-      return this.rootType_ === VolumeManagerCommon.RootType.MY_FILES ||
-          this.rootType_ == VolumeManagerCommon.RootType.DOWNLOADS;
+      return (this.rootType_ !== VolumeManagerCommon.RootType.DRIVE);
     }
     return false;
   }
@@ -337,11 +347,11 @@ export class SearchV2ContentScanner extends ContentScanner {
       entriesCallback, successCallback, errorCallback,
       invalidateCache = false) {
     const searchPromises = [];
+    const category = this.getDesiredCategory_();
     if (this.isSearchingLocal_()) {
       searchPromises.push(new Promise((resolve, reject) => {
-        const rootDir = this.options_.location === SearchLocation.THIS_FOLDER ?
-            this.entry_ :
-            undefined;
+        const rootDir =
+            this.isSearchingRoot_() ? this.entry_.filesystem.root : this.entry_;
         const timestamp = this.getEarliestTimestamp_();
         chrome.fileManagerPrivate.searchFiles(
             {
@@ -350,6 +360,7 @@ export class SearchV2ContentScanner extends ContentScanner {
               types: chrome.fileManagerPrivate.SearchType.ALL,
               maxResults: 100,
               timestamp: timestamp,
+              category: category,
             },
             /**
              * @param {!Array<!Entry>} entries
@@ -362,7 +373,7 @@ export class SearchV2ContentScanner extends ContentScanner {
                     util.FileError.NOT_READABLE_ERR,
                     chrome.runtime.lastError.message));
               } else {
-                resolve(entries.filter(this.getTypeFilter_()));
+                resolve(entries);
               }
             });
       }));
@@ -370,7 +381,12 @@ export class SearchV2ContentScanner extends ContentScanner {
     if (this.isSearchingDrive_()) {
       searchPromises.push(new Promise((resolve, reject) => {
         chrome.fileManagerPrivate.searchDrive(
-            {query: this.query_, nextFeed: ''}, (entries, nextFeed) => {
+            {
+              query: this.query_,
+              category: category,
+              nextFeed: '',
+            },
+            (entries, nextFeed) => {
               if (chrome.runtime.lastError) {
                 reject(createDOMError(
                     util.FileError.NOT_READABLE_ERR,
@@ -380,7 +396,7 @@ export class SearchV2ContentScanner extends ContentScanner {
               } else if (!entries) {
                 reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
               } else {
-                resolve(entries.filter(this.getTypeFilter_()));
+                resolve(entries);
               }
             });
       }));
@@ -457,9 +473,9 @@ export class RecentContentScanner extends ContentScanner {
    * @param {string} query Search query.
    * @param {VolumeManager} volumeManager Volume manager.
    * @param {chrome.fileManagerPrivate.SourceRestriction=} opt_sourceRestriction
-   * @param {chrome.fileManagerPrivate.RecentFileType=} opt_recentFileType
+   * @param {chrome.fileManagerPrivate.FileCategory=} opt_fileCategory
    */
-  constructor(query, volumeManager, opt_sourceRestriction, opt_recentFileType) {
+  constructor(query, volumeManager, opt_sourceRestriction, opt_fileCategory) {
     super();
 
     /**
@@ -479,10 +495,10 @@ export class RecentContentScanner extends ContentScanner {
         chrome.fileManagerPrivate.SourceRestriction.ANY_SOURCE;
 
     /**
-     * @private {chrome.fileManagerPrivate.RecentFileType}
+     * @private {chrome.fileManagerPrivate.FileCategory}
      */
-    this.recentFileType_ =
-        opt_recentFileType || chrome.fileManagerPrivate.RecentFileType.ALL;
+    this.fileCategory_ =
+        opt_fileCategory || chrome.fileManagerPrivate.FileCategory.ALL;
   }
 
   /**
@@ -503,7 +519,7 @@ export class RecentContentScanner extends ContentScanner {
     const isAllowedVolume = (entry) =>
         this.volumeManager_.getVolumeInfo(entry) !== null;
     chrome.fileManagerPrivate.getRecentFiles(
-        this.sourceRestriction_, this.recentFileType_, invalidateCache,
+        this.sourceRestriction_, this.fileCategory_, invalidateCache,
         entries => {
           if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError.message);

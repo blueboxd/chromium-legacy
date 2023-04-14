@@ -21,7 +21,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/drm_overlay_plane.h"
 #include "ui/ozone/public/hardware_capabilities.h"
-#include "ui/ozone/public/swap_completion_callback.h"
 
 namespace gfx {
 class Rect;
@@ -72,17 +71,17 @@ class HardwareDisplayPlaneManager {
     uint32_t id;
     // Keeps track of the CRTC state. If a surface has been bound, then the
     // value is set to true. Otherwise it is false.
-    DrmDevice::Property active;
-    DrmDevice::Property mode_id;
+    DrmWrapper::Property active;
+    DrmWrapper::Property mode_id;
     // Optional properties.
-    DrmDevice::Property ctm;
-    DrmDevice::Property gamma_lut;
-    DrmDevice::Property gamma_lut_size;
-    DrmDevice::Property degamma_lut;
-    DrmDevice::Property degamma_lut_size;
-    DrmDevice::Property out_fence_ptr;
-    DrmDevice::Property background_color;
-    DrmDevice::Property vrr_enabled;
+    DrmWrapper::Property ctm;
+    DrmWrapper::Property gamma_lut;
+    DrmWrapper::Property gamma_lut_size;
+    DrmWrapper::Property degamma_lut;
+    DrmWrapper::Property degamma_lut_size;
+    DrmWrapper::Property out_fence_ptr;
+    DrmWrapper::Property background_color;
+    DrmWrapper::Property vrr_enabled;
   };
 
   struct CrtcState {
@@ -140,10 +139,6 @@ class HardwareDisplayPlaneManager {
       uint32_t crtc_id,
       const std::vector<display::GammaRampRGBEntry>& degamma_lut,
       const std::vector<display::GammaRampRGBEntry>& gamma_lut);
-
-  // Sets the variable refresh rate enabled state on the CRTC object with ID
-  // |crtc_id|.
-  virtual bool SetVrrEnabled(uint32_t crtc_id, bool vrr_enabled);
 
   // Assign hardware planes from the |planes_| list to |overlay_list| entries,
   // recording the plane IDs in the |plane_list|. Only planes compatible with
@@ -215,13 +210,13 @@ class HardwareDisplayPlaneManager {
   // Gets `HardwareCapabilities` based on planes available to the specified
   // CRTC. num_overlay_capable_planes counts both `DRM_PLANE_TYPE_PRIMARY` and
   // `DRM_PLANE_TYPE_OVERLAY` planes.
-  ui::HardwareCapabilities GetHardwareCapabilities(uint32_t crtc_id);
+  HardwareCapabilities GetHardwareCapabilities(uint32_t crtc_id);
 
  protected:
   struct ConnectorProperties {
     uint32_t id;
-    DrmDevice::Property crtc_id;
-    DrmDevice::Property link_status;
+    DrmWrapper::Property crtc_id;
+    DrmWrapper::Property link_status;
   };
 
   bool InitializeCrtcState();

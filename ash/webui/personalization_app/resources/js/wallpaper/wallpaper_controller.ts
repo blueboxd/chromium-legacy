@@ -7,8 +7,8 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FilePath} from 'chrome://resources/mojo/mojo/public/mojom/base/file_path.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
+import {GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../../personalization_app.mojom-webui.js';
 import {setErrorAction} from '../personalization_actions.js';
-import {GooglePhotosAlbum, GooglePhotosEnablementState, GooglePhotosPhoto, WallpaperCollection, WallpaperLayout, WallpaperProviderInterface, WallpaperType} from '../personalization_app.mojom-webui.js';
 import {PersonalizationStore} from '../personalization_store.js';
 import {isNonEmptyArray} from '../utils.js';
 
@@ -350,9 +350,7 @@ export async function selectWallpaper(
   store.dispatch(action.beginSelectImageAction(image));
   store.dispatch(action.beginLoadSelectedImageAction());
   const {tabletMode} = await provider.isInTabletMode();
-  const shouldPreview = tabletMode &&
-      loadTimeData.getBoolean('fullScreenPreviewEnabled') &&
-      !isDefaultImage(image);
+  const shouldPreview = tabletMode && !isDefaultImage(image);
   if (shouldPreview) {
     provider.makeTransparent();
   }

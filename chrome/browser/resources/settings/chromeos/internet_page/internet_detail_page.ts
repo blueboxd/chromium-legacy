@@ -56,8 +56,8 @@ import {Constructor} from '../common/types.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.js';
-import {routes} from '../os_route.js';
 import {OsSettingsSubpageElement} from '../os_settings_page/os_settings_subpage.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -543,7 +543,7 @@ class SettingsInternetDetailPageElement extends
   }
 
   /**
-   * RouteObserverBehavior override
+   * RouteObserverMixin override
    */
   override currentRouteChanged(route: Route, oldRoute?: Route): void {
     if (route !== routes.NETWORK_DETAIL) {

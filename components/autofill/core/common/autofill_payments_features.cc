@@ -79,14 +79,6 @@ BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
              "AutofillEnableManualFallbackForVirtualCards",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enabled, if the user attempts to use a virtual card on a website
-// where the merchant has opted out of virtual cards, a descriptive error
-// message will appear letting the user know that the merchant has opted
-// out.
-BASE_FEATURE(kAutofillEnableMerchantOptOutErrorDialog,
-             "AutofillEnableMerchantOptOutErrorDialog",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, a notification will be displayed on page navigation if the
 // domain has an eligible merchant promo code offer or reward.
 BASE_FEATURE(kAutofillEnableOfferNotificationForPromoCodes,
@@ -97,6 +89,14 @@ BASE_FEATURE(kAutofillEnableOfferNotificationForPromoCodes,
 // downstream.
 BASE_FEATURE(kAutofillEnableOffersInClankKeyboardAccessory,
              "AutofillEnableOffersInClankKeyboardAccessory",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, client side filtering functionality will be triggered for
+// certain autofill use-cases, for example filtering displaying virtual card
+// suggestions on websites where the merchant has opted-out of virtual
+// cards.
+BASE_FEATURE(kAutofillEnablePageLoadMetadataIntegration,
+             "AutofillEnablePageLoadMetadataIntegration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, some extra metrics logging for Autofill Downstream will start.
@@ -193,28 +193,10 @@ BASE_FEATURE(kAutofillRemoveCardExpirationAndTypeTitles,
              "AutofillRemoveCardExpirationAndTypeTitles",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// When enabled, the Save Card infobar will be dismissed by a user initiated
-// navigation other than one caused by submitted form.
-BASE_FEATURE(kAutofillSaveCardDismissOnNavigation,
-             "AutofillSaveCardDismissOnNavigation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, the Save Card infobar supports editing before submitting.
 BASE_FEATURE(kAutofillSaveCardInfobarEditSupport,
              "AutofillSaveCardInfobarEditSupport",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, Chrome will display experimental UI variants to the user
-// during the upload save card process.
-BASE_FEATURE(kAutofillSaveCardUiExperiment,
-             "AutofillSaveCardUiExperiment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// This will select one of the options for the save card UI bubble which we
-// want to display to the user. The value will be an integer(number).
-const base::FeatureParam<int> kAutofillSaveCardUiExperimentSelectorInNumber{
-    &kAutofillSaveCardUiExperiment,
-    "autofill_save_card_ui_experiment_selector_in_number", 0};
 
 // When enabled, the entire PAN and the CVC details of the unmasked cached card
 // will be shown in the manual filling view.

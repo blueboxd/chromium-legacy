@@ -20,7 +20,7 @@ import android.util.Size;
 import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -357,10 +357,8 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     }
 
     public void initWithNative() {
-        // TODO (https://crbug.com/1048632): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It works correctly now, but
-        // it is not safe.
-        mTabListFaviconProvider.initWithNative(Profile.getLastUsedRegularProfile());
+        mTabListFaviconProvider.initWithNative(
+                mTabModelSelector.getModel(/*isIncognito=*/false).getProfile());
     }
 
     /**
@@ -374,14 +372,16 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     public void getTabThumbnailWithCallback(int tabId, Size thumbnailSize,
             Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache,
             boolean isSelected) {
-        PseudoTab tab = PseudoTab.fromTabId(tabId);
-        if (tab == null || PseudoTab.getRelatedTabs(mContext, tab, mTabModelSelector).size() == 1) {
+        Tab tab = mTabModelSelector.getTabById(tabId);
+        PseudoTab pseudoTab = (tab != null) ? PseudoTab.fromTab(tab) : PseudoTab.fromTabId(tabId);
+        if (pseudoTab == null
+                || PseudoTab.getRelatedTabs(mContext, pseudoTab, mTabModelSelector).size() == 1) {
             mTabContentManager.getTabThumbnailWithCallback(
                     tabId, thumbnailSize, finalCallback, forceUpdate, writeToCache);
             return;
         }
         new MultiThumbnailFetcher(
-                tab, thumbnailSize, finalCallback, forceUpdate, writeToCache, isSelected)
+                pseudoTab, thumbnailSize, finalCallback, forceUpdate, writeToCache, isSelected)
                 .fetch();
     }
 }

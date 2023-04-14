@@ -136,6 +136,14 @@ BASE_FEATURE(kOpaqueResponseBlockingV02,
              "OpaqueResponseBlockingV02",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables preprocessing the Attribution API's trigger registration ping
+// requests, potentially adding attestation headers, and handling their
+// responses. (See
+// https://github.com/WICG/attribution-reporting-api/blob/main/trigger_attestation.md)
+BASE_FEATURE(kAttributionReportingTriggerAttestation,
+             "AttributionReportingTriggerAttestation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables preprocessing requests with the Private State Tokens API Fetch flags
 // set, and handling their responses, according to the protocol.
 // (See https://github.com/WICG/trust-token-api.)
@@ -181,6 +189,11 @@ BASE_FEATURE(kWebSocketReassembleShortMessages,
 // See:
 // https://tools.ietf.org/html/draft-davidben-http-client-hint-reliability-02#section-4.3
 BASE_FEATURE(kAcceptCHFrame, "AcceptCHFrame", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable
+BASE_FEATURE(kGetCookiesStringUma,
+             "GetCookiesStringUma",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 // The default Mojo ring buffer size, used to send the content body.
@@ -290,8 +303,13 @@ BASE_FEATURE(kDisableResourceScheduler,
 // Reduce PNA preflight response waiting time to 200ms.
 // See: https://wicg.github.io/private-network-access/#cors-preflight
 BASE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout,
-             "PrivateNetworkAccessPreflightReduceTimeout",
+             "PrivateNetworkAccessPreflightShortTimeout",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Allow secure same origin PNA requests without preflights.
+BASE_FEATURE(kPrivateNetworkAccessAllowSecureSameOrigin,
+             "PrivateNetworkAccessAllowSecureSameOrigin",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Handle the Link header DNS prefetches and preconnects in the network
 // service instead of through the renderer process.

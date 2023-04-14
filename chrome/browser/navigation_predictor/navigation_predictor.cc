@@ -4,6 +4,7 @@
 
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 
+#include <algorithm>
 #include <memory>
 
 #include "base/check_op.h"
@@ -14,7 +15,6 @@
 #include "base/system/sys_info.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
-#include "chrome/browser/page_load_metrics/observers/page_anchors_metrics_observer.h"
 #include "chrome/browser/preloading/prefetch/no_state_prefetch/no_state_prefetch_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_manager.h"
@@ -102,6 +102,21 @@ int NavigationPredictor::GetLinearBucketForRatioArea(int value) const {
   return ukm::GetLinearBucketMin(static_cast<int64_t>(value), 5);
 }
 
+PageAnchorsMetricsObserver::UserInteractionsData&
+NavigationPredictor::GetUserInteractionsData() const {
+  // Create the UserInteractionsData object for this WebContents if it doesn't
+  // already exist.
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(&render_frame_host());
+  PageAnchorsMetricsObserver::UserInteractionsData::CreateForWebContents(
+      web_contents);
+  PageAnchorsMetricsObserver::UserInteractionsData* data =
+      PageAnchorsMetricsObserver::UserInteractionsData::FromWebContents(
+          web_contents);
+  DCHECK(data);
+  return *data;
+}
+
 void NavigationPredictor::ReportNewAnchorElements(
     std::vector<blink::mojom::AnchorElementMetricsPtr> elements) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -120,7 +135,7 @@ void NavigationPredictor::ReportNewAnchorElements(
   GURL document_url;
   std::vector<GURL> new_predictions;
   for (auto& element : elements) {
-    uint32_t anchor_id = element->anchor_id;
+    AnchorId anchor_id(element->anchor_id);
     if (anchors_.find(anchor_id) != anchors_.end()) {
       continue;
     }
@@ -178,6 +193,8 @@ void NavigationPredictor::ReportAnchorElementClick(
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
   DCHECK(!IsPrerendering(render_frame_host()));
 
+  navigation_start_to_click_ = click->navigation_start_to_click;
+
   clicked_count_++;
   if (clicked_count_ > kMaxClicksTracked)
     return;
@@ -189,18 +206,81 @@ void NavigationPredictor::ReportAnchorElementClick(
   // An anchor index of -1 indicates that we are not going to log details about
   // the anchor that was clicked.
   int anchor_index = -1;
-  auto index_it = tracked_anchor_id_to_index_.find(click->anchor_id);
+  AnchorId anchor_id(click->anchor_id);
+  auto index_it = tracked_anchor_id_to_index_.find(anchor_id);
   if (index_it != tracked_anchor_id_to_index_.end()) {
     anchor_index = index_it->second;
   }
 
   ukm::builders::NavigationPredictorPageLinkClick builder(ukm_source_id_);
   builder.SetAnchorElementIndex(anchor_index);
-  auto it = anchors_.find(click->anchor_id);
+  auto it = anchors_.find(anchor_id);
   if (it != anchors_.end()) {
     builder.SetHrefUnchanged(it->second->target_url == click->target_url);
   }
+  navigation_start_to_click_ = click->navigation_start_to_click;
+  GetUserInteractionsData().navigation_start_to_click_ =
+      navigation_start_to_click_;
+
+  builder.SetNavigationStartToLinkClickedMs(ukm::GetExponentialBucketMin(
+      navigation_start_to_click_.value().InMilliseconds(), 1.3));
   builder.Record(ukm_recorder_);
+}
+
+void NavigationPredictor::ReportAnchorElementsLeftViewport(
+    std::vector<blink::mojom::AnchorElementLeftViewportPtr> elements) {
+  auto& user_interactions_data = GetUserInteractionsData();
+  auto& user_interactions = user_interactions_data.user_interactions_;
+  for (const auto& element : elements) {
+    auto index_it =
+        tracked_anchor_id_to_index_.find(AnchorId(element->anchor_id));
+    if (index_it == tracked_anchor_id_to_index_.end()) {
+      continue;
+    }
+    auto& user_interaction = user_interactions[index_it->second];
+    user_interaction.is_in_viewport = false;
+    user_interaction.last_navigation_start_to_entered_viewport.reset();
+    user_interaction.max_time_in_viewport = std::max(
+        user_interaction.max_time_in_viewport.value_or(base::TimeDelta()),
+        element->time_in_viewport);
+  }
+}
+
+void NavigationPredictor::ReportAnchorElementPointerOver(
+    blink::mojom::AnchorElementPointerOverPtr pointer_over_event) {
+  auto& user_interactions_data = GetUserInteractionsData();
+  auto& user_interactions = user_interactions_data.user_interactions_;
+  auto index_it =
+      tracked_anchor_id_to_index_.find(AnchorId(pointer_over_event->anchor_id));
+  if (index_it == tracked_anchor_id_to_index_.end()) {
+    return;
+  }
+
+  auto& user_interaction = user_interactions[index_it->second];
+  if (!user_interaction.is_hovered) {
+    user_interaction.pointer_hovering_over_count++;
+  }
+  user_interaction.is_hovered = true;
+  user_interaction.last_navigation_start_to_pointer_over =
+      pointer_over_event->navigation_start_to_pointer_over;
+}
+
+void NavigationPredictor::ReportAnchorElementPointerOut(
+    blink::mojom::AnchorElementPointerOutPtr hover_event) {
+  auto& user_interactions_data = GetUserInteractionsData();
+  auto& user_interactions = user_interactions_data.user_interactions_;
+  auto index_it =
+      tracked_anchor_id_to_index_.find(AnchorId(hover_event->anchor_id));
+  if (index_it == tracked_anchor_id_to_index_.end()) {
+    return;
+  }
+
+  auto& user_interaction = user_interactions[index_it->second];
+  user_interaction.is_hovered = false;
+  user_interaction.last_navigation_start_to_pointer_over.reset();
+  user_interaction.max_hover_dwell_time = std::max(
+      hover_event->hover_dwell_time,
+      user_interaction.max_hover_dwell_time.value_or(base::TimeDelta()));
 }
 
 void NavigationPredictor::ReportAnchorElementsEnteredViewport(
@@ -213,15 +293,30 @@ void NavigationPredictor::ReportAnchorElementsEnteredViewport(
     return;
   }
 
+  auto& user_interactions_data = GetUserInteractionsData();
+  auto& user_interactions = user_interactions_data.user_interactions_;
   for (const auto& element : elements) {
-    if (anchors_.find(element->anchor_id) == anchors_.end()) {
+    AnchorId anchor_id(element->anchor_id);
+    auto index_it = tracked_anchor_id_to_index_.find(anchor_id);
+    if (index_it == tracked_anchor_id_to_index_.end()) {
+      // We're not tracking this element, no need to generate a
+      // NavigationPredictorAnchorElementMetrics record.
+      continue;
+    }
+    auto& user_interaction = user_interactions[index_it->second];
+    user_interaction.is_in_viewport = true;
+    user_interaction.last_navigation_start_to_entered_viewport =
+        element->navigation_start_to_entered_viewport;
+
+    auto anchor_it = anchors_.find(anchor_id);
+    if (anchor_it == anchors_.end()) {
       // We don't know about this anchor, likely because at its first paint,
       // AnchorElementMetricsSender didn't send it to NavigationPredictor.
       // Reasons could be that the link had non-HTTP scheme, the anchor had
       // zero width/height, etc.
       continue;
     }
-    const auto& anchor = anchors_[element->anchor_id];
+    const auto& anchor = anchor_it->second;
     // Collect the target URL if it is new, without ref (# fragment).
     GURL::Replacements replacements;
     replacements.ClearRef();
@@ -236,12 +331,6 @@ void NavigationPredictor::ReportAnchorElementsEnteredViewport(
       continue;
     }
 
-    auto index_it = tracked_anchor_id_to_index_.find(element->anchor_id);
-    if (index_it == tracked_anchor_id_to_index_.end()) {
-      // We're not tracking this element, no need to generate a
-      // NavigationPredictorAnchorElementMetrics record.
-      continue;
-    }
     ukm::builders::NavigationPredictorAnchorElementMetrics
         anchor_element_builder(ukm_source_id_);
 
@@ -255,7 +344,8 @@ void NavigationPredictor::ReportAnchorElementsEnteredViewport(
     anchor_element_builder.SetIsBold(anchor->font_weight > 500 ? 1 : 0);
     anchor_element_builder.SetNavigationStartToLinkLoggedMs(
         ukm::GetExponentialBucketMin(
-            element->navigation_start_to_entered_viewport_ms, 1.3));
+            element->navigation_start_to_entered_viewport.InMilliseconds(),
+            1.3));
 
     uint32_t font_size_bucket;
     if (anchor->font_size_px < 10) {

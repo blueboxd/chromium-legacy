@@ -16,12 +16,16 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 
 namespace {
 // Maximum vocabulary file size that will be loaded in bytes.
 static constexpr size_t kVocabFileSizeLimit = 64 * 1024;
 
-// The max num of single char tokens.
+// The max num of single char tokens where token IDs are directly mapped to
+// ASCII characters.
+// Token IDs greater than kNumSingleChar are special control tokens or
+// multi-char tokens specified by the given vocabulary file.
 static constexpr size_t kNumSingleChar = 256;
 
 // Special control tokens.
@@ -176,6 +180,22 @@ bool OnDeviceTailTokenizer::IsAmbiguousToken(const std::string& token) const {
   return ambiguous_tokens_.find(token) != ambiguous_tokens_.end();
 }
 
+bool OnDeviceTailTokenizer::IsTokenPrintable(TokenId token_id) const {
+  if (static_cast<size_t>(token_id) >= vocab_size()) {
+    return false;
+  }
+  // If the token is not a single character, check whether it is a special
+  // control token. Note other multi-char tokens which are extracted from
+  // queries are always printable.
+  if (static_cast<size_t>(token_id) >= kNumSingleChar) {
+    return token_id != TokenToId(kBeginQueryToken) &&
+           token_id != TokenToId(kEndQueryToken) &&
+           token_id != TokenToId(kEmptyPreviousQueryToken) &&
+           token_id != TokenToId(kUnknownToken);
+  }
+  return base::IsAsciiPrintable(static_cast<char>(token_id));
+}
+
 void OnDeviceTailTokenizer::EncodeRawString(
     const std::string& raw_string,
     std::vector<std::pair<std::string, TokenId>>* token_and_ids) const {
@@ -217,6 +237,10 @@ void OnDeviceTailTokenizer::TokenizePrevQuery(
   std::vector<std::pair<std::string, TokenId>> token_and_ids;
   EncodeRawString(prev_query, &token_and_ids);
 
+  if (OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest()) {
+    prev_query_token_ids->push_back(TokenToId(" "));
+  }
+
   for (const auto& pair : token_and_ids) {
     prev_query_token_ids->push_back(pair.second);
   }
@@ -242,6 +266,11 @@ void OnDeviceTailTokenizer::CreatePrefixTokenization(
 
   // Always add begin query token at the front of the prefix.
   tokenization->unambiguous_ids.push_back(TokenToId(kBeginQueryToken));
+
+  if (OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest()) {
+    tokenization->unambiguous_ids.push_back(TokenToId(" "));
+  }
+
   for (size_t i = 0; i < num_unambiguous; ++i) {
     tokenization->unambiguous_prefix += token_and_ids[i].first;
     tokenization->unambiguous_ids.push_back(token_and_ids[i].second);

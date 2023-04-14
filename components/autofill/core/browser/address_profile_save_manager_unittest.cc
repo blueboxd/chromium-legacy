@@ -12,7 +12,7 @@
 #include "components/autofill/core/browser/autofill_profile_import_process.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_test_utils.h"
-#include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/test_utils/test_profiles.h"
@@ -147,9 +147,9 @@ struct ImportScenarioTestCase {
   absl::optional<AutofillProfile> merge_candidate;
   absl::optional<AutofillProfile> import_candidate;
   std::vector<AutofillProfile> expected_final_profiles;
-  std::vector<AutofillMetrics::SettingsVisibleFieldTypeForMetrics>
+  std::vector<SettingsVisibleFieldTypeForMetrics>
       expected_edited_types_for_metrics;
-  std::vector<AutofillMetrics::SettingsVisibleFieldTypeForMetrics>
+  std::vector<SettingsVisibleFieldTypeForMetrics>
       expected_affeceted_types_in_merge_for_metrics;
   bool new_profiles_suppresssed_for_domain;
   std::vector<std::string> blocked_guids_for_updates;
@@ -614,10 +614,10 @@ TEST_P(AddressProfileSaveManagerTest, SaveNewProfile_Edited) {
       .import_candidate = observed_profile,
       .expected_final_profiles = {edited_profile},
       .expected_edited_types_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kName,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kStreetAddress,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip}};
+          SettingsVisibleFieldTypeForMetrics::kName,
+          SettingsVisibleFieldTypeForMetrics::kStreetAddress,
+          SettingsVisibleFieldTypeForMetrics::kCity,
+          SettingsVisibleFieldTypeForMetrics::kZip}};
 
   TestImportScenario(test_scenario);
 }
@@ -676,6 +676,31 @@ TEST_P(AddressProfileSaveManagerTest, ImportDuplicateProfile) {
       .import_candidate = absl::nullopt,
       .expected_final_profiles = {existing_profile}};
 
+  TestImportScenario(test_scenario);
+}
+
+// Test that the observation of quasi identical profile that has a different
+// structure in the name will not result in a silent update when silent updates
+// are disabled by a feature flag.
+TEST_P(AddressProfileSaveManagerTest,
+       SilentlyUpdateProfile_DisabledByFeatureFlag) {
+  base::test::ScopedFeatureList disabled_update_feature;
+  disabled_update_feature.InitAndEnableFeature(
+      features::kAutofillDisableSilentProfileUpdates);
+
+  AutofillProfile observed_profile = test::StandardProfile();
+  AutofillProfile updateable_profile = test::UpdateableStandardProfile();
+
+  ImportScenarioTestCase test_scenario{
+      .existing_profiles = {updateable_profile},
+      .observed_profile = observed_profile,
+      .is_prompt_expected = false,
+      .user_decision = UserDecision::kUserNotAsked,
+      .expected_import_type = AutofillProfileImportType::kDuplicateImport,
+      .is_profile_change_expected = false,
+      .merge_candidate = absl::nullopt,
+      .import_candidate = absl::nullopt,
+      .expected_final_profiles = {updateable_profile}};
   TestImportScenario(test_scenario);
 }
 
@@ -774,6 +799,31 @@ TEST_P(AddressProfileSaveManagerTest,
 }
 
 // Test the observation of a profile that can only be merged with a
+// settings-visible change will not cause an update when the latter is disabled
+// by a feature flag.
+TEST_P(AddressProfileSaveManagerTest,
+       UserConfirmableMerge_DisabledByFeatureFlag) {
+  base::test::ScopedFeatureList disabled_update_feature;
+  disabled_update_feature.InitAndEnableFeature(
+      features::kAutofillDisableProfileUpdates);
+
+  AutofillProfile observed_profile = test::StandardProfile();
+  AutofillProfile mergeable_profile = test::SubsetOfStandardProfile();
+
+  ImportScenarioTestCase test_scenario{
+      .existing_profiles = {mergeable_profile},
+      .observed_profile = observed_profile,
+      .is_prompt_expected = false,
+      .user_decision = UserDecision::kUserNotAsked,
+      .expected_import_type =
+          AutofillProfileImportType::kSuppressedConfirmableMerge,
+      .is_profile_change_expected = false,
+      .expected_final_profiles = {mergeable_profile}};
+
+  TestImportScenario(test_scenario);
+}
+
+// Test the observation of a profile that can only be merged with a
 // settings-visible change.
 TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge) {
   AutofillProfile observed_profile = test::StandardProfile();
@@ -792,8 +842,8 @@ TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge) {
       .import_candidate = final_profile,
       .expected_final_profiles = {final_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -844,8 +894,8 @@ TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_VerifiedProfile) {
       .import_candidate = final_profile,
       .expected_final_profiles = {final_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -873,10 +923,10 @@ TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_Edited) {
       .import_candidate = import_candidate,
       .expected_final_profiles = {edited_profile},
       .expected_edited_types_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kName,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kStreetAddress,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip}};
+          SettingsVisibleFieldTypeForMetrics::kName,
+          SettingsVisibleFieldTypeForMetrics::kStreetAddress,
+          SettingsVisibleFieldTypeForMetrics::kCity,
+          SettingsVisibleFieldTypeForMetrics::kZip}};
 
   TestImportScenario(test_scenario);
 }
@@ -900,8 +950,8 @@ TEST_P(AddressProfileSaveManagerTest, UserConfirmableMerge_Declined) {
       .import_candidate = final_profile,
       .expected_final_profiles = {mergeable_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -927,8 +977,8 @@ TEST_P(AddressProfileSaveManagerTest, UserConfirmableMergeAndDuplicate) {
       .import_candidate = merged_profile,
       .expected_final_profiles = {existing_duplicate, merged_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -957,8 +1007,8 @@ TEST_P(AddressProfileSaveManagerTest,
       .import_candidate = merged_profile,
       .expected_final_profiles = {existing_duplicate, merged_profile},
       .expected_affeceted_types_in_merge_for_metrics =
-          {AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-           AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity},
+          {SettingsVisibleFieldTypeForMetrics::kZip,
+           SettingsVisibleFieldTypeForMetrics::kCity},
       .new_profiles_suppresssed_for_domain = true};
 
   TestImportScenario(test_scenario);
@@ -996,8 +1046,8 @@ TEST_P(AddressProfileSaveManagerTest,
       .expected_final_profiles = {existing_duplicate, updated_profile,
                                   merged_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -1066,8 +1116,8 @@ TEST_P(AddressProfileSaveManagerTest,
       .expected_final_profiles = {existing_duplicate, updated_profile,
                                   mergeable_profile},
       .expected_affeceted_types_in_merge_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity}};
+          SettingsVisibleFieldTypeForMetrics::kZip,
+          SettingsVisibleFieldTypeForMetrics::kCity}};
 
   TestImportScenario(test_scenario);
 }
@@ -1107,10 +1157,10 @@ TEST_P(AddressProfileSaveManagerTest,
       .expected_final_profiles = {existing_duplicate, updated_profile,
                                   edited_profile},
       .expected_edited_types_for_metrics = {
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kName,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kStreetAddress,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kCity,
-          AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kZip}};
+          SettingsVisibleFieldTypeForMetrics::kName,
+          SettingsVisibleFieldTypeForMetrics::kStreetAddress,
+          SettingsVisibleFieldTypeForMetrics::kCity,
+          SettingsVisibleFieldTypeForMetrics::kZip}};
 
   TestImportScenario(test_scenario);
 }

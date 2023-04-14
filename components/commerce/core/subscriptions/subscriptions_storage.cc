@@ -61,13 +61,6 @@ void SubscriptionsStorage::DeleteAll() {
   }));
 }
 
-std::string SubscriptionsStorage::GetSubscriptionKey(
-    const CommerceSubscription& subscription) {
-  return SubscriptionTypeToString(subscription.type) + "_" +
-         SubscriptionIdTypeToString(subscription.id_type) + "_" +
-         subscription.id;
-}
-
 void SubscriptionsStorage::SaveSubscription(
     CommerceSubscription subscription,
     base::OnceCallback<void(bool)> callback) {
@@ -99,7 +92,7 @@ void SubscriptionsStorage::SaveSubscription(
     return;
   }
 
-  const std::string& key = GetSubscriptionKey(subscription);
+  const std::string& key = GetStorageKeyForSubscription(subscription);
   CommerceSubscriptionProto proto;
   proto.set_key(key);
   proto.set_tracking_id(subscription.id);
@@ -114,7 +107,7 @@ void SubscriptionsStorage::SaveSubscription(
 void SubscriptionsStorage::DeleteSubscription(
     CommerceSubscription subscription,
     base::OnceCallback<void(bool)> callback) {
-  proto_db_->DeleteOneEntry(GetSubscriptionKey(subscription),
+  proto_db_->DeleteOneEntry(GetStorageKeyForSubscription(subscription),
                             std::move(callback));
 }
 
@@ -123,24 +116,31 @@ void SubscriptionsStorage::LoadAllSubscriptionsForType(
     GetLocalSubscriptionsCallback callback) {
   proto_db_->LoadContentWithPrefix(
       SubscriptionTypeToString(type),
-      base::BindOnce(
-          [](base::WeakPtr<SubscriptionsStorage> storage,
-             GetLocalSubscriptionsCallback callback, bool succeeded,
-             CommerceSubscriptions data) {
-            auto subscriptions =
-                std::make_unique<std::vector<CommerceSubscription>>();
-            if (!succeeded) {
-              VLOG(1) << "Fail to load all subscriptions";
-              std::move(callback).Run(std::move(subscriptions));
-              return;
-            }
-            for (SessionProtoStorage<CommerceSubscriptionProto>::KeyAndValue&
-                     kv : data) {
-              subscriptions->push_back(storage->GetSubscriptionFromProto(kv));
-            }
-            std::move(callback).Run(std::move(subscriptions));
-          },
-          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      base::BindOnce(&SubscriptionsStorage::HandleLoadCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SubscriptionsStorage::LoadAllSubscriptions(
+    GetLocalSubscriptionsCallback callback) {
+  proto_db_->LoadAllEntries(
+      base::BindOnce(&SubscriptionsStorage::HandleLoadCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void SubscriptionsStorage::HandleLoadCompleted(
+    GetLocalSubscriptionsCallback callback,
+    bool succeeded,
+    CommerceSubscriptions data) {
+  auto subscriptions = std::make_unique<std::vector<CommerceSubscription>>();
+  if (!succeeded) {
+    VLOG(1) << "Fail to load all subscriptions";
+    std::move(callback).Run(std::move(subscriptions));
+    return;
+  }
+  for (SessionProtoStorage<CommerceSubscriptionProto>::KeyAndValue& kv : data) {
+    subscriptions->push_back(GetSubscriptionFromProto(kv));
+  }
+  std::move(callback).Run(std::move(subscriptions));
 }
 
 CommerceSubscription SubscriptionsStorage::GetSubscriptionFromProto(
@@ -157,7 +157,7 @@ SubscriptionsStorage::SubscriptionsListToMap(
     std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
   std::unordered_map<std::string, CommerceSubscription> map;
   for (auto& subscription : *subscriptions) {
-    std::string key = GetSubscriptionKey(subscription);
+    std::string key = GetStorageKeyForSubscription(subscription);
     map.insert(std::make_pair(key, std::move(subscription)));
   }
   return map;
@@ -215,14 +215,29 @@ void SubscriptionsStorage::PerformUpdateStorage(
     }
   }
   for (auto& kv : remote_map) {
-    if (local_map.find(kv.first) == local_map.end()) {
-      SaveSubscription(std::move(kv.second),
-                       base::BindOnce(
-                           [](bool* all_succeeded, bool succeeded) {
-                             *all_succeeded = (*all_succeeded) && succeeded;
-                           },
-                           &all_succeeded));
+    auto local_it = local_map.find(kv.first);
+    // If there is one subscription in local cache with the same key but
+    // different timestamp, we need to replace it with the server-side one since
+    // we use the timestamp as the identifier when removing subscription from
+    // server. This will ensure the unsubscribe operation works correctly when a
+    // user operates on multiple devices.
+    if (local_it != local_map.end()) {
+      if (local_it->second.timestamp == kv.second.timestamp) {
+        continue;
+      }
+      DeleteSubscription(std::move(local_it->second),
+                         base::BindOnce(
+                             [](bool* all_succeeded, bool succeeded) {
+                               *all_succeeded = (*all_succeeded) && succeeded;
+                             },
+                             &all_succeeded));
     }
+    SaveSubscription(std::move(kv.second),
+                     base::BindOnce(
+                         [](bool* all_succeeded, bool succeeded) {
+                           *all_succeeded = (*all_succeeded) && succeeded;
+                         },
+                         &all_succeeded));
   }
   std::move(callback).Run(all_succeeded
                               ? SubscriptionsRequestStatus::kSuccess
@@ -233,7 +248,7 @@ void SubscriptionsStorage::IsSubscribed(
     CommerceSubscription subscription,
     base::OnceCallback<void(bool)> callback) {
   proto_db_->LoadOneEntry(
-      GetSubscriptionKey(subscription),
+      GetStorageKeyForSubscription(subscription),
       base::BindOnce(
           [](base::OnceCallback<void(bool)> callback, bool succeeded,
              CommerceSubscriptions data) {

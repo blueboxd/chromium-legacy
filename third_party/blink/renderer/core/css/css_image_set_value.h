@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_SET_VALUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_CSS_IMAGE_SET_VALUE_H_
 
+#include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
 #include "third_party/blink/renderer/platform/loader/fetch/cross_origin_attribute_value.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -42,42 +43,50 @@ class CORE_EXPORT CSSImageSetValue : public CSSValueList {
   explicit CSSImageSetValue();
   ~CSSImageSetValue();
 
-  bool IsCachePending(float device_scale_factor) const;
-  StyleImage* CachedImage(float device_scale_factor) const;
+  bool IsCachePending(const float device_scale_factor) const;
+  StyleImage* CachedImage(const float device_scale_factor) const;
   StyleImage* CacheImage(
-      const Document&,
-      float device_scale_factor,
-      FetchParameters::ImageRequestBehavior,
-      CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
+      const Document& document,
+      const float device_scale_factor,
+      const FetchParameters::ImageRequestBehavior image_request_behavior,
+      const CrossOriginAttributeValue cross_origin,
+      const CSSToLengthConversionData::ContainerSizes& container_sizes);
 
   String CustomCSSText() const;
 
-  CSSImageSetValue* ValueWithURLsMadeAbsolute();
+  // Gets the computed CSS value of the image-set.
+  CSSImageSetValue* ComputedCSSValue(const ComputedStyle& style,
+                                     const bool allow_visited_style) const;
 
   bool HasFailedOrCanceledSubresources() const;
 
   void TraceAfterDispatch(blink::Visitor*) const;
 
- protected:
-  struct ImageWithScale {
-    DISALLOW_NEW();
-    wtf_size_t index;
-    float scale_factor;
+ private:
+  struct ImageSetOption {
+    wtf_size_t index{};
+    float resolution{};
   };
 
-  ImageWithScale BestImageForScaleFactor(float scale_factor);
+  const ImageSetOption& GetBestOption(const float device_scale_factor);
 
- private:
-  void FillImageSet();
-  static inline bool CompareByScaleFactor(ImageWithScale first,
-                                          ImageWithScale second) {
-    return first.scale_factor < second.scale_factor;
-  }
+  StyleImage* GetImageToCache(
+      const float device_scale_factor,
+      const Document& document,
+      const FetchParameters::ImageRequestBehavior image_request_behavior,
+      const CrossOriginAttributeValue cross_origin,
+      const CSSToLengthConversionData::ContainerSizes& container_sizes);
+
+  // Gets the computed CSS value of image-set-option components.
+  const CSSValue* ComputedCSSValueForOption(
+      const CSSValue* value,
+      const ComputedStyle& style,
+      const bool allow_visited_style) const;
 
   Member<StyleImage> cached_image_;
-  float cached_scale_factor_;
+  float cached_device_scale_factor_{1.0f};
 
-  Vector<ImageWithScale> images_in_set_;
+  Vector<ImageSetOption> options_;
 };
 
 template <>

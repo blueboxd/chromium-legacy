@@ -11,6 +11,7 @@
 #include "ash/public/cpp/projector/speech_recognition_availability.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/cros_speech_recognition_service.h"
 #include "chrome/browser/speech/cros_speech_recognition_service_factory.h"
@@ -18,9 +19,9 @@
 #include "components/soda/soda_installer.h"
 #include "content/public/browser/audio_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
-#include "media/base/bind_to_current_loop.h"
 
 namespace {
 
@@ -152,11 +153,9 @@ SpeechRecognitionRecognizerClientImpl::GetServerBasedRecognitionAvailability(
 SpeechRecognitionRecognizerClientImpl::SpeechRecognitionRecognizerClientImpl(
     const base::WeakPtr<SpeechRecognizerDelegate>& delegate,
     Profile* profile,
+    const std::string& device_id,
     media::mojom::SpeechRecognitionOptionsPtr options)
-    : SpeechRecognizer(delegate),
-      state_(SpeechRecognizerStatus::SPEECH_RECOGNIZER_OFF),
-      is_multichannel_supported_(false),
-      waiting_for_params_(false) {
+    : SpeechRecognizer(delegate), device_id_(device_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(options->language.has_value());
   language_ = options->language.value();
@@ -171,12 +170,12 @@ SpeechRecognitionRecognizerClientImpl::SpeechRecognitionRecognizerClientImpl(
       audio_source_fetcher_.BindNewPipeAndPassReceiver(),
       speech_recognition_client_receiver_.BindNewPipeAndPassRemote(),
       std::move(options),
-      media::BindToCurrentLoop(base::BindOnce(
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
           &SpeechRecognitionRecognizerClientImpl::OnRecognizerBound,
           weak_factory_.GetWeakPtr())));
 
   audio_source_speech_recognition_context_.set_disconnect_handler(
-      media::BindToCurrentLoop(base::BindOnce(
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
           &SpeechRecognitionRecognizerClientImpl::OnRecognizerDisconnected,
           weak_factory_.GetWeakPtr())));
 }
@@ -196,10 +195,9 @@ void SpeechRecognitionRecognizerClientImpl::Start() {
     audio_system_ = content::CreateAudioSystemForAudioService();
   waiting_for_params_ = true;
   audio_system_->GetInputStreamParameters(
-      media::AudioDeviceDescription::kDefaultDeviceId,
-      base::BindOnce(&SpeechRecognitionRecognizerClientImpl::
-                         StartFetchingOnInputDeviceInfo,
-                     weak_factory_.GetWeakPtr()));
+      device_id_, base::BindOnce(&SpeechRecognitionRecognizerClientImpl::
+                                     StartFetchingOnInputDeviceInfo,
+                                 weak_factory_.GetWeakPtr()));
 }
 
 void SpeechRecognitionRecognizerClientImpl::Stop() {
@@ -261,8 +259,7 @@ void SpeechRecognitionRecognizerClientImpl::StartFetchingOnInputDeviceInfo(
   content::GetAudioServiceStreamFactoryBinder().Run(
       stream_factory.InitWithNewPipeAndPassReceiver());
   audio_source_fetcher_->Start(
-      std::move(stream_factory),
-      media::AudioDeviceDescription::kDefaultDeviceId,
+      std::move(stream_factory), device_id_,
       GetAudioParameters(params, is_multichannel_supported_));
   UpdateStatus(SpeechRecognizerStatus::SPEECH_RECOGNIZER_RECOGNIZING);
 }

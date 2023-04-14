@@ -36,6 +36,7 @@
 #import "ios/chrome/test/earl_grey/earl_grey_scoped_block_swizzler.h"
 #import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
+#import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/element_selector.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -54,6 +55,7 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TextFieldForCellWithLabelId;
 using chrome_test_util::TurnTableViewSwitchOn;
+using testing::ElementWithAccessibilityLabelSubstring;
 
 namespace {
 
@@ -171,6 +173,13 @@ id<GREYMatcher> PasswordDetailUsername() {
 // Matcher for the password in Password Details view.
 id<GREYMatcher> PasswordDetailPassword() {
   return TextFieldForCellWithLabelId(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
+}
+
+// Matcher for the note in Password Details view.
+id<GREYMatcher> PasswordDetailNote() {
+  return grey_allOf(
+      grey_accessibilityID(GetTextFieldForID(IDS_IOS_SHOW_PASSWORD_VIEW_NOTE)),
+      grey_kindOfClassName(@"UITextView"), nil);
 }
 
 // Matcher for the federation details in Password Details view.
@@ -380,6 +389,16 @@ void SaveExamplePasswordForms() {
              @"Stored form was not found in the PasswordStore results.");
 }
 
+// Saves an example form with note in the store.
+void SaveExamplePasswordFormWithNote() {
+  GREYAssert(
+      [PasswordSettingsAppInterface saveExampleNote:@"concrete note"
+                                           password:@"concrete password"
+                                           userName:@"concrete username"
+                                             origin:@"https://example.com"],
+      @"Stored form was not found in the PasswordStore results.");
+}
+
 // Saves two example blocked forms in the store.
 void SaveExampleBlockedForms() {
   GREYAssert([PasswordSettingsAppInterface
@@ -519,14 +538,6 @@ id<GREYMatcher> EditDoneButton() {
   }
 
   if ([self isRunningTest:@selector
-            (testNoOndeviceEncryptionSetupWhenSignedOut)]) {
-    config.features_enabled.push_back(syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector(testNoOndeviceEncryptionWithoutFlag)]) {
-    config.features_disabled.push_back(
-        syncer::kSyncTrustedVaultPassphrasePromo);
-  }
-  if ([self isRunningTest:@selector
             (testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled)]) {
     config.features_disabled.push_back(
         password_manager::features::kEnablePasswordsAccountStorage);
@@ -537,21 +548,14 @@ id<GREYMatcher> EditDoneButton() {
         password_manager::features::kEnablePasswordsAccountStorage);
   }
 
+  if ([self isRunningTest:@selector(testLayoutWithNotesDisabled)]) {
+    config.features_disabled.push_back(syncer::kPasswordNotesWithBackup);
+  }
+  if ([self isRunningTest:@selector(testLayoutWithNotesEnabled)]) {
+    config.features_enabled.push_back(syncer::kPasswordNotesWithBackup);
+  }
+
   return config;
-}
-
-// Verifies that a signed out account has no option related to
-// on device encryption.
-- (void)testNoOndeviceEncryptionWithoutFlag {
-  OpenPasswordManager();
-
-  // Check that the menus related to on-device encryptions are not displayed.
-  [OptedInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
-  [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      performAction:grey_tap()];
 }
 
 // Check that a user which is not logged in any account do not get
@@ -1277,6 +1281,86 @@ id<GREYMatcher> EditDoneButton() {
                             @[ Below() ],
                             [self matcherForPasswordDetailCellWithWebsites:
                                       @"https://example.com/"])];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks the order of the elements in the detail view layout for a
+// non-federated, non-blocked credential with notes feature disabled.
+- (void)testLayoutWithNotesDisabled {
+  SaveExamplePasswordForm();
+
+  OpenPasswordManager();
+
+  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
+                                            username:@"concrete username"]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      assertWithMatcher:grey_textFieldValue(@"concrete username")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      assertWithMatcher:grey_textFieldValue(kMaskedPassword)];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      assertWithMatcher:grey_nil()];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
+      assertWithMatcher:grey_layout(
+                            @[ Below() ],
+                            [self matcherForPasswordDetailCellWithWebsites:
+                                      @"https://example.com/"])];
+  [GetInteractionForPasswordDetailItem(PasswordDetailPassword())
+      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
+
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+}
+
+// Checks the order of the elements in the detail view layout for a
+// non-federated, non-blocked credential with notes feature enabled.
+- (void)testLayoutWithNotesEnabled {
+  SaveExamplePasswordFormWithNote();
+
+  OpenPasswordManager();
+
+  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"
+                                            username:@"concrete username"]
+      performAction:grey_tap()];
+
+  [[EarlGrey
+      selectElementWithMatcher:[self matcherForPasswordDetailCellWithWebsites:
+                                         @"https://example.com/"]]
+      assertWithMatcher:grey_notNil()];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+      assertWithMatcher:grey_textFieldValue(@"concrete username")];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+      assertWithMatcher:grey_textFieldValue(kMaskedPassword)];
+  [[EarlGrey selectElementWithMatcher:PasswordDetailNote()]
+      assertWithMatcher:grey_text(@"concrete note")];
+
+  [[EarlGrey selectElementWithMatcher:PasswordDetailFederation()]
+      assertWithMatcher:grey_nil()];
+  [GetInteractionForPasswordDetailItem(PasswordDetailUsername())
+      assertWithMatcher:grey_layout(
+                            @[ Below() ],
+                            [self matcherForPasswordDetailCellWithWebsites:
+                                      @"https://example.com/"])];
+  [GetInteractionForPasswordDetailItem(PasswordDetailPassword())
+      assertWithMatcher:grey_layout(@[ Below() ], PasswordDetailUsername())];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -2173,7 +2257,8 @@ id<GREYMatcher> EditDoneButton() {
 }
 
 // Tests the add password flow from the toolbar button.
-- (void)testAddNewPasswordCredential {
+// TODO(crbug.com/1411944): Flaky, please re-enable once fixed.
+- (void)DISABLED_testAddNewPasswordCredential {
   OpenPasswordManager();
 
   // Press "Add".
@@ -2766,8 +2851,6 @@ id<GREYMatcher> EditDoneButton() {
 - (void)testAccountStorageSwitchHiddenIfSignedInAndFlagDisabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncInitializedTimeout];
 
   OpenPasswordManager();
   OpenSettingsSubmenu();
@@ -2782,31 +2865,31 @@ id<GREYMatcher> EditDoneButton() {
 - (void)testAccountStorageSwitchShownIfSignedInAndFlagEnabled {
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity enableSync:NO];
-  [ChromeEarlGrey waitForSyncEngineInitialized:YES
-                                   syncTimeout:kSyncInitializedTimeout];
 
   OpenPasswordManager();
   OpenSettingsSubmenu();
 
-  GREYAssert(![PasswordSettingsAppInterface isOptedInForAccountStorage],
-             @"User should be opted out by default after sign-in");
+  // User should be opted in by default after sign-in.
   GREYElementInteraction* accountStorageSwitch =
       [EarlGrey selectElementWithMatcher:
                     chrome_test_util::TableViewSwitchCell(
                         kPasswordSettingsAccountStorageSwitchTableViewId,
-                        /*is_toggled_on=*/NO)];
+                        /*is_toggled_on=*/YES)];
+  // The toggle text must contain the signed-in account.
+  [EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(
+              grey_descendant(grey_accessibilityID(
+                  kPasswordSettingsAccountStorageSwitchTableViewId)),
+              ElementWithAccessibilityLabelSubstring(fakeIdentity.userEmail),
+              nil)];
 
-  [accountStorageSwitch performAction:TurnTableViewSwitchOn(YES)];
+  [accountStorageSwitch performAction:TurnTableViewSwitchOn(NO)];
 
-  bool success = base::test::ios::WaitUntilConditionOrTimeout(
-      base::test::ios::kWaitForActionTimeout, ^{
-        return [PasswordSettingsAppInterface isOptedInForAccountStorage];
-      });
-  GREYAssert(success, @"Flipping the toggle should have opted in the user");
   [EarlGrey selectElementWithMatcher:
                 chrome_test_util::TableViewSwitchCell(
                     kPasswordSettingsAccountStorageSwitchTableViewId,
-                    /*is_toggled_on=*/YES)];
+                    /*is_toggled_on=*/NO)];
 }
 
 - (void)testAccountStorageSwitchHiddenIfSignedOut {

@@ -33,6 +33,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   bool CaptionButtonsOnLeadingEdge() const override;
   gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const override;
+  gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const override;
+  void LayoutWebAppWindowTitle(const gfx::Rect& available_space,
+                               views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   bool HasVisibleBackgroundTabShapes(
@@ -67,7 +71,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   SkColor GetTitlebarColor() const;
 
-  const views::Label* window_title_for_testing() const { return window_title_; }
   const GlassBrowserCaptionButtonContainer*
   caption_button_container_for_testing() const {
     return caption_button_container_;

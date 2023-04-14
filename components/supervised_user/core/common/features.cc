@@ -9,8 +9,9 @@
 #include "base/check_op.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
+#include "build/branding_buildflags.h"
 
-namespace supervised_users {
+namespace supervised_user {
 
 // Enables refreshed version of the website filter interstitial that is shown to
 // Family Link users when the navigate to the blocked website.
@@ -67,17 +68,38 @@ BASE_FEATURE(kEnableKidsManagementService,
              "EnableKidsManagementService",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables synchronous sign-in checking in the First Run Experience.
+BASE_FEATURE(kSynchronousSignInChecking,
+             "SynchronousSignInChecking",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 bool IsWebFilterInterstitialRefreshEnabled() {
   DCHECK(base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh) ||
          !base::FeatureList::IsEnabled(kLocalWebApprovals));
   return base::FeatureList::IsEnabled(kWebFilterInterstitialRefresh);
 }
 
+bool IsGoogleBrandedBuild() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  return true;
+#else
+  return false;
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
+}
+
 bool IsLocalWebApprovalsEnabled() {
-  // TODO(crbug.com/1272462): on Android also call through to Java code to check
-  // whether the feature is supported.
+  // TODO(crbug.com/1272462, b/261729051):
+  // Move this logic to SupervisedUserService, once it's migrated to
+  // components, and de-release the intended usage of
+  // WebsiteParentApproval::IsLocalApprovalSupported for Andoird.
+#if BUILDFLAG(IS_ANDROID)
+  return IsWebFilterInterstitialRefreshEnabled() &&
+         base::FeatureList::IsEnabled(kLocalWebApprovals) &&
+         IsGoogleBrandedBuild();
+#else
   return IsWebFilterInterstitialRefreshEnabled() &&
          base::FeatureList::IsEnabled(kLocalWebApprovals);
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 bool IsLocalWebApprovalThePreferredButton() {
@@ -91,4 +113,11 @@ bool IsKidsManagementServiceEnabled() {
   return base::FeatureList::IsEnabled(kEnableKidsManagementService);
 }
 
-}  // namespace supervised_users
+BASE_FEATURE(kFilterWebsitesForSupervisedUsersOnThirdParty,
+             "FilterWebsitesForSupervisedUsersOnThirdParty",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsSynchronousSignInCheckingEnabled() {
+  return base::FeatureList::IsEnabled(kSynchronousSignInChecking);
+}
+}  // namespace supervised_user

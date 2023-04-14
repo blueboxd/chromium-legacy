@@ -12,15 +12,13 @@ import static org.chromium.net.CronetProvider.PROVIDER_NAME_FALLBACK;
 import static org.chromium.net.CronetTestRule.getContext;
 
 import android.content.Context;
-import android.support.test.runner.AndroidJUnit4;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.chromium.base.test.util.Feature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +37,6 @@ public class CronetEngineBuilderTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CronetTestRule.OnlyRunNativeCronet
     public void testVersionComparison() {
         assertVersionIsHigher("22.44", "22.43.12");
@@ -59,7 +56,6 @@ public class CronetEngineBuilderTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testProviderOrdering() {
         final CronetProvider[] availableProviders = new CronetProvider[] {
                 new FakeProvider(getContext(), PROVIDER_NAME_APP_PACKAGED, "99.77", true),
@@ -83,7 +79,6 @@ public class CronetEngineBuilderTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testThatDisabledProvidersAreExcluded() {
         final CronetProvider[] availableProviders = new CronetProvider[] {
                 new FakeProvider(getContext(), PROVIDER_NAME_FALLBACK, "99.99", true),

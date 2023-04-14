@@ -19,7 +19,6 @@
 #include "base/time/time.h"
 #include "ui/aura/null_window_targeter.h"
 #include "ui/aura/scoped_window_targeter.h"
-#include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -95,15 +94,26 @@ class ScopedWindowTucker::TuckHandle : public views::Button {
       canvas->Scale(-1, 1);
     }
 
-    // We draw two icons on top of each other because we need separate
+    // We draw three icons on top of each other because we need separate
     // themeing on different parts which is not supported by `VectorIcon`.
-    const SkColor container_color = ColorUtil::GetSecondToneColor(
-        DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
-            ? SK_ColorWHITE
-            : SK_ColorBLACK);
-    const gfx::ImageSkia& tuck_container = gfx::CreateVectorIcon(
-        kTuckHandleContainerIcon, kTuckHandleWidth, container_color);
-    canvas->DrawImageInt(tuck_container, 0, 0);
+    const bool dark_mode =
+        DarkLightModeControllerImpl::Get()->IsDarkModeEnabled();
+
+    // Paint the container bottom layer with default 80% opacity.
+    const SkColor bottom_color = ColorUtil::GetSecondToneColor(
+        dark_mode ? gfx::kGoogleGrey500 : gfx::kGoogleGrey600);
+    const gfx::ImageSkia& tuck_container_bottom = gfx::CreateVectorIcon(
+        kTuckHandleContainerBottomIcon, kTuckHandleWidth, bottom_color);
+    canvas->DrawImageInt(tuck_container_bottom, 0, 0);
+
+    // Paint the container top layer. This is mostly transparent, with 12%
+    // opacity.
+    const SkColor color = dark_mode ? gfx::kGoogleGrey200 : gfx::kGoogleGrey600;
+    const SkColor top_color =
+        SkColorSetA(color, std::round(SkColorGetA(color) * 0.12f));
+    const gfx::ImageSkia& tuck_container_top = gfx::CreateVectorIcon(
+        kTuckHandleContainerTopIcon, kTuckHandleWidth, top_color);
+    canvas->DrawImageInt(tuck_container_top, 0, 0);
 
     const gfx::ImageSkia& tuck_icon = gfx::CreateVectorIcon(
         kTuckHandleChevronIcon, kTuckHandleWidth, SK_ColorWHITE);
@@ -111,30 +121,13 @@ class ScopedWindowTucker::TuckHandle : public views::Button {
   }
 
   void OnGestureEvent(ui::GestureEvent* event) override {
-    float detail_x = 0.0, detail_y = 0.0;
-    const ui::GestureEventDetails details = event->details();
-    switch (event->type()) {
-      case ui::ET_GESTURE_SWIPE:
-        // Since ET_GESTURE_SWIPE events don't have a numeric value, set
-        // `detail_x` as an arbitrary positive or negative value.
-        detail_x = details.swipe_right() ? 1.0 : -1.0;
-        break;
-      case ui::ET_SCROLL_FLING_START:
-        detail_x = details.velocity_x();
-        detail_y = details.velocity_y();
-        break;
-      case ui::ET_GESTURE_SCROLL_BEGIN:
-        detail_x = details.scroll_x_hint();
-        detail_y = details.scroll_y_hint();
-        break;
-      case ui::ET_GESTURE_SCROLL_UPDATE:
-        detail_x = details.scroll_x();
-        detail_y = details.scroll_y();
-        break;
-      default:
-        views::Button::OnGestureEvent(event);
-        return;
+    if (event->type() != ui::ET_GESTURE_SCROLL_BEGIN) {
+      views::Button::OnGestureEvent(event);
+      return;
     }
+    const ui::GestureEventDetails details = event->details();
+    const float detail_x = details.scroll_x_hint(),
+                detail_y = details.scroll_y_hint();
 
     // Ignore vertical gestures.
     if (std::fabs(detail_x) <= std::fabs(detail_y))
@@ -145,6 +138,7 @@ class ScopedWindowTucker::TuckHandle : public views::Button {
     if ((left_ && detail_x > 0) || (!left_ && detail_x < 0)) {
       NotifyClick(*event);
       event->SetHandled();
+      event->StopPropagation();
     }
   }
 

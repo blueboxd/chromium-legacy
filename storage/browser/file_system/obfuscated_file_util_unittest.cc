@@ -194,8 +194,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
       // Once we enable third-party storage partitioning, we can create a
       // third-party StorageKey and re-assign the StorageKey value in the
       // SandboxFileSystem with this value in SetUp for default buckets.
-      storage_key_ = blink::StorageKey::CreateWithOptionalNonce(
-          storage_key_.origin(), storage_key_.top_level_site(), nullptr,
+      storage_key_ = blink::StorageKey::Create(
+          storage_key_.origin(), storage_key_.top_level_site(),
           blink::mojom::AncestorChainBit::kCrossSite);
     }
   }
@@ -241,7 +241,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
         FROM_HERE, base::BindOnce(
                        [](const scoped_refptr<QuotaManager>& quota_manager) {
                          QuotaSettings settings;
-                         settings.per_storage_key_quota = 25 * 1024 * 1024;
+                         settings.per_storage_key_quota = 250 * 1024 * 1024;
                          settings.pool_size =
                              settings.per_storage_key_quota * 5;
                          settings.must_remain_available = 10 * 1024 * 1024;
@@ -886,8 +886,8 @@ class ObfuscatedFileUtilTest : public testing::Test,
   void GetDirectoryDatabase_IsolatedTestBody() {
     storage_policy_->AddIsolated(origin().GetURL());
     FileSystemURL url = FileSystemURL::CreateForTest(
-        blink::StorageKey(origin()), kFileSystemTypePersistent,
-        base::FilePath());
+        blink::StorageKey::CreateFirstParty(origin()),
+        kFileSystemTypePersistent, base::FilePath());
     if (is_non_default_bucket())
       url.SetBucket(custom_bucket_);
 

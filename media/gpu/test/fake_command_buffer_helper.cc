@@ -91,6 +91,14 @@ FakeCommandBufferHelper::GetDXGISharedHandleManager() {
 }
 #endif
 
+gpu::MemoryTypeTracker* FakeCommandBufferHelper::GetMemoryTypeTracker() {
+  return nullptr;
+}
+
+gpu::SharedImageManager* FakeCommandBufferHelper::GetSharedImageManager() {
+  return nullptr;
+}
+
 bool FakeCommandBufferHelper::HasStub() {
   return has_stub_;
 }
@@ -145,7 +153,7 @@ void FakeCommandBufferHelper::SetCleared(GLuint service_id) {
   DCHECK(service_ids_.count(service_id));
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
 bool FakeCommandBufferHelper::BindDecoderManagedImage(GLuint service_id,
                                                       gl::GLImage* image) {
   return BindImageInternal(service_id, image);

@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2677748264148917807">Esci</translation>
 <translation id="2687403674020088961">Blocca tutti i cookie (non consigliato)</translation>
-<translation id="2704606927547763573">Copiata</translation>
 <translation id="2713106313042589954">Disattiva fotocamera</translation>
 <translation id="2717722538473713889">Indirizzi email</translation>
 <translation id="2750481671343847896">I siti possono mostrare richieste di accesso da servizi di identità.</translation>
@@ -147,12 +146,12 @@
 <translation id="3628308229821498208">Ricerche suggerite</translation>
 <translation id="3744111561329211289">Sincronizzazione in background</translation>
 <translation id="3763247130972274048">Tocca due volte il video a sinistra o a destra per saltare di 10 secondi</translation>
-<translation id="3794286421982011626">Un sito che visiti può salvare informazioni su ciò che stai facendo affinché possa funzionare come previsto, ad esempio per mantenere l'accesso al sito o salvare gli articoli nel tuo carrello degli acquisti. Spesso i siti salvano temporaneamente queste informazioni sul dispositivo.</translation>
+<translation id="3794286421982011626">Un sito che visiti può salvare informazioni su ciò che stai facendo affinché possa funzionare come ti aspetteresti, ad esempio per mantenere l'accesso al sito o salvare gli articoli nel tuo carrello degli acquisti. Spesso i siti salvano temporaneamente queste informazioni sul dispositivo.</translation>
 <translation id="3797520601150691162">Non applicare il tema scuro a un sito specifico</translation>
 <translation id="3803367742635802571">I siti che visiti potrebbero non funzionare più come previsto</translation>
 <translation id="3804247818991980532"><ph name="TYPE_1" />. <ph name="TYPE_2" />.</translation>
 <translation id="381841723434055211">Numeri di telefono</translation>
-<translation id="3826050100957962900">Accesso di terze parti</translation>
+<translation id="3826050100957962900">Third-party sign-in</translation>
 <translation id="3835233591525155343">Utilizzo del tuo dispositivo</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
@@ -254,7 +253,7 @@
 <translation id="5690795753582697420">La fotocamera è disattivata nelle impostazioni di Android</translation>
 <translation id="5706552988683188916">Vengono eliminati i cookie e altri dati dei siti per <ph name="WEBSITE" /></translation>
 <translation id="5719847187258001597">Verranno cancellati tutti i dati e i cookie memorizzati dal sito <ph name="ORIGIN" /> o dalla relativa app nella schermata Home.</translation>
-<translation id="5723967018671998714">I cookie di terze parti sono bloccati in modalità di navigazione in incognito</translation>
+<translation id="5723967018671998714">I cookie di terze parti sono bloccati in Modalità di navigazione in incognito</translation>
 <translation id="5740126560802162366">I siti possono salvare dati sul dispositivo</translation>
 <translation id="5771720122942595109">Autorizzazione <ph name="PERMISSION_1" /> bloccata</translation>
 <translation id="5804241973901381774">Autorizzazioni</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">Aggiungi</translation>
 <translation id="780301667611848630">No grazie</translation>
 <translation id="7804248752222191302">Un sito sta utilizzando la fotocamera</translation>
+<translation id="7807060072011926525">Fornito da Google</translation>
 <translation id="7835852323729233924">Riproduzione media</translation>
 <translation id="783819812427904514">Riattiva audio video</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>

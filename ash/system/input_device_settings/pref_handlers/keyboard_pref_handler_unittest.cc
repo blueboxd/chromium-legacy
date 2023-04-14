@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/mojom/input_device_settings.mojom-shared.h"
+#include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler_impl.h"
 
@@ -14,6 +16,7 @@
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "ui/chromeos/events/mojom/modifier_key.mojom.h"
 
 namespace ash {
 
@@ -24,6 +27,11 @@ const std::string kDictFakeValue = "fake_value";
 const std::string kKeyboardKey1 = "device_key1";
 const std::string kKeyboardKey2 = "device_key2";
 const std::string kKeyboardKey3 = "device_key3";
+
+const int kGlobalAutoRepeatDelay = 1000;
+const int kGlobalAutoRepeatInterval = 1000;
+const bool kGlobalAutoRepeatEnabled = false;
+const bool kGlobalSendFunctionKeys = false;
 
 const mojom::KeyboardSettings kKeyboardSettingsDefault(
     /*modifier_remappings=*/{},
@@ -42,10 +50,10 @@ const mojom::KeyboardSettings kKeyboardSettings1(
     /*auto_repeat_interval=*/base::Milliseconds(500));
 
 const mojom::KeyboardSettings kKeyboardSettings2(
-    /*modifier_remappings=*/{{mojom::ModifierKey::kControl,
-                              mojom::ModifierKey::kAlt},
-                             {mojom::ModifierKey::kAssistant,
-                              mojom::ModifierKey::kVoid}},
+    /*modifier_remappings=*/{{ui::mojom::ModifierKey::kControl,
+                              ui::mojom::ModifierKey::kAlt},
+                             {ui::mojom::ModifierKey::kAssistant,
+                              ui::mojom::ModifierKey::kVoid}},
     /*top_row_are_fkeys=*/true,
     /*suppress_meta_fkey_rewrites=*/true,
     /*auto_repeat_enabled=*/true,
@@ -53,14 +61,14 @@ const mojom::KeyboardSettings kKeyboardSettings2(
     /*auto_repeat_interval=*/base::Milliseconds(100));
 
 const mojom::KeyboardSettings kKeyboardSettings3(
-    /*modifier_remappings=*/{{mojom::ModifierKey::kAlt,
-                              mojom::ModifierKey::kCapsLock},
-                             {mojom::ModifierKey::kAssistant,
-                              mojom::ModifierKey::kVoid},
-                             {mojom::ModifierKey::kBackspace,
-                              mojom::ModifierKey::kEscape},
-                             {mojom::ModifierKey::kControl,
-                              mojom::ModifierKey::kAssistant}},
+    /*modifier_remappings=*/{{ui::mojom::ModifierKey::kAlt,
+                              ui::mojom::ModifierKey::kCapsLock},
+                             {ui::mojom::ModifierKey::kAssistant,
+                              ui::mojom::ModifierKey::kVoid},
+                             {ui::mojom::ModifierKey::kBackspace,
+                              ui::mojom::ModifierKey::kEscape},
+                             {ui::mojom::ModifierKey::kControl,
+                              ui::mojom::ModifierKey::kAssistant}},
     /*top_row_are_fkeys=*/true,
     /*suppress_meta_fkey_rewrites=*/false,
     /*auto_repeat_enabled=*/true,
@@ -92,6 +100,14 @@ class KeyboardPrefHandlerTest : public AshTestBase {
 
     pref_service_->registry()->RegisterDictionaryPref(
         prefs::kKeyboardDeviceSettingsDictPref);
+    pref_service_->registry()->RegisterIntegerPref(prefs::kXkbAutoRepeatDelay,
+                                                   kGlobalAutoRepeatDelay);
+    pref_service_->registry()->RegisterIntegerPref(
+        prefs::kXkbAutoRepeatInterval, kGlobalAutoRepeatInterval);
+    pref_service_->registry()->RegisterBooleanPref(prefs::kXkbAutoRepeatEnabled,
+                                                   kGlobalAutoRepeatEnabled);
+    pref_service_->registry()->RegisterBooleanPref(prefs::kSendFunctionKeys,
+                                                   kGlobalSendFunctionKeys);
   }
 
   void CheckKeyboardSettingsAndDictAreEqual(
@@ -226,7 +242,7 @@ TEST_F(KeyboardPrefHandlerTest, UpdateSettings) {
 
   mojom::KeyboardSettings updated_settings = kKeyboardSettings1;
   updated_settings.modifier_remappings = {
-      {mojom::ModifierKey::kAlt, mojom::ModifierKey::kControl}};
+      {ui::mojom::ModifierKey::kAlt, ui::mojom::ModifierKey::kControl}};
   updated_settings.auto_repeat_enabled = !updated_settings.auto_repeat_enabled;
   updated_settings.suppress_meta_fkey_rewrites =
       !updated_settings.suppress_meta_fkey_rewrites;
@@ -323,23 +339,25 @@ TEST_F(KeyboardPrefHandlerTest, InvalidModifierRemappings) {
 
   base::Value::Dict invalid_modifier_remappings;
   invalid_modifier_remappings.Set(
-      base::NumberToString(static_cast<int>(mojom::ModifierKey::kMaxValue) + 1),
-      static_cast<int>(mojom::ModifierKey::kControl));
+      base::NumberToString(static_cast<int>(ui::mojom::ModifierKey::kMaxValue) +
+                           1),
+      static_cast<int>(ui::mojom::ModifierKey::kControl));
   invalid_modifier_remappings.Set(
-      base::NumberToString(static_cast<int>(mojom::ModifierKey::kMinValue) - 1),
-      static_cast<int>(mojom::ModifierKey::kControl));
+      base::NumberToString(static_cast<int>(ui::mojom::ModifierKey::kMinValue) -
+                           1),
+      static_cast<int>(ui::mojom::ModifierKey::kControl));
   invalid_modifier_remappings.Set(
-      base::NumberToString(static_cast<int>(mojom::ModifierKey::kControl)),
-      static_cast<int>(mojom::ModifierKey::kMaxValue) + 1);
+      base::NumberToString(static_cast<int>(ui::mojom::ModifierKey::kControl)),
+      static_cast<int>(ui::mojom::ModifierKey::kMaxValue) + 1);
   invalid_modifier_remappings.Set(
-      base::NumberToString(static_cast<int>(mojom::ModifierKey::kAlt)),
-      static_cast<int>(mojom::ModifierKey::kMinValue) - 1);
+      base::NumberToString(static_cast<int>(ui::mojom::ModifierKey::kAlt)),
+      static_cast<int>(ui::mojom::ModifierKey::kMinValue) - 1);
 
   // Set 1 valid modifier remapping to check that it skips invalid remappings,
   // and keeps the valid.
   invalid_modifier_remappings.Set(
-      base::NumberToString(static_cast<int>(mojom::ModifierKey::kAlt)),
-      static_cast<int>(mojom::ModifierKey::kControl));
+      base::NumberToString(static_cast<int>(ui::mojom::ModifierKey::kAlt)),
+      static_cast<int>(ui::mojom::ModifierKey::kControl));
 
   // Set modifier remappings to the invalid set.
   settings_dict->Set(prefs::kKeyboardSettingModifierRemappings,
@@ -353,10 +371,10 @@ TEST_F(KeyboardPrefHandlerTest, InvalidModifierRemappings) {
       CallInitializeKeyboardSettings(kKeyboardKey1);
 
   ASSERT_EQ(1u, settings->modifier_remappings.size());
-  ASSERT_TRUE(
-      base::Contains(settings->modifier_remappings, mojom::ModifierKey::kAlt));
-  EXPECT_EQ(mojom::ModifierKey::kControl,
-            settings->modifier_remappings[mojom::ModifierKey::kAlt]);
+  ASSERT_TRUE(base::Contains(settings->modifier_remappings,
+                             ui::mojom::ModifierKey::kAlt));
+  EXPECT_EQ(ui::mojom::ModifierKey::kControl,
+            settings->modifier_remappings[ui::mojom::ModifierKey::kAlt]);
 
   // Saved prefs should not be modified and should be left as they were in their
   // invalid state.
@@ -367,6 +385,24 @@ TEST_F(KeyboardPrefHandlerTest, InvalidModifierRemappings) {
       settings_dict->FindDict(prefs::kKeyboardSettingModifierRemappings);
   ASSERT_NE(nullptr, modifier_remappings_dict);
   EXPECT_EQ(invalid_modifier_remappings, *modifier_remappings_dict);
+}
+
+TEST_F(KeyboardPrefHandlerTest, KeyboardObserveredInTransitionPeriod) {
+  mojom::Keyboard keyboard;
+  keyboard.device_key = kKeyboardKey1;
+  Shell::Get()->input_device_tracker()->OnKeyboardConnected(keyboard);
+  // Initialize keyboard settings for the device and check that the global
+  // prefs were used as defaults.
+  mojom::KeyboardSettingsPtr settings =
+      CallInitializeKeyboardSettings(keyboard.device_key);
+  ASSERT_EQ(settings->auto_repeat_enabled, kGlobalAutoRepeatEnabled);
+  ASSERT_EQ(settings->auto_repeat_interval,
+            base::Milliseconds(kGlobalAutoRepeatInterval));
+  ASSERT_EQ(settings->auto_repeat_delay,
+            base::Milliseconds(kGlobalAutoRepeatDelay));
+  ASSERT_EQ(settings->top_row_are_fkeys, kGlobalSendFunctionKeys);
+  ASSERT_EQ(settings->suppress_meta_fkey_rewrites,
+            kDefaultSuppressMetaFKeyRewrites);
 }
 
 class KeyboardSettingsPrefConversionTest

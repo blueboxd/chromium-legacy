@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">வெளிப்புறச் சாதனங்களுக்கான நிலைபொருள் புதுப்பிப்புச் சாளரம் திறந்துள்ளது. <ph name="NUM_UPDATES" /> புதுப்பிப்புகள் உள்ளன.</translation>
 <translation id="1145516343487477149">உதவிக் கட்டுரைகளையும் Chromebook குறித்த பொதுவான கேள்விகளுக்கான பதில்களையும் கண்டறியலாம்</translation>
+<translation id="1167755866710282443">விசைகளைப் பிரத்தியேகமாக்க மெனுவைத் திறக்கவும். நகர்த்த மெனுவை இழுக்கவும்.</translation>
 <translation id="1175697296044146566">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது.</translation>
 <translation id="1175951029573070619">சுமாராக உள்ளது (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">அகற்று</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> ஆல்பத்தைத் தேர்வுசெய்யும்</translation>
 <translation id="4111761024568264522">USB டச்பேட்</translation>
 <translation id="4117637339509843559">டார்க் பயன்முறை</translation>
+<translation id="4130035430755296270">கூடுதல் தளவமைப்பு விருப்பங்களுக்கு மவுஸ் பாயிண்ட்டரை மேலே கொண்டு செல்லவும்</translation>
 <translation id="4131410914670010031">கருப்பு வெள்ளை</translation>
 <translation id="4145784616224233563">HTTP ஃபயர்வால்</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS ரெசல்யூஷன்</translation>
 <translation id="4848429997038228357">நடைபெறுவது</translation>
 <translation id="4854586501323951986">உள்ளமைந்த டச்ஸ்கிரீன்</translation>
+<translation id="4855250849489639581">கூடுதல் தளவமைப்பு விருப்பங்களுக்குக் கீழ்நோக்கி ஸ்வைப் செய்யுங்கள்</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} முயற்சி மீதமுள்ளது}other{<ph name="ERROR_MESSAGE" /> {0} முயற்சிகள் மீதமுள்ளன}}</translation>
 <translation id="4873827928179867585">அங்கீகரிப்பு அல்காரிதம்</translation>
 <translation id="4880328057631981605">ஆக்சஸ் பாயிண்ட் நேம்</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 படம்</translation>
 <translation id="7177485034254901881">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது. நிர்வாகிகள் இந்தச் சாதனத்தைத் தொலைநிலையிலிருந்து உள்ளமைக்கக்கூடும்.</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
+<translation id="7180865173735832675">பிரத்தியேகமாக்கு</translation>
 <translation id="7212734716605298123">வெளிப்புறச் சாதனங்களுக்கான நிலைபொருள் புதுப்பிப்புகள்</translation>
 <translation id="7216409898977639127">செல்லுலார் வழங்குநர்</translation>
 <translation id="725133483556299729">மின்னஞ்சல் முகவரியைத் தேர்ந்தெடுக்கும்</translation>

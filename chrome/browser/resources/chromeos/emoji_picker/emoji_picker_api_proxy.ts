@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {PageHandlerFactory, PageHandlerRemote, TenorGifResponse} from './emoji_picker.mojom-webui.js';
+import {PageHandlerFactory, PageHandlerRemote, Status, TenorGifResponse} from './emoji_picker.mojom-webui.js';
 import {EmojiVariants, GifSubcategoryData, VisualContent} from './types.js';
 
 /** @interface */
@@ -20,14 +20,18 @@ export interface EmojiPickerApiProxy {
 
   getCategories(): Promise<{gifCategories: GifSubcategoryData[]}>;
 
-  getFeaturedGifs(pos?: string): Promise<{featuredGifs: TenorGifResponse}>;
+  getFeaturedGifs(pos?: string):
+      Promise<{status: Status, featuredGifs: TenorGifResponse}>;
 
   searchGifs(query: string, pos?: string):
-      Promise<{searchGifs: TenorGifResponse}>;
+      Promise<{status: Status, searchGifs: TenorGifResponse}>;
 
-  getGifsByIds(ids: string[]): Promise<{selectedGifs: VisualContent[]}>;
+  getGifsByIds(ids: string[]):
+      Promise<{status: Status, selectedGifs: VisualContent[]}>;
 
   convertTenorGifsToEmoji(gifs: TenorGifResponse): EmojiVariants[];
+
+  onUiFullyLoaded(): void;
 }
 
 export class EmojiPickerApiProxyImpl implements EmojiPickerApiProxy {
@@ -71,19 +75,25 @@ export class EmojiPickerApiProxyImpl implements EmojiPickerApiProxy {
   }
 
   /** @override */
-  getFeaturedGifs(pos?: string): Promise<{featuredGifs: TenorGifResponse}> {
+  getFeaturedGifs(pos?: string):
+      Promise<{status: Status, featuredGifs: TenorGifResponse}> {
     return this.handler.getFeaturedGifs(pos || null);
   }
 
   /** @override */
   searchGifs(query: string, pos?: string):
-      Promise<{searchGifs: TenorGifResponse}> {
+      Promise<{status: Status, searchGifs: TenorGifResponse}> {
     return this.handler.searchGifs(query, pos || null);
   }
 
   /** @override */
-  getGifsByIds(ids: string[]): Promise<{selectedGifs: VisualContent[]}> {
+  getGifsByIds(ids: string[]):
+      Promise<{status: Status, selectedGifs: VisualContent[]}> {
     return this.handler.getGifsByIds(ids);
+  }
+
+  onUiFullyLoaded(): void {
+    this.handler.onUiFullyLoaded();
   }
 
   convertTenorGifsToEmoji(gifs: TenorGifResponse): EmojiVariants[] {

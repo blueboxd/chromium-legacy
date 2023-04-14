@@ -16,6 +16,7 @@
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/proto/backdrop_wallpaper.pb.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/policy/core/device_local_account.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/ash/wallpaper/wallpaper_drivefs_delegate_impl.h"
 #include "chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.h"
 #include "chrome/browser/browser_process.h"
@@ -354,11 +354,14 @@ void WallpaperControllerClientImpl::RemoveAlwaysOnTopWallpaper() {
 }
 
 void WallpaperControllerClientImpl::RemoveUserWallpaper(
-    const AccountId& account_id) {
-  if (!IsKnownUser(account_id))
+    const AccountId& account_id,
+    base::OnceClosure on_removed) {
+  if (!IsKnownUser(account_id)) {
+    std::move(on_removed).Run();
     return;
+  }
 
-  wallpaper_controller_->RemoveUserWallpaper(account_id);
+  wallpaper_controller_->RemoveUserWallpaper(account_id, std::move(on_removed));
 }
 
 void WallpaperControllerClientImpl::RemovePolicyWallpaper(

@@ -151,7 +151,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "leak_detection_linux": {
@@ -178,7 +178,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-arm64-castos": {
@@ -190,7 +190,7 @@
       "is_debug": false,
       "symbol_level": 1,
       "target_cpu": "arm64",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-bfcache-rel": {
@@ -256,7 +256,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-extended-tracing-rel": {
@@ -275,7 +275,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-gcc-rel": {
@@ -311,7 +311,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "use_dummy_lastchange": true,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-js-code-coverage": {
@@ -323,9 +323,8 @@
       "is_debug": false,
       "optimize_webui": false,
       "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_goma": true,
-      "use_javascript_coverage": true
+      "use_javascript_coverage": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-asan-lsan-rel": {
@@ -384,7 +383,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-libfuzzer-asan-rel": {
@@ -426,7 +425,7 @@
       "mbi_mode": "per_site_instance",
       "proprietary_codecs": true,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-perfetto-rel": {
@@ -452,21 +451,6 @@
       "use_clang_coverage": true,
       "use_dummy_lastchange": true,
       "use_remoteexec": true
-    }
-  },
-  "linux-rel-inverse-fyi": {
-    "gn_args": {
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "devtools_skip_typecheck": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_dummy_lastchange": true,
-      "use_goma": true
     }
   },
   "linux-rel-ml": {
@@ -511,7 +495,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-wayland-rel": {
@@ -534,7 +518,6 @@
   "linux-webkit-msan-rel": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "xenial",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
@@ -548,7 +531,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-wpt-content-shell-leak-detection": {
@@ -557,7 +540,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-wpt-fyi-rel": {
@@ -595,7 +578,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-x64-castos-audio": {
@@ -607,7 +590,7 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux-x64-castos-dbg": {
@@ -617,7 +600,7 @@
       "is_component_build": true,
       "is_debug": true,
       "symbol_level": 1,
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "linux_chromium_archive_rel_ng": {
@@ -667,7 +650,6 @@
   "linux_chromium_chromeos_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,
@@ -724,7 +706,6 @@
   "linux_chromium_msan_rel_ng": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "focal",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,

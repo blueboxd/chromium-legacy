@@ -26,32 +26,11 @@
 
 namespace metrics_util = password_manager::metrics_util;
 
-namespace {
-
-std::vector<password_manager::PasswordForm> DeepCopyForms(
-    const std::vector<std::unique_ptr<password_manager::PasswordForm>>& forms) {
-  std::vector<password_manager::PasswordForm> result;
-  result.reserve(forms.size());
-  std::transform(
-      forms.begin(), forms.end(), std::back_inserter(result),
-      [](const std::unique_ptr<password_manager::PasswordForm>& form) {
-        return *form;
-      });
-  return result;
-}
-
-}  // namespace
-
 ItemsBubbleController::ItemsBubbleController(
     base::WeakPtr<PasswordsModelDelegate> delegate)
     : PasswordBubbleControllerBase(
           std::move(delegate),
-          /*display_disposition=*/metrics_util::MANUAL_MANAGE_PASSWORDS),
-      local_credentials_(DeepCopyForms(delegate_->GetCurrentForms())),
-      title_(
-          GetManagePasswordsDialogTitleText(GetWebContents()->GetVisibleURL(),
-                                            delegate_->GetOrigin(),
-                                            !local_credentials_.empty())) {}
+          /*display_disposition=*/metrics_util::MANUAL_MANAGE_PASSWORDS) {}
 
 ItemsBubbleController::~ItemsBubbleController() {
   OnBubbleClosing();
@@ -71,14 +50,7 @@ void ItemsBubbleController::OnPasswordAction(
   if (!profile)
     return;
   scoped_refptr<password_manager::PasswordStoreInterface> password_store =
-      password_form.IsUsingAccountStore()
-          ? AccountPasswordStoreFactory::GetForProfile(
-                profile, ServiceAccessType::EXPLICIT_ACCESS)
-                .get()
-          : PasswordStoreFactory::GetForProfile(
-                profile, ServiceAccessType::EXPLICIT_ACCESS)
-                .get();
-
+      PasswordStoreForForm(password_form);
   DCHECK(password_store);
   if (action == PasswordAction::kRemovePassword)
     password_store->RemoveLogin(password_form);
@@ -124,6 +96,40 @@ void ItemsBubbleController::OnGooglePasswordManagerLinkClicked() {
         password_manager::ManagePasswordsReferrer::kManagePasswordsBubble);
   }
 }
+const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+ItemsBubbleController::GetCredentials() const {
+  return delegate_->GetCurrentForms();
+}
+
+void ItemsBubbleController::UpdateStoredCredential(
+    const password_manager::PasswordForm& original_form,
+    password_manager::PasswordForm updated_form) {
+  Profile* profile = GetProfile();
+  if (!profile) {
+    return;
+  }
+  scoped_refptr<password_manager::PasswordStoreInterface> password_store =
+      PasswordStoreForForm(original_form);
+
+  if (original_form.username_value == updated_form.username_value) {
+    password_store->UpdateLogin(updated_form);
+    return;
+  }
+  if (updated_form.username_value.empty()) {
+    // The UI doesn't allow clearing the username.
+    NOTREACHED();
+    return;
+  }
+  // The UI allows updating the username for credentials with an empty username.
+  // Since the username is part of the the unique key, updating it requires
+  // calling another API on the password store.
+
+  // Phished and leaked issues are no longer relevant on username change.
+  // Weak and reused issues are still relevant.
+  updated_form.password_issues.erase(password_manager::InsecureType::kPhished);
+  updated_form.password_issues.erase(password_manager::InsecureType::kLeaked);
+  password_store->UpdateLoginWithPrimaryKey(updated_form, original_form);
+}
 
 void ItemsBubbleController::OnFaviconReady(
     base::OnceCallback<void(const gfx::Image&)> favicon_ready_callback,
@@ -139,5 +145,19 @@ void ItemsBubbleController::ReportInteractions() {
 }
 
 std::u16string ItemsBubbleController::GetTitle() const {
-  return title_;
+  return GetManagePasswordsDialogTitleText(
+      GetWebContents()->GetVisibleURL(), delegate_->GetOrigin(),
+      !delegate_->GetCurrentForms().empty());
+}
+
+scoped_refptr<password_manager::PasswordStoreInterface>
+ItemsBubbleController::PasswordStoreForForm(
+    const password_manager::PasswordForm& password_form) const {
+  Profile* profile = GetProfile();
+  DCHECK(profile);
+  return password_form.IsUsingAccountStore()
+             ? AccountPasswordStoreFactory::GetForProfile(
+                   profile, ServiceAccessType::EXPLICIT_ACCESS)
+             : PasswordStoreFactory::GetForProfile(
+                   profile, ServiceAccessType::EXPLICIT_ACCESS);
 }

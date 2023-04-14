@@ -133,11 +133,13 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="163517899691012366">Varsler ignoreres når Ikke forstyrr er på</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> enheter</translation>
 <translation id="1639239467298939599">Laster inn</translation>
+<translation id="1647986356840967552">Forrige side</translation>
 <translation id="1654477262762802994">Start et talesøk</translation>
 <translation id="1668469839109562275">Innebygd VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> er ikke tilkoblet.</translation>
 <translation id="1677582821739292812">Noen ser på skjermen din</translation>
+<translation id="1683399938733266832">Nåværende prosessorbruk: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Nedtelling på <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1771761307086386028">Rull til høyre</translation>
 <translation id="1774796056689732716">Kalender – <ph name="CURRENT_MONTH_YEAR" />. For øyeblikket er <ph name="DATE" /> valgt.</translation>
 <translation id="1787955149152357925">Av</translation>
-<translation id="1797271123677381264">Glemt passord</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="181103072419391116">Signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="1816896987747843206">Dette gir alle apper og nettsteder som har kameratillatelsen, tilgang til kameraet</translation>
@@ -381,6 +382,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3051189971848907985">Gir profilen nytt navn. Vent i noen minutter.</translation>
 <translation id="3055162170959710888">Du har brukt denne enheten i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3062298103034426069">Støttes ikke</translation>
+<translation id="3068622547379332530">Versjon <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Hyllen er til venstre</translation>
 <translation id="3077734595579995578">shift</translation>
 <translation id="3081696990447829002">Vis menyen</translation>
@@ -421,9 +423,11 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3289674678944039601">Lader via adapter</translation>
 <translation id="3290356915286466215">Usikret</translation>
 <translation id="3294437725009624529">Gjest</translation>
+<translation id="3298690094479023523">PIN-koden eller passordet kunne fremdeles ikke verifiseres. Prøv på nytt.</translation>
 <translation id="3307642347673023554">Byttet til laptopmodus</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan fortsatt logge på senere.</translation>
 <translation id="3321628682574733415">Feil kode for foreldertilgang</translation>
+<translation id="332827762492701193">Varsler er skjult</translation>
 <translation id="3339826665088060472">Skjermdump, verktøy for å ta skjermdumper og skjermopptak</translation>
 <translation id="3340978935015468852">innstillinger</translation>
 <translation id="3341303451326249809">Skjermdumpen er lagret</translation>
@@ -554,12 +558,14 @@ Koble enheten til strøm.</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="397726367135689299">Batteriladingen kan være ustabil.</translation>
 <translation id="3977512764614765090">Batteriet er <ph name="PERCENTAGE" /> % fullt og lades.</translation>
+<translation id="3984536049089846927">Neste side</translation>
 <translation id="3986082989454912832">Svar</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="40062176907008878">Håndskrift</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="401993194061514265">Merkepennen er ikke tilgjengelig. Åpne Screencast på nytt.</translation>
 <translation id="4021716437419160885">Rull ned</translation>
+<translation id="4024840464866786680">Hvis du har glemt PIN-koden og passordet ditt eller nylig endret passordet for Google-kontoen din, kan du prøve å gjenopprette denne brukeren.</translation>
 <translation id="4028481283645788203">Passord kreves for mer sikkerhet</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Du deler skjermen din</translation>
@@ -575,9 +581,10 @@ Koble enheten til strøm.</translation>
 <translation id="4123259114412175274">For å låse opp Chromebooken, sørg for at Bluetooth er påslått på telefonen</translation>
 <translation id="4125970834901680537">Kan ikke strømme apper i nettbrettmodus. Prøv på nytt i laptopmodus.</translation>
 <translation id="4129129681837227511">For å se varsler på låseskjermen, lås opp for å endre innstillingen</translation>
-<translation id="4130035430755296270">Hold markøren i ro for å se flere oppsettsalternativer</translation>
+<translation id="4131973331381812765">Temperatur: <ph name="TEMPERATURE" /> °C – Nåværende hastighet: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Påslått til soloppgang</translation>
 <translation id="4146833061457621061">Spill av musikk</translation>
+<translation id="4150201353443180367">Skjerm</translation>
 <translation id="4165275524535002941">Kabelen støtter kanskje ikke skjermer</translation>
 <translation id="4177913004758410636">{0,plural, =1{Oppdater enheten innen en dag}other{Oppdater enheten innen # dager}}</translation>
 <translation id="4181841719683918333">Språk</translation>
@@ -699,10 +706,12 @@ Koble enheten til strøm.</translation>
 <translation id="4735944890391795473">Skrivebord 12</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="4740516757091333363">Vil du slette det lagrede skrivebordet?</translation>
+<translation id="4747410141429390146">Lås opp for å se varsler</translation>
 <translation id="4752784485658729358">Kun 6 lagrede skrivebord er tillatt. Fjern et skrivebord for å lagre et nytt.</translation>
 <translation id="4759238208242260848">Nedlastinger</translation>
 <translation id="4762573482154983647">Skjul apper</translation>
 <translation id="4774338217796918551">Kom tilbake i morgen <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Passordet ditt kunne fremdeles ikke verifiseres. Prøv på nytt.</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Butikk</translation>
 <translation id="4778095205580009397">Google-assistenten er ikke tilgjengelig under demonstrasjonsøkter.</translation>
@@ -727,6 +736,7 @@ Koble enheten til strøm.</translation>
 <translation id="4895488851634969361">Batteriet er fullt.</translation>
 <translation id="490375751687810070">Vertikal</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="491504982845934899">Aktiver etter enhetsoppsett <ph name="NETWORK_NAME" /></translation>
 <translation id="4917385247580444890">Sterkt</translation>
 <translation id="4918086044614829423">Godta</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> bruker kameraet ditt for øyeblikket</translation>
@@ -836,12 +846,13 @@ Koble enheten til strøm.</translation>
 <translation id="547979256943495781">Hyllen er til høyre</translation>
 <translation id="5491186829646618080">Fastvareoppdateringer er tilgjengelige</translation>
 <translation id="5519195206574732858">LTE</translation>
-<translation id="5520229639206813572">Administratoren din har fjernet alle eSIM-kortprofiler. Kontakt administratoren for å få mer informasjon.</translation>
+<translation id="5520229639206813572">Administratoren din har fjernet alle e-SIM-kortprofiler. Kontakt administratoren for å få mer informasjon.</translation>
 <translation id="5523434445161341166"><ph name="FEATURE_NAME" /> kobler til.</translation>
 <translation id="5532994612895037630">Trykk hvor som helst for å ta opp i fullskjerm</translation>
 <translation id="5536723544185013515">Nylige apper – naviger med venstrepilen eller høyrepilen for å få tilgang til alle nylige apper</translation>
 <translation id="553675580533261935">Avslutning av økten</translation>
 <translation id="5537725057119320332">Cast</translation>
+<translation id="5546397813406633847">Gjenopprett bruker</translation>
 <translation id="554893713779400387">Slå av/på diktering</translation>
 <translation id="5558091555391176027">Slå av/på høy synlighet for nærdeling</translation>
 <translation id="5560420195677022218">Se apper fra telefonen din på <ph name="DEVICE_TYPE" /></translation>
@@ -858,6 +869,7 @@ Koble enheten til strøm.</translation>
 <translation id="5618148318840095371">Vi har flyttet deg til et bedre nettverk</translation>
 <translation id="5619862035903135339">Skjermdumper er deaktivert på grunn av en administratorregel</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">Passordet ditt kunne ikke verifiseres. Prøv på nytt.</translation>
 <translation id="5648021990716966815">Mikrofonkontakt</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> ber om din oppmerksomhet.</translation>
 <translation id="5662075790140998213">Skrivebord 10</translation>
@@ -876,6 +888,7 @@ Koble enheten til strøm.</translation>
 <translation id="5707775774148071965">Enheten støtter en høyere datafrekvens enn kabelen. Enhetens ytelse kan være begrenset.</translation>
 <translation id="5710450975648804523">Ikke forstyrr er på</translation>
 <translation id="571295407079589142">Mobildata er slått av</translation>
+<translation id="5727460725221669831">Hvis du har glemt passordet ditt eller nylig endret passordet for Google-kontoen din, kan du prøve å gjenopprette denne brukeren.</translation>
 <translation id="573413375004481890">Enheten kunne ikke støtte alle skjermene dine, så en av dem ble koblet fra</translation>
 <translation id="5740328398383587084">Nærdeling</translation>
 <translation id="574392208103952083">Medium</translation>
@@ -905,6 +918,7 @@ Koble enheten til strøm.</translation>
 <translation id="5867606971598166637">Systemadministratoren din overvåker skjermene dine</translation>
 <translation id="5876666360658629066">Angi foreldrekoden</translation>
 <translation id="5881540930187678962">Konfigurer Telefonstyring senere</translation>
+<translation id="5881663018261910378">Av</translation>
 <translation id="5887954372087850114">Vinduet <ph name="WINDOW_TITLE" /> er tilordnet <ph name="DESK_TITLE" />, og tilordningen er fjernet på alle andre skrivebord</translation>
 <translation id="5895138241574237353">Start på nytt</translation>
 <translation id="589817443623831496">Punktskanning</translation>
@@ -1031,7 +1045,7 @@ Koble enheten til strøm.</translation>
 <translation id="655633303491376835"><ph name="APP_NAME" />
 Nylig installert</translation>
 <translation id="6559976592393364813">Spør administratoren</translation>
-<translation id="6565007273808762236">eSIM-korttilkoblingen er ikke tilgjengelig</translation>
+<translation id="6565007273808762236">e-SIM-korttilkoblingen er ikke tilgjengelig</translation>
 <translation id="6570831796530454248">{0,plural, =1{Oppdater enheten innen en time}other{Oppdater enheten innen # timer}}</translation>
 <translation id="6570902864550063460">Lader via USB</translation>
 <translation id="6574587113394758819">Et varsel fra <ph name="APP_TITLE" /> er skjult fordi visningsbeskyttelse er på</translation>
@@ -1266,7 +1280,7 @@ Nylig installert</translation>
 <translation id="7860671499921112077">Sveip opp med tre fingre for å åpne Oversikt</translation>
 <translation id="7866482334467279021">på</translation>
 <translation id="7868900307798234037">Låser opp med fingeravtrykk</translation>
-<translation id="7872195908557044066">Administratoren holder på å tilbakestille eSIM-kortet ditt. Vent i noen minutter.</translation>
+<translation id="7872195908557044066">Administratoren holder på å tilbakestille e-SIM-kortet ditt. Vent i noen minutter.</translation>
 <translation id="7872786842639831132">Av</translation>
 <translation id="7875575368831396199">Det ser ut til at Bluetooth er slått av på <ph name="DEVICE_TYPE" />. Slå på Bluetooth for å bruke Telefonstyring.</translation>
 <translation id="7877557217297072640">{0,plural, =0{Nedgrader enheten til en tidligere versjon nå}=1{Nedgrader enheten til en tidligere versjon innen 1 sekund}other{Nedgrader enheten til en tidligere versjon innen # sekunder}}</translation>
@@ -1319,6 +1333,7 @@ Nylig installert</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8131994907636310308">Lukk brukervarsel om sortering</translation>
 <translation id="8132793192354020517">Koblet til <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Aktiver etter enhetsoppsett</translation>
 <translation id="813913629614996137">Initialiserer …</translation>
 <translation id="8142441511840089262">Dobbeltklikk</translation>
 <translation id="8142699993796781067">Privat nettverk</translation>

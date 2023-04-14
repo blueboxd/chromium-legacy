@@ -16,6 +16,7 @@
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/partition_allocator/partition_alloc.h"
+
 #if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/metadata_allocator.h"
 #endif
@@ -48,8 +49,9 @@ class BASE_EXPORT NonScannableAllocatorImpl final {
   // allocator is not enabled.
   partition_alloc::ThreadSafePartitionRoot* root() {
 #if BUILDFLAG(USE_STARSCAN)
-    if (!allocator_.get())
+    if (!allocator_.get()) {
       return nullptr;
+    }
     return allocator_->root();
 #else
     return nullptr;

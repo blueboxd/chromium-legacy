@@ -12,7 +12,6 @@
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/menu/menu_controller.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/quick_answers/quick_answers_state_ash.h"
@@ -221,11 +220,8 @@ void QuickAnswersControllerImpl::OnRequestPreprocessFinished(
     return;
   }
 
-  auto* active_menu_controller = views::MenuController::GetActiveInstance();
-  if (visibility_ == QuickAnswersVisibility::kClosed ||
-      !active_menu_controller || !active_menu_controller->owner()) {
+  if (visibility_ == QuickAnswersVisibility::kClosed)
     return;
-  }
 
   query_ = processed_request.preprocessed_output.query;
   title_ = processed_request.preprocessed_output.intent_info.intent_text;

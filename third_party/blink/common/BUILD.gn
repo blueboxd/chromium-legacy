@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
+import("//build/config/rust.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/blink/renderer/build/scripts/scripts.gni")
@@ -186,6 +188,7 @@ source_set("common") {
     "interest_group/auction_config_mojom_traits.cc",
     "interest_group/interest_group.cc",
     "interest_group/interest_group_mojom_traits.cc",
+    "interest_group/interest_group_utils.cc",
     "link_to_text/link_to_text_mojom_traits.cc",
     "loader/inter_process_time_ticks_converter.cc",
     "loader/loader_constants.cc",
@@ -317,8 +320,12 @@ source_set("common") {
     "//ui/latency/mojom:shared_mojom_traits",
   ]
 
-  # iOS doesn't use and must not depend on //media
-  if (!is_ios) {
+  if (build_rust_crash) {
+    deps += [ "//third_party/blink/common/rust_crash" ]
+  }
+
+  # If use_blink is used then it needs to depend on //media
+  if (use_blink) {
     deps += [ "//media" ]
   }
 
@@ -381,6 +388,7 @@ source_set("common_unittests_sources") {
     "input/web_input_event_unittest.cc",
     "interest_group/auction_config_mojom_traits_test.cc",
     "interest_group/interest_group_mojom_traits_test.cc",
+    "interest_group/interest_group_utils_unittest.cc",
     "loader/inter_process_time_ticks_converter_unittest.cc",
     "loader/mime_sniffing_throttle_unittest.cc",
     "loader/referrer_utils_unittest.cc",
@@ -495,5 +503,13 @@ if (use_libfuzzer) {
       "//third_party/libprotobuf-mutator",
     ]
     seed_corpus = "//third_party/blink/common/storage_key/storage_key_corpus"
+  }
+
+  fuzzer_test("interest_group_parse_size_fuzzer") {
+    sources = [ "interest_group/interest_group_parse_size_fuzzer.cc" ]
+    deps = [
+      ":common",
+      "//content/public/common",
+    ]
   }
 }

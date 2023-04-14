@@ -24,14 +24,13 @@
 #include "components/aggregation_service/aggregation_service.mojom.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/suitable_origin.h"
-#include "components/attribution_reporting/trigger_attestation.h"
 #include "content/browser/attribution_reporting/aggregatable_histogram_contribution.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
 #include "content/browser/attribution_reporting/storable_source.h"
-#include "content/public/browser/attribution_reporting.h"
+#include "services/network/public/cpp/trigger_attestation.h"
 #include "sql/database.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -65,6 +64,7 @@ struct AggregatableReportMetadataRecord {
   int aggregation_coordinator = static_cast<int>(
       ::aggregation_service::mojom::AggregationCoordinator::kDefault);
   absl::optional<std::string> attestation_token;
+  std::string destination_origin = "https://destination.test";
 };
 
 struct AggregatableContributionRecord {
@@ -170,7 +170,7 @@ class AttributionStorageSqlTest : public testing::Test {
 
     static constexpr char kStoreMetadataSql[] =
         "INSERT INTO aggregatable_report_metadata "
-        "VALUES(?,?,?,?,?,?,?,?,?,?)";
+        "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
     sql::Statement statement(raw_db.GetUniqueStatement(kStoreMetadataSql));
     statement.BindInt64(0, record.aggregation_id);
     statement.BindInt64(1, record.source_id);
@@ -190,6 +190,7 @@ class AttributionStorageSqlTest : public testing::Test {
     } else {
       statement.BindNull(9);
     }
+    statement.BindString(10, record.destination_origin);
     ASSERT_TRUE(statement.Run());
   }
 
@@ -316,8 +317,8 @@ TEST_F(AttributionStorageSqlTest, VersionTooNew_RazesDB) {
     // The values here are irrelevant, as the meta table already exists.
     ASSERT_TRUE(meta.Init(&raw_db, /*version=*/1, /*compatible_version=*/1));
 
-    meta.SetVersionNumber(meta.GetVersionNumber() + 1);
-    meta.SetCompatibleVersionNumber(meta.GetVersionNumber() + 1);
+    ASSERT_TRUE(meta.SetVersionNumber(meta.GetVersionNumber() + 1));
+    ASSERT_TRUE(meta.SetCompatibleVersionNumber(meta.GetVersionNumber() + 1));
   }
 
   // The DB should be razed because the version is too new.
@@ -334,7 +335,7 @@ TEST_F(AttributionStorageSqlTest, StoreAndRetrieveReportWithAttestation) {
                               .Build();
   storage()->StoreSource(source);
 
-  auto trigger_attestation = attribution_reporting::TriggerAttestation::Create(
+  auto trigger_attestation = network::TriggerAttestation::Create(
       /*token=*/"attestation-token", /*aggregatable_report_id=*/
       "55865da3-fb0e-4b71-965e-64fc4bf0a323");
   AttributionTrigger trigger = DefaultAggregatableTriggerBuilder()
@@ -401,9 +402,9 @@ TEST_F(AttributionStorageSqlTest, ClearDataRangeMultipleReports) {
   // Use a time range that targets all triggers.
   storage()->ClearData(
       base::Time::Min(), base::Time::Max(),
-      base::BindRepeating(
-          std::equal_to<blink::StorageKey>(),
-          blink::StorageKey(source.common_info().reporting_origin())));
+      base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                          blink::StorageKey::CreateFirstParty(
+                              source.common_info().reporting_origin())));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -455,9 +456,9 @@ TEST_F(AttributionStorageSqlTest, ClearDataWithVestigialConversion) {
   // Use a time range that only intersects the last trigger.
   storage()->ClearData(
       base::Time::Now(), base::Time::Now(),
-      base::BindRepeating(
-          std::equal_to<blink::StorageKey>(),
-          blink::StorageKey(source.common_info().reporting_origin())));
+      base::BindRepeating(std::equal_to<blink::StorageKey>(),
+                          blink::StorageKey::CreateFirstParty(
+                              source.common_info().reporting_origin())));
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Max()), IsEmpty());
 
   CloseDatabase();
@@ -726,15 +727,9 @@ TEST_F(AttributionStorageSqlTest, MaxUint64StorageSucceeds) {
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(SourceEventIdIs(kMaxUint64)));
 
-  EXPECT_EQ(
-      AttributionTrigger::EventLevelResult::kSuccess,
-      MaybeCreateAndStoreEventLevelReport(
-          TriggerBuilder()
-              .SetDebugKey(kMaxUint64)
-              .SetDestinationOrigin(
-                  impression.common_info().destination_origin())
-              .SetReportingOrigin(impression.common_info().reporting_origin())
-              .Build()));
+  EXPECT_EQ(AttributionTrigger::EventLevelResult::kSuccess,
+            MaybeCreateAndStoreEventLevelReport(
+                TriggerBuilder().SetDebugKey(kMaxUint64).Build()));
 
   EXPECT_THAT(storage()->GetAttributionReports(base::Time::Now()),
               ElementsAre(TriggerDebugKeyIs(kMaxUint64)));
@@ -952,34 +947,46 @@ TEST_F(AttributionStorageSqlTest,
 }
 
 TEST_F(AttributionStorageSqlTest,
-       InsecureImpressionOrigin_FailsDeserialization) {
-  static constexpr const char* kUpdateSqls[] = {
-      "UPDATE sources SET source_origin=?",
-      "UPDATE sources SET destination_origin=?",
-      "UPDATE sources SET reporting_origin=?",
+       InvalidSourceOriginOrSite_FailsDeserialization) {
+  const struct {
+    const char* sql;
+    const char* value;
+  } kTestCases[] = {
+      {
+          .sql = "UPDATE sources SET source_origin=?",
+          .value = "http://insecure.test",
+      },
+      {
+          .sql = "UPDATE sources SET reporting_origin=?",
+          .value = "http://insecure.test",
+      },
+      {
+          .sql = "UPDATE sources SET destination_site=?",
+          .value = "wss://a.test",
+      },
   };
 
-  for (const char* update_sql : kUpdateSqls) {
+  for (const auto& test_case : kTestCases) {
     OpenDatabase();
 
     SourceBuilder source_builder;
     storage()->StoreSource(
         source_builder.SetExpiry(base::Milliseconds(3)).Build());
-    ASSERT_THAT(storage()->GetActiveSources(), SizeIs(1)) << update_sql;
+    ASSERT_THAT(storage()->GetActiveSources(), SizeIs(1)) << test_case.sql;
 
     CloseDatabase();
 
     {
       sql::Database raw_db;
-      ASSERT_TRUE(raw_db.Open(db_path())) << update_sql;
+      ASSERT_TRUE(raw_db.Open(db_path())) << test_case.sql;
 
-      sql::Statement statement(raw_db.GetUniqueStatement(update_sql));
-      statement.BindString(0, "http://insecure.test");
-      ASSERT_TRUE(statement.Run()) << update_sql;
+      sql::Statement statement(raw_db.GetUniqueStatement(test_case.sql));
+      statement.BindString(0, test_case.value);
+      ASSERT_TRUE(statement.Run()) << test_case.sql;
     }
 
     OpenDatabase();
-    ASSERT_THAT(storage()->GetActiveSources(), IsEmpty()) << update_sql;
+    ASSERT_THAT(storage()->GetActiveSources(), IsEmpty()) << test_case.sql;
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();
@@ -1131,6 +1138,82 @@ TEST_F(AttributionStorageSqlTest,
     storage()->ClearData(base::Time::Min(), base::Time::Max(),
                          base::NullCallback());
     CloseDatabase();
+  }
+}
+
+TEST_F(AttributionStorageSqlTest, ReportTablesStoreDestinationOrigin) {
+  constexpr char kDestinationOriginA[] = "https://a.d.test";
+  constexpr char kDestinationOriginB[] = "https://b.d.test";
+
+  OpenDatabase();
+
+  StorableSource source =
+      TestAggregatableSourceProvider()
+          .GetBuilder()
+          .SetDestinationOrigin(
+              *SuitableOrigin::Deserialize(kDestinationOriginA))
+          .SetExpiry(base::Days(30))
+          .Build();
+  storage()->StoreSource(source);
+
+  AttributionTrigger trigger =
+      DefaultAggregatableTriggerBuilder()
+          .SetDestinationOrigin(
+              *SuitableOrigin::Deserialize(kDestinationOriginB))
+          .Build();
+  ASSERT_THAT(storage()->MaybeCreateAndStoreReport(trigger),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  CloseDatabase();
+
+  sql::Database raw_db;
+  ASSERT_TRUE(raw_db.Open(db_path()));
+
+  {
+    sql::Statement s(raw_db.GetUniqueStatement(
+        "SELECT context_origin FROM event_level_reports"));
+    ASSERT_TRUE(s.Step());
+    ASSERT_EQ(s.ColumnString(0), kDestinationOriginB);
+  }
+
+  {
+    sql::Statement s(raw_db.GetUniqueStatement(
+        "SELECT destination_origin FROM aggregatable_report_metadata"));
+    ASSERT_TRUE(s.Step());
+    ASSERT_EQ(s.ColumnString(0), kDestinationOriginB);
+  }
+}
+
+TEST_F(AttributionStorageSqlTest, FakeReportUsesSourceOriginAsContext) {
+  OpenDatabase();
+
+  delegate()->set_randomized_response(
+      std::vector<AttributionStorageDelegate::FakeReport>{
+          {.trigger_data = 1,
+           .trigger_time = base::Time::Now() + base::Microseconds(1),
+           .report_time = base::Time::Now() + base::Microseconds(2)}});
+
+  storage()->StoreSource(
+      SourceBuilder()
+          .SetSourceOrigin(*SuitableOrigin::Deserialize("https://a.s.test"))
+          .SetDestinationOrigin(
+              *SuitableOrigin::Deserialize("https://b.d.test"))
+          .SetReportingOrigin(*SuitableOrigin::Deserialize("https://r.test"))
+          .Build());
+
+  CloseDatabase();
+
+  sql::Database raw_db;
+  ASSERT_TRUE(raw_db.Open(db_path()));
+
+  {
+    sql::Statement s(raw_db.GetUniqueStatement(
+        "SELECT context_origin FROM event_level_reports"));
+    ASSERT_TRUE(s.Step());
+    ASSERT_EQ(s.ColumnString(0), "https://a.s.test");
   }
 }
 

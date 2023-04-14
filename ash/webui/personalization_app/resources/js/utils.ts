@@ -10,7 +10,8 @@ import {loadTimeData} from '//resources/ash/common/load_time_data.m.js';
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 
-import {AmbientModeAlbum, GooglePhotosAlbum} from './personalization_app.mojom-webui.js';
+import {AmbientModeAlbum, GooglePhotosAlbum} from './../personalization_app.mojom-webui.js';
+import {isPersonalizationJellyEnabled} from './load_time_booleans.js';
 
 export type PersonalizationAppSelectionEvent =
     MouseEvent&{type: 'click'}|KeyboardEvent&{key: 'Enter'};
@@ -81,10 +82,6 @@ export function decodeString16(str: String16|null): string {
  * migration is enabled.
  */
 export function getSanitizedDefaultImageUrl(url: Url): Url {
-  if (!loadTimeData.getBoolean('isAvatarsCloudMigrationEnabled')) {
-    return url;
-  }
-
   return {url: 'chrome://image/?url=' + url.url};
 }
 
@@ -111,4 +108,12 @@ export function convertToRgbHexStr(hexVal: number): string {
 export function isRecentHighlightsAlbum(album: AmbientModeAlbum|
                                         GooglePhotosAlbum): boolean {
   return album.id === 'RecentHighlights';
+}
+
+/**
+ * Returns the icon string for the checkmark.
+ */
+export function getCheckmarkIcon(): string {
+  return isPersonalizationJellyEnabled() ? 'personalization:circle_checkmark' :
+                                           'personalization:checkmark';
 }

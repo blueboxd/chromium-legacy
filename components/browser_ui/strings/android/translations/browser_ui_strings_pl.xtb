@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2687403674020088961">Blokuj wszystkie pliki cookie (niezalecane)</translation>
-<translation id="2704606927547763573">Skopiowane</translation>
 <translation id="2713106313042589954">Wyłącz kamerę</translation>
 <translation id="2717722538473713889">Adresy e-mail</translation>
 <translation id="2750481671343847896">Witryny mogą wyświetlać prośby o zalogowanie się pochodzące od usług tożsamości.</translation>
@@ -227,7 +226,7 @@
 <translation id="5264323282659631142">Usuń: „<ph name="CHIP_LABEL" />”</translation>
 <translation id="528192093759286357">Przeciągnij od góry i kliknij przycisk Wstecz, by wyjść z trybu pełnoekranowego.</translation>
 <translation id="5300589172476337783">Pokaż</translation>
-<translation id="5301954838959518834">OK</translation>
+<translation id="5301954838959518834">Rozumiem</translation>
 <translation id="5317780077021120954">Zapisz</translation>
 <translation id="5335288049665977812">Zezwalaj na wykonywanie kodu JavaScript w witrynach (zalecane)</translation>
 <translation id="534295439873310000">Urządzenia z funkcją NFC</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">Dodaj</translation>
 <translation id="780301667611848630">Nie, dziękuję</translation>
 <translation id="7804248752222191302">Strona używa kamery</translation>
+<translation id="7807060072011926525">Udostępniany przez Google</translation>
 <translation id="7835852323729233924">Odtwarzanie multimediów</translation>
 <translation id="783819812427904514">Wyłącz wyciszenie filmu</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
@@ -414,7 +414,7 @@
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="8681886425883659911">Reklamy są blokowane w witrynach, o których wiadomo, że wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
 <translation id="868929229000858085">Wyszukaj w kontaktach</translation>
-<translation id="8712637175834984815">OK</translation>
+<translation id="8712637175834984815">Rozumiem</translation>
 <translation id="8719283222052720129">Przyznaj aplikacji <ph name="APP_NAME" /> uprawnienie w <ph name="BEGIN_LINK" />ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8730621377337864115">Gotowe</translation>

@@ -88,7 +88,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -2481,16 +2481,16 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin1, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin2, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin3, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       kOrigin4, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
 
   // Clear all except for origin1 and origin3.
   std::unique_ptr<BrowsingDataFilterBuilder> filter(
@@ -3665,7 +3665,8 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest,
   EXPECT_EQ((base::ValueToTime(prefs->GetDict(kPermissionActionsPrefPath)
                                    .FindList("notifications")
                                    ->front()
-                                   .FindKey("time")))
+                                   .GetDict()
+                                   .Find("time")))
                 .value_or(base::Time()),
             third_recorded_time);
 

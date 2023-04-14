@@ -31,7 +31,8 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
       /*displays=*/const std::vector<DisplaySnapshot*>&,
       /*unassociated_displays=*/const std::vector<DisplaySnapshot*>&,
       /*new_display_state=*/MultipleDisplayState,
-      /*new_power_state=*/chromeos::DisplayPowerState)>;
+      /*new_power_state=*/chromeos::DisplayPowerState,
+      /*new_vrr_state=*/bool)>;
 
   UpdateDisplayConfigurationTask(
       NativeDisplayDelegate* delegate,
@@ -40,6 +41,7 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
       chromeos::DisplayPowerState new_power_state,
       int power_flags,
       RefreshRateThrottleState refresh_rate_throttle_state,
+      bool new_vrr_state,
       bool force_configure,
       ConfigurationType configuration_type,
       ResponseCallback callback);
@@ -72,7 +74,7 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
   void OnEnableSoftwareMirroring(ConfigureDisplaysTask::Status status);
 
   // Starts the configuration process. |callback| is used to continue the task
-  // after |configure_taks_| finishes executing.
+  // after |configure_task_| finishes executing.
   void EnterState(ConfigureDisplaysTask::ResponseCallback callback);
 
   // Finishes display configuration and runs |callback_|.
@@ -86,6 +88,10 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
 
   // Returns a display state based on the power state.
   MultipleDisplayState ChooseDisplayState() const;
+
+  // Returns whether a display configuration is required to meet the desired
+  // variable refresh rate setting.
+  bool ShouldConfigureVrr() const;
 
   NativeDisplayDelegate* delegate_;       // Not owned.
   DisplayLayoutManager* layout_manager_;  // Not owned.
@@ -103,6 +109,10 @@ class DISPLAY_MANAGER_EXPORT UpdateDisplayConfigurationTask
   // Whether the configuration task should select a low refresh rate
   // for the internal display.
   RefreshRateThrottleState refresh_rate_throttle_state_;
+
+  // The requested VRR enabled state which the configuration task should apply
+  // to all capable displays.
+  bool new_vrr_state_;
 
   bool force_configure_;
 

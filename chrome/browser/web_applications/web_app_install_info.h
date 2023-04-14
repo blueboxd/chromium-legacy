@@ -14,6 +14,8 @@
 
 #include "base/values.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
+#include "chrome/browser/web_applications/scope_extension_info.h"
+#include "chrome/browser/web_applications/web_app_id.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/services/app_service/public/cpp/icon_info.h"
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
@@ -295,6 +297,10 @@ struct WebAppInstallInfo {
   // information.
   apps::UrlHandlers url_handlers;
 
+  // The app intends to have an extended scope containing URLs described by this
+  // information.
+  std::vector<web_app::ScopeExtensionInfo> scope_extensions;
+
   // URL within scope to launch on the lock screen for a "show on lock screen"
   // action. Valid iff this is considered a lock-screen-capable app.
   GURL lock_screen_start_url;
@@ -307,9 +313,6 @@ struct WebAppInstallInfo {
   // scope.
   blink::mojom::CaptureLinks capture_links =
       blink::mojom::CaptureLinks::kUndefined;
-
-  // Whether the app should be loaded in a dedicated storage partition.
-  bool is_storage_isolated = false;
 
   // The window selection behaviour of app launches.
   absl::optional<blink::Manifest::LaunchHandler> launch_handler;
@@ -334,6 +337,11 @@ struct WebAppInstallInfo {
   // Customisations to the tab strip. This field is only used when the
   // display mode is set to 'tabbed'.
   absl::optional<blink::Manifest::TabStrip> tab_strip;
+
+  // Id of the app that called the SUB_APP API to install this app. This field
+  // is only used when the app is installed as a sub app through the SUB_APP
+  // API.
+  absl::optional<web_app::AppId> parent_app_id;
 
  private:
   // Used this method in Clone() method. Use Clone() to deep copy explicitly.

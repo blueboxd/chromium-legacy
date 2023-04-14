@@ -173,6 +173,10 @@ void DownloadBubbleRowView::UpdateRow(bool initial_setup) {
   RecordDownloadDisplayed();
   UpdateLabels();
   UpdateProgressBar();
+  if ((initial_setup || ui_info_changed) &&
+      !update_status_text_timer_.IsRunning()) {
+    update_status_text_timer_.Reset();
+  }
 }
 
 void DownloadBubbleRowView::AddedToWidget() {
@@ -293,7 +297,7 @@ void DownloadBubbleRowView::LoadIcon() {
 
 DownloadBubbleRowView::~DownloadBubbleRowView() {
   // Explicit removal of InkDrop for classes that override
-  // Add/RemoveLayerBeneathView(). This is done so that the InkDrop doesn't
+  // Add/RemoveLayerFromRegions(). This is done so that the InkDrop doesn't
   // access the non-override versions in ~View.
   views::InkDrop::Remove(this);
 }
@@ -318,6 +322,11 @@ DownloadBubbleRowView::DownloadBubbleRowView(
           FROM_HERE,
           base::Minutes(3),
           base::BindRepeating(&DownloadBubbleRowView::AnnounceInProgressAlert,
+                              base::Unretained(this))),
+      update_status_text_timer_(
+          FROM_HERE,
+          base::Minutes(1),
+          base::BindRepeating(&DownloadBubbleRowView::UpdateStatusText,
                               base::Unretained(this))) {
   model_->SetDelegate(this);
   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
@@ -552,12 +561,13 @@ gfx::Size DownloadBubbleRowView::CalculatePreferredSize() const {
   return {fixed_width, GetHeightForWidth(fixed_width)};
 }
 
-void DownloadBubbleRowView::AddLayerBeneathView(ui::Layer* layer) {
-  inkdrop_container_->AddLayerBeneathView(layer);
+void DownloadBubbleRowView::AddLayerToRegion(ui::Layer* layer,
+                                             views::LayerRegion region) {
+  inkdrop_container_->AddLayerToRegion(layer, region);
 }
 
-void DownloadBubbleRowView::RemoveLayerBeneathView(ui::Layer* layer) {
-  inkdrop_container_->RemoveLayerBeneathView(layer);
+void DownloadBubbleRowView::RemoveLayerFromRegions(ui::Layer* layer) {
+  inkdrop_container_->RemoveLayerFromRegions(layer);
 }
 
 void DownloadBubbleRowView::OnWillChangeFocus(views::View* before,
@@ -676,8 +686,7 @@ void DownloadBubbleRowView::UpdateProgressBar() {
 
 void DownloadBubbleRowView::UpdateLabels() {
   primary_label_->SetText(model_->GetFileNameToReportUser().LossyDisplayName());
-  secondary_label_->SetText(model_->GetStatusTextForLabel(
-      secondary_label_->font_list(), secondary_label_->width()));
+  UpdateStatusText();
 
   if (ui_info_.has_subpage) {
     transparent_button_->SetAccessibleName(l10n_util::GetStringFUTF16(
@@ -928,6 +937,11 @@ void DownloadBubbleRowView::AnnounceInProgressAlert() {
       model_->GetInProgressAccessibleAlertText());
 }
 
+void DownloadBubbleRowView::UpdateStatusText() {
+  secondary_label_->SetText(model_->GetStatusTextForLabel(
+      secondary_label_->font_list(), secondary_label_->width()));
+}
+
 bool DownloadBubbleRowView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (model_->GetState() != download::DownloadItem::COMPLETE) {
@@ -955,6 +969,10 @@ bool DownloadBubbleRowView::AcceleratorPressed(
 bool DownloadBubbleRowView::CanHandleAccelerators() const {
   bool focused = Contains(GetFocusManager()->GetFocusedView());
   return focused;
+}
+
+const std::u16string& DownloadBubbleRowView::GetSecondaryLabelTextForTesting() {
+  return secondary_label_->GetText();
 }
 
 void DownloadBubbleRowView::RegisterAccelerators(

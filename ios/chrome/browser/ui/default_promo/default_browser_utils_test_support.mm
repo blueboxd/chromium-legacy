@@ -11,13 +11,21 @@
 #endif
 
 // Visible for testing.
-extern NSArray<NSString*>* const kDefaultBrowserUtilsLegacyKeysForTesting;
 extern NSString* const kDefaultBrowserUtilsKey;
 
 void ClearDefaultBrowserPromoData() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  for (NSString* key in kDefaultBrowserUtilsLegacyKeysForTesting) {
+  for (NSString* key in DefaultBrowserUtilsLegacyKeysForTesting()) {
     [defaults removeObjectForKey:key];
   }
   [defaults removeObjectForKey:kDefaultBrowserUtilsKey];
+}
+
+void SetObjectInStorageForKey(NSString* key, NSObject* data) {
+  NSMutableDictionary<NSString*, NSObject*>* dict =
+      [[NSMutableDictionary alloc] init];
+  NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
+  dict[key] = data;
+
+  [defaults setObject:dict forKey:kDefaultBrowserUtilsKey];
 }

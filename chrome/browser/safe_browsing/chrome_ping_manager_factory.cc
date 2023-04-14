@@ -53,8 +53,11 @@ KeyedService* ChromePingManagerFactory::BuildServiceInstanceFor(
           &ChromePingManagerFactory::ShouldFetchAccessTokenForReport, profile),
       safe_browsing::WebUIInfoSingleton::GetInstance(),
       content::GetUIThreadTaskRunner({}),
-      base::BindRepeating(&safe_browsing::GetUserPopulationForProfile,
-                          profile));
+      base::BindRepeating(&safe_browsing::GetUserPopulationForProfile, profile),
+      base::FeatureList::IsEnabled(
+          safe_browsing::kAddPageLoadTokenToClientSafeBrowsingReport)
+          ? base::BindRepeating(&safe_browsing::GetPageLoadTokenForURL, profile)
+          : base::NullCallback());
 }
 
 // static
@@ -63,8 +66,7 @@ bool ChromePingManagerFactory::ShouldFetchAccessTokenForReport(
   PrefService* prefs = profile->GetPrefs();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  return base::FeatureList::IsEnabled(kSafeBrowsingCsbrrWithToken) &&
-         IsEnhancedProtectionEnabled(*prefs) && identity_manager &&
+  return IsEnhancedProtectionEnabled(*prefs) && identity_manager &&
          safe_browsing::SyncUtils::IsPrimaryAccountSignedIn(identity_manager);
 }
 

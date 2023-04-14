@@ -44,6 +44,10 @@ bool FakeFastPairRepository::HasKeyForDevice(const std::string& mac_address) {
   return saved_account_keys_.contains(mac_address);
 }
 
+bool FakeFastPairRepository::HasNameForDevice(const std::string& mac_address) {
+  return saved_display_names_.contains(mac_address);
+}
+
 void FakeFastPairRepository::GetDeviceMetadata(
     const std::string& hex_model_id,
     DeviceMetadataCallback callback) {
@@ -68,16 +72,19 @@ void FakeFastPairRepository::CheckAccountKeys(
   std::move(callback).Run(check_account_keys_result_);
 }
 
-void FakeFastPairRepository::AssociateAccountKey(
+void FakeFastPairRepository::WriteAccountAssociationToFootprints(
     scoped_refptr<Device> device,
     const std::vector<uint8_t>& account_key) {
-  saved_account_keys_[device->ble_address()] = account_key;
+  saved_account_keys_.insert_or_assign(device->classic_address().value(),
+                                       account_key);
+  saved_display_names_.insert_or_assign(device->classic_address().value(),
+                                        device->display_name().value());
 }
 
-bool FakeFastPairRepository::AssociateAccountKeyLocally(
+bool FakeFastPairRepository::WriteAccountAssociationToLocalRegistry(
     scoped_refptr<Device> device) {
   std::vector<uint8_t> fake_account_key;
-  saved_account_keys_[device->ble_address()] = fake_account_key;
+  saved_account_keys_[device->classic_address().value()] = fake_account_key;
   return true;
 }
 
@@ -148,14 +155,13 @@ bool FakeFastPairRepository::PersistDeviceImages(scoped_refptr<Device> device) {
 }
 
 // Unimplemented.
-bool FakeFastPairRepository::EvictDeviceImages(
-    const device::BluetoothDevice* device) {
+bool FakeFastPairRepository::EvictDeviceImages(const std::string& mac_address) {
   return true;
 }
 
 // Unimplemented.
 absl::optional<bluetooth_config::DeviceImageInfo>
-FakeFastPairRepository::GetImagesForDevice(const std::string& device_id) {
+FakeFastPairRepository::GetImagesForDevice(const std::string& mac_address) {
   return absl::nullopt;
 }
 

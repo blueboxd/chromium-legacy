@@ -102,12 +102,6 @@ public class MerchantTrustBottomSheetMediator {
             }
 
             @Override
-            public void didStartNavigationNoop(NavigationHandle navigation) {
-                mMetrics.recordNavigateLinkOnBottomSheet();
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void titleWasSet(String title) {
                 if (!MerchantViewerConfig.doesTrustSignalsSheetUsePageTitle()) return;
                 mToolbarModel.set(BottomSheetToolbarProperties.TITLE, title);
@@ -119,11 +113,6 @@ public class MerchantTrustBottomSheetMediator {
                     mToolbarModel.set(
                             BottomSheetToolbarProperties.URL, mWebContents.get().getVisibleUrl());
                 }
-            }
-
-            @Override
-            public void didFinishNavigationNoop(NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
             }
         };
 

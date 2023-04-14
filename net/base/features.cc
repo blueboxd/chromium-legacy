@@ -109,10 +109,6 @@ BASE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey,
              "PartitionNelAndReportingByNetworkIsolationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableDoubleKeyNetworkAnonymizationKey,
-             "EnableDoubleKeyNetworkAnonymizationKey",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableCrossSiteFlagNetworkAnonymizationKey,
              "EnableCrossSiteFlagNetworkAnonymizationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -137,15 +133,6 @@ BASE_FEATURE(kPostQuantumCECPQ2SomeDomains,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string>
     kPostQuantumCECPQ2Prefix(&kPostQuantumCECPQ2SomeDomains, "prefix", "a");
-
-// This is feature-gated, but enabled, to act as a kill switch, in case there
-// are unforeseen consequences to fully removing TLS 1.0/1.1.
-//
-// TODO(https://crbug.com/1376584): Remove this feature and all TLS 1.0/1.1
-// support code.
-BASE_FEATURE(kSSLMinVersionAtLeastTLS12,
-             "SSLMinVersionAtLeastTLS12",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNetUnusedIdleSocketTimeout,
              "NetUnusedIdleSocketTimeout",
@@ -285,22 +272,6 @@ BASE_FEATURE(kBlockSetCookieHeader,
 BASE_FEATURE(kOptimisticBlockfileWrite,
              "OptimisticBlockfileWrite",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kStorageAccessAPI,
-             "StorageAccessAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-constexpr int kStorageAccessAPIDefaultImplicitGrantLimit = 5;
-const base::FeatureParam<int> kStorageAccessAPIImplicitGrantLimit{
-    &kStorageAccessAPI, "storage-access-api-implicit-grant-limit",
-    kStorageAccessAPIDefaultImplicitGrantLimit};
-const base::FeatureParam<bool> kStorageAccessAPIGrantsUnpartitionedStorage(
-    &kStorageAccessAPI,
-    "storage-access-api-grants-unpartitioned-storage",
-    false);
-const base::FeatureParam<bool> kStorageAccessAPIAutoGrantInFPS{
-    &kStorageAccessAPI, "storage_access_api_auto_grant_in_fps", true};
-const base::FeatureParam<bool> kStorageAccessAPIAutoDenyOutsideFPS{
-    &kStorageAccessAPI, "storage_access_api_auto_deny_outside_fps", true};
 
 // Enables partitioning of third party storage (IndexedDB, CacheStorage, etc.)
 // by the top level site to reduce fingerprinting.

@@ -981,4 +981,60 @@ export class RemoteCallFilesApp extends RemoteCall {
     // Wait the OPEN button to have multiple tasks.
     await this.waitAndClickElement(appId, '#tasks[multiple]');
   }
+
+  /**
+   * Check if an item is pinned on drive or not.
+   * @param {string} appId app window ID.
+   * @param {string} path Path from the drive mount point, e.g. /root/test.txt
+   * @param {boolean} status Pinned status to expect drive item to be.
+   */
+  async expectDriveItemPinnedStatus(appId, path, status) {
+    await this.waitFor('isFileManagerLoaded', appId, true);
+    chrome.test.assertEq(
+        await sendTestMessage({
+          appId,
+          name: 'isItemPinned',
+          path,
+        }),
+        String(status));
+  }
+
+  /**
+   * Send a delete event via the `OnFilesChanged` drivefs delegate method.
+   * @param {string} appId app window ID.
+   * @param {string} path Path from the drive mount point, e.g. /root/test.txt
+   */
+  async sendDriveCloudDeleteEvent(appId, path) {
+    await this.waitFor('isFileManagerLoaded', appId, true);
+    await sendTestMessage({
+      appId,
+      name: 'sendDriveCloudDeleteEvent',
+      path,
+    });
+  }
+
+  /**
+   * Wait for the nudge with the given text to be visible.
+   *
+   * @param {string} appId app window ID.
+   * @param {string} expectedText Text that should be displayed in the Nudge.
+   * @return {!Promise<boolean>}
+   */
+  async waitNudge(appId, expectedText) {
+    const caller = getCaller();
+    return repeatUntil(async () => {
+      const nudgeDot = await this.waitForElementStyles(
+          appId, ['xf-nudge', '#dot'], ['left']);
+      if (nudgeDot.renderedLeft < 0) {
+        return pending(caller, 'Wait nudge to appear');
+      }
+
+      const actualText =
+          await this.waitForElement(appId, ['xf-nudge', '#text']);
+      console.log(actualText);
+      chrome.test.assertEq(actualText.text, expectedText);
+
+      return true;
+    });
+  }
 }

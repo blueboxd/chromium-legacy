@@ -249,7 +249,7 @@
 #include "ui/display/win/dpi.h"
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 #include "content/browser/media/key_system_support_impl.h"
 #endif
 
@@ -2140,21 +2140,13 @@ void RenderProcessHostImpl::CreateWebSocketConnector(
     mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
-  //
-  // Shared Workers and service workers are not directly associated with a
-  // frame, so the concept of "top-level frame" does not exist. Can use
-  // (origin, origin, origin) for the IsolationInfo for requests because these
-  // workers can only be created when the site has cookie access.
-  //
-  // TODO(https://crbug.com/1199077): We should consider using
-  // storage_key().top_frame_origin() instead once that is fully populated.
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<WebSocketConnectorImpl>(
           GetID(), MSG_ROUTING_NONE, storage_key.origin(),
           net::IsolationInfo::Create(
-              net::IsolationInfo::RequestType::kOther, storage_key.origin(),
-              storage_key.origin(),
-              net::SiteForCookies::FromOrigin(storage_key.origin()),
+              net::IsolationInfo::RequestType::kOther,
+              url::Origin::Create(storage_key.top_level_site().GetURL()),
+              storage_key.origin(), storage_key.ToNetSiteForCookies(),
               /*party_context=*/absl::nullopt,
               storage_key.nonce().has_value() ? &storage_key.nonce().value()
                                               : nullptr)),
@@ -2176,6 +2168,7 @@ void RenderProcessHostImpl::ReinitializeLogging(
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 void RenderProcessHostImpl::CreateStableVideoDecoder(
     mojo::PendingReceiver<media::stable::mojom::StableVideoDecoder> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!stable_video_decoder_factory_remote_.is_bound()) {
     LaunchStableVideoDecoderFactory(
         stable_video_decoder_factory_remote_.BindNewPipeAndPassReceiver());
@@ -2455,7 +2448,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       [](mojo::PendingReceiver<blink::mojom::PluginRegistry> receiver) {}));
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
   AddUIThreadInterface(
       registry.get(), base::BindRepeating(&KeySystemSupportImpl::BindReceiver));
 #endif
@@ -3389,7 +3382,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kFullMemoryCrashReport,
     switches::kGaiaUrl,
     switches::kIPCConnectionTimeout,
-    switches::kIsolatedAppOrigins,
     switches::kLogBestEffortTasks,
     switches::kLogFile,
     switches::kLoggingLevel,
@@ -3441,6 +3433,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     blink::switches::kDisablePreferCompositingToLCDText,
     blink::switches::kDisableRGBA4444Textures,
     blink::switches::kDisableThreadedScrolling,
+    blink::switches::kDisableThrottleNonVisibleCrossOriginIframes,
     blink::switches::kEnableLowResTiling,
     blink::switches::kEnablePreferCompositingToLCDText,
     blink::switches::kEnableRGBA4444Textures,
@@ -4820,6 +4813,8 @@ void RenderProcessHostImpl::ProcessDied(
 }
 
 void RenderProcessHostImpl::ResetIPC() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  media_interface_proxy_.reset();
   renderer_host_receiver_.reset();
   io_thread_host_impl_.reset();
   associated_interfaces_.reset();

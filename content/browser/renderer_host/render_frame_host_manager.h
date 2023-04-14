@@ -19,6 +19,7 @@
 #include "base/types/expected.h"
 #include "content/browser/renderer_host/browsing_context_group_swap.h"
 #include "content/browser/renderer_host/browsing_context_state.h"
+#include "content/browser/renderer_host/cross_origin_opener_policy_status.h"
 #include "content/browser/renderer_host/navigation_discard_reason.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/should_swap_browsing_instance.h"
@@ -152,7 +153,6 @@ class CONTENT_EXPORT RenderFrameHostManager {
         RenderViewHost* render_view_host) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(
         bool proceed,
-        const base::TimeTicks& proceed_time,
         bool* proceed_to_fire_unload) = 0;
     virtual void CancelModalDialogsForRenderManager() = 0;
     virtual void NotifySwappedFromRenderManager(
@@ -309,15 +309,14 @@ class CONTENT_EXPORT RenderFrameHostManager {
   void SetIsLoading(bool is_loading);
 
   // Confirms whether we should close the page. |proceed| indicates whether the
-  // user chose to proceed. |proceed_time| is the time when the request was
-  // allowed to proceed. This is called in one of the two *distinct* scenarios
-  // below:
+  // user chose to proceed. This is called in one of the two *distinct*
+  // scenarios below:
   //   1- The tab/window is closed after allowing the appropriate renderer to
   //      show the beforeunload prompt.
   //   2- The FrameTreeNode is being prepared for attaching an inner Delegate,
   //      in which case beforeunload is triggered in the current frame. This
   //      only happens for child frames.
-  void BeforeUnloadCompleted(bool proceed, const base::TimeTicks& proceed_time);
+  void BeforeUnloadCompleted(bool proceed);
 
   // Called when a renderer's frame navigates.
   void DidNavigateFrame(RenderFrameHostImpl* render_frame_host,
@@ -709,7 +708,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       bool is_reload,
       bool is_same_document,
       IsSameSiteGetter& is_same_site,
-      bool cross_origin_opener_policy_mismatch,
+      CoopSwapResult coop_swap_result,
       bool was_server_redirect,
       bool should_replace_current_entry);
 
@@ -735,7 +734,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool was_server_redirect,
-      bool cross_origin_opener_policy_mismatch,
+      CoopSwapResult coop_swap_result,
       bool should_replace_current_entry,
       bool force_new_browsing_instance,
       BrowsingContextGroupSwap* browsing_context_group_swap,
@@ -765,7 +764,7 @@ class CONTENT_EXPORT RenderFrameHostManager {
       IsSameSiteGetter& is_same_site,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
-      bool force_browsing_instance_swap,
+      BrowsingContextGroupSwap browsing_context_group_swap,
       bool was_server_redirect,
       std::string* reason);
 

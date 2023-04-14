@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
@@ -26,10 +25,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -222,12 +219,6 @@ OobeScreenId OobeBaseTest::GetFirstSigninScreen() {
                                   ->IsDeviceEnterpriseManaged();
   return isEnterpriseManaged ? UserCreationView::kScreenId
                              : GaiaView::kScreenId;
-}
-
-// static
-OobeScreenId OobeBaseTest::GetScreenAfterNetworkScreen() {
-  bool consolidated_enabled = features::IsOobeConsolidatedConsentEnabled();
-  return consolidated_enabled ? UpdateView::kScreenId : EulaView::kScreenId;
 }
 
 void OobeBaseTest::MaybeWaitForLoginScreenLoad() {

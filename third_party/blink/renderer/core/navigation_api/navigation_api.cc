@@ -517,28 +517,16 @@ NavigationResult* NavigationApi::navigate(ScriptState* script_state,
           "URL.");
     }
 
-    if (completed_url == window_->Url()) {
+    if (frame->ShouldMaintainTrivialSessionHistory()) {
       return EarlyErrorResult(
           script_state, DOMExceptionCode::kNotSupportedError,
           "A \"push\" navigation was explicitly requested, but only a "
-          "\"replace\" navigation is possible when navigating to the current "
-          "URL.");
+          "\"replace\" navigation is possible when navigating in a trivial "
+          "session history context, which maintains only one session history "
+          "entry.");
     }
 
-    // The NavigationShouldReplaceCurrentHistoryEntry() check corresponds to the
-    // spec's check on whether the document is completely loaded, plus a couple
-    // of checks related to behind-a-flag features (portals and fenced frames).
-    // Eventually if portals and fenced frames make their way into the HTML
-    // Standard, they will need to modify the navigation API sections as well,
-    // probably by factoring out something similar in the spec as we have done
-    // in our implementation.
-    if (frame->NavigationShouldReplaceCurrentHistoryEntry(
-            request, WebFrameLoadType::kStandard)) {
-      return EarlyErrorResult(
-          script_state, DOMExceptionCode::kNotSupportedError,
-          "A \"push\" navigation was explicitly requested but only a "
-          "\"replace\" navigation is possible for this window.");
-    }
+    request.SetForceHistoryPush();
   }
 
   // The spec also converts "auto" to "replace" here if the document is not
@@ -768,8 +756,8 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
     return DispatchResult::kContinue;
   }
 
-  auto* script_state = ToScriptStateForMainWorld(window_->GetFrame());
-  DCHECK(script_state);
+  LocalFrame* frame = window_->GetFrame();
+  auto* script_state = ToScriptStateForMainWorld(frame);
   ScriptState::Scope scope(script_state);
 
   if (params->frame_load_type == WebFrameLoadType::kBackForward &&
@@ -808,8 +796,15 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   }
   init->setDestination(destination);
 
+  bool should_allow_traversal_cancellation =
+      RuntimeEnabledFeatures::NavigateEventCancelableTraversalsEnabled() &&
+      params->frame_load_type == WebFrameLoadType::kBackForward &&
+      params->event_type != NavigateEventType::kCrossDocument &&
+      frame->IsMainFrame() &&
+      (!params->is_browser_initiated || frame->IsHistoryUserActivationActive());
   init->setCancelable(params->frame_load_type !=
-                      WebFrameLoadType::kBackForward);
+                          WebFrameLoadType::kBackForward ||
+                      should_allow_traversal_cancellation);
   init->setCanIntercept(
       CanChangeToUrlForHistoryApi(params->url, window_->GetSecurityOrigin(),
                                   current_url) &&
@@ -852,8 +847,13 @@ NavigationApi::DispatchResult NavigationApi::DispatchNavigateEvent(
   DispatchEvent(*navigate_event);
 
   if (navigate_event->defaultPrevented()) {
-    if (!navigate_event->signal()->aborted())
+    if (!navigate_event->signal()->aborted()) {
+      if (params->frame_load_type == WebFrameLoadType::kBackForward &&
+          window_->GetFrame()) {
+        window_->GetFrame()->ConsumeHistoryUserActivation();
+      }
       FinalizeWithAbortedNavigationError(script_state, ongoing_navigation_);
+    }
     return DispatchResult::kAbort;
   }
 
@@ -977,6 +977,10 @@ void NavigationApi::TraverseCancelled(
         "Navigating to key " + key +
             " would require a navigation that "
             "violates this frame's sandbox policy");
+  } else if (reason ==
+             mojom::blink::TraverseCancelledReason::kAbortedBeforeCommit) {
+    exception = MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kAbortError, "Navigation was aborted");
   }
   DCHECK(exception);
 
@@ -1068,6 +1072,36 @@ int NavigationApi::GetIndexFor(NavigationHistoryEntry* entry) {
 
 const AtomicString& NavigationApi::InterfaceName() const {
   return event_target_names::kNavigation;
+}
+
+void NavigationApi::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::AddedEventListener(event_type,
+                                                registered_listener);
+  LocalFrame* frame = window_->GetFrame();
+  if (event_type != event_type_names::kNavigate || !frame) {
+    return;
+  }
+  navigate_event_handler_count_++;
+  if (navigate_event_handler_count_ == 1) {
+    frame->GetLocalFrameHostRemote().NavigateEventHandlerPresenceChanged(true);
+  }
+}
+
+void NavigationApi::RemovedEventListener(
+    const AtomicString& event_type,
+    const RegisteredEventListener& registered_listener) {
+  EventTargetWithInlineData::RemovedEventListener(event_type,
+                                                  registered_listener);
+  LocalFrame* frame = window_->GetFrame();
+  if (event_type != event_type_names::kNavigate || !frame) {
+    return;
+  }
+  navigate_event_handler_count_--;
+  if (navigate_event_handler_count_ == 0) {
+    frame->GetLocalFrameHostRemote().NavigateEventHandlerPresenceChanged(false);
+  }
 }
 
 void NavigationApi::Trace(Visitor* visitor) const {

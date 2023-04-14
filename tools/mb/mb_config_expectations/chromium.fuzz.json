@@ -221,7 +221,6 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
-      "instrumented_libraries_release": "focal",
       "is_component_build": true,
       "is_debug": false,
       "is_msan": true,
@@ -239,9 +238,10 @@
       "dcheck_always_on": false,
       "enable_nacl": false,
       "ffmpeg_branding": "ChromeOS",
-      "is_component_build": false,
+      "is_component_build": true,
       "is_debug": false,
       "is_ubsan_security": true,
+      "is_ubsan_vptr": false,
       "optimize_for_fuzzing": true,
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
@@ -408,7 +408,6 @@
   "MSAN Release (chained origins)": {
     "gn_args": {
       "dcheck_always_on": false,
-      "instrumented_libraries_release": "xenial",
       "is_component_build": false,
       "is_debug": false,
       "is_msan": true,

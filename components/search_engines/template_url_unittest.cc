@@ -5,6 +5,7 @@
 #include "components/search_engines/template_url.h"
 
 #include <stddef.h>
+#include <string>
 
 #include "base/base64.h"
 #include "base/base_paths.h"
@@ -28,6 +29,7 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 using base::ASCIIToUTF16;
+using RequestSource = SearchTermsData::RequestSource;
 
 namespace {
 bool IsLowerCase(const std::u16string& str) {
@@ -369,6 +371,7 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
   data.SetURL("http://foo{fhqwhgads}search/?q={searchTerms}");
   data.suggestions_url = "http://foo{fhqwhgads}suggest/?q={searchTerms}";
   data.image_url = "http://foo{fhqwhgads}image/";
+  data.image_translate_url = "http://foo{fhqwhgads}image/?translate";
   data.new_tab_url = "http://foo{fhqwhgads}newtab/";
   data.contextual_search_url = "http://foo{fhqwhgads}context/";
   data.alternate_urls.push_back(
@@ -388,6 +391,8 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
             url.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo{fhqwhgads}image/",
             url.image_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://foo%7Bfhqwhgads%7Dimage/?translate",
+            url.image_translate_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo{fhqwhgads}newtab/",
             url.new_tab_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foo{fhqwhgads}context/",
@@ -405,6 +410,8 @@ TEST_F(TemplateURLTest, SetPrepopulatedAndReplace) {
             url2.suggestions_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://fooimage/",
             url2.image_url_ref().ReplaceSearchTerms(args, stdata));
+  EXPECT_EQ("http://fooimage/?translate",
+            url2.image_translate_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foonewtab/",
             url2.new_tab_url_ref().ReplaceSearchTerms(args, stdata));
   EXPECT_EQ("http://foocontext/",
@@ -1071,7 +1078,7 @@ TEST_F(TemplateURLTest, RLZFromAppList) {
   EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
   ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
   TemplateURLRef::SearchTermsArgs args(u"x");
-  args.request_source = TemplateURLRef::CROS_APP_LIST;
+  args.request_source = RequestSource::CROS_APP_LIST;
   GURL result(url.url_ref().ReplaceSearchTerms(args, search_terms_data_));
   ASSERT_TRUE(result.is_valid());
   EXPECT_EQ("http://bar/?rlz=" + base::UTF16ToUTF8(rlz_string) + "&x",
@@ -1907,8 +1914,8 @@ TEST_F(TemplateURLTest, ReplacePageClassification) {
   EXPECT_EQ("http://www.google.com/?pgcl=3&q=foo", result);
 }
 
-// Test the IsSearchResults function.
-TEST_F(TemplateURLTest, IsSearchResults) {
+// Test the IsSearchURL function.
+TEST_F(TemplateURLTest, IsSearchURL) {
   TemplateURLData data;
   data.SetURL("http://bar/search?q={searchTerms}");
   data.new_tab_url = "http://bar/newtab";
@@ -2185,6 +2192,30 @@ TEST_F(TemplateURLTest, KeepSearchTermsInURL) {
         &canonical_search_url));
     EXPECT_EQ("http://bar/search?q=foo&xssi=t", canonical_search_url);
   }
+  {
+    // Search terms extraction, normalized or not.
+    search_terms_args.additional_query_params = "gs_ssp=GS_SSP";
+    std::string original_search_url = turl.url_ref().ReplaceSearchTerms(
+        search_terms_args, search_terms_data_);
+    EXPECT_EQ("http://bar/search?gs_ssp=GS_SSP&q=FOO&psi=SESSIONTOKEN&xssi=t",
+              original_search_url);
+
+    GURL canonical_search_url;
+    std::u16string search_terms;
+    EXPECT_TRUE(turl.KeepSearchTermsInURL(
+        GURL(original_search_url), search_terms_data_,
+        /*keep_search_intent_params=*/false, /*normalize_search_terms=*/true,
+        &canonical_search_url, &search_terms));
+    EXPECT_EQ("http://bar/search?q=foo&xssi=t", canonical_search_url);
+    EXPECT_EQ(u"foo", search_terms);
+
+    EXPECT_TRUE(turl.KeepSearchTermsInURL(
+        GURL(original_search_url), search_terms_data_,
+        /*keep_search_intent_params=*/false, /*normalize_search_terms=*/false,
+        &canonical_search_url, &search_terms));
+    EXPECT_EQ("http://bar/search?q=FOO&xssi=t", canonical_search_url);
+    EXPECT_EQ(u"FOO", search_terms);
+  }
 }
 
 TEST_F(TemplateURLTest, GenerateSearchURL) {
@@ -2258,6 +2289,7 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   data.SetURL("{google:baseURL}search?q={searchTerms}");
   data.suggestions_url = "{google:baseSuggestURL}search?q={searchTerms}";
   data.image_url = "{google:baseURL}searchbyimage/upload";
+  data.image_translate_url = "{google:baseURL}searchbyimage/upload?translate";
   data.new_tab_url = "{google:baseURL}_/chrome/newtab";
   data.contextual_search_url = "{google:baseURL}_/contextualsearch";
   data.alternate_urls.push_back("{google:baseURL}s#q={searchTerms}");
@@ -2281,6 +2313,9 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   EXPECT_EQ("http://www.google.com/searchbyimage/upload",
             url.image_url_ref().ReplaceSearchTerms(search_terms_args,
                                                    search_terms_data_));
+  EXPECT_EQ("http://www.google.com/searchbyimage/upload?translate",
+            url.image_translate_url_ref().ReplaceSearchTerms(
+                search_terms_args, search_terms_data_));
   EXPECT_EQ("http://www.google.com/_/chrome/newtab",
             url.new_tab_url_ref().ReplaceSearchTerms(search_terms_args,
                                                      search_terms_data_));
@@ -2316,6 +2351,9 @@ TEST_F(TemplateURLTest, InvalidateCachedValues) {
   EXPECT_EQ("https://www.foo.org/searchbyimage/upload",
             url.image_url_ref().ReplaceSearchTerms(search_terms_args,
                                                    search_terms_data_));
+  EXPECT_EQ("https://www.foo.org/searchbyimage/upload?translate",
+            url.image_translate_url_ref().ReplaceSearchTerms(
+                search_terms_args, search_terms_data_));
   EXPECT_EQ("https://www.foo.org/_/chrome/newtab",
             url.new_tab_url_ref().ReplaceSearchTerms(search_terms_args,
                                                      search_terms_data_));
@@ -2421,6 +2459,49 @@ TEST_F(TemplateURLTest, SideImageSearchParams) {
   result = url.RemoveSideImageSearchParamFromURL(
       GURL("http://foo.com/?q=123&sideimagesearch=1&sideimagesearch=2"));
   EXPECT_EQ("http://foo.com/?q=123&sideimagesearch=2", result.spec());
+}
+
+TEST_F(TemplateURLTest, ImageTranslate) {
+  struct TestData {
+    const std::string image_translate_url;
+    const std::string image_translate_source_language_param_key;
+    const std::string image_translate_target_language_param_key;
+    const std::string image_translate_source_locale;
+    const std::string image_translate_target_locale;
+    const std::string expected_result;
+  } test_data[] = {
+      {"https://lens.google.com/upload?filtertype=translate"
+       "&{imageTranslateSourceLocale}{imageTranslateTargetLocale}",
+       "sourcelang", "targetlang", "zh-CN", "fr",
+       "https://lens.google.com/"
+       "upload?filtertype=translate&sourcelang=zh-CN&targetlang=fr&"},
+      {"https://www.foo.com/images/detail/search"
+       "?ft=tr&{imageTranslateSourceLocale}{imageTranslateTargetLocale}"
+       "#fragment",
+       "sl", "tl", "ja", "es",
+       "https://www.foo.com/images/detail/search?ft=tr&sl=ja&tl=es&#fragment"},
+      {"https://bar.com/images/translate/"
+       "{imageTranslateSourceLocale}/{imageTranslateTargetLocale}/",
+       "", "", "ko", "de", "https://bar.com/images/translate/ko/de/"},
+  };
+  TemplateURLData data;
+  for (const auto& entry : test_data) {
+    data.image_translate_url = entry.image_translate_url;
+    data.image_translate_source_language_param_key =
+        entry.image_translate_source_language_param_key;
+    data.image_translate_target_language_param_key =
+        entry.image_translate_target_language_param_key;
+    TemplateURL url(data);
+    TemplateURLRef::SearchTermsArgs search_terms_args(u"");
+    search_terms_args.image_translate_source_locale =
+        entry.image_translate_source_locale;
+    search_terms_args.image_translate_target_locale =
+        entry.image_translate_target_locale;
+    GURL result(url.image_translate_url_ref().ReplaceSearchTerms(
+        search_terms_args, search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(entry.expected_result, result.spec());
+  }
 }
 
 TEST_F(TemplateURLTest, ImageSearchBrandingLabel) {

@@ -34,7 +34,7 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="IOS.Allocator.ShimInstalled" enum="Boolean"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rohitrao@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -177,7 +177,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ContentSuggestions.ActionOnNTP"
-    enum="IOSContentSuggestionsActionType" expires_after="2023-06-04">
+    enum="IOSContentSuggestionsActionType" expires_after="2023-08-06">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -186,7 +186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ContentSuggestions.ActionOnStartSurface"
-    enum="IOSContentSuggestionsActionType" expires_after="2023-06-04">
+    enum="IOSContentSuggestionsActionType" expires_after="2023-08-06">
   <owner>thegreenfrog@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -194,35 +194,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.Cookies.GetCookiesForURLCallResult"
-    enum="IOSGetCookiesForURLCallResult" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    Recorded to indicate whether the GetCookiesForURL call found cookies or not
-    when called on a specific system cookie store implementation. Most of the
-    cookies fetching on iOS Chromium is done by the WKWebView and doesn't
-    involve calling GetCookiesForURL. The method is only called when a request
-    is made by the UrlRequestFetcher for cases that are not handled by WKWebView
-    (eg. Downloads, Auto Suggestions and NTP tiles).
-  </summary>
-</histogram>
-
-<histogram name="IOS.Cookies.GetCookiesForURLCallStoreType"
-    enum="IOSGetCookiesForURLCallCookieStoreType" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    The system cookie store type used when GetCookiesForURL method is called.
-    Most of the cookies fetching on iOS Chromium is done by the WKWebView and
-    doesn't involve calling GetCookiesForURL. The method is only called when a
-    request is made by the UrlRequestFetcher for cases that are not handled by
-    WKWebView (eg. Downloads, Auto Suggestions and NTP tiles).
-  </summary>
-</histogram>
-
 <histogram name="IOS.CredentialExtension.ConsentVerifiedCount" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -266,7 +239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.DisplayCount" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -342,7 +315,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.PasswordUseCount" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -353,7 +326,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.QuickPasswordUseCount" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -386,7 +359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.CredentialExtension.SearchCount" units="count"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>rkgibson@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>
@@ -580,7 +553,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ExperienceKitCalendar.Present"
-    enum="ExperienceKitCalendarTypes" expires_after="2023-03-01">
+    enum="ExperienceKitCalendarTypes" expires_after="2023-06-01">
   <owner>djean@chromium.org</owner>
   <owner>erahmaoui@google.com</owner>
   <summary>
@@ -589,7 +562,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ExperienceKitCalendar.Success"
-    enum="ExperienceKitCalendarTypes" expires_after="2023-03-01">
+    enum="ExperienceKitCalendarTypes" expires_after="2023-06-01">
   <owner>djean@chromium.org</owner>
   <owner>erahmaoui@google.com</owner>
   <summary>
@@ -599,7 +572,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.ExperienceKitCalendar.TextClassifierModelAvailable"
-    enum="BooleanAvailable" expires_after="2023-06-04">
+    enum="BooleanAvailable" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -647,71 +620,6 @@ chromium-metrics-reviews@google.com.
     the time when a new navigation is finished. True means the URL matches the
     current back-forward item.
   </summary>
-</histogram>
-
-<histogram name="IOS.FirstRun.ScrollButtonVisible.{FirstRunScreen}"
-    enum="Boolean" expires_after="2023-02-09">
-  <owner>ginnyhuang@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    Depending on the text size of the system, the first run screens would either
-    show buttons intended for the purpose of the view, or a &quot;More&quot;
-    button. In the latter scenario, tapping on the button would trigger a scroll
-    down, and would transform into the intended action buttons when the user has
-    scrolled down to the bottom of the view. This histogram counts the frequency
-    for each type of screen of the &quot;More&quot; button showing on the view
-    first appears, instead of the intended action buttons.
-  </summary>
-  <token key="FirstRunScreen">
-    <variant name="DefaultBrowserPromoScreen"
-        summary="The new FRE screen that instructs the user to set default
-                 browser to Chrome."/>
-    <variant name="SignInScreenWithFooter"
-        summary="The screen that asks the user to sign in when no stored
-                 account is detected, with a footer shown at the bottom.
-                 Displayed when MICe is enabled without the welcome screen
-                 (2-steps MICe FRE), or when forced sign-in is enabled."/>
-    <variant name="SignInScreenWithFooterAndIdentityPicker"
-        summary="The screen that asks the user to sign in a stored account,
-                 with a footer shown at the bottom. Displayed when MICe is
-                 enabled without the welcome screen (2-steps MICe FRE), or
-                 when forced sign-in is enabled."/>
-    <variant name="SignInScreenWithIdentityPicker"
-        summary="The screen that asks the user to sign in a stored account,
-                 but with no footer shown at the bottom. Displayed when MICe
-                 is enabled with the welcome screen (3-steps MICe FRE)."/>
-    <variant name="SignInScreenWithoutFooterOrIdentityPicker"
-        summary="The screen that asks the user to sign in when no stored
-                 account is detected, but with no footer shown at the bottom.
-                 Displayed when MICe is enabled with the welcome screen
-                 (3-steps MICe FRE)."/>
-    <variant name="SyncScreenWithIdentityPicker"
-        summary="The screen that asks the user to turn on sync while showing
-                 an account picker. Displayed when MICe is disabled and an
-                 account is detected.">
-      <obsolete>
-        This metric is obsolete as of M111 as the corresponding screen was
-        removed.
-      </obsolete>
-    </variant>
-    <variant name="SyncScreenWithoutIdentityPicker"
-        summary="The screen that asks the user to turn on sync while no
-                 account picker is present. Displayed when MICe is enabled or
-                 when no account is detected.">
-      <obsolete>
-        This metric is obsolete as of M111 as the corresponding screen was
-        removed.
-      </obsolete>
-    </variant>
-    <variant name="TangibleSyncScreen"
-        summary="The tangible sync screen that asks the user to turn on sync."/>
-    <variant name="WelcomeScreenWithoutUMACheckbox"
-        summary="Welcome screen without UMA checkbox. Displayed when MICe is
-                 enabled."/>
-    <variant name="WelcomeScreenWithUMACheckbox"
-        summary="Welcome screen with UMA checkbox. Displayed when MICe is
-                 disabled."/>
-  </token>
 </histogram>
 
 <histogram name="IOS.FontProvider.ProductSansRegular.LoadSuccess"
@@ -918,6 +826,10 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="IOS.IPH.DefaultSite.Presented" enum="BooleanHit"
     expires_after="2023-02-28">
+  <obsolete>
+    This metric is obsolete as of M112, it is now recorded in
+    InProductHelp.ShouldTriggerHelpUI.IPH_DefaultSiteView.
+  </obsolete>
   <owner>gambard@chromium.org</owner>
   <owner>lpromero@chromium.org</owner>
   <summary>
@@ -1085,7 +997,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}ApplicationResumeTime" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1099,7 +1011,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}AverageSuspendedMemory" units="MB"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1157,7 +1069,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}ExtendedLaunch" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>ajuma@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1225,7 +1137,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}OptimizedTimeToFirstDraw" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>ajuma@chromium.org</owner>
   <owner>justincohen@chromium.org</owner>
   <summary>
@@ -1244,7 +1156,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}PeakMemoryUsage" units="MB"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1264,7 +1176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.MetricKit.{MXVersion}TimeToFirstDraw" units="ms"
-    expires_after="2023-03-19">
+    expires_after="2023-09-19">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -1291,6 +1203,21 @@ chromium-metrics-reviews@google.com.
   <summary>
     The source of &quot;Open in new Window&quot; user requests. Recorded when a
     newly created window is added to a session.
+  </summary>
+</histogram>
+
+<histogram name="IOS.NavigationStateNotFinishedInLoadCancelled" enum="Boolean"
+    expires_after="2023-09-24">
+  <owner>ajuma@chromium.org</owner>
+  <owner>michaeldo@chromium.org</owner>
+  <summary>
+    The method -[CRWWKNavigationHandler loadCancelled] updates the navigation
+    state to finished if it is any other state. Additionally, if
+    `beingDestroyed` is false, the webstate's loading state is set to false.
+    There is a long standing TODO in this method with the comment: &quot;Check
+    if this function should be removed.&quot; This metric is logged when the
+    logic in this method is triggered. The results will be reviewed to see if
+    this logic is still ever called or if it can now be removed.
   </summary>
 </histogram>
 
@@ -1350,14 +1277,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.OverflowMenu.ActionType" enum="IOSOverflowMenuActionType"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The type of action the user took in the overflow/tools menu</summary>
 </histogram>
 
 <histogram name="IOS.OverflowMenu.TimeOpen" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>rkgibson@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>The amount of time the overflow/tools menu is open.</summary>
@@ -1441,7 +1368,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.AutoFillStatusChange"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-03-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-09-01">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1452,7 +1379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PasswordsInOtherApps.Dismiss"
-    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-03-11">
+    enum="PasswordAutoFillEnrollmentStatus" expires_after="2023-09-01">
   <owner>ginnyhuang@chromium.org</owner>
   <owner>bling-team@google.com</owner>
   <summary>
@@ -1516,7 +1443,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PostRestoreSignin.Choice"
-    enum="IOSPostRestoreSigninChoice" expires_after="2023-03-05">
+    enum="IOSPostRestoreSigninChoice" expires_after="2023-04-15">
   <owner>scottyoder@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -1525,7 +1452,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.PostRestoreSignin.Displayed" enum="Boolean"
-    expires_after="2023-03-05">
+    expires_after="2023-04-15">
   <owner>scottyoder@google.com</owner>
   <owner>bling-get-set-up@google.com</owner>
   <summary>
@@ -1686,16 +1613,6 @@ chromium-metrics-reviews@google.com.
     on startup when it is detected that EULA pref is not set but First run
     sentinel is set. There is no base event (false) as this should be an
     exceptional case and should tend to 0 occurence.
-  </summary>
-</histogram>
-
-<histogram name="IOS.RepeatedExternalAppPromptResponse"
-    enum="IOSRepeatedExternalAppPromptResponse" expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    The user reaction to the prompt that appears when a website tries to open an
-    external application repeatedly.
   </summary>
 </histogram>
 
@@ -1925,15 +1842,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="IOS.StoreKitLoadedSuccessfully" enum="BooleanSuccess"
-    expires_after="2021-08-01">
-  <owner>mrefaat@chromium.org</owner>
-  <owner>bling-team@google.com</owner>
-  <summary>
-    Whether the StoreKit loaded the required iTunes product successfully or not.
-  </summary>
-</histogram>
-
 <histogram name="IOS.TabGrid.CloseTabs" units="Tabs" expires_after="2023-11-01">
   <owner>ewannpv@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
@@ -1999,6 +1907,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="IOS.TabStrip.DragInteraction" enum="Boolean"
+    expires_after="2024-02-08">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Tracks whether the user moved a tabStrip tab to a new index. Recorded when
+    the user stops the drag interaction.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabStrip.TapInteraction" enum="Boolean"
+    expires_after="2024-02-08">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Tracks whether the user tapped on a tabStrip tab that is not the active one.
+    Recorded when the tabStrip tab is tapped.
+  </summary>
+</histogram>
+
 <histogram name="IOS.TabSwitcher.DragDropTabs"
     enum="IOSTabSwitcherDragDropTabs" expires_after="2023-11-16">
   <owner>ewannpv@chromium.org</owner>
@@ -2016,6 +1946,42 @@ chromium-metrics-reviews@google.com.
   <owner>pakzhygitov@google.com</owner>
   <owner>bling-team@google.com</owner>
   <summary>Records the origin of dropped items in the tab switcher.</summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.Idle.IncognitoTabGridPage" enum="Boolean"
+    expires_after="2024-02-08">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Tracks whether the user closed the incognito tab grid page without doing any
+    meaningful action. Meaningful actions are creating, moving, deleting or
+    switching tab. Recorded when the user closed the incognito tab grid page.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.Idle.RecentTabs" enum="Boolean"
+    expires_after="2024-02-08">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Tracks whether the user closed the recent tabs page without doing any
+    meaningful action. Meaningful action is opening a tab. Recorded when the
+    user closed the recent tabs page or switched to a tab grid page.
+  </summary>
+</histogram>
+
+<histogram name="IOS.TabSwitcher.Idle.RegularTabGridPage" enum="Boolean"
+    expires_after="2024-02-08">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <owner>bling-team@google.com</owner>
+  <summary>
+    Tracks whether the user closed the regular tab grid page without doing any
+    meaningful action. Meaningful actions are creating, moving, deleting or
+    switching tab. Recorded when the user closed the regular tab grid page.
+  </summary>
 </histogram>
 
 <histogram name="IOS.TabSwitcher.PageChangeInteraction"
@@ -2060,7 +2026,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.TextSelection.EntityDetection.DetectedEntityType"
-    enum="TextSelectionDetectedEntityType" expires_after="2023-06-04">
+    enum="TextSelectionDetectedEntityType" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -2084,7 +2050,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="IOS.TextSelection.EntityDetection.TFLiteModelEvaluationDuration"
-    units="ms" expires_after="2023-06-04">
+    units="ms" expires_after="2023-08-08">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -2223,7 +2189,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WidgetKit.Action" enum="IOSWidgetKitAction"
-    expires_after="2023-07-16">
+    expires_after="2024-01-30">
   <owner>rkgibson@google.com</owner>
   <owner>muradyan@google.com</owner>
   <summary>
@@ -2233,7 +2199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="IOS.WidgetKit.{Status}" enum="IOSWidgetKitExtensionKind"
-    expires_after="2022-12-11">
+    expires_after="2024-01-30">
   <owner>rkgibson@google.com</owner>
   <owner>muradyan@chromium.org</owner>
   <summary>
@@ -2309,7 +2275,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ManualFallback.PresentedOptions.Profiles" units="Profiles"
-    expires_after="2023-05-01">
+    expires_after="2023-08-13">
   <owner>tmartino@chromium.org</owner>
   <owner>djean@chromium.org</owner>
   <summary>

@@ -71,7 +71,6 @@
 #include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/ash/login/os_install_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -426,7 +425,8 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   manager->Initialize(static_cast<int>(Sound::kStartup),
-                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_STARTUP_WAV),
+                      media::AudioCodec::kPCM);
 
   login_display_ = std::make_unique<LoginDisplayWebUI>();
 
@@ -540,8 +540,6 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
 
   TryToPlayOobeStartupSound();
 
-  // Keep parameters to restore if renderer crashes.
-  restore_path_ = RESTORE_WIZARD;
   first_screen_ = first_screen;
 
   VLOG(1) << "Login WebUI >> wizard";
@@ -552,8 +550,6 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
   }
 
   DVLOG(1) << "Starting wizard, first_screen: " << first_screen;
-  oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
-  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
 
   // Create and show the wizard.
   if (wizard_controller_) {
@@ -580,7 +576,6 @@ void LoginDisplayHostWebUI::CancelUserAdding() {
 void LoginDisplayHostWebUI::OnStartSignInScreen() {
   DisableKeyboardOverscroll();
 
-  restore_path_ = RESTORE_SIGN_IN;
   finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   VLOG(1) << "Login WebUI >> sign in";
@@ -588,16 +583,9 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   DVLOG(1) << "Starting sign in screen";
   CreateExistingUserController();
 
-  // TODO(crbug.com/784495): This is always false, since
-  // LoginDisplayHost::StartSignInScreen marks the device as registered.
-  oobe_progress_bar_visible_ = !StartupUtils::IsDeviceRegistered();
-  SetOobeProgressBarVisible(oobe_progress_bar_visible_);
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
-
-  // Legacy calls, will go away soon.
-  GetOobeUI()->signin_screen_handler()->Show();
 
   ShowGaiaDialogCommon(EmptyAccountId());
 
@@ -773,6 +761,18 @@ bool LoginDisplayHostWebUI::IsOobeUIDialogVisible() const {
   return true;
 }
 
+bool LoginDisplayHostWebUI::HandleAccelerator(LoginAcceleratorAction action) {
+  if (action == LoginAcceleratorAction::kToggleSystemInfo) {
+    if (!GetOobeUI()) {
+      return false;
+    }
+    GetOobeUI()->GetCoreOobeView()->ToggleSystemInfo();
+    return true;
+  }
+
+  return LoginDisplayHostCommon::HandleAccelerator(action);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LoginDisplayHostWebUI, private
 
@@ -903,10 +903,6 @@ void LoginDisplayHostWebUI::ResetLoginWindowAndView() {
   wizard_controller_.reset();
 }
 
-void LoginDisplayHostWebUI::SetOobeProgressBarVisible(bool visible) {
-  GetOobeUI()->ShowOobeUI(visible);
-}
-
 void LoginDisplayHostWebUI::TryToPlayOobeStartupSound() {
   need_to_play_startup_sound_ = true;
   PlayStartupSoundIfPossible();
@@ -989,7 +985,7 @@ void LoginDisplayHostWebUI::VerifyOwnerForKiosk(base::OnceClosure) {
   NOTREACHED();
 }
 
-void LoginDisplayHostWebUI::ShowPasswordChangedDialog(
+void LoginDisplayHostWebUI::ShowPasswordChangedDialogLegacy(
     const AccountId& account_id,
     bool show_password_error) {
   NOTREACHED();

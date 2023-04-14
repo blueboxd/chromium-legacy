@@ -52,7 +52,7 @@ std::vector<ContentSettingsPattern> FledgeBlockToContentSettingsPatterns(
 // Returns a base::Value for storage in prefs that represents |topic| blocked
 // at the current time.
 base::Value CreateBlockedTopicEntry(const CanonicalTopic& topic) {
-  base::Value entry(base::Value::Type::DICTIONARY);
+  base::Value entry(base::Value::Type::DICT);
   entry.SetKey(kBlockedTopicsTopicKey, topic.ToValue());
   entry.SetKey(kBlockedTopicsBlockTimeKey,
                base::TimeToValue(base::Time::Now()));
@@ -564,8 +564,7 @@ bool PrivacySandboxSettingsImpl::IsPrivacySandboxEnabledForContext(
   // for cookies is provided so the context is always treated as a third party.
   return cookie_settings_->IsFullCookieAccessAllowed(
       url, net::SiteForCookies(), top_frame_origin,
-      net::CookieSettingOverrides(),
-      content_settings::CookieSettings::QueryReason::kPrivacySandbox);
+      net::CookieSettingOverrides());
 }
 
 void PrivacySandboxSettingsImpl::SetTopicsDataAccessibleFromNow() const {

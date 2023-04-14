@@ -133,8 +133,6 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
       [sessions addObject:session_storage];
     }
     return [[SessionWindowIOS alloc] initWithSessions:sessions
-                                      sessionsSummary:nil
-                                          tabContents:nil
                                         selectedIndex:selected_index];
   }
 
@@ -154,7 +152,7 @@ class SessionRestorationBrowserAgentTest : public PlatformTest {
         web::WebState::Create(create_params);
     web_state->GetView();
     web_state->GetNavigationManager()->LoadURLWithParams(load_params);
-    web_state->GetWebFramesManager();
+    web_state->GetPageWorldWebFramesManager();
     web::WebState* web_state_ptr = web_state.get();
     EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^bool {
       return !web_state_ptr->IsLoading();
@@ -189,8 +187,6 @@ TEST_F(SessionRestorationBrowserAgentTest, RestoreEmptySessions) {
     [sessions addObject:session_storage];
   }
   SessionWindowIOS* window = [[SessionWindowIOS alloc] initWithSessions:sessions
-                                                        sessionsSummary:nil
-                                                            tabContents:nil
                                                           selectedIndex:2];
 
   session_restoration_agent_->RestoreSessionWindow(window);

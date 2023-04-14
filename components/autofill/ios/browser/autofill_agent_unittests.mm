@@ -18,6 +18,7 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/form_util/form_handlers_java_script_feature.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -130,9 +131,8 @@ class AutofillAgentTests : public web::WebTest {
 TEST_F(AutofillAgentTests,
        OnFormDataFilledTestWithFrameMessagingUsingRendererIDs) {
   std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::EnableDownloadManager(false));
+  autofill::AutofillDriverIOSFactory::CreateForWebState(&fake_web_state_,
+                                                        &client_, nil, locale);
 
   autofill::FormData form;
   form.url = GURL("https://myform.com");
@@ -174,9 +174,9 @@ TEST_F(AutofillAgentTests,
   field.is_autofilled = true;
   field.unique_renderer_id = FieldRendererId(5);
   form.fields.push_back(field);
-  [autofill_agent_
-      fillFormData:form
-           inFrame:fake_web_state_.GetWebFramesManager()->GetMainWebFrame()];
+  [autofill_agent_ fillFormData:form
+                        inFrame:fake_web_state_.GetPageWorldWebFramesManager()
+                                    ->GetMainWebFrame()];
   fake_web_state_.WasShown();
   EXPECT_EQ(u"__gCrWeb.autofill.fillForm({\"fields\":{\"2\":{\"section\":\"-"
             u"default\",\"value\":\"number_value\"},\"3\":{\"section\":\"-"
@@ -411,9 +411,8 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
 // callbacks. The main frame should always be processed first.
 TEST_F(AutofillAgentTests, FrameInitializationOrderFrames) {
   std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      &fake_web_state_, &client_, nil, locale,
-      autofill::AutofillManager::EnableDownloadManager(false));
+  autofill::AutofillDriverIOSFactory::CreateForWebState(&fake_web_state_,
+                                                        &client_, nil, locale);
 
   // Remove the current main frame.
   RemoveWebFrame(fake_main_frame_->GetFrameId());

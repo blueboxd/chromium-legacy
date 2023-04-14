@@ -46,7 +46,6 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_dedicated_worker_host_factory_client.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
@@ -61,7 +60,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/memory_cache_dump_provider.h"
 #include "third_party/blink/renderer/platform/language.h"
-#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/common/simple_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread.h"
@@ -70,7 +69,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/skia/include/core/SkGraphics.h"
 #include "third_party/webrtc/api/rtp_parameters.h"
 #include "third_party/webrtc/p2p/base/port_allocator.h"
 
@@ -262,9 +260,6 @@ void Platform::InitializeMainThreadCommon(
       CanvasMemoryDumpProvider::Instance(), "Canvas",
       base::SingleThreadTaskRunner::GetCurrentDefault());
 
-  SkGraphics::SetVariableColrV1EnabledFunc(
-      RuntimeEnabledFeatures::VariableCOLRV1Enabled);
-
   // Use a delayed idle task as this is low priority work that should stop when
   // the main thread is not doing any work.
   WTF::Partitions::StartPeriodicReclaim(
@@ -298,11 +293,6 @@ void Platform::UnsetMainThreadTaskRunnerForTesting() {
 
 Platform* Platform::Current() {
   return g_platform;
-}
-
-std::unique_ptr<WebURLLoaderFactory> Platform::WrapURLLoaderFactory(
-    CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>) {
-  return nullptr;
 }
 
 std::unique_ptr<WebDedicatedWorkerHostFactoryClient>

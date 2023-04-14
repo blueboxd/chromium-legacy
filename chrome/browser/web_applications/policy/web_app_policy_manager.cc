@@ -5,10 +5,12 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "base/barrier_callback.h"
+#include "base/check_deref.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -38,7 +40,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
-#include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -47,6 +49,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "url/url_constants.h"
 
@@ -56,6 +59,11 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/web_applications/web_app_system_web_app_delegate_map_utils.h"
+#include "components/user_manager/user_manager.h"
+#endif
 
 namespace {
 
@@ -81,6 +89,18 @@ void LogIsolatedWebAppInstallResult(
   }
 }
 #endif
+
+// Policy installed apps are only allowed on:
+// 1. ChromeOS guest sessions (current only on Ash).
+// 2. All Chrome profiles apart from incognito/guest profiles.
+bool AreForceInstalledAppsAllowed(Profile* profile) {
+  bool allowed = web_app::AreWebAppsUserInstallable(profile);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  allowed = allowed || user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+            user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
+#endif
+  return allowed;
+}
 
 }  // namespace
 
@@ -112,10 +132,12 @@ void WebAppPolicyManager::SetSubsystems(
   os_integration_manager_ = os_integration_manager;
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 void WebAppPolicyManager::SetSystemWebAppDelegateMap(
     const ash::SystemWebAppDelegateMap* system_web_apps_delegate_map) {
   system_web_apps_delegate_map_ = system_web_apps_delegate_map;
 }
+#endif
 
 void WebAppPolicyManager::Start(base::OnceClosure initialization_complete) {
   DCHECK(initialization_complete_.is_null());
@@ -145,7 +167,7 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(
 
   const auto it = base::ranges::find(
       web_apps_list, url.spec(), [](const base::Value& entry) {
-        return entry.FindKey(kUrlKey)->GetString();
+        return CHECK_DEREF(entry.GetDict().FindString(kUrlKey));
       });
 
   bool is_placeholder_url =
@@ -159,7 +181,8 @@ void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(
     return;
   }
 
-  ExternalInstallOptions install_options = ParseInstallPolicyEntry(*it);
+  ExternalInstallOptions install_options =
+      ParseInstallPolicyEntry(it->GetDict());
 
   if (!install_options.install_url.is_valid()) {
     std::move(on_complete)
@@ -274,6 +297,11 @@ bool WebAppPolicyManager::IsDisabledAppsModeHidden() const {
 }
 
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
+  if (!AreForceInstalledAppsAllowed(profile_)) {
+    OnWebAppForceInstallPolicyParsed();
+    return;
+  }
+
   // If this is called again while in progress, we will run it again once the
   // |SynchronizeInstalledApps| call is finished.
   if (is_refreshing_) {
@@ -293,7 +321,8 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   // are using a SimpleSchemaValidatingPolicyHandler which should validate them
   // for us.
   for (const base::Value& entry : web_apps) {
-    ExternalInstallOptions install_options = ParseInstallPolicyEntry(entry);
+    ExternalInstallOptions install_options =
+        ParseInstallPolicyEntry(entry.GetDict());
 
     if (!install_options.install_url.is_valid())
       continue;
@@ -390,7 +419,7 @@ void WebAppPolicyManager::RefreshPolicySettings() {
   // Read default policy, if provided.
   const auto it = base::ranges::find(
       web_apps_list, kWildcard, [](const base::Value& entry) {
-        return entry.FindKey(kManifestId)->GetString();
+        return CHECK_DEREF(entry.GetDict().FindString(kManifestId));
       });
 
   if (it != web_apps_list.end() && it->is_dict()) {
@@ -441,25 +470,24 @@ void WebAppPolicyManager::ApplyPolicySettings() {
 }
 
 ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
-    const base::Value& entry) {
-  const base::Value* install_url = entry.FindKey(kUrlKey);
+    const base::Value::Dict& entry) {
+  const std::string* install_url = entry.FindString(kUrlKey);
   // url is a required field and is validated by
   // SimpleSchemaValidatingPolicyHandler. It is guaranteed to exist.
-  const GURL install_gurl(install_url->GetString());
-  const base::Value* default_launch_container =
-      entry.FindKey(kDefaultLaunchContainerKey);
-  const base::Value* create_desktop_shortcut =
-      entry.FindKey(kCreateDesktopShortcutKey);
-  const base::Value* fallback_app_name = entry.FindKey(kFallbackAppNameKey);
-  const base::Value* uninstall_and_replace =
-      entry.FindKey(kUninstallAndReplaceKey);
-  const base::Value* install_as_shortcut = entry.FindKey(kInstallAsShortcut);
+  const GURL install_gurl(CHECK_DEREF(install_url));
+  const std::string* default_launch_container =
+      entry.FindString(kDefaultLaunchContainerKey);
+  const absl::optional<bool> create_desktop_shortcut =
+      entry.FindBool(kCreateDesktopShortcutKey);
+  const std::string* fallback_app_name = entry.FindString(kFallbackAppNameKey);
+  const base::Value::List* uninstall_and_replace =
+      entry.FindList(kUninstallAndReplaceKey);
+  const absl::optional<bool> install_as_shortcut =
+      entry.FindBool(kInstallAsShortcut);
 
   DCHECK(!default_launch_container ||
-         default_launch_container->GetString() ==
-             kDefaultLaunchContainerWindowValue ||
-         default_launch_container->GetString() ==
-             kDefaultLaunchContainerTabValue);
+         (*default_launch_container == kDefaultLaunchContainerWindowValue) ||
+         (*default_launch_container == kDefaultLaunchContainerTabValue));
 
   if (!install_gurl.is_valid()) {
     LOG(WARNING) << "Policy-installed web app has invalid URL " << *install_url;
@@ -468,8 +496,7 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   mojom::UserDisplayMode user_display_mode;
   if (!default_launch_container) {
     user_display_mode = mojom::UserDisplayMode::kBrowser;
-  } else if (default_launch_container->GetString() ==
-             kDefaultLaunchContainerTabValue) {
+  } else if (*default_launch_container == kDefaultLaunchContainerTabValue) {
     user_display_mode = mojom::UserDisplayMode::kBrowser;
   } else {
     user_display_mode = mojom::UserDisplayMode::kStandalone;
@@ -482,43 +509,39 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   // this doesn't re-apply when we already have it done.
   // https://crbug.com/1295044
   install_options.add_to_applications_menu = true;
-  install_options.add_to_desktop =
-      create_desktop_shortcut ? create_desktop_shortcut->GetBool() : false;
+  install_options.add_to_desktop = create_desktop_shortcut.value_or(false);
   // Pinning apps to the ChromeOS shelf is done through the PinnedLauncherApps
   // policy.
   install_options.add_to_quick_launch_bar = false;
 
   // Allow administrators to override the name of the placeholder app, as well
   // as the permanent name for Web Apps without a manifest.
-  if (fallback_app_name)
-    install_options.fallback_app_name = fallback_app_name->GetString();
+  if (fallback_app_name) {
+    install_options.fallback_app_name = *fallback_app_name;
+  }
 
   // Used by default Chrome app policy migration to force install web apps and
   // uninstall the old Chrome app equivalents.
   if (uninstall_and_replace) {
-    const base::Value::List* list = uninstall_and_replace->GetIfList();
-    if (list) {
-      for (const base::Value& item : *list) {
-        if (item.is_string())
-          install_options.uninstall_and_replace.push_back(item.GetString());
+    for (const base::Value& item : *uninstall_and_replace) {
+      if (item.is_string()) {
+        install_options.uninstall_and_replace.push_back(item.GetString());
       }
     }
   }
 
-  install_options.install_as_shortcut =
-      install_as_shortcut ? install_as_shortcut->GetBool() : false;
+  install_options.install_as_shortcut = install_as_shortcut.value_or(false);
 
-  const base::Value* custom_name = entry.FindKey(kCustomNameKey);
+  const std::string* custom_name = entry.FindString(kCustomNameKey);
   if (custom_name) {
-    install_options.override_name = custom_name->GetString();
+    install_options.override_name = *custom_name;
     if (install_gurl.is_valid())
-      custom_manifest_values_by_url_[install_gurl].SetName(
-          custom_name->GetString());
+      custom_manifest_values_by_url_[install_gurl].SetName(*custom_name);
   }
 
-  const base::Value* custom_icon = entry.FindKey(kCustomIconKey);
-  if (custom_icon && custom_icon->is_dict()) {
-    const std::string* icon_url = custom_icon->FindStringKey(kCustomIconURLKey);
+  const base::Value::Dict* custom_icon = entry.FindDict(kCustomIconKey);
+  if (custom_icon && custom_icon) {
+    const std::string* icon_url = custom_icon->FindString(kCustomIconURLKey);
     if (icon_url) {
       GURL icon_gurl = GURL(*icon_url);
       if (icon_gurl.SchemeIs(url::kHttpsScheme)) {
@@ -605,7 +628,7 @@ void WebAppPolicyManager::MaybeOverrideManifest(
         app_registrar_->GetExternallyInstalledApps(
             ExternalInstallSource::kExternalPolicy);
     if (base::Contains(policy_installed_apps, app_id)) {
-      DCHECK(policy_installed_apps[app_id].size() > 0);
+      DCHECK_GT(policy_installed_apps[app_id].size(), 0UL);
       for (const GURL& policy_install_url : policy_installed_apps[app_id]) {
         if (base::Contains(custom_manifest_values_by_url_, policy_install_url))
           OverrideManifest(policy_install_url, manifest);
@@ -643,13 +666,7 @@ void WebAppPolicyManager::OnAppsSynchronized(
                                   url_and_result.second.code);
   }
 
-  if (on_apps_synchronized_for_testing_) {
-    std::move(on_apps_synchronized_for_testing_).Run();
-  }
-
-  if (initialization_complete_) {
-    std::move(initialization_complete_).Run();
-  }
+  OnWebAppForceInstallPolicyParsed();
 }
 
 WebAppPolicyManager::WebAppSetting::WebAppSetting() {
@@ -791,6 +808,16 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #endif  // BUILDFLAG(IS_CHROMEOS)
+}
+
+void WebAppPolicyManager::OnWebAppForceInstallPolicyParsed() {
+  if (on_apps_synchronized_for_testing_) {
+    std::move(on_apps_synchronized_for_testing_).Run();
+  }
+
+  if (initialization_complete_) {
+    std::move(initialization_complete_).Run();
+  }
 }
 
 }  // namespace web_app

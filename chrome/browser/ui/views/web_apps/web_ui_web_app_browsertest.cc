@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -25,7 +27,7 @@ constexpr char kWebUIScheme[] = "chrome://";
 
 namespace web_app {
 
-class WebUIWebAppBrowserTest : public InProcessBrowserTest {
+class WebUIWebAppBrowserTest : public WebAppControllerBrowserTest {
  public:
   WebUIWebAppBrowserTest() = default;
   ~WebUIWebAppBrowserTest() override = default;
@@ -34,7 +36,7 @@ class WebUIWebAppBrowserTest : public InProcessBrowserTest {
     features_.InitAndEnableFeature(
         password_manager::features::kPasswordManagerRedesign);
     ASSERT_TRUE(embedded_test_server()->Start());
-    InProcessBrowserTest::SetUp();
+    WebAppControllerBrowserTest::SetUp();
   }
 
   struct App {
@@ -42,7 +44,7 @@ class WebUIWebAppBrowserTest : public InProcessBrowserTest {
     std::string start_url;
     raw_ptr<Browser> browser;
     raw_ptr<BrowserView> browser_view;
-    content::WebContents* web_contents;
+    raw_ptr<content::WebContents> web_contents;
   };
 
   App InstallAndLaunch() {
@@ -55,7 +57,7 @@ class WebUIWebAppBrowserTest : public InProcessBrowserTest {
     web_app_info->user_display_mode = mojom::UserDisplayMode::kStandalone;
     AppId app_id = test::InstallWebApp(profile, std::move(web_app_info));
 
-    Browser* app_browser = LaunchWebAppBrowser(profile, app_id);
+    Browser* app_browser = ::web_app::LaunchWebAppBrowser(profile, app_id);
     return App{app_id, start_url, app_browser,
                BrowserView::GetBrowserViewForBrowser(app_browser),
                app_browser->tab_strip_model()->GetActiveWebContents()};

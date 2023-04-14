@@ -51,7 +51,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.ArcContinueBootImpulseStatus"
-    enum="ArcContinueBootImpulseStatus" expires_after="2023-06-18">
+    enum="ArcContinueBootImpulseStatus" expires_after="2023-08-20">
   <owner>vsomani@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -124,7 +124,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.FailureReason" enum="LoginFailureReason"
-    expires_after="2023-06-04">
+    expires_after="2023-08-06">
   <owner>achuith@chromium.org</owner>
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -132,8 +132,8 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.Flow.{UserVisibility}.{UserCount}"
-    enum="LoginFlowUserLoginType" expires_after="2022-12-15">
-  <owner>sherrilin@google.com</owner>
+    enum="LoginFlowUserLoginType" expires_after="2023-06-01">
+  <owner>anastasiian@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
     Report the type of user login and the number of it on a device. It is
@@ -191,7 +191,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.NumberOfUsersOnLoginScreen" units="units"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>mslus@chromium.org</owner>
   <owner>chromeos-commercial-identity@google.com</owner>
   <summary>
@@ -233,7 +233,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PasswordChanged.ReauthReason" enum="LoginReauthReasons"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -243,7 +243,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PasswordNotChanged.ReauthReason"
-    enum="LoginReauthReasons" expires_after="2023-06-04">
+    enum="LoginReauthReasons" expires_after="2023-08-08">
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>
@@ -271,7 +271,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.PromptToCompleteLoginTime" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>antrim@chromium.org</owner>
   <owner>achuith@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -281,7 +281,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2023-06-04">
+<histogram name="Login.PromptToLoginTime" units="ms" expires_after="2023-08-08">
   <owner>khmel@chromium.org</owner>
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -310,7 +310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.SessionExitType" enum="LoginSessionExitType"
-    expires_after="2023-05-27">
+    expires_after="2023-07-30">
   <owner>iby@chromium.org</owner>
   <summary>
     Tracks whether a ChromeOS user was logged out because Chrome repeatedly
@@ -329,7 +329,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.SuccessReason" enum="LoginSuccessReason"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>achuith@chromium.org</owner>
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
@@ -350,7 +350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Login.TokenCheckResponseTime" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>antrim@chromium.org</owner>
   <owner>cros-lurs@google.com</owner>
   <summary>

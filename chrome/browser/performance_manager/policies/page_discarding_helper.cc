@@ -357,8 +357,14 @@ PageDiscardingHelper::CanUrgentlyDiscard(
       return CanUrgentlyDiscardResult::kProtected;
     if (live_state_data->IsActiveTab())
       return CanUrgentlyDiscardResult::kProtected;
+    if (live_state_data->IsPinnedTab()) {
+      return CanUrgentlyDiscardResult::kProtected;
+    }
     if (live_state_data->IsContentSettingTypeAllowed(
             ContentSettingsType::NOTIFICATIONS)) {
+      return CanUrgentlyDiscardResult::kProtected;
+    }
+    if (live_state_data->IsDevToolsOpen()) {
       return CanUrgentlyDiscardResult::kProtected;
     }
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -371,13 +377,8 @@ PageDiscardingHelper::CanUrgentlyDiscard(
 #endif
   }
 
-  // `HadUserEdits()` is currently a superset of `HadFormInteraction()` but
-  // that may change so check both here (the check is not expensive).
-  if (page_node->HadFormInteraction() || page_node->HadUserEdits()) {
+  if (page_node->HadFormInteraction())
     return CanUrgentlyDiscardResult::kProtected;
-  }
-
-  // TODO(sebmarchand): Do not discard pages if they're connected to DevTools.
 
   // TODO(sebmarchand): Do not discard crashed tabs.
 
@@ -403,14 +404,14 @@ bool PageDiscardingHelper::IsPageOptedOutOfDiscarding(
   return !it->second->MatchURL(url).empty();
 }
 
-base::Value PageDiscardingHelper::DescribePageNodeData(
+base::Value::Dict PageDiscardingHelper::DescribePageNodeData(
     const PageNode* node) const {
   auto* data = DiscardAttemptMarker::Get(PageNodeImpl::FromNode(node));
   if (data == nullptr)
-    return base::Value();
+    return base::Value::Dict();
 
-  base::Value ret(base::Value::Type::DICTIONARY);
-  ret.SetKey("has_discard_attempt_marker", base::Value("true"));
+  base::Value::Dict ret;
+  ret.Set("has_discard_attempt_marker", base::Value("true"));
 
   return ret;
 }

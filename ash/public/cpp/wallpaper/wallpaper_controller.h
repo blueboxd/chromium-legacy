@@ -62,6 +62,11 @@ class ASH_PUBLIC_EXPORT WallpaperController {
                     const base::FilePath& custom_wallpapers,
                     const base::FilePath& device_policy_wallpaper) = 0;
 
+  // Whether the user with `account_id` can set wallpaper. Users may be
+  // disallowed from setting wallpaper based on enterprise policy or if the
+  // device is running in kiosk mode.
+  virtual bool CanSetUserWallpaper(const AccountId& account_id) const = 0;
+
   // Sets the wallpaper from a local file and updates the saved wallpaper info
   // for the user.
   // |account_id|: The user's account id.
@@ -251,7 +256,8 @@ class ASH_PUBLIC_EXPORT WallpaperController {
 
   // Removes all of the user's saved wallpapers and related info.
   // |account_id|: The user's account id.
-  virtual void RemoveUserWallpaper(const AccountId& account_id) = 0;
+  virtual void RemoveUserWallpaper(const AccountId& account_id,
+                                   base::OnceClosure on_removed) = 0;
 
   // Removes all of the user's saved wallpapers and related info if the
   // wallpaper was set by |SetPolicyWallpaper|. In addition, sets the user's

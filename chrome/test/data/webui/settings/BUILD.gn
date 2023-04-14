@@ -20,6 +20,8 @@ build_webui_tests("build") {
     "appearance_fonts_page_test.ts",
     "appearance_page_test.ts",
     "autofill_page_test.ts",
+    "autofill_section_address_validation_test.ts",
+    "autofill_section_test_utils.ts",
     "autofill_section_test.ts",
     "avatar_icon_test.ts",
     "basic_page_test.ts",
@@ -96,12 +98,14 @@ build_webui_tests("build") {
     "settings_menu_test.ts",
     "settings_page_test_util.ts",
     "settings_performance_menu_test.ts",
+    "settings_section_test.ts",
     "settings_slider_tests.ts",
     "settings_subpage_test.ts",
     "settings_toggle_button_tests.ts",
     "settings_ui_tests.ts",
     "site_data_test.ts",
     "site_details_permission_tests.ts",
+    "site_details_permission_device_entry_tests.ts",
     "site_details_tests.ts",
     "site_entry_tests.ts",
     "site_favicon_test.ts",
@@ -118,7 +122,6 @@ build_webui_tests("build") {
     "test_hats_browser_proxy.ts",
     "test_lifetime_browser_proxy.ts",
     "test_metrics_browser_proxy.ts",
-    "test_open_window_proxy.ts",
     "test_password_manager_proxy.ts",
     "test_performance_browser_proxy.ts",
     "test_performance_metrics_proxy.ts",
@@ -216,5 +219,8 @@ build_webui_tests("build") {
         [ "//tools/typescript/definitions/quick_unlock_private.d.ts" ]
   }
 
-  ts_deps = [ "//chrome/browser/resources/settings:build_ts" ]
+  ts_deps = [
+    "//chrome/browser/resources/settings:build_ts",
+    "//ui/webui/resources/js:build_ts",
+  ]
 }

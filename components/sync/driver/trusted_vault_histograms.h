@@ -32,6 +32,20 @@ enum class TrustedVaultDeviceRegistrationStateForUMA {
   kMaxValue = kAlreadyRegisteredV1,
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class TrustedVaultDeviceRegistrationOutcomeForUMA {
+  kSuccess = 0,
+  kAlreadyRegistered = 1,
+  kLocalDataObsolete = 2,
+  kTransientAccessTokenFetchError = 3,
+  kPersistentAccessTokenFetchError = 4,
+  kPrimaryAccountChangeAccessTokenFetchError = 5,
+  kNetworkError = 6,
+  kOtherError = 7,
+  kMaxValue = kOtherError,
+};
+
 // Used to provide UMA metric breakdowns.
 enum class TrustedVaultURLFetchReasonForUMA {
   kUnspecified,
@@ -60,7 +74,8 @@ enum class TrustedVaultDownloadKeysStatusForUMA {
   kThrottledClientSide = 12,
   kCorruptedLocalDeviceRegistration = 13,
   kAborted = 14,
-  kMaxValue = kAborted
+  kNetworkError = 15,
+  kMaxValue = kNetworkError
 };
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -81,6 +96,9 @@ void RecordTrustedVaultHintDegradedRecoverabilityChangedReason(
 
 void RecordTrustedVaultDeviceRegistrationState(
     TrustedVaultDeviceRegistrationStateForUMA registration_state);
+
+void RecordTrustedVaultDeviceRegistrationOutcome(
+    TrustedVaultDeviceRegistrationOutcomeForUMA registration_outcome);
 
 // Records url fetch response status (combined http and net error code). If
 // |http_response_code| is non-zero, it will be recorded, otherwise |net_error|

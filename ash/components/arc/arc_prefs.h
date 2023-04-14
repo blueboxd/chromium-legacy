@@ -43,7 +43,6 @@ ARC_EXPORT extern const char kArcShowResizeLockSplashScreenLimits[];
 ARC_EXPORT extern const char kArcSignedIn[];
 ARC_EXPORT extern const char kArcSkippedReportingNotice[];
 ARC_EXPORT extern const char kArcTermsAccepted[];
-ARC_EXPORT extern const char kArcTermsShownInOobe[];
 ARC_EXPORT extern const char kArcVisibleExternalStorages[];
 ARC_EXPORT extern const char kArcVmDataMigrationStatus[];
 ARC_EXPORT extern const char kArcIsManaged[];
@@ -56,6 +55,7 @@ ARC_EXPORT extern const char kAnrPendingDuration[];
 ARC_EXPORT extern const char kArcSerialNumberSalt[];
 ARC_EXPORT extern const char kArcSnapshotHours[];
 ARC_EXPORT extern const char kArcSnapshotInfo[];
+ARC_EXPORT extern const char kArcVmmSwapOutTime[];
 ARC_EXPORT extern const char kStabilityMetrics[];
 ARC_EXPORT extern const char kWebViewProcessStarted[];
 

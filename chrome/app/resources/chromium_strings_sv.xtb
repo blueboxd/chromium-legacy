@@ -12,7 +12,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="1131805035311359397"><ph name="BEGIN_LINK" />Logga in i Chromium<ph name="END_LINK" /> om du vill kontrollera att dina lösenord skyddas från dataintrång och andra säkerhetsproblem.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
 <translation id="1203500561924088507">Tack för att du installerat programmet. Du måste starta om webbläsaren innan du använder <ph name="BUNDLE_NAME" />.</translation>
-<translation id="1231839967188101156">När det här alternativet är aktiverat frigörs minne från inaktiva flikar i Chromium. Detta förser aktiva flikar och andra appar med mer av datorns resurser, vilket gör att Chromium fortsätter att fungera snabbt. De inaktiva flikarna aktiveras automatiskt när du återvänder till dem. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Minnessparläget har gjort Chromium snabbare</translation>
 <translation id="1315551408014407711">Konfigurera din nya profil i Chromium</translation>
 <translation id="1396446129537741364">Chromium försöker visa lösenord.</translation>
@@ -116,6 +115,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="3567254597502212821">Webbhistoriken, där webbplatser som du besökt i Chromium på den här enheten registreras.</translation>
 <translation id="3575459661164320785">Det finns skadlig programvara på datorn. Den skadliga programvaran kan tas bort, inställningarna återställas och tillägg inaktiveras så att webbläsaren fungerar som den ska igen.</translation>
 <translation id="3593091352817399191">Ett annat konto är redan inloggat. Du kan hålla isär webbinformationen genom att skapa en egen profil i Chromium.</translation>
+<translation id="363078681319665186">Du behöver macOS 10.15 eller senare för att få framtida uppdateringar av Chromium. På den här datorn används macOS 10.13.</translation>
 <translation id="3639635944603682591">Den här personens webbläsardata tas bort från enheten. Logga in i Chromium som <ph name="USER_EMAIL" /> om du vill återställa data.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Det finns en ny Chromium-uppdatering som tillämpas så snart du startar om.}=1{Det finns en ny Chromium-uppdatering som tillämpas så snart du startar om. Inkognitofönstret öppnas inte igen.}other{Det finns en ny Chromium-uppdatering som tillämpas så snart du startar om. De # inkognitofönstren öppnas inte igen.}}</translation>
 <translation id="3651803019964686660">Logga in på Chromium på båda enheterna om du vill skicka ett nummer från <ph name="ORIGIN" /> till Android-telefonen.</translation>
@@ -123,12 +123,12 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="3702352323269013324">Läs mer om annonsanpassning i Chromium</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas}=1{Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas. Inkognitofönstret öppnas inte igen.}other{Administratören meddelar att du bör starta om Chromium så att uppdateringen tillämpas. De # inkognitofönstren öppnas inte igen.}}</translation>
 <translation id="3713809861844741608">Öppna länken i en ny &amp;flik i Chromium</translation>
-<translation id="3728336900324680424">Chromium får åtkomst till din Drive så att du kan få förslag därifrån i adressfältet</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="3830894615770080216">Chromium OS-system</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="386822487697155367">Få hjälp med Chromium OS</translation>
 <translation id="3871664619793219264">Få saker i webbläsaren Chromium från <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">Du behöver macOS 10.15 eller senare för att få framtida uppdateringar av Chromium. På den här datorn används macOS 10.14.</translation>
 <translation id="388648406173476553">Anpassa och kontrollera Chromium. Någonting behöver ses över. Klicka här för mer information.</translation>
 <translation id="3889543394854987837">Öppna Chromium genom att klicka på ditt namn och börja surfa.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> är redan inloggad på den här Chromium-profilen. Du kan hålla isär webbinformationen genom att skapa en egen profil i Chromium.</translation>
@@ -218,6 +218,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="6072463441809498330">Gör Chromium snabbare</translation>
 <translation id="608006075545470555">Lägg till en jobbprofil i den här webbläsaren</translation>
 <translation id="6096348254544841612">Anpassa och styr Chromium. En uppdatering är tillgänglig.</translation>
+<translation id="6102072151902574948">När inställningen är aktiverad sparar Chromium batteri genom att begränsa aktivitet i bakgrunden och visuella effekter, till exempel jämnare scrollning och bildfrekvenser för video.</translation>
 <translation id="6119438414301547735">Tillåt att tillägg visar åtkomstförfrågningar i verktygsfältet i Chromium</translation>
 <translation id="6120345080069858279">Det här lösenordet sparas i ditt Google-konto. Du behöver inte komma ihåg det.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> är skadlig och har blockerats av Chromium.</translation>
@@ -278,6 +279,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6940431691900807093">Senare kan en webbplats fråga efter dina intressen i Chromium för att anpassa vilka annonser som visas. Chromium kan dela upp till tre intressen.</translation>
 <translation id="6964305034639999644">Öppna länken i ett inko&amp;gnitofönster i Chromium.</translation>
 <translation id="6978145336957848883">Svaga lösenord är lätta att lista ut. Låt Chromium <ph name="BEGIN_LINK" />skapa och spara starka lösenord åt dig<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">När det här alternativet är aktiverat frigörs minne från inaktiva flikar i Chromium. Detta förser aktiva flikar och andra appar med mer av datorns resurser, vilket gör att Chromium fortsätter att fungera snabbt. De inaktiva flikarna aktiveras automatiskt när du återvänder till dem.</translation>
 <translation id="6984667024406244807">Chromium är inaktivt</translation>
 <translation id="6985329841647292029">Villkor för Chromium OS</translation>
 <translation id="6990124437352146030">Du behöver ge Chromium behörighet att använda mikrofonen på webbplatsen</translation>
@@ -322,6 +324,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Det finns redan en Chromium-profil med detta konto på enheten</translation>
 <translation id="7845233973568007926">Tack för att du installerat programmet. Du måste starta om datorn innan du använder <ph name="BUNDLE_NAME" />.</translation>
+<translation id="7859018312476869945">När du skriver i adressfältet eller sökrutan skickar Chromium det du skriver till standardsökmotorn för att du ska få bättre förslag. Detta är inaktiverat i inkognitoläge.</translation>
 <translation id="7867198900892795913">Det gick inte att uppdatera Chromium till den senaste versionen. Därför går du miste om nya funktioner och säkerhetskorrigeringar.</translation>
 <translation id="7872446069773932638">Laddar ned … <ph name="SECONDS" /> sekund/sekunder återstår</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Så här kan du hantera dina uppgifter:<ph name="END_BOLD" /> För att skydda din integritet raderar vi automatiskt intressen som är äldre än fyra veckor. Medan du surfar kan ett intresse dyka upp på listan igen. Du kan också ta bort intressen som du inte vill att Chromium ska inkludera.</translation>
@@ -349,9 +352,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
 <translation id="8550334526674375523">Jobbprofilen hålls helt åtskild från din privata profil.</translation>
 <translation id="8558383651099478961">Din förälder har inaktiverat Behörigheter för webbplatser, appar och tillägg för Chromium. Det är inte tillåtet att lägga till denna <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
-<translation id="8561285221328166383">Du behöver macOS 10.13 eller senare för att få kommande uppdateringar av Chromium. På den här datorn används macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium kan kontrollera dina lösenord när du loggar in med Google-kontot</translation>
-<translation id="8574036838419011058">När inställningen är aktiverad sparar Chromium batteri genom att begränsa aktivitet i bakgrunden och visuella effekter, till exempel jämnare scrollning och bildfrekvenser för video. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Så här använder vi denna data:<ph name="END_BOLD" /> Webbplatser kan lagra information om dina intressen i Chromium. Om du till exempel besöker en webbplats för att köpa skor till ett maraton kanske webbplatsen anger att du är intresserad av att springa maraton. Om du sedan besöker en annan webbplats för att registrera dig för ett lopp kan webbplatsen visa en annons för löparskor utifrån dina intressen.</translation>
 <translation id="8619360774459241877">Chromium startas …</translation>
@@ -382,7 +383,6 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium kanske inte fungerar ordentligt eftersom den inte längre stöds på Windows XP och Windows Vista</translation>
 <translation id="942598560705308788">Certifikat som hanteras av Chromium</translation>
-<translation id="945990405696787151">Du behöver macOS 10.13 eller senare för att få kommande uppdateringar av Chromium. På den här datorn används OS X 10.11.</translation>
 <translation id="965162752251293939">Vem ska använda Chromium?</translation>
 <translation id="967427899662692980">Få det bästa skyddet i Chromium</translation>
 <translation id="9792300276217204">Rensa alltid webbplatsdata från enheten när du stänger Chromium</translation>

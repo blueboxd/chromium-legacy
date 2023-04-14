@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Отворен е прозорецот за ажурирање фирмвер за надворешни уреди. Достапни се <ph name="NUM_UPDATES" /> ажурирања.</translation>
 <translation id="1145516343487477149">Најдете статии за помош и одговори на вообичаени прашања за Chromebook</translation>
+<translation id="1167755866710282443">Отворете го менито за приспособување на клучевите. Повлечете го менито за преместување.</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> управува со овој <ph name="DEVICE_TYPE" />.</translation>
 <translation id="1175951029573070619">Просечен (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Отстрани</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Изберете го албумот <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Подлога за допир со USB</translation>
 <translation id="4117637339509843559">Темен режим</translation>
+<translation id="4130035430755296270">Наместете го курсорот за повеќе опции за распоред</translation>
 <translation id="4131410914670010031">Црно и бело</translation>
 <translation id="4145784616224233563">Заштитен ѕид со HTTP</translation>
 <translation id="4147897805161313378">Фотографии на Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Одредување со DNS</translation>
 <translation id="4848429997038228357">СЕ ИЗВРШУВА</translation>
 <translation id="4854586501323951986">Вграден допирен екран</translation>
+<translation id="4855250849489639581">Повлечете надолу за повеќе опции за распоред</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Уште {0} обид}one{<ph name="ERROR_MESSAGE" /> Уште {0} обид}other{<ph name="ERROR_MESSAGE" /> Уште {0} обиди}}</translation>
 <translation id="4873827928179867585">Алгоритам за проверка</translation>
 <translation id="4880328057631981605">Име на пристапна точка</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 слика</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> управува со овој <ph name="DEVICE_TYPE" />. Администраторите може да го конфигурираат уредот оддалеку.</translation>
 <translation id="7180611975245234373">Освежи</translation>
+<translation id="7180865173735832675">Приспособи</translation>
 <translation id="7212734716605298123">Ажурирања на фирмверот за екстерни уреди</translation>
 <translation id="7216409898977639127">Мобилен оператор</translation>
 <translation id="725133483556299729">Избери е-пошта</translation>

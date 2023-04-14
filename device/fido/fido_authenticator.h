@@ -51,9 +51,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using GetAssertionCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               std::vector<AuthenticatorGetAssertionResponse>)>;
-  using GetCredentialInformationForRequestCallback = base::OnceCallback<void(
+  using GetPlatformCredentialInfoForRequestCallback = base::OnceCallback<void(
       std::vector<DiscoverableCredentialMetadata> credentials,
-      bool has_credentials)>;
+      FidoRequestHandlerBase::RecognizedCredential has_credentials)>;
 
   using GetRetriesCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
@@ -82,10 +82,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   using BioEnrollmentCallback =
       base::OnceCallback<void(CtapDeviceResponseCode,
                               absl::optional<BioEnrollmentResponse>)>;
-  using LargeBlobReadCallback = base::OnceCallback<void(
-      CtapDeviceResponseCode,
-      absl::optional<std::vector<std::pair<LargeBlobKey, LargeBlob>>>
-          callback)>;
 
   FidoAuthenticator() = default;
 
@@ -135,13 +131,16 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                             CtapGetAssertionOptions options,
                             GetAssertionCallback callback) = 0;
 
-  // GetCredentialInformationForRequest returns a boolean indicating whether
-  // there are credentials applicable for |request|, and if supported, a list of
-  // the corresponding resident credential metadata for empty allow list
-  // requests.
-  virtual void GetCredentialInformationForRequest(
+  // GetPlatformCredentialInfoForRequest returns whether there are platform
+  // credentials applicable for |request|, and if supported, a list of the
+  // corresponding resident credential metadata for empty allow list requests.
+  // This is only valid to call for internal authenticators, or for the Windows
+  // native authenticator (in which case the result will reflect its platform
+  // authenticator).
+  virtual void GetPlatformCredentialInfoForRequest(
       const CtapGetAssertionRequest& request,
-      GetCredentialInformationForRequestCallback callback);
+      const CtapGetAssertionOptions& options,
+      GetPlatformCredentialInfoForRequestCallback callback);
   // GetTouch causes an (external) authenticator to flash and wait for a touch.
   virtual void GetTouch(base::OnceCallback<void()> callback);
   // GetPinRetries gets the number of PIN attempts remaining before an
@@ -261,20 +260,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
                                std::vector<uint8_t> template_id,
                                BioEnrollmentCallback);
 
-  // Large blob commands.
-  // Attempts to write a |large_blob| into the credential. If there is an
-  // existing credential for the |large_blob_key|, it will be overwritten.
-  virtual void WriteLargeBlob(
-      LargeBlob large_blob,
-      const LargeBlobKey& large_blob_key,
-      absl::optional<pin::TokenResponse> pin_uv_auth_token,
-      base::OnceCallback<void(CtapDeviceResponseCode)> callback);
-  // Attempts to read large blobs from the credential encrypted with
-  // |large_blob_keys|. Returns a map of keys to their blobs.
-  virtual void ReadLargeBlob(
-      const std::vector<LargeBlobKey>& large_blob_keys,
-      absl::optional<pin::TokenResponse> pin_uv_auth_token,
-      LargeBlobReadCallback callback);
   // Removes all stored large blobs that conform to the large blob CBOR
   // structure without a corresponding discoverable credential.
   virtual void GarbageCollectLargeBlob(
@@ -315,14 +300,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // same VID:PID. It defaults to returning the value of |GetId|.
   virtual std::string GetDisplayName() const;
   virtual ProtocolVersion SupportedProtocol() const;
-  virtual bool SupportsCredProtectExtension() const;
-  virtual bool SupportsHMACSecretExtension() const;
-  virtual bool SupportsEnterpriseAttestation() const;
-  virtual bool SupportsCredBlobOfSize(size_t num_bytes) const;
-  virtual bool SupportsDevicePublicKey() const;
-  virtual bool SupportsLargeBlobs() const;
-  virtual const absl::optional<AuthenticatorSupportedOptions>& Options()
-      const = 0;
+  virtual const AuthenticatorSupportedOptions& Options() const = 0;
   virtual absl::optional<FidoTransportProtocol> AuthenticatorTransport()
       const = 0;
   virtual base::WeakPtr<FidoAuthenticator> GetWeakPtr() = 0;

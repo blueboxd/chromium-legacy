@@ -15,13 +15,16 @@
 /// *******
 
 // Custom symbol names.
+#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
+extern NSString* const kGoogleIconSymbol;
+extern NSString* const kGoogleShieldSymbol;
+extern NSString* const kChromeSymbol;
+#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kPrivacySymbol;
 extern NSString* const kSyncDisabledSymbol;
 extern NSString* const kSafetyCheckSymbol;
-#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-extern NSString* const kGoogleIconSymbol;
-#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kArrowClockWiseSymbol;
+extern NSString* const kIncognitoSymbol;
 extern NSString* const kSquareNumberSymbol;
 extern NSString* const kTranslateSymbol;
 extern NSString* const kCameraSymbol;
@@ -34,17 +37,18 @@ extern NSString* const kPhotoBadgeMagnifyingglassSymbol;
 extern NSString* const kReadingListSymbol;
 extern NSString* const kRecentTabsSymbol;
 extern NSString* const kLanguageSymbol;
+extern NSString* const kLocationSymbol;
+extern NSString* const kLocationFillSymbol;
 extern NSString* const kPasswordSymbol;
 #if !BUILDFLAG(IS_IOS_MACCATALYST)
 extern NSString* const kMulticolorPasswordSymbol;
 #endif  // BUILDFLAG(IS_IOS_MACCATALYST)
 extern NSString* const kCameraLensSymbol;
 extern NSString* const kDownTrendSymbol;
-#if BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
-extern NSString* const kGoogleShieldSymbol;
-#endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kShieldSymbol;
-extern NSString* const kIncognitoSymbol;
+extern NSString* const kCloudSlashSymbol;
+extern NSString* const kCloudAndArrowUpSymbol;
+extern NSString* const kDinoSymbol;
 
 // Custom symbol names which can be configured with a color palette. iOS 15+
 // only.
@@ -90,9 +94,9 @@ extern NSString* const kPrinterSymbol;
 extern NSString* const kCreditCardSymbol;
 extern NSString* const kMicrophoneFillSymbol;
 extern NSString* const kMicrophoneSymbol;
+extern NSString* const kMagnifyingglassSymbol;
 extern NSString* const kEllipsisCircleFillSymbol;
 extern NSString* const kPinSymbol;
-extern NSString* const kPinFillSymbol;
 extern NSString* const kPinSlashSymbol;
 extern NSString* const kSettingsSymbol;
 extern NSString* const kSettingsFilledSymbol;
@@ -126,6 +130,7 @@ extern NSString* const kPhoneFillSymbol;
 extern NSString* const kDownloadPromptFillSymbol;
 extern NSString* const kDownloadPromptFilliOS14Symbol;
 extern NSString* const kDownloadDocFillSymbol;
+extern NSString* const kDocSymbol;
 extern NSString* const kOpenInDownloadsSymbol;
 extern NSString* const kOpenInDownloadsiOS14Symbol;
 extern NSString* const kExternalLinkSymbol;
@@ -133,6 +138,10 @@ extern NSString* const kChevronForwardSymbol;
 extern NSString* const kGlobeAmericasSymbol;
 extern NSString* const kGlobeSymbol;
 extern NSString* const kPersonCropCircleSymbol;
+extern NSString* const kEqualSymbol;
+extern NSString* const kBookClosedSymbol;
+extern NSString* const kSunFillSymbol;
+extern NSString* const kCalendarSymbol;
 
 // Names of the default symbol being non-monochrome by default. When using them,
 // you probably want to set their color to monochrome.

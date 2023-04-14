@@ -95,7 +95,6 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2677748264148917807">離開</translation>
 <translation id="2687403674020088961">封鎖所有 Cookie (不建議)</translation>
-<translation id="2704606927547763573">已複製</translation>
 <translation id="2713106313042589954">關閉攝影機</translation>
 <translation id="2717722538473713889">電子郵件地址</translation>
 <translation id="2750481671343847896">網站可以顯示身分識別服務的登入提示。</translation>
@@ -358,6 +357,7 @@
 <translation id="7791543448312431591">新增</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
 <translation id="7804248752222191302">有網站正在使用你的攝影機</translation>
+<translation id="7807060072011926525">由 Google 提供</translation>
 <translation id="7835852323729233924">正在播放媒體</translation>
 <translation id="783819812427904514">將影片取消靜音</translation>
 <translation id="7846076177841592234">全部取消選取</translation>

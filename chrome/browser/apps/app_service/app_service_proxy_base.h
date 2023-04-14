@@ -33,7 +33,6 @@
 #include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_impl.h"
-#include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -109,20 +108,9 @@ class AppServiceProxyBase : public KeyedService,
   // be destroyed earlier than AppServiceProxy.
   void UnregisterPublisher(AppType app_type);
 
-  // PreferredApps::Host overrides.
-  void InitializePreferredAppsForAllSubscribers() override;
-  void OnPreferredAppsChanged(PreferredAppChangesPtr changes) override;
-  void OnPreferredAppSet(
-      const std::string& app_id,
-      IntentFilterPtr intent_filter,
-      IntentPtr intent,
-      ReplacedAppPreferences replaced_app_preferences) override;
+  // PreferredAppsImpl::Host overrides.
   void OnSupportedLinksPreferenceChanged(const std::string& app_id,
                                          bool open_in_app) override;
-  void OnSupportedLinksPreferenceChanged(AppType app_type,
-                                         const std::string& app_id,
-                                         bool open_in_app) override;
-  bool HasPublisher(AppType app_type) override;
 
   // apps::IconLoader overrides.
   absl::optional<IconKey> GetIconKey(const std::string& app_id) override;
@@ -252,8 +240,12 @@ class AppServiceProxyBase : public KeyedService,
       std::vector<apps::IntentFilePtr> files);
 
   // Adds a preferred app for |url|.
+  // Deprecated, prefer calling SetSupportedLinksPreference() instead.
+  // TODO(crbug.com/1416434): Migrate existing users.
   void AddPreferredApp(const std::string& app_id, const GURL& url);
-  // Adds a preferred app for |intent|.
+  // Adds a preferred app for |intent|. Only supports link intents.
+  // Deprecated, prefer calling SetSupportedLinksPreference() instead.
+  // TODO(crbug.com/1416434): Migrate existing users.
   void AddPreferredApp(const std::string& app_id, const IntentPtr& intent);
 
   // Sets |app_id| as the preferred app for all of its supported links ('view'
@@ -391,7 +383,7 @@ class AppServiceProxyBase : public KeyedService,
 
   // Returns true if we should read icon image files from the local app_service
   // icon directory on disk, e.g. for ChromeOS. Otherwise, returns false.
-  virtual bool ShouldReadIcons();
+  virtual bool ShouldReadIcons(AppType app_type);
 
   // Reads icon image files from the local app_service icon directory on disk.
   virtual void ReadIcons(AppType app_type,
@@ -423,7 +415,6 @@ class AppServiceProxyBase : public KeyedService,
   IconCache outer_icon_loader_;
 
   std::unique_ptr<apps::PreferredAppsImpl> preferred_apps_impl_;
-  apps::PreferredAppsList preferred_apps_list_;
 
   raw_ptr<Profile> profile_;
 

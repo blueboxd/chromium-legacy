@@ -4,8 +4,8 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
-import("//ui/file_manager/base/gn/files_webui_bundle/files_webui_bundle.gni")
 import("//ui/file_manager/base/gn/js_test_type_check.gni")
+import("//ui/webui/resources/tools/optimize_webui.gni")
 
 visibility = [
   "//ui/file_manager/file_manager/externs/*",
@@ -198,8 +198,10 @@ js_library("banner_controller") {
     ":directory_model",
     "ui/banners:dlp_restricted_banner",
     "ui/banners:drive_low_individual_space_banner",
+    "ui/banners:drive_low_shared_drive_space_banner",
     "ui/banners:drive_out_of_individual_space_banner",
     "ui/banners:drive_out_of_organization_space_banner",
+    "ui/banners:drive_out_of_shared_drive_space_banner",
     "ui/banners:drive_welcome_banner",
     "ui/banners:google_one_offer_banner",
     "ui/banners:holding_space_welcome_banner",
@@ -845,6 +847,8 @@ js_library("guest_os_controller") {
     "//ui/file_manager/file_manager/common/js:api",
     "//ui/file_manager/file_manager/common/js:files_app_entry_types",
     "//ui/file_manager/file_manager/common/js:util",
+    "//ui/file_manager/file_manager/common/js:volume_manager_types",
+    "//ui/file_manager/file_manager/externs:volume_manager",
   ]
 }
 
@@ -1258,7 +1262,7 @@ image_loader_path =
     rebase_path("$root_gen_dir/ui/file_manager/preprocessed/image_loader",
                 root_build_dir)
 
-files_webui_bundle("build") {
+optimize_webui("build") {
   visibility += [ "//ui/file_manager:build_grd" ]
   host = "file_manager"
 
@@ -1266,12 +1270,6 @@ files_webui_bundle("build") {
   js_module_in_files = [
     "main.js",
     "deferred_elements.js",
-  ]
-
-  js_out_files = [
-    "main.rollup.js",
-    "deferred_elements.rollup.js",
-    "shared.rollup.js",
   ]
 
   external_paths = [
@@ -1283,18 +1281,18 @@ files_webui_bundle("build") {
   deps = [
     ":main",
     "//ui/file_manager:build_ts",
-    "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_components/color_change_listener:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
 }
 
-files_webui_bundle("build_worker") {
+optimize_webui("build_worker") {
   visibility += [ "//ui/file_manager:build_grd" ]
   host = "file_manager"
 
   input = tsc_folder
   js_module_in_files = [ "metadata/metadata_dispatcher.js" ]
-
-  js_out_files = [ "metadata_dispatcher.rollup.js" ]
 
   external_paths = [
     "chrome-extension://pmfjbimdmchhbnneeidfognadeopoehp|$image_loader_path",

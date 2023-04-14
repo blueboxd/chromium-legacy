@@ -307,6 +307,21 @@ IbanEntryList GenerateIbanList(
   return list;
 }
 
+absl::optional<api::autofill_private::AccountInfo> GetAccountInfo(
+    const autofill::PersonalDataManager& personal_data) {
+  absl::optional<CoreAccountInfo> account =
+      personal_data.GetPrimaryAccountInfo();
+  if (!account.has_value()) {
+    return absl::nullopt;
+  }
+
+  api::autofill_private::AccountInfo api_account;
+  api_account.email = account->email;
+  api_account.is_sync_enabled_for_autofill_profiles =
+      personal_data.IsSyncEnabledFor(syncer::ModelType::AUTOFILL_PROFILE);
+  return std::move(api_account);
+}
+
 }  // namespace autofill_util
 
 }  // namespace extensions

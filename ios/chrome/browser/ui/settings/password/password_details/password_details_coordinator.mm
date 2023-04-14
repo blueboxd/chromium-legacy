@@ -18,6 +18,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
@@ -33,6 +34,7 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -93,7 +95,7 @@
     _credential = credential;
     _manager = manager;
     _reauthenticationModule = reauthModule;
-    if (IsCredentialProviderExtensionPromoEnabled()) {
+    if (IsCredentialProviderExtensionPromoEnabledOnPasswordCopied()) {
       _credentialProviderPromoHandler = HandlerForProtocol(
           browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
     }
@@ -119,7 +121,7 @@
     _affiliatedGroup = affiliatedGroup;
     _manager = manager;
     _reauthenticationModule = reauthModule;
-    if (IsCredentialProviderExtensionPromoEnabled()) {
+    if (IsCredentialProviderExtensionPromoEnabledOnPasswordCopied()) {
       _credentialProviderPromoHandler = HandlerForProtocol(
           browser->GetCommandDispatcher(), CredentialProviderPromoCommands);
     }
@@ -293,6 +295,33 @@
   [self.actionSheetCoordinator start];
 }
 
+- (void)moveCredentialToAccountStore:(PasswordDetails*)password {
+  // TODO(crbug.com/1400217): Instantiate the coordinator for the confirmation
+  // dialog in case there are conflicting passwords.
+  const std::vector<password_manager::CredentialUIEntry>& credentials =
+      self.mediator.credentials;
+  auto it = base::ranges::find_if(
+      credentials,
+      [password](const password_manager::CredentialUIEntry& credential) {
+        return base::SysNSStringToUTF8(password.signonRealm) ==
+                   credential.GetFirstSignonRealm() &&
+               base::SysNSStringToUTF16(password.username) ==
+                   credential.username &&
+               base::SysNSStringToUTF16(password.password) ==
+                   credential.password;
+      });
+  if (it != credentials.end()) {
+    web::WebState* webState =
+        self.browser->GetWebStateList()->GetActiveWebState();
+    DCHECK(webState) << "It is impossible to open password details UI when all "
+                        "tabs are closed.";
+    [self.mediator
+        moveCredentialToAccountStore:*it
+                              client:PasswordTabHelper::FromWebState(webState)
+                                         ->GetPasswordManagerClient()];
+  }
+}
+
 - (void)showPasswordDetailsInEditModeWithoutAuthentication {
   [self.viewController showEditViewWithoutAuthentication];
 }
@@ -307,7 +336,7 @@
 }
 
 - (void)onPasswordCopiedByUser {
-  if (IsCredentialProviderExtensionPromoEnabled()) {
+  if (IsCredentialProviderExtensionPromoEnabledOnPasswordCopied()) {
     DCHECK(_credentialProviderPromoHandler);
     [_credentialProviderPromoHandler
         showCredentialProviderPromoWithTrigger:CredentialProviderPromoTrigger::

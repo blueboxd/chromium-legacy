@@ -303,7 +303,8 @@ void LoadStreamTask::UploadActionsComplete(UploadActionsTask::Result result) {
   feedwire::Request request = CreateFeedQueryRefreshRequest(
       options_.stream_type,
       GetRequestReason(options_.stream_type, options_.load_type),
-      request_metadata, stream_->GetMetadata().consistency_token());
+      request_metadata, stream_->GetMetadata().consistency_token(),
+      options_.single_feed_entry_point);
 
   const AccountInfo account_info =
       force_signed_out_request ? AccountInfo{} : stream_->GetAccountInfo();
@@ -482,6 +483,7 @@ void LoadStreamTask::Done(LaunchResult launch_result) {
   result.upload_actions_result = std::move(upload_actions_result_);
   result.experiments = experiments_;
   result.launch_result = launch_result.launch_result;
+  result.single_feed_entry_point = options_.single_feed_entry_point;
   std::move(done_callback_).Run(std::move(result));
   TaskComplete();
 }
@@ -497,7 +499,9 @@ std::ostream& operator<<(std::ostream& os,
   if (result.network_response_info)
     os << " network_response_info=" << *result.network_response_info;
   return os << " loaded_new_content_from_network="
-            << result.loaded_new_content_from_network << "}";
+            << result.loaded_new_content_from_network
+            << " single_feed_entry_point=" << result.single_feed_entry_point
+            << "}";
 }
 
 }  // namespace feed

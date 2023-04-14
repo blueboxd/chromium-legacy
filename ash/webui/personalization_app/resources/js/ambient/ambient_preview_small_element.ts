@@ -15,9 +15,10 @@ import './ambient_zero_state_svg_element.js';
 import '../../css/common.css.js';
 import '../../css/cros_button_style.css.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {AmbientUiVisibility} from '../personalization_app.mojom-webui.js';
+import {AmbientUiVisibility} from '../../personalization_app.mojom-webui.js';
+import {isAmbientModeAllowed, isScreenSaverPreviewEnabled} from '../load_time_booleans.js';
 
 import {startScreenSaverPreview} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
@@ -49,13 +50,23 @@ export class AmbientPreviewSmall extends AmbientPreviewBase {
         type: Number,
         value: null,
       },
+      isScreenSaverPreviewEnabled_: {
+        type: Boolean,
+        value() {
+          return isScreenSaverPreviewEnabled();
+        },
+      },
     };
   }
 
   private screenSaverPreviewActive_: boolean;
   private ambientUiVisibility_: AmbientUiVisibility|null;
+  private isScreenSaverPreviewEnabled_: boolean;
 
   override connectedCallback() {
+    assert(
+        isAmbientModeAllowed(),
+        'ambient-preview-small requires ambient mode allowed');
     super.connectedCallback();
     this.watch(
         'ambientUiVisibility_', state => state.ambient.ambientUiVisibility);
@@ -64,10 +75,6 @@ export class AmbientPreviewSmall extends AmbientPreviewBase {
 
   private computeScreenSaverPreviewActive_(): boolean {
     return this.ambientUiVisibility_ === AmbientUiVisibility.kPreview;
-  }
-
-  private isScreenSaverPreviewEnabled_() {
-    return loadTimeData.getBoolean('isScreenSaverPreviewEnabled');
   }
 
   private startScreenSaverPreview_(event: Event) {
@@ -84,6 +91,14 @@ export class AmbientPreviewSmall extends AmbientPreviewBase {
     return this.screenSaverPreviewActive_ ?
         this.i18n('screenSaverPreviewDownloading') :
         this.i18n('screenSaverPreviewButton');
+  }
+
+  private getScreenSaverPreviewAriaLabel_(): string {
+    if (!this.screenSaverPreviewActive_) {
+      return `${this.i18n('screensaverLabel')} ${
+          this.i18n('screenSaverPreviewButton')}`;
+    }
+    return this.i18n('screenSaverPreviewDownloading');
   }
 }
 

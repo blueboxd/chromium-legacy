@@ -19,6 +19,8 @@
 #include <cstring>
 
 #include "absl/base/config.h"
+#include "absl/base/dynamic_annotations.h"
+#include "absl/hash/hash.h"
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
@@ -43,12 +45,31 @@ constexpr size_t Group::kWidth;
 inline size_t RandomSeed() {
 #ifdef ABSL_HAVE_THREAD_LOCAL
   static thread_local size_t counter = 0;
+  // On Linux kernels >= 5.4 the MSAN runtime has a false-positive when
+  // accessing thread local storage data from loaded libraries
+  // (https://github.com/google/sanitizers/issues/1265), for this reason counter
+  // needs to be annotated as initialized.
+  ABSL_ANNOTATE_MEMORY_IS_INITIALIZED(&counter, sizeof(size_t));
   size_t value = ++counter;
 #else   // ABSL_HAVE_THREAD_LOCAL
   static std::atomic<size_t> counter(0);
   size_t value = counter.fetch_add(1, std::memory_order_relaxed);
 #endif  // ABSL_HAVE_THREAD_LOCAL
   return value ^ static_cast<size_t>(reinterpret_cast<uintptr_t>(&counter));
+}
+
+bool CommonFieldsGenerationInfoEnabled::
+    should_rehash_for_bug_detection_on_insert(const ctrl_t* ctrl,
+                                              size_t capacity) const {
+  if (reserved_growth_ == kReservedGrowthJustRanOut) return true;
+  if (reserved_growth_ > 0) return false;
+  // Note: we can't use the abseil-random library because abseil-random
+  // depends on swisstable. We want to return true with probability
+  // `min(1, RehashProbabilityConstant() / capacity())`. In order to do this,
+  // we probe based on a random hash and see if the offset is less than
+  // RehashProbabilityConstant().
+  return probe(ctrl, capacity, absl::HashOf(RandomSeed())).offset() <
+         RehashProbabilityConstant();
 }
 
 bool ShouldInsertBackwards(size_t hash, const ctrl_t* ctrl) {

@@ -16,6 +16,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/fast_pair_advertiser.h"
 #include "chrome/browser/ash/login/oobe_quick_start/connectivity/random_session_id.h"
+#include "chrome/browser/ash/login/oobe_quick_start/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -33,26 +34,20 @@ constexpr uint8_t kEndpointInfoVersion = 1;
 // http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=876;rcl=458110957
 constexpr uint8_t kEndpointInfoVerificationStyle = 0;
 
-// Device Type for Smart Setup, e.g. phone, tablet.
-// 0 = "Unknown", since there isn't yet a Chromebook option.
-// Values come from this enum:
-// http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=961;rcl=458110957
-constexpr uint8_t kEndpointInfoDeviceType = 0;
+// Device Type for Smart Setup, e.g. phone, tablet.  8 = "Chrome"
+// Values come from the DiscoveryEvent DeviceType enum:
+// http://google3/logs/proto/wireless/android/smartsetup/smart_setup_extension.proto;l=985;rcl=507029311
+constexpr uint8_t kEndpointInfoDeviceType = 8;
 
 // Boolean field indicating to Smart Setup whether the client is Quick Start.
 constexpr uint8_t kEndpointInfoIsQuickStart = 1;
 
 constexpr size_t kMaxEndpointInfoDisplayNameLength = 18;
 
-// Derive three decimal digits from the RandomSessionId.
-std::string GetDisplayNameSessionIdDigits(const RandomSessionId& session_id) {
-  base::span<const uint8_t, RandomSessionId::kLength> session_id_bytes =
-      session_id.AsBytes();
-  uint32_t high = session_id_bytes[0];
-  uint32_t low = session_id_bytes[1];
-  uint32_t x = (high << 8) + low;
-  return base::NumberToString(x % 1000);
-}
+// The Advertising Id field has a fixed width of 10 bytes, but contains a
+// base64-encoded UTF-8 string that will be null-terminated if less than 10
+// characters.
+constexpr size_t kEndpointInfoAdvertisingIdLength = 10;
 
 // The display name must:
 // - Be a variable-length string of utf-8 bytes
@@ -61,7 +56,7 @@ std::string GetDisplayNameSessionIdDigits(const RandomSessionId& session_id) {
 std::vector<uint8_t> GetEndpointInfoDisplayNameBytes(
     const RandomSessionId& session_id) {
   std::string display_name = base::UTF16ToUTF8(ui::GetChromeOSDeviceName());
-  std::string suffix = " (" + GetDisplayNameSessionIdDigits(session_id) + ")";
+  std::string suffix = " (" + session_id.GetDisplayCode() + ")";
 
   base::TruncateUTF8ToByteSize(
       display_name, kMaxEndpointInfoDisplayNameLength - suffix.size(),
@@ -70,8 +65,9 @@ std::vector<uint8_t> GetEndpointInfoDisplayNameBytes(
 
   std::vector<uint8_t> display_name_bytes(display_name.begin(),
                                           display_name.end());
-  if (display_name_bytes.size() < kMaxEndpointInfoDisplayNameLength)
+  if (display_name_bytes.size() < kMaxEndpointInfoDisplayNameLength) {
     display_name_bytes.push_back(0);
+  }
 
   return display_name_bytes;
 }
@@ -111,11 +107,13 @@ TargetDeviceConnectionBrokerImpl::~TargetDeviceConnectionBrokerImpl() {}
 
 TargetDeviceConnectionBrokerImpl::FeatureSupportStatus
 TargetDeviceConnectionBrokerImpl::GetFeatureSupportStatus() const {
-  if (!bluetooth_adapter_)
+  if (!bluetooth_adapter_) {
     return FeatureSupportStatus::kUndetermined;
+  }
 
-  if (bluetooth_adapter_->IsPresent())
+  if (bluetooth_adapter_->IsPresent()) {
     return FeatureSupportStatus::kSupported;
+  }
 
   return FeatureSupportStatus::kNotSupported;
 }
@@ -174,25 +172,41 @@ void TargetDeviceConnectionBrokerImpl::StartAdvertising(
     return;
   }
 
-  VLOG(1) << "Starting advertising with session id " << random_session_id_
-          << " (" << GetDisplayNameSessionIdDigits(random_session_id_) << ")";
+  // This will start Nearby Connections advertising if Fast Pair advertising
+  // succeeds.
+  StartFastPairAdvertising(std::move(on_start_advertising_callback));
+}
+
+void TargetDeviceConnectionBrokerImpl::StartFastPairAdvertising(
+    ResultCallback callback) {
+  QS_LOG(INFO) << "Starting Fast Pair advertising with session id "
+               << random_session_id_ << " ("
+               << random_session_id_.GetDisplayCode() << ")";
 
   fast_pair_advertiser_ =
       FastPairAdvertiser::Factory::Create(bluetooth_adapter_);
   auto [success_callback, failure_callback] =
-      base::SplitOnceCallback(std::move(on_start_advertising_callback));
+      base::SplitOnceCallback(std::move(callback));
 
   fast_pair_advertiser_->StartAdvertising(
-      // TODO(b/234655072): on success, start Nearby Connections advertising.
-      base::BindOnce(std::move(success_callback), /*success=*/true),
+      base::BindOnce(
+          &TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingSuccess,
+          weak_ptr_factory_.GetWeakPtr(), std::move(success_callback)),
       base::BindOnce(
           &TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingError,
           weak_ptr_factory_.GetWeakPtr(), std::move(failure_callback)),
       random_session_id_);
 }
 
+void TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingSuccess(
+    ResultCallback callback) {
+  QS_LOG(INFO) << "Fast Pair advertising started successfully.";
+  StartNearbyConnectionsAdvertising(std::move(callback));
+}
+
 void TargetDeviceConnectionBrokerImpl::OnStartFastPairAdvertisingError(
     ResultCallback callback) {
+  QS_LOG(ERROR) << "Fast Pair advertising failed to start.";
   fast_pair_advertiser_.reset();
   std::move(callback).Run(/*success=*/false);
 }
@@ -204,7 +218,7 @@ void TargetDeviceConnectionBrokerImpl::StopAdvertising(
   }
 
   if (!fast_pair_advertiser_) {
-    VLOG(1) << __func__ << " Not currently advertising, ignoring.";
+    QS_LOG(INFO) << __func__ << " Not currently advertising, ignoring.";
     std::move(on_stop_advertising_callback).Run();
     return;
   }
@@ -217,7 +231,8 @@ void TargetDeviceConnectionBrokerImpl::StopAdvertising(
 void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
     base::OnceClosure callback) {
   fast_pair_advertiser_.reset();
-  std::move(callback).Run();
+
+  StopNearbyConnectionsAdvertising(std::move(callback));
 }
 
 // The EndpointInfo consists of the following fields:
@@ -226,11 +241,10 @@ void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
 // - Advertisement data, 13 bytes:
 //   - Verification Style, byte[0]
 //   - Device Type, byte[1]
-//   - Advertising Id, byte[2-11], 10 bytes. (See RandomSessionId)
+//   - Advertising Id, byte[2-11], 10 UTF-8 bytes. (See RandomSessionId)
 //   - isQuickStart, byte[12], =1 for Quick Start.
 std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
-  base::span<const uint8_t, RandomSessionId::kLength> session_id_bytes =
-      random_session_id_.AsBytes();
+  std::string session_id = random_session_id_.ToString();
   std::vector<uint8_t> display_name_bytes =
       GetEndpointInfoDisplayNameBytes(random_session_id_);
 
@@ -242,11 +256,88 @@ std::vector<uint8_t> TargetDeviceConnectionBrokerImpl::GenerateEndpointInfo() {
                        display_name_bytes.end());
   endpoint_info.push_back(kEndpointInfoVerificationStyle);
   endpoint_info.push_back(kEndpointInfoDeviceType);
-  endpoint_info.insert(endpoint_info.end(), session_id_bytes.begin(),
-                       session_id_bytes.end());
+  endpoint_info.insert(endpoint_info.end(), session_id.begin(),
+                       session_id.end());
+  for (size_t i = 0; i < kEndpointInfoAdvertisingIdLength - session_id.size();
+       i++) {
+    // Pad out the advertising id to the correct field length using null
+    // terminators.
+    endpoint_info.push_back(0);
+  }
   endpoint_info.push_back(kEndpointInfoIsQuickStart);
 
   return endpoint_info;
+}
+
+void TargetDeviceConnectionBrokerImpl::StartNearbyConnectionsAdvertising(
+    ResultCallback callback) {
+  if (!nearby_connections_manager_) {
+    QS_LOG(ERROR)
+        << "NearbyConnectionsManager is null, cannot start Nearby Connections "
+           "advertising.";
+    std::move(callback).Run(/*success=*/false);
+    return;
+  }
+
+  QS_LOG(INFO) << "Starting Nearby Connections Advertising";
+  // TODO(b/234655072): PowerLevel::kHighPower implies using Bluetooth classic,
+  // but we should also advertise over BLE. Nearby Connections does not yet
+  // support BLE as an upgrade medium, so Quick Start over BLE is planned for
+  // post-launch.
+  nearby_connections_manager_->StartAdvertising(
+      GenerateEndpointInfo(), /*listener=*/this, PowerLevel::kHighPower,
+      DataUsage::kOffline,
+      base::BindOnce(&TargetDeviceConnectionBrokerImpl::
+                         OnStartNearbyConnectionsAdvertising,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void TargetDeviceConnectionBrokerImpl::StopNearbyConnectionsAdvertising(
+    base::OnceClosure callback) {
+  if (!nearby_connections_manager_) {
+    QS_LOG(ERROR)
+        << "NearbyConnectionsManager is null, cannot stop Nearby Connections "
+           "advertising.";
+    std::move(callback).Run();
+    return;
+  }
+
+  QS_LOG(INFO) << "Stopping Nearby Connections Advertising";
+  nearby_connections_manager_->StopAdvertising(base::BindOnce(
+      &TargetDeviceConnectionBrokerImpl::OnStopNearbyConnectionsAdvertising,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void TargetDeviceConnectionBrokerImpl::OnStartNearbyConnectionsAdvertising(
+    ResultCallback callback,
+    NearbyConnectionsManager::ConnectionsStatus status) {
+  QS_LOG(INFO) << "Nearby Connections Advertising started with status "
+               << status;
+  bool success =
+      status == NearbyConnectionsManager::ConnectionsStatus::kSuccess;
+  std::move(callback).Run(success);
+}
+
+void TargetDeviceConnectionBrokerImpl::OnStopNearbyConnectionsAdvertising(
+    base::OnceClosure callback,
+    NearbyConnectionsManager::ConnectionsStatus status) {
+  QS_LOG(INFO) << "Nearby Connections Advertising stopped with status "
+               << status;
+  if (status != NearbyConnectionsManager::ConnectionsStatus::kSuccess) {
+    QS_LOG(WARNING) << "Failed to stop Nearby Connections advertising";
+  }
+  std::move(callback).Run();
+}
+
+void TargetDeviceConnectionBrokerImpl::OnIncomingConnection(
+    const std::string& endpoint_id,
+    const std::vector<uint8_t>& endpoint_info,
+    NearbyConnection* connection) {
+  QS_LOG(INFO) << "Nearby Connections incoming connection, endpoint_id="
+               << endpoint_id;
+
+  // TODO(b/234655072): Notify ConnectionLifecycleListener about the incoming
+  // connection so that the Quick Start flow can proceed.
 }
 
 }  // namespace ash::quick_start

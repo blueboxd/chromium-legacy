@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-official",
-              "project": "chromium-m111"
+              "project": "chromium"
             },
             "builder_spec": {
               "builder_group": "chromium",
@@ -37,7 +37,7 @@
         {
           "bucket": "ci",
           "builder": "android-official",
-          "project": "chromium-m111"
+          "project": "chromium"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -61,8 +61,5 @@
     ]
   },
   "builder_group": "chromium",
-  "recipe": "chromium",
-  "sheriff_rotations": [
-    "chrome_browser_release"
-  ]
+  "recipe": "chromium"
 }

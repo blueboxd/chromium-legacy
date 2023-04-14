@@ -13,7 +13,11 @@
 #import "components/image_fetcher/core/image_data_fetcher.h"
 #import "components/payments/core/currency_formatter.h"
 #import "ios/chrome/browser/push_notification/push_notification_util.h"
+#import "ios/chrome/browser/ui/commands/bookmark_add_command.h"
+#import "ios/chrome/browser/ui/commands/bookmarks_commands.h"
+#import "ios/chrome/browser/ui/commands/price_notifications_commands.h"
 #import "ios/chrome/browser/ui/price_notifications/cells/price_notifications_table_view_item.h"
+#import "ios/chrome/browser/ui/price_notifications/price_notifications_alert_presenter.h"
 #import "ios/chrome/browser/ui/price_notifications/price_notifications_consumer.h"
 #import "ios/web/public/web_state.h"
 #import "url/gurl.h"
@@ -79,7 +83,17 @@ using PriceNotificationItems =
   // receives price tracking notifications to the current device. However, the
   // device's permission status will not prevent the shopping service from
   // subscribing the user to the product and its price tracking events.
-  [PushNotificationUtil requestPushNotificationPermission:nil];
+  __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
+  [PushNotificationUtil requestPushNotificationPermission:^(
+                            BOOL granted, BOOL promptShown, NSError* error) {
+    if (!error && !promptShown && !granted) {
+      // This callback can be executed on a background thread, make sure the UI
+      // is displayed on the main thread.
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [weakSelf.presenter presentPushNotificationPermissionAlert];
+      });
+    }
+  }];
 
   // The price tracking infrastructure is built on top of bookmarks, so a new
   // bookmark needs to be created before the item can be registered for price
@@ -94,7 +108,6 @@ using PriceNotificationItems =
         base::SysNSStringToUTF16(item.title), item.entryURL);
   }
 
-  __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
   commerce::SetPriceTrackingStateForBookmark(
       self.shoppingService, self.bookmarkModel, bookmark, true,
       base::BindOnce(^(bool success) {
@@ -116,10 +129,27 @@ using PriceNotificationItems =
       self.shoppingService, self.bookmarkModel, bookmark, false,
       base::BindOnce(^(bool success) {
         if (!success) {
+          [weakSelf.presenter presentStopPriceTrackingErrorAlertForItem:item];
           return;
         }
         [weakSelf didStopTrackingItem:item];
       }));
+}
+
+- (void)navigateToWebpageForItem:(PriceNotificationsTableViewItem*)item {
+  DCHECK(item.tracking);
+  self.webState->OpenURL(web::WebState::OpenURLParams(
+      item.entryURL, web::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      ui::PAGE_TRANSITION_GENERATED, /*is_renderer_initiated=*/false));
+  [self.handler hidePriceNotifications];
+}
+
+- (void)navigateToBookmarks {
+  [self.handler hidePriceNotifications];
+  BookmarkAddCommand* command =
+      [[BookmarkAddCommand alloc] initWithWebState:self.webState
+                              presentFolderChooser:NO];
+  [self.bookmarksHandler openToExternalBookmark:command];
 }
 
 #pragma mark - Private
@@ -158,13 +188,17 @@ using PriceNotificationItems =
     return;
   }
 
+  __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
+
   PriceNotificationsTableViewItem* item =
       [self createPriceNotificationTableViewItem:NO
                                  fromProductInfo:productInfo
                                            atURL:URL];
-  [self.consumer setTrackableItem:item currentlyTracking:NO];
+  self.shoppingService->IsClusterIdTrackedByUser(
+      productInfo->product_cluster_id, base::BindOnce(^(bool isTracked) {
+        [weakSelf.consumer setTrackableItem:item currentlyTracking:isTracked];
+      }));
 
-  __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
   // Fetches the current item's trackable image.
   _imageFetcher->FetchImageData(
       productInfo->image_url,
@@ -219,14 +253,14 @@ using PriceNotificationItems =
 // an item with the ShoppingService.
 - (void)didTrackItem:(PriceNotificationsTableViewItem*)trackableItem
         successfully:(BOOL)success {
-  if (success) {
-    trackableItem.tracking = YES;
-    [self.consumer reconfigureCellsForItems:@[ trackableItem ]];
-    [self.consumer didStartPriceTrackingForItem:trackableItem];
+  if (!success) {
+    [self.presenter presentStartPriceTrackingErrorAlertForItem:trackableItem];
+    return;
   }
 
-  // TODO(crbug.com/1400738) Implement UX flow in the event an error occurs when
-  // a user attempts to track an item.
+  trackableItem.tracking = YES;
+  [self.consumer reconfigureCellsForItems:@[ trackableItem ]];
+  [self.consumer didStartPriceTrackingForItem:trackableItem];
 }
 
 // This function handles the response from the user attempting to unsubscribe to
@@ -268,7 +302,8 @@ using PriceNotificationItems =
       [self createPriceNotificationTableViewItem:YES
                                  fromProductInfo:productInfo
                                            atURL:URL];
-  [self.consumer addTrackedItem:item];
+  [self.consumer addTrackedItem:item
+                    toBeginning:self.webState->GetVisibleURL() == URL];
 
   __weak PriceNotificationsPriceTrackingMediator* weakSelf = self;
   // Fetches the current item's trackable image.

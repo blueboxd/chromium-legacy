@@ -42,7 +42,8 @@ class FilterUI extends HTMLElement {
       <div class='label' title='Filter annotation to match.
       For example frame.root.damage' >Annotation </div>
       <div class='input'>
-        <input placeholder='Substring to match' id='annotation' size=40>
+        <input list="knownAnnotations" placeholder='Substring to match'
+         id='annotation' size=40>
         <!-- TODO: A fancy drop-down here would be nice. -->
       </div>
     </div>
@@ -132,6 +133,26 @@ class FilterUI extends HTMLElement {
 };
 
 window.customElements.define('filter-ui', FilterUI);
+
+// A <datalist> element containing values of previously seen filter annotations.
+let dataListElement = undefined;
+let knownAnnotations = new Set();
+// Called when processing new sources from a frame.
+function notifyUiOfNewSource(source) {
+  if (dataListElement === undefined) {
+    dataListElement = document.createElement("datalist");
+    dataListElement.id = "knownAnnotations";
+    document.body.appendChild(dataListElement);
+  }
+
+  if (!knownAnnotations.has(source.anno)) {
+    let option = document.createElement("option");
+    option.value = source.anno;
+    dataListElement.appendChild(option);
+
+    knownAnnotations.add(source.anno);
+  }
+}
 
 function createFilterChip(filter) {
   const chip = document.createElement('div');
@@ -315,14 +336,16 @@ function createFilterComplete(enabled, selector, action, index) {
 function showEditFilterPopup(item) {
   var chip = item.closest(".mdc-chip");
   var index = Array.prototype.indexOf.call(chip.parentNode.children, chip);
+  var filter = Filter.getFilter(index);
 
   const menu = new MDCMenu(chip.querySelector('#filterchipmenu'));
   menu.open = false;
 
   const filterUi = document.createElement('filter-ui');
+  const isEnabled = filter.enabled;
   filterUi.addEventListener('saveFilter', (event) => {
     if (event.detail.selector && event.detail.action) {
-      var newChip = createFilterComplete(event.detail.selector,
+      var newChip = createFilterComplete(isEnabled, event.detail.selector,
         event.detail.action, index);
       chip.replaceWith(newChip);
     }
@@ -333,8 +356,6 @@ function showEditFilterPopup(item) {
   filterUi.style.zIndex = maxZIndex;
 
   showModal(filterUi, '#annotation');
-
-  var filter = Filter.getFilter(index);
 
   // fill form from filter data
   filterUi.querySelector('#filter-ui-title').innerHTML = "Edit Filter";

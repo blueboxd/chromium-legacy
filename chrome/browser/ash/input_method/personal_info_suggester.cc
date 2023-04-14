@@ -17,7 +17,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/ash/services/ime/public/cpp/assistive_suggestions.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
@@ -240,10 +239,10 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
 
 bool PersonalInfoSuggester::TrySuggestWithSurroundingText(
     const std::u16string& text,
-    int cursor_pos,
-    int anchor_pos) {
+    const gfx::Range selection_range) {
   // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
   // characters before cursor.
+  const int cursor_pos = selection_range.start();
   int start_pos = cursor_pos >= static_cast<int>(kMaxTextBeforeCursorLength)
                       ? cursor_pos - kMaxTextBeforeCursorLength
                       : 0;
@@ -276,7 +275,7 @@ bool PersonalInfoSuggester::TrySuggestWithSurroundingText(
     // trigger a personal info suggestion.
     int len = static_cast<int>(text.length());
     if (!(cursor_pos > 0 && cursor_pos <= len &&  // cursor inside text
-          cursor_pos == anchor_pos &&             // no selection
+          selection_range.is_empty() &&           // no selection
           text[cursor_pos - 1] == ' ' &&          // space before cursor
           // cursor at end of line (no or new line char after cursor)
           (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos])))) {

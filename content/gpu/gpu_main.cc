@@ -74,6 +74,7 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/android/meminfo_dump_provider.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #endif
@@ -356,14 +357,12 @@ int GpuMain(MainFunctionParams parameters) {
 
   gpu_process.set_main_thread(child_thread);
 
-#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
-  // Startup tracing is usually enabled earlier, but if we forked from a zygote,
-  // we can only enable it after mojo IPC support is brought up initialized by
-  // GpuChildThread, because the mojo broker has to create the tracing SMB on
-  // our behalf due to the zygote sandbox.
-  if (parameters.zygote_child)
+  // Mojo IPC support is brought up by GpuChildThread, so startup tracing is
+  // enabled here if it needs to start after mojo init (normally so the mojo
+  // broker can bypass the sandbox to allocate startup tracing's SMB).
+  if (parameters.needs_startup_tracing_after_mojo_init) {
     tracing::EnableStartupTracingIfNeeded();
-#endif  // BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+  }
 
 #if BUILDFLAG(IS_MAC)
   // A GPUEjectPolicy of 'wait' is set in the Info.plist of the browser
@@ -387,6 +386,8 @@ int GpuMain(MainFunctionParams parameters) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       tracing::GraphicsMemoryDumpProvider::GetInstance(), "AndroidGraphics",
       nullptr);
+
+  base::android::MeminfoDumpProvider::Initialize();
 #endif
 
   base::allocator::PartitionAllocSupport::Get()->ReconfigureAfterTaskRunnerInit(
@@ -445,16 +446,14 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
       !gpu_prefs.disable_accelerated_video_encode;
 
 #if BUILDFLAG(IS_CHROMEOS)
-  // Increase the FD limit by 512 on Chrome OS devices in order to avoid running
-  // running out of FDs in cases where many decoders are running concurrently.
-  // See b/215553848 and b/265885078.
-  // TODO(b/195769334): revisit the need for this once out-of-process video
-  // decoding has been fully implemented.
+  // Video decoding of many video streams can use thousands of FDs as well as
+  // Exo clients like Lacros.
+  // See https://crbug.com/1417237
   const auto current_max_fds =
       base::saturated_cast<unsigned int>(base::GetMaxFds());
-  constexpr unsigned int kMaxFDsDelta = 1u << 9;
+  constexpr unsigned int kMaxFDsDelta = 1u << 13;
   const auto new_max_fds =
-      static_cast<unsigned int>(base::ClampAdd(current_max_fds, kMaxFDsDelta));
+      static_cast<unsigned int>(base::ClampMax(current_max_fds, kMaxFDsDelta));
   base::IncreaseFdLimitTo(new_max_fds);
 #endif
 

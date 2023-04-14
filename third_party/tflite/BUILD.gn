@@ -54,6 +54,7 @@ config("tflite_flags") {
     "FARMHASH_NO_CXX_STRING",
     "NEON2SSE_DISABLE_PERFORMANCE_WARNING",
     "TF_LITE_STRIP_ERROR_STRINGS",
+    "TFL_STATIC_LIBRARY_BUILD",
   ]
 
   if (build_tflite_with_xnnpack) {
@@ -424,6 +425,14 @@ static_library("tflite") {
     "src/tensorflow/lite/core/api/profiler.h",
     "src/tensorflow/lite/core/api/tensor_utils.cc",
     "src/tensorflow/lite/core/api/tensor_utils.h",
+    "src/tensorflow/lite/core/async/async_kernel_internal.h",
+    "src/tensorflow/lite/core/async/async_signature_runner.cc",
+    "src/tensorflow/lite/core/async/async_signature_runner.h",
+    "src/tensorflow/lite/core/async/async_subgraph.cc",
+    "src/tensorflow/lite/core/async/async_subgraph.h",
+    "src/tensorflow/lite/core/async/common.h",
+    "src/tensorflow/lite/core/async/task_internal.cc",
+    "src/tensorflow/lite/core/async/task_internal.h",
     "src/tensorflow/lite/core/c/common.cc",
     "src/tensorflow/lite/core/c/common.h",
     "src/tensorflow/lite/core/experimental/acceleration/configuration/delegate_registry.cc",

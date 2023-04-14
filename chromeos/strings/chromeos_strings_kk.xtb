@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Сыртқы құрылғылардың микробағдарламасын жаңарту терезесі ашық. <ph name="NUM_UPDATES" /> жаңа нұсқа бар.</translation>
 <translation id="1145516343487477149">Chromebook бойынша жиі қойылатын сұрақтарға жауаптар мен анықтамалық мақалаларды табыңыз.</translation>
+<translation id="1167755866710282443">Пернелерді бейімдеу үшін мәзірді ашыңыз. Жылжыту үшін мәзірді сүйреңіз.</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="MANAGER" /> басқарады.</translation>
 <translation id="1175951029573070619">Орташа (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Өшіру</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">"<ph name="TITLE" />" альбомын таңдаңыз (<ph name="DESC" />).</translation>
 <translation id="4111761024568264522">USB сенсорлық тақтасы</translation>
 <translation id="4117637339509843559">Қараңғы режим</translation>
+<translation id="4130035430755296270">Тағы басқа формат опцияларын көру үшін курсорды апарыңыз.</translation>
 <translation id="4131410914670010031">Қара мен ақ</translation>
 <translation id="4145784616224233563">HTTP брандмауэрі</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">DNS ажыратымдылығы (Android)</translation>
 <translation id="4848429997038228357">ТЕКСЕРІЛУДЕ</translation>
 <translation id="4854586501323951986">Ендірілген сенсорлық экран</translation>
+<translation id="4855250849489639581">Тағы басқа формат опциялары үшін төмен қарай сырғыту</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} әрекет қалды.}other{<ph name="ERROR_MESSAGE" /> {0} әрекет қалды.}}</translation>
 <translation id="4873827928179867585">Аутентификация алгоритмі</translation>
 <translation id="4880328057631981605">Кіру нүктесінің атауы</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Дисплей жарықтығын арттыру</translation>
 <translation id="57838592816432529">Дыбысын өшіру</translation>
 <translation id="5784136236926853061">HTTP кідірісі жоғары.</translation>
+<translation id="5826644637650799838">Өнер туралы</translation>
 <translation id="5832805196449965646">Адам қосу</translation>
 <translation id="583281660410589416">Белгісіз</translation>
 <translation id="5843706793424741864">Фаренгейт</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 сурет</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> құрылғысын <ph name="MANAGER" /> басқарады. Әкімшілер құрылғыны қашықтан конфигурациялай алады.</translation>
 <translation id="7180611975245234373">Жаңарту</translation>
+<translation id="7180865173735832675">Реттеу</translation>
 <translation id="7212734716605298123">Сыртқы құрылғыларға арналған микробағдарламаның жаңа нұсқалары</translation>
 <translation id="7216409898977639127">Ұялы байланыс провайдері</translation>
 <translation id="725133483556299729">Электрондық поштаны таңдау</translation>

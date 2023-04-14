@@ -10,7 +10,6 @@
 <translation id="1131805035311359397">Kui soovite kontrollida, kas teie paroolid on andmetega seotud rikkumiste ja muude turvaprobleemide eest kaitstud, <ph name="BEGIN_LINK" />logige Chromiumi sisse<ph name="END_LINK" />.</translation>
 <translation id="1185134272377778587">Teave Chromiumi kohta</translation>
 <translation id="1203500561924088507">Täname teid installimise eest. Enne brauseri <ph name="BUNDLE_NAME" /> kasutamist peate selle taaskäivitama.</translation>
-<translation id="1231839967188101156">Kui see on sisse lülitatud, vabastab Chromium inaktiivsete vahelehtede mälu. See annab aktiivsetele vahelehtedele ja muudele rakendustele rohkem arvutiressursse ja tagab Chromiumi kiiruse. Teie inaktiivsed vahelehed muutuvad automaatselt aktiivseks niipea, kui nendele naasete. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">Mälusäästja muutis Chromiumi kiiremaks</translation>
 <translation id="1315551408014407711">Uue Chromiumi profiili seadistamine</translation>
 <translation id="1396446129537741364">Chromium püüab paroole kuvada.</translation>
@@ -114,6 +113,7 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="3567254597502212821">Teie sirvimisajalugu, selles seadmes Chromiumiga külastatud saitide andmed.</translation>
 <translation id="3575459661164320785">Teie arvutis on kahjulik tarkvara. Chromium saab selle eemaldada, taastada teie seaded ja keelata laiendused, et brauser töötaks jälle normaalselt.</translation>
 <translation id="3593091352817399191">Teine konto on juba sisse logitud. Teie sirvimise eraldi hoidmiseks saab Chromium teile luua oma profiili.</translation>
+<translation id="363078681319665186">Chromiumi tulevaste värskenduste saamiseks on teil vaja operatsioonisüsteemi macOS 10.15 või uuemat versiooni. See arvuti kasutab operatsioonisüsteemi macOS 10.13.</translation>
 <translation id="3639635944603682591">Selle isiku sirvimisandmed kustutatakse seadmest. Andmete taastamiseks logige Chromiumi sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel.}=1{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel. Teie inkognito akent ei avata uuesti.}other{Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel. Teie # inkognito akent ei avata uuesti.}}</translation>
 <translation id="3651803019964686660">Numbri saatmiseks asukohast <ph name="ORIGIN" /> Android-telefoni logige mõlemas seadmes Chromiumi sisse.</translation>
@@ -121,12 +121,12 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="3702352323269013324">Lisateave Chromiumis reklaamide isikupärastamise kohta</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada}=1{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada. Teie inkognito akent ei avata uuesti.}other{Administraator palub teil Chromiumi selle värskenduse rakendamiseks uuesti käivitada. Teie # inkognito akent ei avata uuesti.}}</translation>
 <translation id="3713809861844741608">Ava link Chromiumi uuel &amp;vahekaardil</translation>
-<translation id="3728336900324680424">Chromium pääseb teie Drive'ile juurde, et aadressiribal soovitusi anda</translation>
 <translation id="378917192836375108">Chromium võimaldab teil veebis telefoninumbril klõpsata ja sellele Skype'i kaudu helistada!</translation>
 <translation id="3830894615770080216">Chromium OS-i süsteem</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> – Chromium</translation>
 <translation id="386822487697155367">Chromium OS-i puhul abi hankimine</translation>
 <translation id="3871664619793219264">Hankige oma Chromiumi brauseri sisu kontolt <ph name="ACCOUNT_EMAIL" /></translation>
+<translation id="387966568917439637">Chromiumi tulevaste värskenduste saamiseks on teil vaja operatsioonisüsteemi macOS 10.15 või uuemat versiooni. See arvuti kasutab operatsioonisüsteemi macOS 10.14.</translation>
 <translation id="388648406173476553">Chromiumi kohandamine ja haldamine. Miski vajab teie tähelepanu – klõpsake üksikasjade nägemiseks.</translation>
 <translation id="3889543394854987837">Chromiumi avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" /> on juba sellele Chromiumi profiilile sisse logitud. Teie sirvimise eraldi hoidmiseks saab Chromium teile luua oma profiili.</translation>
@@ -216,6 +216,7 @@ Load, mille olete juba veebisaitidele ja rakendustele andnud, võivad selle kont
 <translation id="6072463441809498330">Muutke Chromium kiiremaks</translation>
 <translation id="608006075545470555">Tööprofiili lisamine sellesse brauserisse</translation>
 <translation id="6096348254544841612">Kohandage ja juhtige Chromiumi. Saadaval on värskendus.</translation>
+<translation id="6102072151902574948">Kui see on sisse lülitatud, säästab Chromium akutoidet, piirates taustal toimuvaid tegevusi ja visuaalseid efekte, nagu sujuv kerimine ja video kaadrisagedus.</translation>
 <translation id="6119438414301547735">Lubage laiendus, et juurdepääsutaotlused Chromiumi tööriistaribal kuvada</translation>
 <translation id="6120345080069858279">Chromium salvestab selle parooli teie Google'i kontole. Te ei pea seda meeles pidama.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" /> on ohtlik, mistõttu Chromium blokeeris selle.</translation>
@@ -275,6 +276,7 @@ On võimalik, et mõni funktsioon ei ole saadaval. Määrake muu profiilikataloo
 <translation id="6940431691900807093">Hiljem saab teie külastatav sait taotleda Chromiumilt teie huvisid, et isikupärastada teile kuvatavaid reklaame. Chromium võib jagada kuni kolme huvi.</translation>
 <translation id="6964305034639999644">Ava link Chromiumi inko&amp;gnito aknas</translation>
 <translation id="6978145336957848883">Nõrku paroole on lihtne ära arvata. Laske Chromiumil <ph name="BEGIN_LINK" />teie jaoks luua ja meelde jätta tugevaid paroole<ph name="END_LINK" />.</translation>
+<translation id="6981396265751285733">Kui see on sisse lülitatud, vabastab Chromium inaktiivsete vahelehtede mälu. See annab aktiivsetele vahelehtedele ja muudele rakendustele rohkem arvutiressursse ja tagab Chromiumi kiiruse. Teie inaktiivsed vahelehed muutuvad automaatselt aktiivseks niipea, kui nendele naasete.</translation>
 <translation id="6984667024406244807">Chromium ei ole aktiivne</translation>
 <translation id="6985329841647292029">Chromium OS-i tingimused</translation>
 <translation id="6990124437352146030">Chromium vajab selle saidi puhul luba, et teie mikrofonile juurde pääseda</translation>
@@ -319,6 +321,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7828947555739565424">Selle kontoga Chromiumi profiil on selles seadmes juba olemas</translation>
 <translation id="7845233973568007926">Täname teid installimise eest. Enne brauseri <ph name="BUNDLE_NAME" /> kasutamist peate oma arvuti taaskäivitama.</translation>
+<translation id="7859018312476869945">Kui sisestate teksti aadressiribale või otsingukasti, saadab Chromium teie sisestatud teksti teie vaikeotsingumootorisse, et saada paremaid soovitusi. See on inkognito režiimis välja lülitatud.</translation>
 <translation id="7867198900892795913">Chromiumi ei saanud uusimale versioonile värskendada, mistõttu jääte ilma uutest funktsioonidest ja turvaparandustest.</translation>
 <translation id="7872446069773932638">Allalaadimine … <ph name="SECONDS" /> sekund(it) on jäänud</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />Kuidas saate oma andmeid hallata?<ph name="END_BOLD" /> Teie privaatsuse kaitsmiseks kustutame automaatselt huvid, mis on vanemad kui 4 nädalat. Kui jätkate sirvimist, võib huvi uuesti loendis ilmuda. Võite ka eemaldada huvid, mida te ei soovi lasta Chromiumil arvesse võtta.</translation>
@@ -346,9 +349,7 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="8493179195440786826">Chromium on aegunud</translation>
 <translation id="8550334526674375523">See tööprofiil on teie isiklikust profiilist täielikult eraldi.</translation>
 <translation id="8558383651099478961">Sinu vanem lülitas valiku „Saitide, rakenduste ja laienduste load” Chromiumi puhul välja. Laienduse <ph name="EXTENSION_TYPE_PARAMETER" /> lubamine on keelatud.</translation>
-<translation id="8561285221328166383">Chromiumi tulevaste värskenduste saamiseks on teil vaja operatsioonisüsteemi macOS 10.13 või uuemat versiooni. See arvuti kasutab operatsioonisüsteemi macOS 10.12.</translation>
 <translation id="8568283329061645092">Chromium saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga</translation>
-<translation id="8574036838419011058">Kui see on sisse lülitatud, säästab Chromium akutoidet, piirates taustal toimuvaid tegevusi ja visuaalseid efekte, nagu sujuv kerimine ja video kaadrisagedus. <ph name="BEGIN_LINK" />Lisateave<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Autoriõigus <ph name="YEAR" /> The Chromium Authors. Kõik õigused on kaitstud.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Kuidas neid andmeid kasutame?<ph name="END_BOLD" /> Saidid võivad talletada Chromiumissse teavet teie huvide kohta. Näiteks kui külastate saiti, et osta maratoni jooksmiseks jalatseid, võib sait määratleda teie huviks maratonijooksu. Kui külastate hiljem jooksule registreerumiseks muud saiti, võib see sait näidata teile teie huvide alusel jooksujalatsite reklaami.</translation>
 <translation id="8619360774459241877">Chromiumi käivitamine …</translation>
@@ -379,7 +380,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="9190841055450128916">Chromium (mDNS-In)</translation>
 <translation id="93478295209880648">Chromium ei pruugi õigesti töötada, kuna seda ei toetata enam Windows XP-s ega Windows Vistas</translation>
 <translation id="942598560705308788">Chromiumi hallatavad sertifikaadid</translation>
-<translation id="945990405696787151">Chromiumi tulevaste värskenduste saamiseks on teil vaja operatsioonisüsteemi macOS 10.13 või uuemat versiooni. See arvuti kasutab operatsioonisüsteemi OS X 10.11.</translation>
 <translation id="965162752251293939">Kes kasutab Chromiumi?</translation>
 <translation id="967427899662692980">Hankige Chromiumi parimad turbefunktsioonid</translation>
 <translation id="9792300276217204">Saidi andmed kustutatakse alati seadmest, kui Chromiumi sulgete</translation>

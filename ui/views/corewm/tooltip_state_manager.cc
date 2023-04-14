@@ -108,8 +108,11 @@ void TooltipStateManager::UpdatePositionIfNeeded(const gfx::Point& position,
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-void TooltipStateManager::OnTooltipShownOnServer(const std::u16string& text,
+void TooltipStateManager::OnTooltipShownOnServer(aura::Window* window,
+                                                 const std::u16string& text,
                                                  const gfx::Rect& bounds) {
+  tooltip_id_ = wm::GetTooltipId(window);
+  tooltip_parent_window_ = window;
   tooltip_->OnTooltipShownOnServer(text, bounds);
 }
 
@@ -146,7 +149,7 @@ void TooltipStateManager::StartWillShowTooltipTimer(
           .supports_tooltip) {
     // Send `show_delay` and `hide_delay` together and delegate the timer
     // handling on Ash side.
-    tooltip_->Update(tooltip_parent_window_, tooltip_text_, position_,
+    tooltip_->Update(tooltip_parent_window_, trimmed_text, position_,
                      tooltip_trigger_);
     tooltip_->SetDelay(show_delay, hide_delay);
     tooltip_->Show();

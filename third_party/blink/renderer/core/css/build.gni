@@ -623,7 +623,6 @@ blink_core_sources_css = [
   "rule_feature_set.h",
   "rule_set.cc",
   "rule_set.h",
-  "scoped_css_value.h",
   "selector_filter.cc",
   "selector_filter.h",
   "selector_statistics.cc",
@@ -676,6 +675,8 @@ blink_core_sources_css = [
   "style_rule_namespace.h",
   "style_scope.cc",
   "style_scope.h",
+  "style_scope_frame.cc",
+  "style_scope_frame.h",
   "style_sheet.cc",
   "style_sheet.h",
   "style_sheet_candidate.cc",
@@ -693,6 +694,7 @@ blink_core_sources_css = [
   "ua_counter_style_map.cc",
   "vision_deficiency.cc",
   "vision_deficiency.h",
+  "white_space.h",
   "zoom_adjusted_pixel_value.h",
 ]
 

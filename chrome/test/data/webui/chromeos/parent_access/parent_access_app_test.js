@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import '../../mojo_webui_test_support.js';
+import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://parent-access/parent_access_app.js';
 import 'chrome://parent-access/strings.m.js';
 
@@ -24,6 +24,8 @@ parent_access_app_tests.TestNames = {
       'Tests that the web approvals after flow is shown',
   TestShowExtensionApprovalsFlow:
       'Tests that the extension approvals flow is shown',
+  TestShowExtensionApprovalsDisabledScreen:
+      'Tests that the extensions disabled flow is shown and is terminal',
   TestShowErrorScreenOnOAuthFailure: 'Tests that the error screen is shown',
   TestWebApprovalsOffline:
       'Tests that dialog switches in/out of offline screen',
@@ -71,7 +73,8 @@ suite(parent_access_app_tests.suiteName, function() {
       async () => {
         // Set up the TestParentAccessUIHandler
         const handler = new TestParentAccessUIHandler();
-        handler.setParentAccessParams(buildExtensionApprovalsParams());
+        handler.setParentAccessParams(
+            buildExtensionApprovalsParams(/*is_disabled=*/ false));
         handler.setOAuthTokenStatus('token', GetOAuthTokenStatus.kSuccess);
         setParentAccessUIHandlerForTest(handler);
 
@@ -89,6 +92,38 @@ suite(parent_access_app_tests.suiteName, function() {
         // Verify online flow is showing and switch to the after screen.
         assertEquals(
             parentAccessApp.currentScreen_, Screens.AUTHENTICATION_FLOW);
+      });
+
+  test(
+      parent_access_app_tests.TestNames
+          .TestShowExtensionApprovalsDisabledScreen,
+      async () => {
+        // Set up the TestParentAccessUIHandler
+        const handler = new TestParentAccessUIHandler();
+        handler.setParentAccessParams(
+            buildExtensionApprovalsParams(/*is_disabled=*/ true));
+        handler.setOAuthTokenStatus('token', GetOAuthTokenStatus.kSuccess);
+        setParentAccessUIHandlerForTest(handler);
+
+        // Create app element.
+        const parentAccessApp = document.createElement('parent-access-app');
+        document.body.appendChild(parentAccessApp);
+        await flushTasks();
+
+        // Verify disabled flow is showing.
+        assertEquals(parentAccessApp.currentScreen_, Screens.DISABLED);
+        // Verify extension approvals disabled screen is showing.
+        const parentAccessAfter =
+            parentAccessApp.shadowRoot.querySelector('parent-access-disabled');
+        const extensionApprovalsDisabled =
+            parentAccessAfter.shadowRoot.querySelector(
+                'extension-approvals-disabled');
+        assertNotEquals(null, extensionApprovalsDisabled);
+
+        // Verify disabled screen still showing after triggering offline event.
+        window.dispatchEvent(new Event('offline'));
+        await flushTasks();
+        assertEquals(parentAccessApp.currentScreen_, Screens.DISABLED);
       });
 
   test(

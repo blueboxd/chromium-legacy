@@ -13,12 +13,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/constants/ash_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
@@ -38,6 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_switches.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #else
 #include "components/enterprise/browser/controller/fake_browser_dm_token_storage.h"
@@ -166,6 +167,8 @@ ChunkedPolicyPrefsTest::ChunkedPolicyPrefsTest() {
 // IMPORTANT: Please add hendrich@chromium.org on any related bugs when
 // disabling this test.
 IN_PROC_BROWSER_TEST_P(ChunkedPolicyPrefsTest, PolicyToPrefsMapping) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   policy::FakeBrowserDMTokenStorage storage;
   policy::BrowserDMTokenStorage::SetForTesting(&storage);

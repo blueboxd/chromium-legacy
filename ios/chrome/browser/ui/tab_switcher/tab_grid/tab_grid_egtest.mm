@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "base/format_macros.h"
+#import "base/i18n/message_formatter.h"
 #import "base/ios/ios_util.h"
 #import "base/strings/string_util.h"
 #import "base/strings/stringprintf.h"
@@ -557,7 +558,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
 
-  [self waitForSnackBarMessage:IDS_IOS_BOOKMARK_PAGE_SAVED
+  NSString* snackbarMessage = base::SysUTF16ToNSString(
+      l10n_util::GetPluralStringFUTF16(IDS_IOS_BOOKMARK_PAGE_SAVED, 1));
+  [self waitForSnackBarMessageText:snackbarMessage
       triggeredByTappingItemWithMatcher:AddToBookmarksButton()];
 
   [self longPressTabWithTitle:[NSString stringWithUTF8String:kTitle1]];
@@ -708,8 +711,7 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
 // Tests that dragging a tab grid incognito item to the edge opens a new window
 // and that the tab is properly transferred, incuding navigation stack.
-// TODO(crbug.com/1409065): This test is flaky.
-- (void)FLAKY_testIncognitoDragAndDropAtEdgeToCreateNewWindow {
+- (void)testIncognitoDragAndDropAtEdgeToCreateNewWindow {
   if (![ChromeEarlGrey areMultipleWindowsSupported])
     EARL_GREY_TEST_SKIPPED(@"Multiple windows can't be opened.");
 
@@ -1292,18 +1294,21 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
   [[EarlGrey selectElementWithMatcher:AddToBookmarksButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::NavigationBarTitleWithAccessibilityLabelId(
-                     IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON)]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_BOOKMARK_CHOOSE_GROUP_BUTTON))]
       assertWithMatcher:grey_notNil()];
 
   // Choose "Mobile Bookmarks" folder as the destination.
   // Duplicate matcher here instead of using +[BookmarkEarlGreyUI
   // openMobileBookmarks] in order to properly wait for the snackbar message.
-  NSString* snackBarMessage =
-      l10n_util::GetNSStringF(IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER,
-                              base::SysNSStringToUTF16(@"Mobile Bookmarks"));
-  [self waitForSnackBarMessageText:snackBarMessage
+  std::u16string pattern =
+      l10n_util::GetStringUTF16(IDS_IOS_BOOKMARK_PAGE_SAVED_FOLDER);
+  NSString* snackbarMessage = base::SysUTF16ToNSString(
+      base::i18n::MessageFormatter::FormatWithNamedArgs(
+          pattern, "count", 2, "title",
+          base::SysNSStringToUTF16(@"Mobile Bookmarks")));
+  [self waitForSnackBarMessageText:snackbarMessage
       triggeredByTappingItemWithMatcher:grey_allOf(grey_kindOfClassName(
                                                        @"UITableViewCell"),
                                                    grey_descendant(grey_text(
@@ -1930,7 +1935,15 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
 // Tests that add to reading list action works successfully from the long press
 // context menu on search results.
-- (void)testSearchOpenTabsContextMenuAddToReadingList {
+// TODO(crbug.com/1412117): Test fails on simulator.
+#if !TARGET_IPHONE_SIMULATOR
+#define MAYBE_testSearchOpenTabsContextMenuAddToReadingList \
+  testSearchOpenTabsContextMenuAddToReadingList
+#else
+#define MAYBE_testSearchOpenTabsContextMenuAddToReadingList \
+  DISABLED_testSearchOpenTabsContextMenuAddToReadingList
+#endif
+- (void)MAYBE_testSearchOpenTabsContextMenuAddToReadingList {
   [self loadTestURLsInNewTabs];
   [ChromeEarlGreyUI openTabGrid];
 
@@ -1964,7 +1977,9 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   [self longPressTabWithTitle:title2];
 
-  [self waitForSnackBarMessage:IDS_IOS_BOOKMARK_PAGE_SAVED
+  NSString* snackbarMessage = base::SysUTF16ToNSString(
+      l10n_util::GetPluralStringFUTF16(IDS_IOS_BOOKMARK_PAGE_SAVED, 1));
+  [self waitForSnackBarMessageText:snackbarMessage
       triggeredByTappingItemWithMatcher:AddToBookmarksButton()];
 
   [self longPressTabWithTitle:title2];
@@ -2530,9 +2545,13 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbar_matcher =
-      chrome_test_util::ButtonWithAccessibilityLabelId(messageIdentifier);
+      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");
   ConditionBlock wait_for_appearance = ^{
-    return [ChromeEarlGrey watcherDetectedButtonWithLabel:snackBarLabel];
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
   };
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kSnackbarAppearanceTimeout, wait_for_appearance),
@@ -2562,9 +2581,13 @@ void EchoURLDefaultSearchEngineResponseProvider::GetResponseHeadersAndBody(
 
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbar_matcher =
-      chrome_test_util::ButtonWithAccessibilityLabel(snackBarLabel);
+      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");
   ConditionBlock wait_for_appearance = ^{
-    return [ChromeEarlGrey watcherDetectedButtonWithLabel:snackBarLabel];
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
   };
   GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
                  kSnackbarAppearanceTimeout, wait_for_appearance),

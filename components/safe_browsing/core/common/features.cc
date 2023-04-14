@@ -25,6 +25,10 @@ BASE_FEATURE(kAdSamplerTriggerFeature,
              "SafeBrowsingAdSamplerTrigger",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAddPageLoadTokenToClientSafeBrowsingReport,
+             "AddPageLoadTokenToClientSafeBrowsingReport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kClientSideDetectionKillswitch,
              "ClientSideDetectionKillswitch",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -84,6 +88,12 @@ BASE_FEATURE(kEsbIphBubbleAndCollapseSettings,
              "EsbIphBubbleAndCollapseSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableIph{
+    &kEsbIphBubbleAndCollapseSettings, "EnableEsbIphBubble", false};
+
+const base::FeatureParam<bool> kEsbIphBubbleAndCollapseSettingsEnableCollapse{
+    &kEsbIphBubbleAndCollapseSettings, "EnableEsbSettingCollapse", false};
+
 BASE_FEATURE(kExtensionTelemetry,
              "SafeBrowsingExtensionTelemetry",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -107,6 +117,18 @@ BASE_FEATURE(kExtensionTelemetryPersistence,
 BASE_FEATURE(kExtensionTelemetryConfiguration,
              "SafeBrowsingExtensionTelemetryConfiguration",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtensionTelemetryFileData,
+             "SafeBrowsingExtensionTelemetryFileData",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kExtensionTelemetryFileDataMaxFilesToProcess{
+    &kExtensionTelemetryFileData, "MaxFilesToProcess",
+    /*default_value=*/50};
+
+const base::FeatureParam<int> kExtensionTelemetryFileDataMaxFileSizeBytes{
+    &kExtensionTelemetryFileData, "MaxFileSizeBytes",
+    /*default_value=100KB*/ 100 * 1024};
 
 BASE_FEATURE(kExtensionTelemetryPotentialPasswordTheft,
              "SafeBrowsingExtensionTelemetryPotentialPasswordTheft",
@@ -160,10 +182,6 @@ BASE_FEATURE(kSafeBrowsingCsbrrNewDownloadTrigger,
              "SafeBrowsingCsbrrNewDownloadTrigger",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kSafeBrowsingCsbrrWithToken,
-             "SafeBrowsingCsbrrWithToken",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSafeBrowsingDisableConsumerCsdForEnterprise,
              "SafeBrowsingDisableConsumerCsdForEnterprise",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -187,6 +205,14 @@ BASE_FEATURE(kSevenZipEvaluationEnabled,
 BASE_FEATURE(kSimplifiedUrlDisplay,
              "SimplifiedUrlDisplay",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kStrictDownloadTimeout,
+             "SafeBrowsingStrictDownloadtimeout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+constexpr base::FeatureParam<int> kStrictDownloadTimeoutMilliseconds{
+    &kStrictDownloadTimeout, "TimeoutMilliseconds",
+    /*default_value=*/7000};
 
 BASE_FEATURE(kSuspiciousSiteTriggerQuotaFeature,
              "SafeBrowsingSuspiciousSiteTriggerQuota",
@@ -217,6 +243,10 @@ BASE_FEATURE(kVisualFeaturesSizes,
              "VisualFeaturesSizes",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kClientSideDetectionModelOptimizationGuide,
+             "ClientSideDetectionModelOptimizationGuide",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 namespace {
 // List of Safe Browsing features. Boolean value for each list member should
 // be set to true if the experiment state should be listed on
@@ -227,7 +257,9 @@ constexpr struct {
   bool show_state;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
+    {&kAddPageLoadTokenToClientSafeBrowsingReport, false},
     {&kClientSideDetectionKillswitch, true},
+    {&kClientSideDetectionModelOptimizationGuide, true},
     {&kClientSideDetectionModelIsFlatBuffer, true},
     {&kClientSideDetectionReferrerChain, true},
     {&kClientSideDetectionTypeForceRequest, true},
@@ -254,13 +286,13 @@ constexpr struct {
     {&kRealTimeUrlFilteringForEnterprise, true},
     {&kRealTimeUrlLookupForEnterpriseAllowlistBypass, true},
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
-    {&kSafeBrowsingCsbrrWithToken, true},
     {&kSafeBrowsingDisableConsumerCsdForEnterprise, true},
     {&kSafeBrowsingEnterpriseCsd, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},
     {&kSevenZipEvaluationEnabled, true},
     {&kSimplifiedUrlDisplay, true},
+    {&kStrictDownloadTimeout, true},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kTailoredSecurityDesktopNotice, true},
     {&kTailoredSecurityIntegration, true},

@@ -106,6 +106,17 @@ class CommandBufferHelperImpl
     return shared_image_stub();
   }
 
+  gpu::MemoryTypeTracker* GetMemoryTypeTracker() override {
+    return &memory_type_tracker_;
+  }
+
+  gpu::SharedImageManager* GetSharedImageManager() override {
+    if (!stub_) {
+      return nullptr;
+    }
+    return stub_->channel()->gpu_channel_manager()->shared_image_manager();
+  }
+
 #if BUILDFLAG(IS_WIN)
   gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() override {
     if (!stub_)
@@ -185,7 +196,7 @@ class CommandBufferHelperImpl
     textures_[service_id]->SetCleared();
   }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   bool BindDecoderManagedImage(GLuint service_id, gl::GLImage* image) override {
     DVLOG(2) << __func__ << "(" << service_id << ")";
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

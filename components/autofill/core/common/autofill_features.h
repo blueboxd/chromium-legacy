@@ -26,14 +26,23 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool>
     kAutofillEnableSilentUpdatesForAccountProfiles;
 COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillAccountProfilesOnSignIn);
-COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAddressProfileSavePromptNicknameSupport);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAllowDuplicateFormSubmissions);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillAllowNonHttpActivation);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillAssociateForms);
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillCapturedSiteTestsMetricsScraper);
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<std::string>
+    kAutofillCapturedSiteTestsMetricsScraperOutputDir;
+COMPONENT_EXPORT(AUTOFILL)
+extern const base::FeatureParam<std::string>
+    kAutofillCapturedSiteTestsMetricsScraperHistogramRegex;
+COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableProfileUpdates);
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillDisableSilentProfileUpdates);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<base::TimeDelta> kAutofillAssociateFormsTTL;
 COMPONENT_EXPORT(AUTOFILL)
@@ -122,7 +131,6 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillImprovedLabelForInference);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode);
-COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillKeyboardAccessory);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillLabelAffixRemoval);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillMin3FieldTypesForLocalHeuristics);
@@ -146,6 +154,8 @@ BASE_DECLARE_FEATURE(kAutofillRationalizeStreetAddressAndHouseNumber);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRemoveInaccessibleProfileValuesOnStartup);
 COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillRequireNameForProfileImport);
+COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRetrieveOverallPredictionsFromCache);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillSaveAndFillVPA);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillServerBehaviors);
@@ -155,6 +165,8 @@ COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillServerCommunication);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillSharedAutofill);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSharedAutofillRelaxedParam;
+COMPONENT_EXPORT(AUTOFILL)
+BASE_DECLARE_FEATURE(kAutofillShowAutocompleteDeleteButton);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillShowManualFallbackInContextMenu);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillShowTypePredictions);
@@ -182,8 +194,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool> kAutofillSectioningModeExpand;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillRefillByFormRendererId);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillUseConsistentPopupSettingsIcons);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillEnableAblationStudy);
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::FeatureParam<bool>
@@ -204,6 +214,7 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillLogUKMEventsWithSampleRate);
 
 #if BUILDFLAG(IS_ANDROID)
+COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillKeyboardAccessory);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillManualFallbackAndroid);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillRefreshStyleAndroid);
 COMPONENT_EXPORT(AUTOFILL)

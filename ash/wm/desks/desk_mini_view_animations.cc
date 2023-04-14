@@ -6,15 +6,16 @@
 
 #include <utility>
 
-#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/cros_next_desk_button.h"
+#include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_session.h"
 #include "base/containers/contains.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -51,12 +52,16 @@ constexpr base::TimeDelta kScaleDownDeskIconButton = base::Milliseconds(50);
 // Scale for entering/exiting zero state.
 constexpr float kEnterOrExitZeroStateScale = 0.6f;
 
+// Animation durations for fade in the label below the desk icon button.
+constexpr base::TimeDelta kLabelFadeInDelay = base::Milliseconds(100);
+constexpr base::TimeDelta kLabelFadeInDuration = base::Milliseconds(50);
+
 // |settings| will be initialized with a fast-out-slow-in animation with the
 // given |duration|.
 void InitScopedAnimationSettings(ui::ScopedLayerAnimationSettings* settings,
                                  base::TimeDelta duration) {
   settings->SetTransitionDuration(duration);
-  const gfx::Tween::Type tween_type = features::IsJellyrollEnabled()
+  const gfx::Tween::Type tween_type = chromeos::features::IsJellyrollEnabled()
                                           ? gfx::Tween::ACCEL_20_DECEL_100
                                           : gfx::Tween::ACCEL_20_DECEL_60;
   settings->SetTweenType(tween_type);
@@ -72,10 +77,32 @@ void AnimateView(views::View* view, const gfx::Transform& begin_transform) {
 
   ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
   InitScopedAnimationSettings(&settings,
-                              features::IsJellyrollEnabled()
+                              chromeos::features::IsJellyrollEnabled()
                                   ? kExistingMiniViewsAnimationDurationCrOSNext
                                   : kExistingMiniViewsAnimationDuration);
   layer->SetTransform(kEndTransform);
+}
+
+// Note this function assumes that the given `view` is already set with its
+// final visibility. If it's not visible, no need to fade it in. Return
+// immediately instead.
+void FadeInView(views::View* view,
+                base::TimeDelta duration,
+                base::TimeDelta delay) {
+  if (!view->GetVisible()) {
+    return;
+  }
+
+  auto* layer = view->layer();
+  layer->SetOpacity(0.f);
+
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .At(delay)
+      .SetDuration(duration)
+      .SetOpacity(layer, 1.f, gfx::Tween::ACCEL_20_DECEL_100);
 }
 
 // See details at AnimateView.
@@ -117,8 +144,9 @@ void ScaleUpAndFadeInView(views::View* view, int bar_x_center) {
 
   ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
   const base::TimeDelta animation_duration =
-      features::IsJellyrollEnabled() ? kZeroStateAnimationDurationCrOSNext
-                                     : kZeroStateAnimationDuration;
+      chromeos::features::IsJellyrollEnabled()
+          ? kZeroStateAnimationDurationCrOSNext
+          : kZeroStateAnimationDuration;
   InitScopedAnimationSettings(&settings, animation_duration);
   layer->SetTransform(kEndTransform);
   layer->SetOpacity(1.f);
@@ -206,7 +234,7 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
     if (to_zero_state) {
       target_widget_bounds.set_height(DesksBarView::kZeroStateBarHeight);
 
-      if (features::IsJellyrollEnabled()) {
+      if (chromeos::features::IsJellyrollEnabled()) {
         // When `Jellyroll` is enabled, setting desks bar's bounds to its bounds
         // at zero state directly to layout its contents at the correct position
         // first before the animation. When `Jellyroll` is enabled, we use the
@@ -241,8 +269,9 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
     ui::ScopedLayerAnimationSettings settings{
         desks_widget->GetLayer()->GetAnimator()};
     const base::TimeDelta animation_duration =
-        features::IsJellyrollEnabled() ? kZeroStateAnimationDurationCrOSNext
-                                       : kZeroStateAnimationDuration;
+        chromeos::features::IsJellyrollEnabled()
+            ? kZeroStateAnimationDurationCrOSNext
+            : kZeroStateAnimationDuration;
     InitScopedAnimationSettings(&settings, animation_duration);
     settings.AddObserver(this);
     desks_widget->SetBounds(target_widget_bounds);
@@ -272,53 +301,52 @@ class DesksBarBoundsAnimation : public ui::ImplicitAnimationObserver {
   DesksBarView* const bar_view_;
 };
 
-// A self-deleting class that performs the scale up / down animation for the new
-// desk button.
-class NewDeskButtonScaleAnimation {
+// A self-deleting class that performs the scale up / down animation for the
+// desk icon button.
+class DeskIconButtonScaleAnimation {
  public:
-  NewDeskButtonScaleAnimation(CrOSNextDeskIconButton* new_desk_button,
-                              const gfx::Transform& scale_transform)
-      : new_desk_button_(new_desk_button) {
-    // Please note that since `this` is constructed after `new_desk_button_` is
+  DeskIconButtonScaleAnimation(CrOSNextDeskIconButton* button,
+                               const gfx::Transform& scale_transform)
+      : desk_icon_button_(button) {
+    // Please note that since `this` is constructed after `desk_icon_button_` is
     // laid out in its final position, the target state is its current state.
     const CrOSNextDeskIconButton::State target_state =
-        new_desk_button_->state();
+        desk_icon_button_->state();
     const bool is_scale_up_animation =
-        target_state == CrOSNextDeskIconButton::State::kDragAndDrop;
+        target_state == CrOSNextDeskIconButton::State::kActive;
     const gfx::RoundedCornersF initial_radius =
         gfx::RoundedCornersF(CrOSNextDeskIconButton::GetCornerRadiusOnState(
-            is_scale_up_animation
-                ? CrOSNextDeskIconButton::State::kExpanded
-                : CrOSNextDeskIconButton::State::kDragAndDrop));
+            is_scale_up_animation ? CrOSNextDeskIconButton::State::kExpanded
+                                  : CrOSNextDeskIconButton::State::kActive));
 
-    // Since the corner radius of `new_desk_button_` is updated on the state
+    // Since the corner radius of `desk_icon_button_` is updated on the state
     // changes, to apply the animation for the corner radius change, set and
     // apply the corner radius animation on the layer, and set the solid
     // background (no corner radius) to the new desk button in the meanwhile. At
     // the end of the animation, set the layer's corner radius back to 0, and
     // apply the corner radius back to the background. The reason is that the
-    // focus ring is painted on a layer which is a child of `new_desk_button_`'s
-    // layer. If `new_desk_button_` has a clip rect, the clip rect will
-    // affect it's children and the focus ring won't be visible. Please refer to
-    // the `Layout` function of `FocusRing` for more implementation details.
-    auto* layer = new_desk_button_->layer();
+    // focus ring is painted on a layer which is a child of
+    // `desk_icon_button_`'s layer. If `desk_icon_button_` has a clip rect, the
+    // clip rect will affect it's children and the focus ring won't be visible.
+    // Please refer to the `Layout` function of `FocusRing` for more
+    // implementation details.
+    auto* layer = desk_icon_button_->layer();
     layer->SetRoundedCornerRadius(initial_radius);
-    new_desk_button_->SetBackground(views::CreateSolidBackground(
-        new_desk_button_->background()->get_color()));
+    desk_icon_button_->SetBackground(views::CreateSolidBackground(
+        desk_icon_button_->background()->get_color()));
 
     layer->SetTransform(scale_transform);
 
-    const base::TimeDelta duration = is_scale_up_animation
-                                         ? kScaleUpDeskIconButton
-                                         : kScaleDownDeskIconButton;
+    const auto duration = is_scale_up_animation ? kScaleUpDeskIconButton
+                                                : kScaleDownDeskIconButton;
     const gfx::RoundedCornersF end_radius = gfx::RoundedCornersF(
         CrOSNextDeskIconButton::GetCornerRadiusOnState(target_state));
     views::AnimationBuilder()
         .OnEnded(base::BindOnce(
-            [](NewDeskButtonScaleAnimation* animation) { delete animation; },
+            [](DeskIconButtonScaleAnimation* animation) { delete animation; },
             base::Unretained(this)))
         .OnAborted(base::BindOnce(
-            [](NewDeskButtonScaleAnimation* animation) { delete animation; },
+            [](DeskIconButtonScaleAnimation* animation) { delete animation; },
             base::Unretained(this)))
         .SetPreemptionStrategy(
             ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
@@ -328,25 +356,26 @@ class NewDeskButtonScaleAnimation {
         .SetTransform(layer, kEndTransform, gfx::Tween::ACCEL_20_DECEL_100);
   }
 
-  NewDeskButtonScaleAnimation(const NewDeskButtonScaleAnimation&) = delete;
-  NewDeskButtonScaleAnimation& operator=(const NewDeskButtonScaleAnimation&) =
+  DeskIconButtonScaleAnimation(const DeskIconButtonScaleAnimation&) = delete;
+  DeskIconButtonScaleAnimation& operator=(const DeskIconButtonScaleAnimation&) =
       delete;
 
-  ~NewDeskButtonScaleAnimation() {
+  ~DeskIconButtonScaleAnimation() {
     if (Shell::Get()->overview_controller()->InOverviewSession()) {
-      new_desk_button_->layer()->SetRoundedCornerRadius(gfx::RoundedCornersF());
-      new_desk_button_->SetBackground(views::CreateRoundedRectBackground(
-          new_desk_button_->background()->get_color(),
+      desk_icon_button_->layer()->SetRoundedCornerRadius(
+          gfx::RoundedCornersF());
+      desk_icon_button_->SetBackground(views::CreateRoundedRectBackground(
+          desk_icon_button_->background()->get_color(),
           CrOSNextDeskIconButton::GetCornerRadiusOnState(
-              new_desk_button_->state())));
+              desk_icon_button_->state())));
     }
   }
 
  private:
-  // `new_desk_button_` is valid through the lifetime of `this `. Since when the
-  // `new_desk_button` is destroyed, `OnAborted` will be triggered and then the
-  // destructor of `this` will be triggered.
-  CrOSNextDeskIconButton* const new_desk_button_;
+  // `desk_icon_button_` is valid through the lifetime of `this `. Since when
+  // the `desk_icon_button_` is destroyed, `OnAborted` will be triggered and
+  // then the destructor of `this` will be triggered.
+  CrOSNextDeskIconButton* const desk_icon_button_;
 };
 
 }  // namespace
@@ -357,7 +386,7 @@ void PerformNewDeskMiniViewAnimation(
     std::vector<DeskMiniView*> mini_views_left,
     std::vector<DeskMiniView*> mini_views_right,
     int shift_x) {
-  if (features::IsJellyrollEnabled()) {
+  if (chromeos::features::IsJellyrollEnabled()) {
     DCHECK(bar_view->new_desk_button());
   } else {
     DCHECK(bar_view->expanded_state_new_desk_button());
@@ -369,16 +398,24 @@ void PerformNewDeskMiniViewAnimation(
   mini_views_right_begin_transform.Translate(-shift_x, 0);
 
   for (auto* mini_view : new_mini_views) {
-    ui::Layer* layer = mini_view->layer();
-    layer->SetOpacity(0);
+    if (chromeos::features::IsJellyrollEnabled()) {
+      if (!mini_view->desk()->is_desk_being_removed()) {
+        ScaleUpAndFadeInView(mini_view, mini_view->bounds().CenterPoint().x());
+      }
+    } else {
+      ui::Layer* layer = mini_view->layer();
+      layer->SetOpacity(0);
 
-    if (!mini_view->desk()->is_desk_being_removed())
-      layer->SetTransform(mini_views_left_begin_transform);
+      if (!mini_view->desk()->is_desk_being_removed()) {
+        layer->SetTransform(mini_views_left_begin_transform);
+      }
 
-    ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
-    InitScopedAnimationSettings(&settings, kExistingMiniViewsAnimationDuration);
-    layer->SetOpacity(1);
-    layer->SetTransform(kEndTransform);
+      ui::ScopedLayerAnimationSettings settings{layer->GetAnimator()};
+      InitScopedAnimationSettings(&settings,
+                                  kExistingMiniViewsAnimationDuration);
+      layer->SetOpacity(1);
+      layer->SetTransform(kEndTransform);
+    }
   }
 
   AnimateMiniViews(mini_views_left, mini_views_left_begin_transform);
@@ -389,10 +426,16 @@ void PerformNewDeskMiniViewAnimation(
   const auto& button_transform = base::i18n::IsRTL()
                                      ? mini_views_left_begin_transform
                                      : mini_views_right_begin_transform;
-  if (features::IsJellyrollEnabled()) {
+  if (chromeos::features::IsJellyrollEnabled()) {
     AnimateView(bar_view->new_desk_button(), button_transform);
+    if (bar_view->new_desk_button_label()->GetVisible()) {
+      AnimateView(bar_view->new_desk_button_label(), button_transform);
+    }
     if (auto* library_button = bar_view->library_button()) {
       AnimateView(library_button, button_transform);
+      if (bar_view->library_button_label()->GetVisible()) {
+        AnimateView(bar_view->library_button_label(), button_transform);
+      }
     }
   } else {
     AnimateView(bar_view->expanded_state_new_desk_button(), button_transform);
@@ -423,10 +466,16 @@ void PerformRemoveDeskMiniViewAnimation(
   const auto& button_transform = base::i18n::IsRTL()
                                      ? mini_views_left_begin_transform
                                      : mini_views_right_begin_transform;
-  if (features::IsJellyrollEnabled()) {
+  if (chromeos::features::IsJellyrollEnabled()) {
     AnimateView(bar_view->new_desk_button(), button_transform);
+    if (bar_view->new_desk_button_label()->GetVisible()) {
+      AnimateView(bar_view->new_desk_button_label(), button_transform);
+    }
     if (auto* library_button = bar_view->library_button()) {
       AnimateView(library_button, button_transform);
+      if (bar_view->library_button_label()->GetVisible()) {
+        AnimateView(bar_view->library_button_label(), button_transform);
+      }
     }
   } else {
     AnimateView(bar_view->expanded_state_new_desk_button(), button_transform);
@@ -456,8 +505,18 @@ void PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(
     DesksBarView* bar_view) {
   bar_view->new_desk_button()->UpdateState(
       CrOSNextDeskIconButton::State::kExpanded);
-  bar_view->library_button()->UpdateState(
-      CrOSNextDeskIconButton::State::kExpanded);
+  auto* library_button = bar_view->library_button();
+
+  if (library_button) {
+    if (bar_view->overview_grid()->WillShowSavedDeskLibrary()) {
+      // For library button, when it's at zero state and clicked, the desks bar
+      // will expand, the overview grid will show the saved desk library, the
+      // library button should be activated and focused.
+      library_button->UpdateState(CrOSNextDeskIconButton::State::kActive);
+    } else {
+      library_button->UpdateState(CrOSNextDeskIconButton::State::kExpanded);
+    }
+  }
 
   new DesksBarBoundsAnimation(bar_view, /*to_zero_state=*/false);
 
@@ -467,9 +526,17 @@ void PerformZeroStateToExpandedStateMiniViewAnimationCrOSNext(
   }
 
   ScaleUpAndFadeInView(bar_view->new_desk_button(), bar_x_center);
-  if (auto* library_button = bar_view->library_button()) {
+  if (library_button) {
     ScaleUpAndFadeInView(library_button, bar_x_center);
+    // Library button could be at active state when the desks bar is switched
+    // from the zero state to the expanded state, for example when clicking on
+    // the library button at zero state. Thus we should also try to fade in the
+    // library button label here.
+    FadeInView(bar_view->library_button_label(),
+               /*duration=*/kLabelFadeInDuration,
+               /*delay=*/kLabelFadeInDelay);
   }
+
   PositionWindowsInOverview();
 }
 
@@ -555,20 +622,35 @@ void PerformLibraryButtonVisibilityAnimation(
   AnimateView(new_desk_button, translation);
 }
 
-void PerformNewDeskButtonScaleAnimationCrOSNext(
+void PerformDeskIconButtonScaleAnimationCrOSNext(
+    CrOSNextDeskIconButton* button,
     DesksBarView* bar_view,
     const gfx::Transform& new_desk_button_rects_transform,
     int shift_x) {
-  new NewDeskButtonScaleAnimation(bar_view->new_desk_button(),
-                                  new_desk_button_rects_transform);
+  new DeskIconButtonScaleAnimation(button, new_desk_button_rects_transform);
+
   gfx::Transform left_begin_transform;
   left_begin_transform.Translate(shift_x, 0);
   gfx::Transform right_begin_transform;
   right_begin_transform.Translate(-shift_x, 0);
 
   AnimateMiniViews(bar_view->mini_views(), left_begin_transform);
-  if (auto* library_button = bar_view->library_button()) {
-    AnimateView(library_button, right_begin_transform);
+
+  // If `button` is the new desk button, shift the library button to the right.
+  // Otherwise if it's the library button, shift the new desk button to the
+  // left.
+  if (button == bar_view->new_desk_button()) {
+    if (auto* library_button = bar_view->library_button()) {
+      AnimateView(library_button, right_begin_transform);
+      FadeInView(bar_view->new_desk_button_label(),
+                 /*duration=*/kLabelFadeInDuration,
+                 /*delay=*/kLabelFadeInDelay);
+    }
+  } else {
+    AnimateView(bar_view->new_desk_button(), left_begin_transform);
+    FadeInView(bar_view->library_button_label(),
+               /*duration=*/kLabelFadeInDuration,
+               /*delay=*/kLabelFadeInDelay);
   }
 }
 

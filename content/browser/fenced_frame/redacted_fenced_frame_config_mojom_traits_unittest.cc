@@ -348,7 +348,7 @@ TEST(FencedFrameConfigMojomTraitsTest, ConfigMojomTraitsNullInternalUrnTest) {
   RedactedFencedFrameConfig input_config =
       browser_config.RedactFor(FencedFrameEntity::kEmbedder);
   RedactedFencedFrameConfig output_config;
-  EXPECT_DEATH(
+  EXPECT_DEATH_IF_SUPPORTED(
       mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameConfig>(
           input_config, output_config),
       "");
@@ -511,8 +511,8 @@ TEST(FencedFrameConfigMojomTraitsTest, PropertiesHasFencedFrameReportingTest) {
 
   // Create a reporting service with a dummy SharedURLLoaderFactory.
   properties.fenced_frame_reporter_ = FencedFrameReporter::CreateForFledge(
-      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-          nullptr));
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(nullptr),
+      /*attribution_data_host_manager=*/nullptr);
   input_properties = properties.RedactFor(FencedFrameEntity::kEmbedder);
   EXPECT_TRUE(input_properties.has_fenced_frame_reporting());
   mojo::test::SerializeAndDeserialize<blink::mojom::FencedFrameProperties>(

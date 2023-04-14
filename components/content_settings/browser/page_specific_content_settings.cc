@@ -412,7 +412,7 @@ PageSpecificContentSettings::PageSpecificContentSettings(content::Page& page,
       delegate_(delegate),
       map_(delegate_->GetSettingsMap()),
       allowed_local_shared_objects_(
-          GetWebContents()->GetBrowserContext(),
+          GetWebContents()->GetPrimaryMainFrame()->GetStoragePartition(),
 #if !BUILDFLAG(IS_ANDROID)
           // TODO(crbug.com/1404234): Remove the async local storage pathway
           // completely when the new dialog has launched.
@@ -423,14 +423,15 @@ PageSpecificContentSettings::PageSpecificContentSettings(content::Page& page,
 #endif
           delegate_->GetAdditionalFileSystemTypes(),
           delegate_->GetIsDeletionDisabledCallback()),
-      blocked_local_shared_objects_(GetWebContents()->GetBrowserContext(),
-                                    /*ignore_empty_localstorage=*/false,
-                                    delegate_->GetAdditionalFileSystemTypes(),
-                                    delegate_->GetIsDeletionDisabledCallback()),
-      allowed_browsing_data_model_(
-          BrowsingDataModel::BuildEmpty(GetWebContents()->GetBrowserContext())),
-      blocked_browsing_data_model_(
-          BrowsingDataModel::BuildEmpty(GetWebContents()->GetBrowserContext())),
+      blocked_local_shared_objects_(
+          GetWebContents()->GetPrimaryMainFrame()->GetStoragePartition(),
+          /*ignore_empty_localstorage=*/false,
+          delegate_->GetAdditionalFileSystemTypes(),
+          delegate_->GetIsDeletionDisabledCallback()),
+      allowed_browsing_data_model_(BrowsingDataModel::BuildEmpty(
+          GetWebContents()->GetPrimaryMainFrame()->GetStoragePartition())),
+      blocked_browsing_data_model_(BrowsingDataModel::BuildEmpty(
+          GetWebContents()->GetPrimaryMainFrame()->GetStoragePartition())),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   observation_.Observe(map_.get());
   if (page.GetMainDocument().GetLifecycleState() ==
@@ -711,20 +712,23 @@ void AddToContainer(browsing_data::LocalSharedObjectsContainer& container,
     case StorageType::LOCAL_STORAGE:
       // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
       // function directly.
-      container.local_storages()->Add(blink::StorageKey(origin));
+      container.local_storages()->Add(
+          blink::StorageKey::CreateFirstParty(origin));
       return;
     case StorageType::SESSION_STORAGE:
       // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
       // function directly.
-      container.session_storages()->Add(blink::StorageKey(origin));
+      container.session_storages()->Add(
+          blink::StorageKey::CreateFirstParty(origin));
       return;
     case StorageType::INDEXED_DB:
       // TODO(https://crbug.com/1199077): Pass the real StorageKey into this
       // function directly.
-      container.indexed_dbs()->Add(blink::StorageKey(origin));
+      container.indexed_dbs()->Add(blink::StorageKey::CreateFirstParty(origin));
       return;
     case StorageType::CACHE:
-      container.cache_storages()->Add(blink::StorageKey(origin));
+      container.cache_storages()->Add(
+          blink::StorageKey::CreateFirstParty(origin));
       return;
     case StorageType::FILE_SYSTEM:
       container.file_systems()->Add(origin);

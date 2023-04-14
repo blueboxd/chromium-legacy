@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
 
 #include <ios>
@@ -25,6 +26,7 @@
 #include "base/numerics/clamped_math.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
@@ -287,7 +289,7 @@ void WaitForUpdatePendingCallback(const GURL& url) {
 
 }  // namespace
 
-class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
+class ManifestUpdateManagerBrowserTest : public WebAppControllerBrowserTest {
  public:
   ManifestUpdateManagerBrowserTest()
       : update_dialog_scope_(SetIdentityUpdateDialogActionForTesting(
@@ -312,7 +314,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(http_server_.Start());
     // Suppress globally to avoid OS hooks deployed for system web app during
     // WebAppProvider setup.
-    InProcessBrowserTest::SetUp();
+    WebAppControllerBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -592,7 +594,7 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   void InstallAppLocally(const WebApp* web_app) {
     // Doesn't call GetProvider().os_integration_manager().InstallOsHooks() to
     // suppress OS hooks.
-    GetProvider().sync_bridge_unsafe().SetAppIsLocallyInstalled(
+    GetProvider().sync_bridge_unsafe().SetAppIsLocallyInstalledForTesting(
         web_app->app_id(), true);
     GetProvider().sync_bridge_unsafe().SetAppInstallTime(web_app->app_id(),
                                                          base::Time::Now());
@@ -641,7 +643,6 @@ class ManifestUpdateManagerBrowserTest : public InProcessBrowserTest {
   // pixel color for each size is used as the representation color for that
   // size, even if the image is multi-colored.
   std::vector<std::pair<int, SkColor>> updated_colors_;
-  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
   base::AutoReset<absl::optional<AppIdentityUpdate>> update_dialog_scope_;
 };
 
@@ -951,7 +952,8 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "blue"});
   AppId app_id = InstallWebApp();
 
-  GetProvider().sync_bridge_unsafe().SetAppIsLocallyInstalled(app_id, false);
+  GetProvider().sync_bridge_unsafe().SetAppIsLocallyInstalledForTesting(app_id,
+                                                                        false);
   EXPECT_FALSE(GetProvider().registrar_unsafe().IsLocallyInstalled(app_id));
 
   OverrideManifest(kManifestTemplate, {kInstallableIconList, "red"});
@@ -4136,8 +4138,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
   // Navigate to the app in a dedicated PWA window. Note that this opens a
   // second browser window.
   GURL url = GetAppURL();
-  Browser* web_app_browser =
-      LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+  Browser* web_app_browser = LaunchWebAppBrowserAndWait(app_id);
 
   // Wait for the PWA to a) detect that an update is needed and b) start waiting
   // on its window to close.
@@ -4204,8 +4205,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerAppIdentityBrowserTest,
   // Navigate to the app in a dedicated PWA window. Note that this opens a
   // second browser window.
   GURL url = GetAppURL();
-  Browser* web_app_browser =
-      LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+  Browser* web_app_browser = LaunchWebAppBrowserAndWait(app_id);
 
   // Wait for the PWA to a) detect that an update is needed and b) start waiting
   // on its window to close.
@@ -4329,7 +4329,7 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerImmediateUpdateBrowserTest,
         icon_load.QuitClosure());
     UpdateCheckResultAwaiter result_awaiter(app_url);
 
-    app_browser = LaunchWebAppBrowserAndWait(browser()->profile(), app_id);
+    app_browser = LaunchWebAppBrowserAndWait(app_id);
 
     icon_load.Run();
     EXPECT_EQ(std::move(result_awaiter).AwaitNextResult(),
@@ -4602,78 +4602,54 @@ class ManifestUpdateManagerBrowserTest_AppIdentityParameterized
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// A list of the supported colored images (of different sizes) used in the test.
-enum : int {
-  kNone = 0,
-  kGreen = 1,
-  kRed = 2,
-};
-
-std::string GenerateIconRow(int size, int color) {
+std::string GenerateIconRow(SquareSizePx size, SkColor color) {
   std::string size_str = base::NumberToString(size);
-  std::string row = "      { ";
-  row += "\"src\": \"" + size_str + "x" + size_str + "-";
-  switch (color) {
-    case kNone:
-      row += "?";
-      break;
-    case kGreen:
-      row += "green";
-      break;
-    case kRed:
-      row += "red";
-      break;
-  }
-  row += ".png\", ";
-  row += "\"sizes\": \"" + size_str + "x" + size_str + "\", ";
-  row += "\"type\": \"image/png\" }";
-  return row;
+  std::string color_str = base::ReplaceStringPlaceholders(
+      R"(rgb($1, $2, $3))",
+      {base::NumberToString(SkColorGetR(color)),
+       base::NumberToString(SkColorGetG(color)),
+       base::NumberToString(SkColorGetB(color))},
+      nullptr);
+  // Encode a square SVG with a flat colored rect of the requested size and
+  // color in the icon URL.
+  return base::ReplaceStringPlaceholders(R"(      {
+        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='$1' height='$1'><rect fill='$2' width='$1' height='$1' /></svg>",
+        "sizes": "$1x$1",
+        "type": "image/svg+xml"
+      })",
+                                         {size_str, color_str}, nullptr);
 }
 
-std::string GenerateColoredIconList(int installability_icon,
-                                    int launcher_icon,
-                                    int install_icon,
-                                    int other_icon,
-                                    int other_icon2 = kNone) {
+struct SizeColor {
+  SquareSizePx size;
+  SkColor color;
+};
+
+std::string GenerateColoredIconList(std::vector<SizeColor> size_colors) {
+  bool installable_icon_included = false;
+
   std::string icon_list;
-  if (install_icon != kNone) {
-    icon_list += GenerateIconRow(kInstallIconSize, install_icon);
-  }
-  if (launcher_icon != kNone) {
-    if (!icon_list.empty())
+  for (const auto [size, color] : size_colors) {
+    if (!icon_list.empty()) {
       icon_list += ",\n";
-    icon_list += GenerateIconRow(kLauncherIconSize, launcher_icon);
+    }
+    icon_list += GenerateIconRow(size, color);
+
+    // Installability requirements mandate at least one large icon.
+    installable_icon_included |= size >= kInstallMinSize;
   }
-  if (other_icon != kNone) {
-    if (!icon_list.empty())
+
+  if (!installable_icon_included) {
+    if (!icon_list.empty()) {
       icon_list += ",\n";
-    icon_list += GenerateIconRow(kUnimportantIconSize, other_icon);
-  }
-  if (other_icon2 != kNone) {
-    if (!icon_list.empty())
-      icon_list += ",\n";
-    icon_list += GenerateIconRow(kUnimportantIconSize2, other_icon2);
-  }
-  if (installability_icon != kNone) {
-    if (!icon_list.empty())
-      icon_list += ",\n";
-    icon_list += GenerateIconRow(kInstallabilityIconSize, installability_icon);
-  }
-  // Installability requirements mandate at least one large icon.
-  if ((kLauncherIconSize < kInstallMinSize || launcher_icon == kNone) &&
-      (kInstallIconSize < kInstallMinSize || install_icon == kNone) &&
-      (kUnimportantIconSize < kInstallMinSize || other_icon == kNone) &&
-      (kUnimportantIconSize2 < kInstallMinSize || other_icon2 == kNone) &&
-      (kInstallabilityIconSize < kInstallMinSize ||
-       installability_icon == kNone)) {
-    if (!icon_list.empty())
-      icon_list += ",\n";
+    }
     icon_list += "      { \"error\": \"Installability requirements not met\" }";
   }
 
-  if (!icon_list.empty())
+  if (!icon_list.empty()) {
     icon_list += "\n";
-  return "\n    [\n" + icon_list + "    ]\n  ";
+  }
+  return base::StrCat({"\n    [\n", icon_list, "    ]\n  "});
 }
 
 // Disabled due to test flakiness: https://crbug.com/1341617
@@ -4695,7 +4671,8 @@ IN_PROC_BROWSER_TEST_P(
     }
   )";
 
-  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = true;
+  ManifestUpdateManager::ScopedBypassWindowCloseWaitingForTesting
+      bypass_window_close_waiting;
 
   testing::TestParamInfo<
       std::tuple<AppIdTestParam, AppIdTestParam, AppIdTestParam>>
@@ -4765,10 +4742,11 @@ IN_PROC_BROWSER_TEST_P(
 
   // This is the default icon list (all green icons) and is overridden below,
   // if need be.
-  starting_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kGreen);
+  starting_stage =
+      GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                               {kInstallIconSize, SK_ColorYELLOW},
+                               {kLauncherIconSize, SK_ColorGREEN},
+                               {kInstallabilityIconSize, SK_ColorBLUE}});
 
   // This is the resulting shortcut colors (per size) for the default icon list
   // above, and similar to `starting_stage` it is overridden below when needed.
@@ -4783,200 +4761,166 @@ IN_PROC_BROWSER_TEST_P(
   // that size therefore does not always feature in the shortcut expectations.
   std::vector<std::pair<std::pair<int, int>, SkColor>>
       expected_shortcut_colors_before = {
-          {{32, kAll}, SK_ColorGREEN},
-          {{48, kAll}, SK_ColorGREEN},
+          {{32, kAll}, SK_ColorYELLOW},
+          {{48, kAll}, SK_ColorYELLOW},
           // Although sizes 64 and 96 are within the SizesToGenerate() list they
           // are listed in `kDesiredIconSizesForShortcut` on Windows only.
           {{64, kWin}, SK_ColorGREEN},
           {{96, kWin}, SK_ColorGREEN},
           {{128, kAll}, SK_ColorGREEN},
-          {{256, kAll}, SK_ColorGREEN},
+          {{256, kMac}, SK_ColorGREEN},
+          {{256, kNotMac}, SK_ColorBLUE},
           // The tests use size 512 as the icon size that guarantees that the
           // installability requirements are met, but that size is not listed as
           // a desired shortcut size on Windows.
-          {{512, kNotWin}, SK_ColorGREEN}};
+          {{512, kNotWin}, SK_ColorBLUE}};
 
   // This needs to be populated for each test below.
   std::vector<std::pair<std::pair<int, int>, SkColor>>
       expected_shortcut_colors_if_updated;
 
   if (LauncherIconUpdate() && InstallIconUpdate()) {
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kRed,
-                                           /* install_icon= */ kRed,
-                                           /* other_icon= */ kGreen);
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                                 {kInstallIconSize, SK_ColorBLACK},
+                                 {kLauncherIconSize, SK_ColorWHITE},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
     expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorRED},
-        {{48, kAll}, SK_ColorRED},
-        {{64, kWin}, SK_ColorRED},
-        {{96, kWin}, SK_ColorRED},
-        {{128, kAll}, SK_ColorRED},
-        // On Mac, this size is the launcher icon, so red is expected.
-        {{256, kMac}, SK_ColorRED},
+        {{32, kAll}, SK_ColorBLACK},
+        {{48, kAll}, SK_ColorBLACK},
+        {{64, kWin}, SK_ColorWHITE},
+        {{96, kWin}, SK_ColorWHITE},
+        {{128, kAll}, SK_ColorWHITE},
+        // On Mac, this size is the launcher icon, so white is expected.
+        {{256, kMac}, SK_ColorWHITE},
         // On other platforms, there is no size 256 specified, so this is
-        // generated from the installability icon (size 512), which is green.
-        {{256, kNotMac}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
+        // generated from the installability icon (size 512), which is blue.
+        {{256, kNotMac}, SK_ColorBLUE},
+        {{512, kNotWin}, SK_ColorBLUE}};
   } else if (IconSwitchFromLauncher()) {
     // Starting stage is with a launcher icon but without an unimportant icon.
-    starting_stage = GenerateColoredIconList(/* installability_icon= */ kRed,
-                                             /* launcher_icon= */ kGreen,
-                                             /* install_icon= */ kGreen,
-                                             /* other_icon= */ kNone);
+    starting_stage =
+        GenerateColoredIconList({{kInstallIconSize, SK_ColorYELLOW},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
     expected_shortcut_colors_before = {
-        {{32, kAll}, SK_ColorGREEN},
-        {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorGREEN},
-        {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},
-        // On Mac, this size is the launcher icon, so green is expected.
-        {{256, kMac}, SK_ColorGREEN},
-        // On other platforms, there is no size 256 specified, so this is
-        // generated from the installability icon (size 512), which is red.
-        {{256, kNotMac}, SK_ColorRED},
-        {{512, kNotWin}, SK_ColorRED}};
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
+        {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
 
     // Ending stage is without a launcher icon but with an unimportant icon.
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kRed,
-                                           /* launcher_icon= */ kNone,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kGreen);
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
     expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorGREEN},  {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorRED},    {{96, kWin}, SK_ColorRED},
-        {{128, kAll}, SK_ColorRED},   {{256, kAll}, SK_ColorRED},
-        {{512, kNotWin}, SK_ColorRED}};
+        {{32, kAll}, SK_ColorGREEN},    {{48, kAll}, SK_ColorGREEN},
+        {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
   } else if (IconSwitchToLauncher()) {
     // Starting stage is without a launcher icon but with an unimportant icon.
-    starting_stage = GenerateColoredIconList(/* installability_icon= */ kRed,
-                                             /* launcher_icon= */ kNone,
-                                             /* install_icon= */ kGreen,
-                                             /* other_icon= */ kGreen);
+    starting_stage = GenerateColoredIconList({
+        {kUnimportantIconSize, SK_ColorRED},
+        {kInstallIconSize, SK_ColorYELLOW},
+        {kInstallabilityIconSize, SK_ColorBLUE},
+    });
 
     expected_shortcut_colors_before = {
-        {{32, kAll}, SK_ColorGREEN},  {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorRED},    {{96, kWin}, SK_ColorRED},
-        {{128, kAll}, SK_ColorRED},   {{256, kAll}, SK_ColorRED},
-        {{512, kNotWin}, SK_ColorRED}};
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
+        {{64, kWin}, SK_ColorYELLOW},   {{96, kWin}, SK_ColorYELLOW},
+        {{128, kAll}, SK_ColorBLUE},    {{256, kMac}, SK_ColorBLUE},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
 
-    // Ending stage is with the a icon but without an unimportant icon.
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kRed,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kNone);
+    // Ending stage is with the launcher icon but without an unimportant icon.
+    ending_stage =
+        GenerateColoredIconList({{kInstallIconSize, SK_ColorYELLOW},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
     expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorGREEN},
-        {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorGREEN},
-        {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},
-        // On Mac, this size is the launcher icon, so green is expected.
-        {{256, kMac}, SK_ColorGREEN},
-        // On other platforms, this is inherited from the installability icon.
-        {{256, kNotMac}, SK_ColorRED},
-        {{512, kNotWin}, SK_ColorRED}};
-  } else if (LauncherIconUpdate()) {
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kRed,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kGreen);
-    expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorGREEN},
-        {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorRED},
-        {{96, kWin}, SK_ColorRED},
-        {{128, kAll}, SK_ColorRED},
-        // On Mac, this size is the launcher icon, so red is expected.
-        {{256, kMac}, SK_ColorRED},
-        // On other platforms, this is inherited from the installability icon.
-        {{256, kNotMac}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
-  } else if (InstallIconUpdate()) {
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kRed,
-                                           /* other_icon= */ kGreen);
-    expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorRED},      {{48, kAll}, SK_ColorRED},
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
         {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},   {{256, kAll}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
+  } else if (LauncherIconUpdate()) {
+    ending_stage = GenerateColoredIconList({
+        {kUnimportantIconSize, SK_ColorRED},
+        {kInstallIconSize, SK_ColorYELLOW},
+        {kLauncherIconSize, SK_ColorWHITE},
+        {kInstallabilityIconSize, SK_ColorBLUE},
+    });
+    expected_shortcut_colors_if_updated = {
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
+        {{64, kWin}, SK_ColorWHITE},    {{96, kWin}, SK_ColorWHITE},
+        {{128, kAll}, SK_ColorWHITE},   {{256, kMac}, SK_ColorWHITE},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
+  } else if (InstallIconUpdate()) {
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                                 {kInstallIconSize, SK_ColorWHITE},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
+    expected_shortcut_colors_if_updated = {
+        {{32, kAll}, SK_ColorWHITE},    {{48, kAll}, SK_ColorWHITE},
+        {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
   } else if (UnimportantIconUpdate()) {
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kRed);
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorWHITE},
+                                 {kInstallIconSize, SK_ColorYELLOW},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
     // There should be no effect on the shortcut icons when an unimportant icon
     // updates.
     expected_shortcut_colors_if_updated = expected_shortcut_colors_before;
   } else if (LauncherIconRemove()) {
-    starting_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                             /* launcher_icon= */ kRed,
-                                             /* install_icon= */ kGreen,
-                                             /* other_icon= */ kGreen);
-    expected_shortcut_colors_before = {
-        {{32, kAll}, SK_ColorGREEN},
-        {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorRED},
-        {{96, kWin}, SK_ColorRED},
-        {{128, kAll}, SK_ColorRED},
-        // On Mac, this size is the launcher icon, so red is expected.
-        {{256, kMac}, SK_ColorRED},
-        // On other platforms, this is inherited from the installability icon.
-        {{256, kNotMac}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                                 {kInstallIconSize, SK_ColorYELLOW},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
 
-    // Note that the starting stage for this request is not a set of icons that
-    // are all green, but instead the launcher icon is red. Then, when the
-    // launcher icon is removed, we can verify that it becomes auto-generated
-    // from other icons (and therefore turns green).
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kNone,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kGreen);
-
+    expected_shortcut_colors_if_updated = {
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
+        {{64, kWin}, SK_ColorBLUE},     {{96, kWin}, SK_ColorBLUE},
+        {{128, kAll}, SK_ColorBLUE},    {{256, kMac}, SK_ColorBLUE},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
+  } else if (InstallIconRemove()) {
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorRED},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
     expected_shortcut_colors_if_updated = {
         {{32, kAll}, SK_ColorGREEN},    {{48, kAll}, SK_ColorGREEN},
         {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},   {{256, kAll}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
-  } else if (InstallIconRemove()) {
-    // The install icon size is not a size that is auto-generated for the
-    // shortcut when missing, so when removed there should be
-    // no effect.
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kNone,
-                                           /* other_icon= */ kGreen);
-    expected_shortcut_colors_if_updated = expected_shortcut_colors_before;
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
   } else if (UnimportantIconRemove()) {
-    starting_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                             /* launcher_icon= */ kGreen,
-                                             /* install_icon= */ kGreen,
-                                             /* other_icon= */ kGreen,
-                                             /* other_icon2 */ kGreen);
+    starting_stage =
+        GenerateColoredIconList({{kUnimportantIconSize, SK_ColorBLACK},
+                                 {kUnimportantIconSize2, SK_ColorRED},
+                                 {kInstallIconSize, SK_ColorYELLOW},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
     expected_shortcut_colors_before = {
-        {{32, kAll}, SK_ColorGREEN},    {{48, kAll}, SK_ColorGREEN},
+        {{32, kAll}, SK_ColorYELLOW},   {{48, kAll}, SK_ColorYELLOW},
         {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},   {{256, kAll}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
+        {{128, kAll}, SK_ColorGREEN},   {{256, kMac}, SK_ColorGREEN},
+        {{256, kNotMac}, SK_ColorBLUE}, {{512, kNotWin}, SK_ColorBLUE}};
 
     // Removing an unimportant icon should have no effect on other icons.
-    ending_stage = GenerateColoredIconList(/* installability_icon= */ kGreen,
-                                           /* launcher_icon= */ kGreen,
-                                           /* install_icon= */ kGreen,
-                                           /* other_icon= */ kNone,
-                                           /* other_icon2 */ kGreen);
-    expected_shortcut_colors_if_updated = {
-        {{32, kAll}, SK_ColorGREEN},    {{48, kAll}, SK_ColorGREEN},
-        {{64, kWin}, SK_ColorGREEN},    {{96, kWin}, SK_ColorGREEN},
-        {{128, kAll}, SK_ColorGREEN},   {{256, kAll}, SK_ColorGREEN},
-        {{512, kNotWin}, SK_ColorGREEN}};
+    ending_stage =
+        GenerateColoredIconList({{kUnimportantIconSize2, SK_ColorRED},
+                                 {kInstallIconSize, SK_ColorYELLOW},
+                                 {kLauncherIconSize, SK_ColorGREEN},
+                                 {kInstallabilityIconSize, SK_ColorBLUE}});
+    expected_shortcut_colors_if_updated = expected_shortcut_colors_before;
   } else if (TitleUpdate()) {
     ending_stage = starting_stage;  // No icon change.
     expected_shortcut_colors_if_updated = expected_shortcut_colors_before;
@@ -5031,8 +4975,6 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_EQ(ExpectTitleUpdate() ? "Different app name" : "Test app name",
             GetProvider().registrar_unsafe().GetAppShortName(app_id));
-
-  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = false;
 }
 
 INSTANTIATE_TEST_SUITE_P(

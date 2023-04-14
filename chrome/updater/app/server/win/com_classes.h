@@ -13,7 +13,6 @@
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/update_service.h"
-#include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/win_util.h"
 
 // Definitions for native COM updater classes.
@@ -109,6 +108,7 @@ class UpdaterImpl : public DynamicIIDsImpl<IUpdater,
                         const wchar_t* install_data_index,
                         LONG priority,
                         BOOL same_version_update_allowed,
+                        BOOL do_update_check_only,
                         IUpdaterObserver* observer) override;
   IFACEMETHODIMP UpdateAll(IUpdaterObserver* observer) override;
   IFACEMETHODIMP Install(const wchar_t* app_id,

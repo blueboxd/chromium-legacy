@@ -3,6 +3,7 @@
 <translationbundle lang="sl">
 <translation id="1143896152279775643">Geslo bo shranjeno v Google Upravitelju gesel za račun <ph name="EMAIL" />.</translation>
 <translation id="1282031177488366470">Pomagajte izboljšati funkcije in delovanje Chroma</translation>
+<translation id="1352919863522755794">Googlov upravitelj gesel ni mogel preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="1462727070346936664">Prijavite se, če želite čim bolje izkoristiti Chrome.</translation>
 <translation id="1479202195792305274">Chrome lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
 <translation id="1493827051843127077">Nastavite Chrome kot privzeto možnost sinhroniziranja zavihkov, gesel in podatkov za plačilo v vseh napravah.</translation>
@@ -12,17 +13,16 @@
 <translation id="1682483655351012182">Sinhronizacija podatkov v Chromu</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1917964099031477364">Ta račun in vsi neshranjeni podatki bodo odstranjeni iz Chroma in drugih Googlovih aplikacij v tej napravi.</translation>
-<translation id="1968388653333775699">Opravite več s Chromom</translation>
 <translation id="2009224836393115614">Chromu ni uspelo preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="2056123005618757196">Opravite več s preprostim in varnim Chromom, ki je hitrejši kot kdaj prej.</translation>
 <translation id="2147651015520127414">Chrome je preveril, da je izdajatelj <ph name="ISSUER" /> izdal potrdilo tega spletnega mesta.</translation>
 <translation id="2199719347983604670">Podatki iz Sinhronizacije za Chrome</translation>
-<translation id="2313070403598893276">Google Chrome je preprost, varen in hitrejši kot kdaj prej.</translation>
 <translation id="2339201583852607431">Geslo bo shranjeno v računu Google (<ph name="EMAIL" />).</translation>
 <translation id="2342919707875585281">Chrome vašo lokacijo deli s spletnimi mesti, ki jih dovolite.</translation>
 <translation id="2347208864470321755">Kadar je vklopljena ta funkcija, bo Chrome ponudil, da z uporabo Google Prevajalnika prevede strani v drugih jezikih. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
 <translation id="2427791862912929107">Chrome ima funkcije, s katerimi lažje upravljate internetne podatke in hitrost nalaganja spletnih strani.
 <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
+<translation id="2444854139071078915">Če želite preprosto do shranjenih gesel v drugih aplikacijah, uporabite Chrome za samodejno izpolnjevanje.</translation>
 <translation id="2561231791489583059">Uporabljajte Chrome kot privzeti brskalnik, če se želite zaščititi pred nevarnimi spletnimi mesti in poskrbeti za varnost gesel.</translation>
 <translation id="2574249610672786438">Če si želite ogledati zavihke iz naprav, v katerih uporabljate Chrome, se prijavite v vseh napravah</translation>
 <translation id="2576431527583832481">Chrome je izboljšan! Na voljo je nova različica.</translation>
@@ -31,6 +31,7 @@
 <translation id="2689064829982324496">Če se želite odjaviti iz računa Google na vseh spletnih mestih, <ph name="BEGIN_LINK" />se odjavite iz Chroma<ph name="END_LINK" />.</translation>
 <translation id="2695886661449553974">Chrome ni mogel preveriti, ali so na voljo posodobitve. Poskusite pozneje.</translation>
 <translation id="2732745070297234559">Chromu ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
+<translation id="2767464022270041271">Ni shranjenih gesel. Googlov upravitelj gesel lahko preveri gesla, če jih shranite.</translation>
 <translation id="2869959624320573933">Prijava v Chrome</translation>
 <translation id="2957447865124070833">Izberite <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Ker se boste odjavili iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, boste iz te naprave izbrisali podatke v Chromu. Vaši podatki bodo še vedno na voljo v Google Računu.</translation>
@@ -59,15 +60,18 @@
 <translation id="4698415050768537821">Chromu ni uspelo preveriti vseh gesel. Poskusite znova jutri ali <ph name="BEGIN_LINK" />preverite gesla v računu Google.<ph name="END_LINK" /></translation>
 <translation id="4819268619367838612">Zaradi izboljšanja aplikacije Chrome Googlu pošlje podatke o uporabi in zrušitvah. <ph name="BEGIN_LINK" />Upravljanje<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Ni podprto v Chromu Beta</translation>
+<translation id="4840404732697892756">Googlov upravitelj gesel lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
 <translation id="5030102366287574140">Chrome vas lahko varuje pred podatkovnimi kršitvami, spletnimi mesti, ki niso varna, in drugim.</translation>
 <translation id="5108659628347594808">Izboljšajte Chrome</translation>
 <translation id="5119391094379141756">Izberite Chrome.</translation>
 <translation id="5162467219239570114">Chrome je zastarel. Če v trgovini <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> ni na voljo nobene posodobitve, vaša naprava morda ne podpira več novih različic Chroma.</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
 <translation id="5460571915754665838">4. Izberite Chrome.</translation>
+<translation id="5492504007368565877">Googlov upravitelj gesel ne more preveriti vaših gesel.</translation>
 <translation id="5552137475244467770">Chrome občasno preveri vaša gesla, tako da jih primerja s seznami gesel, objavljenimi v spletu. Pri tem so vaša gesla in uporabniška imena šifrirana, da jih ne more prebrati nihče, vključno z Googlom.</translation>
 <translation id="5639704535586432836">Odprite Settings &gt; Privacy &gt; Camera &gt; Google Chrome in vklopite fotoaparat.</translation>
 <translation id="5642200033778930880">Google Chrome ne more uporabljati fotoaparata v načinu razdeljenega pogleda</translation>
+<translation id="5661521615548540542">Googlovemu upravitelju gesel ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Chrome brez povezave ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="5716154293141027663">Odpiranje Chroma ob vsakem dotiku povezav v drugih aplikacijah.</translation>
@@ -87,6 +91,7 @@
 <translation id="6709398533399187136">Geslo je bilo razkrito zaradi podatkovne kršitve. Google Upravitelj gesel priporoča, da ga takoj spremenite.</translation>
 <translation id="6822673484890854830">Chromu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="6964931465519938134">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
+<translation id="6975725306479268850">Izbira Chroma za samodejno izpolnjevanje</translation>
 <translation id="701356708427365932">Spoznajte novi meni v Chromu</translation>
 <translation id="7059914902409643750">Prilagodite si Chrome</translation>
 <translation id="7124339256045485976">Posodobitev Chroma</translation>
@@ -107,6 +112,8 @@
 <translation id="7754633291442704733">Vaša organizacija <ph name="DOMAIN" /> bo imela dostop do podatkov Chroma, zaznamkov, zgodovine, gesel in drugih nastavitev, ki jih shranite v tem računu. Ko se odjavite, bodo podatki izbrisani iz te naprave.  Vaši podatki bodo kljub temu še naprej shranjeni v upravljanem računu Google in bodo na voljo vaši organizaciji. Vaša organizacija lahko nastavi tudi uporabniške pravilnike, specifične za ta račun, to pa lahko spremeni način delovanja Chroma.</translation>
 <translation id="7780154209050837198">Če želite kar najbolje izkoristiti Chrome, se prijavite vanj z računom Google.</translation>
 <translation id="7855730255114109580">Google Chrome je posodobljen</translation>
+<translation id="7939179037291298976">V nastavitvah iPhona odprite »Password Options« (Možnosti gesla) in izberite »Chrome«</translation>
+<translation id="7975131781538454817">Obvestila za Chrome so izklopljena v nastavitvah naprave. Najprej morate omogočiti obvestila.</translation>
 <translation id="8022947259858476807">Uporabljajte Chrome kot privzeto možnost odpiranja povezav, iskanja v pripomočkih in samodejnega izpolnjevanja gesel v drugih aplikacijah.</translation>
 <translation id="81358522153858150">Chrome zdaj podpira uporabniške pravilnike za vaš upravljani račun</translation>
 <translation id="8160472928944011082">Chroma ni mogoče posodobiti</translation>
@@ -120,9 +127,12 @@
   2. Dotaknite se možnosti za privzeto aplikacijo za brskanje.
   3. Izberite Chrome.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
+<translation id="8603022514504485810">Googlovemu upravitelju gesel ni uspelo preveriti vseh gesel. Poskusite znova jutri ali <ph name="BEGIN_LINK" />preverite gesla v računu Google.<ph name="END_LINK" /></translation>
 <translation id="8736550665979974340">Ostanite varni z Google Chromom</translation>
+<translation id="8765470054473112089">Ko tipkate v naslovno vrstico ali iskalno polje, Chrome vaše vnose pošlje v privzeti iskalnik zaradi boljših predlogov. V anonimnem načinu je to izklopljeno.</translation>
 <translation id="8772179140489533211">Pokaže pozive za prijavo v Chrome.</translation>
 <translation id="8788269841521769222">Tega gesla si ne bo treba zapomniti. Shranjeno bo v Google Upravitelju gesel za račun <ph name="EMAIL" />.</translation>
+<translation id="8857676124663337448">Googlovemu upravitelju gesel ni uspelo preveriti vseh gesel. Poskusite znova jutri.</translation>
 <translation id="8897749957032330183">Gesla so shranjena v Googlovem upravitelju gesel v tej napravi.</translation>
 <translation id="8969290730818637510">Če je omogočeno:
 <ph name="BEGIN_INDENT" />  • Pomagate izboljšati Chrome za ljudi, ki ga uporabljajo kot vi.<ph name="END_INDENT" />
@@ -133,6 +143,7 @@ Kaj je treba upoštevati:
   • Če se Chrome zruši, bodo med podatki o zrušitvi morda nekateri osebni podatki.
 
   • Če vklopite sinhronizacijo, bodo meritve vključevale tudi podatke o URL-jih, ki jih obiščete.<ph name="END_INDENT" /></translation>
+<translation id="9101160735177453133">Če želite vklopiti funkcijo »Spremljanje cene« v nastavitvah naprave omogočite obvestila za Chrome</translation>
 <translation id="9103442491611662960">V tem profilu za Chrome uporabljate standardno varnostno zaščito.</translation>
 <translation id="9112744793181547300">Želite nastaviti Chrome kot privzeto možnost?</translation>
 <translation id="9122931302567044771">To pomeni, da bo Chrome vsakič zahteval spletno mesto za namizne naprave.</translation>

@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "net/base/network_anonymization_key.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
@@ -552,7 +553,7 @@ class PrefetchedNavigationLoaderInterceptor
     cookie_manager_->GetAllForUrl(
         request.url, request.trusted_params->isolation_info.site_for_cookies(),
         *request.trusted_params->isolation_info.top_frame_origin(),
-        std::move(match_options),
+        request.has_storage_access, std::move(match_options),
         base::BindOnce(&PrefetchedNavigationLoaderInterceptor::OnGetCookies,
                        weak_factory_.GetWeakPtr(), std::move(callback),
                        std::move(fallback_callback)));

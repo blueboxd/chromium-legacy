@@ -16,6 +16,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/crostini/fake_crostini_features.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/extensions/mixin_based_extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -41,12 +42,14 @@ namespace file_manager {
 
 enum GuestMode { NOT_IN_GUEST_MODE, IN_GUEST_MODE, IN_INCOGNITO };
 enum TestAccountType {
-  TEST_ACCOUNT_TYPE_NOT_SET,
-  ENTERPRISE,
-  CHILD,
-  NON_MANAGED
+  kTestAccountTypeNotSet,
+  kEnterprise,
+  kChild,
+  kNonManaged,
+  // Non-managed account as a non owner profile on a device.
+  kNonManagedNonOwner,
 };
-enum DeviceMode { DEVICE_MODE_NOT_SET, CONSUMER_OWNED, ENROLLED };
+enum DeviceMode { kDeviceModeNotSet, kConsumerOwned, kEnrolled };
 
 class DriveFsTestVolume;
 class FakeTestVolume;
@@ -60,6 +63,11 @@ class SmbfsTestVolume;
 class HiddenTestVolume;
 class GuestOsTestVolume;
 
+ash::LoggedInUserMixin::LogInType LogInTypeFor(
+    TestAccountType test_account_type);
+
+absl::optional<AccountId> AccountIdFor(TestAccountType test_account_type);
+
 class FileManagerBrowserTestBase
     : public content::DevToolsAgentHostObserver,
       public extensions::MixinBasedExtensionApiTest {
@@ -67,6 +75,7 @@ class FileManagerBrowserTestBase
   struct Options {
     Options();
     Options(const Options&);
+    ~Options();
 
     // Should test run in Guest or Incognito mode?
     GuestMode guest_mode = NOT_IN_GUEST_MODE;
@@ -74,12 +83,12 @@ class FileManagerBrowserTestBase
     // Account type used to log-in for a test session. This option is valid only
     // for `LoggedInUserFilesAppBrowserTest`. This won't work with `guest_mode`
     // option.
-    TestAccountType test_account_type = TEST_ACCOUNT_TYPE_NOT_SET;
+    TestAccountType test_account_type = kTestAccountTypeNotSet;
 
     // Device mode used for a test session. This option is valid only for
     // `LoggedInUserFilesAppBrowserTest`. This might not work with `guest_mode`
     // option.
-    DeviceMode device_mode = DEVICE_MODE_NOT_SET;
+    DeviceMode device_mode = kDeviceModeNotSet;
 
     // Whether test runs in tablet mode.
     bool tablet_mode = false;
@@ -159,6 +168,12 @@ class FileManagerBrowserTestBase
 
     // Whether tests should enable Google One offer Files banner.
     bool enable_google_one_offer_files_banner = false;
+
+    // Whether tests should enable the Google Drive bulk pinning feature.
+    bool enable_drive_bulk_pinning = false;
+
+    // Feature IDs associated for mapping test cases and features.
+    std::vector<std::string> feature_ids;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;

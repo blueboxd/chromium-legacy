@@ -239,6 +239,35 @@ TEST_F(PointerEventManagerTest, PointerCancelsOfAllTypes) {
   ASSERT_EQ(callback->numTypePenReceived(), 1);
 }
 
+// Tests that user activation in not triggered if Blink receives a pointerup
+// event after a gesture scroll has started.  On a page w/o either pointer or
+// touch event listeners, WidgetInputHandlerManager dispatches a kPointerup
+// event to Blink after dispatching kPointerCausedUaAction to mark an
+// ongoing scroll, see https://crbug.com/1313076.
+TEST_F(PointerEventManagerTest, NoUserActivationWithPointerUpAfterCancel) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<body style='padding: 0px; width: 400px; height: 400px;'></body>");
+
+  ASSERT_FALSE(
+      WebView().MainFrameWidget()->LocalRoot()->HasTransientUserActivation());
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::Type::kPointerCausedUaAction,
+                             WebPointerProperties::PointerType::kTouch),
+      {}, {}, ui::LatencyInfo()));
+
+  WebView().MainFrameWidget()->HandleInputEvent(WebCoalescedInputEvent(
+      CreateTestPointerEvent(WebInputEvent::Type::kPointerUp,
+                             WebPointerProperties::PointerType::kTouch),
+      {}, {}, ui::LatencyInfo()));
+
+  ASSERT_FALSE(
+      WebView().MainFrameWidget()->LocalRoot()->HasTransientUserActivation());
+}
+
 TEST_F(PointerEventManagerTest, PointerCancelForNonExistentid) {
   WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -621,7 +650,8 @@ class PanActionTrackingWebFrameWidget : public SimWebFrameWidget {
 class PanActionPointerEventTest : public PointerEventManagerTest {
  public:
   PanActionPointerEventTest() {
-    feature_list_.InitWithFeatures({blink::features::kStylusWritingToInput},
+    feature_list_.InitWithFeatures({blink::features::kStylusWritingToInput,
+                                    blink::features::kStylusPointerAdjustment},
                                    {});
   }
 
@@ -795,6 +825,112 @@ TEST_F(PanActionPointerEventTest, PanActionNotSetWhenTouchActive) {
       Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
   test::RunPendingTasks();
   ASSERT_EQ(widget->LastPanAction(), PanAction::kNone);
+}
+
+TEST_F(PanActionPointerEventTest, PanActionAdjustedStylusWritable) {
+  ScopedStylusHandwritingForTest stylus_handwriting(true);
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <input type=text style='width: 100px; height: 100px;'>
+  )HTML");
+
+  PanActionTrackingWebFrameWidget* widget = GetWidget();
+
+  // Pan action adjusted as stylus writable for 15px around edit area with
+  // pointer as kPen.
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kNone);
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(110, 110)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kStylusWritable);
+
+  // Pan action not adjusted when pointer type is kMouse.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kMouse,
+                               gfx::PointF(110, 110)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_NE(widget->LastPanAction(), PanAction::kStylusWritable);
+
+  // Pan action adjusted with pointer as kEraser.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kEraser,
+                               gfx::PointF(110, 110)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kStylusWritable);
+}
+
+TEST_F(PanActionPointerEventTest, PanActionAdjustedWithTappableNodeNearby) {
+  ScopedStylusHandwritingForTest stylus_handwriting(true);
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <input type=text style='width: 100px; height: 100px;'>
+    <button id='button1'>Button</button>
+  )HTML");
+
+  PanActionTrackingWebFrameWidget* widget = GetWidget();
+
+  // Pan action adjusted as stylus writable below the editable node.
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kNone);
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(50, 110)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kStylusWritable);
+
+  // On a tappable node to the right, then pan action is not writable.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(110, 50)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_NE(widget->LastPanAction(), PanAction::kStylusWritable);
+}
+
+TEST_F(PanActionPointerEventTest, PanActionSentAcrossFrames) {
+  ScopedStylusHandwritingForTest stylus_handwriting(true);
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin: 0; } iframe { display: block; } </style>
+    <input type=text style='width: 100px; height: 100px;' />
+    <div style='margin: 0px;'>
+      <iframe style='width: 500px; height: 500px;'
+        srcdoc='<body style="margin: 0; height: 500px; width: 500px;
+                touch-action: none"></body>'>
+      </iframe>
+    </div>
+  )HTML");
+
+  PanActionTrackingWebFrameWidget* widget = GetWidget();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kNone);
+
+  // Pan action is stylus writable on editable node.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(50, 50)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kStylusWritable);
+
+  // Pan action is none on an Iframe with touch-action set as none.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(200, 200)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kNone);
+
+  // Pan action is set stylus writable again outside iframe.
+  GetEventHandler().HandleMouseMoveEvent(
+      CreateTestMouseMoveEvent(WebPointerProperties::PointerType::kPen,
+                               gfx::PointF(50, 50)),
+      Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  test::RunPendingTasks();
+  ASSERT_EQ(widget->LastPanAction(), PanAction::kStylusWritable);
 }
 
 }  // namespace blink

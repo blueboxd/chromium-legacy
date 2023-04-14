@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">التالي</translation>
 <translation id="1209796539517632982">خوادم الأسماء التلقائية</translation>
 <translation id="1210831758834677569">اللاوية</translation>
+<translation id="1221555006497674479">مساحة التخزين منخفضة. يتبقى %<ph name="REMAINING_PERCENTAGE" /> من إجمالي مساحة التخزين السحابي المشتركة التي تبلغ <ph name="TOTAL_SPACE" />.</translation>
 <translation id="1243314992276662751">تحميل</translation>
 <translation id="1249250836236328755">النوع</translation>
 <translation id="1254593899333212300">اتصال مباشر بالإنترنت</translation>
 <translation id="1272293450992660632">لا تتطابق قيم أرقام التعريف الشخصية.</translation>
 <translation id="1280820357415527819">جارٍ البحث عن شبكات الجوّال</translation>
-<translation id="1291603679744561561">‏تم قفل شريحة SIM.</translation>
 <translation id="1293556467332435079">ملفات</translation>
 <translation id="1297922636971898492">‏Google Drive غير متاح في الوقت الحالي. ستتم إعادة تشغيل التحميل تلقائيًا فور توفر Google Drive.</translation>
 <translation id="1307931752636661898">‏يتعذّر عرض ملفات نظام التشغيل Linux</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">‏لإفلات ملفات في Parallels Desktop، يجب نقل الملف إلى مجلد ملفات Windows.</translation>
 <translation id="1435838927755162558">‏مشاركة المجلد مع نظام Parallels Desktop</translation>
 <translation id="1439919885608649279">شخص يحمل أزهارًا</translation>
+<translation id="1458457385801829801">إلغاء تثبيت <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">السلوفاكية</translation>
 <translation id="1482884275703521657">الفنلندية</translation>
 <translation id="148466539719134488">السويسرية</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">‏الصينية باستخدام لوحة مفاتيح Pinyin</translation>
 <translation id="1646019627374511909">جارٍ إتاحة <ph name="NUMBER_OF_ITEMS" /> ملف بلا إنترنت</translation>
 <translation id="164969095109328410">‏جهاز Chrome</translation>
+<translation id="1661207570040737402">‏لقد استهلكت كل مساحة التخزين السحابي المشتركة في Google Workspace.</translation>
 <translation id="1661867754829461514">رقم التعريف الشخصي غير موجود</translation>
 <translation id="166439687370499867">لا يُسمح بتغيير عمليات ضبط الشبكة المشتركة.</translation>
 <translation id="1665611772925418501">تعذر تعديل على الملف.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">‏تمت مشاركة مجلد واحد مع الجهاز الافتراضي Bruschetta.</translation>
 <translation id="2578394532502990878">التاميلية الصوتية</translation>
 <translation id="2579959351793446050">الأوديا</translation>
+<translation id="2587195714949534472">يجري الإعداد لمزامنة <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، حجب المشرف هذه الشبكة، التفاصيل</translation>
 <translation id="2614589611416690597">ملف فيديو <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">‏لا يمكن الوصول إلى Google Drive في الوقت الحالي.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">المنغولية</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> من الأخطاء.</translation>
 <translation id="3509680540198371098">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، التفاصيل</translation>
+<translation id="3511705761158917664">يجري الإعداد لمزامنة <ph name="NUMBER_OF_ITEMS" /> عنصر…</translation>
 <translation id="3522708245912499433">البرتغالية</translation>
 <translation id="3524311639100184459">تنبيه: هذه الملفات مؤقتة وقد يتم حذفها تلقائيًا لتوفير مساحة على القرص.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">المجلد</translation>
@@ -347,6 +351,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">لصق</translation>
 <translation id="3952872973865944257">التيلوغوية الصوتية</translation>
+<translation id="3954354850384043518">جارية</translation>
 <translation id="3958548648197196644">كيوي</translation>
 <translation id="3971140002794351170">‏تنزيل الملف الشخصي لشريحة eSIM على الجهاز الجوّال، الشبكة رقم <ph name="NETWORK_INDEX" /> من أصل <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" />، <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">الإنجليزية (المملكة المتحدة)</translation>
@@ -406,6 +411,7 @@
 <translation id="4462159676511157176">خوادم أسماء مخصصة</translation>
 <translation id="4465725236958772856">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، يديرها المشرف، الاتصال</translation>
 <translation id="4470564870223067757">المجموعة رقم 2 الهانغولية</translation>
+<translation id="4474142134969976028">ما مِن نتائج مطابقة</translation>
 <translation id="4477002475007461989">الرومانية</translation>
 <translation id="4477219268485577442">بلغارية صوتية</translation>
 <translation id="4508265954913339219">تعذّر إتمام عملية التفعيل</translation>
@@ -477,6 +483,7 @@
 <translation id="4973523518332075481">يرجى استخدام اسم يحتوي على <ph name="MAX_LENGTH" /> حرف أو أقل</translation>
 <translation id="4973970068702235170">تعذَّر الضغط، خطأ غير متوقع: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">اليابانية</translation>
+<translation id="4987699874727873250">الإنجليزية (الهند)</translation>
 <translation id="4988205478593450158">هل تريد بالتأكيد حذف "<ph name="FILE_NAME" />"؟</translation>
 <translation id="498902553138568924">فراشة حمراء</translation>
 <translation id="4992066212339426712">إعادة الصوت</translation>
@@ -786,6 +793,7 @@
 <translation id="7458955835361612701">ما مِن صور حديثة.</translation>
 <translation id="7460898608667578234">الأوكرانية</translation>
 <translation id="7469894403370665791">الاتصال بهذه الشبكة تلقائيًا</translation>
+<translation id="7481358317100446445">جاهزة</translation>
 <translation id="7486315294984620427">‏لإفلات ملفات في Parallels Desktop، يجب نسخ الملف إلى مجلد ملفات Windows.</translation>
 <translation id="749452993132003881">هيراغانا</translation>
 <translation id="7495372004724182530">الماليالامية الصوتية</translation>
@@ -811,6 +819,7 @@
 <translation id="7655441028674523381">‏الوصول بسهولة إلى "صور Google"</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7663224033570512922">الهندية</translation>
+<translation id="7665680517722058469">يُرجى تجربة عبارة بحث أخرى.</translation>
 <translation id="7689532716264131859">تم نقل <ph name="NUMBER_OF_ITEMS" /> عنصر إلى "المهملات".</translation>
 <translation id="7693909743393669729">ستؤدي تهيئة محرك أقراص إلى محو جميع البيانات المخزَّنة عليه وإزالة جميع الأقسام الحالية، بما فيها الأقسام التي قد تكون غير مرئية. ولا يمكن التراجع عن هذا الإجراء.</translation>
 <translation id="7695430100978772476">تعذّر ضبط <ph name="DRIVE_NAME" /></translation>
@@ -967,6 +976,7 @@
 <translation id="8866284467018526531">تحويل صوتي إلى اللغة العربية</translation>
 <translation id="8873014196523807561">لاستعادة هذه العناصر، اسحبها إلى مجلد جديد. تم حذف المجلدات الأصلية لبعض هذه العناصر.</translation>
 <translation id="8874184842967597500">غير متصل</translation>
+<translation id="8876368061475701452">تم الوضع في قائمة الانتظار</translation>
 <translation id="8900820606136623064">المجرية</translation>
 <translation id="8903931173357132290">خرّيج</translation>
 <translation id="8912078710089354287">كلب يهُز ذيله</translation>

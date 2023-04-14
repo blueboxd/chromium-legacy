@@ -11,6 +11,7 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/paint/paint_cache.h"
 #include "cc/paint/paint_op_buffer.h"
+#include "cc/paint/paint_op_reader.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/test/transfer_cache_test_helper.h"
 #include "components/viz/test/test_context_provider.h"
@@ -72,7 +73,6 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
             const uint8_t* data,
             size_t size) {
   const size_t kRasterDimension = 32;
-  const size_t kMaxSerializedSize = 1000000;
 
   SkImageInfo image_info = SkImageInfo::MakeN32(
       kRasterDimension, kRasterDimension, kOpaque_SkAlphaType);
@@ -88,12 +88,8 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
       &transfer_cache_helper, paint_cache, strike_client, &scratch_buffer,
       true /* is_privileged */, nullptr /* shared_image_provider */);
 
-  // Need 4 bytes to be able to read the type/skip.
-  while (size >= 4) {
-    const cc::PaintOp* serialized = reinterpret_cast<const cc::PaintOp*>(data);
-    if (serialized->skip > kMaxSerializedSize)
-      break;
-
+  // Need kHeaderBytes bytes to be able to read the header.
+  while (size >= cc::PaintOpWriter::kHeaderBytes) {
     std::unique_ptr<char, base::AlignedFreeDeleter> deserialized(
         static_cast<char*>(base::AlignedAlloc(
             sizeof(cc::LargestPaintOp), cc::PaintOpBuffer::kPaintOpAlign)));
@@ -108,9 +104,6 @@ void Raster(scoped_refptr<viz::TestContextProvider> context_provider,
     deserialized_op->Raster(canvas, params);
 
     deserialized_op->DestroyThis();
-
-    if (serialized->skip >= size)
-      break;
 
     size -= bytes_read;
     data += bytes_read;
@@ -128,12 +121,16 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 
   // Partition the data to use some bytes for populating the font cache.
   uint32_t bytes_for_fonts = data[0];
-  if (bytes_for_fonts > size)
+  if (bytes_for_fonts > size) {
     bytes_for_fonts = size / 2;
-  // PaintOpBuffer only accepts 4 bytes aligned buffer.
-  bytes_for_fonts = base::bits::AlignDown(
-      bytes_for_fonts,
-      base::checked_cast<uint32_t>(cc::PaintOpWriter::Alignment()));
+  }
+  const uint8_t* raster_data = base::bits::AlignDown(
+      data + bytes_for_fonts, cc::PaintOpWriter::kMaxAlignment);
+  if (raster_data < data) {
+    return 0;
+  }
+  bytes_for_fonts = raster_data - data;
+  size_t raster_size = size - bytes_for_fonts;
 
   FontSupport font_support;
   scoped_refptr<gpu::ServiceFontManager> font_manager(
@@ -144,15 +141,13 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (bytes_for_fonts > 0u) {
     font_manager->Deserialize(reinterpret_cast<const char*>(data),
                               bytes_for_fonts, &locked_handles);
-    data += bytes_for_fonts;
-    size -= bytes_for_fonts;
   }
 
   auto context_provider_no_support = viz::TestContextProvider::Create();
   context_provider_no_support->BindToCurrentSequence();
   CHECK(!context_provider_no_support->GrContext()->supportsDistanceFieldText());
   Raster(context_provider_no_support, font_manager->strike_client(),
-         &paint_cache, data, size);
+         &paint_cache, raster_data, raster_size);
 
   auto context_provider_with_support = viz::TestContextProvider::Create(
       std::string("GL_OES_standard_derivatives"));
@@ -160,7 +155,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CHECK(
       context_provider_with_support->GrContext()->supportsDistanceFieldText());
   Raster(context_provider_with_support, font_manager->strike_client(),
-         &paint_cache, data, size);
+         &paint_cache, raster_data, raster_size);
 
   font_manager->Unlock(locked_handles);
   font_manager->Destroy();

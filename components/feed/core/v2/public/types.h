@@ -6,7 +6,6 @@
 #define COMPONENTS_FEED_CORE_V2_PUBLIC_TYPES_H_
 
 #include <iosfwd>
-#include <map>
 #include <string>
 #include <vector>
 
@@ -72,10 +71,6 @@ struct DisplayMetrics {
 using EphemeralChangeId = base::IdTypeU32<class EphemeralChangeIdClass>;
 using SurfaceId = base::IdTypeU32<class SurfaceIdClass>;
 using ImageFetchId = base::IdTypeU32<class ImageFetchIdClass>;
-
-// A map of trial names (key) and list of group names/IDs (value)
-// sent from the server.
-typedef std::map<std::string, std::vector<std::string>> Experiments;
 
 struct NetworkResponseInfo {
   NetworkResponseInfo();
@@ -268,6 +263,22 @@ enum class StreamKind : int {
 
   kMaxValue = kSingleWebFeed,
 };
+
+// Singe Web entry points
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.feed
+enum class SingleWebFeedEntryPoint : int {
+  // Three dot menu
+  kMenu = 0,
+  // Feed Atteribution
+  kAttribution = 1,
+  // Feed Recomentation
+  kRecommendation = 2,
+  // Other
+  kOther = 3,
+
+  kMaxValue = kOther,
+};
+std::ostream& operator<<(std::ostream& out, SingleWebFeedEntryPoint value);
 
 // For testing and debugging only.
 std::ostream& operator<<(std::ostream& out,

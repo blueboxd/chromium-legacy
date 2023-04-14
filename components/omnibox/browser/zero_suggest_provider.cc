@@ -447,18 +447,26 @@ void ZeroSuggestProvider::StartPrefetch(const AutocompleteInput& input) {
     LogEvent(Event::kRequestInvalidated, result_type, /*is_prefetch=*/true);
   }
 
-  // Create a loader for the request and take ownership of it.
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = input.current_page_classification();
   search_terms_args.focus_type = input.focus_type();
   search_terms_args.current_page_url = result_type == ResultType::kRemoteSendURL
                                            ? input.current_url().spec()
                                            : std::string();
+
+  // AllowZeroPrefixSuggestions() ensures these are not nullptr.
+  const TemplateURLService* template_url_service =
+      client()->GetTemplateURLService();
+  const TemplateURL* template_url =
+      template_url_service->GetDefaultSearchProvider();
+
+  // Create a loader for the request and take ownership of it.
   prefetch_loader_ =
       client()
           ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
-          ->StartSuggestionsRequest(
-              search_terms_args, client()->GetTemplateURLService(),
+          ->StartZeroPrefixSuggestionsRequest(
+              template_url, search_terms_args,
+              template_url_service->search_terms_data(),
               base::BindOnce(&ZeroSuggestProvider::OnPrefetchURLLoadComplete,
                              weak_ptr_factory_.GetWeakPtr(),
                              GetZeroSuggestInput(input, client()),
@@ -497,7 +505,12 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
 
   done_ = false;
 
-  // Create a loader for the request and take ownership of it.
+  // AllowZeroPrefixSuggestions() ensures these are not nullptr.
+  const TemplateURLService* template_url_service =
+      client()->GetTemplateURLService();
+  const TemplateURL* template_url =
+      template_url_service->GetDefaultSearchProvider();
+
   TemplateURLRef::SearchTermsArgs search_terms_args;
   search_terms_args.page_classification = input.current_page_classification();
   search_terms_args.focus_type = input.focus_type();
@@ -505,10 +518,13 @@ void ZeroSuggestProvider::Start(const AutocompleteInput& input,
       result_type_running_ == ResultType::kRemoteSendURL
           ? input.current_url().spec()
           : std::string();
+
+  // Create a loader for the request and take ownership of it.
   loader_ = client()
                 ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
-                ->StartSuggestionsRequest(
-                    search_terms_args, client()->GetTemplateURLService(),
+                ->StartZeroPrefixSuggestionsRequest(
+                    template_url, search_terms_args,
+                    template_url_service->search_terms_data(),
                     base::BindOnce(&ZeroSuggestProvider::OnURLLoadComplete,
                                    weak_ptr_factory_.GetWeakPtr(),
                                    GetZeroSuggestInput(input, client()),
@@ -586,16 +602,13 @@ void ZeroSuggestProvider::OnURLLoadComplete(
     const AutocompleteInput& input,
     const ResultType result_type,
     const network::SimpleURLLoader* source,
+    const bool response_received,
     std::unique_ptr<std::string> response_body) {
   TRACE_EVENT0("omnibox", "ZeroSuggestProvider::OnURLLoadComplete");
 
   DCHECK(!done_);
   DCHECK_EQ(loader_.get(), source);
 
-  const bool response_received =
-      response_body && source->NetError() == net::OK &&
-      (source->ResponseInfo() && source->ResponseInfo()->headers &&
-       source->ResponseInfo()->headers->response_code() == 200);
   if (!response_received) {
     loader_.reset();
     done_ = true;
@@ -640,15 +653,12 @@ void ZeroSuggestProvider::OnPrefetchURLLoadComplete(
     const AutocompleteInput& input,
     const ResultType result_type,
     const network::SimpleURLLoader* source,
+    const bool response_received,
     std::unique_ptr<std::string> response_body) {
   TRACE_EVENT0("omnibox", "ZeroSuggestProvider::OnPrefetchURLLoadComplete");
 
   DCHECK_EQ(prefetch_loader_.get(), source);
 
-  const bool response_received =
-      response_body && source->NetError() == net::OK &&
-      (source->ResponseInfo() && source->ResponseInfo()->headers &&
-       source->ResponseInfo()->headers->response_code() == 200);
   if (response_received) {
     LogEvent(Event::kRemoteResponseReceived, result_type, /*is_prefetch=*/true);
 

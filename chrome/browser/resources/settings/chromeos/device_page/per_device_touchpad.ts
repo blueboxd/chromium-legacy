@@ -10,36 +10,53 @@
 
 import '../../icons.html.js';
 import '../../settings_shared.css.js';
+import 'chrome://resources/cr_components/localized_link/localized_link.js';
+import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
+import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import '../../controls/settings_radio_group.js';
+import '../../controls/settings_slider.js';
+import '../../controls/settings_toggle_button.js';
+import '../../settings_shared.css.js';
+import 'chrome://resources/cr_elements/cr_slider/cr_slider.js';
 
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
+import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
+import {InputDeviceSettingsProviderInterface, Touchpad} from './input_device_settings_types.js';
 import {getTemplate} from './per_device_touchpad.html.js';
 
-const SettingsPerDeviceTouchpadElementBase =
-    RouteObserverMixin(I18nMixin(PolymerElement));
+const SettingsPerDeviceTouchpadElementBase = RouteObserverMixin(PolymerElement);
 
 class SettingsPerDeviceTouchpadElement extends
     SettingsPerDeviceTouchpadElementBase {
-  static get is() {
+  static get is(): string {
     return 'settings-per-device-touchpad';
   }
 
-  static get template() {
+  static get template(): HTMLTemplateElement {
     return getTemplate();
   }
 
-  static get properties() {
+  static get properties(): PolymerElementProperties {
     return {
-      isDeviceSettingsSplitEnabled: {
-        type: Boolean,
-        value: false,
+      touchpads: {
+        type: Array,
       },
     };
+  }
+
+  protected touchpads: Touchpad[];
+  private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
+      getInputDeviceSettingsProvider();
+
+  constructor() {
+    super();
+    this.fetchConnectedTouchpads();
   }
 
   override currentRouteChanged(route: Route): void {
@@ -47,6 +64,11 @@ class SettingsPerDeviceTouchpadElement extends
     if (route !== routes.PER_DEVICE_TOUCHPAD) {
       return;
     }
+  }
+
+  private async fetchConnectedTouchpads(): Promise<void> {
+    this.touchpads =
+        await this.inputDeviceSettingsProvider.getConnectedTouchpadSettings();
   }
 }
 

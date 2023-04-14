@@ -80,7 +80,7 @@
       "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x64",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-13-x64-rel": {
@@ -137,27 +137,6 @@
       "use_remoteexec": true
     }
   },
-  "android-arm64-rel-inverse-fyi": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "fail_on_android_expectations": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "skip_secondary_abi_for_cq": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "system_webview_package_name": "com.google.android.apps.chrome",
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_clang_coverage": true,
-      "use_goma": true
-    }
-  },
   "android-asan": {
     "gn_args": {
       "dcheck_always_on": true,
@@ -198,6 +177,7 @@
       "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
       "is_official_build": true,
+      "is_on_release_branch": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_os": "android",
@@ -219,7 +199,7 @@
       "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x86",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-code-coverage": {
@@ -644,7 +624,7 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-deterministic-rel": {
@@ -656,7 +636,7 @@
       "strip_debug_info": true,
       "symbol_level": 0,
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-fieldtrial-rel": {
@@ -674,7 +654,7 @@
       "symbol_level": 1,
       "target_cpu": "x86",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-inverse-fieldtrials-pie-x86-fyi-rel": {
@@ -692,7 +672,7 @@
       "system_webview_package_name": "com.google.android.webview",
       "target_cpu": "x86",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-nougat-x86-rel": {
@@ -713,26 +693,6 @@
       "target_os": "android",
       "use_jacoco_coverage": true,
       "use_remoteexec": true
-    }
-  },
-  "android-nougat-x86-rel-inverse-fyi": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 0,
-      "system_webview_package_name": "com.google.android.apps.chrome",
-      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
-      "target_cpu": "x86",
-      "target_os": "android",
-      "use_goma": true,
-      "use_jacoco_coverage": true
     }
   },
   "android-oreo-arm64-dbg": {
@@ -759,8 +719,8 @@
       "symbol_level": 0,
       "target_cpu": "x64",
       "target_os": "android",
-      "use_goma": true,
-      "use_perfetto_client_library": true
+      "use_perfetto_client_library": true,
+      "use_remoteexec": true
     }
   },
   "android-pie-arm64-dbg": {
@@ -789,7 +749,7 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android-pie-x86-rel": {
@@ -808,24 +768,6 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_remoteexec": true
-    }
-  },
-  "android-weblayer-marshmallow-x86-rel-tests": {
-    "gn_args": {
-      "android_static_analysis": "off",
-      "chrome_public_manifest_package": "com.android.chrome",
-      "dcheck_always_on": true,
-      "debuggable_apks": false,
-      "enable_proguard_obfuscation": false,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "strip_debug_info": true,
-      "symbol_level": 1,
-      "target_cpu": "x86",
-      "target_os": "android",
-      "use_goma": true
     }
   },
   "android-weblayer-pie-x86-fyi-rel": {
@@ -865,6 +807,21 @@
     }
   },
   "android-webview-12-x64-dbg": {
+    "gn_args": {
+      "debuggable_apks": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": true,
+      "is_debug": true,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview.debug",
+      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
+      "target_cpu": "x64",
+      "target_os": "android",
+      "use_remoteexec": true
+    }
+  },
+  "android-webview-13-x64-dbg": {
     "gn_args": {
       "debuggable_apks": false,
       "ffmpeg_branding": "Chrome",
@@ -957,7 +914,7 @@
       "proprietary_codecs": true,
       "symbol_level": 0,
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android_archive_rel_ng": {
@@ -971,7 +928,7 @@
       "strip_debug_info": true,
       "symbol_level": 0,
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "android_arm64_dbg_recipe": {
@@ -1122,7 +1079,7 @@
       "symbol_level": 1,
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_remoteexec": true
     }
   },
   "gpu-fyi-try-android-m-nexus-5x-64": {

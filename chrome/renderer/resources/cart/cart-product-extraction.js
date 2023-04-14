@@ -6,7 +6,8 @@ var verbose = 0;
 
 // Aliexpress uses 'US $12.34' format in the price.
 // Macy's uses "$12.34 to 56.78" format.
-var priceCleanupPrefix = 'sale|with offer|only|our price|now|starting at';
+var priceCleanupPrefix =
+  'sale price|price|sale|with offer|only|our price|now|starting at';
 var priceCleanupPostfix = '(/(each|set))';
 var priceRegexTemplate = '((reg|regular|orig|from|' + priceCleanupPrefix +
     ')\\s+)?' +
@@ -225,7 +226,8 @@ function extractUrl(item) {
   // instead of <a>.
   if (document.URL.includes("ae.com")
       || document.URL.includes("kiehls.com")
-      || document.URL.includes("discounttiredirect.com")) {
+      || document.URL.includes("discounttiredirect.com")
+      || document.URL.includes("shutterfly.com")) {
     return "";
   }
   let anchors;
@@ -532,13 +534,14 @@ function extractPrice(item) {
   for (const price of item.querySelectorAll(
     'span, b, p, div, h3, td, li, em, strong, ins')) {
     let candidate = price.innerText.trim();
-  if (window.location.hostname.endsWith("urbanoutfitters.com")) {
-    priceParts = candidate.split("\n");
-    if (priceParts.length >= 2){
-      candidate = priceParts[1];
-    }
-  }
-  if (window.location.hostname.endsWith("thecompanystore.com")) {
+    if (window.location.hostname.endsWith("urbanoutfitters.com")
+        || window.location.hostname.endsWith("freepeople.com")) {
+      priceParts = candidate.split("\n");
+      if (priceParts.length >= 2){
+        candidate = priceParts[1];
+      }
+    } else if (window.location.hostname.endsWith("thecompanystore.com")
+        || window.location.hostname.endsWith("childrensplace.com")) {
       candidate = candidate.split("\n")[0];
     }
     if (!candidate.match(priceRegexFull))
@@ -716,7 +719,8 @@ function isCartItem(item) {
       && !document.URL.includes("orientaltrading.com")
       && matchPattern(item, addToCartTextRegex, true)) return false;
   if ((document.URL.includes("ashleyfurniture.com")
-      || document.URL.includes("gnc.com"))
+      || document.URL.includes("gnc.com")
+      || document.URL.includes("bathandbodyworks.com"))
       && matchPattern(item, minicartHTMLRegex, false)) return false;
   if (document.URL.includes("ashleyfurniture.com")
       && matchPattern(item, cartItemQtyRegex, true) === null)
@@ -976,6 +980,8 @@ async function extractAllItems(root) {
     items = root.querySelectorAll("[role=\"listitem\"]");
   } else if (document.URL.includes("discounttiredirect.com")) {
     items = root.querySelectorAll(".cart-item");
+  } else if (document.URL.includes("shutterfly.com")){
+    items = root.querySelectorAll(".cartitem");
   } else {
     skipFiltering = false;
     // Generic pattern

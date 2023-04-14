@@ -38,7 +38,13 @@ class FakeRestrictedUDPSocket
     : public network::mojom::blink::RestrictedUDPSocket {
  public:
   void Send(base::span<const uint8_t> data, SendCallback callback) override {
-    NOTIMPLEMENTED();
+    NOTREACHED();
+  }
+
+  void SendTo(base::span<const uint8_t> data,
+              const net::HostPortPair& dest_addr,
+              SendToCallback callback) override {
+    NOTREACHED();
   }
 
   void ReceiveMore(uint32_t num_additional_datagrams) override {
@@ -74,7 +80,7 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
  public:
   StreamCreator() : receiver_{&fake_udp_socket_} {}
 
-  ~StreamCreator() { test::RunPendingTasks(); }
+  ~StreamCreator() = default;
 
   UDPReadableStreamWrapper* Create(const V8TestingScope& scope) {
     auto* udp_socket =
@@ -96,12 +102,27 @@ class StreamCreator : public GarbageCollected<StreamCreator> {
 
   FakeRestrictedUDPSocket& fake_udp_socket() { return fake_udp_socket_; }
 
+  void Cleanup() { receiver_.reset(); }
+
  private:
   GC_PLUGIN_IGNORE("https://crbug.com/1381979")
   mojo::Receiver<network::mojom::blink::RestrictedUDPSocket> receiver_;
 
   FakeRestrictedUDPSocket fake_udp_socket_;
   Member<UDPReadableStreamWrapper> stream_wrapper_;
+};
+
+class ScopedStreamCreator {
+ public:
+  explicit ScopedStreamCreator(StreamCreator* stream_creator)
+      : stream_creator_(stream_creator) {}
+
+  ~ScopedStreamCreator() { stream_creator_->Cleanup(); }
+
+  StreamCreator* operator->() const { return stream_creator_; }
+
+ private:
+  Persistent<StreamCreator> stream_creator_;
 };
 
 std::pair<UDPMessage*, bool> UnpackPromiseResult(const V8TestingScope& scope,
@@ -133,7 +154,7 @@ String UDPMessageDataToString(const UDPMessage* message) {
 TEST(UDPReadableStreamWrapperTest, Create) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
 
   EXPECT_TRUE(udp_readable_stream_wrapper->Readable());
@@ -142,7 +163,7 @@ TEST(UDPReadableStreamWrapperTest, Create) {
 TEST(UDPReadableStreamWrapperTest, ReadUdpMessage) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
 
   auto& fake_udp_socket = stream_creator->fake_udp_socket();
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
@@ -174,7 +195,7 @@ TEST(UDPReadableStreamWrapperTest, ReadUdpMessage) {
 TEST(UDPReadableStreamWrapperTest, ReadDelayedUdpMessage) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
 
   auto& fake_udp_socket = stream_creator->fake_udp_socket();
@@ -206,7 +227,7 @@ TEST(UDPReadableStreamWrapperTest, ReadDelayedUdpMessage) {
 TEST(UDPReadableStreamWrapperTest, ReadEmptyUdpMessage) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
 
   auto& fake_udp_socket = stream_creator->fake_udp_socket();
@@ -239,7 +260,7 @@ TEST(UDPReadableStreamWrapperTest, ReadEmptyUdpMessage) {
 TEST(UDPReadableStreamWrapperTest, CancelStreamFromReader) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
 
   // Ensure that udp_socket_->ReceiveMore(...) call from
@@ -272,7 +293,7 @@ TEST(UDPReadableStreamWrapperTest, CancelStreamFromReader) {
 TEST(UDPReadableStreamWrapperTest, ReadRejectsOnError) {
   V8TestingScope scope;
 
-  auto* stream_creator = MakeGarbageCollected<StreamCreator>();
+  ScopedStreamCreator stream_creator(MakeGarbageCollected<StreamCreator>());
   auto* udp_readable_stream_wrapper = stream_creator->Create(scope);
 
   // Ensure that udp_socket_->ReceiveMore(...) call from

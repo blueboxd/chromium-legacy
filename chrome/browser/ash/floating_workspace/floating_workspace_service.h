@@ -106,10 +106,18 @@ class FloatingWorkspaceService : public KeyedService,
   // floating_workspace_template_uuid_.
   void RestoreFloatingWorkspaceTemplate(const DeskTemplate* desk_template);
 
+  // Launch downloaded floating workspace desk when all conditions are met.
+  // Virtual for testing.
+  virtual void LaunchFloatingWorkspaceTemplate(
+      const DeskTemplate* desk_template);
+
   // Compare currently captured and previous floating workspace desk.
   // Called by CaptureAndUploadActiveDesk before upload.
   // If no difference is recorded no upload job will be triggered.
   bool IsCurrentDeskSameAsPrevious(DeskTemplate* current_desk_template) const;
+
+  // Handles the recording of the error for template launch.
+  void HandleTemplateUploadErrors(DesksClient::DeskActionError error);
 
   // Callback function that is run after a floating workspace template
   // is downloaded and launched.

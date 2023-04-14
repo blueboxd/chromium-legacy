@@ -14,11 +14,18 @@ mojom("mojom") {
     "trigger_registration_error.mojom",
   ]
   webui_module_path = "/"
+  use_typescript_sources = true
+
+  # The 3 legacy JS bindings types are required by Blink and by the fuzzer
+  # targets below.
+  generate_legacy_js_bindings = true
   generate_java = true
 }
 
 component("attribution_reporting") {
   sources = [
+    "aggregatable_dedup_key.cc",
+    "aggregatable_dedup_key.h",
     "aggregatable_trigger_data.cc",
     "aggregatable_trigger_data.h",
     "aggregatable_values.cc",
@@ -39,26 +46,25 @@ component("attribution_reporting") {
     "parsing_utils.h",
     "source_registration.cc",
     "source_registration.h",
+    "source_type.cc",
+    "source_type.h",
     "suitable_origin.cc",
     "suitable_origin.h",
-    "trigger_attestation.cc",
-    "trigger_attestation.h",
     "trigger_registration.cc",
     "trigger_registration.h",
   ]
 
   public_deps = [
     ":mojom",
+    ":source_type_mojom",
     "//base",
     "//components/aggregation_service",
     "//components/aggregation_service:mojom",
+    "//net",
     "//url",
   ]
 
-  deps = [
-    "//net",
-    "//services/network/public/cpp",
-  ]
+  deps = [ "//services/network/public/cpp" ]
 
   defines = [ "IS_ATTRIBUTION_REPORTING_IMPL" ]
 }
@@ -67,6 +73,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "aggregatable_dedup_key_unittest.cc",
     "aggregatable_trigger_data_unittest.cc",
     "aggregatable_values_unittest.cc",
     "aggregation_keys_unittest.cc",
@@ -78,7 +85,6 @@ source_set("unit_tests") {
     "parsing_utils_unittest.cc",
     "source_registration_unittest.cc",
     "suitable_origin_unittest.cc",
-    "trigger_attestation_unittest.cc",
     "trigger_registration_unittest.cc",
   ]
 
@@ -99,7 +105,10 @@ source_set("test_support") {
     "test_utils.h",
   ]
 
-  public_deps = [ ":attribution_reporting" ]
+  public_deps = [
+    ":attribution_reporting",
+    "//services/network/public/cpp",
+  ]
 
   deps = [ "//base" ]
 }
@@ -161,10 +170,15 @@ mojom("registration_mojom") {
 
   generate_java = true
   webui_module_path = "/"
+  use_typescript_sources = true
+
+  # Used by Blink, so requires legacy JS bindings.
+  generate_legacy_js_bindings = true
 
   deps = [
     "//components/aggregation_service:mojom",
     "//mojo/public/mojom/base",
+    "//services/network/public/mojom:mojom_schemeful_site",
     "//url/mojom:url_mojom_origin",
   ]
 
@@ -222,6 +236,12 @@ mojom("registration_mojom") {
               "namespace attribution_reporting { class Filters; }"
         },
         {
+          mojom = "attribution_reporting.mojom.FilterPair"
+          cpp = "::attribution_reporting::FilterPair"
+          forward_declaration =
+              "namespace attribution_reporting { struct FilterPair; }"
+        },
+        {
           mojom = "attribution_reporting.mojom.EventTriggerData"
           cpp = "::attribution_reporting::EventTriggerData"
           forward_declaration =
@@ -233,11 +253,10 @@ mojom("registration_mojom") {
           forward_declaration = "namespace attribution_reporting { struct AggregatableTriggerData; }"
         },
         {
-          mojom = "attribution_reporting.mojom.TriggerAttestation"
-          cpp = "::attribution_reporting::TriggerAttestation"
+          mojom = "attribution_reporting.mojom.AggregatableDedupKey"
+          cpp = "::attribution_reporting::AggregatableDedupKey"
           forward_declaration =
-              "namespace attribution_reporting { class TriggerAttestation; }"
-          move_only = true
+              "namespace attribution_reporting { struct AggregatableDedupKey; }"
         },
         {
           mojom = "attribution_reporting.mojom.TriggerRegistration"
@@ -272,7 +291,20 @@ component("registration_mojom_traits") {
     "//base",
     "//components/aggregation_service:mojom_shared",
     "//mojo/public/cpp/base:shared_typemap_traits",
+    "//net",
+    "//services/network/public/mojom",
     "//url",
     "//url/mojom:mojom_traits",
   ]
+}
+
+mojom("source_type_mojom") {
+  sources = [ "source_type.mojom" ]
+  webui_module_path = "/"
+  use_typescript_sources = true
+
+  # Fuzzers use the 3 legacy JS bindings types. This mojom is a dependency of
+  # the attribution_reporting component, which is used by the fuzzer tests
+  # above.
+  generate_legacy_js_bindings = enable_mojom_fuzzer
 }

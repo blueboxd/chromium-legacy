@@ -26,12 +26,13 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.build.annotations.MockedInTests;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
-import org.chromium.chrome.browser.flags.PostNativeFlag;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -57,6 +58,7 @@ import java.util.List;
 /**
  * Class containing functionality related to voice search.
  */
+@MockedInTests
 public class VoiceRecognitionHandler {
     private static final String TAG = "VoiceRecognition";
 
@@ -144,8 +146,6 @@ public class VoiceRecognitionHandler {
     private static final MutableFlagWithSafeDefault sAssistantIntentTranslateInfoFlag =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.ASSISTANT_INTENT_TRANSLATE_INFO, false);
-    private static final PostNativeFlag sCacheVoiceSearchEnabledFlag =
-            new PostNativeFlag(ChromeFeatureList.IS_VOICE_SEARCH_ENABLED_CACHE);
 
     private static Boolean sIsRecognitionIntentPresentForTesting;
     private final Delegate mDelegate;
@@ -417,7 +417,10 @@ public class VoiceRecognitionHandler {
 
             RenderFrameHost renderFrameHost = webContents.getMainFrame();
             if (renderFrameHost == null) return;
-            if (TemplateUrlServiceFactory.get().isSearchResultsPageFromDefaultSearchProvider(url)) {
+
+            if (!mProfileSupplier.hasValue()) return;
+            if (TemplateUrlServiceFactory.getForProfile(mProfileSupplier.get())
+                            .isSearchResultsPageFromDefaultSearchProvider(url)) {
                 renderFrameHost.notifyUserActivation();
             }
         }
@@ -428,11 +431,6 @@ public class VoiceRecognitionHandler {
                 setReceivedUserGesture(navigation.getUrl());
             }
             destroy();
-        }
-
-        @Override
-        public void didFinishNavigationNoop(NavigationHandle navigation) {
-            if (!navigation.isInPrimaryMainFrame()) return;
         }
     }
 
@@ -536,14 +534,17 @@ public class VoiceRecognitionHandler {
                 }
             }
 
-            AutocompleteMatch match = null;
-            if (mProfileSupplier.hasValue()) {
-                match = AutocompleteCoordinator.classify(mProfileSupplier.get(), topResultQuery);
-            }
+            if (!mProfileSupplier.hasValue()) return;
+
+            Profile profile = mProfileSupplier.get();
+            AutocompleteMatch match =
+                    AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
+                            .get(profile)
+                            .classify(topResultQuery, false);
 
             String url;
             if (match == null || match.isSearchSuggestion()) {
-                url = TemplateUrlServiceFactory.get()
+                url = TemplateUrlServiceFactory.getForProfile(profile)
                               .getUrlForVoiceSearchQuery(topResultQuery)
                               .getSpec();
                 // If a language was returned to us from voice recognition, then use it. Currently,
@@ -606,7 +607,9 @@ public class VoiceRecognitionHandler {
 
             AutocompleteMatch match = null;
             if (mProfileSupplier.hasValue()) {
-                match = AutocompleteCoordinator.classify(mProfileSupplier.get(), culledString);
+                match = AutocompleteControllerProvider.from(mDelegate.getWindowAndroid())
+                                .get(mProfileSupplier.get())
+                                .classify(culledString, false);
             }
 
             String urlOrSearchQuery;
@@ -904,10 +907,6 @@ public class VoiceRecognitionHandler {
         if (windowAndroid.getActivity().get() == null) return false;
         if (!VoiceRecognitionUtil.isVoiceSearchPermittedByPolicy(false)) return false;
 
-        if (!sCacheVoiceSearchEnabledFlag.isEnabled()) {
-            return VoiceRecognitionUtil.isVoiceSearchEnabled(windowAndroid);
-        }
-
         if (mIsVoiceSearchEnabledCached == null) {
             mIsVoiceSearchEnabledCached = VoiceRecognitionUtil.isVoiceSearchEnabled(windowAndroid);
 
@@ -1136,11 +1135,6 @@ public class VoiceRecognitionHandler {
     /*package*/ static void setIsRecognitionIntentPresentForTesting(
             Boolean isRecognitionIntentPresent) {
         sIsRecognitionIntentPresentForTesting = isRecognitionIntentPresent;
-    }
-
-    @VisibleForTesting
-    protected void setIsVoiceSearchEnabledCacheForTesting(Boolean value) {
-        mIsVoiceSearchEnabledCached = value;
     }
 
     /** Sets the start time for testing. */

@@ -14,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_auction.h"
+#include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -32,8 +33,10 @@ struct AuctionConfig;
 
 namespace content {
 
+class AttributionDataHostManager;
 class InterestGroupAuctionReporter;
 class InterestGroupManagerImpl;
+class PrivateAggregationManager;
 
 // An AuctionRunner loads and runs the bidder and seller worklets, along with
 // their reporting phases and produces the result via a callback. Most of the
@@ -60,24 +63,8 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // `ad_component_urls` is the list of ad component URLs returned by the
   //  winning bidder. Null if there is no winner or no list was returned.
   //
-  // `winning_group_ad_metadata` is the metadata associated with the winning ad,
-  //  to be made available to the interest group in future auctions in the
-  //  `prevWins` field. Empty if there was no winner.
-  //
   // `report_urls` Reporting URLs returned by seller worklet reportResult()
   //  methods and the winning bidder's reportWin() methods, if any.
-  //
-  // `debug_loss_report_urls` URLs to use for reporting loss result to bidders
-  //  and the seller. Empty if no report should be sent.
-  //
-  // `debug_win_report_urls` URLs to use for reporting win result to bidders and
-  //  the seller. Empty if no report should be sent.
-  //
-  // `private_aggregation_requests` Requests made to the Private Aggregation
-  //  API. Keyed by reporting origin of the associated requests.
-  //
-  // `interest_groups_that_bid` is a list of the interest groups that made bids
-  // in the auction. Empty if the auction didn't run to completion.
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see.
@@ -97,13 +84,6 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       absl::optional<blink::InterestGroupKey> winning_group_id,
       absl::optional<GURL> render_url,
       std::vector<GURL> ad_component_urls,
-      std::string winning_group_ad_metadata,
-      std::vector<GURL> debug_loss_report_urls,
-      std::vector<GURL> debug_win_report_urls,
-      std::map<url::Origin, PrivateAggregationRequests>
-          private_aggregation_requests,
-      blink::InterestGroupSet interest_groups_that_bid,
-      base::flat_set<std::string> k_anon_keys_to_join,
       std::vector<std::string> errors,
       std::unique_ptr<InterestGroupAuctionReporter>
           interest_group_auction_reporter)>;
@@ -117,31 +97,57 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   // Creates an entire FLEDGE auction. Single-use object.
   //
   // Arguments:
-  // `auction_worklet_manager` and `interest_group_manager` must remain valid
-  //  until the  AuctionRunner is destroyed.
+  // `auction_worklet_manager`, `interest_group_manager`,
+  //  `attribution_data_host_manager`, and `private_aggregation_manager` must
+  //  remain valid, and `log_private_aggregation_requests_callback` must be safe
+  //  to call until the AuctionRunner and any InterestGroupAuctionReporter it
+  //  returns are destroyed. `attribution_data_host_manager` could be null in
+  //  Incognito mode or in test.
+  //
+  // `log_private_aggregation_requests_callback` will be invoked with private
+  // aggregation
+  //  requests before they're uploaded, allowing them to be logged. It may be
+  //  invoked multiple times. It may be invoked ether directly by AuctionRunner
+  //  (when an auction has no winner) or by the returned
+  //  InterestGroupAuctionReporter (when an auction has a winner). It will never
+  //  be passed an empty set of pending reports.
   //
   // `auction_config` is the configuration provided by client JavaScript in
   //  the renderer in order to initiate the auction.
   //
-  //  `client_security_state` is the client security state of the frame that
+  // `main_frame_origin` is the origin of the main frame where the auction is
+  // running. Used for
+  //  issuing reports.
+  //
+  // `frame_origin` is the origin of the frame running the auction. Used for
+  //  issuing reports.
+  //
+  // `client_security_state` is the client security state of the frame that
   //  issued the auction request -- this is used for post-auction interest group
-  //  updates.
+  //  updates, and sending reports.
+  //
+  // `url_loader_factory` will be used to issue reporting requests. It should be
+  // backed by a trusted URLLoaderFactory.
   //
   // `is_interest_group_api_allowed_callback` will be called on all buyer and
   //  seller origins, and those for which it returns false will not be allowed
   //  to participate in the auction.
   //
-  // `browser_signals` signals from the browser about the auction that are the
-  //  same for all worklets.
-  //
-  //  `callback` is invoked on auction completion. It should synchronously
+  // `callback` is invoked on auction completion. It should synchronously
   //  destroy this AuctionRunner object. `callback` won't be invoked until after
   //  CreateAndStart() returns.
   static std::unique_ptr<AuctionRunner> CreateAndStart(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
+      PrivateAggregationManager* private_aggregation_manager,
+      InterestGroupAuctionReporter::LogPrivateAggregationRequestsCallback
+          log_private_aggregation_requests_callback,
       const blink::AuctionConfig& auction_config,
+      const url::Origin& main_frame_origin,
+      const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
@@ -162,7 +168,12 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
           per_buyer_signals) override;
   void ResolvedBuyerTimeoutsPromise(
       blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+      blink::mojom::AuctionAdConfigBuyerTimeoutField field,
       const blink::AuctionConfig::BuyerTimeouts& buyer_timeouts) override;
+  void ResolvedDirectFromSellerSignalsPromise(
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+      const absl::optional<blink::DirectFromSellerSignals>&
+          direct_from_seller_signals) override;
   void Abort() override;
 
   // Fails the auction, invoking `callback_` and prevents any future calls into
@@ -187,9 +198,16 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   AuctionRunner(
       AuctionWorkletManager* auction_worklet_manager,
       InterestGroupManagerImpl* interest_group_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
+      PrivateAggregationManager* private_aggregation_manager,
+      InterestGroupAuctionReporter::LogPrivateAggregationRequestsCallback
+          log_private_aggregation_requests_callback,
       auction_worklet::mojom::KAnonymityBidMode kanon_mode,
       const blink::AuctionConfig& auction_config,
+      const url::Origin& main_frame_origin,
+      const url::Origin& frame_origin,
       network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
@@ -229,10 +247,24 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
 
   const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
 
+  // Needed to create `FencedFrameReporter`. Bound to the life time of the
+  // browser context. Could be null in Incognito mode or in test.
+  const raw_ptr<AttributionDataHostManager> attribution_data_host_manager_;
+
+  const raw_ptr<PrivateAggregationManager> private_aggregation_manager_;
+
+  const InterestGroupAuctionReporter::LogPrivateAggregationRequestsCallback
+      log_private_aggregation_requests_callback_;
+
+  const url::Origin main_frame_origin_;
+  const url::Origin frame_origin_;
+
   // ClientSecurityState built from the frame that issued the auction request;
   // will be used to update interest groups that participated in the auction
   // after the auction.
-  network::mojom::ClientSecurityStatePtr client_security_state_;
+  const network::mojom::ClientSecurityStatePtr client_security_state_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // For checking if operations like running auctions, updating interest groups,
   // etc. are allowed or not.

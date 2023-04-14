@@ -37,7 +37,6 @@
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/extensions/extensions_internals_source.h"
 #include "chrome/common/chrome_switches.h"
@@ -215,6 +214,8 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_service_ = std::make_unique<ExtensionService>(
       profile_, base::CommandLine::ForCurrentProcess(),
       profile_->GetPath().AppendASCII(extensions::kInstallDirectoryName),
+      profile_->GetPath().AppendASCII(
+          extensions::kUnpackedInstallDirectoryName),
       ExtensionPrefs::Get(profile_), Blocklist::Get(profile_),
       autoupdate_enabled, extensions_enabled, &ready_);
 

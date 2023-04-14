@@ -2560,6 +2560,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="AmbientMode.ScreenSaverPreview.Started">
+  <owner>safarli@google.com</owner>
+  <owner>assistive-eng@google.com</owner>
+  <description>
+    User clicked the button to start screen saver preview. Records the button
+    click event. Recorded on ChromeOS only.
+  </description>
+</action>
+
 <action name="Android.AddToHomescreenIPH.Message.Clicked">
   <owner>shaktisahu@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -3481,6 +3490,96 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="AppHome_CreateShortcut">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User clicks on the menu option to create shortcuts for an app from the right
+    click context menu of an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_CustomContextMenuTriggered">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User opens the custom context menu for an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_InstallAppLocally">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User clicks on the menu option to install an app locally from the right
+    click context menu of an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_LaunchAtStartupChecked">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User checks the launch at startup option from the right click context menu
+    of an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_LaunchAtStartupUnchecked">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User unchecks the launch at startup option from the right click context menu
+    of an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_NavigationComplete">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    Triggered whenever an the new chrome://apps page page is initialized on
+    navigation. This is not recorded on OSes where the new chrome://apps page
+    page does not exist, like ChromeOS and Android.
+  </description>
+</action>
+
+<action name="AppHome_OpenAppSettings">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User clicks on the menu option to open app settings from the right click
+    context menu of an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_OpenInWindowChecked">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User checks the open in window option from the right click context menu of
+    an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_OpenInWindowUnchecked">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User checks the open in window option from the right click context menu of
+    an app from new chrome://apps page.
+  </description>
+</action>
+
+<action name="AppHome_UninstallTriggered">
+  <owner>dibyapal@chromium.org</owner>
+  <owner>desktop-pwas-team@chromium.org</owner>
+  <description>
+    User clicks on the menu option to uninstall an app from the right click
+    context menu of an app from new chrome://apps page.
+  </description>
+</action>
+
 <action name="ApplicationShortcut.LensPressedFromHomeScreenWidget">
   <owner>schechter@google.com</owner>
   <owner>hujasonx@google.com</owner>
@@ -4211,6 +4310,48 @@ should be able to be added at any place in this file.
   <owner>jsaul@google.com</owner>
   <description>
     Recorded when user visits chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillIbanAdded">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user adds IBAN via chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillIbanAddedWithNickname">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user adds IBAN with a nickname via chrome://settings/payments
+    page.
+  </description>
+</action>
+
+<action name="AutofillIbanDeleted">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user deletes IBAN via chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillIbanEdited">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits IBAN via chrome://settings/payments page.
+  </description>
+</action>
+
+<action name="AutofillIbanEditedWithNickname">
+  <owner>qihuizhao@google.com</owner>
+  <owner>jsaul@google.com</owner>
+  <description>
+    Recorded when user edits IBAN with a new nickname via
+    chrome://settings/payments page.
   </description>
 </action>
 
@@ -5700,6 +5841,16 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ChromeOS.Settings.InputMethod.Autocorrect.Open">
+  <owner>zacpartridge@chromium.org</owner>
+  <owner>essential-inputs-team@google.com</owner>
+  <description>
+    Recorded when a user clicks the link to open the Auto-correction section in
+    Chrome OS Inputs methods setting page. This can happen when a user clicks on
+    the Learn More button from the Autocorrection undo window.
+  </description>
+</action>
+
 <action name="ChromeOS.Settings.Languages">
   <owner>myy@chromium.org</owner>
   <owner>essential-inputs-team@google.com</owner>
@@ -5817,8 +5968,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClearBrowsingData_Everything" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Browsing data has been cleared for all time.</description>
 </action>
 
 <action name="ClearBrowsingData_History" not_user_triggered="true">
@@ -5826,24 +5978,36 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="ClearBrowsingData_Last15Minutes" not_user_triggered="true">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Browsing data has been cleared for the last 15 minutes.
+  </description>
+</action>
+
 <action name="ClearBrowsingData_LastDay" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Browsing data has been cleared for the last day.</description>
 </action>
 
 <action name="ClearBrowsingData_LastHour" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Browsing data has been cleared for the last hour.</description>
 </action>
 
 <action name="ClearBrowsingData_LastMonth" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Browsing data has been cleared for the last month.</description>
 </action>
 
 <action name="ClearBrowsingData_LastWeek" not_user_triggered="true">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Browsing data has been cleared for the last week.</description>
 </action>
 
 <action name="ClearBrowsingData_LSOData">
@@ -5955,6 +6119,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ClearBrowsingData_TimePeriodChanged_Everything">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>Time period in CBD was changed.</description>
+</action>
+
+<action name="ClearBrowsingData_TimePeriodChanged_Last15Minutes">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <description>Time period in CBD was changed.</description>
@@ -11408,6 +11578,41 @@ should be able to be added at any place in this file.
   <owner>djean@chromium.org</owner>
   <description>
     The user dismissed a tailored browser fullscreen promo modal. iOS only.
+  </description>
+</action>
+
+<action name="IOS.EmailExperience.LongPress.Copy">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    User tapped on the copy button after long-pressing on an email address.
+  </description>
+</action>
+
+<action name="IOS.EmailExperience.LongPress.CreateEmail">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    User tapped on the &quot;Create Email&quot; button after long-pressing on an
+    email address.
+  </description>
+</action>
+
+<action name="IOS.EmailExperience.LongPress.Display">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the email experience context menu was displayed after a
+    user long press on an email address.
+  </description>
+</action>
+
+<action name="IOS.EmailExperience.OneTap.CreateEmail">
+  <owner>erahmaoui@google.com</owner>
+  <owner>djean@chromium.org</owner>
+  <description>
+    The number of times the user tapped on an underlined email address and
+    triggered the &quot;Create mail with&quot; view controller.
   </description>
 </action>
 
@@ -17894,6 +18099,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileBookmarkManagerMultipleEntriesOpened">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <description>
+    Recorded when multi-selection is opened from the bookmark manager. Possible
+    that the selection is only 1 bookmark.
+  </description>
+</action>
+
 <action name="MobileBookmarkManagerOpen">
   <owner>ianwen@chromium.org</owner>
   <description>
@@ -19928,6 +20142,21 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePasswordCheckupSettingsBack">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user goes back from Password Checkup Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordCheckupSettingsClose">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when Password Checkup Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobilePasswordsSettingsBack">
   <owner>kazinova@google.com</owner>
   <owner>sczs@chromium.org</owner>
@@ -21049,6 +21278,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabGridShowInactiveTabs">
+  <owner>lpromero@google.com</owner>
+  <owner>alionadangla@google.com</owner>
+  <description>
+    User tapped on the Inactive Tabs button of the iOS Regular Tab Grid.
+  </description>
+</action>
+
 <action name="MobileTabGridTabContextMenuSelectTabs">
   <owner>mrefaat@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
@@ -21118,6 +21355,12 @@ should be able to be added at any place in this file.
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="MobileTabStripScrollDidEnd">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>User scrolled the tabStrip view.</description>
 </action>
 
 <action name="MobileTabStripShowTabGridMenu">
@@ -25302,7 +25545,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Overscroll_Cancelled.Reload">
-  <owner>mohsen@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <description>
     When vertical overscroll corresponding to the RELOAD navigation is cancelled
     - either because the user performed an interfering action such as pressing a
@@ -25326,7 +25569,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Overscroll_Navigated.Reload">
-  <owner>mohsen@chromium.org</owner>
+  <owner>jonross@chromium.org</owner>
   <description>
     When vertical overscroll initiates a RELOAD navigation in the browser.
   </description>
@@ -29520,7 +29763,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Shelf_ShutDown">
-  <owner>sherrilin@google.com</owner>
+  <owner>antrim@google.com</owner>
   <owner>cros-lurs@google.com</owner>
   <description>User shut down from the shelf shutdown button.</description>
 </action>
@@ -33613,14 +33856,26 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SystemBack">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back **after** Native is initialized. This action
+    is mutually exclusive with SystemBackBeforeNativeInitialized. Android only.
+  </description>
+</action>
+
+<action name="SystemBackBeforeNativeInitialized">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back **before** Native is initialized. This action
+    is mutually exclusive with SystemBack. Android only.
+  </description>
 </action>
 
 <action name="SystemBackBeforeUINativeInitialized">
   <owner>lazzzis@google.com</owner>
   <description>
-    The user triggered system back before UI with Native is initialized.
+    The user triggered system back **before UI** with Native is initialized.
+    Recorded on Android only.
   </description>
 </action>
 
@@ -33633,6 +33888,14 @@ should be able to be added at any place in this file.
   <description>
     The user navigated backward in the tab's history using the system back
     button.
+  </description>
+</action>
+
+<action name="SystemBackOnActivityFinishingOrDestroyed">
+  <owner>lazzzis@google.com</owner>
+  <description>
+    The user triggered system back when activity is finishing or has been
+    destroyed. Android only.
   </description>
 </action>
 

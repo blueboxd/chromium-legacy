@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/blink/public/public_features.gni")
+import("//third_party/blink/renderer/config.gni")
 
 if (is_android) {
   import("//build/config/android/config.gni")
@@ -39,10 +41,6 @@ mojom("mojom_platform") {
     "choosers/date_time_chooser.mojom",
     "choosers/file_chooser.mojom",
     "choosers/popup_menu.mojom",
-    "chromeos/system_extensions/hid/cros_hid.mojom",
-    "chromeos/system_extensions/managed_device_health_services/telemetry/cros_telemetry.mojom",
-    "chromeos/system_extensions/managed_device_health_services/telemetry/nullable_primitives.mojom",
-    "chromeos/system_extensions/window_management/cros_window_management.mojom",
     "clipboard/clipboard.mojom",
     "close_watcher/close_listener.mojom",
     "commit_result/commit_result.mojom",
@@ -110,6 +108,8 @@ mojom("mojom_platform") {
     "loader/code_cache.mojom",
     "loader/content_security_notifier.mojom",
     "loader/fetch_client_settings_object.mojom",
+    "loader/keep_alive_handle.mojom",
+    "loader/keep_alive_handle_factory.mojom",
     "loader/mixed_content.mojom",
     "loader/navigation_predictor.mojom",
     "loader/pause_subresource_loading_handle.mojom",
@@ -244,6 +244,15 @@ mojom("mojom_platform") {
     sources += [ "input/text_input_host.mojom" ]
   }
 
+  if (use_blink_extensions_chromeos) {
+    sources += [
+      "chromeos/system_extensions/hid/cros_hid.mojom",
+      "chromeos/system_extensions/managed_device_health_services/telemetry/cros_telemetry.mojom",
+      "chromeos/system_extensions/managed_device_health_services/telemetry/nullable_primitives.mojom",
+      "chromeos/system_extensions/window_management/cros_window_management.mojom",
+    ]
+  }
+
   public_deps = [
     ":android_mojo_bindings",
     ":authenticator_test_mojo_bindings",
@@ -293,6 +302,7 @@ mojom("mojom_platform") {
     # Direct deps (instead of transitive deps) are necessary for java targets.
     public_deps += [
       "//services/network/public/mojom:cookies_mojom",
+      "//services/network/public/mojom:mojom_attribution",
       "//services/network/public/mojom:mojom_network_param",
       "//services/network/public/mojom:mojom_schemeful_site",
       "//ui/accessibility:ax_enums_mojo",
@@ -312,8 +322,8 @@ mojom("mojom_platform") {
     ]
   }
 
-  # iOS doesn't use and must not depend on //media
-  if (!is_ios) {
+  # Chromium without blink doesn't use and must not depend on //media
+  if (use_blink) {
     public_deps += [
       "//media/capture/mojom:video_capture",
       "//media/capture/mojom:video_capture_types",
@@ -556,10 +566,6 @@ mojom("mojom_platform") {
           cpp = "::blink::FencedFrame::ReportingDestination"
         },
         {
-          mojom = "blink.mojom.FencedFrameReporting"
-          cpp = "::blink::FencedFrame::FencedFrameReporting"
-        },
-        {
           mojom = "blink.mojom.DeprecatedFencedFrameMode"
           cpp = "::blink::FencedFrame::DeprecatedFencedFrameMode"
         },
@@ -586,10 +592,6 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.PotentiallyOpaqueSharedStorageBudgetMetadata"
           cpp = "::blink::FencedFrame::RedactedFencedFrameProperty<::blink::FencedFrame::SharedStorageBudgetMetadata>"
-        },
-        {
-          mojom = "blink.mojom.PotentiallyOpaqueReportingMetadata"
-          cpp = "::blink::FencedFrame::RedactedFencedFrameProperty<::blink::FencedFrame::FencedFrameReporting>"
         },
         {
           mojom = "blink.mojom.FencedFrameConfig"
@@ -660,6 +662,17 @@ mojom("mojom_platform") {
         {
           mojom = "blink.mojom.AuctionAdConfigMaybePromiseBuyerTimeouts"
           cpp = "::blink::AuctionConfig::MaybePromiseBuyerTimeouts"
+        },
+      ]
+      traits_headers = [ "//third_party/blink/public/common/interest_group/auction_config_mojom_traits.h" ]
+      traits_public_deps = [ "//url/mojom:mojom_traits" ]
+    },
+    {
+      types = [
+        {
+          mojom =
+              "blink.mojom.AuctionAdConfigMaybePromiseDirectFromSellerSignals"
+          cpp = "::blink::AuctionConfig::MaybePromiseDirectFromSellerSignals"
         },
       ]
       traits_headers = [ "//third_party/blink/public/common/interest_group/auction_config_mojom_traits.h" ]

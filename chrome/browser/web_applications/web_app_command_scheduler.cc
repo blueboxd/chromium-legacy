@@ -32,7 +32,6 @@
 #include "chrome/browser/web_applications/commands/web_app_uninstall_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/install_isolated_web_app_command.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
-#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/full_system_lock.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
@@ -95,9 +94,8 @@ void WebAppCommandScheduler::FetchManifestAndInstall(
 
   provider_->command_manager().ScheduleCommand(
       std::make_unique<FetchManifestAndInstallCommand>(
-          std::move(install_surface), std::move(contents),
-          bypass_service_worker_check, std::move(dialog_callback),
-          std::move(callback), use_fallback,
+          install_surface, std::move(contents), bypass_service_worker_check,
+          std::move(dialog_callback), std::move(callback), use_fallback,
           std::make_unique<WebAppDataRetriever>()));
 }
 
@@ -117,7 +115,7 @@ void WebAppCommandScheduler::InstallFromInfo(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallFromInfoCommand>(
           &profile_.get(), std::move(install_info),
-          overwrite_existing_manifest_fields, std::move(install_surface),
+          overwrite_existing_manifest_fields, install_surface,
           std::move(install_callback)));
 }
 
@@ -138,7 +136,7 @@ void WebAppCommandScheduler::InstallFromInfoWithParams(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallFromInfoCommand>(
           &profile_.get(), std::move(install_info),
-          overwrite_existing_manifest_fields, std::move(install_surface),
+          overwrite_existing_manifest_fields, install_surface,
           std::move(install_callback), install_params));
 }
 
@@ -174,7 +172,8 @@ void WebAppCommandScheduler::InstallExternallyManagedApp(
                             webapps::InstallResultCode code,
                             bool did_uninstall_and_replace)> install_callback,
     base::WeakPtr<content::WebContents> contents,
-    std::unique_ptr<WebAppDataRetriever> data_retriever) {
+    std::unique_ptr<WebAppDataRetriever> data_retriever,
+    WebAppUrlLoader* web_app_url_loader) {
   if (IsShuttingDown()) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
@@ -188,7 +187,8 @@ void WebAppCommandScheduler::InstallExternallyManagedApp(
   provider_->command_manager().ScheduleCommand(
       std::make_unique<ExternallyManagedInstallCommand>(
           &profile_.get(), external_install_options,
-          std::move(install_callback), contents, std::move(data_retriever)));
+          std::move(install_callback), contents, std::move(data_retriever),
+          web_app_url_loader));
 }
 
 void WebAppCommandScheduler::InstallPlaceholder(
@@ -293,7 +293,7 @@ void WebAppCommandScheduler::FetchInstallabilityForChromeManagement(
 
 void WebAppCommandScheduler::InstallIsolatedWebApp(
     const IsolatedWebAppUrlInfo& url_info,
-    const IsolationData& isolation_data,
+    const IsolatedWebAppLocation& location,
     InstallIsolatedWebAppCallback callback) {
   if (IsShuttingDown()) {
     InstallIsolatedWebAppCommandError error;
@@ -306,7 +306,7 @@ void WebAppCommandScheduler::InstallIsolatedWebApp(
 
   provider_->command_manager().ScheduleCommand(
       std::make_unique<InstallIsolatedWebAppCommand>(
-          url_info, isolation_data, CreateIsolatedWebAppWebContents(*profile_),
+          url_info, location, CreateIsolatedWebAppWebContents(*profile_),
           std::make_unique<WebAppUrlLoader>(), *profile_, std::move(callback)));
 }
 
@@ -352,7 +352,7 @@ void WebAppCommandScheduler::SetRunOnOsLoginMode(const AppId& app_id,
   }
 
   provider_->command_manager().ScheduleCommand(
-      RunOnOsLoginCommand::CreateForSetLoginMode(app_id, std::move(login_mode),
+      RunOnOsLoginCommand::CreateForSetLoginMode(app_id, login_mode,
                                                  std::move(callback)));
 }
 
@@ -515,11 +515,11 @@ void WebAppCommandScheduler::LaunchApp(apps::AppLaunchParams params,
       std::make_unique<ScopedKeepAlive>(KeepAliveOrigin::WEB_APP_LAUNCH,
                                         KeepAliveRestartOption::ENABLED);
 
-  auto launch_with_keep_alives = base::BindOnce(
-      &WebAppCommandScheduler::LaunchAppWithKeepAlives,
-      weak_ptr_factory_.GetWeakPtr(), std::move(params), std::move(option),
-      std::move(callback), std::move(profile_keep_alive),
-      std::move(browser_keep_alive));
+  auto launch_with_keep_alives =
+      base::BindOnce(&WebAppCommandScheduler::LaunchAppWithKeepAlives,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(params), option,
+                     std::move(callback), std::move(profile_keep_alive),
+                     std::move(browser_keep_alive));
   // Because we are accessing the WebAppUiManager, we should wait until the
   // provider has started to actually create the command.
   if (!provider_->is_registry_ready()) {

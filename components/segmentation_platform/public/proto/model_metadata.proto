@@ -38,18 +38,6 @@ message VersionInfo {
   optional int32 metadata_cur_version = 2;
 }
 
-// Used as time unit for rest of this proto.
-enum TimeUnit {
-  UNKNOWN_TIME_UNIT = 0;
-  YEAR = 1;
-  MONTH = 2;
-  WEEK = 3;
-  DAY = 4;
-  HOUR = 5;
-  MINUTE = 6;
-  SECOND = 7;
-}
-
 // Used to identify the source of the model whether it is a client side or
 // server side model.
 enum ModelSource {
@@ -130,7 +118,8 @@ message CustomInput {
     // Output type: ProcessedValue
     // Output length: 1
     // Additional arg:
-    //   `name`: The name of the field to be looked up in input context.
+    //   `name`: Optional. The name of the field to be looked up in input
+    //    context. If missing then the |name| field is used.
     FILL_FROM_INPUT_CONTEXT = 4;
 
     // Output is a tensor of length 10 consisting of float values denoting
@@ -243,6 +232,7 @@ message TrainingOutputs {
   message TriggerConfig {
     // Describes how the training outputs are collected.
     enum DecisionType {
+      // By default considered as PERIODIC type.
       UNKNOWN = 0;
       // The on demand scheduler will trigger training data collection when the
       // client asks for a model execution with input context.
@@ -271,6 +261,23 @@ message TrainingOutputs {
     // List of triggers, whichever is hit first is used to upload the training
     // data.
     repeated ObservationTrigger observation_trigger = 2;
+
+    // Only for PERIODIC trigger. The prediction and observation times can be
+    // exact or flexible. The exact prediction setting forces the prediction
+    // time to be the time at which the segment selection or classification
+    // result was changed. The input features will be collected till the
+    // prediction time. Flexible prediction time setting allows the collector to
+    // pick any point in the past as the prediction time, usually pick the
+    // current time. The training data collection is triggered once a day with a
+    // rolling window whenever Chrome is active. This setting uploads more
+    // training data samples. By default the prediction time is FLEXIBLE. The
+    // exact observation time setting will be used only in case of exact
+    // prediction case and the observation starts exactly after prediction time.
+    // Flexible observation can be used to get most recent user behavior by
+    // setting observation time to the time of upload, which could be later than
+    // end of the observation period. By default the observation time is EXACT.
+    optional bool use_exact_prediction_time = 3;
+    optional bool use_flexible_observation_time = 4;
   }
   optional TriggerConfig trigger_config = 2;
 }

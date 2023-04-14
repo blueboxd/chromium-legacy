@@ -16,12 +16,23 @@ namespace ash {
 
 class GifTenorApiFetcher {
  public:
+  // Used in tests to mock a creation of the endpoint_fetcher
+  using EndpointFetcherCreator =
+      base::RepeatingCallback<std::unique_ptr<EndpointFetcher>(
+          const scoped_refptr<network::SharedURLLoaderFactory>
+              url_loader_factory,
+          const GURL& url,
+          const net::NetworkTrafficAnnotationTag& annotation_tag)>;
+
   GifTenorApiFetcher();
+
+  explicit GifTenorApiFetcher(EndpointFetcherCreator endpoint_fetcher_creator);
 
   ~GifTenorApiFetcher();
 
   using TenorGifsApiCallback =
-      base::OnceCallback<void(emoji_picker::mojom::TenorGifResponsePtr)>;
+      base::OnceCallback<void(emoji_picker::mojom::Status,
+                              emoji_picker::mojom::TenorGifResponsePtr)>;
 
   // Fetch tenor API Categories endpoint
   void FetchCategories(
@@ -48,43 +59,34 @@ class GifTenorApiFetcher {
       const std::vector<std::string>& ids);
 
  private:
-  std::unique_ptr<EndpointFetcher> endpoint_fetcher_;
+  const EndpointFetcherCreator endpoint_fetcher_creator_;
   base::WeakPtrFactory<GifTenorApiFetcher> weak_ptr_factory_{this};
-  GURL GetURL(const char* endpoint, const absl::optional<std::string>& pos);
 
   void FetchCategoriesResponseHandler(
       emoji_picker::mojom::PageHandler::GetCategoriesCallback callback,
+      std::unique_ptr<EndpointFetcher> endpoint_fetcher,
       std::unique_ptr<EndpointResponse> response);
 
   void OnCategoriesJsonParsed(
       emoji_picker::mojom::PageHandler::GetCategoriesCallback callback,
       data_decoder::DataDecoder::ValueOrError result);
 
-  void TenorGifsApiResponseHandler(TenorGifsApiCallback callback,
-                                   std::unique_ptr<EndpointResponse> response);
+  void TenorGifsApiResponseHandler(
+      TenorGifsApiCallback callback,
+      std::unique_ptr<EndpointFetcher> endpoint_fetcher,
+      std::unique_ptr<EndpointResponse> response);
 
   void OnGifsJsonParsed(TenorGifsApiCallback callback,
                         data_decoder::DataDecoder::ValueOrError result);
 
   void FetchGifsByIdsResponseHandler(
       emoji_picker::mojom::PageHandler::GetGifsByIdsCallback callback,
+      std::unique_ptr<EndpointFetcher> endpoint_fetcher,
       std::unique_ptr<EndpointResponse> response);
 
   void OnGifsByIdsJsonParsed(
       emoji_picker::mojom::PageHandler::GetGifsByIdsCallback callback,
       data_decoder::DataDecoder::ValueOrError result);
-
-  std::vector<emoji_picker::mojom::GifResponsePtr> ParseGifs(
-      const base::Value::List* results);
-
-  const base::Value::List* FindList(
-      data_decoder::DataDecoder::ValueOrError& result,
-      const std::string& key);
-
-  std::unique_ptr<EndpointFetcher> CreateEndpointFetcher(
-      const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const GURL& url,
-      const net::NetworkTrafficAnnotationTag& annotation_tag);
 };
 }  // namespace ash
 

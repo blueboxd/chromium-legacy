@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Interneteko konexio zuzena</translation>
 <translation id="1272293450992660632">PIN kodeak ez datoz bat.</translation>
 <translation id="1280820357415527819">Sare mugikorren bila</translation>
-<translation id="1291603679744561561">SIM txartela blokeatuta dago</translation>
 <translation id="1293556467332435079">Fitxategiak</translation>
 <translation id="1297922636971898492">Une honetan, Google Drive ez dago erabilgarri. Erabilgarri dagoenean, automatikoki hasiko da berriro kargatzen.</translation>
 <translation id="1307931752636661898">Ezin dira ikusi Linux fitxategiak</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Fitxategiak Parallels Desktop-en jaregin ahal izateko, Windows-eko fitxategien karpetara eraman behar dira lehendabizi.</translation>
 <translation id="1435838927755162558">Partekatu karpeta Parallels Desktop aplikazioarekin</translation>
 <translation id="1439919885608649279">Pertsona bat loreekin</translation>
+<translation id="1458457385801829801">Kanporatu <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Eslovakiarra</translation>
 <translation id="1482884275703521657">Finlandiarra</translation>
 <translation id="148466539719134488">Suitzarra</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Karpeta bat partekatu da Bruschetta-rekin</translation>
 <translation id="2578394532502990878">Tamildar fonetikoa</translation>
 <translation id="2579959351793446050">Odiarra</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> sinkronizatzeko prestatzen…</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" /> saretatik <ph name="NETWORK_INDEX" />garrena, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Seinalearen indarra: ehuneko <ph name="SIGNAL_STRENGTH" />, Administratzaileak blokeatu du, Xehetasunak</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> bideoa</translation>
 <translation id="2620090360073999360">Une honetan, ezin da konektatu Google Drive zerbitzuarekin.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongoliarra</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errore.</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />; <ph name="CONNECTION_STATUS" />). Seinalearen indarra: % <ph name="SIGNAL_STRENGTH" />. Xehetasunak.</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> elementu sinkronizatzeko prestatzen…</translation>
 <translation id="3522708245912499433">Portugaldarra</translation>
 <translation id="3524311639100184459">Kontuz: fitxategi hauek aldi baterakoak dira eta agian automatikoki ezabatuko dira diskoan tokia egiteko.  <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Karpeta</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Itsatsi</translation>
 <translation id="3952872973865944257">Teluguar fonetikoa</translation>
+<translation id="3954354850384043518">Abian</translation>
 <translation id="3958548648197196644">Kiwia</translation>
 <translation id="3971140002794351170">Deskargatu mugikorreko profila, <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" /> sare, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Ingelesa (Erresuma Batua)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Izen-zerbitzari pertsonalizatuak</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" />. Administratzaileak kudeatua. Konektatu.</translation>
 <translation id="4470564870223067757">2. hangul-karaktere sorta</translation>
+<translation id="4474142134969976028">Ez dago emaitzarik</translation>
 <translation id="4477002475007461989">Errumaniarra</translation>
 <translation id="4477219268485577442">Bulgariar fonetikoa</translation>
 <translation id="4508265954913339219">Ezin izan da aktibatu</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Erabili <ph name="MAX_LENGTH" /> karaktere edo gutxiago dituen izen bat</translation>
 <translation id="4973970068702235170">Ezin izan da konprimatu ustekabeko errore hau gertatu delako: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japoniarra</translation>
+<translation id="4987699874727873250">Ingelesa (India)</translation>
 <translation id="4988205478593450158">Ziur "<ph name="FILE_NAME" />" ezabatu nahi duzula?</translation>
 <translation id="498902553138568924">Tximeleta gorria</translation>
 <translation id="4992066212339426712">Aktibatu audioa</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">Ez dago azkenaldiko irudirik</translation>
 <translation id="7460898608667578234">Ukrainarra</translation>
 <translation id="7469894403370665791">Konektatu automatikoki sare honetara</translation>
+<translation id="7481358317100446445">Prest</translation>
 <translation id="7486315294984620427">Fitxategiak Parallels Desktop-en jaregin ahal izateko, Windows-eko fitxategien karpetan kopiatu behar dira lehendabizi.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malabartar fonetikoa</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Atzitu erraz Google Argazkiak</translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7663224033570512922">Hindia</translation>
+<translation id="7665680517722058469">Egin beste bilaketa bat</translation>
 <translation id="7689532716264131859">Eraman dira zaborrontzira <ph name="NUMBER_OF_ITEMS" /> elementu</translation>
 <translation id="7693909743393669729">Unitatea formateatuz gero, bertan gordetako datu guztiak ezabatuko dira, eta partizio guztiak kendu, ikusgai ez daudenak barne. Ezin da desegin ekintza.</translation>
 <translation id="7695430100978772476">Ezin izan da formateatu <ph name="DRIVE_NAME" /></translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">Arabieraren transliterazioa</translation>
 <translation id="8873014196523807561">Elementuak leheneratzeko, arrasta itzazu beste karpeta batera. Elementu horietako batzuen jatorrizko karpetak ezabatu egin dira.</translation>
 <translation id="8874184842967597500">Konektatu gabe</translation>
+<translation id="8876368061475701452">Ilaran</translation>
 <translation id="8900820606136623064">Hungariarra</translation>
 <translation id="8903931173357132290">Graduduna</translation>
 <translation id="8912078710089354287">Buztanari eragiten ari dion txakurra</translation>

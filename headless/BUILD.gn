@@ -386,8 +386,6 @@ component("headless_non_renderer") {
   if (use_aura) {
     sources += [
       "lib/browser/headless_browser_impl_aura.cc",
-      "lib/browser/headless_clipboard.cc",
-      "lib/browser/headless_clipboard.h",
       "lib/browser/headless_focus_client.cc",
       "lib/browser/headless_focus_client.h",
       "lib/browser/headless_screen.cc",
@@ -432,6 +430,7 @@ component("headless_non_renderer") {
     "//components/embedder_support",
     "//components/embedder_support:embedder_support",
     "//components/embedder_support/origin_trials",
+    "//components/headless/clipboard",
     "//components/keyed_service/content",
     "//components/keyed_service/content:content",
     "//components/origin_trials:browser",
@@ -464,9 +463,6 @@ component("headless_non_renderer") {
     "//third_party/inspector_protocol:crdtp",
     "//third_party/inspector_protocol:crdtp",
     "//ui/base",
-    "//ui/base",
-    "//ui/base/clipboard",
-    "//ui/compositor",
     "//ui/compositor",
     "//ui/display",
     "//ui/events/devices",
@@ -480,16 +476,15 @@ component("headless_non_renderer") {
 
   if (headless_use_policy) {
     sources += [
-      "lib/browser/headless_pref_names.cc",
-      "lib/browser/headless_pref_names.h",
       "lib/browser/policy/headless_browser_policy_connector.cc",
       "lib/browser/policy/headless_browser_policy_connector.h",
-      "lib/browser/policy/headless_mode_policy.cc",
-      "lib/browser/policy/headless_mode_policy.h",
       "lib/browser/policy/headless_policies.cc",
       "lib/browser/policy/headless_policies.h",
+      "lib/browser/policy/headless_prefs.cc",
+      "lib/browser/policy/headless_prefs.h",
     ]
     deps += [
+      "//components/headless/policy",
       "//components/policy/content",
       "//components/policy/core/browser",
     ]
@@ -692,10 +687,6 @@ test("headless_browsertests") {
     "//v8:external_startup_data",
   ]
   sources = [
-    "test/bitmap_utils.cc",
-    "test/bitmap_utils.h",
-    "test/capture_std_stream.cc",
-    "test/capture_std_stream.h",
     "test/headless_browser_browsertest.cc",
     "test/headless_browser_context_browsertest.cc",
     "test/headless_browser_test.cc",
@@ -714,11 +705,7 @@ test("headless_browsertests") {
   ]
 
   if (enable_printing && enable_pdf) {
-    sources += [
-      "test/headless_printtopdf_browsertest.cc",
-      "test/pdf_utils.cc",
-      "test/pdf_utils.h",
-    ]
+    sources += [ "test/headless_printtopdf_browsertest.cc" ]
   }
 
   if (headless_use_policy) {
@@ -780,6 +767,7 @@ test("headless_browsertests") {
     "//base",
     "//cc:test_support",
     "//components/devtools/simple_devtools_protocol_client",
+    "//components/headless/test",
     "//components/policy/core/browser",
     "//components/security_state/content",
     "//content/test:browsertest_support",
@@ -817,7 +805,10 @@ test("headless_browsertests") {
   }
 
   if (headless_use_policy) {
-    deps += [ "//components/policy/core/common:test_support" ]
+    deps += [
+      "//components/headless/policy",
+      "//components/policy/core/common:test_support",
+    ]
   }
 
   if (headless_enable_commands) {
@@ -851,7 +842,10 @@ if (is_win) {
       "//sandbox",
     ]
     if (headless_use_policy) {
-      deps += [ "//components/policy/content" ]
+      deps += [
+        "//components/headless/policy",
+        "//components/policy/content",
+      ]
     }
     if (enable_printing) {
       deps += [ "//components/printing/browser/headless:headless" ]
@@ -919,8 +913,11 @@ static_library("headless_shell_lib") {
     ]
   }
 
-  if (headless_use_policy && !is_component_build) {
-    deps += [ "//components/policy/content" ]
+  if (headless_use_policy) {
+    deps += [
+      "//components/headless/policy",
+      "//components/policy/content",
+    ]
   }
 
   if (headless_enable_commands) {

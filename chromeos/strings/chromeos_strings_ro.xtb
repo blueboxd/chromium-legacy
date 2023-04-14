@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Fereastra de actualizare a firmware-ului pentru dispozitivele externe este deschisă. <ph name="NUM_UPDATES" /> actualizări disponibile.</translation>
 <translation id="1145516343487477149">Găsește articole de ajutor și răspunsuri la întrebările frecvente despre Chromebookuri</translation>
+<translation id="1167755866710282443">Deschide meniul pentru a personaliza tastele. Trage meniul pentru a muta.</translation>
 <translation id="1175697296044146566">Acest <ph name="DEVICE_TYPE" /> este gestionat de <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Medie (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Elimină</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Selectează albumul <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Modul întunecat</translation>
+<translation id="4130035430755296270">Plasează cursorul pentru mai multe opțiuni de aspect</translation>
 <translation id="4131410914670010031">Alb-negru</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Google Foto</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Rezolvare DNS</translation>
 <translation id="4848429997038228357">RULEAZĂ</translation>
 <translation id="4854586501323951986">Ecran tactil încorporat</translation>
+<translation id="4855250849489639581">Glisează în jos pentru mai multe opțiuni de aspect</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} încercare rămasă}few{<ph name="ERROR_MESSAGE" /> {0} încercări rămase}other{<ph name="ERROR_MESSAGE" /> {0} de încercări rămase}}</translation>
 <translation id="4873827928179867585">Algoritm de autentificare</translation>
 <translation id="4880328057631981605">Nume punct de acces</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Creșterea luminozității ecranului</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
 <translation id="5784136236926853061">Latență mare a solicitărilor HTTP</translation>
+<translation id="5826644637650799838">Despre lucrarea de artă</translation>
 <translation id="5832805196449965646">Adăugați un utilizator</translation>
 <translation id="583281660410589416">Necunoscut</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">O imagine</translation>
 <translation id="7177485034254901881">Acest <ph name="DEVICE_TYPE" /> este gestionat de <ph name="MANAGER" />. Administratorii pot să configureze dispozitivul de la distanță.</translation>
 <translation id="7180611975245234373">Actualizați</translation>
+<translation id="7180865173735832675">Personalizează</translation>
 <translation id="7212734716605298123">Actualizări de firmware pentru dispozitive externe</translation>
 <translation id="7216409898977639127">Furnizor de date mobile</translation>
 <translation id="725133483556299729">Selectează adresa de e-mail</translation>

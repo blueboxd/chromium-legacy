@@ -68,7 +68,12 @@ std::unique_ptr<NavigationSimulatorImpl> CreateActivation(
 
 class PrerenderHostTest : public RenderViewHostImplTestHarness {
  public:
-  PrerenderHostTest() = default;
+  PrerenderHostTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kPrerender2MainFrameNavigation);
+  }
+
+  ~PrerenderHostTest() override = default;
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
@@ -90,11 +95,10 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
     return PrerenderAttributes(
         url, PrerenderTriggerType::kSpeculationRule,
         /*embedder_histogram_suffix=*/"", Referrer(),
-        rfh->GetLastCommittedOrigin(), rfh->GetLastCommittedURL(),
-        rfh->GetProcess()->GetID(), contents()->GetWeakPtr(),
-        rfh->GetFrameToken(), rfh->GetFrameTreeNodeId(),
-        rfh->GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
-        std::move(url_match_predicate));
+        rfh->GetLastCommittedOrigin(), rfh->GetProcess()->GetID(),
+        contents()->GetWeakPtr(), rfh->GetFrameToken(),
+        rfh->GetFrameTreeNodeId(), rfh->GetPageUkmSourceId(),
+        ui::PAGE_TRANSITION_LINK, std::move(url_match_predicate));
   }
 
   void ExpectFinalStatus(PrerenderFinalStatus status) {
@@ -131,6 +135,7 @@ class PrerenderHostTest : public RenderViewHostImplTestHarness {
       web_contents_delegate_;
   base::HistogramTester histogram_tester_;
   ukm::TestAutoSetUkmRecorder ukm_recorder_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 TEST_F(PrerenderHostTest, Activate) {
@@ -157,8 +162,9 @@ TEST_F(PrerenderHostTest, DontActivate) {
   ExpectFinalStatus(PrerenderFinalStatus::kDestroyed);
 }
 
-// Tests that main frame navigations in a prerendered page cannot occur even if
-// they start after the prerendered page has been reserved for activation.
+// Tests that cross-site main frame navigations in a prerendered page cannot
+// occur even if they start after the prerendered page has been reserved for
+// activation.
 TEST_F(PrerenderHostTest, MainFrameNavigationForReservedHost) {
   // Start prerendering a page.
   const GURL kPrerenderingUrl("https://example.com/next");
@@ -199,7 +205,7 @@ TEST_F(PrerenderHostTest, MainFrameNavigationForReservedHost) {
     const GURL kBadUrl("https://example2.test/");
     TestNavigationManager tno(contents(), kBadUrl);
 
-    // Start a cross-origin navigation in the prerendered page. It should be
+    // Start a cross-site navigation in the prerendered page. It should be
     // cancelled.
     auto navigation_2 = NavigationSimulatorImpl::CreateRendererInitiated(
         kBadUrl, prerender_rfh);
@@ -209,12 +215,12 @@ TEST_F(PrerenderHostTest, MainFrameNavigationForReservedHost) {
     ASSERT_TRUE(tno.WaitForNavigationFinished());
     EXPECT_FALSE(tno.was_committed());
 
-    // The cross-origin navigation cancels the activation.
+    // The cross-site navigation cancels the activation.
     installer.condition().CallResumeClosure();
     prerender_host_observer.WaitForDestroyed();
     EXPECT_FALSE(prerender_host_observer.was_activated());
     EXPECT_EQ(registry().FindHostByUrlForTesting(kPrerenderingUrl), nullptr);
-    ExpectFinalStatus(PrerenderFinalStatus::kMainFrameNavigation);
+    ExpectFinalStatus(PrerenderFinalStatus::kCrossSiteNavigation);
   }
 
   // The activation falls back to regular navigation.

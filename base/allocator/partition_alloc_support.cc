@@ -48,14 +48,14 @@
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/allocator/partition_allocator/starscan/pcscan_scheduling.h"
 #include "base/allocator/partition_allocator/starscan/stack/stack.h"
 #include "base/allocator/partition_allocator/starscan/stats_collector.h"
 #include "base/allocator/partition_allocator/starscan/stats_reporter.h"
 #include "base/memory/nonscannable_memory.h"
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 #if BUILDFLAG(IS_ANDROID)
 #include "base/system/sys_info.h"
@@ -74,13 +74,13 @@ namespace {
 namespace switches {
 [[maybe_unused]] constexpr char kRendererProcess[] = "renderer";
 constexpr char kZygoteProcess[] = "zygote";
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 constexpr char kGpuProcess[] = "gpu-process";
 constexpr char kUtilityProcess[] = "utility";
 #endif
 }  // namespace switches
 
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
 constexpr const char* ScannerIdToTracingString(
@@ -181,11 +181,11 @@ class StatsReporterImpl final : public partition_alloc::StatsReporter {
   static constexpr char kTraceCategory[] = "partition_alloc";
 };
 
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 }  // namespace
 
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 void RegisterPCScanStatsReporter() {
   static StatsReporterImpl s_reporter;
   static bool registered = false;
@@ -195,7 +195,7 @@ void RegisterPCScanStatsReporter() {
   partition_alloc::internal::PCScan::RegisterStatsReporter(&s_reporter);
   registered = true;
 }
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 namespace {
 
@@ -302,7 +302,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   }
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
   [[maybe_unused]] bool pcscan_enabled =
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
       FeatureList::IsEnabled(features::kPartitionAllocPCScanBrowserOnly);
 #else
       false;
@@ -378,7 +378,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   // fully controlled by Finch and thus have identical population sizes.
   std::string pcscan_group_name = "Unavailable";
   std::string pcscan_group_name_fallback = "Unavailable";
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   if (brp_truly_enabled) {
     // If BRP protection is enabled, just ignore the population. Check
     // brp_truly_enabled, not brp_finch_enabled, because there are certain modes
@@ -395,7 +395,7 @@ std::map<std::string, std::string> ProposeSyntheticFinchTrials() {
   } else {
     pcscan_group_name_fallback = (pcscan_enabled ? "Enabled" : "Disabled");
   }
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
   trials.emplace("PCScan_Effective", pcscan_group_name);
   trials.emplace("PCScan_Effective_Fallback", pcscan_group_name_fallback);
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -415,11 +415,13 @@ namespace {
 
 internal::PartitionLock g_stack_trace_buffer_lock;
 
-struct StackTraceWithID {
+struct DanglingPointerFreeInfo {
   debug::StackTrace stack_trace;
+  debug::TaskTrace task_trace;
   uintptr_t id = 0;
 };
-using DanglingRawPtrBuffer = std::array<absl::optional<StackTraceWithID>, 32>;
+using DanglingRawPtrBuffer =
+    std::array<absl::optional<DanglingPointerFreeInfo>, 32>;
 DanglingRawPtrBuffer g_stack_trace_buffer GUARDED_BY(g_stack_trace_buffer_lock);
 
 void DanglingRawPtrDetected(uintptr_t id) {
@@ -428,14 +430,14 @@ void DanglingRawPtrDetected(uintptr_t id) {
   internal::PartitionAutoLock guard(g_stack_trace_buffer_lock);
 
 #if DCHECK_IS_ON()
-  for (absl::optional<StackTraceWithID>& entry : g_stack_trace_buffer) {
+  for (absl::optional<DanglingPointerFreeInfo>& entry : g_stack_trace_buffer) {
     PA_DCHECK(!entry || entry->id != id);
   }
 #endif  // DCHECK_IS_ON()
 
-  for (absl::optional<StackTraceWithID>& entry : g_stack_trace_buffer) {
+  for (absl::optional<DanglingPointerFreeInfo>& entry : g_stack_trace_buffer) {
     if (!entry) {
-      entry = {debug::StackTrace(), id};
+      entry = {debug::StackTrace(), debug::TaskTrace(), id};
       return;
     }
   }
@@ -444,15 +446,16 @@ void DanglingRawPtrDetected(uintptr_t id) {
   // enough.
 }
 
-// From the StackTrace recorded in |DanglingRawPtrDetected|, extract the one
+// From the traces recorded in |DanglingRawPtrDetected|, extract the one
 // whose id match |id|. Return nullopt if not found.
-absl::optional<debug::StackTrace> TakeStackTrace(uintptr_t id) {
+absl::optional<DanglingPointerFreeInfo> TakeDanglingPointerFreeInfo(
+    uintptr_t id) {
   internal::PartitionAutoLock guard(g_stack_trace_buffer_lock);
-  for (absl::optional<StackTraceWithID>& entry : g_stack_trace_buffer) {
+  for (absl::optional<DanglingPointerFreeInfo>& entry : g_stack_trace_buffer) {
     if (entry && entry->id == id) {
-      debug::StackTrace stack_trace = std::move(entry->stack_trace);
+      absl::optional<DanglingPointerFreeInfo> result(entry);
       entry = absl::nullopt;
-      return stack_trace;
+      return result;
     }
   }
   return absl::nullopt;
@@ -470,7 +473,11 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
   const StringPiece callees[] = {
       "internal::RawPtrBackupRefImpl<>::ReleaseInternal()",
       "internal::PartitionFree()",
+      "base::RefCountedThreadSafe<>::Release()",
       "base::(anonymous namespace)::FreeFn()",
+      // Task traces are prefixed with "Task trace:" in
+      // https://crsrc.org/c/base/debug/task_trace.cc;drc=82fbec846172f4e7ea576ad4f2f7f3d082dcb13b;l=77
+      "Task trace:",
   };
   size_t caller_index = 0;
   for (size_t i = 0; i < lines.size(); ++i) {
@@ -481,7 +488,7 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
     }
   }
   if (caller_index >= lines.size()) {
-    return "undefined";
+    return "no_callee_match";
   }
   StringPiece caller = lines[caller_index];
 
@@ -495,64 +502,92 @@ std::string ExtractDanglingPtrSignature(std::string stacktrace) {
   size_t function_start = caller.find(' ', address_start + 1);
 
   if (address_start == caller.npos || function_start == caller.npos) {
-    return "undefined";
+    return "invalid_format";
   }
 
   return std::string(caller.substr(function_start + 1));
 }
 
-void DanglingRawPtrReleasedLogSignature(uintptr_t id) {
-  // This is called from raw_ptr<>'s release operation. Making allocations is
-  // allowed. In particular, symbolizing and printing the StackTraces may
-  // allocate memory.
-
-  debug::StackTrace stack_trace_release;
-  absl::optional<debug::StackTrace> stack_trace_free = TakeStackTrace(id);
-
-  if (stack_trace_free) {
-    LOG(ERROR) << StringPrintf(
-        "[DanglingSignature]\t%s\t%s",
-        ExtractDanglingPtrSignature(stack_trace_release.ToString()).c_str(),
-        ExtractDanglingPtrSignature(stack_trace_free->ToString()).c_str());
-  } else {
-    LOG(ERROR) << StringPrintf(
-        "[DanglingSignature]\t%s\tmissing-stacktrace",
-        ExtractDanglingPtrSignature(stack_trace_release.ToString()).c_str());
+std::string ExtractDanglingPtrSignature(debug::TaskTrace task_trace) {
+  if (task_trace.empty()) {
+    return "No active task";
   }
+  return ExtractDanglingPtrSignature(task_trace.ToString());
 }
 
-void DanglingRawPtrReleasedCrash(uintptr_t id) {
+std::string ExtractDanglingPtrSignature(
+    absl::optional<DanglingPointerFreeInfo> free_info,
+    debug::StackTrace release_stack_trace,
+    debug::TaskTrace release_task_trace) {
+  if (free_info) {
+    return StringPrintf(
+        "[DanglingSignature]\t%s\t%s\t%s\t%s",
+        ExtractDanglingPtrSignature(free_info->stack_trace.ToString()).c_str(),
+        ExtractDanglingPtrSignature(free_info->task_trace).c_str(),
+        ExtractDanglingPtrSignature(release_stack_trace.ToString()).c_str(),
+        ExtractDanglingPtrSignature(release_task_trace).c_str());
+  }
+  return StringPrintf(
+      "[DanglingSignature]\t%s\t%s\t%s\t%s", "missing", "missing",
+      ExtractDanglingPtrSignature(release_stack_trace.ToString()).c_str(),
+      ExtractDanglingPtrSignature(release_task_trace).c_str());
+}
+
+template <features::DanglingPtrMode dangling_pointer_mode,
+          features::DanglingPtrType dangling_pointer_type>
+void DanglingRawPtrReleased(uintptr_t id) {
   // This is called from raw_ptr<>'s release operation. Making allocations is
   // allowed. In particular, symbolizing and printing the StackTraces may
   // allocate memory.
   debug::StackTrace stack_trace_release;
   debug::TaskTrace task_trace_release;
-  absl::optional<debug::StackTrace> stack_trace_free = TakeStackTrace(id);
+  absl::optional<DanglingPointerFreeInfo> free_info =
+      TakeDanglingPointerFreeInfo(id);
 
+  if constexpr (dangling_pointer_type ==
+                features::DanglingPtrType::kCrossTask) {
+    if (!free_info) {
+      return;
+    }
+    if (task_trace_release.ToString() == free_info->task_trace.ToString()) {
+      return;
+    }
+  }
+
+  std::string dangling_signature = ExtractDanglingPtrSignature(
+      free_info, stack_trace_release, task_trace_release);
   static const char dangling_ptr_footer[] =
       "\n"
       "\n"
       "Please check for more information on:\n"
       "https://chromium.googlesource.com/chromium/src/+/main/docs/"
-      "dangling_ptr_guide.md\n";
-
-  if (stack_trace_free) {
+      "dangling_ptr_guide.md\n"
+      "\n"
+      "Googlers: Please give us your feedback about the dangling pointer\n"
+      "          detector at:\n"
+      "          http://go/dangling-ptr-cq-survey\n";
+  if (free_info) {
     LOG(ERROR) << "Detected dangling raw_ptr with id="
-               << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
+               << StringPrintf("0x%016" PRIxPTR, id) << ":\n"
+               << dangling_signature << "\n\n"
                << "The memory was freed at:\n"
-               << *stack_trace_free << "\n"
+               << free_info->stack_trace << free_info->task_trace << "\n"
                << "The dangling raw_ptr was released at:\n"
                << stack_trace_release << task_trace_release
                << dangling_ptr_footer;
   } else {
     LOG(ERROR) << "Detected dangling raw_ptr with id="
                << StringPrintf("0x%016" PRIxPTR, id) << ":\n\n"
+               << dangling_signature << "\n\n"
                << "It was not recorded where the memory was freed.\n\n"
                << "The dangling raw_ptr was released at:\n"
                << stack_trace_release << task_trace_release
                << dangling_ptr_footer;
   }
-  ImmediateCrash();
+
+  if constexpr (dangling_pointer_mode == features::DanglingPtrMode::kCrash) {
+    ImmediateCrash();
+  }
 }
 
 void ClearDanglingRawPtrBuffer() {
@@ -573,16 +608,35 @@ void InstallDanglingRawPtrChecks() {
     return;
   }
 
+  partition_alloc::SetDanglingRawPtrDetectedFn(&DanglingRawPtrDetected);
   switch (features::kDanglingPtrModeParam.Get()) {
     case features::DanglingPtrMode::kCrash:
-      partition_alloc::SetDanglingRawPtrDetectedFn(DanglingRawPtrDetected);
-      partition_alloc::SetDanglingRawPtrReleasedFn(DanglingRawPtrReleasedCrash);
+      switch (features::kDanglingPtrTypeParam.Get()) {
+        case features::DanglingPtrType::kAll:
+          partition_alloc::SetDanglingRawPtrReleasedFn(
+              &DanglingRawPtrReleased<features::DanglingPtrMode::kCrash,
+                                      features::DanglingPtrType::kAll>);
+          break;
+        case features::DanglingPtrType::kCrossTask:
+          partition_alloc::SetDanglingRawPtrReleasedFn(
+              &DanglingRawPtrReleased<features::DanglingPtrMode::kCrash,
+                                      features::DanglingPtrType::kCrossTask>);
+          break;
+      }
       break;
-
-    case features::DanglingPtrMode::kLogSignature:
-      partition_alloc::SetDanglingRawPtrDetectedFn(DanglingRawPtrDetected);
-      partition_alloc::SetDanglingRawPtrReleasedFn(
-          DanglingRawPtrReleasedLogSignature);
+    case features::DanglingPtrMode::kLogOnly:
+      switch (features::kDanglingPtrTypeParam.Get()) {
+        case features::DanglingPtrType::kAll:
+          partition_alloc::SetDanglingRawPtrReleasedFn(
+              &DanglingRawPtrReleased<features::DanglingPtrMode::kLogOnly,
+                                      features::DanglingPtrType::kAll>);
+          break;
+        case features::DanglingPtrType::kCrossTask:
+          partition_alloc::SetDanglingRawPtrReleasedFn(
+              &DanglingRawPtrReleased<features::DanglingPtrMode::kLogOnly,
+                                      features::DanglingPtrType::kCrossTask>);
+          break;
+      }
       break;
   }
 }
@@ -632,7 +686,7 @@ void InstallUnretainedDanglingRawPtrChecks() {
 
 namespace {
 
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
 void SetProcessNameForPCScan(const std::string& process_type) {
   const char* name = [&process_type] {
     if (process_type.empty()) {
@@ -713,7 +767,7 @@ bool EnablePCScanForMallocPartitionsInRendererProcessIfNeeded() {
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   return false;
 }
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 }  // namespace
 
@@ -929,7 +983,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
 
   // If BRP is not enabled, check if any of PCScan flags is enabled.
   [[maybe_unused]] bool scan_enabled = false;
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   if (!enable_brp) {
     scan_enabled = EnablePCScanForMallocPartitionsIfNeeded();
     // No specified process type means this is the Browser process.
@@ -963,10 +1017,10 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       SetProcessNameForPCScan(process_type);
     }
   }
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   // Non-quarantinable partition is dealing with hot V8's zone allocations.
   // In case PCScan is enabled in Renderer, enable thread cache on this
   // partition. At the same time, thread cache on the main(malloc) partition
@@ -976,7 +1030,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
         .root()
         ->EnableThreadCacheIfSupported();
   } else
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
   {
     allocator_shim::internal::PartitionAllocMalloc::Allocator()
         ->EnableThreadCacheIfSupported();
@@ -1058,7 +1112,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
 #endif  // PA_CONFIG(THREAD_CACHE_SUPPORTED) &&
         // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
-#if PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_STARSCAN)
   if (base::FeatureList::IsEnabled(
           base::features::kPartitionAllocPCScanMUAwareScheduler)) {
     // Assign PCScan a task-based scheduling backend.
@@ -1070,7 +1124,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
     partition_alloc::internal::PCScan::scheduler().SetNewSchedulingBackend(
         *mu_aware_task_based_backend.get());
   }
-#endif  // PA_CONFIG(ALLOW_PCSCAN)
+#endif  // BUILDFLAG(USE_STARSCAN)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   base::allocator::StartMemoryReclaimer(

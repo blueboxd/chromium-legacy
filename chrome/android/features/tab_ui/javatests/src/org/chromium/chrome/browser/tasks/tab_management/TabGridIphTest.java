@@ -125,6 +125,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1416886")
     public void testShowAndHideIphDialog() {
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -184,6 +185,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/1412394")
     public void testDismissIphItem() throws Exception {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -217,6 +219,7 @@ public class TabGridIphTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "crbug.com/1412391")
     public void testRenderIph_Portrait() throws IOException {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -303,6 +306,7 @@ public class TabGridIphTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1412947")
     public void testIphItemChangeWithLastTab() {
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 

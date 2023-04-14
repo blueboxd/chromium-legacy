@@ -13,8 +13,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
@@ -23,9 +21,6 @@
 #include "base/win/scoped_com_initializer.h"
 #include "chrome/installer/util/install_service_work_item.h"
 #include "chrome/installer/util/registry_util.h"
-#include "chrome/updater/app/server/win/updater_idl.h"
-#include "chrome/updater/app/server/win/updater_internal_idl.h"
-#include "chrome/updater/app/server/win/updater_legacy_idl.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/util.h"
@@ -45,6 +40,13 @@ void DeleteComServer(UpdaterScope scope, bool uninstall_all) {
     installer::DeleteRegistryKey(UpdaterScopeToHKeyRoot(scope),
                                  GetComServerClsidRegistryPath(clsid),
                                  WorkItem::kWow64Default);
+
+    const std::wstring progid(GetProgIdForClsid(clsid));
+    if (!progid.empty()) {
+      installer::DeleteRegistryKey(UpdaterScopeToHKeyRoot(scope),
+                                   GetComProgIdRegistryPath(progid),
+                                   WorkItem::kWow64Default);
+    }
   }
 }
 
@@ -61,9 +63,6 @@ void DeleteComService(bool uninstall_all) {
   }
 
   for (const bool is_internal_service : {true, false}) {
-    if (!uninstall_all && !is_internal_service)
-      continue;
-
     const std::wstring service_name = GetServiceName(is_internal_service);
     if (!installer::InstallServiceWorkItem::DeleteService(
             service_name.c_str(), UPDATER_KEY, {}, {})) {
@@ -90,26 +89,28 @@ void DeleteGoogleUpdateFilesAndKeys(UpdaterScope scope) {
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
-  if (target_path)
+  if (target_path) {
     base::DeletePathRecursively(target_path->DirName());
+  }
 }
 
 int RunUninstallScript(UpdaterScope scope, bool uninstall_all) {
   const absl::optional<base::FilePath> versioned_dir =
-      GetVersionedDataDirectory(scope);
+      GetVersionedInstallDirectory(scope);
   if (!versioned_dir) {
-    LOG(ERROR) << "GetVersionedDataDirectory failed.";
+    LOG(ERROR) << "GetVersionedInstallDirectory failed.";
     return kErrorNoVersionedDirectory;
   }
-  const absl::optional<base::FilePath> base_dir = GetBaseDataDirectory(scope);
+  const absl::optional<base::FilePath> base_dir = GetInstallDirectory(scope);
   if (IsSystemInstall(scope) && !base_dir) {
-    LOG(ERROR) << "GetBaseDataDirectory failed.";
+    LOG(ERROR) << "GetInstallDirectory failed.";
     return kErrorNoBaseDirectory;
   }
 
   base::FilePath cmd_exe_path;
-  if (!base::PathService::Get(base::DIR_SYSTEM, &cmd_exe_path))
+  if (!base::PathService::Get(base::DIR_SYSTEM, &cmd_exe_path)) {
     return kErrorPathServiceFailed;
+  }
   cmd_exe_path = cmd_exe_path.Append(L"cmd.exe");
 
   const base::FilePath script_path =
@@ -151,16 +152,19 @@ int UninstallImpl(UpdaterScope scope, bool uninstall_all) {
 
   updater::UnregisterWakeTask(scope);
 
-  if (uninstall_all)
+  if (uninstall_all) {
     DeleteGoogleUpdateFilesAndKeys(scope);
+  }
 
   DeleteComInterfaces(scope, uninstall_all);
-  if (IsSystemInstall(scope))
+  if (IsSystemInstall(scope)) {
     DeleteComService(uninstall_all);
+  }
   DeleteComServer(scope, uninstall_all);
 
-  if (!IsSystemInstall(scope))
+  if (!IsSystemInstall(scope)) {
     UnregisterUserRunAtStartup(GetTaskNamePrefix(scope));
+  }
 
   return RunUninstallScript(scope, uninstall_all);
 }

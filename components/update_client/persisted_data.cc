@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/guid.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/values.h"
@@ -34,38 +35,44 @@ PersistedData::~PersistedData() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
-const base::Value* PersistedData::GetAppKey(const std::string& id) const {
+const base::Value::Dict* PersistedData::GetAppKey(const std::string& id) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!pref_service_)
+  if (!pref_service_) {
     return nullptr;
+  }
   const base::Value& dict = pref_service_->GetValue(kPersistedDataPreference);
-  if (dict.type() != base::Value::Type::DICTIONARY)
+  if (!dict.is_dict()) {
     return nullptr;
-  const base::Value* apps = dict.FindDictKey("apps");
-  if (!apps)
+  }
+  const base::Value::Dict* apps = dict.GetDict().FindDict("apps");
+  if (!apps) {
     return nullptr;
-  return apps->FindDictKey(id);
+  }
+  return apps->FindDict(base::ToLowerASCII(id));
 }
 
 int PersistedData::GetInt(const std::string& id,
                           const std::string& key,
                           int fallback) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* app_key = GetAppKey(id);
-  if (!app_key)
+  const base::Value::Dict* app_key = GetAppKey(id);
+  if (!app_key) {
     return fallback;
-  return app_key->FindIntKey(key).value_or(fallback);
+  }
+  return app_key->FindInt(key).value_or(fallback);
 }
 
 std::string PersistedData::GetString(const std::string& id,
                                      const std::string& key) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const base::Value* app_key = GetAppKey(id);
-  if (!app_key)
+  const base::Value::Dict* app_key = GetAppKey(id);
+  if (!app_key) {
     return {};
-  const std::string* value = app_key->FindStringKey(key);
-  if (!value)
+  }
+  const std::string* value = app_key->FindString(key);
+  if (!value) {
     return {};
+  }
   return *value;
 }
 
@@ -102,9 +109,9 @@ base::Value::Dict* PersistedData::GetOrCreateAppKey(const std::string& id,
                                                     base::Value::Dict& root) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value::Dict* apps = root.EnsureDict("apps");
-  base::Value::Dict* app = apps->FindDict(id);
+  base::Value::Dict* app = apps->FindDict(base::ToLowerASCII(id));
   if (!app) {
-    app = &apps->Set(id, base::Value::Dict())->GetDict();
+    app = &apps->Set(base::ToLowerASCII(id), base::Value::Dict())->GetDict();
     app->Set("installdate", kDateFirstTime);
   }
   return app;

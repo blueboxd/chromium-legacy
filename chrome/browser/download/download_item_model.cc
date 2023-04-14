@@ -33,8 +33,6 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
-#include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -62,6 +60,11 @@
 #if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
 #include "ui/views/vector_icons.h"
+#endif
+
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+#include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #endif
 
 using download::DownloadItem;
@@ -931,7 +934,8 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
     return DownloadUIModel::BubbleUIInfo(
                l10n_util::GetStringUTF16(
                    IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE))
-        .AddIconAndColor(views::kInfoIcon, ui::kColorAlertMediumSeverity)
+        .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
+                         ui::kColorAlertMediumSeverity)
         .AddPrimaryButton(DownloadCommands::Command::DISCARD)
         .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
                           DownloadCommands::Command::DISCARD,
@@ -964,7 +968,7 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
                    l10n_util::GetStringFUTF16(
                        IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT_AND_ACCOUNT,
                        base::ASCIIToUTF16(email)))
-            .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
+            .AddIconAndColor(vector_icons::kDangerousIcon,
                              ui::kColorAlertHighSeverity)
             .AddPrimaryButton(DownloadCommands::Command::DISCARD)
             .AddSubpageButton(
@@ -976,7 +980,7 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
     return DownloadUIModel::BubbleUIInfo(
                l10n_util::GetStringUTF16(
                    IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT))
-        .AddIconAndColor(vector_icons::kNotSecureWarningIcon,
+        .AddIconAndColor(vector_icons::kDangerousIcon,
                          ui::kColorAlertHighSeverity)
         .AddPrimaryButton(DownloadCommands::Command::DISCARD)
         .AddSubpageButton(l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),

@@ -21,10 +21,8 @@ import android.widget.TextView;
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.annotation.VisibleForTesting;
 import androidx.fragment.app.Fragment;
 
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
@@ -52,6 +50,7 @@ import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.AccountInfoServiceProvider;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
+import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManagerHolder;
@@ -61,6 +60,7 @@ import org.chromium.ui.text.SpanApplier;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Contains the common logic of fragments used to sign in and enable sync.
@@ -103,24 +103,16 @@ public abstract class SyncConsentFragmentBase
     }
 
     /** Group name for different UIs in tangible sync experiment. */
-    @IntDef({TangibleSyncGroup.GROUP_A, TangibleSyncGroup.GROUP_B, TangibleSyncGroup.GROUP_C})
+    @IntDef({TangibleSyncGroup.GROUP_A, TangibleSyncGroup.GROUP_B, TangibleSyncGroup.GROUP_C,
+            TangibleSyncGroup.GROUP_D, TangibleSyncGroup.GROUP_E, TangibleSyncGroup.GROUP_F})
     @Retention(RetentionPolicy.SOURCE)
     @interface TangibleSyncGroup {
         int GROUP_A = 1;
         int GROUP_B = 2;
         int GROUP_C = 3;
-    }
-
-    /** Used for Signin.SyncConsentScreen.DataRowClicked histogram. Don't change existing values. */
-    @VisibleForTesting
-    @IntDef({SyncDataRowClicked.BOOKMARKS, SyncDataRowClicked.AUTOFILL, SyncDataRowClicked.HISTORY,
-            SyncDataRowClicked.COUNT})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface SyncDataRowClicked {
-        int BOOKMARKS = 0;
-        int AUTOFILL = 1;
-        int HISTORY = 2;
-        int COUNT = 3;
+        int GROUP_D = 4;
+        int GROUP_E = 5;
+        int GROUP_F = 6;
     }
 
     private final AccountManagerFacade mAccountManagerFacade;
@@ -216,11 +208,10 @@ public abstract class SyncConsentFragmentBase
      * @param accessPoint The access point for starting sign-in flow.
      * @param accountName The account to preselect or null to preselect the default account.
      */
-    public static Bundle createArgumentsForTangibleSyncFlow(
+    public static Bundle createArgumentsForTangibleSync(
             @SigninAccessPoint int accessPoint, String accountName) {
         assert ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC);
-        Bundle result = SyncConsentFragmentBase.createArgumentsForChooseAccountFlow(
-                accessPoint, accountName);
+        Bundle result = SyncConsentFragmentBase.createArguments(accessPoint, accountName);
         result.putBoolean(ARGUMENT_SHOW_TANGIBLE_SYNC_CONSENT_VIEW, true);
         return result;
     }
@@ -281,6 +272,13 @@ public abstract class SyncConsentFragmentBase
                         public void onSignInComplete() {
                             UnifiedConsentServiceBridge.setUrlKeyedAnonymizedDataCollectionEnabled(
                                     Profile.getLastUsedRegularProfile(), true);
+                            if (ChromeFeatureList.isEnabled(ChromeFeatureList.TANGIBLE_SYNC)
+                                    && getTangibleSyncGroup() != TangibleSyncGroup.GROUP_F) {
+                                // Groups A-E are only for enabling History and Tab Sync
+                                SyncService.get().setSelectedTypes(false,
+                                        Set.of(UserSelectableType.HISTORY,
+                                                UserSelectableType.TABS));
+                            }
                             if (!settingsClicked) {
                                 SyncService.get().setFirstSetupComplete(
                                         SyncFirstSetupCompleteSource.BASIC_FLOW);
@@ -383,31 +381,13 @@ public abstract class SyncConsentFragmentBase
         }
 
         updateConsentText();
-        final CoreAccountInfo primaryAccount =
-                IdentityServicesProvider.get()
-                        .getIdentityManager(Profile.getLastUsedRegularProfile())
-                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
-        mIsSignedInWithoutSync = (FREMobileIdentityConsistencyFieldTrial.isEnabled()
-                && mSigninAccessPoint == SigninAccessPoint.START_PAGE && primaryAccount != null);
-        if (mIsSignedInWithoutSync) {
-            mSelectedAccountName = primaryAccount.getEmail();
-        }
 
-        // When a fragment that was in the FragmentManager backstack becomes visible again, the view
-        // will be recreated by onCreateView. Update the state of this recreated UI.
-        if (mSelectedAccountName != null) {
-            updateProfileData(mSelectedAccountName);
-        }
         return mSyncConsentView != null ? mSyncConsentView : mSigninView;
     }
 
     private void createSyncConsentView(LayoutInflater inflater, ViewGroup container) {
         mSyncConsentView =
                 (SyncConsentView) inflater.inflate(R.layout.sync_consent_view, container, false);
-
-        mSyncConsentView.getBookmarksRow().setOnClickListener(this::recordClickAndResetListener);
-        mSyncConsentView.getAutofillRow().setOnClickListener(this::recordClickAndResetListener);
-        mSyncConsentView.getHistoryRow().setOnClickListener(this::recordClickAndResetListener);
 
         mSyncConsentView.getRefuseButton().setOnClickListener(this::onRefuseButtonClicked);
         mSyncConsentView.getRefuseButton().setVisibility(View.GONE);
@@ -534,14 +514,14 @@ public abstract class SyncConsentFragmentBase
 
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
-        final @StringRes int refuseButtonTextId =
-                mSigninAccessPoint == SigninAccessPoint.SIGNIN_PROMO
-                        || mSigninAccessPoint == SigninAccessPoint.START_PAGE
-                ? R.string.no_thanks
-                : R.string.cancel;
         if (mSyncConsentView != null) {
-            updateSyncConsentViewText(refuseButtonTextId);
+            updateSyncConsentViewText(R.string.no_thanks);
         } else {
+            final @StringRes int refuseButtonTextId =
+                    mSigninAccessPoint == SigninAccessPoint.SIGNIN_PROMO
+                            || mSigninAccessPoint == SigninAccessPoint.START_PAGE
+                    ? R.string.no_thanks
+                    : R.string.cancel;
             updateSigninViewText(refuseButtonTextId);
         }
     }
@@ -554,11 +534,17 @@ public abstract class SyncConsentFragmentBase
     private static @StringRes int getSyncConsentViewTitleText() {
         switch (getTangibleSyncGroup()) {
             case TangibleSyncGroup.GROUP_A:
-                return R.string.sync_consent_title;
+                return R.string.history_sync_consent_title_a;
             case TangibleSyncGroup.GROUP_B:
-                return R.string.sync_consent_title_variation;
+                return R.string.history_sync_consent_title_b;
             case TangibleSyncGroup.GROUP_C:
-                return R.string.sync_consent_title;
+                return R.string.history_sync_consent_title_c;
+            case TangibleSyncGroup.GROUP_D:
+                return R.string.history_sync_consent_title_d;
+            case TangibleSyncGroup.GROUP_E:
+                return R.string.history_sync_consent_title_e;
+            case TangibleSyncGroup.GROUP_F:
+                return R.string.signin_title;
             default:
                 throw new IllegalStateException("Invalid group id");
         }
@@ -566,49 +552,27 @@ public abstract class SyncConsentFragmentBase
 
     private static @StringRes int getSyncConsentViewSubtitleText() {
         switch (getTangibleSyncGroup()) {
+            // Groups A and B share the same subtitle.
             case TangibleSyncGroup.GROUP_A:
-                return R.string.sync_consent_subtitle;
             case TangibleSyncGroup.GROUP_B:
-                return R.string.sync_consent_subtitle;
+                return R.string.history_sync_consent_subtitle_a;
             case TangibleSyncGroup.GROUP_C:
-                return R.string.sync_consent_subtitle_variation;
+                return R.string.history_sync_consent_subtitle_c;
+            case TangibleSyncGroup.GROUP_D:
+                return R.string.history_sync_consent_subtitle_d;
+            case TangibleSyncGroup.GROUP_E:
+                return R.string.history_sync_consent_subtitle_e;
+            case TangibleSyncGroup.GROUP_F:
+                return R.string.signin_sync_title;
             default:
                 throw new IllegalStateException("Invalid group id");
         }
-    }
-
-    /**
-     * Records histogram for the sync data row clicks only once. Resets listener after recording.
-     */
-    private void recordClickAndResetListener(View view) {
-        if (view == mSyncConsentView.getBookmarksRow()) {
-            recordSyncDataRowClicked(SyncDataRowClicked.BOOKMARKS);
-        } else if (view == mSyncConsentView.getAutofillRow()) {
-            recordSyncDataRowClicked(SyncDataRowClicked.AUTOFILL);
-        } else if (view == mSyncConsentView.getHistoryRow()) {
-            recordSyncDataRowClicked(SyncDataRowClicked.HISTORY);
-        } else {
-            throw new IllegalStateException("Sync data row view does not exist");
-        }
-        view.setOnClickListener(null);
-    }
-
-    private static void recordSyncDataRowClicked(@SyncDataRowClicked int syncRowClicked) {
-        RecordHistogram.recordEnumeratedHistogram("Signin.SyncConsentScreen.DataRowClicked",
-                syncRowClicked, SyncDataRowClicked.COUNT);
     }
 
     private void updateSyncConsentViewText(@StringRes int refuseButtonTextId) {
         mConsentTextTracker.setText(mSyncConsentView.getTitleView(), getSyncConsentViewTitleText());
         mConsentTextTracker.setText(
                 mSyncConsentView.getSubtitleView(), getSyncConsentViewSubtitleText());
-
-        mConsentTextTracker.setText(
-                mSyncConsentView.getBookmarksRow(), R.string.sync_consent_bookmarks_text);
-        mConsentTextTracker.setText(
-                mSyncConsentView.getAutofillRow(), R.string.sync_consent_autofill_text);
-        mConsentTextTracker.setText(
-                mSyncConsentView.getHistoryRow(), R.string.sync_consent_history_text);
 
         mConsentTextTracker.setText(mSyncConsentView.getRefuseButton(), refuseButtonTextId);
         mConsentTextTracker.setText(
@@ -853,6 +817,22 @@ public abstract class SyncConsentFragmentBase
     public void onResume() {
         super.onResume();
         mAccountManagerFacade.addObserver(this);
+
+        final CoreAccountInfo primaryAccount =
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+        mIsSignedInWithoutSync = (FREMobileIdentityConsistencyFieldTrial.isEnabled()
+                && mSigninAccessPoint == SigninAccessPoint.START_PAGE && primaryAccount != null);
+        if (mIsSignedInWithoutSync) {
+            mSelectedAccountName = primaryAccount.getEmail();
+        }
+        // When a fragment that was in the FragmentManager backstack becomes visible again, the view
+        // will be recreated by onCreateView. Update the state of this recreated UI.
+        if (mSelectedAccountName != null) {
+            updateProfileData(mSelectedAccountName);
+        }
+
         updateAccounts(
                 AccountUtils.getAccountsIfFulfilledOrEmpty(mAccountManagerFacade.getAccounts()));
 

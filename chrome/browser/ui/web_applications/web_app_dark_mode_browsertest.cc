@@ -118,14 +118,15 @@ IN_PROC_BROWSER_TEST_F(WebAppDarkModeBrowserTest, NoUserPreferences) {
       blink::mojom::WebFeature::kWebAppManifestUserPreferences, 0);
 }
 
-class WebAppDarkModeOriginTrialBrowserTest : public InProcessBrowserTest {
+class WebAppDarkModeOriginTrialBrowserTest
+    : public WebAppControllerBrowserTest {
  public:
   WebAppDarkModeOriginTrialBrowserTest() {
     feature_list_.InitAndDisableFeature(blink::features::kWebAppEnableDarkMode);
   }
   ~WebAppDarkModeOriginTrialBrowserTest() override = default;
 
-  // InProcessBrowserTest:
+  // WebAppControllerBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Using the test public key from docs/origin_trials_integration.md#Testing.
     command_line->AppendSwitchASCII(
@@ -133,14 +134,13 @@ class WebAppDarkModeOriginTrialBrowserTest : public InProcessBrowserTest {
         "dRCs+TocuKkocNKa0AtZ4awrt9XKH2SQCI6o4FY6BNA=");
   }
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
+    WebAppControllerBrowserTest::SetUpOnMainThread();
     web_app::test::WaitUntilReady(
         web_app::WebAppProvider::GetForTest(browser()->profile()));
   }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  OsIntegrationManager::ScopedSuppressForTesting os_hooks_suppress_;
 };
 namespace {
 
@@ -191,7 +191,8 @@ constexpr char kOriginTrialToken[] =
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebAppDarkModeOriginTrialBrowserTest, OriginTrial) {
-  ManifestUpdateManager::BypassWindowCloseWaitingForTesting() = true;
+  ManifestUpdateManager::ScopedBypassWindowCloseWaitingForTesting
+      bypass_window_close_waiting;
 
   bool serve_token = true;
   content::URLLoaderInterceptor interceptor(base::BindLambdaForTesting(

@@ -23,6 +23,7 @@
 #include "net/cert/x509_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -33,7 +34,7 @@ namespace policy {
 void SetRequireCTForTesting(bool required) {
   if (content::IsOutOfProcessNetworkService()) {
     mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-    content::GetNetworkService()->BindTestInterface(
+    content::GetNetworkService()->BindTestInterfaceForTesting(
         network_service_test.BindNewPipeAndPassReceiver());
     network::mojom::NetworkServiceTest::RequireCT required_ct =
         required ? network::mojom::NetworkServiceTest::RequireCT::REQUIRE

@@ -212,6 +212,8 @@ bool TraceStartupConfig::EnableFromCommandLine() {
     memory_config.triggers.push_back(
         {10000, base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
          base::trace_event::MemoryDumpType::PERIODIC_INTERVAL});
+    memory_config.allowed_dump_modes.insert(
+        base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
     trace_config_.ResetMemoryDumpConfig(memory_config);
   }
 
@@ -310,8 +312,7 @@ bool TraceStartupConfig::ParseTraceConfigFileContent(
   if (!trace_config_dict)
     return false;
 
-  trace_config_ = base::trace_event::TraceConfig(
-      base::Value(std::move(*trace_config_dict)));
+  trace_config_ = base::trace_event::TraceConfig(std::move(*trace_config_dict));
 
   startup_duration_in_seconds_ =
       dict.FindInt(kStartupDurationParam).value_or(0);

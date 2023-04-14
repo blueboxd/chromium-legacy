@@ -26,6 +26,7 @@
 #import "components/autofill/core/common/unique_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/test_autofill_manager_injector.h"
 #import "components/autofill/ios/form_util/form_util_java_script_feature.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -129,20 +130,22 @@ class FormStructureBrowserTest
   FormStructureBrowserTest& operator=(const FormStructureBrowserTest&) = delete;
 
  protected:
+  class TestAutofillClient : public ChromeAutofillClientIOS {
+   public:
+    using ChromeAutofillClientIOS::ChromeAutofillClientIOS;
+    AutofillDownloadManager* GetDownloadManager() override { return nullptr; }
+  };
+
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(AutofillDriverIOS* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
    private:
-    TestAutofillManagerWaiter waiter_{
-        *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+    TestAutofillManagerWaiter waiter_{*this,
+                                      {AutofillManagerEvent::kFormsSeen}};
   };
 
   FormStructureBrowserTest();
@@ -166,7 +169,7 @@ class FormStructureBrowserTest
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   std::unique_ptr<web::WebState> web_state_;
-  std::unique_ptr<autofill::ChromeAutofillClientIOS> autofill_client_;
+  std::unique_ptr<TestAutofillClient> autofill_client_;
   AutofillAgent* autofill_agent_;
   std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
       autofill_manager_injector_;
@@ -246,14 +249,13 @@ void FormStructureBrowserTest::SetUp() {
   InfoBarManagerImpl::CreateForWebState(web_state());
   infobars::InfoBarManager* infobar_manager =
       InfoBarManagerImpl::FromWebState(web_state());
-  autofill_client_.reset(new autofill::ChromeAutofillClientIOS(
+  autofill_client_ = std::make_unique<TestAutofillClient>(
       browser_state_.get(), web_state(), infobar_manager, autofill_agent_,
-      /*password_generation_manager=*/nullptr));
+      /*password_generation_manager=*/nullptr);
 
   std::string locale("en");
-  autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale,
-      autofill::AutofillManager::EnableDownloadManager(false));
+  autofill::AutofillDriverIOSFactory::CreateForWebState(
+      web_state(), autofill_client_.get(), /*autofill_agent=*/nil, locale);
 
   autofill_manager_injector_ =
       std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
@@ -275,7 +277,7 @@ bool FormStructureBrowserTest::LoadHtmlWithoutSubresourcesAndInitRendererIds(
 
   __block web::WebFrame* main_frame = nullptr;
   success = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
-    main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+    main_frame = web_state()->GetPageWorldWebFramesManager()->GetMainWebFrame();
     return main_frame != nullptr;
   });
   if (!success) {

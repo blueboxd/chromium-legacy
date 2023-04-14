@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">ସିଧାସଳଖ ଇଣ୍ଟର୍ନେ‍ଟ୍ ସଂଯୋଗ</translation>
 <translation id="1272293450992660632">PIN ମୂଲ୍ୟଗୁଡ଼ିକ ମେଳ ହେଉନାହିଁ।</translation>
 <translation id="1280820357415527819">ମୋବାଇଲ୍ ନେଟୱାର୍କଗୁଡିକୁ ଖୋଜୁଛି</translation>
-<translation id="1291603679744561561">SIM ଲକ୍ କରାଯାଇଛି</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">ଏହି କ୍ଷଣି Google ଡ୍ରାଇଭ୍ ଉପଲବ୍ଧ ନାହିଁ। ଥରେ Google ଡ୍ରାଇଭ୍ କାର୍ଯ୍ୟକ୍ଷମ ହୋଇଗଲେ, ଅପ୍‍‍ଲୋଡ୍ ସ୍ଵଚାଳିତ ଭାବେ ରିଷ୍ଟାର୍ଟ ହେବ।</translation>
 <translation id="1307931752636661898">Linux ଫାଇଲ୍‌ଗୁଡ଼ିକ ଦେଖିପାରୁନାହିଁ</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Parallels Desktopରେ ଫାଇଲଗୁଡ଼ିକୁ ଡ୍ରପ୍ କରିବା ପାଇଁ ଫାଇଲକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରକୁ ମୁଭ୍ କରିବା ଆବଶ୍ୟକ।</translation>
 <translation id="1435838927755162558">Parallels Desktop ସହ ଫୋଲ୍ଡର ସେୟାର୍ କରନ୍ତୁ</translation>
 <translation id="1439919885608649279">ଫୁଲଗୁଡ଼ିକ ସହ ଜଣେ ବ୍ୟକ୍ତି</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" />କୁ ବାହାର କରିଦିଅନ୍ତୁ</translation>
 <translation id="1471718551822868769">ସ୍ଲୋଭାକ୍</translation>
 <translation id="1482884275703521657">ଫିନିଶ୍</translation>
 <translation id="148466539719134488">ସ୍ଵିସ୍</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Bruschetta ସହ 1ଟି ଫୋଲ୍ଡର ସେୟାର କରାଯାଇଛି</translation>
 <translation id="2578394532502990878">ତାମିଲ ଫୋନେଟିକ୍</translation>
 <translation id="2579959351793446050">ଓଡ଼ିଆ</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> ସିଙ୍କ କରିବାକୁ ପ୍ରସ୍ତୁତ ହେଉଛି…</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" />ଟିରୁ <ph name="NETWORK_INDEX" /> ନମ୍ବର ନେଟୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ସିଗନାଲ କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ଆପଣଙ୍କ ଆଡମିନିଷ୍ଟ୍ରେଟରଙ୍କ ଦ୍ୱାରା ବ୍ଲକ କରାଯାଇଛି, ବିବରଣୀ</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> ଭିଡିଓ</translation>
 <translation id="2620090360073999360">ଏହି ସମୟରେ Google Driveରେ ପହଞ୍ଚି ହେବ ନାହିଁ।</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">ମଙ୍ଗୋଲିଆନ୍</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />ଟି ତ୍ରୁଟି।</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" /> ସିଗ୍‌ନାଲ୍‌ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />%, ବିବରଣୀ</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ ସିଙ୍କ କରିବାକୁ ପ୍ରସ୍ତୁତ ହେଉଛି…</translation>
 <translation id="3522708245912499433">ପର୍ତ୍ତୁଗୀଜ୍</translation>
 <translation id="3524311639100184459">ସାବଧାନ: ଏହି ଫାଇଲଗୁଡ଼ିକ ଅସ୍ଥାୟୀ ଅଟେ ଏବଂ ଡିସ୍କରେ ଜାଗା ଖାଲି କରିବା ପାଇଁ ଏଗୁଡ଼ିକ ସ୍ୱଚାଳିତ ଭାବେ ଡିଲିଟ୍ ହୋଇଯାଇପାରେ।  <ph name="BEGIN_LINK" />ଅଧିକ ଜାଣନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ଫୋଲ୍ଡର୍</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">ମେଟା</translation>
 <translation id="3943857333388298514">ପେଷ୍ଟ କରନ୍ତୁ</translation>
 <translation id="3952872973865944257">ତେଲୁଗୁ ଫୋନେଟିକ୍</translation>
+<translation id="3954354850384043518">ପ୍ରକ୍ରିୟାରତ ଅଛି</translation>
 <translation id="3958548648197196644">କିୱି</translation>
 <translation id="3971140002794351170">ମୋବାଇଲ ପ୍ରୋଫାଇଲ୍, <ph name="NETWORK_COUNT" />ର <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> ନେଟୱାର୍କ ଡାଉନଲୋଡ୍ କରନ୍ତୁ</translation>
 <translation id="3973925058222872294">ଇଂରାଜୀ (UK)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">କଷ୍ଟମ୍ ନାମ ସର୍ଭର୍</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" />ଟିର <ph name="NETWORK_INDEX" /> ନେଟ୍‌ୱାର୍କ, <ph name="NETWORK_NAME" />, ଆପଣଙ୍କ ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‌ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ, ସଂଯୋଗ କରନ୍ତୁ</translation>
 <translation id="4470564870223067757">ହଂଗୁଲ୍ 2 ସେଟ୍</translation>
+<translation id="4474142134969976028">ମେଳ ହେଉଥିବା କୌଣସି ଫଳାଫଳ ନାହିଁ</translation>
 <translation id="4477002475007461989">ରୋମାନିଆନ୍</translation>
 <translation id="4477219268485577442">ବୁଲ୍‍‍ଗେରିଆନ୍ ଫୋନେଟିକ୍</translation>
 <translation id="4508265954913339219">ସକ୍ରିୟକରଣ ବିଫଳ ହେଲା</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> କିମ୍ବା ତା’ଠାରୁ କମ୍‌ ଅକ୍ଷରର ନାମ ବ୍ୟବହାର କରନ୍ତୁ</translation>
 <translation id="4973970068702235170">ଜିପ୍ କରିବା ବିଫଳ ହେଲା, ଅପ୍ରତ୍ୟାଶିତ ତ୍ରୁଟି: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ଜାପାନିଜ</translation>
+<translation id="4987699874727873250">ଇଂରାଜୀ (ଭାରତ)</translation>
 <translation id="4988205478593450158">ଆପଣ "<ph name="FILE_NAME" />"କୁ ଡିଲିଟ୍ କରିବାକୁ ଚାହୁଁଥିବା ସୁନିଶ୍ଚିତ କି?</translation>
 <translation id="498902553138568924">ଲାଲ୍ ପ୍ରଜାପତି</translation>
 <translation id="4992066212339426712">ଅନମ୍ୟୁଟ୍ କରନ୍ତୁ</translation>
@@ -780,6 +785,7 @@
 <translation id="7458955835361612701">ବର୍ତ୍ତମାନର କୌଣସି ଇମେଜ ନାହିଁ</translation>
 <translation id="7460898608667578234">ୟୁକ୍ରାନିଆନ୍</translation>
 <translation id="7469894403370665791">ସ୍ୱଚାଳିତ ଭାବେ ଏହି ନେଟ୍‍ୱର୍କ ସହ ସଂଯୋଗ କରନ୍ତୁ</translation>
+<translation id="7481358317100446445">ପ୍ରସ୍ତୁତ</translation>
 <translation id="7486315294984620427">Parallels Desktopରେ ଫାଇଲଗୁଡ଼ିକୁ ଡ୍ରପ୍ କରିବା ପାଇଁ ଫାଇଲକୁ Windows ଫାଇଲ୍ ଫୋଲ୍ଡରରେ କପି କରିବା ଆବଶ୍ୟକ।</translation>
 <translation id="749452993132003881">ହିରାଗାନା</translation>
 <translation id="7495372004724182530">ମାଲାୟଲମ୍ ଫୋନେଟିକ୍</translation>
@@ -805,6 +811,7 @@
 <translation id="7655441028674523381">Google Photosକୁ ସହଜରେ ଆକ୍ସେସ୍ କରନ୍ତୁ</translation>
 <translation id="7658239707568436148">ବାତିଲ</translation>
 <translation id="7663224033570512922">ହିନ୍ଦୀ</translation>
+<translation id="7665680517722058469">ଆଉ ଥରେ ସର୍ଚ୍ଚ କରି ଦେଖନ୍ତୁ</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ ଟ୍ରାସକୁ ମୁଭ କରାଯାଇଛି</translation>
 <translation id="7693909743393669729">ଏକ ଡ୍ରାଇଭକୁ ଫର୍ମାଟ୍ କରିବା ଦ୍ୱାରା ସେଥିରେ ଷ୍ଟୋର୍ କରାଯାଇଥିବା ସମସ୍ତ ଡାଟା ଲିଭିଯିବ ଏବଂ ଦୃଶ୍ୟମାନ ହେଉନଥିବା ପାର୍ଟିସନଗୁଡ଼ିକ ସମେତ, ପୂର୍ବରୁ ଥିବା ସମସ୍ତ ପାର୍ଟିସନକୁ କାଢ଼ି ଦିଆଯିବ। ଏହି କାର୍ଯ୍ୟକୁ ପୂର୍ବବତ୍ କରାଯାଇପାରିବ ନାହିଁ।</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ଫର୍ମାଟ୍ କରାଯାଇପାରିଲା ନାହିଁ</translation>
@@ -961,6 +968,7 @@
 <translation id="8866284467018526531">ଆରବିକ୍ ଟ୍ରାନ୍ସଲିଟ୍ରେସନ୍</translation>
 <translation id="8873014196523807561">ଏହି ଆଇଟମଗୁଡ଼ିକୁ ରିଷ୍ଟୋର କରିବା ପାଇଁ, ସେଗୁଡ଼ିକୁ ଏକ ନୂଆ ଫୋଲ୍ଡରକୁ ଡ୍ରାଗ କରନ୍ତୁ। ଏହି ଆଇଟମଗୁଡ଼ିକରୁ କିଛି ଆଇଟମର ମୂଳ ଫୋଲ୍ଡରଗୁଡ଼ିକୁ ଡିଲିଟ କରିଦିଆଯାଇଛି।</translation>
 <translation id="8874184842967597500">ସଂଯୁକ୍ତ ନାହିଁ</translation>
+<translation id="8876368061475701452">ଧାଡ଼ିରେ ରଖାଯାଇଛି</translation>
 <translation id="8900820606136623064">ହଙ୍ଗେରୀଆନ୍</translation>
 <translation id="8903931173357132290">ଗ୍ରାଜୁଏଟ୍</translation>
 <translation id="8912078710089354287">ଲାଞ୍ଜ ହଲାଉଥିବା କୁକୁର</translation>

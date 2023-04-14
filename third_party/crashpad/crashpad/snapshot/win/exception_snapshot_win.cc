@@ -14,8 +14,6 @@
 
 #include "snapshot/win/exception_snapshot_win.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "snapshot/capture_memory.h"
 #include "snapshot/memory_snapshot.h"
@@ -263,12 +261,8 @@ bool ExceptionSnapshotWin::InitializeFromExceptionPointers(
     exception_code_ = first_record.ExceptionCode;
     exception_flags_ = first_record.ExceptionFlags;
     exception_address_ = first_record.ExceptionAddress;
-
-    const DWORD number_parameters = std::min<DWORD>(
-        first_record.NumberParameters, EXCEPTION_MAXIMUM_PARAMETERS);
-    for (DWORD i = 0; i < number_parameters; ++i) {
+    for (DWORD i = 0; i < first_record.NumberParameters; ++i)
       codes_.push_back(first_record.ExceptionInformation[i]);
-    }
     if (first_record.ExceptionRecord) {
       // https://crashpad.chromium.org/bug/43
       LOG(WARNING) << "dropping chained ExceptionRecord";

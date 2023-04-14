@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '../cr_hidden_style.css.js';
 import '../cr_icons.css.js';
 import '../cr_shared_vars.css.js';
 
@@ -56,6 +57,18 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
   override ready() {
     super.ready();
     FocusOutlineManager.forDocument(document);
+    this.addEventListener('pointerdown', () => this.setActiveState_(true));
+    this.addEventListener('pointerup', () => this.setActiveState_(false));
+    this.addEventListener('pointerleave', () => this.setActiveState_(false));
+  }
+
+  private getDisplayedCount_() {
+    if (this.count && this.count > 999) {
+      // The square to display the count only fits 3 characters.
+      return '99+';
+    }
+
+    return this.count;
   }
 
   private getFavicon_(): string {
@@ -64,6 +77,10 @@ export class CrUrlListItemElement extends CrUrlListItemElementBase {
 
   private onSizeChanged_() {
     assert(Object.values(CrUrlListItemSize).includes(this.size));
+  }
+
+  private setActiveState_(active: boolean) {
+    this.classList.toggle('active', active);
   }
 
   private shouldShowFavicon_(): boolean {

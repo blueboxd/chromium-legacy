@@ -9,8 +9,9 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 
-@class PinnedTabsViewController;
 @protocol GridImageDataSource;
+@class GridTransitionLayout;
+@class PinnedTabsViewController;
 @protocol TabCollectionDragDropHandler;
 @protocol TabContextMenuProvider;
 
@@ -30,8 +31,19 @@
             (PinnedTabsViewController*)pinnedTabsViewController
               didChangeItemCount:(NSUInteger)count;
 
-// Tells the delegate that the `pinnedTabsViewController` is hidden.
-- (void)pinnedTabsViewControllerDidHide;
+// Tells the delegate that the item with `itemID` was moved.
+- (void)pinnedTabsViewController:
+            (PinnedTabsViewController*)pinnedTabsViewController
+               didMoveItemWithID:(NSString*)itemID;
+
+// Tells the delegate that the item with `itemID` was removed.
+- (void)pinnedTabsViewController:(PinnedTabsViewController*)gridViewController
+             didRemoveItemWIthID:(NSString*)itemID;
+
+// Tells the delegate that the `pinnedTabsViewController` visibility has
+// changed.
+- (void)pinnedTabsViewControllerVisibilityDidChange:
+    (PinnedTabsViewController*)pinnedTabsViewController;
 
 @end
 
@@ -54,6 +66,13 @@
 // Tracks if a drop animation is in progress.
 @property(nonatomic, assign) BOOL dropAnimationInProgress;
 
+// Returns YES if the collection has no items.
+@property(nonatomic, readonly, getter=isCollectionEmpty) BOOL collectionEmpty;
+
+// YES if the selected cell is visible in the Pinned Tabs collection.
+@property(nonatomic, readonly, getter=isSelectedCellVisible)
+    BOOL selectedCellVisible;
+
 // Updates the view when starting or ending a drag action.
 - (void)dragSessionEnabled:(BOOL)enabled;
 
@@ -63,6 +82,12 @@
 
 // Updates the view when the drop animation did end.
 - (void)dropAnimationDidEnd;
+
+// Returns the layout of the pinned tabs to be used in an animated transition.
+- (GridTransitionLayout*)transitionLayout;
+
+// Returns whether there is a selected cell in the collection.
+- (BOOL)hasSelectedCell;
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 

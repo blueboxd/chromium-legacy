@@ -26,20 +26,6 @@ std::string GetRequiredString(const base::Value::Dict& onc_apn,
   return *v;
 }
 
-absl::optional<std::vector<std::string>> GetStringList(
-    const base::Value::Dict& dict,
-    const char* key) {
-  const base::Value::List* v = dict.FindList(key);
-  if (!v) {
-    return absl::nullopt;
-  }
-  std::vector<std::string> result;
-  for (const base::Value& e : *v) {
-    result.push_back(e.GetString());
-  }
-  return result;
-}
-
 std::vector<std::string> GetRequiredStringList(const base::Value::Dict& dict,
                                                const char* key) {
   const base::Value::List* v = dict.FindList(key);
@@ -60,21 +46,20 @@ std::vector<std::string> GetRequiredStringList(const base::Value::Dict& dict,
 }
 
 mojom::ApnAuthenticationType OncApnAuthenticationTypeToMojo(
-    const std::string& authentication_type) {
-  if (authentication_type.empty() ||
-      authentication_type ==
-          ::onc::cellular_apn::kAuthenticationTypeAutomatic) {
+    const absl::optional<std::string>& authentication_type) {
+  if (!authentication_type.has_value() || authentication_type->empty() ||
+      authentication_type == ::onc::cellular_apn::kAuthenticationAutomatic) {
     return mojom::ApnAuthenticationType::kAutomatic;
   }
-  if (authentication_type == ::onc::cellular_apn::kAuthenticationTypePap) {
+  if (authentication_type == ::onc::cellular_apn::kAuthenticationPap) {
     return mojom::ApnAuthenticationType::kPap;
   }
-  if (authentication_type == ::onc::cellular_apn::kAuthenticationTypeChap) {
+  if (authentication_type == ::onc::cellular_apn::kAuthenticationChap) {
     return mojom::ApnAuthenticationType::kChap;
   }
 
   NOTREACHED() << "Unexpected ONC APN Authentication type: "
-               << authentication_type;
+               << authentication_type.value();
   return mojom::ApnAuthenticationType::kAutomatic;
 }
 
@@ -208,8 +193,8 @@ mojom::ApnPropertiesPtr GetApnProperties(const base::Value::Dict& onc_apn,
   auto apn = mojom::ApnProperties::New();
   apn->access_point_name =
       GetRequiredString(onc_apn, ::onc::cellular_apn::kAccessPointName);
-  apn->authentication =
-      GetString(onc_apn, ::onc::cellular_apn::kAuthentication);
+  apn->authentication = OncApnAuthenticationTypeToMojo(
+      GetString(onc_apn, ::onc::cellular_apn::kAuthentication));
   apn->language = GetString(onc_apn, ::onc::cellular_apn::kLanguage);
   apn->localized_name = GetString(onc_apn, ::onc::cellular_apn::kLocalizedName);
   apn->name = GetString(onc_apn, ::onc::cellular_apn::kName);
@@ -219,30 +204,10 @@ mojom::ApnPropertiesPtr GetApnProperties(const base::Value::Dict& onc_apn,
 
   if (is_apn_revamp_enabled) {
     apn->id = GetString(onc_apn, ::onc::cellular_apn::kId);
-    // TODO(b/162365553) Remove missing value checking after Shill implements
-    // the interface.
-    if (!GetString(onc_apn, ::onc::cellular_apn::kAuthenticationType)) {
-      apn->authentication_type = mojom::ApnAuthenticationType::kAutomatic;
-    } else {
-      apn->authentication_type = OncApnAuthenticationTypeToMojo(
-          GetRequiredString(onc_apn, ::onc::cellular_apn::kAuthenticationType));
-    }
-    // TODO(b/162365553) Remove missing value checking after Shill implements
-    // the interface.
-    if (!GetString(onc_apn, ::onc::cellular_apn::kIpType)) {
-      apn->ip_type = mojom::ApnIpType::kAutomatic;
-    } else {
-      apn->ip_type = OncApnIpTypeToMojo(
-          GetRequiredString(onc_apn, ::onc::cellular_apn::kIpType));
-    }
-    // TODO(b/162365553) Remove missing value checking after Shill implements
-    // the interface.
-    if (!GetStringList(onc_apn, ::onc::cellular_apn::kApnTypes)) {
-      apn->apn_types = {mojom::ApnType::kDefault};
-    } else {
-      apn->apn_types = OncApnTypesToMojo(
-          GetRequiredStringList(onc_apn, ::onc::cellular_apn::kApnTypes));
-    }
+    apn->ip_type = OncApnIpTypeToMojo(
+        GetRequiredString(onc_apn, ::onc::cellular_apn::kIpType));
+    apn->apn_types = OncApnTypesToMojo(
+        GetRequiredStringList(onc_apn, ::onc::cellular_apn::kApnTypes));
   }
 
   return apn;

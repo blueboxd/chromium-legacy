@@ -14,14 +14,14 @@
 
 #include "base/barrier_closure.h"
 #include "base/functional/bind.h"
-#include "base/memory/ref_counted_memory.h"
 #include "base/values.h"
+#include "content/public/browser/web_contents.h"
+#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/browser/api/device_permissions_prompt.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/usb/usb_device_resource.h"
 #include "extensions/browser/extension_function_constants.h"
-#include "extensions/browser/extension_system.h"
 #include "extensions/common/api/usb.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -29,7 +29,6 @@
 #include "services/device/public/cpp/usb/usb_utils.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/public/mojom/usb_enumeration_options.mojom.h"
-#include "services/device/public/mojom/usb_manager.mojom.h"
 
 namespace usb = extensions::api::usb;
 namespace BulkTransfer = usb::BulkTransfer;
@@ -657,8 +656,8 @@ void UsbFindDevicesFunction::OnGetDevicesComplete(
 void UsbFindDevicesFunction::OnDeviceOpened(
     const std::string& guid,
     mojo::Remote<device::mojom::UsbDevice> device,
-    device::mojom::UsbOpenDeviceError error) {
-  if (error == device::mojom::UsbOpenDeviceError::OK && device) {
+    device::mojom::UsbOpenDeviceResultPtr result) {
+  if (result->is_success() && device) {
     ApiResourceManager<UsbDeviceResource>* manager =
         ApiResourceManager<UsbDeviceResource>::Get(browser_context());
     UsbDeviceResource* resource =
@@ -883,8 +882,8 @@ ExtensionFunction::ResponseAction UsbOpenDeviceFunction::Run() {
 void UsbOpenDeviceFunction::OnDeviceOpened(
     std::string guid,
     mojo::Remote<device::mojom::UsbDevice> device,
-    device::mojom::UsbOpenDeviceError error) {
-  if (error != device::mojom::UsbOpenDeviceError::OK || !device) {
+    device::mojom::UsbOpenDeviceResultPtr result) {
+  if (result->is_error() || !device) {
     Respond(Error(kErrorOpen));
     return;
   }

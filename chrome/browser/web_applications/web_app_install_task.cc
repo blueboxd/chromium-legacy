@@ -14,7 +14,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
@@ -48,6 +47,7 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_data.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -234,11 +234,13 @@ void WebAppInstallTask::UpdateFinalizerClientData(
     options->add_to_applications_menu = params->add_to_applications_menu;
     options->add_to_desktop = params->add_to_desktop;
     options->add_to_quick_launch_bar = params->add_to_quick_launch_bar;
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     if (params->system_app_type.has_value()) {
       options->system_web_app_data.emplace();
       options->system_web_app_data->system_app_type =
           params->system_app_type.value();
     }
+#endif
   }
 }
 
@@ -323,7 +325,7 @@ void WebAppInstallTask::WebContentsDestroyed() {
                       webapps::InstallResultCode::kWebContentsDestroyed);
 }
 
-base::Value WebAppInstallTask::TakeErrorDict() {
+base::Value::Dict WebAppInstallTask::TakeErrorDict() {
   DCHECK(log_entry_.HasErrorDict());
   return log_entry_.TakeErrorDict();
 }
@@ -499,7 +501,7 @@ void WebAppInstallTask::OnDidPerformInstallableCheck(
   // case we proceed with the installation which adds the SUB_APP install source
   // as well.
   if (install_surface_ == webapps::WebappInstallSource::SUB_APP) {
-    DCHECK(install_params_ && install_params_->parent_app_id.has_value());
+    DCHECK(web_app_info->parent_app_id.has_value());
     if (registrar_->WasInstalledBySubApp(app_id)) {
       CallInstallCallback(std::move(app_id),
                           webapps::InstallResultCode::kSuccessAlreadyInstalled);
@@ -702,7 +704,6 @@ void WebAppInstallTask::OnDialogCompleted(
     finalize_options.locally_installed = install_params_->locally_installed;
     finalize_options.overwrite_existing_manifest_fields =
         install_params_->force_reinstall;
-    finalize_options.parent_app_id = install_params_->parent_app_id;
 
     ApplyParamsToFinalizeOptions(*install_params_, finalize_options);
 

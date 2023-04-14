@@ -64,6 +64,11 @@ class TestThemeObserver
     color_scheme_ = color_scheme;
   }
 
+  void OnSampleColorSchemesChanged(const std::vector<ash::SampleColorScheme>&
+                                       sample_color_schemes) override {
+    sample_color_schemes_ = sample_color_schemes;
+  }
+
   void OnStaticColorChanged(absl::optional<::SkColor> static_color) override {
     static_color_ = static_color;
   }
@@ -115,6 +120,7 @@ class TestThemeObserver
   bool color_mode_auto_schedule_enabled_ = false;
   ash::ColorScheme color_scheme_ = ash::ColorScheme::kTonalSpot;
   absl::optional<::SkColor> static_color_ = absl::nullopt;
+  std::vector<ash::SampleColorScheme> sample_color_schemes_;
 };
 
 }  // namespace

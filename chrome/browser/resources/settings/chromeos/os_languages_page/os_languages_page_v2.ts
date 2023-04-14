@@ -37,7 +37,7 @@ import {PrefsMixin} from '../../prefs/prefs_mixin.js';
 import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
 import {Route} from '../router.js';
 
@@ -135,7 +135,7 @@ class OsSettingsLanguagesPageV2Element extends
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kAddLanguage,
           Setting.kChangeDeviceLanguage,
           Setting.kOfferTranslation,
@@ -163,7 +163,7 @@ class OsSettingsLanguagesPageV2Element extends
 
   // Internal properties for mixins.
   // From DeepLinkingMixin.
-  // override supportedSettingIds = new Set([
+  // override supportedSettingIds = new Set<Setting>([
   //   Setting.kAddLanguage,
   //   Setting.kChangeDeviceLanguage,
   //   Setting.kOfferTranslation,

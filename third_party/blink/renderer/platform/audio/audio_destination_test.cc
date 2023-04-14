@@ -37,6 +37,11 @@ class MockWebAudioDevice : public WebAudioDevice {
   MOCK_METHOD(void, Resume, (), (override));
   double SampleRate() override { return sample_rate_; }
   int FramesPerBuffer() override { return frames_per_buffer_; }
+  int MaxChannelCount() override { return 2; }
+  media::OutputDeviceStatus CreateSinkAndGetDeviceStatus() override {
+    // In this test, we assume the sink creation always succeeds.
+    return media::OUTPUT_DEVICE_STATUS_OK;
+  }
 
  private:
   double sample_rate_;
@@ -107,19 +112,30 @@ class AudioDestinationTest
 
     // TODO(https://crbug.com/988121) Replace 128 with the appropriate
     // AudioContextRenderSizeHintCategory.
-    scoped_refptr<AudioDestination> destination =
-        AudioDestination::Create(callback, sink_descriptor, channel_count,
-                                 latency_hint, sample_rate, 128);
+    constexpr int render_quantum_frames = 128;
+    scoped_refptr<AudioDestination> destination = AudioDestination::Create(
+        callback, sink_descriptor, channel_count, latency_hint, sample_rate,
+        render_quantum_frames);
     destination->Start();
 
     destination->Render(
         base::TimeDelta::Min(), base::TimeTicks::Now(), {},
         media::AudioBus::Create(channel_count, request_frames).get());
 
-    int exact_frames_required =
-        std::ceil(request_frames * destination->SampleRate() /
-                  Platform::Current()->AudioHardwareSampleRate());
-    int expected_frames_processed =
+    // Calculate the expected number of frames to be consumed to produce
+    // |request_frames| frames.
+    int exact_frames_required = request_frames;
+    if (destination->SampleRate() !=
+        Platform::Current()->AudioHardwareSampleRate()) {
+      exact_frames_required =
+          std::ceil(request_frames * destination->SampleRate() /
+                    Platform::Current()->AudioHardwareSampleRate());
+      // The internal resampler requires media::SincResampler::KernelSize() / 2
+      // more frames to flush the output. See sinc_resampler.cc for details.
+      exact_frames_required +=
+          media::SincResampler::KernelSizeFromRequestFrames(request_frames) / 2;
+    }
+    const int expected_frames_processed =
         std::ceil(exact_frames_required /
                   static_cast<double>(destination->RenderQuantumFrames())) *
         destination->RenderQuantumFrames();

@@ -23,6 +23,7 @@
 #include "chrome/browser/component_updater/commerce_heuristics_component_installer.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/crowd_deny_component_installer.h"
+#include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/first_party_sets_component_installer.h"
 #include "chrome/browser/component_updater/hyphenation_component_installer.h"
@@ -41,6 +42,7 @@
 #include "components/component_updater/installer_policies/safety_tips_component_installer.h"
 #include "components/component_updater/url_param_filter_remover.h"
 #include "components/nacl/common/buildflags.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -63,12 +65,10 @@
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/component_updater/crow_domain_list_component_installer.h"
-#include "chrome/browser/component_updater/desktop_sharing_hub_component_remover.h"
 #include "chrome/browser/component_updater/real_time_url_checks_allowlist_component_installer.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/component_updater/desktop_sharing_hub_component_installer.h"
 #include "chrome/browser/component_updater/zxcvbn_data_component_installer.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "media/base/media_switches.h"
@@ -148,10 +148,8 @@ void RegisterComponentsForUpdate() {
 
     component_updater::DeleteUrlParamFilter(path);
 
-#if BUILDFLAG(IS_ANDROID)
-    // Clean up any desktop sharing hubs that were installed on Android.
+    // Clean up any remaining desktop sharing hub state.
     component_updater::DeleteDesktopSharingHub(path);
-#endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_WIN)
     // TODO(crbug/1407233): Remove this call once it has rolled out for a few
@@ -200,7 +198,6 @@ void RegisterComponentsForUpdate() {
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-  RegisterDesktopSharingHubComponent(cus);
   RegisterZxcvbnDataComponent(cus);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -211,7 +208,12 @@ void RegisterComponentsForUpdate() {
 
   RegisterAutofillStatesComponent(cus, g_browser_process->local_state());
 
-  RegisterClientSidePhishingComponent(cus);
+  // OptimizationGuide provides the model through their services, so if the
+  // flag is false, a registration to CSD-Phishing component is needed
+  if (!base::FeatureList::IsEnabled(
+          safe_browsing::kClientSideDetectionModelOptimizationGuide)) {
+    RegisterClientSidePhishingComponent(cus);
+  }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE) && !BUILDFLAG(IS_CHROMEOS)
   RegisterScreenAIComponent(cus, g_browser_process->local_state());

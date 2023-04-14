@@ -119,6 +119,7 @@ enum class PermissionEmbargoStatus {
   // Removed: PERMISSIONS_BLACKLISTING = 1,
   REPEATED_DISMISSALS = 2,
   REPEATED_IGNORES = 3,
+  RECENT_DISPLAY = 4,
 
   // Keep this at the end.
   NUM,
@@ -457,6 +458,11 @@ class PermissionUmaUtil {
       ContentSettingsType type,
       PermissionAction previous_action,
       ContentSetting setting_after);
+
+  static void RecordPageInfoPermissionChange(ContentSettingsType type,
+                                             ContentSetting setting_before,
+                                             ContentSetting setting_after,
+                                             bool suppress_reload_page_bar);
 
   static std::string GetPermissionActionString(
       PermissionAction permission_action);

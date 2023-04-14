@@ -11,6 +11,7 @@
 #include "base/functional/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "components/sync/driver/trusted_vault_histograms.h"
+#include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
 #include "components/sync/trusted_vault/trusted_vault_connection.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
@@ -22,13 +23,7 @@ class SharedURLLoaderFactory;
 class SimpleURLLoader;
 }  // namespace network
 
-namespace signin {
-struct AccessTokenInfo;
-}  // namespace signin
-
 namespace syncer {
-
-class TrustedVaultAccessTokenFetcher;
 
 // Allows calling VaultService API using proto-over-http.
 class TrustedVaultRequest : public TrustedVaultConnection::Request {
@@ -42,10 +37,18 @@ class TrustedVaultRequest : public TrustedVaultConnection::Request {
     kNotFound,
     // Reported when server returns http status code 409 (conflict).
     kConflict,
-    // Reported when access token fetch attempt was failed and request wasn't
-    // sent.
-    kAccessTokenFetchingFailure,
-    // Reported when other network and http errors occur.
+    // Reported when access token fetch attempt was failed due to transient auth
+    // error.
+    kTransientAccessTokenFetchError,
+    // Reported when access token fetch attempt failed due to permanent auth
+    // error.
+    kPersistentAccessTokenFetchError,
+    // Reported when access token fetch attempt was cancelled due to primary
+    // account change.
+    kPrimaryAccountChangeAccessTokenFetchError,
+    // Reported when network error occurs.
+    kNetworkError,
+    // Reported when other http errors occur.
     kOtherError
   };
 
@@ -79,7 +82,8 @@ class TrustedVaultRequest : public TrustedVaultConnection::Request {
 
  private:
   void OnAccessTokenFetched(
-      absl::optional<signin::AccessTokenInfo> access_token_info);
+      TrustedVaultAccessTokenFetcher::AccessTokenInfoOrError
+          access_token_info_or_error);
   void OnURLLoadComplete(std::unique_ptr<std::string> response_body);
 
   std::unique_ptr<network::SimpleURLLoader> CreateURLLoader(

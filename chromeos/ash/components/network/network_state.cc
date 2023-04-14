@@ -227,14 +227,35 @@ bool NetworkState::PropertyChanged(const std::string& key,
       return false;
     probe_url_ = GURL(probe_url_string);
     return true;
+  } else if (key == shill::kUplinkSpeedPropertyKbps) {
+    uint32_t max_uplink_speed_kbps;
+    if (!GetUInt32Value(key, value, &max_uplink_speed_kbps))
+      return false;
+    if (max_uplink_speed_kbps_.has_value() &&
+        max_uplink_speed_kbps == max_uplink_speed_kbps_.value()) {
+      return false;
+    }
+    max_uplink_speed_kbps_ = max_uplink_speed_kbps;
+    return true;
+  } else if (key == shill::kDownlinkSpeedPropertyKbps) {
+    uint32_t max_downlink_speed_kbps;
+    if (!GetUInt32Value(key, value, &max_downlink_speed_kbps))
+      return false;
+    if (max_downlink_speed_kbps_.has_value() &&
+        max_downlink_speed_kbps == max_downlink_speed_kbps_.value()) {
+      return false;
+    }
+    max_downlink_speed_kbps_ = max_downlink_speed_kbps;
+    return true;
   }
   return false;
 }
 
-bool NetworkState::InitialPropertiesReceived(const base::Value& properties) {
+bool NetworkState::InitialPropertiesReceived(
+    const base::Value::Dict& properties) {
   NET_LOG(EVENT) << "InitialPropertiesReceived: " << NetworkId(this)
                  << " State: " << connection_state_ << " Visible: " << visible_;
-  if (!properties.GetDict().contains(shill::kTypeProperty)) {
+  if (!properties.contains(shill::kTypeProperty)) {
     NET_LOG(ERROR) << "NetworkState has no type: " << NetworkId(this);
     return false;
   }
@@ -272,7 +293,7 @@ void NetworkState::GetStateProperties(base::Value* dictionary) const {
     // Shill sends VPN provider properties in a nested dictionary. |dictionary|
     // must replicate that nested structure.
     std::string provider_type = vpn_provider()->type;
-    base::Value provider_property(base::Value::Type::DICTIONARY);
+    base::Value provider_property(base::Value::Type::DICT);
     provider_property.SetKey(shill::kTypeProperty, base::Value(provider_type));
     if (provider_type == shill::kProviderThirdPartyVpn ||
         provider_type == shill::kProviderArcVpn) {
@@ -340,12 +361,13 @@ bool NetworkState::IsActive() const {
          activation_state() == shill::kActivationStateActivating;
 }
 
-void NetworkState::IPConfigPropertiesChanged(const base::Value& properties) {
-  if (properties.DictEmpty()) {
+void NetworkState::IPConfigPropertiesChanged(
+    const base::Value::Dict& properties) {
+  if (properties.empty()) {
     ipv4_config_ = base::Value();
     return;
   }
-  ipv4_config_ = properties.Clone();
+  ipv4_config_ = base::Value(properties.Clone());
 }
 
 std::string NetworkState::GetIpAddress() const {
@@ -635,7 +657,7 @@ std::unique_ptr<NetworkState> NetworkState::CreateNonShillCellularNetwork(
 
 // Private methods.
 
-bool NetworkState::UpdateName(const base::Value& properties) {
+bool NetworkState::UpdateName(const base::Value::Dict& properties) {
   std::string updated_name =
       shill_property_util::GetNameFromProperties(path(), properties);
   if (updated_name != name()) {
@@ -645,7 +667,8 @@ bool NetworkState::UpdateName(const base::Value& properties) {
   return false;
 }
 
-void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
+void NetworkState::UpdateCaptivePortalState(
+    const base::Value::Dict& properties) {
   if (!IsConnectedState()) {
     // Unconnected networks are in an unknown portal state and should not
     // update histograms.
@@ -654,7 +677,7 @@ void NetworkState::UpdateCaptivePortalState(const base::Value& properties) {
   }
 
   int status_code =
-      properties.FindIntKey(shill::kPortalDetectionFailedStatusCodeProperty)
+      properties.FindInt(shill::kPortalDetectionFailedStatusCodeProperty)
           .value_or(0);
   if (connection_state_ == shill::kStateNoConnectivity) {
     shill_portal_state_ = PortalState::kNoInternet;

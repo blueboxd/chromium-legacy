@@ -15,7 +15,6 @@ try_.defaults.set(
     builderless = False,
     os = os.LINUX_DEFAULT,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = try_.gpu.SERVICE_ACCOUNT,
@@ -35,6 +34,7 @@ try_.builder(
     mirrors = [
         "ci/Dawn Android arm DEPS Release (Pixel 4)",
     ],
+    goma_backend = goma.backend.RBE_PROD,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -64,7 +64,6 @@ try_.builder(
         "ci/Dawn Linux x64 DEPS Release (Intel UHD 630)",
         "ci/Dawn Linux x64 DEPS Release (NVIDIA)",
     ],
-    goma_backend = None,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -96,7 +95,6 @@ try_.builder(
         "ci/Dawn Mac x64 DEPS Release (Intel)",
     ],
     os = os.MAC_ANY,
-    goma_backend = None,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -127,7 +125,6 @@ try_.builder(
         "ci/Dawn Win10 x64 DEPS Release (NVIDIA)",
     ],
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -158,7 +155,6 @@ try_.builder(
         "ci/Dawn Win10 x86 DEPS Release (NVIDIA)",
     ],
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     main_list_view = "try",
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
@@ -185,6 +181,7 @@ try_.builder(
     mirrors = [
         "ci/Dawn Android arm Release (Pixel 4)",
     ],
+    goma_backend = goma.backend.RBE_PROD,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -197,7 +194,6 @@ try_.builder(
         "ci/Dawn Linux x64 Release (Intel UHD 630)",
         "ci/Dawn Linux x64 Release (NVIDIA)",
     ],
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -212,6 +208,7 @@ try_.builder(
         "ci/Dawn Mac x64 Release (Intel)",
     ],
     os = os.MAC_ANY,
+    goma_backend = goma.backend.RBE_PROD,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -226,6 +223,7 @@ try_.builder(
     pool = "luci.chromium.gpu.mac.retina.amd.try",
     builderless = True,
     os = os.MAC_ANY,
+    goma_backend = goma.backend.RBE_PROD,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -240,6 +238,7 @@ try_.builder(
     pool = "luci.chromium.gpu.mac.mini.intel.try",
     builderless = True,
     os = os.MAC_ANY,
+    goma_backend = goma.backend.RBE_PROD,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -254,7 +253,6 @@ try_.builder(
     pool = "luci.chromium.gpu.win10.intel.try",
     builderless = True,
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -269,7 +267,6 @@ try_.builder(
     pool = "luci.chromium.gpu.win10.intel.try",
     builderless = True,
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -283,7 +280,6 @@ try_.builder(
         "ci/Dawn Win10 x64 Release (NVIDIA)",
     ],
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -297,7 +293,6 @@ try_.builder(
         "ci/Dawn Win10 x86 Release (NVIDIA)",
     ],
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),
@@ -309,7 +304,6 @@ try_.builder(
         "ci/Dawn Win10 x64 ASAN Release",
     ],
     os = os.WINDOWS_ANY,
-    goma_backend = None,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),

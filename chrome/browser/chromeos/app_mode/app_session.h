@@ -59,13 +59,13 @@ class AppSession {
   virtual void Init(const std::string& app_id);
 
   // Initializes an app session for Web kiosk.
-  // |web_app_name| is absl::nullopt for ash-side of the web kiosk with Lacros.
+  // `web_app_name` is absl::nullopt for ash-side of the web kiosk with Lacros.
   virtual void InitForWebKiosk(const absl::optional<std::string>& web_app_name);
 
   // Invoked when GuestViewManager adds a guest web contents.
   void OnGuestAdded(content::WebContents* guest_web_contents);
 
-  // Replaces chrome::AttemptUserExit() by |closure|.
+  // Replaces chrome::AttemptUserExit() by `closure`.
   void SetAttemptUserExitForTesting(base::OnceClosure closure);
 
   Browser* GetSettingsBrowserForTesting();
@@ -81,7 +81,7 @@ class AppSession {
              base::OnceClosure attempt_user_exit,
              std::unique_ptr<AppSessionMetricsService> metrics_service);
 
-  // Create a |browser_window_handler_| object.
+  // Create a `browser_window_handler_` object.
   void CreateBrowserWindowHandler(
       const absl::optional<std::string>& web_app_name);
 
@@ -98,9 +98,12 @@ class AppSession {
 
   void OnHandledNewBrowserWindow(bool is_closing);
   void OnAppWindowAdded(extensions::AppWindow* app_window);
-  void OnLastAppWindowClosed();
+  void ShutdownAppSession();
 
   bool is_shutting_down_ = false;
+
+  // Owned by `ProfileManager`.
+  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
 
   std::unique_ptr<AppWindowHandler> app_window_handler_;
   std::unique_ptr<AppSessionBrowserWindowHandler> browser_window_handler_;
@@ -108,8 +111,6 @@ class AppSession {
   std::unique_ptr<PluginHandlerDelegateImpl> plugin_handler_delegate_;
   std::unique_ptr<KioskSessionPluginHandler> plugin_handler_;
 #endif
-
-  raw_ptr<Profile, DanglingUntriaged> profile_ = nullptr;
 
   base::OnceClosure attempt_user_exit_;
   const std::unique_ptr<AppSessionMetricsService> metrics_service_;

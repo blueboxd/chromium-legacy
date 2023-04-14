@@ -113,17 +113,12 @@ public class AccountSelectionCoordinator implements AccountSelectionComponent {
                 .inflate(R.layout.account_selection_continue_button, parent, false);
     }
 
-    static View buildAutoSignInCancelButtonView(ViewGroup parent) {
-        return LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.auto_sign_in_cancel_button, parent, false);
-    }
-
     @Override
     public void showAccounts(String rpEtldPlusOne, String idpEtldPlusOne, List<Account> accounts,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientMetadata,
-            boolean isAutoSignIn) {
-        mMediator.showAccounts(
-                rpEtldPlusOne, idpEtldPlusOne, accounts, idpMetadata, clientMetadata, isAutoSignIn);
+            boolean isAutoReauthn) {
+        mMediator.showAccounts(rpEtldPlusOne, idpEtldPlusOne, accounts, idpMetadata, clientMetadata,
+                isAutoReauthn);
     }
 
     @Override

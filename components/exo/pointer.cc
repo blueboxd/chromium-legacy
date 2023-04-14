@@ -50,13 +50,8 @@
 #include "ui/wm/core/cursor_util.h"
 
 namespace exo {
-namespace {
 
-// TODO(oshima): Some accessibility features, including large cursors, disable
-// hardware cursors. Ash does not support compositing for custom cursors, so it
-// replaces them with the default cursor. As a result, this scale has no effect
-// for now. See crbug.com/708378.
-const float kLargeCursorScale = 2.8f;
+namespace {
 
 const double kLocatedEventEpsilonSquared = 1.0 / (2000.0 * 2000.0);
 
@@ -470,6 +465,13 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
   if (seat_->was_shutdown() || event->handled())
     return;
 
+  WMHelper* helper = WMHelper::GetInstance();
+  auto* drag_drop_client = helper->GetDragDropClient();
+  if (!static_cast<ash::DragDropController*>(drag_drop_client)
+           ->IsDragDropCompleted()) {
+    return;
+  }
+
   // Nothing to report to a client nor have to update the pointer when capture
   // changes.
   if (event->type() == ui::ET_MOUSE_CAPTURE_CHANGED)
@@ -724,34 +726,12 @@ void Pointer::OnDragStarted() {
 }
 
 void Pointer::OnDragCompleted(const ui::DropTargetEvent& event) {
-  // Drag 'n drop operations driven by sources different than pointer/mouse
-  // should have not effect here.
-  WMHelper* helper = WMHelper::GetInstance();
-  if (auto* drag_drop_client = helper->GetDragDropClient()) {
-    if (static_cast<ash::DragDropController*>(drag_drop_client)
-            ->event_source() != ui::mojom::DragEventSource::kMouse)
-      return;
-  }
-
-  // DragDropController::PerformDrop() can result in the DropTargetEvent::target
-  // being destroyed. Verify whether this is the case, and adapt the event.
-  // This must be tested before `GetEffectiveTargetForEvent` which may pick the
-  // capture window.
-  //
-  // TODO(https://crbug.com/1160925): Avoid nested RunLoop in exo
-  // DataDevice::GetDropCallback() - remove the block below when it is fixed.
-  auto* event_target = static_cast<aura::Window*>(event.target());
-  if (!event_target) {
-    LOG(WARNING) << "EventTarget has been destroyed during the drop operation.";
-    return;
-  }
-
-  gfx::PointF location_in_target;
-  auto* target = GetEffectiveTargetForEvent(&event, &location_in_target);
-  if (target) {
-    SetFocus(target, event.root_location_f(), location_in_target,
-             /*button_flags=*/0);
-  }
+  // Don't update the focus here as the DragDropOperation is still processing
+  // the DnD and hasn't sent drop/leave events.
+  // The focus has been reset upon DnD start above, and will be updated on
+  // next Mouse Event.
+  // This is not ideal, but the better fix should be done as a part of
+  // DnD nested loop removal. (crbug.com/1160925)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -853,6 +833,12 @@ void Pointer::SetFocus(Surface* surface,
   }
   // Second generate an enter event if focus moved to a new surface.
   if (surface) {
+    // Pointer enter should not be generated during dnd session.
+#if DCHECK_IS_ON()
+    auto* drag_drop_controller = static_cast<ash::DragDropController*>(
+        aura::client::GetDragDropClient(surface->window()->GetRootWindow()));
+    DCHECK(!drag_drop_controller->IsDragDropInProgress());
+#endif
     delegate_->OnPointerEnter(surface, surface_location, button_flags);
     delegate_->OnPointerFrame();
     location_in_root_ = root_location;
@@ -955,8 +941,6 @@ void Pointer::UpdateCursor() {
         ui::GetScaleForResourceScaleFactor(ui::GetSupportedResourceScaleFactor(
             display.device_scale_factor())) /
         capture_scale_;
-    if (cursor_client->GetCursorSize() == ui::CursorSize::kLarge)
-      scale *= kLargeCursorScale;
 
     // Use panel_rotation() rather than "natural" rotation, as it actually
     // relates to the hardware you're about to draw the cursor bitmap on.

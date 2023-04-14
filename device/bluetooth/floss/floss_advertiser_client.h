@@ -11,7 +11,7 @@
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/floss/exported_callback_manager.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
-#include "device/bluetooth/floss/floss_gatt_client.h"
+#include "device/bluetooth/floss/floss_gatt_manager_client.h"
 #include "device/bluetooth/public/cpp/bluetooth_uuid.h"
 
 namespace floss {
@@ -196,6 +196,9 @@ class DEVICE_BLUETOOTH_EXPORT FlossAdvertiserClient
       ErrorCallback error_callback);
 
  protected:
+  // Registers callback to daemon after all callback methods are exported.
+  void OnMethodsExported();
+
   // Completes the method call for RegisterAdvertiserCallback.
   void CompleteRegisterCallback(dbus::Response* response,
                                 dbus::ErrorResponse* error_response);

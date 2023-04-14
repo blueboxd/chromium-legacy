@@ -89,7 +89,7 @@ void DelegatedFrameHost::WasShown(
 
   frame_evictor_->SetVisible(true);
   if (record_tab_switch_time_request && compositor_) {
-    compositor_->RequestPresentationTimeForNextFrame(
+    compositor_->RequestSuccessfulPresentationTimeForNextFrame(
         tab_switch_time_recorder_.TabWasShown(
             true /* has_saved_frames */,
             std::move(record_tab_switch_time_request)));
@@ -107,19 +107,19 @@ void DelegatedFrameHost::WasShown(
   }
 }
 
-void DelegatedFrameHost::RequestPresentationTimeForNextFrame(
+void DelegatedFrameHost::RequestSuccessfulPresentationTimeForNextFrame(
     blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
   DCHECK(visible_time_request);
   if (!compositor_)
     return;
   // Tab was shown while widget was already painting, eg. due to being
   // captured.
-  compositor_->RequestPresentationTimeForNextFrame(
+  compositor_->RequestSuccessfulPresentationTimeForNextFrame(
       tab_switch_time_recorder_.TabWasShown(true /* has_saved_frames */,
                                             std::move(visible_time_request)));
 }
 
-void DelegatedFrameHost::CancelPresentationTimeRequest() {
+void DelegatedFrameHost::CancelSuccessfulPresentationTimeRequest() {
   // Tab was hidden while widget keeps painting, eg. due to being captured.
   tab_switch_time_recorder_.TabWasHidden();
 }
@@ -344,7 +344,7 @@ void DelegatedFrameHost::ClearFallbackSurfaceForCommitPending() {
 
   // CommitPending failed, and Navigation never completed. Evict our surfaces.
   if (fallback_surface_id && fallback_surface_id->is_valid()) {
-    EvictDelegatedFrame(frame_evictor_->CollectSurfaceIdsForEviction());
+    EvictDelegatedFrame();
     client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
         viz::SurfaceId());
   }
@@ -366,7 +366,7 @@ void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
   // We never completed navigation, evict our surfaces.
   if (pre_navigation_local_surface_id_.is_valid() &&
       !first_local_surface_id_after_navigation_.is_valid()) {
-    EvictDelegatedFrame(frame_evictor_->CollectSurfaceIdsForEviction());
+    EvictDelegatedFrame();
   }
 
   client_->DelegatedFrameHostGetLayer()->SetOldestAcceptableFallback(
@@ -376,8 +376,7 @@ void DelegatedFrameHost::ResetFallbackToFirstNavigationSurface() {
           : viz::SurfaceId());
 }
 
-void DelegatedFrameHost::EvictDelegatedFrame(
-    const std::vector<viz::SurfaceId>& surface_ids) {
+void DelegatedFrameHost::EvictDelegatedFrame() {
   // There is already an eviction request pending.
   if (frame_eviction_state_ == FrameEvictionState::kPendingEvictionRequests) {
     frame_evictor_->OnSurfaceDiscarded();
@@ -385,7 +384,7 @@ void DelegatedFrameHost::EvictDelegatedFrame(
   }
 
   if (!HasSavedFrame()) {
-    ContinueDelegatedFrameEviction(surface_ids);
+    ContinueDelegatedFrameEviction();
     return;
   }
 
@@ -408,22 +407,9 @@ void DelegatedFrameHost::EvictDelegatedFrame(
         gfx::ScaleToRoundedSize(surface_dip_size_, kFrameContentCaptureQuality),
         std::move(callback));
   } else {
-    ContinueDelegatedFrameEviction(surface_ids);
+    ContinueDelegatedFrameEviction();
   }
   frame_evictor_->OnSurfaceDiscarded();
-}
-
-std::vector<viz::SurfaceId> DelegatedFrameHost::CollectSurfaceIdsForEviction()
-    const {
-  return client_->CollectSurfaceIdsForEviction();
-}
-
-viz::SurfaceId DelegatedFrameHost::GetCurrentSurfaceId() const {
-  return viz::SurfaceId(frame_sink_id_, local_surface_id_);
-}
-
-viz::SurfaceId DelegatedFrameHost::GetPreNavigationSurfaceId() const {
-  return viz::SurfaceId(frame_sink_id_, pre_navigation_local_surface_id_);
 }
 
 void DelegatedFrameHost::DidCopyStaleContent(
@@ -443,8 +429,7 @@ void DelegatedFrameHost::DidCopyStaleContent(
   DCHECK_NE(frame_eviction_state_, FrameEvictionState::kNotStarted);
 #endif
   SetFrameEvictionStateAndNotifyObservers(FrameEvictionState::kNotStarted);
-  ContinueDelegatedFrameEviction(
-      frame_evictor_->CollectSurfaceIdsForEviction());
+  ContinueDelegatedFrameEviction();
 
   auto transfer_resource = viz::TransferableResource::MakeGpu(
       result->GetTextureResult()->planes[0].mailbox, GL_LINEAR, GL_TEXTURE_2D,
@@ -467,8 +452,7 @@ void DelegatedFrameHost::DidCopyStaleContent(
       transfer_resource, std::move(release_callbacks[0]), surface_dip_size_);
 }
 
-void DelegatedFrameHost::ContinueDelegatedFrameEviction(
-    const std::vector<viz::SurfaceId>& surface_ids) {
+void DelegatedFrameHost::ContinueDelegatedFrameEviction() {
   // Reset primary surface.
   if (HasPrimarySurface()) {
     client_->DelegatedFrameHostGetLayer()->SetShowSurface(
@@ -479,14 +463,20 @@ void DelegatedFrameHost::ContinueDelegatedFrameEviction(
   if (!HasSavedFrame())
     return;
 
-  // This list could incorrectly be empty. This could occur when the
-  // RenderFrameHostImpl has been disconnected from the RenderViewHostImpl,
-  // preventing the FrameTree from being traversed. This could happen during
-  // navigation involving BFCache. This should not occur with
-  // features::kEvictSubtree.
-  DCHECK(!surface_ids.empty() ||
-         !base::FeatureList::IsEnabled(features::kEvictSubtree));
+  std::vector<viz::SurfaceId> surface_ids = {
+      client_->CollectSurfaceIdsForEviction()};
+
+  // If we have a surface from before a navigation, evict it as well.
+  if (pre_navigation_local_surface_id_.is_valid()) {
+    viz::SurfaceId id(frame_sink_id_, pre_navigation_local_surface_id_);
+    surface_ids.push_back(id);
+  }
+
+  // This list could be empty if this frame is not in the frame tree (can happen
+  // during navigation, construction, destruction, or in unit tests).
   if (!surface_ids.empty()) {
+    DCHECK(!GetCurrentSurfaceId().is_valid() ||
+           base::Contains(surface_ids, GetCurrentSurfaceId()));
     DCHECK(host_frame_sink_manager_);
     host_frame_sink_manager_->EvictSurfaces(surface_ids);
   }

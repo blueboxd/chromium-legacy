@@ -20,6 +20,7 @@
 #include "chromeos/ash/components/drivefs/drivefs_session.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/drivefs/sync_status_tracker.h"
+#include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "components/account_id/account_id.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -67,11 +68,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DRIVEFS) DriveFsHost {
     virtual base::FilePath GetMyFilesPath() = 0;
     virtual std::string GetLostAndFoundDirectoryName() = 0;
     virtual bool IsVerboseLoggingEnabled() = 0;
-    virtual mojom::DriveFsDelegate::ExtensionConnectionStatus
-    ConnectToExtension(
+    virtual void ConnectToExtension(
         mojom::ExtensionConnectionParamsPtr params,
         mojo::PendingReceiver<mojom::NativeMessagingPort> port,
-        mojo::PendingRemote<mojom::NativeMessagingHost> host) = 0;
+        mojo::PendingRemote<mojom::NativeMessagingHost> host,
+        mojom::DriveFsDelegate::ConnectToExtensionCallback callback) = 0;
     virtual const std::string GetMachineRootID() = 0;
     virtual void PersistMachineRootID(const std::string& id) = 0;
   };

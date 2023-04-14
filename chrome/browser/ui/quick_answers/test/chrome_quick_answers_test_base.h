@@ -36,7 +36,6 @@ class ChromeQuickAnswersTestBase : public ChromeAshTestBase {
 
  protected:
   void CreateAndShowBasicMenu();
-  void ResetMenuParent();
 
  private:
   // Menu.

@@ -8,7 +8,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -46,8 +45,9 @@ bool WebKioskBrowserControllerBase::ShouldShowCustomTabBar() const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 ui::ImageModel WebKioskBrowserControllerBase::GetWindowAppIcon() const {
-  if (app_icon_)
+  if (app_icon_) {
     return *app_icon_;
+  }
   app_icon_ = GetFallbackAppIcon();
   return *app_icon_;
 }

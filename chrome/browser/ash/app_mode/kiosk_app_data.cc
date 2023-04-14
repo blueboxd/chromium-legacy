@@ -49,8 +49,6 @@ namespace {
 // Keys for local state data. See sample layout in KioskAppManager.
 constexpr char kKeyRequiredPlatformVersion[] = "required_platform_version";
 
-bool ignore_kiosk_app_data_load_failures_for_testing = false;
-
 // Returns true for valid kiosk app manifest.
 bool IsValidKioskAppManifest(const extensions::Manifest& manifest) {
   return manifest.FindBoolPath(extensions::manifest_keys::kKioskEnabled)
@@ -75,7 +73,6 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
             const base::FilePath& crx_file)
       : client_(client),
         crx_file_(crx_file),
-        success_(false),
         task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
@@ -167,7 +164,7 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
 
   base::WeakPtr<KioskAppData> client_;
   base::FilePath crx_file_;
-  bool success_;
+  bool success_ = false;
 
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
@@ -265,12 +262,7 @@ KioskAppData::KioskAppData(KioskAppDataDelegate* delegate,
       delegate_(delegate),
       status_(Status::kInit),
       update_url_(update_url),
-      crx_file_(cached_crx) {
-  if (ignore_kiosk_app_data_load_failures_for_testing) {
-    LOG(WARNING) << "Force KioskAppData loaded for testing.";
-    SetStatus(Status::kLoaded);
-  }
-}
+      crx_file_(cached_crx) {}
 
 KioskAppData::~KioskAppData() = default;
 
@@ -345,12 +337,6 @@ std::unique_ptr<KioskAppData> KioskAppData::CreateForTest(
 }
 
 void KioskAppData::SetStatus(Status status) {
-  if (status == Status::kError &&
-      ignore_kiosk_app_data_load_failures_for_testing) {
-    LOG(WARNING) << "Ignoring KioskAppData error for testing. Force OK.";
-    status = Status::kLoaded;
-  }
-
   if (status_ == status) {
     return;
   }
@@ -454,11 +440,6 @@ void KioskAppData::OnIconLoadDone(absl::optional<gfx::ImageSkia> icon) {
 
   icon_ = icon.value();
   SetStatus(Status::kLoaded);
-}
-
-// static
-void KioskAppData::SetIgnoreKioskAppDataLoadFailuresForTesting(bool value) {
-  ignore_kiosk_app_data_load_failures_for_testing = value;
 }
 
 void KioskAppData::OnWebstoreParseSuccess(

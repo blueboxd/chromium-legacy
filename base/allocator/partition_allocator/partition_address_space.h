@@ -26,7 +26,7 @@
 #include "build/build_config.h"
 
 // The feature is not applicable to 32-bit address space.
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
 
 namespace partition_alloc {
 
@@ -52,7 +52,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
 #if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     PA_DCHECK(!IsInBRPPool(address));
 #endif
-    pool_handle pool = 0;
+    pool_handle pool = kNullPoolHandle;
     uintptr_t base = 0;
     if (IsInRegularPool(address)) {
       pool = kRegularPoolHandle;
@@ -475,6 +475,6 @@ PA_ALWAYS_INLINE bool IsConfigurablePoolAvailable() {
 
 }  // namespace partition_alloc
 
-#endif  // PA_CONFIG(HAS_64_BITS_POINTERS)
+#endif  // BUILDFLAG(HAS_64_BIT_POINTERS)
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ADDRESS_SPACE_H_

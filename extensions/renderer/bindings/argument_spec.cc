@@ -176,14 +176,11 @@ void ArgumentSpec::InitializeType(const base::Value::Dict& dict) {
     if (const base::Value::List* enums = dict.FindList("enum")) {
       CHECK(!enums->empty());
       for (const base::Value& value : *enums) {
-        const std::string* enum_str = value.GetIfString();
-        // Enum entries come in two versions: a list of possible strings, and
+        // Enum entries come in two versions: a list of possible strings, or
         // a dictionary with a field 'name'.
-        if (!enum_str) {
-          CHECK(value.is_dict());
-          enum_str = value.FindStringKey("name");
-          CHECK(enum_str);
-        }
+        const std::string* enum_str = value.is_string()
+                                          ? &value.GetString()
+                                          : value.GetDict().FindString("name");
         enum_values_.insert(*enum_str);
       }
     }
@@ -203,7 +200,7 @@ void ArgumentSpec::InitializeType(const base::Value::Dict& dict) {
   }
 }
 
-ArgumentSpec::~ArgumentSpec() {}
+ArgumentSpec::~ArgumentSpec() = default;
 
 bool ArgumentSpec::IsCorrectType(v8::Local<v8::Value> value,
                                  const APITypeReferenceMap& refs,
@@ -766,7 +763,7 @@ bool ArgumentSpec::ParseArgumentToFunction(
       // generated types have adapted to consider functions "objects" and
       // serialize them as dictionaries.
       // TODO(devlin): It'd be awfully nice to get rid of this eccentricity.
-      *out_value = std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+      *out_value = std::make_unique<base::Value>(base::Value::Type::DICT);
     }
   }
 

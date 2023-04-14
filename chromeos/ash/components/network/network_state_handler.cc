@@ -324,39 +324,64 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
   return TECHNOLOGY_AVAILABLE;
 }
 
-void NetworkStateHandler::SetTechnologyEnabled(
+void NetworkStateHandler::SetTechnologiesEnabled(
     const NetworkTypePattern& type,
     bool enabled,
     network_handler::ErrorCallback error_callback) {
   std::vector<std::string> technologies = GetTechnologiesForType(type);
   for (const std::string& technology : technologies) {
-    if (technology == kTypeTether) {
-      if (tether_technology_state_ != TECHNOLOGY_ENABLED &&
-          tether_technology_state_ != TECHNOLOGY_AVAILABLE) {
-        NET_LOG(ERROR) << "SetTechnologyEnabled() called for the Tether "
-                       << "DeviceState, but the current state was: "
-                       << tether_technology_state_;
-        network_handler::RunErrorCallback(
-            std::move(error_callback),
-            NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable);
-        continue;
-      }
-
-      // Tether does not exist in Shill, so set |tether_technology_state_| and
-      // skip the below interactions with |shill_property_handler_|.
-      tether_technology_state_ =
-          enabled ? TECHNOLOGY_ENABLED : TECHNOLOGY_AVAILABLE;
-      continue;
-    }
-
-    if (!shill_property_handler_->IsTechnologyAvailable(technology))
-      continue;
-    NET_LOG(USER) << "SetTechnologyEnabled " << technology << ":" << enabled;
-    shill_property_handler_->SetTechnologyEnabled(technology, enabled,
-                                                  std::move(error_callback));
+    PerformSetTechnologyEnabled(technology, enabled, base::DoNothing(),
+                                std::move(error_callback));
   }
+
   // Signal Device/Technology state changed.
   NotifyDeviceListChanged();
+}
+
+void NetworkStateHandler::SetTechnologyEnabled(
+    const NetworkTypePattern& type,
+    bool enabled,
+    base::OnceClosure success_callback,
+    network_handler::ErrorCallback error_callback) {
+  std::string technology = GetTechnologyForType(type);
+  PerformSetTechnologyEnabled(technology, enabled, std::move(success_callback),
+                              std::move(error_callback));
+
+  // Signal Device/Technology state changed.
+  NotifyDeviceListChanged();
+}
+
+void NetworkStateHandler::PerformSetTechnologyEnabled(
+    const std::string& technology,
+    bool enabled,
+    base::OnceClosure success_callback,
+    network_handler::ErrorCallback error_callback) {
+  if (technology == kTypeTether) {
+    if (tether_technology_state_ != TECHNOLOGY_ENABLED &&
+        tether_technology_state_ != TECHNOLOGY_AVAILABLE) {
+      NET_LOG(ERROR) << "SetTechnologyEnabled() called for the Tether "
+                     << "DeviceState, but the current state was: "
+                     << tether_technology_state_;
+      network_handler::RunErrorCallback(
+          std::move(error_callback),
+          NetworkConnectionHandler::kErrorEnabledOrDisabledWhenNotAvailable);
+      return;
+    }
+
+    // Tether does not exist in Shill, so set |tether_technology_state_| and
+    // skip the below interactions with |shill_property_handler_|.
+    tether_technology_state_ =
+        enabled ? TECHNOLOGY_ENABLED : TECHNOLOGY_AVAILABLE;
+    return;
+  }
+
+  if (!shill_property_handler_->IsTechnologyAvailable(technology)) {
+    return;
+  }
+  NET_LOG(USER) << "SetTechnologyEnabled " << technology << ":" << enabled;
+  shill_property_handler_->SetTechnologyEnabled(technology, enabled,
+                                                std::move(error_callback),
+                                                std::move(success_callback));
 }
 
 void NetworkStateHandler::SetTetherTechnologyState(
@@ -1408,7 +1433,7 @@ void NetworkStateHandler::ProfileListChanged(const base::Value& profile_list) {
 void NetworkStateHandler::UpdateManagedStateProperties(
     ManagedState::ManagedType type,
     const std::string& path,
-    const base::Value& properties) {
+    const base::Value::Dict& properties) {
   ManagedStateList* managed_list = GetManagedList(type);
   ManagedState* managed = GetModifiableManagedState(managed_list, path);
   if (!managed) {
@@ -1425,8 +1450,9 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     UpdateNetworkStateProperties(managed->AsNetworkState(), properties);
   } else {
     // Device
-    for (const auto iter : properties.DictItems())
+    for (const auto iter : properties) {
       managed->PropertyChanged(iter.first, iter.second);
+    }
     managed->InitialPropertiesReceived(properties);
   }
   managed->set_update_requested(false);
@@ -1434,13 +1460,13 @@ void NetworkStateHandler::UpdateManagedStateProperties(
 
 void NetworkStateHandler::UpdateNetworkStateProperties(
     NetworkState* network,
-    const base::Value& properties) {
+    const base::Value::Dict& properties) {
   DCHECK(network);
   bool network_property_updated = false;
   std::string prev_connection_state = network->connection_state();
   bool metered = false;
   bool had_icccid_before_update = !network->iccid().empty();
-  for (const auto iter : properties.DictItems()) {
+  for (const auto iter : properties) {
     if (network->PropertyChanged(iter.first, iter.second))
       network_property_updated = true;
     if (iter.first == shill::kMeteredProperty)
@@ -1634,7 +1660,7 @@ void NetworkStateHandler::UpdateIPConfigProperties(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    base::Value properties) {
+    base::Value::Dict properties) {
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     NetworkState* network = GetModifiableNetworkState(path);
     if (!network)

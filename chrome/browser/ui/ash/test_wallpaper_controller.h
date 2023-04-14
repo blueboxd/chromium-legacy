@@ -35,6 +35,9 @@ class TestWallpaperController : public ash::WallpaperController {
 
   void ClearCounts();
   bool was_client_set() const { return was_client_set_; }
+  void set_can_set_user_wallpaper(bool can_set_user_wallpaper) {
+    can_set_user_wallpaper_ = can_set_user_wallpaper;
+  }
   int remove_user_wallpaper_count() const {
     return remove_user_wallpaper_count_;
   }
@@ -82,6 +85,7 @@ class TestWallpaperController : public ash::WallpaperController {
             const base::FilePath& wallpapers,
             const base::FilePath& custom_wallpapers,
             const base::FilePath& device_policy_wallpaper) override;
+  bool CanSetUserWallpaper(const AccountId& account_id) const override;
   void SetCustomWallpaper(const AccountId& account_id,
                           const base::FilePath& file_path,
                           ash::WallpaperLayout layout,
@@ -108,6 +112,7 @@ class TestWallpaperController : public ash::WallpaperController {
   bool GetDailyGooglePhotosWallpaperIdCache(
       const AccountId& account_id,
       DailyGooglePhotosIdCache& ids_out) const override;
+  void SetCurrentUser(const AccountId& account_id);
   void SetDefaultWallpaper(const AccountId& account_id,
                            bool show_wallpaper,
                            SetWallpaperCallback callback) override;
@@ -121,6 +126,8 @@ class TestWallpaperController : public ash::WallpaperController {
                           const std::string& data) override;
   void SetDevicePolicyWallpaperPath(
       const base::FilePath& device_policy_wallpaper_path) override;
+  // Call `SetCurrentUser` with the account_id before calling
+  // SetThirdPartyWallpaper, or else it will fail.
   bool SetThirdPartyWallpaper(const AccountId& account_id,
                               const std::string& file_name,
                               ash::WallpaperLayout layout,
@@ -136,7 +143,8 @@ class TestWallpaperController : public ash::WallpaperController {
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path) override;
   void RemoveAlwaysOnTopWallpaper() override;
-  void RemoveUserWallpaper(const AccountId& account_id) override;
+  void RemoveUserWallpaper(const AccountId& account_id,
+                           base::OnceClosure on_removed) override;
   void RemovePolicyWallpaper(const AccountId& account_id) override;
   void SetAnimationDuration(base::TimeDelta animation_duration) override;
   void OpenWallpaperPickerIfAllowed() override;
@@ -161,6 +169,7 @@ class TestWallpaperController : public ash::WallpaperController {
 
  private:
   bool was_client_set_ = false;
+  bool can_set_user_wallpaper_ = true;
   int remove_user_wallpaper_count_ = 0;
   int set_default_wallpaper_count_ = 0;
   int set_custom_wallpaper_count_ = 0;
@@ -176,6 +185,7 @@ class TestWallpaperController : public ash::WallpaperController {
 
   base::ObserverList<ash::WallpaperControllerObserver>::Unchecked observers_;
 
+  AccountId current_account_id;
   gfx::ImageSkia current_wallpaper;
 };
 

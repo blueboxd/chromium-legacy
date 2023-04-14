@@ -711,11 +711,11 @@ void StyleEngine::SetRuleUsageTracker(StyleRuleUsageTracker* tracker) {
   }
 }
 
-void StyleEngine::ComputeFont(Element& element,
-                              ComputedStyle* font_style,
+Font StyleEngine::ComputeFont(Element& element,
+                              const ComputedStyle& font_style,
                               const CSSPropertyValueSet& font_properties) {
   UpdateActiveStyle();
-  GetStyleResolver().ComputeFont(element, font_style, font_properties);
+  return GetStyleResolver().ComputeFont(element, font_style, font_properties);
 }
 
 RuleSet* StyleEngine::RuleSetForSheet(CSSStyleSheet& sheet) {
@@ -945,11 +945,7 @@ CSSStyleSheet* StyleEngine::ParseSheet(
   style_sheet = CSSStyleSheet::CreateInline(element, NullURL(), start_position,
                                             GetDocument().Encoding());
   style_sheet->Contents()->SetRenderBlocking(render_blocking_behavior);
-  std::unique_ptr<CachedCSSTokenizer> tokenizer;
-  if (auto* parser = GetDocument().GetScriptableDocumentParser()) {
-    tokenizer = parser->TakeCSSTokenizer(text);
-  }
-  style_sheet->Contents()->ParseString(text, true, std::move(tokenizer));
+  style_sheet->Contents()->ParseString(text);
   return style_sheet;
 }
 
@@ -1217,9 +1213,7 @@ void StyleEngine::InvalidateElementAffectedByHas(
         StyleChangeReasonForTracing::Create(
             blink::style_change_reason::kStyleInvalidator));
 
-    if (GetRuleFeatureSet().UsesHasInsideNth()) {
-      PossiblyScheduleNthPseudoInvalidations(element);
-    }
+    PossiblyScheduleNthPseudoInvalidations(element);
   }
 
   if (element.AffectedByNonSubjectHas()) {
@@ -1609,10 +1603,8 @@ void StyleEngine::PseudoStateChangedForElement(
     Element& element,
     bool invalidate_descendants_or_siblings,
     bool invalidate_ancestors_or_siblings) {
-  if (!invalidate_descendants_or_siblings &&
-      !invalidate_ancestors_or_siblings) {
-    return;
-  }
+  DCHECK(invalidate_descendants_or_siblings ||
+         invalidate_ancestors_or_siblings);
 
   if (ShouldSkipInvalidationFor(element)) {
     return;
@@ -3702,7 +3694,8 @@ void StyleEngine::UpdateViewportStyle() {
     return;
   }
 
-  scoped_refptr<ComputedStyle> viewport_style = resolver_->StyleForViewport();
+  scoped_refptr<const ComputedStyle> viewport_style =
+      resolver_->StyleForViewport();
   if (ComputedStyle::ComputeDifference(
           viewport_style.get(), GetDocument().GetLayoutView()->Style()) !=
       ComputedStyle::Difference::kEqual) {

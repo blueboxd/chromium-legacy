@@ -20,6 +20,8 @@ namespace ash {
 // Label ID's.
 constexpr int kSummaryLabelID = 100;
 constexpr int kTimeLabelID = 101;
+constexpr int kEventListItemDotID = 102;
+constexpr int kJoinButtonID = 103;
 
 class CalendarViewController;
 
@@ -40,7 +42,12 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
       google_apis::calendar::CalendarEvent event,
       const bool round_top_corners,
       const bool round_bottom_corners,
-      const int max_width = 0);
+      // Show the calendar indicator dots which show the event colors. If
+      // false this piece of UI is not added to the view hierarchy.
+      const bool show_event_list_dot,
+      // Used in `Label::SizeToFit()` to fix the width of this view.  If 0, no
+      // fixed width is enforced.
+      const int fixed_width = 0);
   CalendarEventListItemViewJelly(const CalendarEventListItemViewJelly& other) =
       delete;
   CalendarEventListItemViewJelly& operator=(
@@ -53,6 +60,8 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
   // ActionableView:
   bool PerformAction(const ui::Event& event) override;
 
+  void OnJoinMeetingButtonPressed(const ui::Event& event);
+
  private:
   friend class CalendarViewEventListViewTest;
 
@@ -63,6 +72,10 @@ class ASH_EXPORT CalendarEventListItemViewJelly : public ActionableView {
 
   // The URL for the meeting event.
   const GURL event_url_;
+
+  const std::string hangout_link_;
+
+  base::WeakPtrFactory<CalendarEventListItemViewJelly> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

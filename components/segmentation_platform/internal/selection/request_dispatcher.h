@@ -11,6 +11,7 @@
 
 #include "base/containers/circular_deque.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/scoped_refptr.h"
 #include "components/segmentation_platform/internal/selection/cached_result_provider.h"
 #include "components/segmentation_platform/internal/selection/request_handler.h"
@@ -61,14 +62,13 @@ class RequestDispatcher {
 
  private:
   // Configs for all registered clients.
-  const std::vector<std::unique_ptr<Config>>& configs_;
+  const raw_ref<const std::vector<std::unique_ptr<Config>>> configs_;
 
   // Request handlers associated with the clients.
   std::map<std::string, std::unique_ptr<RequestHandler>> request_handlers_;
 
   // Delegate to provide cached results for all clients, shared among clients.
-  const raw_ptr<CachedResultProvider, DanglingUntriaged>
-      cached_result_provider_;
+  const raw_ptr<CachedResultProvider> cached_result_provider_;
 
   // Storage initialization status.
   absl::optional<bool> storage_init_status_;

@@ -941,6 +941,7 @@ void PrefetchProxyTabHelper::StartSinglePrefetch() {
 void PrefetchProxyTabHelper::OnPrefetchRedirect(
     network::SimpleURLLoader* loader,
     const GURL& original_url,
+    const GURL& url_before_redirect,
     const net::RedirectInfo& redirect_info,
     const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* removed_headers) {
@@ -1585,7 +1586,7 @@ void PrefetchProxyTabHelper::CheckEligibilityOfURL(
   // constructed with the top-level site to ensure correct partitioning.
   bool site_has_service_worker =
       service_worker_context_->MaybeHasRegistrationForStorageKey(
-          blink::StorageKey(url::Origin::Create(url)));
+          blink::StorageKey::CreateFirstParty(url::Origin::Create(url)));
   if (site_has_service_worker) {
     std::move(result_callback)
         .Run(url, false,

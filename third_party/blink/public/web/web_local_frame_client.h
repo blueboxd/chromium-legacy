@@ -74,7 +74,6 @@
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_url_error.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -102,6 +101,10 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace blink {
 namespace mojom {
 enum class TreeScopeType;
@@ -128,6 +131,7 @@ class WebServiceWorkerProvider;
 class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
+class URLLoader;
 class WebURLRequest;
 class WebURLResponse;
 class WebView;
@@ -665,8 +669,12 @@ class BLINK_EXPORT WebLocalFrameClient {
 
   // Loading --------------------------------------------------------------
 
-  virtual std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() {
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() {
     NOTREACHED();
+    return nullptr;
+  }
+
+  virtual std::unique_ptr<URLLoader> CreateURLLoaderForTesting() {
     return nullptr;
   }
 

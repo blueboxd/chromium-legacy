@@ -29,18 +29,19 @@ BackgroundBridge.Braille = {
         BridgeConstants.Braille.TARGET,
         BridgeConstants.Braille.Action.BACK_TRANSLATE, cells);
   },
-};
 
-BackgroundBridge.BrailleBackground = {
-  /**
-   * @param {string} brailleTable The table for this translator to use.
-   * @return {!Promise<boolean>}
-   */
-  async refreshBrailleTable(brailleTable) {
+  /** @return {!Promise} */
+  async panLeft() {
     return BridgeHelper.sendMessage(
-        BridgeConstants.BrailleBackground.TARGET,
-        BridgeConstants.BrailleBackground.Action.REFRESH_BRAILLE_TABLE,
-        brailleTable);
+        BridgeConstants.Braille.TARGET,
+        BridgeConstants.Braille.Action.PAN_LEFT);
+  },
+
+  /** @return {!Promise} */
+  async panRight() {
+    return BridgeHelper.sendMessage(
+        BridgeConstants.Braille.TARGET,
+        BridgeConstants.Braille.Action.PAN_RIGHT);
   },
 
   /**
@@ -49,8 +50,8 @@ BackgroundBridge.BrailleBackground = {
    */
   async write(text) {
     return BridgeHelper.sendMessage(
-        BridgeConstants.BrailleBackground.TARGET,
-        BridgeConstants.BrailleBackground.Action.WRITE, text);
+        BridgeConstants.Braille.TARGET, BridgeConstants.Braille.Action.WRITE,
+        text);
   },
 };
 
@@ -360,8 +361,7 @@ BackgroundBridge.TtsBackground = {
   },
 
   /**
-   * Method that updates the punctuation echo level, and also persists setting
-   * to local storage.
+   * Method that updates the punctuation echo level, and also persists setting.
    * @param {number} punctuationEcho The index of the desired punctuation echo
    *     level in PunctuationEchoes.
    * @return {!Promise}

@@ -1595,6 +1595,75 @@ Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
           PrimaryMainFrameRendererProcessKilled;
     case PrerenderFinalStatus::kActivationFramePolicyNotCompatible:
       return Page::PrerenderFinalStatusEnum::ActivationFramePolicyNotCompatible;
+    case PrerenderFinalStatus::kPreloadingDisabled:
+      return Page::PrerenderFinalStatusEnum::PreloadingDisabled;
+    case PrerenderFinalStatus::kBatterySaverEnabled:
+      return Page::PrerenderFinalStatusEnum::BatterySaverEnabled;
+    case PrerenderFinalStatus::kActivatedDuringMainFrameNavigation:
+      return Page::PrerenderFinalStatusEnum::ActivatedDuringMainFrameNavigation;
+    case PrerenderFinalStatus::kPreloadingUnsupportedByWebContents:
+      return Page::PrerenderFinalStatusEnum::PreloadingUnsupportedByWebContents;
+  }
+}
+
+Page::PreloadingStatus PreloadingTriggeringOutcomeToProtocol(
+    PreloadingTriggeringOutcome feature) {
+  switch (feature) {
+    case PreloadingTriggeringOutcome::kRunning:
+      return Page::PreloadingStatusEnum::Running;
+    case PreloadingTriggeringOutcome::kReady:
+      return Page::PreloadingStatusEnum::Ready;
+    case PreloadingTriggeringOutcome::kSuccess:
+      return Page::PreloadingStatusEnum::Success;
+    case PreloadingTriggeringOutcome::kFailure:
+      return Page::PreloadingStatusEnum::Failure;
+    case PreloadingTriggeringOutcome::kTriggeredButPending:
+      return Page::PreloadingStatusEnum::Pending;
+    case PreloadingTriggeringOutcome::kUnspecified:
+    case PreloadingTriggeringOutcome::kDuplicate:
+    case PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown:
+    case PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender:
+      return Page::PreloadingStatusEnum::NotSupported;
+  }
+}
+
+bool PreloadingTriggeringOutcomeSupportedByPrefetch(
+    PreloadingTriggeringOutcome feature) {
+  // TODO(crbug/1384419): revisit the unsupported cases call sites to make sure
+  // that either they are covered by other CDPs or they are included by the
+  // current CDPs in the future.
+  switch (feature) {
+    case PreloadingTriggeringOutcome::kRunning:
+    case PreloadingTriggeringOutcome::kReady:
+    case PreloadingTriggeringOutcome::kSuccess:
+    case PreloadingTriggeringOutcome::kFailure:
+      return true;
+    case PreloadingTriggeringOutcome::kTriggeredButPending:
+    case PreloadingTriggeringOutcome::kUnspecified:
+    case PreloadingTriggeringOutcome::kDuplicate:
+    case PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown:
+    case PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender:
+      return false;
+  }
+}
+
+bool PreloadingTriggeringOutcomeSupportedByPrerender(
+    PreloadingTriggeringOutcome feature) {
+  // TODO(crbug/1384419): revisit the unsupported cases call sites to make sure
+  // that either they are covered by other CDPs or they are included by the
+  // current CDPs in the future.
+  switch (feature) {
+    case PreloadingTriggeringOutcome::kRunning:
+    case PreloadingTriggeringOutcome::kReady:
+    case PreloadingTriggeringOutcome::kSuccess:
+    case PreloadingTriggeringOutcome::kFailure:
+    case PreloadingTriggeringOutcome::kTriggeredButPending:
+      return true;
+    case PreloadingTriggeringOutcome::kUnspecified:
+    case PreloadingTriggeringOutcome::kDuplicate:
+    case PreloadingTriggeringOutcome::kTriggeredButOutcomeUnknown:
+    case PreloadingTriggeringOutcome::kTriggeredButUpgradedToPrerender:
+      return false;
   }
 }
 
@@ -2082,6 +2151,36 @@ void PageHandler::DidCancelPrerender(const GURL& prerendering_url,
                                        prerendering_url.spec(),
                                        PrerenderFinalStatusToProtocol(status),
                                        std::move(opt_disallowed_api_method));
+}
+
+void PageHandler::DidUpdatePrefetchStatus(
+    const std::string& initiating_frame_id,
+    const GURL& prefetch_url,
+    PreloadingTriggeringOutcome status) {
+  if (!enabled_) {
+    return;
+  }
+
+  if (PreloadingTriggeringOutcomeSupportedByPrefetch(status)) {
+    frontend_->PrefetchStatusUpdated(
+        initiating_frame_id, prefetch_url.spec(),
+        PreloadingTriggeringOutcomeToProtocol(status));
+  }
+}
+
+void PageHandler::DidUpdatePrerenderStatus(
+    const std::string& initiating_frame_id,
+    const GURL& prerender_url,
+    PreloadingTriggeringOutcome status) {
+  if (!enabled_) {
+    return;
+  }
+
+  if (PreloadingTriggeringOutcomeSupportedByPrerender(status)) {
+    frontend_->PrerenderStatusUpdated(
+        initiating_frame_id, prerender_url.spec(),
+        PreloadingTriggeringOutcomeToProtocol(status));
+  }
 }
 
 bool PageHandler::ShouldBypassCSP() {

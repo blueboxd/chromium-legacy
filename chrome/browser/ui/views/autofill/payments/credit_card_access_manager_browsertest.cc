@@ -30,10 +30,7 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -42,7 +39,7 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
    private:
     TestAutofillManagerWaiter forms_seen_waiter_{
         *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+        {AutofillManagerEvent::kFormsSeen}};
   };
 
   void SetUpOnMainThread() override {
@@ -54,15 +51,10 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
     // Wait for Personal Data Manager to be fully loaded to prevent that
     // spurious notifications deceive the tests.
     WaitForPersonalDataManagerToBeLoaded(browser()->profile());
-
-    autofill_manager_injector_ =
-        std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
-            web_contents());
   }
 
   TestAutofillManager* GetAutofillManager() {
-    DCHECK(autofill_manager_injector_);
-    return autofill_manager_injector_->GetForPrimaryMainFrame();
+    return autofill_manager_injector_[web_contents()];
   }
 
   content::WebContents* web_contents() {
@@ -94,8 +86,7 @@ class CreditCardAccessManagerBrowserTest : public InProcessBrowserTest {
   }
 
  private:
-  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
-      autofill_manager_injector_;
+  TestAutofillManagerInjector<TestAutofillManager> autofill_manager_injector_;
 };
 
 IN_PROC_BROWSER_TEST_F(CreditCardAccessManagerBrowserTest,

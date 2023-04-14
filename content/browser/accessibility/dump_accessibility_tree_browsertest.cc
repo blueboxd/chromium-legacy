@@ -650,6 +650,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaControls) {
   RunAriaTest(FILE_PATH_LITERAL("aria-controls.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaControlsManyParagraphsBetween) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-controls-many-paragraphs-between.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaCurrent) {
   RunAriaTest(FILE_PATH_LITERAL("aria-current.html"));
 }
@@ -793,6 +798,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAriaHiddenDescribedBy) {
   RunAriaTest(FILE_PATH_LITERAL("aria-hidden-described-by.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaHiddenFocusCorrections) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-hidden-focus-corrections.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -1494,6 +1504,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityArticle) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAside) {
   RunHtmlTest(FILE_PATH_LITERAL("aside.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAsideInsideOtherSection) {
+  RunHtmlTest(FILE_PATH_LITERAL("aside-inside-other-section.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAsideInsideSectionRoleGeneric) {
+  RunHtmlTest(FILE_PATH_LITERAL("aside-inside-section-role-generic.html"));
 }
 
 // https://crbug.com/923993

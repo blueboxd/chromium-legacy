@@ -16,6 +16,7 @@ namespace switches {
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableOverscrollEdgeEffect[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDisablePullToRefreshEffect[];
+COMPONENT_EXPORT(UI_BASE) extern const char kUseToastManager[];
 #endif
 
 #if BUILDFLAG(IS_MAC)
@@ -29,6 +30,7 @@ COMPONENT_EXPORT(UI_BASE) extern const char kEnableResourcesFileSharing[];
 
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableCompositedAntialiasing[];
 COMPONENT_EXPORT(UI_BASE) extern const char kDisableTouchDragDrop[];
+COMPONENT_EXPORT(UI_BASE) extern const char kDRMVirtualConnectorIsExternal[];
 COMPONENT_EXPORT(UI_BASE) extern const char kEnableTouchDragDrop[];
 COMPONENT_EXPORT(UI_BASE) extern const char kForceCaptionStyle[];
 COMPONENT_EXPORT(UI_BASE) extern const char kForceDarkMode[];

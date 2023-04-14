@@ -57,13 +57,6 @@ public abstract class WebContentsObserver {
     public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {}
 
     /**
-     * TODO(crbug.com/1351884) Remove when NotifyJavaSpuriouslyToMeasurePerf experiment is finished.
-     * No-op, for measuring performance of calling didStartNavigation in only the primary main
-     * frame vs calling it in all frames.
-     */
-    public void didStartNavigationNoop(NavigationHandle navigationHandle) {}
-
-    /**
      * Called when the browser process redirect a navigation.
      * @param navigationHandle
      *        NavigationHandle are proided to several WebContentsObserver methods to allow
@@ -81,13 +74,6 @@ public abstract class WebContentsObserver {
      *        NavigationHandle at the end of this function.
      */
     public void didFinishNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {}
-
-    /**
-     * TODO(crbug.com/1351884) Remove when NotifyJavaSpuriouslyToMeasurePerf experiment is finished.
-     * No-op, for measuring performance of calling didFinishNavigation in only the primary main
-     * frame vs calling it in all frames.
-     */
-    public void didFinishNavigationNoop(NavigationHandle navigationHandle) {}
 
     /**
      * Called when the a page starts loading.
@@ -163,27 +149,12 @@ public abstract class WebContentsObserver {
             boolean isKnownValid, @LifecycleState int rfhLifecycleState) {}
 
     /**
-     * TODO(crbug.com/1351884) Remove when NotifyJavaSpuriouslyToMeasurePerf experiment is finished.
-     * No-op, for measuring performance of calling didFinishLoad in only the primary main frame.
-     */
-    public void didFinishLoadNoop(GlobalRenderFrameHostId rfhId, GURL url, boolean isKnownValid,
-            boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {}
-
-    /**
      * Notifies that the document has finished loading for the primary main frame.
      * @param rfhId Identifier of the navigating frame.
      * @param rfhLifecycleState The lifecycle state of the associated frame.
      */
     public void documentLoadedInPrimaryMainFrame(
             GlobalRenderFrameHostId rfhId, @LifecycleState int rfhLifecycleState) {}
-
-    /**
-     * TODO(crbug.com/1351884) Remove when NotifyJavaSupriouslyToMeasurePerf experiment is finished.
-     * No-op, for measuring performance of calling documentLoadedInFrame in only the primary main
-     * frame vs calling it in all frames.
-     */
-    public void documentLoadedInFrameNoop(GlobalRenderFrameHostId rfhId,
-            boolean isInPrimaryMainFrame, @LifecycleState int rfhLifecycleState) {}
 
     /**
      * Notifies that a navigation entry has been committed.

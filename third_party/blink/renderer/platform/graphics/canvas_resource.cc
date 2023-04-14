@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -452,8 +453,9 @@ CanvasResourceRasterSharedImage::CanvasResourceRasterSharedImage(
         surface_origin, surface_alpha_type, shared_image_usage_flags);
   } else {
     shared_image_mailbox = shared_image_interface->CreateSharedImage(
-        GetResourceFormat(), Size(), GetColorSpace(), surface_origin,
-        surface_alpha_type, shared_image_usage_flags, gpu::kNullSurfaceHandle);
+        viz::SharedImageFormat::SinglePlane(GetResourceFormat()), Size(),
+        GetColorSpace(), surface_origin, surface_alpha_type,
+        shared_image_usage_flags, gpu::kNullSurfaceHandle);
   }
 
   // Wait for the mailbox to be ready to be used.
@@ -1046,10 +1048,10 @@ void CanvasResourceSwapChain::PresentSwapChain() {
   // front buffer contains the content we just rendered, and it needs to be
   // copied into the back buffer to support a retained mode like canvas expects.
   // The wait sync token ensure that the present executes before we do the copy.
-  raster_interface->CopySubTexture(front_buffer_mailbox_, back_buffer_mailbox_,
-                                   GL_TEXTURE_2D, 0, 0, 0, 0, size_.width(),
-                                   size_.height(), false /* unpack_flip_y */,
-                                   false /* unpack_premultiply_alpha */);
+  raster_interface->CopySharedImage(front_buffer_mailbox_, back_buffer_mailbox_,
+                                    GL_TEXTURE_2D, 0, 0, 0, 0, size_.width(),
+                                    size_.height(), false /* unpack_flip_y */,
+                                    false /* unpack_premultiply_alpha */);
   // Don't generate sync token here so that the copy is not on critical path.
 }
 

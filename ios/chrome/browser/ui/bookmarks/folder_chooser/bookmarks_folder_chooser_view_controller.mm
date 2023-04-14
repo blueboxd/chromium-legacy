@@ -8,6 +8,7 @@
 #import <vector>
 
 #import "base/check.h"
+#import "base/containers/contains.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
@@ -15,8 +16,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_ui_constants.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_folder_item.h"
-#import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_view_controller.h"
-#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
+#import "ios/chrome/browser/ui/bookmarks/folder_chooser/bookmarks_folder_chooser_view_controller_presentation_delegate.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/table_view/table_view_utils.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -50,11 +50,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 using bookmarks::BookmarkNode;
 
-@interface BookmarksFolderChooserViewController () <
-    BookmarksFolderEditorViewControllerDelegate,
-    BookmarkModelBridgeObserver,
-    UITableViewDataSource,
-    UITableViewDelegate> {
+@interface BookmarksFolderChooserViewController () <BookmarkModelBridgeObserver,
+                                                    UITableViewDataSource,
+                                                    UITableViewDelegate> {
   std::set<const BookmarkNode*> _editedNodes;
   std::vector<const BookmarkNode*> _folders;
   std::unique_ptr<BookmarkModelBridge> _modelBridge;
@@ -71,10 +69,6 @@ using bookmarks::BookmarkNode;
 
 // The currently selected folder.
 @property(nonatomic, readonly) const BookmarkNode* selectedFolder;
-
-// The view controller to present when creating a new folder.
-@property(nonatomic, strong)
-    BookmarksFolderEditorViewController* folderAddController;
 
 // A linear list of folders.
 @property(nonatomic, assign, readonly)
@@ -105,7 +99,6 @@ using bookmarks::BookmarkNode;
 @synthesize allowsNewFolders = _allowsNewFolders;
 @synthesize bookmarkModel = _bookmarkModel;
 @synthesize editedNodes = _editedNodes;
-@synthesize folderAddController = _folderAddController;
 @synthesize delegate = _delegate;
 @synthesize folders = _folders;
 @synthesize selectedFolder = _selectedFolder;
@@ -145,8 +138,11 @@ using bookmarks::BookmarkNode;
   [self reloadModel];
 }
 
-- (void)dealloc {
-  _folderAddController.delegate = nil;
+- (void)notifyFolderNodeAdded:(const BookmarkNode*)folder {
+  DCHECK(folder);
+  [self reloadModel];
+  [self changeSelectedFolder:folder];
+  [self delayedNotifyDelegateOfSelection];
 }
 
 #pragma mark - View lifecycle
@@ -184,16 +180,10 @@ using bookmarks::BookmarkNode;
   [self reloadModel];
 }
 
-#pragma mark - Presentation controller integration
-
-- (BOOL)shouldBeDismissedOnTouchOutside {
-  return NO;
-}
-
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self.delegate folderPickerDidCancel:self];
+  [self.delegate bookmarksFolderChooserViewControllerDidCancel:self];
   return YES;
 }
 
@@ -268,40 +258,6 @@ using bookmarks::BookmarkNode;
   }
 }
 
-#pragma mark - BookmarksFolderEditorViewControllerDelegate
-
-- (void)bookmarkFolderEditor:(BookmarksFolderEditorViewController*)folderEditor
-      didFinishEditingFolder:(const BookmarkNode*)folder {
-  DCHECK(folder);
-  [self reloadModel];
-  [self changeSelectedFolder:folder];
-  [self delayedNotifyDelegateOfSelection];
-}
-
-- (void)bookmarkFolderEditorDidDeleteEditedFolder:
-    (BookmarksFolderEditorViewController*)folderEditor {
-  NOTREACHED();
-}
-
-- (void)bookmarkFolderEditorDidCancel:
-    (BookmarksFolderEditorViewController*)folderEditor {
-  [self.navigationController popViewControllerAnimated:YES];
-  self.folderAddController.delegate = nil;
-  self.folderAddController = nil;
-}
-
-- (void)bookmarkFolderEditorWillCommitTitleChange:
-    (BookmarksFolderEditorViewController*)controller {
-  // Do nothing.
-}
-
-#pragma mark - UIAdaptivePresentationControllerDelegate
-
-- (void)presentationControllerDidDismiss:
-    (UIPresentationController*)presentationController {
-  [self.delegate folderPickerDidDismiss:self];
-}
-
 #pragma mark - BookmarkModelBridgeObserver
 
 - (void)bookmarkModelLoaded {
@@ -332,11 +288,11 @@ using bookmarks::BookmarkNode;
                  fromFolder:(const BookmarkNode*)folder {
   // Remove node from editedNodes if it is already deleted (possibly remotely by
   // another sync device).
-  if (self.editedNodes.find(bookmarkNode) != self.editedNodes.end()) {
-    self.editedNodes.erase(bookmarkNode);
+  if (base::Contains(_editedNodes, bookmarkNode)) {
+    _editedNodes.erase(bookmarkNode);
     // if editedNodes becomes empty, nothing to move.  Exit the folder picker.
-    if (self.editedNodes.empty()) {
-      [self.delegate folderPickerDidCancel:self];
+    if (_editedNodes.empty()) {
+      [self.delegate bookmarksFolderChooserViewControllerDidCancel:self];
     }
     // Exit here because nodes in editedNodes cannot be any visible folders in
     // folder picker.
@@ -365,11 +321,12 @@ using bookmarks::BookmarkNode;
 #pragma mark - Actions
 
 - (void)done:(id)sender {
-  [self.delegate folderPicker:self didFinishWithFolder:self.selectedFolder];
+  [self.delegate bookmarksFolderChooserViewController:self
+                                  didFinishWithFolder:self.selectedFolder];
 }
 
 - (void)cancel:(id)sender {
-  [self.delegate folderPickerDidCancel:self];
+  [self.delegate bookmarksFolderChooserViewControllerDidCancel:self];
 }
 
 #pragma mark - Private
@@ -435,15 +392,7 @@ using bookmarks::BookmarkNode;
 
 - (void)pushFolderAddViewController {
   DCHECK(self.allowsNewFolders);
-  BookmarksFolderEditorViewController* folderCreator =
-      [BookmarksFolderEditorViewController
-          folderCreatorWithBookmarkModel:self.bookmarkModel
-                            parentFolder:self.selectedFolder
-                                 browser:self.browser];
-  folderCreator.delegate = self;
-  folderCreator.snackbarCommandsHandler = self.snackbarCommandsHandler;
-  [self.navigationController pushViewController:folderCreator animated:YES];
-  self.folderAddController = folderCreator;
+  [self.delegate showBookmarksFolderEditor];
 }
 
 - (void)delayedNotifyDelegateOfSelection {
@@ -460,6 +409,12 @@ using bookmarks::BookmarkNode;
         strongSelf.view.userInteractionEnabled = YES;
         [strongSelf done:nil];
       });
+}
+
+#pragma mark - Properties
+
+- (const std::set<const bookmarks::BookmarkNode*>&)editedNodes {
+  return _editedNodes;
 }
 
 @end

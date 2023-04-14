@@ -22,7 +22,7 @@ if (current_cpu == "mipsel" || current_cpu == "mips64el") {
   import("//build/config/mips.gni")
 }
 
-skia_support_gpu = !is_ios
+skia_support_gpu = use_blink
 skia_support_pdf = !is_ios && enable_printing
 
 buildflag_header("buildflags") {
@@ -48,7 +48,7 @@ config("skia_config") {
 
   include_dirs = [ "//third_party/skia" ]
 
-  if (!is_ios) {
+  if (use_blink) {
     include_dirs += [ "//third_party/wuffs/src/release/c" ]
   }
   if (enable_vulkan) {
@@ -61,7 +61,7 @@ config("skia_config") {
     defines += [ "SK_GL" ]
   }
 
-  if (!is_ios) {
+  if (use_blink) {
     defines += [
       "SK_CODEC_DECODES_JPEG",
       "SK_ENCODE_JPEG",
@@ -107,6 +107,12 @@ config("skia_config") {
       "SK_METAL",
     ]
   }
+  if (is_ios) {
+    defines += [
+      "SK_BUILD_FOR_IOS",
+      "SK_METAL",
+    ]
+  }
 
   if (is_win) {
     defines += [ "GR_GL_FUNCTION_TYPE=__stdcall" ]
@@ -121,12 +127,7 @@ config("skia_library_config") {
     "SKIA_IMPLEMENTATION=1",
   ]
 
-  # Skia uses C++17 language features in its internal code. Previously Skia was built with
-  # "-std=c++17". See http://crbug.com/1257145 for why this was a bad idea.
-  cflags_cc = [ "-Wno-c++17-extensions" ]
-  cflags_objcc = [ "-Wno-c++17-extensions" ]
-
-  if (!is_ios && !use_system_freetype) {
+  if (use_blink && !use_system_freetype) {
     defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
   }
 
@@ -278,7 +279,7 @@ component("skia") {
     ]
   }
 
-  if (!is_ios) {
+  if (use_blink) {
     public += [ "ext/platform_canvas.h" ]
     sources += [ "ext/platform_canvas.cc" ]
   }
@@ -313,40 +314,42 @@ component("skia") {
   public += skia_effects_public
   public += skia_effects_imagefilter_public
   public += skia_utils_chromium
+  public += skia_discardable_memory_chromium
 
   # The imported Skia gni source paths are made absolute by gn.
   defines = []
   sources += skia_sksl_sources
   sources += skia_utils_private
   sources += skia_xps_sources
+  sources += skia_encode_srcs
+  sources += skia_encode_png_srcs
+  sources += skia_encode_webp_srcs
   sources += [
     "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
     "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
-    "//third_party/skia/src/images/SkImageEncoder.cpp",
-    "//third_party/skia/src/images/SkPngEncoder.cpp",
-    "//third_party/skia/src/images/SkWebpEncoder.cpp",
     "//third_party/skia/src/ports/SkGlobalInitialization_default.cpp",
     "//third_party/skia/src/ports/SkImageGenerator_none.cpp",
     "//third_party/skia/src/ports/SkOSFile_stdio.cpp",
     "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
   ]
-  if (!is_ios) {
+  if (use_blink) {
     sources -= [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
     sources += skia_codec_core
     sources += skia_codec_decode_bmp
+    sources += skia_encode_jpeg_srcs
     sources += [
       "//third_party/skia/src/codec/SkEncodedInfo.cpp",
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
       "//third_party/skia/src/codec/SkJpegDecoderMgr.cpp",
+      "//third_party/skia/src/codec/SkJpegSegmentScan.cpp",
+      "//third_party/skia/src/codec/SkJpegSourceMgr.cpp",
       "//third_party/skia/src/codec/SkJpegUtility.cpp",
       "//third_party/skia/src/codec/SkParseEncodedOrigin.cpp",
       "//third_party/skia/src/codec/SkPngCodec.cpp",
       "//third_party/skia/src/codec/SkWebpCodec.cpp",
       "//third_party/skia/src/codec/SkWuffsCodec.cpp",
-      "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
-      "//third_party/skia/src/images/SkJpegEncoder.cpp",
       "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
     ]
     deps += [ "//third_party/wuffs" ]
@@ -370,9 +373,9 @@ component("skia") {
 
   # Select Skia ports.
 
-  # FreeType is needed everywhere (except on iOS), on Linux and Android as main
+  # FreeType is needed everywhere where blink is used, on Linux and Android as main
   # font backend, on Windows and Mac as fallback backend for Variations.
-  if (!is_ios) {
+  if (use_blink) {
     sources += [
       "//third_party/skia/src/ports/SkFontHost_FreeType.cpp",
       "//third_party/skia/src/ports/SkFontHost_FreeType_common.cpp",
@@ -423,7 +426,7 @@ component("skia") {
     ]
   }
 
-  if (is_win || is_mac) {
+  if (is_win || (is_apple && use_blink)) {
     sources += [
       # Add the FreeType custom font manager as a fallback backend for variable fonts.
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
@@ -438,9 +441,9 @@ component("skia") {
       "ext/fontmgr_default_fuchsia.cc",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts:fuchsia.fonts_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io:fuchsia.io_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys:fuchsia.sys_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/zx",
       "//third_party/icu:icuuc",
@@ -484,7 +487,7 @@ component("skia") {
     ]
   }
 
-  if (!is_ios) {
+  if (use_blink) {
     deps += [
       "//build/config/freetype",
       "//third_party:jpeg",
@@ -511,25 +514,33 @@ component("skia") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
-  if (is_mac) {
+  if (use_blink && is_apple) {
     deps += [ ":skia_metal" ]
     defines += [ "SK_METAL" ]
     sources += skia_gpu_metal_cpp
     frameworks = [
-      "AppKit.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
       "CoreText.framework",
       "Metal.framework",
       "Foundation.framework",
     ]
+    if (is_mac) {
+      frameworks += [ "AppKit.framework" ]
+    }
+    if (is_ios) {
+      frameworks += [
+        "ImageIO.framework",
+        "IOSurface.framework",
+      ]
+    }
+  } else if (is_ios) {
+    frameworks = [ "ImageIO.framework" ]
   }
+
   if (skia_use_dawn) {
     public += skia_gpu_dawn_public
     sources += skia_gpu_dawn_private
-  }
-  if (is_ios) {
-    frameworks = [ "ImageIO.framework" ]
   }
 
   if (is_fuchsia) {
@@ -614,12 +625,9 @@ template("skia_source_set") {
     }
     if (is_win) {
       cflags_cc = [
-        "/std:c++17",
         "/wd5041",  # out-of-line definition for constexpr static data member is
                     # not needed and is deprecated in C++17
       ]
-    } else {
-      cflags_cc = [ "-std=c++17" ]
     }
   }
 }
@@ -758,7 +766,7 @@ skia_source_set("skia_opts") {
 }
 
 # Split out metal sources, because they require ARC.
-if (is_mac) {
+if (use_blink && is_apple) {
   skia_source_set("skia_metal") {
     defines = [ "SK_METAL" ]
     public = skia_gpu_metal_public
@@ -831,7 +839,9 @@ source_set("test_fonts") {
       "ext/test_fonts_fuchsia.cc",
       "ext/test_fonts_fuchsia_cfv2.cc",
     ]
-    public_deps = [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts" ]
+    public_deps = [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts:fuchsia.fonts_hlcpp",
+    ]
     deps += [
       "//base",
       "//skia",
@@ -890,7 +900,9 @@ test("skia_unittests") {
 
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
-    deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts" ]
+    deps += [
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts:fuchsia.fonts_hlcpp",
+    ]
     additional_manifest_fragments =
         [ "//build/config/fuchsia/test/test_fonts.shard.test-cml" ]
   }

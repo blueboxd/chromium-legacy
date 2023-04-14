@@ -23,6 +23,8 @@
 
 namespace blink {
 
+class DOMException;
+class HistoryItem;
 class NavigationApiNavigation;
 class NavigationUpdateCurrentEntryOptions;
 class NavigationHistoryEntry;
@@ -32,8 +34,7 @@ class NavigationReloadOptions;
 class NavigationResult;
 class NavigationOptions;
 class NavigationTransition;
-class DOMException;
-class HistoryItem;
+class RegisteredEventListener;
 class SerializedScriptValue;
 
 class CORE_EXPORT NavigationApi final
@@ -132,6 +133,9 @@ class CORE_EXPORT NavigationApi final
   ExecutionContext* GetExecutionContext() const final {
     return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
+  void AddedEventListener(const AtomicString&, RegisteredEventListener&) final;
+  void RemovedEventListener(const AtomicString&,
+                            const RegisteredEventListener&) final;
 
   void Trace(Visitor*) const final;
 
@@ -184,6 +188,8 @@ class CORE_EXPORT NavigationApi final
   Member<NavigationApiNavigation> upcoming_non_traversal_navigation_;
 
   Member<NavigateEvent> ongoing_navigate_event_;
+
+  int navigate_event_handler_count_ = 0;
 };
 
 }  // namespace blink

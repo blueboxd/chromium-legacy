@@ -25,6 +25,8 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/ambient/ambient_client.h"
+#include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/projector/projector_controller.h"
@@ -60,6 +62,8 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/screen_pinning_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_multitask_menu_event_handler.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_manager.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -484,7 +488,7 @@ bool CanShowStylusTools() {
 }
 
 bool CanStartAmbientMode() {
-  return features::IsAmbientModeEnabled();
+  return AmbientClient::Get() && AmbientClient::Get()->IsAmbientModeAllowed();
 }
 
 bool CanSwapPrimaryDisplay() {
@@ -500,21 +504,32 @@ bool CanToggleDictation() {
 }
 
 bool CanToggleFloatingWindow() {
-  if (!chromeos::wm::features::IsFloatWindowEnabled()) {
+  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     return false;
   }
   aura::Window* window = window_util::GetActiveWindow();
   return window && chromeos::wm::CanFloatWindow(window);
 }
 
+bool CanToggleGameDashboard() {
+  if (!features::IsGameDashboardEnabled()) {
+    return false;
+  }
+  aura::Window* window = window_util::GetActiveWindow();
+  return window && IsArcWindow(window);
+}
+
 bool CanToggleMultitaskMenu() {
-  if (!chromeos::wm::features::IsFloatWindowEnabled() ||
-      Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+  if (!chromeos::wm::features::IsWindowLayoutMenuEnabled()) {
     return false;
   }
   aura::Window* window = window_util::GetActiveWindow();
   if (!window) {
     return false;
+  }
+  if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    // In tablet mode, the window just has to be able to maximize.
+    return WindowState::Get(window)->CanMaximize();
   }
   // If the active window has a visible size button, the menu can be opened.
   if (auto* size_button = GetFrameSizeButton(window);
@@ -1072,6 +1087,7 @@ void ToggleAssignToAllDesk() {
   if (!active_window)
     return;
 
+  // TODO(b/267363112): Allow a floated window to be assigned to all desks.
   // Only children of the desk container should have their assigned to all
   // desks state toggled to avoid interfering with special windows like
   // always-on-top windows, floated windows, etc.
@@ -1240,7 +1256,7 @@ void ToggleDockedMagnifier() {
 }
 
 void ToggleFloating() {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = window_util::GetActiveWindow();
   DCHECK(window);
   DCHECK(chromeos::wm::CanFloatWindow(window));
@@ -1302,6 +1318,13 @@ void ToggleFullscreenMagnifier() {
   } else {
     SetFullscreenMagnifierEnabled(!current_enabled);
   }
+}
+
+void ToggleGameDashboard() {
+  DCHECK(features::IsGameDashboardEnabled());
+  aura::Window* window = window_util::GetActiveWindow();
+  DCHECK(window);
+  // TODO(phshah): Connect to the game dashboard controller.
 }
 
 void ToggleHighContrast() {
@@ -1455,9 +1478,18 @@ void ToggleMirrorMode() {
 }
 
 void ToggleMultitaskMenu() {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   aura::Window* window = window_util::GetActiveWindow();
   DCHECK(window);
+  if (auto* tablet_mode_controller = Shell::Get()->tablet_mode_controller();
+      tablet_mode_controller->InTabletMode()) {
+    auto* tablet_mode_event_handler =
+        tablet_mode_controller->tablet_mode_window_manager()
+            ->tablet_mode_multitask_menu_event_handler();
+    // Does nothing if the menu is already shown.
+    tablet_mode_event_handler->ShowMultitaskMenu(window);
+    return;
+  }
   auto* frame_view = NonClientFrameViewAsh::Get(window);
   if (!frame_view) {
     // If `window` doesn't have a frame, it must be the multitask menu and have

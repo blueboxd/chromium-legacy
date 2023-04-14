@@ -71,7 +71,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     uint8_t bio_enrollment_samples_required = 4;
     bool cred_protect_support = false;
     bool hmac_secret_support = false;
+    bool prf_support = false;
     bool large_blob_support = false;
+    // large_blob_extension_support indicates support for the single-extension
+    // form of largeBlob. This form is implemented by hybrid authenticators and
+    // is mutually exclusive with `large_blob_support`. If this value is
+    // present then the extension will be implement, but if it's present with
+    // the value false then the authenticator will report that makeCredential
+    // didn't enable a large blob.
+    absl::optional<bool> large_blob_extension_support;
     // Support for setting a min PIN length and forcing pin change.
     bool min_pin_length_support = false;
     // min_pin_length_extension_support, if true, enables support for the

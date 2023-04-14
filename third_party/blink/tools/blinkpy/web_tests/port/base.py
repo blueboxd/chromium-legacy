@@ -155,6 +155,8 @@ class Port(object):
         ('mac11-arm64', 'arm64'),
         ('mac12', 'x86_64'),
         ('mac12-arm64', 'arm64'),
+        ('mac13', 'x86_64'),
+        ('mac13-arm64', 'arm64'),
         ('win10.20h2', 'x86'),
         ('win11', 'x86_64'),
         ('trusty', 'x86_64'),
@@ -164,7 +166,7 @@ class Port(object):
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': [
             'mac10.13', 'mac10.14', 'mac10.15', 'mac11', 'mac11-arm64',
-            'mac12', 'mac12-arm64'
+            'mac12', 'mac12-arm64', 'mac13', 'mac13-arm64'
         ],
         'win': ['win10.20h2', 'win11'],
         'linux': ['trusty'],
@@ -296,6 +298,9 @@ class Port(object):
         return 'Port{name=%s, version=%s, architecture=%s, test_configuration=%s}' % (
             self._name, self._version, self._architecture,
             self._test_configuration)
+
+    def version(self):
+        return self._version
 
     def get_platform_tags(self):
         """Returns system condition tags that are used to find active expectations

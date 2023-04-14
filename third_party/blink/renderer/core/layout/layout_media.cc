@@ -32,7 +32,6 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/media_controls.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 
@@ -56,7 +55,6 @@ HTMLMediaElement* LayoutMedia::MediaElement() const {
 
 void LayoutMedia::UpdateLayout() {
   NOT_DESTROYED();
-  DeferredShapingDisallowScope disallow_deferred(*View());
   LayoutSize old_size(ContentWidth(), ContentHeight());
 
   LayoutImage::UpdateLayout();
@@ -138,10 +136,9 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   // check can be removed if ::-webkit-media-controls is made
   // internal.
   if (child->GetNode()->IsMediaControls()) {
-    // IsInline() and StyleRef() don't work at this timing.
-    if (child->IsFlexibleBoxIncludingNG() &&
-        child->GetNode()->GetComputedStyle()->IsDisplayInlineType()) {
-      UseCounter::Count(GetDocument(), WebFeature::kLayoutMediaInlineChildren);
+    if (RuntimeEnabledFeatures::LayoutMediaNoInlineChildrenEnabled()) {
+      // LayoutObject::IsInline() doesn't work at this timing.
+      DCHECK(!child->GetNode()->GetComputedStyle()->IsDisplayInlineType());
     }
     return child->IsFlexibleBoxIncludingNG();
   }
@@ -149,8 +146,10 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   if (child->GetNode()->IsTextTrackContainer() ||
       child->GetNode()->IsMediaRemotingInterstitial() ||
       child->GetNode()->IsPictureInPictureInterstitial()) {
-    if (child->GetNode()->GetComputedStyle()->IsDisplayInlineType())
-      UseCounter::Count(GetDocument(), WebFeature::kLayoutMediaInlineChildren);
+    if (RuntimeEnabledFeatures::LayoutMediaNoInlineChildrenEnabled()) {
+      // LayoutObject::IsInline() doesn't work at this timing.
+      DCHECK(!child->GetNode()->GetComputedStyle()->IsDisplayInlineType());
+    }
     return true;
   }
 

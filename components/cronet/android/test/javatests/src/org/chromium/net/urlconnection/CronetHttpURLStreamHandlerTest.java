@@ -11,8 +11,7 @@ import static org.junit.Assert.fail;
 
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -21,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.NativeTestServer;
@@ -54,7 +52,6 @@ public class CronetHttpURLStreamHandlerTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testOpenConnectionHttp() throws Exception {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =
@@ -69,7 +66,6 @@ public class CronetHttpURLStreamHandlerTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testOpenConnectionHttps() throws Exception {
         URL url = new URL("https://example.com");
         CronetHttpURLStreamHandler streamHandler =
@@ -81,7 +77,6 @@ public class CronetHttpURLStreamHandlerTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testOpenConnectionProtocolNotSupported() throws Exception {
         URL url = new URL("ftp://example.com");
         CronetHttpURLStreamHandler streamHandler =
@@ -96,7 +91,6 @@ public class CronetHttpURLStreamHandlerTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testOpenConnectionWithProxy() throws Exception {
         URL url = new URL(NativeTestServer.getEchoMethodURL());
         CronetHttpURLStreamHandler streamHandler =

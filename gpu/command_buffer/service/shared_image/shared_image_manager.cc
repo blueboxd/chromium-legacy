@@ -128,6 +128,8 @@ SharedImageManager::Register(std::unique_ptr<SharedImageBacking> backing,
     return nullptr;
   }
 
+  UMA_HISTOGRAM_ENUMERATION("GPU.SharedImage.BackingType", backing->GetType());
+
   // TODO(jonross): Determine how the direct destruction of a
   // SharedImageRepresentationFactoryRef leads to ref-counting issues as
   // well as thread-checking failures in tests.
@@ -468,7 +470,7 @@ scoped_refptr<gfx::NativePixmap> SharedImageManager::GetNativePixmap(
 }
 
 bool SharedImageManager::SupportsScanoutImages() {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   return true;
 #elif BUILDFLAG(IS_ANDROID)
   return base::AndroidHardwareBufferCompat::IsSupportAvailable();

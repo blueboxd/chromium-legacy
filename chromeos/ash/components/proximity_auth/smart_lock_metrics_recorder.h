@@ -103,10 +103,6 @@ class SmartLockMetricsRecorder {
   static void RecordAuthResultUnlockFailure(
       SmartLockAuthResultFailureReason failure_reason);
 
-  static void RecordAuthResultSignInSuccess(bool success = true);
-  static void RecordAuthResultSignInFailure(
-      SmartLockAuthResultFailureReason failure_reason);
-
   static void RecordAuthMethodChoiceUnlockPasswordState(
       SmartLockAuthEventPasswordState password_state);
   static void RecordAuthMethodChoiceSignInPasswordState(

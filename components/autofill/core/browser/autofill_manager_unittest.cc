@@ -33,6 +33,26 @@ namespace autofill {
 
 namespace {
 
+class MockAutofillDownloadManager : public AutofillDownloadManager {
+ public:
+  explicit MockAutofillDownloadManager(AutofillClient* client)
+      : AutofillDownloadManager(client,
+                                /*api_key=*/"",
+                                /*is_raw_metadata_uploading_enabled=*/false,
+                                /*log_manager=*/nullptr) {}
+
+  MockAutofillDownloadManager(const MockAutofillDownloadManager&) = delete;
+  MockAutofillDownloadManager& operator=(const MockAutofillDownloadManager&) =
+      delete;
+
+  MOCK_METHOD(bool,
+              StartQueryRequest,
+              (const std::vector<FormStructure*>&,
+               net::IsolationInfo,
+               base::WeakPtr<Observer>),
+              (override));
+};
+
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() = default;
@@ -47,15 +67,19 @@ class MockAutofillDriver : public TestAutofillDriver {
   MockAutofillDriver(const MockAutofillDriver&) = delete;
   MockAutofillDriver& operator=(const MockAutofillDriver&) = delete;
   ~MockAutofillDriver() override = default;
+
+  MOCK_METHOD(void, SetShouldSuppressKeyboard, (bool), ());
+  MOCK_METHOD(bool, CanShowAutofillUi, (), (const));
+  MOCK_METHOD(void,
+              TriggerReparseInAllFrames,
+              (base::OnceCallback<void(bool)>),
+              ());
 };
 
 class MockAutofillManager : public AutofillManager {
  public:
   MockAutofillManager(AutofillDriver* driver, AutofillClient* client)
-      : AutofillManager(driver,
-                        client,
-                        client->GetChannel(),
-                        EnableDownloadManager(false)) {}
+      : AutofillManager(driver, client) {}
 
   base::WeakPtr<AutofillManager> GetWeakPtr() override {
     return weak_ptr_factory_.GetWeakPtr();
@@ -178,15 +202,25 @@ class MockAutofillObserver : public AutofillManager::Observer {
   MockAutofillObserver& operator=(const MockAutofillObserver&) = delete;
   ~MockAutofillObserver() override = default;
 
-  MOCK_METHOD(void, OnFormParsed, (), (override));
+  MOCK_METHOD(void, OnFormParsed, (AutofillManager&), (override));
 
-  MOCK_METHOD(void, OnTextFieldDidChange, (), (override));
+  MOCK_METHOD(void, OnTextFieldDidChange, (AutofillManager&), (override));
 
-  MOCK_METHOD(void, OnTextFieldDidScroll, (), (override));
+  MOCK_METHOD(void, OnTextFieldDidScroll, (AutofillManager&), (override));
 
-  MOCK_METHOD(void, OnSelectControlDidChange, (), (override));
+  MOCK_METHOD(void, OnSelectControlDidChange, (AutofillManager&), (override));
 
-  MOCK_METHOD(void, OnFormSubmitted, (), (override));
+  MOCK_METHOD(void, OnFormSubmitted, (AutofillManager&), (override));
+
+  MOCK_METHOD(void,
+              OnBeforeLoadedServerPredictions,
+              (AutofillManager&),
+              (override));
+
+  MOCK_METHOD(void,
+              OnAfterLoadedServerPredictions,
+              (AutofillManager&),
+              (override));
 };
 
 // Creates a vector of test forms which differ in their FormGlobalIds
@@ -233,12 +267,11 @@ void OnFormsSeenWithExpectations(MockAutofillManager& manager,
   size_t num =
       std::min(updated_forms.size(), kAutofillManagerMaxFormCacheSize -
                                          manager.form_structures().size());
-  EXPECT_CALL(manager, ShouldParseForms(_)).Times(1).WillOnce(Return(true));
+  EXPECT_CALL(manager, ShouldParseForms).Times(1).WillOnce(Return(true));
   EXPECT_CALL(manager, OnBeforeProcessParsedForms()).Times(num > 0);
-  EXPECT_CALL(manager, OnFormProcessed(_, _)).Times(num);
-  EXPECT_CALL(manager, OnAfterProcessParsedForms(_)).Times(num > 0);
-  TestAutofillManagerWaiter waiter(
-      manager, {&AutofillManager::Observer::OnAfterFormsSeen});
+  EXPECT_CALL(manager, OnFormProcessed).Times(num);
+  EXPECT_CALL(manager, OnAfterProcessParsedForms).Times(num > 0);
+  TestAutofillManagerWaiter waiter(manager, {AutofillManagerEvent::kFormsSeen});
   manager.OnFormsSeen(updated_forms, removed_forms);
   ASSERT_TRUE(waiter.Wait());
   EXPECT_THAT(manager.form_structures(), HaveSameFormIdsAs(expectation));
@@ -264,6 +297,15 @@ class AutofillManagerTest : public testing::Test {
     driver_.reset();
   }
 
+  void SetUpObserverAndDownloadManager(bool successful_request) {
+    auto download_manager =
+        std::make_unique<MockAutofillDownloadManager>(&client_);
+    ON_CALL(*download_manager, StartQueryRequest)
+        .WillByDefault(Return(successful_request));
+    client_.set_download_manager(std::move(download_manager));
+    manager_->AddObserver(&observer_);
+  }
+
  protected:
   base::test::ScopedFeatureList scoped_feature_list_async_parse_form_;
   base::test::TaskEnvironment task_environment_;
@@ -271,6 +313,7 @@ class AutofillManagerTest : public testing::Test {
   NiceMock<MockAutofillClient> client_;
   std::unique_ptr<MockAutofillDriver> driver_;
   std::unique_ptr<MockAutofillManager> manager_;
+  MockAutofillObserver observer_;
 };
 
 // The test parameter sets the number of forms to be generated.
@@ -284,6 +327,19 @@ class AutofillManagerTest_WithIntParam
 INSTANTIATE_TEST_SUITE_P(AutofillManagerTest,
                          AutofillManagerTest_WithIntParam,
                          testing::Values(0, 1, 5, 10, 100, 110));
+
+class AutofillManagerTest_OnLoadedServerPredictionsObserver
+    : public AutofillManagerTest {
+ public:
+  void SetUpObserverAndDownloadManager(bool successful_request) {
+    auto download_manager =
+        std::make_unique<MockAutofillDownloadManager>(&client_);
+    ON_CALL(*download_manager, StartQueryRequest)
+        .WillByDefault(Return(successful_request));
+    client_.set_download_manager(std::move(download_manager));
+    manager_->AddObserver(&observer_);
+  }
+};
 
 // Tests that the cache size is bounded by kAutofillManagerMaxFormCacheSize.
 TEST_P(AutofillManagerTest_WithIntParam, CacheBoundFormsSeen) {
@@ -336,27 +392,112 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
   // Reset the manager, the observers should stick around.
   manager_->Reset();
 
-  EXPECT_CALL(observer, OnTextFieldDidChange()).Times(1);
+  EXPECT_CALL(observer, OnTextFieldDidChange(testing::Address(manager_.get())));
   manager_->OnTextFieldDidChange(form, field, bounds, time);
-  EXPECT_CALL(observer, OnTextFieldDidChange()).Times(0);
+  EXPECT_CALL(observer, OnTextFieldDidChange).Times(0);
 
-  EXPECT_CALL(observer, OnTextFieldDidScroll()).Times(1);
+  EXPECT_CALL(observer, OnTextFieldDidScroll(testing::Address(manager_.get())));
   manager_->OnTextFieldDidScroll(form, field, bounds);
-  EXPECT_CALL(observer, OnTextFieldDidScroll()).Times(0);
+  EXPECT_CALL(observer, OnTextFieldDidScroll).Times(0);
 
-  EXPECT_CALL(observer, OnSelectControlDidChange()).Times(1);
+  EXPECT_CALL(observer,
+              OnSelectControlDidChange(testing::Address(manager_.get())));
   manager_->OnSelectControlDidChange(form, field, bounds);
-  EXPECT_CALL(observer, OnSelectControlDidChange()).Times(0);
+  EXPECT_CALL(observer, OnSelectControlDidChange).Times(0);
 
-  EXPECT_CALL(observer, OnFormSubmitted()).Times(1);
+  EXPECT_CALL(observer, OnFormSubmitted(testing::Address(manager_.get())));
   manager_->OnFormSubmitted(form, true,
                             mojom::SubmissionSource::FORM_SUBMISSION);
-  EXPECT_CALL(observer, OnFormSubmitted()).Times(0);
+  EXPECT_CALL(observer, OnFormSubmitted).Times(0);
 
   // Remove observer from manager, the observer should no longer receive pings.
   manager_->RemoveObserver(&observer);
-  EXPECT_CALL(observer, OnTextFieldDidChange()).Times(0);
+  EXPECT_CALL(observer, OnTextFieldDidChange).Times(0);
   manager_->OnTextFieldDidChange(form, field, bounds, time);
+}
+
+TEST_F(AutofillManagerTest, SetShouldSuppressKeyboard) {
+  EXPECT_CALL(*driver_, SetShouldSuppressKeyboard(true));
+  manager_->SetShouldSuppressKeyboard(true);
+}
+
+TEST_F(AutofillManagerTest, CanShowAutofillUi) {
+  EXPECT_CALL(*driver_, CanShowAutofillUi).WillOnce(Return(true));
+  EXPECT_TRUE(manager_->CanShowAutofillUi());
+}
+
+TEST_F(AutofillManagerTest, TriggerReparseInAllFrames) {
+  EXPECT_CALL(*driver_, TriggerReparseInAllFrames);
+  manager_->TriggerReparseInAllFrames(base::DoNothing());
+}
+
+TEST_F(
+    AutofillManagerTest_OnLoadedServerPredictionsObserver,
+    OnFormsSeen_SuccessfulQueryRequest_NotifiesBeforeLoadedServerPredictionsObserver) {
+  SetUpObserverAndDownloadManager(/*successful_request=*/true);
+
+  std::vector<FormData> forms = CreateTestForms(1);
+  EXPECT_CALL(observer_, OnBeforeLoadedServerPredictions(
+                             testing::Address(manager_.get())));
+  EXPECT_CALL(observer_, OnAfterLoadedServerPredictions).Times(0);
+  OnFormsSeenWithExpectations(*manager_, forms, {}, forms);
+  task_environment_.RunUntilIdle();
+
+  manager_->RemoveObserver(&observer_);
+}
+
+TEST_F(
+    AutofillManagerTest_OnLoadedServerPredictionsObserver,
+    OnFormsSeen_FailedQueryRequest_NotifiesBothLoadedServerPredictionsObservers) {
+  SetUpObserverAndDownloadManager(/*successful_request=*/false);
+
+  std::vector<FormData> forms = CreateTestForms(1);
+  EXPECT_CALL(observer_, OnBeforeLoadedServerPredictions(
+                             testing::Address(manager_.get())));
+  EXPECT_CALL(observer_,
+              OnAfterLoadedServerPredictions(testing::Address(manager_.get())));
+  OnFormsSeenWithExpectations(*manager_, forms, {}, forms);
+  task_environment_.RunUntilIdle();
+
+  manager_->RemoveObserver(&observer_);
+}
+
+TEST_F(
+    AutofillManagerTest_OnLoadedServerPredictionsObserver,
+    OnLoadedServerPredictions_EmptyQueriedFormSignatures_NotifiesAfterLoadedServerPredictionsObserver) {
+  SetUpObserverAndDownloadManager(/*successful_request=*/true);
+
+  std::vector<FormData> forms = CreateTestForms(1);
+  EXPECT_CALL(observer_, OnBeforeLoadedServerPredictions(
+                             testing::Address(manager_.get())));
+  OnFormsSeenWithExpectations(*manager_, forms, {}, forms);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(observer_,
+              OnAfterLoadedServerPredictions(testing::Address(manager_.get())));
+  manager_->OnLoadedServerPredictionsForTest("", {});
+
+  manager_->RemoveObserver(&observer_);
+}
+
+TEST_F(
+    AutofillManagerTest_OnLoadedServerPredictionsObserver,
+    OnLoadedServerPredictions_NonEmptyQueriedFormSignatures_NotifiesAfterLoadedServerPredictionsObserver) {
+  SetUpObserverAndDownloadManager(/*successful_request=*/true);
+
+  std::vector<FormData> forms = CreateTestForms(1);
+  EXPECT_CALL(observer_, OnBeforeLoadedServerPredictions(
+                             testing::Address(manager_.get())));
+  OnFormsSeenWithExpectations(*manager_, forms, {}, forms);
+  task_environment_.RunUntilIdle();
+
+  EXPECT_CALL(observer_,
+              OnAfterLoadedServerPredictions(testing::Address(manager_.get())));
+  manager_->OnLoadedServerPredictionsForTest(
+      "",
+      {manager_->FindCachedFormById(forms[0].global_id())->form_signature()});
+
+  manager_->RemoveObserver(&observer_);
 }
 
 }  // namespace autofill

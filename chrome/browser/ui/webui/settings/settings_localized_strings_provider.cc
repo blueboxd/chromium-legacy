@@ -184,6 +184,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"noThanks", IDS_NO_THANKS},
     {"ok", IDS_OK},
     {"opensInNewTab", IDS_SETTINGS_OPENS_IN_NEW_TAB},
+    {"sendFeedbackButton", IDS_SETTINGS_SEND_FEEDBACK_ROLE_DESCRIPTION},
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"relaunchConfirmationDialogTitle", IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE},
 #endif
@@ -711,9 +712,13 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
       {"performancePageTitle", IDS_SETTINGS_PERFORMANCE_PAGE_TITLE},
       {"highEfficiencyModeLabel",
        IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING},
+      {"highEfficiencyModeDescription",
+       IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION},
       {"batteryPageTitle", IDS_SETTINGS_BATTERY_PAGE_TITLE},
       {"batterySaverModeLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING},
+      {"batterySaverModeDescription",
+       IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING_DESCRIPTION},
       {"batterySaverModeEnabledOnBatteryLabel",
        IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_ON_BATTERY_LABEL},
       {"batterySaverModeRadioGroupAriaLabel",
@@ -734,33 +739,6 @@ void AddPerformanceStrings(content::WebUIDataSource* html_source) {
           base::NumberToString16(
               performance_manager::user_tuning::UserPerformanceTuningManager::
                   kLowBatteryThresholdPercent)));
-  html_source->AddString(
-      "highEfficiencyModeDescription",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_MODE_SETTING_DESCRIPTION,
-          base::UTF8ToUTF16(chrome::kHighEfficiencyModeLearnMoreUrl),
-          base::EscapeForHTML(l10n_util::GetStringUTF16(
-              IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_LEARN_MORE_ARIA_LABEL))
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-              ,
-          base::EscapeForHTML(l10n_util::GetStringUTF16(
-              IDS_SETTINGS_PERFORMANCE_HIGH_EFFICIENCY_SEND_FEEDBACK_ARIA_LABEL))
-#endif
-              ));
-
-  html_source->AddString(
-      "batterySaverModeDescription",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_MODE_SETTING_DESCRIPTION,
-          base::UTF8ToUTF16(chrome::kBatterySaverModeLearnMoreUrl),
-          base::EscapeForHTML(l10n_util::GetStringUTF16(
-              IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_LEARN_MORE_ARIA_LABEL))
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-              ,
-          base::EscapeForHTML(l10n_util::GetStringUTF16(
-              IDS_SETTINGS_PERFORMANCE_BATTERY_SAVER_SEND_FEEDBACK_ARIA_LABEL))
-#endif
-              ));
 
   html_source->AddString("highEfficiencyLearnMoreUrl",
                          chrome::kHighEfficiencyModeLearnMoreUrl);
@@ -977,6 +955,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
     {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
     {"editAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_EDIT_TITLE},
+    {"editAccountAddressSourceNotice",
+     IDS_AUTOFILL_EDIT_ACCOUNT_ADDRESS_SOURCE_NOTICE},
+    {"deleteAccountAddressSourceNotice",
+     IDS_AUTOFILL_DELETE_ACCOUNT_ADDRESS_SOURCE_NOTICE},
     {"addressCountry", IDS_SETTINGS_AUTOFILL_ADDRESSES_COUNTRY},
     {"addressPhone", IDS_SETTINGS_AUTOFILL_ADDRESSES_PHONE},
     {"addressEmail", IDS_SETTINGS_AUTOFILL_ADDRESSES_EMAIL},
@@ -989,10 +971,19 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"removeAddress", IDS_SETTINGS_ADDRESS_REMOVE},
     {"removeAddressConfirmationTitle",
      IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_TITLE},
-    {"removeAddressConfirmationDescription",
-     IDS_SETTINGS_ADDRESS_REMOVE_CONFIRMATION_DESCRIPTION},
+    {"removeSyncAddressConfirmationDescription",
+     IDS_AUTOFILL_DELETE_SYNC_ADDRESS_SOURCE_NOTICE},
+    {"removeLocalAddressConfirmationDescription",
+     IDS_AUTOFILL_DELETE_LOCAL_ADDRESS_SOURCE_NOTICE},
+    {"removeLocalCreditCardConfirmationTitle",
+     IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_TITLE},
+    {"removeLocalCreditCardConfirmationDescription",
+     IDS_SETTINGS_LOCAL_CARD_REMOVE_CONFIRMATION_DESCRIPTION},
     {"addressRemovedMessage", IDS_SETTINGS_ADDRESS_REMOVED_MESSAGE},
-    {"removeCreditCard", IDS_SETTINGS_CREDIT_CARD_REMOVE},
+    {"editAddressRequiredFieldError",
+     IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELD_FORM_ERROR},
+    {"editAddressRequiredFieldsError",
+     IDS_AUTOFILL_EDIT_ADDRESS_REQUIRED_FIELDS_FORM_ERROR},
     {"clearCreditCard", IDS_SETTINGS_CREDIT_CARD_CLEAR},
     {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
     {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
@@ -1473,15 +1464,15 @@ void AddPersonalizationOptionsStrings(content::WebUIDataSource* html_source) {
     {"signinAllowedTitle", IDS_SETTINGS_SIGNIN_ALLOWED},
     {"signinAllowedDescription", IDS_SETTINGS_SIGNIN_ALLOWED_DESC},
 #endif
-    {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
     {"enablePersonalizationLogging", IDS_SETTINGS_ENABLE_LOGGING_PREF},
     {"enablePersonalizationLoggingDesc", IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC},
     {"spellingDescription", IDS_SETTINGS_SPELLING_PREF_DESC},
     {"searchSuggestPrefDesc", IDS_SETTINGS_SUGGEST_PREF_DESC},
     {"linkDoctorPref", IDS_SETTINGS_LINKDOCTOR_PREF},
     {"linkDoctorPrefDesc", IDS_SETTINGS_LINKDOCTOR_PREF_DESC},
-    {"driveSuggestPref", IDS_DRIVE_SUGGEST_PREF},
-    {"driveSuggestPrefDesc", IDS_DRIVE_SUGGEST_PREF_DESC},
+    {"searchSuggestPref", IDS_SETTINGS_SUGGEST_PREF},
+    {"driveSuggestPref", IDS_SETTINGS_DRIVE_SUGGEST_PREF},
+    {"driveSuggestPrefDesc", IDS_SETTINGS_DRIVE_SUGGEST_PREF_DESC},
     {"priceEmailNotificationsPref", IDS_PRICE_TRACKING_SETTINGS_TITLE},
     {"priceEmailNotificationsPrefDesc",
      IDS_PRICE_TRACKING_SETTINGS_EMAIL_DESCRIPTION},

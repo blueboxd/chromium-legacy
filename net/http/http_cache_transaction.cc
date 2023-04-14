@@ -111,7 +111,7 @@ enum class RestrictedPrefetchReused {
 
 void RecordPervasivePayloadIndex(const char* histogram_name, int index) {
   if (index != -1) {
-    base::UmaHistogramCustomCounts(histogram_name, index, 1, 323, 323);
+    base::UmaHistogramExactLinear(histogram_name, index, 101);
   }
 }
 
@@ -693,13 +693,12 @@ bool HttpCache::Transaction::ResponseChecksumMatches(
   if (hex_result != request_->checksum) {
     DVLOG(2) << "Pervasive payload checksum mismatch for \"" << request_->url
              << "\": got " << hex_result << ", expected " << request_->checksum;
-    RecordPervasivePayloadIndex(
-        "Network.CacheTransparency2.MismatchedChecksums",
-        request_->pervasive_payloads_index_for_logging);
+    RecordPervasivePayloadIndex("Network.CacheTransparency.MismatchedChecksums",
+                                request_->pervasive_payloads_index_for_logging);
     return false;
   }
   RecordPervasivePayloadIndex(
-      "Network.CacheTransparency2.SingleKeyedCacheIsUsed",
+      "Network.CacheTransparency.SingleKeyedCacheIsUsed",
       request_->pervasive_payloads_index_for_logging);
   return true;
 }
@@ -1619,7 +1618,7 @@ int HttpCache::Transaction::DoCacheReadResponseComplete(int result) {
   }
 
   if (response_.single_keyed_cache_entry_unusable) {
-    RecordPervasivePayloadIndex("Network.CacheTransparency2.MarkedUnusable",
+    RecordPervasivePayloadIndex("Network.CacheTransparency.MarkedUnusable",
                                 request_->pervasive_payloads_index_for_logging);
 
     // We've read the single keyed entry and it turned out to be unusable. Let's
@@ -1863,6 +1862,10 @@ int HttpCache::Transaction::DoSendRequest() {
   DCHECK(mode_ & WRITE || mode_ == NONE);
   DCHECK(!network_trans_.get());
 
+  // We do not expect to send a request if the cache entry was used.
+  // TODO(https://crbug.com/1409150): If this CHECK fails investigate how we got
+  // here. Remove the CHECK.
+  CHECK_NE(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
   send_request_since_ = TimeTicks::Now();
 
   // Create a network transaction.
@@ -2768,10 +2771,11 @@ bool HttpCache::Transaction::ShouldPassThrough() {
 
 int HttpCache::Transaction::BeginCacheRead() {
   // We don't support any combination of LOAD_ONLY_FROM_CACHE and byte ranges.
-  // TODO(jkarlin): Either handle this case or DCHECK.
+  // It's possible to trigger this from JavaScript using the Fetch API with
+  // `cache: 'only-if-cached'` so ideally we should support it.
+  // TODO(ricea): Correctly read from the cache in this case.
   if (response_.headers->response_code() == net::HTTP_PARTIAL_CONTENT ||
       partial_) {
-    NOTREACHED();
     TransitionToState(STATE_FINISH_HEADERS);
     return ERR_CACHE_MISS;
   }
@@ -3855,6 +3859,12 @@ void HttpCache::Transaction::UpdateCacheEntryStatus(
     return;
   DCHECK(cache_entry_status_ == CacheEntryStatus::ENTRY_UNDEFINED ||
          new_cache_entry_status == CacheEntryStatus::ENTRY_OTHER);
+  // If we are using the entry then we should not have sent a request.
+  // TODO(https://crbug.com/1409150): If this CHECK fires then trace when the
+  // request was sent. Remove this CHECK.
+  if (new_cache_entry_status == CacheEntryStatus::ENTRY_USED) {
+    CHECK(send_request_since_.is_null());
+  }
   cache_entry_status_ = new_cache_entry_status;
   SyncCacheEntryStatusToResponse();
 }
@@ -3974,7 +3984,15 @@ void HttpCache::Transaction::RecordHistograms() {
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone", total_time);
 
   bool did_send_request = !send_request_since_.is_null();
-  DCHECK(
+
+  // TODO(ricea): Understand why this CHECK is failing in the wild, fix it, and
+  // remove it. See https://crbug.com/1409150.
+  if (did_send_request) {
+    CHECK_NE(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
+  }
+  // This CHECK() should not fire, because the one above should catch all the
+  // erroneous cases.
+  CHECK(
       (did_send_request &&
        (cache_entry_status_ == CacheEntryStatus::ENTRY_NOT_IN_CACHE ||
         cache_entry_status_ == CacheEntryStatus::ENTRY_VALIDATED ||
@@ -3992,7 +4010,6 @@ void HttpCache::Transaction::RecordHistograms() {
 
   base::TimeDelta before_send_time =
       send_request_since_ - first_cache_access_since_;
-  base::TimeDelta after_send_time = now - send_request_since_;
 
   UMA_HISTOGRAM_TIMES("HttpCache.AccessToDone.SentRequest", total_time);
   UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend", before_send_time);
@@ -4003,27 +4020,28 @@ void HttpCache::Transaction::RecordHistograms() {
     case CacheEntryStatus::ENTRY_CANT_CONDITIONALIZE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.CantConditionalize",
                           before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.CantConditionalize",
-                          after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_NOT_IN_CACHE: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.NotCached", before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.NotCached", after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_VALIDATED: {
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Validated", before_send_time);
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Validated", after_send_time);
       break;
     }
     case CacheEntryStatus::ENTRY_UPDATED: {
-      UMA_HISTOGRAM_TIMES("HttpCache.AfterSend.Updated", after_send_time);
       UMA_HISTOGRAM_TIMES("HttpCache.BeforeSend.Updated", before_send_time);
       break;
     }
     default:
-      NOTREACHED();
+      // STATUS_UNDEFINED and STATUS_OTHER are explicitly handled earlier in
+      // the function so shouldn't reach here. STATUS_MAX should never be set.
+      // Originally it was asserted that STATUS_USED couldn't happen here, but
+      // it turns out that it can. We don't have histograms for it, so just
+      // ignore it.
+      DCHECK_EQ(cache_entry_status_, CacheEntryStatus::ENTRY_USED);
+      break;
   }
 
   if (!total_disk_cache_read_time_.is_zero()) {

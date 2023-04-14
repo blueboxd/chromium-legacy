@@ -930,7 +930,7 @@ void SkiaRenderer::SwapBuffers(SwapFrameData swap_frame_data) {
     output_frame.delegated_ink_metadata =
         delegated_ink_handler_->TakeMetadata();
   }
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   output_frame.ca_layer_error_code = swap_frame_data.ca_layer_error_code;
 #endif
 
@@ -2662,11 +2662,8 @@ void SkiaRenderer::ScheduleOverlays() {
   DCHECK(output_surface_->capabilities().supports_surfaceless);
 #endif
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
-  // CrOS and Android SurfaceControl use this code path. Android classic has
-  // switched over to OverlayProcessor.
-  // TODO(weiliangc): Remove this when CrOS and Android SurfaceControl switch
-  // to OverlayProcessor as well.
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+  // CrOS, Android SurfaceControl, and Windows use this code path.
   for (auto& overlay : current_frame()->overlay_list) {
     if (overlay.is_root_render_pass) {
       continue;
@@ -2682,26 +2679,6 @@ void SkiaRenderer::ScheduleOverlays() {
 
     overlay.mailbox = lock.mailbox();
     DCHECK(!overlay.mailbox.IsZero());
-  }
-#elif BUILDFLAG(IS_WIN)
-  for (auto& dc_layer_overlay : current_frame()->overlay_list) {
-    for (size_t i = 0; i < DCLayerOverlayCandidate::kNumResources; ++i) {
-      ResourceId resource_id = dc_layer_overlay.resources[i];
-      if (resource_id == kInvalidResourceId)
-        break;
-
-      // Resources will be unlocked after the next SwapBuffers() is completed.
-      locks.emplace_back(resource_provider(), resource_id);
-      auto& lock = locks.back();
-
-      // Sync tokens ensure the texture to be overlaid is available before
-      // scheduling it for display.
-      if (lock.sync_token().HasData())
-        sync_tokens.push_back(lock.sync_token());
-
-      dc_layer_overlay.mailbox[i] = lock.mailbox();
-    }
-    DCHECK(!dc_layer_overlay.mailbox[0].IsZero());
   }
 #elif BUILDFLAG(IS_APPLE)
   for (CALayerOverlay& ca_layer_overlay : current_frame()->overlay_list) {
@@ -2767,12 +2744,12 @@ void SkiaRenderer::ScheduleOverlays() {
     overlay.mailbox = lock.mailbox();
     DCHECK(!overlay.mailbox.IsZero());
   }
-#else   // BUILDFLAG(IS_ANDROID)
+#else
   // For platforms that don't support overlays, the
   // current_frame()->overlay_list should be empty, and this code should not be
   // reached.
   NOTREACHED();
-#endif  // BUILDFLAG(IS_ANDROID)
+#endif
 
   DCHECK(!current_gpu_commands_completed_fence_->was_set());
   DCHECK(!current_release_fence_->was_set());
@@ -3421,9 +3398,8 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   // The |mask_filter_info| is in the device coordinate and with all transforms
   // (translation, scaling, rotation, etc), so remove them.
   if (!shared_quad_state->mask_filter_info.IsEmpty()) {
-    bool result = shared_quad_state->mask_filter_info.ApplyTransform(
+    shared_quad_state->mask_filter_info.ApplyTransform(
         *quad_to_target_transform_inverse);
-    DCHECK(result) << "shared_quad_state->mask_filter_info.Transform() failed.";
   }
 
   const auto& viewport_size = current_frame()->device_viewport_size;

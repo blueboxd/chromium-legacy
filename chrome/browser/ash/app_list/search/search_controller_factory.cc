@@ -59,9 +59,11 @@ std::unique_ptr<SearchController> CreateSearchController(
     Profile* profile,
     AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller,
-    ash::AppListNotifier* notifier) {
+    ash::AppListNotifier* notifier,
+    ash::federated::FederatedServiceController* federated_service_controller) {
   auto controller = std::make_unique<SearchController>(
-      model_updater, list_controller, notifier, profile);
+      model_updater, list_controller, notifier, profile,
+      federated_service_controller);
   controller->Initialize();
 
   // Add search providers.
@@ -123,10 +125,12 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   controller->AddProvider(std::make_unique<KeyboardShortcutProvider>(profile));
 
-  controller->AddProvider(std::make_unique<HelpAppProvider>(
-      profile,
-      ash::help_app::HelpAppManagerFactory::GetForBrowserContext(profile)
-          ->search_handler()));
+  if (base::FeatureList::IsEnabled(ash::features::kHelpAppLauncherSearch)) {
+    controller->AddProvider(std::make_unique<HelpAppProvider>(
+        profile,
+        ash::help_app::HelpAppManagerFactory::GetForBrowserContext(profile)
+            ->search_handler()));
+  }
 
   controller->AddProvider(
       std::make_unique<HelpAppZeroStateProvider>(profile, notifier));

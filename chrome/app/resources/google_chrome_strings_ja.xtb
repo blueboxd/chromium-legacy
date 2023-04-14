@@ -50,7 +50,6 @@
 <translation id="1874309113135274312">Google Chrome ベータ版（mDNS-In）</translation>
 <translation id="1877026089748256423">Chrome は古いバージョンです</translation>
 <translation id="1919130412786645364">Chrome へのログインを許可する</translation>
-<translation id="1952239763774043237">今後、Google Chrome のアップデートを受信するには、macOS 10.13 以降が必要となります。このコンピュータでは macOS 10.12 が実行されています。</translation>
 <translation id="1953553007165777902">ダウンロードしています... 残り <ph name="MINUTE" /> 分です</translation>
 <translation id="2018528049276128029">Chrome の情報（ブックマーク、履歴、パスワードなど）はプロファイルごとに分けて保持されます</translation>
 <translation id="2018879682492276940">インストールできませんでした。もう一度お試しください。</translation>
@@ -183,6 +182,7 @@
 <translation id="4335235004908507846">Chrome でデータ侵害や不正な拡張機能などの脅威から保護されているか確認します</translation>
 <translation id="4343195214584226067">「<ph name="EXTENSION_NAME" />」が Chrome に追加されました</translation>
 <translation id="4384570495110188418">ログインしていないため、Chrome でパスワードを確認できません</translation>
+<translation id="4393248995085527349">今後、Google Chrome のアップデートを受信するには、macOS 10.15 以降が必要となります。このコンピュータでは macOS 10.13 が実行されています。</translation>
 <translation id="4427306783828095590">保護強化機能により、フィッシングを防ぎ、不正なソフトウェアをより強力にブロックします</translation>
 <translation id="4450664632294415862">Chrome - ネットワークにログイン - <ph name="PAGE_TITLE" /></translation>
 <translation id="4458462641685292929">Google Chrome で別の処理が行われています。しばらくしてからもう一度お試しください。</translation>
@@ -212,7 +212,6 @@
 <translation id="4970880042055371251">Chrome OS のバージョン</translation>
 <translation id="4970947549776831107">危険なファイル形式のため Chrome でブロックされました</translation>
 <translation id="4990567037958725628">Google Chrome Canary</translation>
-<translation id="5037581483200764584">今後、Google Chrome のアップデートを受信するには、macOS 10.13 以降が必要となります。このコンピュータでは OS X 10.11 が実行されています。</translation>
 <translation id="5098668839038261629">オンにすると、Chrome からもログアウトします</translation>
 <translation id="5132929315877954718">Google Chrome のすばらしいアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
 <translation id="5139423532931106058">Chrome プロファイルをカスタマイズ</translation>
@@ -236,6 +235,7 @@
 <translation id="5678190148303298925">{COUNT,plural, =0{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています}=1{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています。シークレット ウィンドウは、再起動後は自動的には開きません。}other{管理者が、このアップデートを適用するために Chrome を再起動するよう求めています。現在開いている # 個のシークレット ウィンドウは、再起動後は自動的には開きません。}}</translation>
 <translation id="5686916850681061684">Google Chrome をカスタマイズ、制御します。確認の必要な項目があります。クリックして詳細をご覧ください。</translation>
 <translation id="5690427481109656848">Google LLC</translation>
+<translation id="570005089986962444">オンにすると、アクティブでないタブのメモリを解放します。これにより、アクティブなタブや他のアプリで利用できるコンピュータ リソースが増え、Chrome の速度低下を抑えられます。アクティブでないタブは、再度アクセスすると自動的にアクティブになります。</translation>
 <translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome は 1 秒後に再起動します}other{Google Chrome は # 秒後に再起動します}}</translation>
 <translation id="5727531838415286053">Chrome の試用期間がランダムに割り当てられた場合は、閲覧履歴が、表示される広告と以下の推定された興味 / 関心に影響します。プライバシーを保護するために、Chrome ではユーザーの興味 / 関心が毎月順番に削除されます。ユーザーが削除しない限り、興味 / 関心は更新されます。</translation>
 <translation id="5736850870166430177">サイトがパスワードを不正に取得しようとしている場合や、ユーザーが安全でないファイルをダウンロードしようとした場合は、URL とページ コンテンツの一部をセーフ ブラウジングに送信することがあります</translation>
@@ -246,10 +246,12 @@
 <translation id="5895138241574237353">再起動</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - ネットワークにログイン</translation>
 <translation id="5924017743176219022">インターネットに接続しています…</translation>
+<translation id="5932997892801542621">Chrome でアドレスバーや検索ボックスに入力を始めると、入力内容が Google ドライブに送信され、検索候補が表示されます。シークレット モードの場合、この設定はオフになっています。</translation>
 <translation id="5940385492829620908">ウェブ、ブックマーク、その他の Chrome データを好みに設定できます。</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5941830788786076944">Google Chrome を既定のブラウザにする</translation>
 <translation id="6003112304606738118">ダウンロードしています... 残り <ph name="HOURS" /> 時間です</translation>
+<translation id="6010556343189461180">今後、Google Chrome のアップデートを受信するには、macOS 10.15 以降が必要となります。このコンピュータでは macOS 10.14 が実行されています。</translation>
 <translation id="6022388122721048220">{0,plural, =0{Chrome は今すぐ終了します。}=1{Chrome は 1 秒後に終了します。}other{Chrome は # 秒後に終了します。}}</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6070348360322141662">セキュリティ強化のため、データは Google Chrome で暗号化されます</translation>
@@ -315,7 +317,6 @@
 <translation id="7410958280246779049">危険なファイルのため Chrome でブロックされました</translation>
 <translation id="7426611252293106642">この Linux ディストリビューションはサポートされなくなったため、Google Chrome は正常に機能しない可能性があります</translation>
 <translation id="7481213027396403996">Chrome の最高水準のセキュリティで保護</translation>
-<translation id="7486227612705979895">Chrome からお客様のドライブにアクセスして、アドレスバーに候補を表示します</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7583399374488819119"><ph name="COMPANY_NAME" /> インストーラ</translation>
 <translation id="7606334485649076285">Google ChromeOS Flex</translation>
@@ -358,7 +359,6 @@
 <translation id="8286862437124483331">Google Chrome でパスワードを表示しようとしています。続行するには、Windows のパスワードを入力してください。</translation>
 <translation id="828798499196665338">保護者が Chrome の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を有効にすることはできません。</translation>
 <translation id="8290100596633877290">エラー: Google Chrome で問題が発生しました。今すぐ再起動しますか？</translation>
-<translation id="8341646175450781745">オンにすると、アクティブでないタブのメモリを解放します。これにより、アクティブなタブや他のアプリで利用できるコンピュータ リソースが増え、Chrome の速度低下を抑えられます。アクティブでないタブは、再度アクセスすると自動的にアクティブになります。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" />または<ph name="BEGIN_LINK_2" />フィードバックを送信<ph name="END_LINK_2" /></translation>
 <translation id="8342675569599923794">このファイルは危険なファイルであるため、Chrome でブロックしました。</translation>
 <translation id="8349795646647783032"><ph name="BEGIN_BOLD" />このデータの利用方法:<ph name="END_BOLD" /> サイトでは、ユーザーの興味 / 関心に関する情報を Chrome に保存できます。たとえば、マラソン用のシューズを購入するためにあるサイトにアクセスすると、そのサイトでは「ランニング」をユーザーの興味 / 関心として定義する可能性があります。その後、別のサイトにアクセスして競技に登録しようとすると、そのサイトでは、ユーザーの興味 / 関心に基づいてランニング用シューズの広告が表示される場合があります。</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
@@ -389,6 +389,7 @@
 <translation id="8686817260976772516">Chrome プロファイルを使うと、Chrome のあらゆる項目や設定を個別に管理できます。友達や家族のプロファイルを作成したり、仕事とプライベートでプロファイルを使い分けたりできます。</translation>
 <translation id="8712767363896337380">アップデートが適用されました。更新を完了するには Chrome を再起動してください。</translation>
 <translation id="873133009373065397">Google Chrome では既定のブラウザを判定または設定できません</translation>
+<translation id="8765470054473112089">Chrome でアドレスバーや検索ボックスに入力を始めると、入力内容がデフォルトの検索エンジンに送信され、より関連性の高い検索候補が表示されます。シークレット モードの場合、この設定はオフになっています。</translation>
 <translation id="8821043148920470810">今後、Google Chrome のアップデートを受信するには、Windows 10 以降が必要となります。このパソコンでは Windows 7 が実行されています。</translation>
 <translation id="8823341990149967727">Chrome は古いバージョンです</translation>
 <translation id="8825634023950448068">ユーザーのプライバシーを保護するために、4 週間以上経過したユーザーの興味 / 関心は自動削除されます。ブラウジングを続けていると、興味 / 関心がリストに再度表示される場合もあります。Chrome に情報を残したくない場合、または特定の広告を表示させたくない場合は、興味 / 関心を削除できます。</translation>
@@ -402,7 +403,6 @@
 <translation id="8986207147630327271">このブラウザに仕事用プロファイルを追加し、管理者がこの仕事用プロファイルのみを管理できるようにします。</translation>
 <translation id="8989968390305463310">閲覧履歴は、表示される広告と以下の推定された興味 / 関心に影響します。プライバシーを保護するために、Chrome ではユーザーの興味 / 関心が毎月順番に自動削除されます。ユーザーが削除しない限り、興味 / 関心は更新される可能性があります。</translation>
 <translation id="8999208279178790196">{0,plural, =0{Chrome のアップデートが利用可能です}=1{Chrome のアップデートが利用可能です}other{Chrome のアップデートが利用可能になってから # 日経過しています}}</translation>
-<translation id="9003498785844995646">オンにすると、バックグラウンド アクティビティと視覚効果（滑らかなスクロールや動画のフレームレートなど）を制限することで、バッテリーを節約します。<ph name="BEGIN_LINK" />詳細<ph name="END_LINK" />または<ph name="BEGIN_LINK_2" />フィードバックを送信<ph name="END_LINK_2" /></translation>
 <translation id="9053892488859122171">ChromeOS Flex システム</translation>
 <translation id="9067395829937117663">Google Chrome のご利用には Windows 7 以上が必要です。</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
@@ -413,6 +413,7 @@
 <translation id="93760716455950538">ChromeOS Flex を再起動</translation>
 <translation id="940313311831216333">お使いのすべてのデバイスで Chrome の設定やデータを使用するには、ログインして同期を有効にしてください。</translation>
 <translation id="943390475793766444">このファイルは危害を及ぼす可能性があるため、スキャンすることをおすすめします。</translation>
+<translation id="963650557422347554">オンにすると、バックグラウンド アクティビティと視覚効果（滑らかなスクロールや動画のフレームレートなど）を制限することで、バッテリーを節約します。</translation>
 <translation id="989369509083708165">既定のブラウザは Google Chrome です</translation>
 <translation id="989816563149873169">Chrome プロフィールを切り替えるには、<ph name="SHORTCUT" /> を使用します</translation>
 </translationbundle>

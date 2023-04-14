@@ -303,7 +303,6 @@ void SingleEntryPropertiesGetterForDriveFs::StartProcess() {
     drivefs::SyncState sync_state =
         integration_service->GetSyncStateForPath(file_system_url_.path());
     properties_->progress = sync_state.progress;
-    properties_->sync_status = file_manager_private::SYNC_STATUS_NOT_FOUND;
     switch (sync_state.status) {
       case drivefs::SyncStatus::kQueued:
         properties_->sync_status = file_manager_private::SYNC_STATUS_QUEUED;
@@ -680,6 +679,35 @@ CreateMountableGuestList(Profile* profile) {
     guests.push_back(std::move(guest));
   }
   return guests;
+}
+
+bool ToRecentSourceFileType(
+    extensions::api::file_manager_private::FileCategory input_category,
+    ash::RecentSource::FileType* output_type) {
+  switch (input_category) {
+    case extensions::api::file_manager_private::FILE_CATEGORY_NONE:
+      // The FileCategory is an optional parameter. Thus we convert NONE to All.
+      // If the calling code does not specify the restrictions on the category
+      // we do not enforce then.
+    case extensions::api::file_manager_private::FILE_CATEGORY_ALL:
+      *output_type = ash::RecentSource::FileType::kAll;
+      return true;
+    case extensions::api::file_manager_private::FILE_CATEGORY_AUDIO:
+      *output_type = ash::RecentSource::FileType::kAudio;
+      return true;
+    case extensions::api::file_manager_private::FILE_CATEGORY_IMAGE:
+      *output_type = ash::RecentSource::FileType::kImage;
+      return true;
+    case extensions::api::file_manager_private::FILE_CATEGORY_VIDEO:
+      *output_type = ash::RecentSource::FileType::kVideo;
+      return true;
+    case extensions::api::file_manager_private::FILE_CATEGORY_DOCUMENT:
+      *output_type = ash::RecentSource::FileType::kDocument;
+      return true;
+    default:
+      NOTREACHED();
+      return false;
+  }
 }
 
 }  // namespace util

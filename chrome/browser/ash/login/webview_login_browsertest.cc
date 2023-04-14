@@ -27,6 +27,7 @@
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/repeating_test_future.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -65,7 +66,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/marketing_opt_in_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
@@ -219,45 +219,6 @@ void PolicyChangedCallback(base::RepeatingClosure callback,
                            const base::Value* old_value,
                            const base::Value* new_value) {
   callback.Run();
-}
-
-// Spins the loop until a notification is received from `prefs` that the value
-// of `pref_name` has changed. If the notification is received before Wait()
-// has been called, Wait() returns immediately and no loop is spun.
-class PrefChangeWatcher {
- public:
-  PrefChangeWatcher(const std::string& pref_name, PrefService* prefs);
-
-  PrefChangeWatcher(const PrefChangeWatcher&) = delete;
-  PrefChangeWatcher& operator=(const PrefChangeWatcher&) = delete;
-
-  void Wait();
-
- private:
-  void OnPrefChange();
-
-  bool pref_changed_ = false;
-
-  base::RunLoop run_loop_;
-  PrefChangeRegistrar registrar_;
-};
-
-PrefChangeWatcher::PrefChangeWatcher(const std::string& pref_name,
-                                     PrefService* prefs) {
-  registrar_.Init(prefs);
-  registrar_.Add(pref_name,
-                 base::BindRepeating(&PrefChangeWatcher::OnPrefChange,
-                                     base::Unretained(this)));
-}
-
-void PrefChangeWatcher::Wait() {
-  if (!pref_changed_)
-    run_loop_.Run();
-}
-
-void PrefChangeWatcher::OnPrefChange() {
-  pref_changed_ = true;
-  run_loop_.Quit();
 }
 
 // Observes OOBE screens and can be queried to see if the error screen has been
@@ -852,8 +813,7 @@ class ReauthTokenWebviewLoginTest : public ReauthWebviewLoginTest {
  public:
   ReauthTokenWebviewLoginTest() {
     scoped_feature_list_.Reset();
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kCryptohomeRecoveryFlow);
+    scoped_feature_list_.InitAndEnableFeature(features::kCryptohomeRecovery);
     login_manager_mixin_.AppendRegularUsers(1);
     user_with_invalid_token_ = login_manager_mixin_.users().back().account_id;
     cryptohome_mixin_.MarkUserAsExisting(user_with_invalid_token_);
@@ -1200,11 +1160,16 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
 
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder_.GetBlob());
-    PrefChangeWatcher watcher(prefs::kManagedAutoSelectCertificateForUrls,
-                              ProfileHelper::GetSigninProfile()->GetPrefs());
+    PrefChangeRegistrar registrar;
+    base::test::RepeatingTestFuture<const char*> pref_changed_future;
+    registrar.Init(ProfileHelper::GetSigninProfile()->GetPrefs());
+    registrar.Add(
+        prefs::kManagedAutoSelectCertificateForUrls,
+        base::BindRepeating(pref_changed_future.GetCallback(),
+                            prefs::kManagedAutoSelectCertificateForUrls));
     FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
-
-    watcher.Wait();
+    EXPECT_EQ(prefs::kManagedAutoSelectCertificateForUrls,
+              pref_changed_future.Take());
   }
 
   // Adds the certificate from `authority_file_path` (PEM) as untrusted
@@ -1228,10 +1193,16 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
 
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder_.GetBlob());
-    PrefChangeWatcher watcher(onc::prefs::kDeviceOpenNetworkConfiguration,
-                              g_browser_process->local_state());
+    PrefChangeRegistrar registrar;
+    base::test::RepeatingTestFuture<const char*> pref_changed_future;
+    registrar.Init(g_browser_process->local_state());
+    registrar.Add(
+        onc::prefs::kDeviceOpenNetworkConfiguration,
+        base::BindRepeating(pref_changed_future.GetCallback(),
+                            onc::prefs::kDeviceOpenNetworkConfiguration));
     FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
-    watcher.Wait();
+    EXPECT_EQ(onc::prefs::kDeviceOpenNetworkConfiguration,
+              pref_changed_future.Take());
   }
 
   // Sets the DeviceLoginScreenPromptOnMultipleMatchingCertificates device
@@ -1245,10 +1216,16 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
 
     FakeSessionManagerClient::Get()->set_device_policy(
         device_policy_builder_.GetBlob());
-    PrefChangeWatcher watcher(prefs::kPromptOnMultipleMatchingCertificates,
-                              ProfileHelper::GetSigninProfile()->GetPrefs());
+    PrefChangeRegistrar registrar;
+    base::test::RepeatingTestFuture<const char*> pref_changed_future;
+    registrar.Init(ProfileHelper::GetSigninProfile()->GetPrefs());
+    registrar.Add(
+        prefs::kPromptOnMultipleMatchingCertificates,
+        base::BindRepeating(pref_changed_future.GetCallback(),
+                            prefs::kPromptOnMultipleMatchingCertificates));
     FakeSessionManagerClient::Get()->OnPropertyChangeComplete(true);
-    watcher.Wait();
+    EXPECT_EQ(prefs::kPromptOnMultipleMatchingCertificates,
+              pref_changed_future.Take());
   }
 
   // Starts the Test HTTPS server with `ssl_options`.
@@ -1293,11 +1270,6 @@ class WebviewClientCertsLoginTestBase : public WebviewLoginTest {
     absl::optional<net::SSLInfo> server_ssl_info = std::move(server_ssl_info_);
     server_ssl_info_ = absl::nullopt;
     return server_ssl_info;
-  }
-
-  void ShowEulaScreen() {
-    LoginDisplayHost::default_host()->StartWizard(EulaView::kScreenId);
-    OobeScreenWaiter(EulaView::kScreenId).Wait();
   }
 
  protected:
@@ -1409,8 +1381,6 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   const std::vector<std::string> autoselect_patterns = {
       R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
   SetAutoSelectCertificatePatterns(autoselect_patterns);
-
-  ShowEulaScreen();
 
   // Use `watch_new_webcontents` because the EULA webview has not navigated yet.
   absl::optional<net::SSLInfo> ssl_info =

@@ -29,7 +29,7 @@ import {castExists} from '../assert_extras.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {TERMINA_VM_TYPE} from '../guest_os/guest_os_browser_proxy.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -275,7 +275,7 @@ class SettingsCrostiniSubpageElement extends
 
   private onCrostiniEnabledChanged_(enabled: boolean) {
     if (!enabled &&
-        Router.getInstance().getCurrentRoute() === routes.CROSTINI_DETAILS) {
+        Router.getInstance().currentRoute === routes.CROSTINI_DETAILS) {
       Router.getInstance().navigateToPreviousRoute();
     }
     if (enabled) {

@@ -81,6 +81,7 @@ class CSSValue;
 class Document;
 class DocumentStyleSheetCollection;
 class ElementRuleCollector;
+class Font;
 class FontSelector;
 class HTMLBodyElement;
 class HTMLSelectElement;
@@ -345,8 +346,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
 
-  void ComputeFont(Element& element,
-                   ComputedStyle* font_style,
+  Font ComputeFont(Element& element,
+                   const ComputedStyle& font_style,
                    const CSSPropertyValueSet& font_properties);
 
   PendingInvalidations& GetPendingNodeInvalidations() {
@@ -634,11 +635,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
     return view_transition_names_;
   }
 
-  StyleFetchedImage* CacheStyleImage(FetchParameters& params,
-                                     OriginClean origin_clean,
-                                     bool is_ad_related) {
+  StyleFetchedImage* CacheStyleImage(
+      FetchParameters& params,
+      OriginClean origin_clean,
+      bool is_ad_related,
+      const float override_image_resolution = 0.0f) {
     return style_image_cache_.CacheStyleImage(GetDocument(), params,
-                                              origin_clean, is_ad_related);
+                                              origin_clean, is_ad_related,
+                                              override_image_resolution);
   }
 
   void AddCachedFillOrClipPathURIValue(const AtomicString& string,

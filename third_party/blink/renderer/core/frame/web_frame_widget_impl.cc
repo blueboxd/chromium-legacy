@@ -100,7 +100,6 @@
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/input/touch_action_util.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
@@ -415,8 +414,6 @@ void WebFrameWidgetImpl::DragTargetDragOver(
 void WebFrameWidgetImpl::DragTargetDragLeave(
     const gfx::PointF& point_in_viewport,
     const gfx::PointF& screen_point) {
-  DCHECK(current_drag_data_);
-
   // TODO(paulmeyer): It shouldn't be possible for |current_drag_data_| to be
   // null here, but this is somehow happening (rarely). This suggests that in
   // some cases drag-leave is happening before drag-enter, which should be
@@ -1365,7 +1362,7 @@ void WebFrameWidgetImpl::WillBeginMainFrame() {
 
         if (auto* transition =
                 ViewTransitionUtils::GetActiveTransition(*document)) {
-          transition->WillBeginMainFrame();
+          transition->NotifyRenderingHasBegun();
         }
       });
 }
@@ -3031,7 +3028,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
         .presentation_time_callback =
             std::move(promise_callbacks_.presentation_time_callback)};
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
     if (reason == DidNotSwapReason::COMMIT_FAILS &&
         promise_callbacks_.core_animation_error_code_callback) {
       action = DidNotSwapAction::KEEP_ACTIVE;
@@ -3066,7 +3063,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
                         swap_time));
       ReportTime(std::move(callbacks.swap_time_callback), swap_time);
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
       if (callbacks.core_animation_error_code_callback) {
         widget->widget_base_->AddCoreAnimationErrorCodeCallback(
             frame_token,
@@ -3076,7 +3073,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
     } else {
       ReportTime(std::move(callbacks.swap_time_callback), swap_time);
       ReportTime(std::move(callbacks.presentation_time_callback), swap_time);
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
       ReportErrorCode(std::move(callbacks.core_animation_error_code_callback),
                       gfx::kCALayerUnknownNoWidget);
 #endif
@@ -3108,7 +3105,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
       std::move(callback).Run(time);
   }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   static void ReportErrorCode(
       base::OnceCallback<void(gfx::CALayerResult)> callback,
       gfx::CALayerResult error_code) {
@@ -3131,7 +3128,7 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
     ReportTime(std::move(callbacks.swap_time_callback), failure_time);
     ReportTime(std::move(callbacks.presentation_time_callback), failure_time);
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
     ReportErrorCode(std::move(callbacks.core_animation_error_code_callback),
                     gfx::kCALayerUnknownDidNotSwap);
 #endif
@@ -3161,7 +3158,7 @@ void WebFrameWidgetImpl::NotifyPresentationTime(
       {.presentation_time_callback = std::move(presentation_callback)});
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 void WebFrameWidgetImpl::NotifyCoreAnimationErrorCode(
     base::OnceCallback<void(gfx::CALayerResult)>
         core_animation_error_code_callback) {
@@ -4366,8 +4363,6 @@ void WebFrameWidgetImpl::PrepareForFinalLifecyclUpdateForTesting() {
         Document* document = core_frame->GetDocument();
         // Similarly, a fully attached frame must always have a document.
         DCHECK(document);
-        if (auto* ds_controller = DeferredShapingController::From(*document))
-          ds_controller->ReshapeAllDeferred(ReshapeReason::kTesting);
       });
 }
 

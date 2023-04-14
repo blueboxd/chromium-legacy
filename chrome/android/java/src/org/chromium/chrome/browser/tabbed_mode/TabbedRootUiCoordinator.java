@@ -18,8 +18,8 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneShotCallback;
 import org.chromium.base.supplier.OneshotSupplier;
-import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -98,7 +98,6 @@ import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
-import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.UndoGroupSnackbarController;
 import org.chromium.chrome.browser.toolbar.ToolbarButtonInProductHelpController;
@@ -558,27 +557,6 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
      */
     @Override
     protected IncognitoReauthCoordinatorFactory getIncognitoReauthCoordinatorFactory() {
-        OneshotSupplierImpl<TabSwitcherCustomViewManager> tabSwitcherCustomViewSupplier =
-                new OneshotSupplierImpl<>();
-        mTabSwitcherCustomViewManagerCallbackController = new CallbackController();
-        mStartSurfaceSupplier.onAvailable(
-                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((startSurface) -> {
-                    startSurface.getTabSwitcherCustomViewManagerSupplier().onAvailable(
-                            (tabSwitcherCustomViewManager) -> {
-                                if (!tabSwitcherCustomViewSupplier.hasValue()) {
-                                    tabSwitcherCustomViewSupplier.set(tabSwitcherCustomViewManager);
-                                }
-                            });
-                }));
-
-        mTabSwitcherSupplier.onAvailable(
-                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((tabSwitcher) -> {
-                    if (!tabSwitcherCustomViewSupplier.hasValue()) {
-                        tabSwitcherCustomViewSupplier.set(
-                                tabSwitcher.getTabSwitcherCustomViewManager());
-                    }
-                }));
-
         // TODO(crbug.com/1324211, crbug.com/1227656) : Refactor below to remove
         // IncognitoReauthTopToolbarDelegate and pass TopToolbarInteractabilityManager.
         IncognitoReauthTopToolbarDelegate incognitoReauthTopToolbarDelegate =
@@ -596,12 +574,39 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
                     }
                 };
 
-        return new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
-                mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
-                new SettingsLauncherImpl(), tabSwitcherCustomViewSupplier,
-                incognitoReauthTopToolbarDelegate, mLayoutManager,
-                /*showRegularOverviewIntent= */ null,
-                /*isTabbedActivity=*/true);
+        IncognitoReauthCoordinatorFactory incognitoReauthCoordinatorFactory =
+                new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
+                        mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
+                        new SettingsLauncherImpl(), incognitoReauthTopToolbarDelegate,
+                        mLayoutManager,
+                        /*showRegularOverviewIntent= */ null,
+                        /*isTabbedActivity=*/true);
+
+        mTabSwitcherCustomViewManagerCallbackController = new CallbackController();
+        mStartSurfaceSupplier.onAvailable(
+                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((startSurface) -> {
+                    new OneShotCallback<>(startSurface.getTabSwitcherCustomViewManagerSupplier(),
+                            (tabSwitcherCustomViewManager) -> {
+                                if (incognitoReauthCoordinatorFactory
+                                                .getTabSwitcherCustomViewManager()
+                                        == null) {
+                                    incognitoReauthCoordinatorFactory
+                                            .setTabSwitcherCustomViewManager(
+                                                    tabSwitcherCustomViewManager);
+                                }
+                            });
+                }));
+
+        mTabSwitcherSupplier.onAvailable(
+                mTabSwitcherCustomViewManagerCallbackController.makeCancelable((tabSwitcher) -> {
+                    if (incognitoReauthCoordinatorFactory.getTabSwitcherCustomViewManager()
+                            == null) {
+                        incognitoReauthCoordinatorFactory.setTabSwitcherCustomViewManager(
+                                tabSwitcher.getTabSwitcherCustomViewManager());
+                    }
+                }));
+
+        return incognitoReauthCoordinatorFactory;
     }
 
     @Override
@@ -687,18 +692,20 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator {
         }
 
         if (!didTriggerPromo) {
-            RationaleDelegate rationaleUIDelegate;
+            Supplier<RationaleDelegate> rationaleUIDelegateSupplier;
 
             if (NotificationPermissionController.shouldUseBottomSheetRationaleUi()) {
-                rationaleUIDelegate = new NotificationPermissionRationaleBottomSheet(
-                        mActivity, getBottomSheetController());
+                rationaleUIDelegateSupplier = ()
+                        -> new NotificationPermissionRationaleBottomSheet(
+                                mActivity, getBottomSheetController());
             } else {
-                rationaleUIDelegate = new NotificationPermissionRationaleDialogController(
-                        mActivity, mModalDialogManagerSupplier.get());
+                rationaleUIDelegateSupplier = ()
+                        -> new NotificationPermissionRationaleDialogController(
+                                mActivity, mModalDialogManagerSupplier.get());
             }
 
-            mNotificationPermissionController =
-                    new NotificationPermissionController(mWindowAndroid, rationaleUIDelegate);
+            mNotificationPermissionController = new NotificationPermissionController(
+                    mWindowAndroid, rationaleUIDelegateSupplier);
 
             NotificationPermissionController.attach(
                     mWindowAndroid, mNotificationPermissionController);

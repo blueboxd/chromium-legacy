@@ -59,6 +59,7 @@
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/page/page.mojom-blink.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_fetch_handler_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -113,6 +114,7 @@
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/permissions_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rules_header.h"
@@ -132,8 +134,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_load_timing.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_utils.h"
 #include "third_party/blink/renderer/platform/loader/fetch/unique_identifier.h"
 #include "third_party/blink/renderer/platform/loader/fetch/url_loader/navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
@@ -222,6 +225,7 @@ struct SameSizeAsDocumentLoader
   absl::optional<ParsedPermissionsPolicy> isolated_app_permissions_policy;
   DocumentToken token;
   KURL url;
+  KURL original_url;
   AtomicString http_method;
   AtomicString referrer;
   scoped_refptr<EncodedFormData> http_body;
@@ -284,11 +288,10 @@ struct SameSizeAsDocumentLoader
   bool is_static_data;
   CommitReason commit_reason;
   uint64_t main_resource_identifier;
-  scoped_refptr<ResourceTimingInfo> navigation_timing_info;
+  mojom::blink::ResourceTimingInfoPtr resource_timing_info_for_parent;
+  base::TimeTicks last_redirect_end_time;
   WebScopedVirtualTimePauser virtual_time_pauser;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager;
-  const KURL web_bundle_physical_url;
-  const KURL web_bundle_claimed_url;
   ukm::SourceId ukm_source_id;
   UseCounterImpl use_counter;
   const base::TickClock* clock;
@@ -435,6 +438,7 @@ DocumentLoader::DocumentLoader(
       initial_permissions_policy_(params_->permissions_policy_override),
       token_(params_->document_token),
       url_(params_->url),
+      original_url_(params_->url),
       http_method_(static_cast<String>(params_->http_method)),
       referrer_(static_cast<String>(params_->referrer)),
       http_body_(params_->http_body),
@@ -489,8 +493,6 @@ DocumentLoader::DocumentLoader(
       loading_url_as_empty_document_(!params_->is_static_data &&
                                      WillLoadUrlAsEmpty(url_)),
       is_static_data_(params_->is_static_data),
-      web_bundle_physical_url_(params_->web_bundle_physical_url),
-      web_bundle_claimed_url_(params_->web_bundle_claimed_url),
       ukm_source_id_(params_->document_ukm_source_id),
       clock_(params_->tick_clock ? params_->tick_clock
                                  : base::DefaultTickClock::GetInstance()),
@@ -626,8 +628,6 @@ DocumentLoader::CreateWebNavigationParamsToCloneDocument() {
       last_navigation_had_transient_user_activation_;
   params->is_browser_initiated = is_browser_initiated_;
   params->was_discarded = was_discarded_;
-  params->web_bundle_physical_url = web_bundle_physical_url_;
-  params->web_bundle_claimed_url = web_bundle_claimed_url_;
   params->document_ukm_source_id = ukm_source_id_;
   params->is_cross_site_cross_browsing_context_group =
       is_cross_site_cross_browsing_context_group_;
@@ -685,10 +685,6 @@ void DocumentLoader::Trace(Visitor* visitor) const {
 
 uint64_t DocumentLoader::MainResourceIdentifier() const {
   return main_resource_identifier_;
-}
-
-ResourceTimingInfo* DocumentLoader::GetNavigationTimingInfo() const {
-  return navigation_timing_info_.get();
 }
 
 WebString DocumentLoader::OriginalReferrer() const {
@@ -917,7 +913,15 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   if (should_send_stop_notification)
     GetFrameLoader().Progress().ProgressCompleted();
 
-  frame_->DomWindow()->navigation()->UpdateForNavigation(*history_item_, type);
+  if (!same_item_sequence_number) {
+    // If the item sequence number didn't change, there's no need to update any
+    // Navigation API state or fire associated events. It's possible to get a
+    // same-document navigation to a same ISN when a  history navigation targets
+    // a frame that no longer exists (https://crbug.com/705550).
+    frame_->DomWindow()->navigation()->UpdateForNavigation(*history_item_,
+                                                           type);
+  }
+
   if (!frame_)
     return;
 
@@ -1091,9 +1095,6 @@ void DocumentLoader::BodyLoadingFinished(
     bool should_report_corb_blocking,
     const absl::optional<WebURLError>& error) {
   TRACE_EVENT0("loading", "DocumentLoader::BodyLoadingFinished");
-  response_.SetEncodedDataLength(total_encoded_data_length);
-  response_.SetEncodedBodyLength(total_encoded_body_length);
-  response_.SetDecodedBodyLength(total_decoded_body_length);
 
   if (!error) {
     GetFrameLoader().Progress().CompleteProgress(main_resource_identifier_);
@@ -1102,33 +1103,30 @@ void DocumentLoader::BodyLoadingFinished(
         completion_time, total_encoded_data_length, total_decoded_body_length,
         should_report_corb_blocking);
 
-    if (response_.ShouldPopulateResourceTiming() ||
-        is_error_page_for_failed_navigation_) {
-      navigation_timing_info_->SetFinalResponse(response_);
+    DOMWindowPerformance::performance(*frame_->DomWindow())
+        ->OnBodyLoadFinished(total_encoded_body_length,
+                             total_decoded_body_length);
 
-      // We only automatically report resource timing when Timing-Allow-Origin
-      // passes, to avoid exposing cross-origin navigation behavior.
-      // Also, as per spec, we avoid adding resource-timing information for
-      // link/back-forward navigations.
-      // TODO (crbug.com/1410705): Using navigation_type_ for this covers
-      // most cases but might still have very rare racy edge cases, such as
-      // extension or window.open with target cancelling an ongoing navigation
-      // and start a new navigation to the same URL.
-      if (frame_->Owner() && (response_.TimingAllowPassed()) &&
-          navigation_type_ == WebNavigationType::kWebNavigationTypeOther) {
-        // The response is being copied here to pass the Encoded and Decoded
-        // sizes.
-        // TODO(yoav): copy the sizes info directly.
-        navigation_timing_info_->SetLoadResponseEnd(completion_time);
-        if (state_ >= kCommitted) {
-          // Note that we currently lose timing info for empty documents,
-          // which will be fixed with synchronous commit.
-          // Main resource timing information is reported through the owner
-          // to be passed to the parent frame, if appropriate.
-
-          frame_->Owner()->AddResourceTiming(*navigation_timing_info_);
-        }
+    if (resource_timing_info_for_parent_) {
+      // Note that we already checked for Timing-Allow-Origin, otherwise we
+      // wouldn't have a resource_timing_info_for_parent_ in the first place
+      // and we would resort to fallback timing.
+      if (!RuntimeEnabledFeatures::ResourceTimingUseCORSForBodySizesEnabled() ||
+          (IsSameOriginInitiator() &&
+           !document_load_timing_.HasCrossOriginRedirect())) {
+        resource_timing_info_for_parent_->encoded_body_size =
+            total_encoded_body_length;
+        resource_timing_info_for_parent_->decoded_body_size =
+            total_decoded_body_length;
       }
+
+      // Note that we currently lose timing info for empty documents,
+      // which will be fixed with synchronous commit.
+      // Main resource timing information is reported through the owner
+      // to be passed to the parent frame, if appropriate.
+      resource_timing_info_for_parent_->response_end = completion_time;
+      frame_->Owner()->AddResourceTiming(
+          std::move(resource_timing_info_for_parent_));
     }
     FinishedLoading(completion_time);
     return;
@@ -1231,18 +1229,6 @@ void DocumentLoader::HandleRedirect(
   url_ = redirect.new_url;
   const KURL& url_after_redirect = url_;
 
-  // Browser process should have already checked that redirecting url is
-  // allowed to display content from the target origin.
-  // When the referrer page is in an unsigned Web Bundle file in local
-  // (eg: file:///tmp/a.wbn), Chrome internally redirects the navigation to the
-  // page (eg: https://example.com/page.html) inside the Web Bundle file
-  // to the file's URL (file:///tmp/a.wbn?https://example.com/page.html). In
-  // this case, CanDisplay() returns false, and web_bundle_claimed_url must not
-  // be null.
-  CHECK(SecurityOrigin::Create(url_before_redirect)
-            ->CanDisplay(url_after_redirect) ||
-        !params_->web_bundle_claimed_url.IsNull());
-
   // Update the HTTP method of this document to the method used by the redirect.
   AtomicString new_http_method = redirect.new_http_method;
   if (http_method_ != new_http_method) {
@@ -1257,7 +1243,9 @@ void DocumentLoader::HandleRedirect(
       probe::ToCoreProbeSink(GetFrame()), main_resource_identifier_, this,
       url_after_redirect, http_method_, http_body_.get());
 
-  navigation_timing_info_->AddRedirect(redirect_response, url_after_redirect);
+  if (ResourceLoadTiming* timing = redirect_response.GetResourceLoadTiming()) {
+    redirect_end_time_ = timing->ReceiveHeadersEnd();
+  }
 
   DCHECK(!GetTiming().FetchStart().is_null());
   GetTiming().AddRedirect(url_before_redirect, url_after_redirect);
@@ -1423,26 +1411,37 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
     }
   }
 
+  // If the item sequence number didn't change, there's no need to trigger
+  // the navigate event. It's possible to get a same-document navigation
+  // to a same ISN when a history navigation targets a frame that no longer
+  // exists (https://crbug.com/705550).
+  bool same_item_sequence_number =
+      history_item_ && history_item &&
+      history_item_->ItemSequenceNumber() == history_item->ItemSequenceNumber();
+  if (!same_item_sequence_number) {
+    auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
+        url, NavigateEventType::kFragment, frame_load_type);
+    if (is_browser_initiated) {
+      params->involvement = UserNavigationInvolvement::kBrowserUI;
+    } else if (triggering_event_info ==
+               mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
+      params->involvement = UserNavigationInvolvement::kActivation;
+    }
+    params->destination_item = history_item;
+    params->is_browser_initiated = is_browser_initiated;
+    params->is_synchronously_committed_same_document =
+        is_synchronously_committed;
+    auto dispatch_result =
+        frame_->DomWindow()->navigation()->DispatchNavigateEvent(params);
+    if (dispatch_result == NavigationApi::DispatchResult::kAbort) {
+      return mojom::blink::CommitResult::Aborted;
+    } else if (dispatch_result == NavigationApi::DispatchResult::kIntercept) {
+      return mojom::blink::CommitResult::Ok;
+    }
+  }
+
   mojom::blink::SameDocumentNavigationType same_document_navigation_type =
       mojom::blink::SameDocumentNavigationType::kFragment;
-  auto* params = MakeGarbageCollected<NavigateEventDispatchParams>(
-      url, NavigateEventType::kFragment, frame_load_type);
-  if (is_browser_initiated) {
-    params->involvement = UserNavigationInvolvement::kBrowserUI;
-  } else if (triggering_event_info ==
-             mojom::blink::TriggeringEventInfo::kFromTrustedEvent) {
-    params->involvement = UserNavigationInvolvement::kActivation;
-  }
-  params->destination_item = history_item;
-  params->is_browser_initiated = is_browser_initiated;
-  params->is_synchronously_committed_same_document = is_synchronously_committed;
-  auto dispatch_result =
-      frame_->DomWindow()->navigation()->DispatchNavigateEvent(params);
-  if (dispatch_result == NavigationApi::DispatchResult::kAbort)
-    return mojom::blink::CommitResult::Aborted;
-  if (dispatch_result == NavigationApi::DispatchResult::kIntercept)
-    return mojom::blink::CommitResult::Ok;
-
   // If the requesting document is cross-origin, perform the navigation
   // asynchronously to minimize the navigator's ability to execute timing
   // attacks. If |is_synchronously_committed| is false, the navigation is
@@ -1462,13 +1461,6 @@ mojom::CommitResult DocumentLoader::CommitSameDocumentNavigation(
                 is_synchronously_committed, triggering_event_info,
                 soft_navigation_heuristics_task_id));
   } else {
-    // Treat a navigation to the same url as replacing only if it did not
-    // originate from a cross-origin iframe. If |is_synchronously_committed| is
-    // false, the browser process already enforced this policy.
-    if (is_synchronously_committed && !IsBackForwardLoadType(frame_load_type) &&
-        history_item_ && url == history_item_->Url()) {
-      frame_load_type = WebFrameLoadType::kReplaceCurrentItem;
-    }
     CommitSameDocumentNavigationInternal(
         url, frame_load_type, history_item, same_document_navigation_type,
         client_redirect_policy, has_transient_user_activation, initiator_origin,
@@ -1712,12 +1704,6 @@ void DocumentLoader::StartLoadingInternal() {
   // so we don't MarkFetchStart here.
   main_resource_identifier_ = CreateUniqueIdentifier();
 
-  navigation_timing_info_ = ResourceTimingInfo::Create(
-      fetch_initiator_type_names::kDocument, GetTiming().NavigationStart(),
-      mojom::blink::RequestContextType::IFRAME,
-      network::mojom::RequestDestination::kIframe,
-      network::mojom::RequestMode::kNavigate);
-  navigation_timing_info_->SetInitialURL(url_);
   virtual_time_pauser_ =
       frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
           url_.GetString(),
@@ -1952,14 +1938,6 @@ void DocumentLoader::DidCommitNavigation() {
   probe::DidCommitLoad(frame_, this);
 
   frame_->GetPage()->DidCommitLoad(frame_);
-
-  // Report legacy TLS versions after Page::DidCommitLoad, because the latter
-  // clears the console.
-  if (response_.IsLegacyTLSVersion()) {
-    GetFrameLoader().ReportLegacyTLSVersion(response_.CurrentRequestUrl(),
-                                            false /* is_subresource */,
-                                            frame_->IsAdFrame());
-  }
 }
 
 Frame* DocumentLoader::CalculateOwnerFrame() {
@@ -2198,6 +2176,13 @@ bool ShouldInheritExplicitOriginKeying(const KURL& url, CommitReason reason) {
          reason == CommitReason::kJavascriptUrl;
 }
 
+bool DocumentLoader::IsSameOriginInitiator() const {
+  return requestor_origin_ &&
+         requestor_origin_->IsSameOriginWith(
+             SecurityOrigin::Create(Url()).get()) &&
+         Url().ProtocolIsInHTTPFamily();
+}
+
 void DocumentLoader::InitializeWindow(Document* owner_document) {
   // Javascript URLs and XSLT committed document must not pass a new
   // policy_container_, since they must keep the previous document one.
@@ -2351,37 +2336,31 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
   security_origin = security_origin->GetOriginForAgentCluster(
       frame_->DomWindow()->GetAgent()->cluster_id());
 
-  // TODO(crbug.com/1159586): Remove this when 3psp storage is on. It's here
-  // to preserve the information that is stripped due to the key being re-made.
-  const auto& storage_key_with_3psp =
-      storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
-
-  // If the nonce isn't null, we need to ensure the top level site matches
-  // origin and the ancestor chain bit is kSameSite. The ancestor chain bit
-  // should be fine as it's from the same StorageKey that already had a nonce,
-  // but it's possible `security_origin` doesn't match the StorageKey's site.
-  // TODO(https://crbug.com/1410254): Cleanup this logic.
-  BlinkSchemefulSite top_level_site(security_origin);
-  if (!storage_key_.GetNonce()) {
-    top_level_site = storage_key_with_3psp.GetTopLevelSite();
+  if (storage_key_.GetNonce()) {
+    // If the nonce isn't null, we can use the simpler form of the constructor.
+    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::CreateWithNonce(
+        security_origin, *storage_key_.GetNonce()));
+  } else {
+    // TODO(crbug.com/1159586): Remove this when 3psp storage is on. It's here
+    // to preserve the information that is stripped due to the key being
+    // re-made.
+    const auto& storage_key_with_3psp =
+        storage_key_.CopyWithForceEnabledThirdPartyStoragePartitioning();
+    BlinkSchemefulSite top_level_site = storage_key_with_3psp.GetTopLevelSite();
+    // If `security_origin` is opaque or does not match `top_level_site` we
+    // must ensure `ancestor_chain_bit` is kCrossSite.
+    mojom::blink::AncestorChainBit ancestor_chain_bit =
+        storage_key_with_3psp.GetAncestorChainBit();
+    if (security_origin->IsOpaque() ||
+        BlinkSchemefulSite(security_origin) != top_level_site) {
+      ancestor_chain_bit = mojom::blink::AncestorChainBit::kCrossSite;
+    }
+    // TODO(https://crbug.com/888079): Just use the storage key sent by the
+    // browser once the browser will be able to compute the origin in all cases.
+    frame_->DomWindow()->SetStorageKey(BlinkStorageKey::Create(
+        security_origin, top_level_site, ancestor_chain_bit));
   }
 
-  // If `security_origin` does not match `top_level_site` we must ensure
-  // `ancestor_chain_bit` is kCrossSite as long as the top level site isn't
-  // opaque.
-  // TODO(https://crbug.com/1410254): Cleanup this logic.
-  mojom::blink::AncestorChainBit ancestor_chain_bit =
-      storage_key_with_3psp.GetAncestorChainBit();
-  if (!top_level_site.IsOpaque() &&
-      BlinkSchemefulSite(security_origin) != top_level_site) {
-    ancestor_chain_bit = mojom::blink::AncestorChainBit::kCrossSite;
-  }
-
-  // TODO(https://crbug.com/888079): Just use the storage key sent by the
-  // browser once the browser will be able to compute the origin in all cases.
-  frame_->DomWindow()->SetStorageKey(BlinkStorageKey(
-      security_origin, top_level_site,
-      base::OptionalToPtr(storage_key_.GetNonce()), ancestor_chain_bit));
   if (storage_key_ == session_storage_key_ ||
       storage_key_.GetSecurityOrigin()->IsOpaque() ||
       session_storage_key_.GetSecurityOrigin()->IsOpaque()) {
@@ -2396,7 +2375,7 @@ void DocumentLoader::InitializeWindow(Document* owner_document) {
     // storage key. The purpose of this path is to change the partition for a
     // given origin, not to allow access to another origin's data.
     DCHECK(session_storage_key_ ==
-           BlinkStorageKey(storage_key_.GetSecurityOrigin()));
+           BlinkStorageKey::CreateFirstParty(storage_key_.GetSecurityOrigin()));
     // We use the renderer side origin when setting the StorageKey on the path
     // above, so we check that the renderer's understanding of the origin
     // matches the session storage StorageKey. This is another precaution to
@@ -2529,7 +2508,6 @@ void DocumentLoader::CommitNavigation() {
           .WithTypeFrom(MimeType())
           .WithSrcdocDocument(loading_srcdoc_)
           .WithFallbackSrcdocBaseURL(fallback_srcdoc_base_url_)
-          .WithWebBundleClaimedUrl(web_bundle_claimed_url_)
           .WithUkmSourceId(ukm_source_id_));
 
   RecordUseCountersForCommit();
@@ -2624,15 +2602,7 @@ void DocumentLoader::CommitNavigation() {
     RecordParentAndChildContentLanguageMetric();
   }
 
-  bool is_same_origin_initiator = false;
-  if (requestor_origin_) {
-    const scoped_refptr<const SecurityOrigin> url_origin =
-        SecurityOrigin::Create(Url());
-
-    is_same_origin_initiator =
-        requestor_origin_->IsSameOriginWith(url_origin.get()) &&
-        Url().ProtocolIsInHTTPFamily();
-  }
+  bool is_same_origin_initiator = IsSameOriginInitiator();
 
   // No requestor origin means it's browser-initiated (which includes *all*
   // history navigations, including those initiated from `window.history`
@@ -2655,16 +2625,41 @@ void DocumentLoader::CommitNavigation() {
     document->SetDeferredCompositorCommitIsAllowed(false);
   }
 
-  if ((response_.IsHTTP() || is_error_page_for_failed_navigation_) &&
-      navigation_timing_info_) {
-    // The response is being copied here to pass the ServerTiming info.
-    // TODO(yoav): copy the ServerTiming info directly.
-    navigation_timing_info_->SetFinalResponse(response_);
-    // Make sure we're properly reporting error documents.
-    if (is_error_page_for_failed_navigation_) {
-      navigation_timing_info_->SetInitialURL(
-          pre_redirect_url_for_failed_navigations_);
+  if (response_.ShouldPopulateResourceTiming() ||
+      is_error_page_for_failed_navigation_) {
+    // We only report resource timing to the parent if:
+    // 1. We have a parent (owner)
+    // 2. Timing Allow Passed - otherwise we report fallback timing.
+    // 3. It's an external navigation (kWebNavigationTypeOther)
+    // TODO (crbug.com/1410705): Using navigation_type_ for this covers
+    // most cases but might still have very rare racy edge cases, such as
+    // extension or window.open with target cancelling an ongoing navigation
+    // and start a new navigation to the same URL.
+    if (frame_->Owner() && response_.TimingAllowPassed() &&
+        navigation_type_ == WebNavigationType::kWebNavigationTypeOther) {
+      resource_timing_info_for_parent_ = CreateResourceTimingInfo(
+          GetTiming().NavigationStart(), original_url_, &response_);
+      if (!is_same_origin_initiator ||
+          document_load_timing_.HasCrossOriginRedirect()) {
+        resource_timing_info_for_parent_->content_type = g_empty_string;
+        resource_timing_info_for_parent_->response_status = 0;
+      }
+      resource_timing_info_for_parent_->last_redirect_end_time =
+          redirect_end_time_;
     }
+
+    response_.SetTimingAllowPassed(true);
+    mojom::blink::ResourceTimingInfoPtr navigation_timing_info =
+        CreateResourceTimingInfo(base::TimeTicks(),
+                                 is_error_page_for_failed_navigation_
+                                     ? pre_redirect_url_for_failed_navigations_
+                                     : url_,
+                                 &response_);
+    navigation_timing_info->last_redirect_end_time = redirect_end_time_;
+    DCHECK(frame_);
+    DCHECK(frame_->DomWindow());
+    DOMWindowPerformance::performance(*frame_->DomWindow())
+        ->CreateNavigationTimingInstance(std::move(navigation_timing_info));
   }
 
   {
@@ -3031,6 +3026,22 @@ base::TimeDelta DocumentLoader::RemainingTimeToLCPLimit() const {
   base::TimeTicks now = clock_->NowTicks();
   if (now < lcp_limit)
     return lcp_limit - now;
+  return base::TimeDelta();
+}
+
+base::TimeDelta
+DocumentLoader::RemainingTimeToRenderBlockingFontMaxBlockingTime() const {
+  DCHECK(base::FeatureList::IsEnabled(features::kRenderBlockingFonts));
+  // We shouldn't call this function before navigation start
+  DCHECK(!document_load_timing_.NavigationStart().is_null());
+  base::TimeTicks max_blocking_time =
+      document_load_timing_.NavigationStart() +
+      base::Milliseconds(
+          features::kMaxBlockingTimeMsForRenderBlockingFonts.Get());
+  base::TimeTicks now = clock_->NowTicks();
+  if (now < max_blocking_time) {
+    return max_blocking_time - now;
+  }
   return base::TimeDelta();
 }
 

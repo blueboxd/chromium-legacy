@@ -149,8 +149,8 @@ class FragmentTreeDumper {
       }
       if (flags_ & NGPhysicalFragment::DumpSubtree) {
         if (flags_ & NGPhysicalFragment::DumpLegacyDescendants &&
-            layout_object && !layout_object->IsLayoutNGObject()) {
-          DCHECK(box->Children().empty());
+            layout_object && !layout_object->IsLayoutNGObject() &&
+            box->Children().empty()) {
           AppendLegacySubtree(*layout_object, indent);
           return;
         }
@@ -761,7 +761,7 @@ void NGPhysicalFragment::TraceAfterDispatch(Visitor* visitor) const {
 base::span<const NGLink> NGPhysicalFragment::Children() const {
   if (Type() == kFragmentBox)
     return static_cast<const NGPhysicalBoxFragment*>(this)->Children();
-  return base::make_span(static_cast<NGLink*>(nullptr), 0);
+  return base::make_span(static_cast<NGLink*>(nullptr), 0u);
 }
 
 NGPhysicalFragment::PostLayoutChildLinkList

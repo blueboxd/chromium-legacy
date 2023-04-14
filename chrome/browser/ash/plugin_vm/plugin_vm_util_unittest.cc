@@ -28,7 +28,7 @@ class PluginVmUtilTest : public testing::Test {
   PluginVmUtilTest(const PluginVmUtilTest&) = delete;
   PluginVmUtilTest& operator=(const PluginVmUtilTest&) = delete;
 
-  MOCK_METHOD(void, OnAvailabilityChanged, (bool, bool));
+  MOCK_METHOD(void, OnPolicyChanged, (bool));
 
  protected:
   struct ScopedDBusClients {
@@ -80,56 +80,45 @@ TEST_F(PluginVmUtilTest, PluginVmShouldBeConfiguredOnceAllConditionsAreMet) {
   EXPECT_TRUE(PluginVmFeatures::Get()->IsConfigured(testing_profile_.get()));
 }
 
-TEST_F(PluginVmUtilTest, AvailabilitySubscription) {
-  PluginVmAvailabilitySubscription subscription(
-      testing_profile_.get(),
-      base::BindRepeating(&PluginVmUtilTest::OnAvailabilityChanged,
-                          base::Unretained(this)));
-
-  // Callback args are: (is_allowed, is_configured).
+TEST_F(PluginVmUtilTest, AddPluginVmPolicyObserver) {
+  const std::unique_ptr<PluginVmPolicySubscription> subscription =
+      std::make_unique<plugin_vm::PluginVmPolicySubscription>(
+          testing_profile_.get(),
+          base::BindRepeating(&PluginVmUtilTest::OnPolicyChanged,
+                              base::Unretained(this)));
 
   EXPECT_FALSE(PluginVmFeatures::Get()->IsAllowed(testing_profile_.get()));
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(true, false));
+  EXPECT_CALL(*this, OnPolicyChanged(true));
   test_helper_->AllowPluginVm();
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(false, false));
+  EXPECT_CALL(*this, OnPolicyChanged(false));
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       ash::kPluginVmAllowed, false);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(true, false));
+  EXPECT_CALL(*this, OnPolicyChanged(true));
   testing_profile_->ScopedCrosSettingsTestHelper()->SetBoolean(
       ash::kPluginVmAllowed, true);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(true, true));
-  testing_profile_->GetPrefs()->SetBoolean(
-      plugin_vm::prefs::kPluginVmImageExists, true);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  EXPECT_CALL(*this, OnAvailabilityChanged(false, true));
+  EXPECT_CALL(*this, OnPolicyChanged(false));
   testing_profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmAllowed,
                                            false);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(true, true));
+  EXPECT_CALL(*this, OnPolicyChanged(true));
   testing_profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmAllowed,
                                            true);
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(false, true));
+  EXPECT_CALL(*this, OnPolicyChanged(false));
   testing_profile_->GetPrefs()->SetString(plugin_vm::prefs::kPluginVmUserId,
                                           "");
   testing::Mock::VerifyAndClearExpectations(this);
 
-  EXPECT_CALL(*this, OnAvailabilityChanged(false, false));
-  testing_profile_->GetPrefs()->SetBoolean(
-      plugin_vm::prefs::kPluginVmImageExists, false);
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  EXPECT_CALL(*this, OnAvailabilityChanged(true, false));
+  EXPECT_CALL(*this, OnPolicyChanged(true));
   const std::string kPluginVmUserId = "fancy-user-id";
   testing_profile_->GetPrefs()->SetString(plugin_vm::prefs::kPluginVmUserId,
                                           kPluginVmUserId);

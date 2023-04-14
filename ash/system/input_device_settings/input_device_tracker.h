@@ -42,9 +42,16 @@ class ASH_EXPORT InputDeviceTracker
 
   // InputDeviceSettingsController::Observer:
   void OnKeyboardConnected(const mojom::Keyboard& keyboard) override;
+  void OnTouchpadConnected(const mojom::Touchpad& touchpad) override;
+  void OnMouseConnected(const mojom::Mouse& mouse) override;
+  void OnPointingStickConnected(
+      const mojom::PointingStick& pointing_stick) override;
 
   // SessionObserver:
   void OnActiveUserPrefServiceChanged(PrefService* pref_service) override;
+
+  bool WasDevicePreviouslyConnected(InputDeviceCategory category,
+                                    const base::StringPiece& device_key) const;
 
  private:
   void Init(PrefService* pref_service);
@@ -53,6 +60,9 @@ class ASH_EXPORT InputDeviceTracker
 
   void ResetPrefMembers();
   void RecordConnectedDevices();
+
+  StringListPrefMember* GetObservedDevicesForCategory(
+      InputDeviceCategory category) const;
 
   std::unique_ptr<StringListPrefMember> keyboard_observed_devices_;
   std::unique_ptr<StringListPrefMember> mouse_observed_devices_;

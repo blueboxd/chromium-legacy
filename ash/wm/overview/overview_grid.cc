@@ -21,7 +21,8 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wm/desks/cros_next_desk_button.h"
+#include "ash/wm/desks/cros_next_default_desk_button.h"
+#include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
@@ -64,6 +65,7 @@
 #include "base/functional/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/app_restore/full_restore_utils.h"
 #include "ui/aura/client/aura_constants.h"
@@ -393,7 +395,7 @@ class DesksBarSlideAnimation {
         .Once()
         .SetDuration(duration)
         .SetTransform(desks_widget_->GetLayer(), transform,
-                      gfx::Tween::ACCEL_30_DECEL_20_85);
+                      gfx::Tween::ACCEL_20_DECEL_100);
   }
 
   DesksBarSlideAnimation(const DesksBarSlideAnimation&) = delete;
@@ -509,7 +511,7 @@ OverviewGrid::~OverviewGrid() = default;
 void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
   EndNudge();
 
-  if (features::IsJellyrollEnabled() && desks_widget_ &&
+  if (chromeos::features::IsJellyrollEnabled() && desks_widget_ &&
       exit_type != OverviewEnterExitType::kImmediateExit) {
     // When applying the slide out animation to the `desks_widget_` during
     // overview grid shutdown phase, we need to make the lifetime of the
@@ -1152,6 +1154,8 @@ void OverviewGrid::OnStartingAnimationComplete(bool canceled) {
 
   MaybeInitDesksWidget();
 
+  UpdateSaveDeskButtons();
+
   for (auto& window : window_list())
     window->OnStartingAnimationComplete();
 }
@@ -1550,11 +1554,12 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
     if (target_desk == desks_controller->active_desk())
       return false;
 
-    if (features::IsJellyrollEnabled()) {
-      // Make sreut that new desk button goes back to the expanded state after
+    if (chromeos::features::IsJellyrollEnabled()) {
+      // Make sure that new desk button goes back to the expanded state after
       // the window is dropped on an existing desk.
-      desks_bar_view_->UpdateNewDeskButton(
-          CrOSNextDeskIconButton::State::kExpanded);
+      desks_bar_view_->UpdateDeskIconButtonState(
+          desks_bar_view_->new_desk_button(),
+          /*target_state=*/CrOSNextDeskIconButton::State::kExpanded);
     }
 
     return desks_controller->MoveWindowFromActiveDeskTo(
@@ -1562,13 +1567,10 @@ bool OverviewGrid::MaybeDropItemOnDeskMiniViewOrNewDeskButton(
         DesksMoveWindowFromActiveDeskSource::kDragAndDrop);
   }
 
-  if (!features::IsDragWindowToNewDeskEnabled())
-    return false;
-
   if (!desks_controller->CanCreateDesks())
     return false;
 
-  if (features::IsJellyrollEnabled()) {
+  if (chromeos::features::IsJellyrollEnabled()) {
     if (!desks_bar_view_->new_desk_button()->IsPointOnButton(screen_location)) {
       return false;
     }
@@ -1852,10 +1854,17 @@ void OverviewGrid::ShowSavedDeskLibrary() {
 
   UpdateSaveDeskButtons();
 
+  // When desks bar is at zero state, the library button's state update will be
+  // handled by `UpdateNewMiniViews` when expanding the desks bar.
   if (desks_bar_view_->IsZeroState()) {
     desks_bar_view_->UpdateNewMiniViews(/*initializing_bar_view=*/false,
                                         /*expanding_bar_view=*/true);
+  } else if (chromeos::features::IsJellyrollEnabled()) {
+    desks_bar_view_->UpdateDeskIconButtonState(
+        desks_bar_view_->library_button(),
+        /*target_state=*/CrOSNextDeskIconButton::State::kActive);
   }
+
   desks_bar_view_->UpdateButtonsForSavedDeskGrid();
 }
 
@@ -1906,6 +1915,14 @@ void OverviewGrid::HideSavedDeskLibrary(bool exit_overview) {
                       /*animate=*/true,
                       base::BindOnce(&OverviewGrid::OnSavedDeskGridFadedOut,
                                      weak_ptr_factory_.GetWeakPtr()));
+  if (chromeos::features::IsJellyrollEnabled()) {
+    // The saved desk library is hidden because of a new desk is created for
+    // saved desk. We have animation of adding a new desk for the library
+    // button, thus to avoid the animation glitches, directly update the state
+    // for the library button instead of applying the scale animation to it.
+    desks_bar_view_->library_button()->UpdateState(
+        CrOSNextDeskIconButton::State::kExpanded);
+  }
 }
 
 bool OverviewGrid::IsShowingSavedDeskLibrary() const {
@@ -1948,6 +1965,10 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items) {
     params.parent =
         root_window_->GetChildById(desks_util::GetActiveDeskContainerId());
     params.hide_in_mini_view = true;
+    if (overview_session_ &&
+        overview_session_->ShouldEnterWithoutAnimations()) {
+      params.disable_default_visibility_animation = true;
+    }
     no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
     no_windows_widget_->Init(std::move(params));
 
@@ -2253,8 +2274,6 @@ void OverviewGrid::MaybeInitDesksWidget() {
   // the container.
   auto* window = desks_widget_->GetNativeWindow();
   window->parent()->StackChildAtBottom(window);
-
-  UpdateSaveDeskButtons();
 }
 
 std::vector<gfx::RectF> OverviewGrid::GetWindowRects(

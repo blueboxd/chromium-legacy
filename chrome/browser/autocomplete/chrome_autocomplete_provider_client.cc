@@ -87,6 +87,11 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #endif
 
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+#include "chrome/browser/autocomplete/autocomplete_scoring_model_service_factory.h"
+#include "components/omnibox/browser/autocomplete_scoring_model_service.h"
+#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+
 namespace {
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -119,7 +124,9 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
       omnibox_triggered_feature_service_(
           std::make_unique<OmniboxTriggeredFeatureService>()) {
   pedal_provider_ = std::make_unique<OmniboxPedalProvider>(
-      *this, GetPedalImplementations(IsOffTheRecord(), false));
+      *this,
+      GetPedalImplementations(profile_->IsIncognitoProfile(),
+                              profile_->IsGuestSession(), /*testing=*/false));
 }
 
 ChromeAutocompleteProviderClient::~ChromeAutocompleteProviderClient() = default;
@@ -313,8 +320,26 @@ signin::IdentityManager* ChromeAutocompleteProviderClient::GetIdentityManager()
   return IdentityManagerFactory::GetForProfile(profile_);
 }
 
+AutocompleteScoringModelService*
+ChromeAutocompleteProviderClient::GetAutocompleteScoringModelService() const {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  return AutocompleteScoringModelServiceFactory::GetInstance()->GetForProfile(
+      profile_);
+#else
+  return nullptr;
+#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+}
+
 bool ChromeAutocompleteProviderClient::IsOffTheRecord() const {
   return profile_->IsOffTheRecord();
+}
+
+bool ChromeAutocompleteProviderClient::IsIncognitoProfile() const {
+  return profile_->IsIncognitoProfile();
+}
+
+bool ChromeAutocompleteProviderClient::IsGuestSession() const {
+  return profile_->IsGuestSession();
 }
 
 bool ChromeAutocompleteProviderClient::SearchSuggestEnabled() const {
@@ -394,7 +419,8 @@ void ChromeAutocompleteProviderClient::StartServiceWorker(
     return;
 
   context->StartServiceWorkerForNavigationHint(
-      destination_url, blink::StorageKey(url::Origin::Create(destination_url)),
+      destination_url,
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(destination_url)),
       base::DoNothing());
 }
 

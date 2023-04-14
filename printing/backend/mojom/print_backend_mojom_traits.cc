@@ -112,8 +112,28 @@ bool StructTraits<printing::mojom::PaperDataView,
                   printing::PrinterSemanticCapsAndDefaults::Paper>::
     Read(printing::mojom::PaperDataView data,
          printing::PrinterSemanticCapsAndDefaults::Paper* out) {
-  return data.ReadDisplayName(&out->display_name) &&
-         data.ReadVendorId(&out->vendor_id) && data.ReadSizeUm(&out->size_um);
+  absl::optional<gfx::Rect> printable_area_um;
+  if (!data.ReadDisplayName(&out->display_name) ||
+      !data.ReadVendorId(&out->vendor_id) || !data.ReadSizeUm(&out->size_um) ||
+      !data.ReadPrintableAreaUm(&printable_area_um)) {
+    return false;
+  }
+
+  // For backwards compatibility, allow printable area to be missing. Set the
+  // default printable area to be the page size.
+  out->printable_area_um = printable_area_um.value_or(gfx::Rect(out->size_um));
+
+  // Allow empty Papers, since PrinterSemanticCapsAndDefaults can have empty
+  // default Papers.
+  if (out->display_name.empty() && out->vendor_id.empty() &&
+      out->size_um.IsEmpty() && out->printable_area_um.IsEmpty()) {
+    return true;
+  }
+
+  // Invalid if the printable area is empty or if the printable area is out of
+  // bounds of the paper size.
+  return !out->printable_area_um.IsEmpty() &&
+         gfx::Rect(out->size_um).Contains(out->printable_area_um);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)

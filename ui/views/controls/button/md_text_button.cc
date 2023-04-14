@@ -50,9 +50,10 @@ MdTextButton::MdTextButton(PressedCallback callback,
       },
       this));
 
-  if (!features::IsChromeRefresh2023())
-    SetCornerRadius(
-        LayoutProvider::Get()->GetCornerRadiusMetric(Emphasis::kLow));
+  if (features::IsChromeRefresh2023()) {
+    constexpr int kImageSpacing = 8;
+    SetImageLabelSpacing(kImageSpacing);
+  }
 
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
@@ -111,18 +112,22 @@ absl::optional<SkColor> MdTextButton::GetBgColorOverride() const {
   return bg_color_override_;
 }
 
-void MdTextButton::SetCornerRadius(float radius) {
+void MdTextButton::SetCornerRadius(absl::optional<float> radius) {
   if (corner_radius_ == radius)
     return;
   corner_radius_ = radius;
-  LabelButton::SetFocusRingCornerRadius(corner_radius_);
+  LabelButton::SetFocusRingCornerRadius(GetCornerRadiusValue());
   // UpdateColors also updates the background border radius.
   UpdateColors();
   OnPropertyChanged(&corner_radius_, kPropertyEffectsNone);
 }
 
-float MdTextButton::GetCornerRadius() const {
+absl::optional<float> MdTextButton::GetCornerRadius() const {
   return corner_radius_;
+}
+
+float MdTextButton::GetCornerRadiusValue() const {
+  return corner_radius_.value_or(0);
 }
 
 void MdTextButton::OnThemeChanged() {
@@ -133,6 +138,12 @@ void MdTextButton::OnThemeChanged() {
 void MdTextButton::StateChanged(ButtonState old_state) {
   LabelButton::StateChanged(old_state);
   UpdateColors();
+}
+
+void MdTextButton::SetImageModel(ButtonState for_state,
+                                 const ui::ImageModel& image_model) {
+  LabelButton::SetImageModel(for_state, image_model);
+  UpdatePadding();
 }
 
 void MdTextButton::OnFocus() {
@@ -148,9 +159,12 @@ void MdTextButton::OnBlur() {
 void MdTextButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   LabelButton::OnBoundsChanged(previous_bounds);
 
-  if (features::IsChromeRefresh2023()) {
+  // A fully rounded corner radius is calculated based on the size of the
+  // button. To avoid overriding a custom corner radius, make sure the default
+  // radius is only called once by checking if the value already exists.
+  if (!corner_radius_) {
     SetCornerRadius(LayoutProvider::Get()->GetCornerRadiusMetric(
-        Emphasis::kMaximum, size()));
+        ShapeContextTokens::kButtonRadius, size()));
   }
 }
 
@@ -202,10 +216,15 @@ gfx::Insets MdTextButton::CalculateDefaultPadding() const {
 
   // TODO(estade): can we get rid of the platform style border hoopla if
   // we apply the MD treatment to all buttons, even GTK buttons?
-  const int horizontal_padding = LayoutProvider::Get()->GetDistanceMetric(
+  int right_padding = LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_BUTTON_HORIZONTAL_PADDING);
-  return gfx::Insets::TLBR(top_padding, horizontal_padding, bottom_padding,
-                           horizontal_padding);
+  int left_padding = right_padding;
+  if (HasImage(GetVisualState()) && features::IsChromeRefresh2023()) {
+    constexpr int kLeftPadding = 12;
+    left_padding = kLeftPadding;
+  }
+  return gfx::Insets::TLBR(top_padding, left_padding, bottom_padding,
+                           right_padding);
 }
 
 void MdTextButton::UpdateTextColor() {
@@ -272,7 +291,7 @@ void MdTextButton::UpdateBackgroundColor() {
 
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateRoundRectWith1PxBorderPainter(
-          bg_color, stroke_color, corner_radius_)));
+          bg_color, stroke_color, GetCornerRadiusValue())));
 }
 
 void MdTextButton::UpdateColors() {
@@ -285,7 +304,7 @@ void MdTextButton::UpdateColors() {
 
 BEGIN_METADATA(MdTextButton, LabelButton)
 ADD_PROPERTY_METADATA(bool, Prominent)
-ADD_PROPERTY_METADATA(float, CornerRadius)
+ADD_PROPERTY_METADATA(absl::optional<float>, CornerRadius)
 ADD_PROPERTY_METADATA(absl::optional<SkColor>, BgColorOverride)
 ADD_PROPERTY_METADATA(absl::optional<gfx::Insets>, CustomPadding)
 END_METADATA

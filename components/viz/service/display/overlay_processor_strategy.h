@@ -25,11 +25,25 @@ class VIZ_SERVICE_EXPORT OverlayProcessorStrategy {
   virtual ~OverlayProcessorStrategy() = default;
   using PrimaryPlane = OverlayProcessorInterface::OutputSurfaceOverlayPlane;
 
-  // Returns false if the strategy cannot be made to work with the
-  // current set of render passes. Returns true if the strategy was successful
-  // and adds any additional passes necessary to represent overlays to
-  // |render_pass_list|. Most strategies should look at the primary
-  // RenderPass, the last element.
+  // Appends all legitimate overlay candidates to the list |candidates|
+  // for this strategy.  It is very important to note that this function
+  // should not attempt a specific candidate it should merely identify them
+  // and save the necessary data required to for a later attempt.
+  virtual void Propose(const SkM44& output_color_matrix,
+                       const OverlayProcessorInterface::FilterOperationsMap&
+                           render_pass_backdrop_filters,
+                       DisplayResourceProvider* resource_provider,
+                       AggregatedRenderPassList* render_pass_list,
+                       SurfaceDamageRectList* surface_damage_rect_list,
+                       const PrimaryPlane* primary_plane,
+                       std::vector<OverlayProposedCandidate>* candidates,
+                       std::vector<gfx::Rect>* content_bounds) = 0;
+
+  // Returns false if the specific |proposed_candidate| cannot be made to work
+  // for this strategy with the current set of render passes. Returns true if
+  // the strategy was successful and adds any additional passes necessary to
+  // represent overlays to |render_pass_list|. Most strategies should look at
+  // the primary RenderPass, the last element.
   virtual bool Attempt(const SkM44& output_color_matrix,
                        const OverlayProcessorInterface::FilterOperationsMap&
                            render_pass_backdrop_filters,
@@ -38,39 +52,8 @@ class VIZ_SERVICE_EXPORT OverlayProcessorStrategy {
                        SurfaceDamageRectList* surface_damage_rect_list,
                        const PrimaryPlane* primary_plane,
                        OverlayCandidateList* candidates,
-                       std::vector<gfx::Rect>* content_bounds) = 0;
-
-  // Appends all legitimate overlay candidates to the list |candidates|
-  // for this strategy.  It is very important to note that this function
-  // should not attempt a specific candidate it should merely identify them
-  // and save the necessary data required to for a later attempt.
-  virtual void ProposePrioritized(
-      const SkM44& output_color_matrix,
-      const OverlayProcessorInterface::FilterOperationsMap&
-          render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
-      AggregatedRenderPassList* render_pass_list,
-      SurfaceDamageRectList* surface_damage_rect_list,
-      const PrimaryPlane* primary_plane,
-      std::vector<OverlayProposedCandidate>* candidates,
-      std::vector<gfx::Rect>* content_bounds) = 0;
-
-  // Returns false if the specific |proposed_candidate| cannot be made to work
-  // for this strategy with the current set of render passes. Returns true if
-  // the strategy was successful and adds any additional passes necessary to
-  // represent overlays to |render_pass_list|. Most strategies should look at
-  // the primary RenderPass, the last element.
-  virtual bool AttemptPrioritized(
-      const SkM44& output_color_matrix,
-      const OverlayProcessorInterface::FilterOperationsMap&
-          render_pass_backdrop_filters,
-      DisplayResourceProvider* resource_provider,
-      AggregatedRenderPassList* render_pass_list,
-      SurfaceDamageRectList* surface_damage_rect_list,
-      const PrimaryPlane* primary_plane,
-      OverlayCandidateList* candidates,
-      std::vector<gfx::Rect>* content_bounds,
-      const OverlayProposedCandidate& proposed_candidate) = 0;
+                       std::vector<gfx::Rect>* content_bounds,
+                       const OverlayProposedCandidate& proposed_candidate) = 0;
 
   // Commits to using the proposed candidate by updating |render_pass| as
   // appropriate when this candidate is presented in an overlay plane.

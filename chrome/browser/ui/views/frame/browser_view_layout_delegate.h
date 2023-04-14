@@ -23,6 +23,10 @@ class BrowserViewLayoutDelegate {
   virtual bool IsTabStripVisible() const = 0;
   virtual bool GetBorderlessModeEnabled() const = 0;
   virtual gfx::Rect GetBoundsForTabStripRegionInBrowserView() const = 0;
+  virtual gfx::Rect GetBoundsForWebAppFrameToolbarInBrowserView() const = 0;
+  virtual void LayoutWebAppWindowTitle(
+      const gfx::Rect& available_space,
+      views::Label& window_title_label) const = 0;
   virtual int GetTopInsetInBrowserView() const = 0;
   virtual int GetThemeBackgroundXInset() const = 0;
   virtual bool IsToolbarVisible() const = 0;
@@ -39,6 +43,9 @@ class BrowserViewLayoutDelegate {
   virtual bool BrowserIsTypeNormal() const = 0;
   virtual bool HasFindBarController() const = 0;
   virtual void MoveWindowForFindBarIfNecessary() const = 0;
+  virtual bool IsWindowControlsOverlayEnabled() const = 0;
+  virtual void UpdateWindowControlsOverlay(
+      const gfx::Rect& available_titlebar_area) const = 0;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_DELEGATE_H_

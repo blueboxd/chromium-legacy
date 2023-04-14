@@ -8,6 +8,8 @@
 #include "ash/constants/ash_pref_names.h"
 #include "base/feature_list.h"
 #include "base/functional/callback_helpers.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "chrome/browser/ash/input_method/input_method_settings.h"
 #include "chrome/browser/ash/input_method/stub_input_method_engine_observer.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client_test_helper.h"
 #include "chrome/common/pref_names.h"
@@ -52,6 +54,16 @@ using ::testing::StrictMock;
 constexpr char kEngineIdUs[] = "xkb:us::eng";
 constexpr char kEngineIdEs[] = "xkb:es::spa";
 constexpr char kEngineIdPinyin[] = "zh-t-i0-pinyin";
+
+// This is a local copy of the JapaneseStartupActions used privately by
+// NativeInputMethodObserver.
+enum class JapaneseStartupAction {
+  kStillLegacy = 0,
+  kAlreadyMigrated = 1,
+  kPerformMigration = 2,
+  kUndoMigration = 3,
+  kMaxValue = kUndoMigration
+};
 
 class FakeSuggesterSwitch : public AssistiveSuggesterSwitch {
  public:
@@ -129,7 +141,7 @@ class MockInputMethod : public ime::mojom::InputMethod {
 void SetInputMethodOptions(Profile& profile,
                            bool autocorrect_enabled,
                            bool predictive_writing_enabled) {
-  base::Value input_method_setting(base::Value::Type::DICTIONARY);
+  base::Value input_method_setting(base::Value::Type::DICT);
   input_method_setting.SetPath(
       std::string(kEngineIdUs) + ".physicalKeyboardAutoCorrectionLevel",
       base::Value(autocorrect_enabled ? 1 : 0));
@@ -140,8 +152,16 @@ void SetInputMethodOptions(Profile& profile,
                           input_method_setting);
 }
 
+// TODO - support setting Japanese InputMethodOptions too.
+void SetInputMethodOptionsJapaneseMigrationCompleted(
+    Profile& profile,
+    bool japanese_migration_completed) {
+  SetJapaneseSettingsMigrationComplete(*(profile.GetPrefs()),
+                                       japanese_migration_completed);
+}
+
 void SetPinyinLayoutPrefs(Profile& profile, const std::string& layout) {
-  base::Value input_method_setting(base::Value::Type::DICTIONARY);
+  base::Value input_method_setting(base::Value::Type::DICT);
   input_method_setting.SetStringPath("zh-t-i0-pinyin.xkbLayout", layout);
   profile.GetPrefs()->Set(::prefs::kLanguageInputMethodSpecificSettings,
                           input_method_setting);
@@ -169,7 +189,7 @@ class FakeConnectionFactory : public ime::mojom::ConnectionFactory {
       mojo::PendingAssociatedReceiver<ime::mojom::JapaneseDecoder>
           japanese_decoder,
       ConnectToJapaneseDecoderCallback callback) override {
-    std::move(callback).Run(false);
+    std::move(callback).Run(true);
   }
 
   void Bind(mojo::PendingReceiver<ime::mojom::ConnectionFactory> receiver) {
@@ -243,6 +263,9 @@ class NativeInputMethodEngineTest : public ::testing::Test {
     chromeos::machine_learning::ServiceConnection::GetInstance()->Initialize();
   }
 
+  // TODO(b/264817001): Refactor EnableDefaultFeature*() functions to be
+  // a single function. This was not done in a parent to keep the change
+  // simple to review.
   void EnableDefaultFeatureList() {
     feature_list_.Reset();
     feature_list_.InitWithFeatures(
@@ -264,6 +287,19 @@ class NativeInputMethodEngineTest : public ::testing::Test {
             features::kAssistPersonalInfoEmail,
             features::kAssistPersonalInfoName,
             features::kAssistMultiWord,
+        },
+        /*disabled_features=*/{ash::features::kImeRuleConfig});
+  }
+
+  void EnableDefaultFeatureListWithJapaneseSystemPk() {
+    feature_list_.Reset();
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/
+        {
+            features::kAssistPersonalInfo,
+            features::kAssistPersonalInfoEmail,
+            features::kAssistPersonalInfoName,
+            features::kSystemJapanesePhysicalTyping,
         },
         /*disabled_features=*/{ash::features::kImeRuleConfig});
   }
@@ -312,6 +348,127 @@ TEST_F(NativeInputMethodEngineTest, LaunchesImeServiceIfAutocorrectIsOn) {
   engine.Enable(kEngineIdUs);
   engine.FlushForTesting();  // ensure input_method is connected.
   EXPECT_TRUE(engine.IsConnectedForTesting());
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest, CheckThatJapaneseStartupRecordedWhen) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kPerformMigration, 0);
+  TestingProfile testing_profile;
+  EnableDefaultFeatureListWithJapaneseSystemPk();
+  SetInputMethodOptionsJapaneseMigrationCompleted(testing_profile, false);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+  engine.Enable("nacl_mozc_jp");
+  engine.FlushForTesting();  // ensure input_method is connected.
+  EXPECT_TRUE(engine.IsConnectedForTesting());
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kPerformMigration, 1);
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       CheckThatJapaneseStartupEnumMarkedAsAlreadyMigrated) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kAlreadyMigrated, 0);
+  TestingProfile testing_profile;
+  EnableDefaultFeatureListWithJapaneseSystemPk();
+  SetInputMethodOptionsJapaneseMigrationCompleted(testing_profile, true);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+  engine.Enable("nacl_mozc_jp");
+  engine.FlushForTesting();  // ensure input_method is connected.
+  EXPECT_TRUE(engine.IsConnectedForTesting());
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kAlreadyMigrated, 1);
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       CheckThatJapaneseStartupEnumIsMarkedAsStillLegacyInLegacyCode) {
+  base::HistogramTester histogram_tester;
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kStillLegacy, 0);
+  TestingProfile testing_profile;
+  EnableDefaultFeatureList();
+  SetInputMethodOptionsJapaneseMigrationCompleted(testing_profile, false);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+  engine.Enable("nacl_mozc_jp");
+  engine.FlushForTesting();  // ensure input_method is connected.
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kStillLegacy, 1);
+
+  InputMethodManager::Shutdown();
+}
+
+TEST_F(NativeInputMethodEngineTest,
+       CheckThatJapaneseStartupEnumIsRevertedIfDisabled) {
+  base::HistogramTester histogram_tester;
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kUndoMigration, 0);
+
+  TestingProfile testing_profile;
+  EnableDefaultFeatureList();
+  SetInputMethodOptionsJapaneseMigrationCompleted(testing_profile, true);
+
+  testing::StrictMock<MockInputMethod> mock_input_method;
+  InputMethodManager::Initialize(
+      new TestInputMethodManager(&mock_input_method));
+  NativeInputMethodEngine engine;
+  engine.Initialize(std::make_unique<StubInputMethodEngineObserver>(),
+                    /*extension_id=*/"", &testing_profile);
+
+  engine.Enable(kEngineIdUs);
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+  engine.Enable("nacl_mozc_jp");
+  engine.FlushForTesting();  // ensure input_method is connected.
+  EXPECT_FALSE(engine.IsConnectedForTesting());
+
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.PhysicalKeyboard.Japanese.StartupAction",
+      JapaneseStartupAction::kUndoMigration, 1);
 
   InputMethodManager::Shutdown();
 }
@@ -702,9 +859,7 @@ TEST_F(NativeInputMethodEngineTest,
   engine.FlushForTesting();  // ensure input_method is connected.
   engine.Focus(TextInputMethod::InputContext(ui::TEXT_INPUT_TYPE_TEXT));
   // Each character in "你好" is one UTF-16 code unit.
-  engine.SetSurroundingText(u"你好",
-                            /*cursor_pos=*/2,
-                            /*anchor_pos=*/2,
+  engine.SetSurroundingText(u"你好", gfx::Range(2),
                             /*offset=*/0);
   engine.FlushForTesting();
 
@@ -984,11 +1139,11 @@ TEST_F(NativeInputMethodEngineWithRenderViewHostTest,
   ASSERT_EQ(0u, test_recorder.entries_count());
 
   // Should not record when random text is entered.
-  engine.SetSurroundingText(u"random text ", 12, 12, 0);
+  engine.SetSurroundingText(u"random text ", gfx::Range(12), 0);
   EXPECT_EQ(0u, test_recorder.entries_count());
 
   // Should record when match is triggered.
-  engine.SetSurroundingText(u"my email is ", 12, 12, 0);
+  engine.SetSurroundingText(u"my email is ", gfx::Range(12), 0);
   EXPECT_EQ(0u, test_recorder.sources_count());
   EXPECT_EQ(1u, test_recorder.entries_count());
   const auto entries =

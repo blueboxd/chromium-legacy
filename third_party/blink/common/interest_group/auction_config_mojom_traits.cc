@@ -22,14 +22,6 @@ namespace mojo {
 
 namespace {
 
-// Helper to check if `url` is HTTPS and has the specified origin. Used to
-// validate seller URLs can be used with the seller's origin.
-bool IsHttpsAndMatchesOrigin(const GURL& seller_url,
-                             const url::Origin& seller_origin) {
-  return seller_url.scheme() == url::kHttpsScheme &&
-         url::Origin::Create(seller_url) == seller_origin;
-}
-
 // Validates no key in `buyer_priority_signals` starts with "browserSignals.",
 // which are reserved for values set by the browser.
 bool AreBuyerPrioritySignalsValid(
@@ -68,26 +60,20 @@ bool StructTraits<blink::mojom::DirectFromSellerSignalsDataView,
   return true;
 }
 
-bool UnionTraits<blink::mojom::AuctionAdConfigMaybePromiseJsonDataView,
-                 blink::AuctionConfig::MaybePromiseJson>::
-    Read(blink::mojom::AuctionAdConfigMaybePromiseJsonDataView in,
-         blink::AuctionConfig::MaybePromiseJson* out) {
+template <class View, class Wrapper>
+bool AdConfigMaybePromiseTraitsHelper<View, Wrapper>::Read(View in,
+                                                           Wrapper* out) {
   switch (in.tag()) {
-    case blink::mojom::AuctionAdConfigMaybePromiseJsonDataView::Tag::kNothing:
-      *out = blink::AuctionConfig::MaybePromiseJson::FromNothing();
+    case View::Tag::kPromise:
+      *out = Wrapper::FromPromise();
       return true;
 
-    case blink::mojom::AuctionAdConfigMaybePromiseJsonDataView::Tag::kPromise:
-      *out = blink::AuctionConfig::MaybePromiseJson::FromPromise();
-      return true;
-
-    case blink::mojom::AuctionAdConfigMaybePromiseJsonDataView::Tag::kJson: {
-      std::string json_payload;
-      if (!in.ReadJson(&json_payload)) {
+    case View::Tag::kValue: {
+      typename Wrapper::ValueType payload;
+      if (!in.ReadValue(&payload)) {
         return false;
       }
-      *out = blink::AuctionConfig::MaybePromiseJson::FromJson(
-          std::move(json_payload));
+      *out = Wrapper::FromValue(std::move(payload));
       return true;
     }
   }
@@ -95,31 +81,21 @@ bool UnionTraits<blink::mojom::AuctionAdConfigMaybePromiseJsonDataView,
   return false;
 }
 
-bool UnionTraits<
+template struct BLINK_COMMON_EXPORT AdConfigMaybePromiseTraitsHelper<
+    blink::mojom::AuctionAdConfigMaybePromiseJsonDataView,
+    blink::AuctionConfig::MaybePromiseJson>;
+
+template struct BLINK_COMMON_EXPORT AdConfigMaybePromiseTraitsHelper<
     blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignalsDataView,
-    blink::AuctionConfig::MaybePromisePerBuyerSignals>::
-    Read(blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignalsDataView in,
-         blink::AuctionConfig::MaybePromisePerBuyerSignals* out) {
-  switch (in.tag()) {
-    case blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignalsDataView::Tag::
-        kPromise:
-      *out = blink::AuctionConfig::MaybePromisePerBuyerSignals::FromPromise();
-      return true;
+    blink::AuctionConfig::MaybePromisePerBuyerSignals>;
 
-    case blink::mojom::AuctionAdConfigMaybePromisePerBuyerSignalsDataView::Tag::
-        kPerBuyerSignals: {
-      absl::optional<base::flat_map<url::Origin, std::string>> payload;
-      if (!in.ReadPerBuyerSignals(&payload)) {
-        return false;
-      }
-      *out = blink::AuctionConfig::MaybePromisePerBuyerSignals::FromValue(
-          std::move(payload));
-      return true;
-    }
-  }
-  NOTREACHED();
-  return false;
-}
+template struct BLINK_COMMON_EXPORT AdConfigMaybePromiseTraitsHelper<
+    blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeoutsDataView,
+    blink::AuctionConfig::MaybePromiseBuyerTimeouts>;
+
+template struct BLINK_COMMON_EXPORT AdConfigMaybePromiseTraitsHelper<
+    blink::mojom::AuctionAdConfigMaybePromiseDirectFromSellerSignalsDataView,
+    blink::AuctionConfig::MaybePromiseDirectFromSellerSignals>;
 
 bool StructTraits<blink::mojom::AuctionAdConfigBuyerTimeoutsDataView,
                   blink::AuctionConfig::BuyerTimeouts>::
@@ -130,31 +106,6 @@ bool StructTraits<blink::mojom::AuctionAdConfigBuyerTimeoutsDataView,
     return false;
   }
   return true;
-}
-
-bool UnionTraits<blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeoutsDataView,
-                 blink::AuctionConfig::MaybePromiseBuyerTimeouts>::
-    Read(blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeoutsDataView in,
-         blink::AuctionConfig::MaybePromiseBuyerTimeouts* out) {
-  switch (in.tag()) {
-    case blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeoutsDataView::Tag::
-        kPromise:
-      *out = blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromPromise();
-      return true;
-
-    case blink::mojom::AuctionAdConfigMaybePromiseBuyerTimeoutsDataView::Tag::
-        kValue: {
-      blink::AuctionConfig::BuyerTimeouts payload;
-      if (!in.ReadValue(&payload)) {
-        return false;
-      }
-      *out = blink::AuctionConfig::MaybePromiseBuyerTimeouts::FromValue(
-          std::move(payload));
-      return true;
-    }
-  }
-  NOTREACHED();
-  return false;
 }
 
 bool StructTraits<
@@ -180,6 +131,7 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
       !data.ReadSellerTimeout(&out->seller_timeout) ||
       !data.ReadPerBuyerSignals(&out->per_buyer_signals) ||
       !data.ReadBuyerTimeouts(&out->buyer_timeouts) ||
+      !data.ReadBuyerCumulativeTimeouts(&out->buyer_cumulative_timeouts) ||
       !data.ReadPerBuyerGroupLimits(&out->per_buyer_group_limits) ||
       !data.ReadPerBuyerPrioritySignals(&out->per_buyer_priority_signals) ||
       !data.ReadAllBuyersPrioritySignals(&out->all_buyers_priority_signals) ||
@@ -190,6 +142,13 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
   }
 
   out->all_buyers_group_limit = data.all_buyers_group_limit();
+
+  // Only one of `interest_group_buyers` or `component_auctions` may be
+  // non-empty.
+  if (out->interest_group_buyers && out->interest_group_buyers->size() > 0 &&
+      out->component_auctions.size() > 0) {
+    return false;
+  }
 
   if (out->interest_group_buyers) {
     for (const auto& buyer : *out->interest_group_buyers) {
@@ -248,52 +207,17 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
   // share the seller's origin, and must be HTTPS. Need to explicitly check the
   // scheme because some non-HTTPS URLs may have HTTPS origins (e.g., blob
   // URLs).
-  if (!IsHttpsAndMatchesOrigin(out->decision_logic_url, out->seller) ||
+  if (!out->IsHttpsAndMatchesSellerOrigin(out->decision_logic_url) ||
       (out->trusted_scoring_signals_url &&
-       !IsHttpsAndMatchesOrigin(*out->trusted_scoring_signals_url,
-                                out->seller))) {
+       !out->IsHttpsAndMatchesSellerOrigin(
+           *out->trusted_scoring_signals_url))) {
     return false;
   }
 
-  absl::optional<blink::DirectFromSellerSignals> direct_from_seller_signals =
-      out->direct_from_seller_signals;
-  if (direct_from_seller_signals) {
-    const GURL& prefix = direct_from_seller_signals->prefix;
-    // The prefix can't have a query because the browser process appends its own
-    // query suffix.
-    if (prefix.has_query())
-      return false;
-    // NOTE: uuid-in-package isn't supported, since it doesn't support CORS.
-    if (!IsHttpsAndMatchesOrigin(prefix, out->seller))
-      return false;
-    base::flat_set<url::Origin> interest_group_buyers(
-        out->non_shared_params.interest_group_buyers
-            ? *out->non_shared_params.interest_group_buyers
-            : std::vector<url::Origin>());
-    for (const auto& [buyer_origin, bundle_url] :
-         direct_from_seller_signals->per_buyer_signals) {
-      // The renderer shouldn't provide bundles for origins that aren't buyers
-      // in this auction -- there would be no worklet to receive them.
-      if (interest_group_buyers.count(buyer_origin) < 1)
-        return false;
-      // All DirectFromSellerSignals must come from the seller.
-      if (!IsHttpsAndMatchesOrigin(bundle_url.bundle_url, out->seller))
-        return false;
-    }
-    if (direct_from_seller_signals->seller_signals &&
-        !IsHttpsAndMatchesOrigin(
-            direct_from_seller_signals->seller_signals->bundle_url,
-            out->seller)) {
-      // All DirectFromSellerSignals must come from the seller.
-      return false;
-    }
-    if (direct_from_seller_signals->auction_signals &&
-        !IsHttpsAndMatchesOrigin(
-            direct_from_seller_signals->auction_signals->bundle_url,
-            out->seller)) {
-      // All DirectFromSellerSignals must come from the seller.
-      return false;
-    }
+  if (!out->direct_from_seller_signals.is_promise() &&
+      !out->IsDirectFromSellerSignalsValid(
+          out->direct_from_seller_signals.value())) {
+    return false;
   }
 
   return true;

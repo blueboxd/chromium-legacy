@@ -11,6 +11,7 @@
 
 #include <vector>
 
+#include "content/browser/devtools/devtools_device_request_prompt_info.h"
 #include "content/browser/devtools/devtools_throttle_handle.h"
 #include "content/browser/preloading/prerender/prerender_final_status.h"
 #include "content/browser/renderer_host/back_forward_cache_impl.h"
@@ -21,7 +22,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/filter/source_stream.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -200,6 +200,14 @@ void DidCancelPrerender(const GURL& prerendering_url,
                         PrerenderFinalStatus status,
                         const std::string& disallowed_api_method);
 
+void DidUpdatePrefetchStatus(FrameTreeNode* ftn,
+                             const GURL& prefetch_url,
+                             PreloadingTriggeringOutcome status);
+
+void DidUpdatePrerenderStatus(int initiator_frame_tree_node_id,
+                              const GURL& prerender_url,
+                              PreloadingTriggeringOutcome status);
+
 void OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     absl::optional<const base::UnguessableToken> devtools_navigation_token,
@@ -377,6 +385,12 @@ void ApplyNetworkContextParamsOverrides(
 
 void DidRejectCrossOriginPortalMessage(
     RenderFrameHostImpl* render_frame_host_impl);
+
+void UpdateDeviceRequestPrompt(RenderFrameHost* render_frame_host,
+                               DevtoolsDeviceRequestPromptInfo* prompt_info);
+
+void CleanUpDeviceRequestPrompt(RenderFrameHost* render_frame_host,
+                                DevtoolsDeviceRequestPromptInfo* prompt_info);
 
 }  // namespace devtools_instrumentation
 

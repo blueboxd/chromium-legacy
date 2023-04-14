@@ -304,6 +304,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableSendPasswords",
       base::FeatureList::IsEnabled(password_manager::features::kSendPasswords));
 
+  html_source->AddBoolean(
+      "enableNewPasswordManagerPage",
+      base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign));
+
   commerce::ShoppingService* shopping_service =
       commerce::ShoppingServiceFactory::GetForBrowserContext(profile);
   html_source->AddBoolean("changePriceEmailNotificationsEnabled",
@@ -352,6 +357,10 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("esbSettingsImprovementsEnabled",
                           base::FeatureList::IsEnabled(
                               safe_browsing::kEsbIphBubbleAndCollapseSettings));
+
+  html_source->AddBoolean(
+      "enableEsbCollapse",
+      safe_browsing::kEsbIphBubbleAndCollapseSettingsEnableCollapse.Get());
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   html_source->AddBoolean(

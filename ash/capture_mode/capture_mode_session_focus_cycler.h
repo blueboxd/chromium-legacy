@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/capture_mode/capture_mode_types.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -82,6 +83,11 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     virtual std::unique_ptr<views::HighlightPathGenerator>
     CreatePathGenerator();
 
+    // Sets `needs_highlight_path_` to true, so that a new highlight path
+    // generator can be created and installed on the focus ring the next time
+    // `PseudoFocus()` is called.
+    void InvalidateFocusRingPath();
+
     // Shows the focus ring and triggers setting accessibility focus on the
     // associated view.
     virtual void PseudoFocus();
@@ -96,7 +102,8 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     virtual void ClickView();
 
    protected:
-    virtual ~HighlightableView() = default;
+    HighlightableView();
+    virtual ~HighlightableView();
 
     // TODO(crbug.com/1182456): This can result in multiple of these objects
     // thinking they have focus if CaptureModeSessionFocusCycler does not call
@@ -108,6 +115,14 @@ class ASH_EXPORT CaptureModeSessionFocusCycler : public views::WidgetObserver {
     // A convenience pointer to the focus ring, which is owned by the views
     // hierarchy.
     views::FocusRing* focus_ring_ = nullptr;
+
+    // True until a highlight path generator has been installed on the focus
+    // ring. The path generator can be refreshed (e.g. to change the shape of
+    // the focus ring) via calling `InvalidateFocusRingPath()`, which will set
+    // this to back to `true`.
+    bool needs_highlight_path_ = true;
+
+    base::WeakPtrFactory<HighlightableView> weak_ptr_factory_{this};
   };
 
   // An aura window that can be focused in capture session.

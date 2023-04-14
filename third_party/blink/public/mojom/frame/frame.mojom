@@ -45,6 +45,7 @@ import "third_party/blink/public/mojom/frame/view_transition_state.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
 import "third_party/blink/public/mojom/loader/referrer.mojom";
+import "third_party/blink/public/mojom/loader/keep_alive_handle_factory.mojom";
 import "third_party/blink/public/mojom/messaging/delegated_capability.mojom";
 import "third_party/blink/public/mojom/messaging/task_attribution_id.mojom";
 import "third_party/blink/public/mojom/messaging/transferable_message.mojom";
@@ -146,6 +147,7 @@ enum JavaScriptExecutionResultType {
 enum TraverseCancelledReason {
   kNotFound,
   kSandboxViolation,
+  kAbortedBeforeCommit,
 };
 
 // The ViewTransitionOnNavigation opt-in state for a Document. This indicates
@@ -188,18 +190,6 @@ struct IframeAttributes {
   string? name;
   // 'src' attribute of the iframe. Optional because it might not be set.
   string? src;
-};
-
-// An opaque handle that keeps alive the associated render process even after
-// the frame is detached. Used by resource requests with "keepalive" specified.
-interface KeepAliveHandle {};
-
-// A factory interface for KeepAliveHandle. This is separate from LocalFrameHost
-// because LocalFrameHost may not be usable when the frame is about to be gone.
-interface KeepAliveHandleFactory {
-  // Creates and returns a KeepAliveHandle.
-  IssueKeepAliveHandle(
-      pending_receiver<blink.mojom.KeepAliveHandle> keep_alive_handle);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -364,6 +354,10 @@ interface LocalFrameHost {
   NavigateToNavigationApiKey(string key, bool has_user_gesture,
                     TaskAttributionId? soft_navigation_heuristics_task_id);
 
+  // Called with |true| when the first navigate event handler is added, and with
+  // |false| when the last navigate event handler is removed.
+  NavigateEventHandlerPresenceChanged(bool present);
+
   // Changes the title for the page in the UI when the page is navigated or the
   // title changes. Sent for top-level frames. This can be null when loading an
   // initial empty document (and in some tests).
@@ -378,6 +372,11 @@ interface LocalFrameHost {
   // |update_state == kNotifyActivation|.
   UpdateUserActivationState(UserActivationUpdateType update_type,
                             UserActivationNotificationType notification_type);
+
+  // Called when a history navigation action that could potentially be used to
+  // back-trap a user is invoked. Keeps HistoryUserActivationState in sync
+  // between renderer and browser.
+  DidConsumeHistoryUserActivation();
 
   // Provides accessibility information about a find in page result.
   HandleAccessibilityFindInPageResult(FindInPageResultAXParams params);
@@ -586,6 +585,15 @@ interface LocalFrameHost {
   SendFencedFrameReportingBeacon(string event_data,
                                  string event_type,
                                  ReportingDestination destination);
+
+  // Fenced frames can send beacons automatically when an event happens.
+  //
+  // For now, only "reserved.top_navigation" is supported. The `event_data` is
+  // installed in the RenderFrameHost and will be sent toward `destination` on
+  // the next cross-document top-frame navigation.
+  SetFencedFrameAutomaticBeaconReportEventData(
+      string event_data,
+      array<ReportingDestination> destination);
 
   // Sent by the renderer process to request the creation of a new portal.
   // |portal| is the pipe to be used for the Portal object, |client| is the pipe

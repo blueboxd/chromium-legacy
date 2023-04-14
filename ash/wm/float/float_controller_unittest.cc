@@ -103,7 +103,7 @@ class WindowFloatTest : public AshTestBase {
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {chromeos::wm::features::kFloatWindow}, {});
+        {chromeos::wm::features::kWindowLayoutMenu}, {});
     AshTestBase::SetUp();
   }
 
@@ -172,6 +172,23 @@ TEST_F(WindowFloatTest, FloatWindowAnimatesInOverview) {
   EXPECT_TRUE(maximized_window->layer()->GetAnimator()->is_animating());
 }
 
+// Tests that a floated window animates when a state change causes it to
+// unfloat. Regression test for b/252505434.
+TEST_F(WindowFloatTest, FloatToMaximizeWindowAnimates) {
+  std::unique_ptr<aura::Window> window = CreateFloatedWindow();
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  const WMEvent maximize_event(WM_EVENT_MAXIMIZE);
+  WindowState::Get(window.get())->OnWMEvent(&maximize_event);
+  // `WindowState::SetBoundsDirectCrossFade` still starts an animation if the
+  // source and destination bounds are the same. Therefore, it is not enough to
+  // just check if its animating.
+  EXPECT_TRUE(window->layer()->GetAnimator()->is_animating());
+  EXPECT_NE(window->layer()->transform(),
+            window->layer()->GetTargetTransform());
+}
+
 // Test when float a window in clamshell mode, window will change to default
 // float bounds in certain conditions.
 TEST_F(WindowFloatTest, WindowFloatingResize) {
@@ -202,12 +219,12 @@ TEST_F(WindowFloatTest, WindowFloatingResize) {
   // Unfloat.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   EXPECT_FALSE(window_state->IsFloated());
-  EXPECT_TRUE(window_state->IsFullscreen());
-  // Unfullscreen.
-  window_state->OnWMEvent(&toggle_fullscreen_event);
-  EXPECT_TRUE(window_state->IsFloated());
-  EXPECT_FALSE(window_state->IsFullscreen());
+  // Unfloat a previously full screened window will restore to previous window
+  // state.
+  EXPECT_TRUE(window_state->IsMaximized());
 
+  // Float window again.
+  PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
   // Minimize floated window.
   // Minimized window can't be floated, but when a floated window enter/exit
   // minimized state, it remains floated.

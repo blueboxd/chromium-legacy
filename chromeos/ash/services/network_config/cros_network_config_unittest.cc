@@ -39,6 +39,7 @@
 #include "chromeos/ash/components/network/prohibited_technologies_handler.h"
 #include "chromeos/ash/components/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/ash/components/network/system_token_cert_db_storage.h"
+#include "chromeos/ash/components/network/technology_state_controller.h"
 #include "chromeos/ash/services/network_config/public/cpp/cros_network_config_test_observer.h"
 #include "chromeos/ash/services/network_config/test_apn_data.h"
 #include "chromeos/ash/services/network_config/test_network_configuration_observer.h"
@@ -75,7 +76,6 @@ constexpr char kCellularTestApnPassword1[] = "Test Pass";
 constexpr char kCellularTestApnAttach1[] = "";
 constexpr char kCellularTestApnId1[] = "1";
 constexpr char kCellularTestApnAuthenticationType1[] = "";
-constexpr char kCellularTestApnIpType1[] = "";
 constexpr char kCellularTestApnTypes1[] = "Default";
 
 constexpr char kCellularTestApn2[] = "TEST.APN2";
@@ -198,8 +198,8 @@ std::string CreateApnShillDict() {
   test_apn_data.password = kCellularTestApnPassword1;
   test_apn_data.attach = kCellularTestApnAttach1;
   test_apn_data.id = kCellularTestApnId1;
-  test_apn_data.onc_authentication_type = kCellularTestApnAuthenticationType1;
-  test_apn_data.onc_ip_type = kCellularTestApnIpType1;
+  test_apn_data.onc_authentication = kCellularTestApnAuthenticationType1;
+  test_apn_data.onc_ip_type = ::onc::cellular_apn::kIpTypeIpv4;
   test_apn_data.onc_apn_types.emplace_back(kCellularTestApnTypes1);
   return test_apn_data.AsApnShillDict();
 }
@@ -267,7 +267,8 @@ class CrosNetworkConfigTest : public testing::Test {
         network_handler->managed_network_configuration_handler(),
         network_handler->network_connection_handler(),
         network_handler->network_certificate_handler(),
-        network_handler->network_profile_handler());
+        network_handler->network_profile_handler(),
+        network_handler->technology_state_controller());
     SetupPolicy();
     SetupNetworks();
   }
@@ -1401,7 +1402,7 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   EXPECT_EQ(mojom::DeviceStateType::kEnabled, vpn->device_state);
 
   // Disable WiFi
-  NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+  NetworkHandler::Get()->technology_state_controller()->SetTechnologiesEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   devices = GetDeviceStateList();
@@ -1856,7 +1857,10 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApnList) {
       /*auth_type_count=*/0, mojom::ApnIpType::kAutomatic,
       /*ip_type_count=*/0, ApnTypes::kAttach, /*apn_types_count=*/0);
 
-  // CreateCustomApn with attach and default and make sure that it gets added.
+  // CreateCustomApn with attach and default and mock a failure.
+  ShillServiceClient::Get()
+      ->GetTestInterface()
+      ->SetErrorForNextSetPropertiesAttempt("Error.NotReady");
   TestApnData test_apn2;
   test_apn2.access_point_name = kCellularTestApn1;
   test_apn2.name = kCellularTestApnName1;
@@ -1868,6 +1872,24 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApnList) {
   test_apn2.onc_apn_types = {::onc::cellular_apn::kApnTypeDefault,
                              ::onc::cellular_apn::kApnTypeAttach};
   CreateCustomApn(kCellularGuid, test_apn2.AsMojoApn());
+  EXPECT_EQ(0u, network_config_observer.GetOnConfigurationModifiedCallCount());
+  {
+    std::vector<TestApnData*> empty_apn_list({});
+    EXPECT_TRUE(
+        UserApnsInNetworkMetadataStoreMatch(kCellularGuid, empty_apn_list));
+    EXPECT_TRUE(UserApnsInCellularConfigMatch(kCellularGuid, empty_apn_list,
+                                              network_config_observer));
+    EXPECT_TRUE(
+        UserApnsInManagedPropertiesMatch(kCellularGuid, empty_apn_list));
+  }
+  AssertCreateCustomApnResultBucketCount(/*num_success=*/0, /*num_failure=*/1);
+  AssertCreateCustomApnPropertiesBucketCount(
+      mojom::ApnAuthenticationType::kAutomatic,
+      /*auth_type_count=*/0, mojom::ApnIpType::kAutomatic,
+      /*ip_type_count=*/0, ApnTypes::kDefaultAndAttach, /*apn_types_count=*/0);
+
+  // Try again to create the APN without mocking a failure.
+  CreateCustomApn(kCellularGuid, test_apn2.AsMojoApn());
 
   EXPECT_EQ(1u, network_config_observer.GetOnConfigurationModifiedCallCount());
   {
@@ -1878,7 +1900,7 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApnList) {
                                               network_config_observer));
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
-  AssertCreateCustomApnResultBucketCount(/*num_success=*/1, /*num_failure=*/0);
+  AssertCreateCustomApnResultBucketCount(/*num_success=*/1, /*num_failure=*/1);
   AssertCreateCustomApnPropertiesBucketCount(
       mojom::ApnAuthenticationType::kAutomatic,
       /*auth_type_count=*/1, mojom::ApnIpType::kAutomatic,
@@ -1905,7 +1927,7 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApnList) {
                                               network_config_observer));
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
-  AssertCreateCustomApnResultBucketCount(/*num_success=*/2, /*num_failure=*/0);
+  AssertCreateCustomApnResultBucketCount(/*num_success=*/2, /*num_failure=*/1);
   AssertCreateCustomApnPropertiesBucketCount(
       mojom::ApnAuthenticationType::kAutomatic,
       /*auth_type_count=*/2, mojom::ApnIpType::kAutomatic,
@@ -2037,8 +2059,31 @@ TEST_F(CrosNetworkConfigTest, RemoveCustomApnList) {
   const std::string third_apn_id = std::string(
       *custom_apns->front().GetDict().FindString(::onc::cellular_apn::kId));
 
-  // Remove the default APN |test_apn3| which is OK because there is another
-  // APN that is default.
+  // Try to remove the default APN |test_apn3| which is OK because there is
+  // another APN that is default but mock a failure.
+  ShillServiceClient::Get()
+      ->GetTestInterface()
+      ->SetErrorForNextSetPropertiesAttempt("Error.NotReady");
+  RemoveCustomApn(kCellularGuid, third_apn_id);
+  EXPECT_EQ(3u, network_config_observer.GetOnConfigurationModifiedCallCount());
+  {
+    std::vector<TestApnData*> expected_apns(
+        {&test_apn3, &test_apn2, &test_apn1});
+    EXPECT_TRUE(
+        UserApnsInNetworkMetadataStoreMatch(kCellularGuid, expected_apns));
+    EXPECT_TRUE(UserApnsInCellularConfigMatch(kCellularGuid, expected_apns,
+                                              network_config_observer));
+    EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
+  }
+  AssertRemoveCustomApnResultBucketCount(/*num_success=*/0, /*num_failure=*/1);
+  AssertRemoveCustomApnPropertiesBucketCount(ApnTypes::kDefault,
+                                             /*apn_types_count=*/0);
+  custom_apns = network_metadata_store()->GetCustomApnList(kCellularGuid);
+  ASSERT_TRUE(custom_apns);
+  ASSERT_EQ(3u, custom_apns->size());
+
+  // Try again to remove the APN which is OK because there is another APN that
+  // is default and we did not mock a failure.
   RemoveCustomApn(kCellularGuid, third_apn_id);
   EXPECT_EQ(4u, network_config_observer.GetOnConfigurationModifiedCallCount());
   {
@@ -2049,7 +2094,7 @@ TEST_F(CrosNetworkConfigTest, RemoveCustomApnList) {
                                               network_config_observer));
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
-  AssertRemoveCustomApnResultBucketCount(/*num_success=*/1, /*num_failure=*/0);
+  AssertRemoveCustomApnResultBucketCount(/*num_success=*/1, /*num_failure=*/1);
   AssertRemoveCustomApnPropertiesBucketCount(ApnTypes::kDefault,
                                              /*apn_types_count=*/1);
   custom_apns = network_metadata_store()->GetCustomApnList(kCellularGuid);
@@ -2067,7 +2112,7 @@ TEST_F(CrosNetworkConfigTest, RemoveCustomApnList) {
                                               network_config_observer));
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
-  AssertRemoveCustomApnResultBucketCount(/*num_success=*/2, /*num_failure=*/0);
+  AssertRemoveCustomApnResultBucketCount(/*num_success=*/2, /*num_failure=*/1);
   AssertRemoveCustomApnPropertiesBucketCount(ApnTypes::kAttach,
                                              /*apn_types_count=*/1);
   custom_apns = network_metadata_store()->GetCustomApnList(kCellularGuid);
@@ -2085,7 +2130,7 @@ TEST_F(CrosNetworkConfigTest, RemoveCustomApnList) {
     EXPECT_TRUE(
         UserApnsInManagedPropertiesMatch(kCellularGuid, empty_apn_list));
   }
-  AssertRemoveCustomApnResultBucketCount(/*num_success=*/3, /*num_failure=*/0);
+  AssertRemoveCustomApnResultBucketCount(/*num_success=*/3, /*num_failure=*/1);
   AssertRemoveCustomApnPropertiesBucketCount(ApnTypes::kDefault,
                                              /*apn_types_count=*/2);
   custom_apns = network_metadata_store()->GetCustomApnList(kCellularGuid);
@@ -2230,13 +2275,16 @@ TEST_F(CrosNetworkConfigTest, ModifyCustomApnList) {
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
 
-  // Modify attach APN type to default which is OK.
+  // Try to modify attach APN type to default which is OK but mock a failure.
   custom_apns = network_metadata_store()->GetCustomApnList(kCellularGuid);
   ASSERT_TRUE(custom_apns);
   ASSERT_EQ(2u, custom_apns->size());
   const std::string second_apn_id =
       *custom_apns->front().GetDict().FindString(::onc::cellular_apn::kId);
 
+  ShillServiceClient::Get()
+      ->GetTestInterface()
+      ->SetErrorForNextSetPropertiesAttempt("Error.NotReady");
   TestApnData test_apn4;
   test_apn4.access_point_name = "TEST.APN4";
   test_apn4.name = "Test Apn 4";
@@ -2247,6 +2295,23 @@ TEST_F(CrosNetworkConfigTest, ModifyCustomApnList) {
   test_apn4.onc_apn_types = {::onc::cellular_apn::kApnTypeDefault};
   test_apn4.id = second_apn_id;
 
+  ApnHistogramCounts counts;
+  AssertApnHistogramCounts(counts);
+  ModifyCustomApn(kCellularGuid, test_apn4.AsMojoApn());
+  EXPECT_EQ(2u, network_config_observer.GetOnConfigurationModifiedCallCount());
+  {
+    std::vector<TestApnData*> expected_apns({&test_apn3, &test_apn1});
+    EXPECT_TRUE(
+        UserApnsInNetworkMetadataStoreMatch(kCellularGuid, expected_apns));
+    EXPECT_TRUE(UserApnsInCellularConfigMatch(kCellularGuid, expected_apns,
+                                              network_config_observer));
+    EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
+  }
+  counts.num_modify_failure++;
+  AssertApnHistogramCounts(counts);
+
+  // Try again to modify attach APN type to default which is OK without mocking
+  // a failure.
   ModifyCustomApn(kCellularGuid, test_apn4.AsMojoApn());
   EXPECT_EQ(3u, network_config_observer.GetOnConfigurationModifiedCallCount());
   {
@@ -2257,6 +2322,9 @@ TEST_F(CrosNetworkConfigTest, ModifyCustomApnList) {
                                               network_config_observer));
     EXPECT_TRUE(UserApnsInManagedPropertiesMatch(kCellularGuid, expected_apns));
   }
+  counts.num_modify_success++;
+  counts.num_modify_type_attach++;
+  AssertApnHistogramCounts(counts);
 
   // Modify first default APN to be attach which is OK.
   TestApnData test_apn5;
@@ -2304,9 +2372,8 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApn_EmptyList) {
   test_apn1.attach = kCellularTestApnAttach1;
   test_apn1.mojo_ip_type = mojom::ApnIpType::kIpv4;
   test_apn1.onc_ip_type = ::onc::cellular_apn::kIpTypeIpv4;
-  test_apn1.mojo_authentication_type = mojom::ApnAuthenticationType::kPap;
-  test_apn1.onc_authentication_type =
-      ::onc::cellular_apn::kAuthenticationTypePap;
+  test_apn1.mojo_authentication = mojom::ApnAuthenticationType::kPap;
+  test_apn1.onc_authentication = ::onc::cellular_apn::kAuthenticationPap;
   test_apn1.mojo_apn_types = {mojom::ApnType::kDefault,
                               mojom::ApnType::kAttach};
   test_apn1.onc_apn_types = {::onc::cellular_apn::kApnTypeDefault,
@@ -2338,9 +2405,8 @@ TEST_F(CrosNetworkConfigTest, CreateCustomApn_EmptyList) {
   test_apn2.attach = kCellularTestApnAttach2;
   test_apn2.mojo_ip_type = mojom::ApnIpType::kIpv4Ipv6;
   test_apn2.onc_ip_type = ::onc::cellular_apn::kIpTypeIpv4Ipv6;
-  test_apn2.mojo_authentication_type = mojom::ApnAuthenticationType::kChap;
-  test_apn2.onc_authentication_type =
-      ::onc::cellular_apn::kAuthenticationTypeChap;
+  test_apn2.mojo_authentication = mojom::ApnAuthenticationType::kChap;
+  test_apn2.onc_authentication = ::onc::cellular_apn::kAuthenticationChap;
   test_apn2.mojo_apn_types = {mojom::ApnType::kDefault,
                               mojom::ApnType::kAttach};
   test_apn2.onc_apn_types = {::onc::cellular_apn::kApnTypeDefault,
@@ -3404,8 +3470,8 @@ TEST_F(CrosNetworkConfigTest, DeviceListChanged) {
       NetworkHandler::Get()->network_state_handler();
 
   // Disable wifi
-  network_state_handler->SetTechnologyEnabled(NetworkTypePattern::WiFi(), false,
-                                              network_handler::ErrorCallback());
+  NetworkHandler::Get()->technology_state_controller()->SetTechnologiesEnabled(
+      NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   // This will trigger three device list updates. First when wifi is in the
   // disabling state, next when it's actually disabled, and lastly when

@@ -134,7 +134,7 @@ const base::FeatureParam<std::string>
 // Android and Linux.
 BASE_FEATURE(kDefaultEnableGpuRasterization,
              "DefaultEnableGpuRasterization",
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || \
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_LINUX)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
@@ -145,7 +145,7 @@ BASE_FEATURE(kDefaultEnableGpuRasterization,
 // Enables the use of out of process rasterization for canvas.
 BASE_FEATURE(kCanvasOopRasterization,
              "CanvasOopRasterization",
-#if BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -185,7 +185,7 @@ BASE_FEATURE(kNoUndamagedOverlayPromotion,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
 // Enable use of Metal for OOP rasterization.
 BASE_FEATURE(kMetal, "Metal", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
@@ -367,6 +367,13 @@ BASE_FEATURE(kUseGpuSchedulerDfs,
 // decoder.
 BASE_FEATURE(kPassthroughYuvRgbConversion,
              "PassthroughYuvRgbConversion",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, the validating command decoder always obtains the size to use
+// from the source texture when copying textures, rather than first checking if
+// there is a GLImage present and using its size if so.
+BASE_FEATURE(kCmdDecoderAlwaysGetSizeFromSourceTexture,
+             "CmdDecoderAlwaysGetSizeFromSourceTexture",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool UseGles2ForOopR() {

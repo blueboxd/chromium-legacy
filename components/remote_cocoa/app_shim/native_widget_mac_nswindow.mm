@@ -13,7 +13,6 @@
 #import "components/remote_cocoa/app_shim/views_nswindow_delegate.h"
 #import "components/remote_cocoa/app_shim/window_touch_bar_delegate.h"
 #include "components/remote_cocoa/common/native_widget_ns_window_host.mojom.h"
-#include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
@@ -100,6 +99,7 @@ void OrderChildWindow(NSWindow* child_window,
 - (BOOL)hasKeyAppearance;
 - (long long)_resizeDirectionForMouseLocation:(CGPoint)location;
 - (BOOL)_isConsideredOpenForPersistentState;
+- (void)_zoomToScreenEdge:(NSUInteger)edge;
 @end
 
 @interface NativeWidgetMacNSWindow () <NSKeyedArchiverDelegate>
@@ -162,23 +162,6 @@ NSPoint clickedLocation;
   return [[self window] windowTitlebarLayoutDirection] ==
          NSUserInterfaceLayoutDirectionRightToLeft;
 }
-
-// The base implementation skips NSAccessibilityRemoteUIElement.
-- (id)accessibilityHitTest:(NSPoint)point {
-  if (@available(macOS 10.10, *)) {
-    for (id child in [[self accessibilityChildren] reverseObjectEnumerator]) {
-      if ([child isKindOfClass:[NSAccessibilityRemoteUIElement class]])
-        return [child accessibilityHitTest:point];
-      if (!NSPointInRect(point, [child accessibilityFrame]))
-        continue;
-      if (id foundChild = [child accessibilityHitTest:point])
-        return foundChild;
-    }
-  }
-
-  // Hit self, but not any child.
-  return NSAccessibilityUnignoredAncestor(self);
-}
 @end
 
 @implementation NativeWidgetMacNSWindowBorderlessFrame
@@ -230,6 +213,20 @@ NSPoint clickedLocation;
     _commandDispatcher.reset([[CommandDispatcher alloc] initWithOwner:self]);
   }
   return self;
+}
+
+// This is called by the "Move Window to {Left/Right} Side of Screen"
+// Window menu alternate items (must press Option to see).
+// Without this, selecting these items will move child windows like
+// bubbles and the find bar, but these should not be movable.
+// Instead, let's push this up to the parent window which should be
+// the browser.
+- (void)_zoomToScreenEdge:(NSUInteger)edge {
+  if (self.parentWindow) {
+    [self.parentWindow _zoomToScreenEdge:edge];
+  } else {
+    [super _zoomToScreenEdge:edge];
+  }
 }
 
 // This override helps diagnose lifetime issues in crash stacktraces by

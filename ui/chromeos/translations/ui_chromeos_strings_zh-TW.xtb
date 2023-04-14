@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">直接連線到網際網路</translation>
 <translation id="1272293450992660632">PIN 碼值不相符。</translation>
 <translation id="1280820357415527819">正在搜尋行動網路</translation>
-<translation id="1291603679744561561">SIM 卡已鎖定</translation>
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1297922636971898492">Google 雲端硬碟目前無法提供服務。一旦 Google 雲端硬碟恢復正常運作，上傳作業將會自動重新啟動。</translation>
 <translation id="1307931752636661898">無法查看 Linux 檔案</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">如要將檔案拖曳到 Parallels Desktop，必須先將檔案移動到 Windows 檔案中。</translation>
 <translation id="1435838927755162558">與 Parallels Desktop 共用資料夾</translation>
 <translation id="1439919885608649279">拿花的人</translation>
+<translation id="1458457385801829801">卸載「<ph name="TARGET_NAME" />」</translation>
 <translation id="1471718551822868769">斯洛伐克文</translation>
 <translation id="1482884275703521657">芬蘭文</translation>
 <translation id="148466539719134488">瑞士文</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">已與 Bruschetta 共用 1 個資料夾</translation>
 <translation id="2578394532502990878">泰米爾文 (拼音)</translation>
 <translation id="2579959351793446050">歐利亞文</translation>
+<translation id="2587195714949534472">正在準備進行同步處理「<ph name="FILE_NAME" />」...</translation>
 <translation id="2602810353103180630">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，遭到管理員封鎖，詳細資料</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 影片</translation>
 <translation id="2620090360073999360">目前無法使用 Google 雲端硬碟。</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">蒙古文</translation>
 <translation id="3495304270784461826">發生 <ph name="COUNT" /> 個錯誤。</translation>
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，詳細資料</translation>
+<translation id="3511705761158917664">正在準備進行同步處理 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
 <translation id="3524311639100184459">注意：這些是暫存檔案，系統可能會自動將其刪除，以釋出磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">貼上</translation>
 <translation id="3952872973865944257">泰盧固文 (拼音)</translation>
+<translation id="3954354850384043518">下載中</translation>
 <translation id="3958548648197196644">奇異果</translation>
 <translation id="3971140002794351170">下載行動裝置設定檔，<ph name="NETWORK_COUNT" /> 個網路中的第 <ph name="NETWORK_INDEX" /> 個，名稱為 <ph name="NETWORK_NAME" />，供應商為 <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">英文 (英國)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，由系統管理員管理，連線</translation>
 <translation id="4470564870223067757">韓文 2 Set</translation>
+<translation id="4474142134969976028">沒有相符的搜尋結果</translation>
 <translation id="4477002475007461989">羅馬尼亞文</translation>
 <translation id="4477219268485577442">保加利亞文 (拼音)</translation>
 <translation id="4508265954913339219">啟用失敗</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">請使用長度不超過 <ph name="MAX_LENGTH" /> 個字元的名稱</translation>
 <translation id="4973970068702235170">壓縮失敗，發生未預期的錯誤：<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">日文</translation>
+<translation id="4987699874727873250">英文 (印度)</translation>
 <translation id="4988205478593450158">你確定要刪除「<ph name="FILE_NAME" />」嗎？</translation>
 <translation id="498902553138568924">紅蝴蝶</translation>
 <translation id="4992066212339426712">取消靜音</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">最近沒有任何圖片</translation>
 <translation id="7460898608667578234">烏克蘭語</translation>
 <translation id="7469894403370665791">自動連線至這個網路</translation>
+<translation id="7481358317100446445">準備就緒</translation>
 <translation id="7486315294984620427">如要將檔案拖曳到 Parallels Desktop，必須先將檔案複製到 Windows 檔案中。</translation>
 <translation id="749452993132003881">平假名</translation>
 <translation id="7495372004724182530">馬拉雅拉姆文 (拼音)</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">輕鬆存取 Google 相簿</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7663224033570512922">北印度文</translation>
+<translation id="7665680517722058469">嘗試搜尋其他字詞</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> 個項目已移至垃圾桶</translation>
 <translation id="7693909743393669729">將硬碟格式化會清除其中儲存的所有資料，並移除所有的現有分割區，包括未顯示的分割區。這項操作無法復原。</translation>
 <translation id="7695430100978772476">無法格式化 <ph name="DRIVE_NAME" /></translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">阿拉伯文 (音譯)</translation>
 <translation id="8873014196523807561">如要還原這些項目，請將項目拖曳到新資料夾，因為部分項目所屬的資料夾已經刪除。</translation>
 <translation id="8874184842967597500">未連線</translation>
+<translation id="8876368061475701452">已加入佇列</translation>
 <translation id="8900820606136623064">匈牙利文</translation>
 <translation id="8903931173357132290">畢業生</translation>
 <translation id="8912078710089354287">搖尾巴的狗</translation>

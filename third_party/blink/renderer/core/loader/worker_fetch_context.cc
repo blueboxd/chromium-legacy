@@ -7,7 +7,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
@@ -22,7 +21,8 @@
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher_properties.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_utils.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -215,15 +215,10 @@ void WorkerFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request) {
     request.SetHttpHeaderField(http_names::kSaveData, "on");
 }
 
-void WorkerFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
-  const SecurityOrigin* security_origin = GetResourceFetcherProperties()
-                                              .GetFetchClientSettingsObject()
-                                              .GetSecurityOrigin();
-  mojom::blink::ResourceTimingInfoPtr mojo_info =
-      Performance::GenerateResourceTiming(*security_origin, info,
-                                          *global_scope_);
-  resource_timing_notifier_->AddResourceTiming(std::move(mojo_info),
-                                               info.InitiatorType());
+void WorkerFetchContext::AddResourceTiming(
+    mojom::blink::ResourceTimingInfoPtr info,
+    const AtomicString& initiator_type) {
+  resource_timing_notifier_->AddResourceTiming(std::move(info), initiator_type);
 }
 
 void WorkerFetchContext::PopulateResourceRequest(

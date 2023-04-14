@@ -1865,9 +1865,8 @@ CommandHandler.COMMANDS_['default-task'] = new (class extends FilesCommand {
 
   /** @override */
   canExecute(event, fileManager) {
-    const canExecute = fileManager.taskController.canExecuteDefaultTask();
-    event.canExecute = canExecute;
-    event.command.setHidden(!canExecute);
+    event.canExecute = fileManager.taskController.canExecuteDefaultTask();
+    event.command.setHidden(fileManager.taskController.shouldHideDefaultTask());
   }
 })();
 
@@ -1897,8 +1896,11 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] =
       execute(event, fileManager) {
         const entries = fileManager.selectionHandler.selection.entries;
         const launchSource = CommandUtil.getSharesheetLaunchSource(event);
+        const dlpSourceUrls =
+            fileManager.metadataModel.getCache(entries, ['sourceUrl'])
+                .map(m => m.sourceUrl || '');
         chrome.fileManagerPrivate.invokeSharesheet(
-            entries, launchSource, () => {
+            entries, launchSource, dlpSourceUrls, () => {
               if (chrome.runtime.lastError) {
                 console.warn(chrome.runtime.lastError.message);
                 return;

@@ -163,10 +163,9 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
         self.tool.web.urls[url] = json.dumps({
             'run_info': {
                 'os': 'mac',
-                'version': '12',
+                'port': 'mac12',
                 'processor': 'arm',
-                'bits': 64,
-                'product': 'chrome',
+                'product': 'content_shell',
             },
             'results': [{
                 'test':
@@ -318,6 +317,35 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
                 '}\n',
             ])
 
+    def test_execute_with_infra_failure(self):
+        self.command.git_cl = MockGitCL(
+            self.tool, {
+                Build('test-linux-wpt-rel', 1000, '1000'):
+                TryJobStatus.from_bb_status('INFRA_FAILURE'),
+                Build('test-mac-wpt-rel', 2000, '2000'):
+                TryJobStatus.from_bb_status('SUCCESS'),
+            })
+        with self._patch_builtins():
+            exit_code = self.command.main([])
+        self.assertEqual(exit_code, 1)
+        self.assertLog([
+            'WARNING: Some builds have infrastructure failures:\n',
+            'WARNING:   "test-linux-wpt-rel" build 1000\n',
+            'WARNING: Examples of infrastructure failures include:\n',
+            'WARNING:   * Shard terminated the harness after timing out.\n',
+            'WARNING:   * Harness exited early due to excessive unexpected '
+            'failures.\n',
+            'WARNING:   * Build failed on a non-test step.\n',
+            'WARNING: Please consider retrying the failed builders or '
+            'giving the builders more shards.\n',
+            'WARNING: See https://chromium.googlesource.com/chromium/src/+/'
+            'HEAD/docs/testing/web_test_expectations.md#handle-bot-timeouts\n',
+            'INFO: All builds finished.\n',
+            'INFO: Continue?\n',
+            'ERROR: Aborting update due to build(s) with infrastructure '
+            'failures.\n',
+        ])
+
     def test_execute_no_trigger_jobs(self):
         self.command.git_cl = MockGitCL(self.tool, {})
         with self._patch_builtins():
@@ -433,6 +461,26 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             'INFO: Staged 0 metadata files.\n',
         ])
 
+    def test_execute_warn_parsing_error(self):
+        self.tool.filesystem.write_text_file(
+            self.finder.path_from_web_tests('external', 'wpt',
+                                            'fail.html.ini'),
+            textwrap.dedent("""\
+                [fail.html]
+                  expected: [OK, FAIL  # Unclosed list
+                """))
+        with self._patch_builtins():
+            exit_code = self.command.main(['fail.html'])
+        self.assertEqual(exit_code, 0)
+        self.assertLog([
+            'INFO: All builds finished.\n',
+            'INFO: Processing wptrunner report (1/1)\n',
+            'INFO: Updating expectations for up to 1 test file.\n',
+            "ERROR: Failed to parse 'external/wpt/fail.html.ini': "
+            'EOL in list value (comment):  line 2\n',
+            'INFO: Staged 0 metadata files.\n',
+        ])
+
     def test_gather_reports(self):
         local_report = {
             'run_info': {
@@ -507,9 +555,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
             key=lambda config: (config['os'], config['flag_specific']))
 
         self.assertEqual(linux['os'], 'linux')
-        self.assertEqual(linux['version'], 'trusty')
-        self.assertEqual(linux['processor'], 'x86_64')
-        self.assertEqual(linux['bits'], 64)
+        self.assertEqual(linux['port'], 'trusty')
         self.assertFalse(linux['debug'])
         self.assertEqual(linux['flag_specific'], '')
 
@@ -517,9 +563,7 @@ class UpdateMetadataExecuteTest(BaseUpdateMetadataTest):
         self.assertEqual(linux_highdpi['flag_specific'], 'highdpi')
 
         self.assertEqual(mac['os'], 'mac')
-        self.assertEqual(mac['version'], '10.11')
-        self.assertEqual(mac['processor'], 'arm')
-        self.assertEqual(mac['bits'], 64)
+        self.assertEqual(mac['port'], 'mac10.11')
         self.assertTrue(mac['debug'])
         self.assertEqual(mac['flag_specific'], '')
 
@@ -544,12 +588,10 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             manifests = load_and_update_manifests(self.finder)
             for report in reports:
                 report['run_info'] = {
+                    'product': 'content_shell',
                     'os': 'mac',
-                    'version': '12',
-                    'processor': 'arm',
-                    'bits': 64,
+                    'port': 'mac12',
                     'flag_specific': '',
-                    'product': 'chrome',
                     'debug': False,
                     **(report.get('run_info') or {}),
                 }
@@ -844,6 +886,7 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
 
             [variant.html?foo=baz]
               bug: crbug.com/456
+              expected: FAIL
             """)
         self.update(
             {
@@ -869,13 +912,14 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             'external/wpt/fail.html.ini', """\
             [fail.html]
               expected:
-                if os == 'mac': FAIL
+                if product == "content_shell": FAIL
             """)
         self.update(
             {
                 'run_info': {
+                    'product': 'content_shell',
                     'os': 'mac',
-                    'version': '12',
+                    'port': 'mac12',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -884,8 +928,9 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 }],
             }, {
                 'run_info': {
-                    'os': 'mac',
-                    'version': '11',
+                    'product': 'content_shell',
+                    'os': 'win',
+                    'port': 'win11',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -894,8 +939,9 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 }],
             }, {
                 'run_info': {
-                    'os': 'win',
-                    'version': '11',
+                    'product': 'chrome',
+                    'os': 'linux',
+                    'port': 'trusty',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -910,8 +956,8 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
         expected = textwrap.dedent("""\
             [fail.html]
               expected:
-                if (os == "mac") and (version == "12"): TIMEOUT
-                if (os == "mac") and (version == "11"): FAIL
+                if (product == "content_shell") and (os == "win"): FAIL
+                if (product == "content_shell") and (os == "mac"): TIMEOUT
                 OK
             """)
         # TODO(crbug.com/1299650): The branch order appears unstable, which we
@@ -924,14 +970,14 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             'external/wpt/fail.html.ini', """\
             [fail.html]
               expected:
-                if os == 'mac' and version == '11': FAIL
-                if os == 'mac' and version == '12': TIMEOUT
+                if product == "content_shell" and os == "mac": FAIL
+                if product == "content_shell" and os == "linux": TIMEOUT
             """)
         self.update(
             {
                 'run_info': {
-                    'os': 'mac',
-                    'version': '12',
+                    'product': 'content_shell',
+                    'os': 'linux',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -940,8 +986,8 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 }],
             }, {
                 'run_info': {
+                    'product': 'content_shell',
                     'os': 'mac',
-                    'version': '11',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -950,8 +996,9 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 }],
             }, {
                 'run_info': {
-                    'os': 'win',
-                    'version': '11',
+                    'product': 'chrome',
+                    'os': 'linux',
+                    'port': 'trusty',
                 },
                 'results': [{
                     'test': '/fail.html',
@@ -968,14 +1015,14 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 textwrap.dedent("""\
                 [fail.html]
                   expected:
-                    if os == "mac": FAIL
-                    OK
+                    if product == "chrome": OK
+                    FAIL
                 """),
                 textwrap.dedent("""\
                 [fail.html]
                   expected:
-                    if os == "win": OK
-                    FAIL
+                    if product == "content_shell": FAIL
+                    OK
                 """),
             })
 
@@ -990,12 +1037,13 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             [variant.html?foo=baz]
               [subtest]
                 expected:
-                  if os == "win": PASS
+                  if (product == "content_shell") and (os == "win"): PASS
                   FAIL
             """)
         self.update(
             {
                 'run_info': {
+                    'product': 'content_shell',
                     'os': 'win'
                 },
                 'results': [{
@@ -1013,11 +1061,13 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
                 }],
             }, {
                 'run_info': {
+                    'product': 'content_shell',
                     'os': 'mac'
                 },
                 'results': [],
             }, {
                 'run_info': {
+                    'product': 'chrome',
                     'os': 'linux'
                 },
                 'results': [],
@@ -1035,10 +1085,10 @@ class UpdateMetadataASTSerializationTest(BaseUpdateMetadataTest):
             'external/wpt/variant.html.ini', """\
             [variant.html?foo=baz]
               expected:
-                if os == "win": TIMEOUT
+                if (product == "content_shell") and (os == "win"): TIMEOUT
               [subtest]
                 expected:
-                  if os == "win": TIMEOUT
+                  if (product == "content_shell") and (os == "win"): TIMEOUT
                   FAIL
             """)
 

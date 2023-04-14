@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
+#include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -47,6 +49,17 @@ constexpr char kCompanyPattern[] = ".company.com";
 constexpr char kGooglePattern[] = "google.com";
 constexpr char kMailPattern[] = "mail.google.com";
 
+constexpr char kWrongRestriction[] = "WrongRestriction";
+constexpr char kWrongComponent[] = "WrongComponent";
+constexpr char kWrongLevel[] = "kWrongLevel";
+
+constexpr char kRuleId1[] = "testid1";
+constexpr char kRuleId2[] = "testid2";
+constexpr char kRuleId3[] = "testid3";
+
+constexpr char kRuleName1[] = "rule #1";
+constexpr char kRuleName2[] = "rule #2";
+constexpr char kRuleName3[] = "rule #3";
 class MockDlpRulesManager : public DlpRulesManagerImpl {
  public:
   explicit MockDlpRulesManager(PrefService* local_state)
@@ -61,179 +74,146 @@ class DlpRulesManagerImplTest : public testing::Test {
       : testing_local_state_(TestingBrowserProcess::GetGlobal()),
         dlp_rules_manager_(testing_local_state_.Get()) {}
 
-  void UpdatePolicyPref(base::Value::List rules_list) {
+  void UpdatePolicyPref(const std::vector<dlp_test_util::DlpRule>& rules) {
+    base::Value::List policy_rules;
+    for (const auto& rule : rules) {
+      policy_rules.Append(rule.Create());
+    }
     testing_local_state_.Get()->SetList(policy_prefs::kDlpRulesList,
-                                        std::move(rules_list));
+                                        std::move(policy_rules));
   }
 
   content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState testing_local_state_;
   MockDlpRulesManager dlp_rules_manager_;
   base::HistogramTester histogram_tester_;
+  base::RunLoop run_loop_;
 };
 
 TEST_F(DlpRulesManagerImplTest, EmptyPref) {
-  UpdatePolicyPref(base::Value::List());
+  UpdatePolicyPref({});
 
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestricted(
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kPrinting));
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kGoogleUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   histogram_tester_.ExpectUniqueSample(
       GetDlpHistogramPrefix() + dlp::kDlpPolicyPresentUMA, false, 1);
 }
 
 TEST_F(DlpRulesManagerImplTest, UnknownRestriction) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Unknown", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(kWrongRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
+  UpdatePolicyPref({rule});
 
-  base::Value::List dst_urls;
-  dst_urls.Append(kWildCardMatching);
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      "Wrong restriction", dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Unknown", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
-
-  UpdatePolicyPref(std::move(rules));
   histogram_tester_.ExpectBucketCount(
       "Enterprise.Dlp.RestrictionConfigured",
       DlpRulesManager::Restriction::kUnknownRestriction, 0);
 }
 
+// Unknown Components should be allowed, (b/267622459).
 TEST_F(DlpRulesManagerImplTest, UnknownComponent) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Unknown", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstComponent(kWrongComponent)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
+  UpdatePolicyPref({rule});
 
-  base::Value::List dst_components;
-  dst_components.Append("Wrong component");
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Unknown", std::move(src_urls),
-      /*dst_urls=*/base::Value::List(), std::move(dst_components),
-      std::move(restrictions)));
-
-  UpdatePolicyPref(std::move(rules));
   histogram_tester_.ExpectBucketCount("Enterprise.Dlp.RestrictionConfigured",
                                       DlpRulesManager::Restriction::kClipboard,
                                       1);
 
   std::string src_pattern;
-  std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(
-      DlpRulesManager::Level::kBlock,
+      DlpRulesManager::Level::kAllow,
       dlp_rules_manager_.IsRestrictedComponent(
           GURL(kExampleUrl), DlpRulesManager::Component::kUnknownComponent,
-          DlpRulesManager::Restriction::kClipboard, &src_pattern));
-  EXPECT_EQ(src_pattern, kExampleUrl);
+          DlpRulesManager::Restriction::kClipboard, &src_pattern,
+          &rule_metadata));
+  EXPECT_EQ(src_pattern, "");
+  EXPECT_EQ(rule_metadata.name, "");
+  EXPECT_EQ(rule_metadata.obfuscated_id, "");
 }
 
 TEST_F(DlpRulesManagerImplTest, UnknownLevel) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Unknown", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, kWrongLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
+  UpdatePolicyPref({rule});
 
-  base::Value::List dst_urls;
-  dst_urls.Append(kWildCardMatching);
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, "Wrong level"));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Unknown", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
-
-  UpdatePolicyPref(std::move(rules));
   histogram_tester_.ExpectBucketCount("Enterprise.Dlp.RestrictionConfigured",
                                       DlpRulesManager::Restriction::kClipboard,
                                       0);
 }
 
 TEST_F(DlpRulesManagerImplTest, BlockPriority) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel)
+      .AddRestriction(dlp::kScreenshotRestriction, dlp::kBlockLevel);
 
-  // First Rule
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kExampleUrl);
+  dlp_test_util::DlpRule rule2(kRuleName2, "Exceptional allow", kRuleId2);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kGoogleUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kAllowLevel);
 
-  base::Value::List dst_urls_1;
-  dst_urls_1.Append(kWildCardMatching);
-
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenshotRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls_1), std::move(dst_urls_1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-
-  // Second Rule
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kExampleUrl);
-
-  base::Value::List dst_urls_2;
-  dst_urls_2.Append(kGoogleUrl);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kAllowLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "exceptional allow", std::move(src_urls_2),
-      std::move(dst_urls_2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kGoogleUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
   EXPECT_EQ(dst_pattern, kGoogleUrl);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kGmailUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestricted(
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kScreenshot));
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedByAnyRule(
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern));
+                &src_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
   histogram_tester_.ExpectUniqueSample(
       GetDlpHistogramPrefix() + dlp::kDlpPolicyPresentUMA, true, 1);
   histogram_tester_.ExpectBucketCount("Enterprise.Dlp.RestrictionConfigured",
@@ -244,27 +224,35 @@ TEST_F(DlpRulesManagerImplTest, BlockPriority) {
                                       1);
 
   // Clear pref
-  UpdatePolicyPref(base::Value::List());
+  UpdatePolicyPref({});
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kGoogleUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
   EXPECT_EQ(dst_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kGmailUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
   EXPECT_EQ(dst_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 
   src_pattern.clear();
   dst_pattern.clear();
@@ -274,41 +262,21 @@ TEST_F(DlpRulesManagerImplTest, BlockPriority) {
 }
 
 TEST_F(DlpRulesManagerImplTest, UpdatePref) {
-  // First DLP rule
-  base::Value::List rules_1;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddRestriction(dlp::kScreenshotRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kExampleUrl);
-
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenshotRestriction, dlp::kBlockLevel));
-
-  rules_1.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls_1),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-  UpdatePolicyPref(std::move(rules_1));
+  UpdatePolicyPref({rule1});
 
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestricted(
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kScreenshot));
 
-  // Second DLP rule
-  base::Value::List rules_2;
+  dlp_test_util::DlpRule rule2(kRuleName2, "Exceptional allow", kRuleId2);
+  rule2.AddSrcUrl(kGoogleUrl)
+      .AddRestriction(dlp::kScreenshotRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kGoogleUrl);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenshotRestriction, dlp::kBlockLevel));
-
-  rules_2.Append(dlp_test_util::CreateRule(
-      "rule #2", "exceptional allow", std::move(src_urls_2),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-  UpdatePolicyPref(std::move(rules_2));
+  UpdatePolicyPref({rule2});
 
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestricted(
@@ -319,197 +287,181 @@ TEST_F(DlpRulesManagerImplTest, UpdatePref) {
 }
 
 TEST_F(DlpRulesManagerImplTest, IsRestrictedComponent_Clipboard) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstComponent(dlp::kArc)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-
-  base::Value::List dst_components;
-  dst_components.Append("ARC");
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls),
-      /*dst_urls=*/base::Value::List(), std::move(dst_components),
-      std::move(restrictions)));
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedComponent(
                 GURL(kExampleUrl), DlpRulesManager::Component::kArc,
-                DlpRulesManager::Restriction::kClipboard, &src_pattern));
+                DlpRulesManager::Restriction::kClipboard, &src_pattern,
+                &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedComponent(
                 GURL(kExampleUrl), DlpRulesManager::Component::kCrostini,
-                DlpRulesManager::Restriction::kClipboard, &src_pattern));
+                DlpRulesManager::Restriction::kClipboard, &src_pattern,
+                &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 }
 
 TEST_F(DlpRulesManagerImplTest, SameSrcDst_Clipboard) {
-  base::Value::List rules;
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-  base::Value::List dst_urls;
-  dst_urls.Append(kWildCardMatching);
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
+  dlp_test_util::DlpRule rule(kRuleName1, "Block", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kExampleUrl),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
   EXPECT_EQ(dst_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 }
 
 TEST_F(DlpRulesManagerImplTest, EmptyUrl_Clipboard) {
-  base::Value::List rules;
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-  base::Value::List dst_urls;
-  dst_urls.Append(kWildCardMatching);
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  // Second Rule
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kGmailUrl);
+  dlp_test_util::DlpRule rule2(kRuleName2, "Block", kRuleId2);
+  rule2.AddSrcUrl(kGmailUrl)
+      .AddDstUrl(kGoogleUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List dst_urls_2;
-  dst_urls_2.Append(kGoogleUrl);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Block", std::move(src_urls_2), std::move(dst_urls_2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(
       DlpRulesManager::Level::kBlock,
       dlp_rules_manager_.IsRestrictedDestination(
           GURL(kExampleUrl), GURL(), DlpRulesManager::Restriction::kClipboard,
-          &src_pattern, &dst_pattern));
+          &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(
       DlpRulesManager::Level::kAllow,
       dlp_rules_manager_.IsRestrictedDestination(
           GURL(kGmailUrl), GURL(), DlpRulesManager::Restriction::kClipboard,
-          &src_pattern, &dst_pattern));
+          &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
   EXPECT_EQ(dst_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 }
 
 TEST_F(DlpRulesManagerImplTest, IsRestricted_MultipleURLs) {
-  base::Value::List rules;
+  const std::vector<std::string> urls = {kChatPattern, kSalesforcePattern,
+                                         kDocsPattern, kDrivePattern,
+                                         kCompanyPattern};
 
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kChatPattern);
-  src_urls_1.Append(kSalesforcePattern);
-  src_urls_1.Append(kDocsPattern);
-  src_urls_1.Append(kDrivePattern);
-  src_urls_1.Append(kCompanyPattern);
+  dlp_test_util::DlpRule rule1(
+      kRuleName1, "Allow copy and paste for work purposes", kRuleId1);
+  for (const std::string& url : urls) {
+    rule1.AddSrcUrl(url).AddDstUrl(url);
+  }
+  rule1.AddRestriction(dlp::kClipboardRestriction, dlp::kAllowLevel);
 
-  base::Value::List dst_urls_1 = src_urls_1.Clone();
-  base::Value::List src_urls_2 = src_urls_1.Clone();
+  dlp_test_util::DlpRule rule2(
+      kRuleName2, "Disallow copy and paste for non-work purposes", kRuleId2);
+  for (const std::string& url : urls) {
+    rule2.AddSrcUrl(url);
+  }
+  rule2.AddDstUrl(kWildCardMatching);
+  rule2.AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kAllowLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "Support agent work flows", "Allow copy and paste for work purposes",
-      std::move(src_urls_1), std::move(dst_urls_1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-
-  base::Value::List dst_urls_2;
-  dst_urls_2.Append(kWildCardMatching);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "Block non-agent work flows",
-      "Disallow copy and paste for non-work purposes", std::move(src_urls_2),
-      std::move(dst_urls_2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kChatPattern})),
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kChatPattern);
   EXPECT_EQ(dst_pattern, kSalesforcePattern);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kDocsPattern})),
                 GURL(base::StrCat({kHttpsPrefix, kDrivePattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kDocsPattern);
   EXPECT_EQ(dst_pattern, kDrivePattern);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kCompanyUrl),
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kCompanyPattern);
   EXPECT_EQ(dst_pattern, kSalesforcePattern);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 GURL(base::StrCat({kHttpsPrefix, kDocsPattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kSalesforcePattern);
   EXPECT_EQ(dst_pattern, kDocsPattern);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   src_pattern.clear();
   dst_pattern.clear();
@@ -517,65 +469,72 @@ TEST_F(DlpRulesManagerImplTest, IsRestricted_MultipleURLs) {
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kChatPattern})),
                 GURL(kGoogleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern, &dst_pattern));
+                &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kChatPattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern, &dst_pattern));
+                &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kSalesforcePattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kDocsPattern})),
                 GURL(kGoogleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern, &dst_pattern));
+                &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kDocsPattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kDrivePattern})),
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern, &dst_pattern));
+                &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kDrivePattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 }
 
 TEST_F(DlpRulesManagerImplTest, DisabledByFeature) {
-  base::Value::List rules_1;
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kExampleUrl);
-  base::Value::List dst_urls_1;
-  dst_urls_1.Append(kWildCardMatching);
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenshotRestriction, dlp::kBlockLevel));
-  rules_1.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls_1), std::move(dst_urls_1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel)
+      .AddRestriction(dlp::kScreenshotRestriction, dlp::kBlockLevel);
 
-  UpdatePolicyPref(std::move(rules_1));
+  UpdatePolicyPref({rule1});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kWildCardMatching),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kExampleUrl);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
 
@@ -588,118 +547,101 @@ TEST_F(DlpRulesManagerImplTest, DisabledByFeature) {
   scoped_feature_list.InitAndDisableFeature(
       features::kDataLeakPreventionPolicy);
 
-  base::Value::List rules_2;
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kExampleUrl);
-  base::Value::List dst_urls_2;
-  dst_urls_2.Append(kWildCardMatching);
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  rules_2.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block", std::move(src_urls_2), std::move(dst_urls_2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
+  dlp_test_util::DlpRule rule2(kRuleName2, "Block", kRuleId2);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  UpdatePolicyPref(std::move(rules_2));
+  UpdatePolicyPref({rule2});
 
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(kExampleUrl), GURL(kWildCardMatching),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, std::string(""));
   EXPECT_EQ(dst_pattern, std::string(""));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
 }
 
 TEST_F(DlpRulesManagerImplTest, WarnPriority) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Warn on every copy from google.com",
+                               kRuleId1);
+  rule1.AddSrcUrl(kGooglePattern)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kWarnLevel);
 
-  // First Rule
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kGooglePattern);
+  dlp_test_util::DlpRule rule2(
+      kRuleName2, "Block copy/paste from docs, drive, gmail", kRuleId2);
+  rule2.AddSrcUrl(kDocsPattern)
+      .AddSrcUrl(kDrivePattern)
+      .AddSrcUrl(kMailPattern)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List dst_urls_1;
-  dst_urls_1.Append(kWildCardMatching);
+  dlp_test_util::DlpRule rule3(
+      kRuleName3, "Allow copy/paste inside docs, drive, gmail", kRuleId3);
+  rule3.AddSrcUrl(kDocsPattern)
+      .AddSrcUrl(kDrivePattern)
+      .AddSrcUrl(kMailPattern)
+      .AddDstUrl(kDocsPattern)
+      .AddDstUrl(kDrivePattern)
+      .AddDstUrl(kMailPattern)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kAllowLevel);
 
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kWarnLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Warn on every copy from google.com", std::move(src_urls_1),
-      std::move(dst_urls_1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-
-  // Second Rule
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kDocsPattern);
-  src_urls_2.Append(kDrivePattern);
-  src_urls_2.Append(kMailPattern);
-  base::Value::List src_urls_3 = src_urls_2.Clone();
-
-  base::Value::List dst_urls_2;
-  dst_urls_2.Append(kWildCardMatching);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Block copy/paste from docs, drive, gmail",
-      std::move(src_urls_2), std::move(dst_urls_2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-
-  // Third Rule
-  base::Value::List dst_urls_3 = src_urls_3.Clone();
-
-  base::Value::List restrictions_3;
-  restrictions_3.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kAllowLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #3", "Allow copy/paste inside docs, drive, gmail",
-      std::move(src_urls_3), std::move(dst_urls_3),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_3)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2, rule3});
 
   std::string src_pattern;
   std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
 
   // Copy/paste from chat.google to example.com should be warned.
   EXPECT_EQ(DlpRulesManager::Level::kWarn,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kChatPattern})),
                 GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard,
-                &src_pattern, &dst_pattern));
+                &src_pattern, &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kGooglePattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
 
   // Copy/paste from docs to salesforce should be blocked.
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kBlock,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kDocsPattern})),
                 GURL(base::StrCat({kHttpsPrefix, kSalesforcePattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kDocsPattern);
   EXPECT_EQ(dst_pattern, kWildCardMatching);
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 
   // Copy/paste from docs to gmail should be allowed.
   src_pattern.clear();
   dst_pattern.clear();
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
             dlp_rules_manager_.IsRestrictedDestination(
                 GURL(base::StrCat({kHttpsPrefix, kDocsPattern})),
                 GURL(base::StrCat({kHttpsPrefix, kMailPattern})),
                 DlpRulesManager::Restriction::kClipboard, &src_pattern,
-                &dst_pattern));
+                &dst_pattern, &rule_metadata));
   EXPECT_EQ(src_pattern, kDocsPattern);
   EXPECT_EQ(dst_pattern, kMailPattern);
+  EXPECT_EQ(rule_metadata.name, kRuleName3);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId3);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -713,34 +655,31 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_DlpClientNotified) {
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block Files", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kExampleUrl)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-
-  base::Value::List dst_urls;
-  dst_urls.Append(kExampleUrl);
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule});
 
   EXPECT_EQ(1, chromeos::DlpClient::Get()
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   dlp_rules_manager_.DlpDaemonRestarted();
+
+  // The above call to DlpRulesManagerImpl::DlpDaemonRestarted posts a task to
+  // the same task runner as the one used here. Doing this ensures that the call
+  // chromeos::DlpClient::Shutdown() does not happen before the task is
+  // completed. The same approach is used on multiple other tests in this file.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+
   EXPECT_EQ(2, chromeos::DlpClient::Get()
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
-  base::RunLoop().RunUntilIdle();
+  run_loop_.Run();
 
   chromeos::DlpClient::Shutdown();
 }
@@ -757,22 +696,12 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_FeatureNotEnabled) {
                    ->GetTestInterface()
                    ->GetSetDlpFilesPolicyCount());
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block Files", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kExampleUrl)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-
-  base::Value::List dst_urls;
-  dst_urls.Append(kExampleUrl);
-
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files", std::move(src_urls), std::move(dst_urls),
-      /*dst_components=*/base::Value::List(), std::move(restrictions)));
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule});
 
   EXPECT_EQ(0, chromeos::DlpClient::Get()
                    ->GetTestInterface()
@@ -782,115 +711,96 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_FeatureNotEnabled) {
 }
 
 TEST_F(DlpRulesManagerImplTest, GetSourceUrlPattern) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block screenshots of work urls",
+                               kRuleId1);
+  rule1.AddSrcUrl(kChatPattern)
+      .AddSrcUrl(kSalesforcePattern)
+      .AddSrcUrl(kDocsPattern)
+      .AddSrcUrl(kDrivePattern)
+      .AddSrcUrl(kCompanyPattern)
+      .AddRestriction(dlp::kScreenshotRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kChatPattern);
-  src_urls_1.Append(kSalesforcePattern);
-  src_urls_1.Append(kDocsPattern);
-  src_urls_1.Append(kDrivePattern);
-  src_urls_1.Append(kCompanyPattern);
+  dlp_test_util::DlpRule rule2(kRuleName2, "Block printing any docs", kRuleId2);
+  rule2.AddSrcUrl(kWildCardMatching)
+      .AddRestriction(dlp::kPrintingRestriction, dlp::kBlockLevel);
 
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenshotRestriction, dlp::kBlockLevel));
+  UpdatePolicyPref({rule1, rule2});
 
-  rules.Append(dlp_test_util::CreateRule(
-      "Block screenshots", "Block screenshots of work urls",
-      std::move(src_urls_1),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kWildCardMatching);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kPrintingRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "Block any printing", "Block printing any docs", std::move(src_urls_2),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-
-  UpdatePolicyPref(std::move(rules));
+  DlpRulesManager::RuleMetadata rule_metadata;
 
   EXPECT_EQ(std::string(kChatPattern),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(std::string("https://") + std::string(kChatPattern)),
                 DlpRulesManager::Restriction::kScreenshot,
-                DlpRulesManager::Level::kBlock));
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(std::string(kSalesforcePattern),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(std::string("https://") + std::string(kSalesforcePattern) +
                      std::string("/xyz")),
                 DlpRulesManager::Restriction::kScreenshot,
-                DlpRulesManager::Level::kBlock));
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(std::string(kDocsPattern),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(std::string("https://") + std::string(kDocsPattern) +
                      std::string("/path?v=1")),
                 DlpRulesManager::Restriction::kScreenshot,
-                DlpRulesManager::Level::kBlock));
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, kRuleName1);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId1);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(std::string(""),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(std::string("https://") + std::string(kDrivePattern)),
                 DlpRulesManager::Restriction::kScreenshot,
-                DlpRulesManager::Level::kAllow));
+                DlpRulesManager::Level::kAllow, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(std::string(""),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(std::string("https://") + std::string(kCompanyPattern)),
                 DlpRulesManager::Restriction::kPrivacyScreen,
-                DlpRulesManager::Level::kBlock));
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, std::string(""));
+  EXPECT_EQ(rule_metadata.obfuscated_id, std::string(""));
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
   EXPECT_EQ(std::string(kWildCardMatching),
             dlp_rules_manager_.GetSourceUrlPattern(
                 GURL(kGoogleUrl), DlpRulesManager::Restriction::kPrinting,
-                DlpRulesManager::Level::kBlock));
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(rule_metadata.name, kRuleName2);
+  EXPECT_EQ(rule_metadata.obfuscated_id, kRuleId2);
 }
 
 TEST_F(DlpRulesManagerImplTest, ReportPriority) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Report any screensharing",
+                               kRuleId1);
+  rule1.AddSrcUrl(kWildCardMatching)
+      .AddRestriction(dlp::kScreenShareRestriction, dlp::kReportLevel);
 
-  base::Value::List src_urls_1;
-  src_urls_1.Append(kWildCardMatching);
+  dlp_test_util::DlpRule rule2(kRuleName2,
+                               "Block screensharing of company urls", kRuleId2);
+  rule2.AddSrcUrl(kDrivePattern)
+      .AddSrcUrl(kDocsPattern)
+      .AddRestriction(dlp::kScreenShareRestriction, dlp::kBlockLevel);
 
-  base::Value::List restrictions_1;
-  restrictions_1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenShareRestriction, dlp::kReportLevel));
+  dlp_test_util::DlpRule rule3(kRuleName3, "Allow screensharing for chat urls",
+                               kRuleId3);
+  rule3.AddSrcUrl(kChatPattern)
+      .AddRestriction(dlp::kScreenShareRestriction, dlp::kAllowLevel);
 
-  rules.Append(dlp_test_util::CreateRule(
-      "Report screensharing", "Report any screensharing", std::move(src_urls_1),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_1)));
-
-  base::Value::List src_urls_2;
-  src_urls_2.Append(kDrivePattern);
-  src_urls_2.Append(kDocsPattern);
-
-  base::Value::List restrictions_2;
-  restrictions_2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenShareRestriction, dlp::kBlockLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "Block screensharing", "Block screensharing of company urls",
-      std::move(src_urls_2),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_2)));
-
-  base::Value::List src_urls_3;
-  src_urls_3.Append(kChatPattern);
-
-  base::Value::List restrictions_3;
-  restrictions_3.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kScreenShareRestriction, dlp::kAllowLevel));
-
-  rules.Append(dlp_test_util::CreateRule(
-      "Allow screensharing", "Allow screensharing for chat urls",
-      std::move(src_urls_3),
-      /*dst_urls=*/base::Value::List(),
-      /*dst_components=*/base::Value::List(), std::move(restrictions_3)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2, rule3});
 
   // Screensharing from chat.google should be allowed.
   EXPECT_EQ(DlpRulesManager::Level::kAllow,
@@ -934,38 +844,27 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_GetAggregatedDestinations) {
       features::kDataLeakPreventionFilesRestriction);
   chromeos::DlpClient::InitializeFake();
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block Files", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kGoogleUrl)
+      .AddDstUrl(kGoogleUrl)  // Duplicates should be ignored.
+      .AddDstUrl(kCompanyUrl)
+      .AddDstUrl(kGmailUrl)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls1;
-  src_urls1.Append(kExampleUrl);
-  base::Value::List dst_urls1;
-  // Duplicates should be ignored.
-  dst_urls1.Append(kGoogleUrl);
-  dst_urls1.Append(kGoogleUrl);
-  dst_urls1.Append(kCompanyUrl);
-  dst_urls1.Append(kGmailUrl);
-  base::Value::List restrictions1;
-  restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files", std::move(src_urls1), std::move(dst_urls1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions1)));
+  dlp_test_util::DlpRule rule2(kRuleName2, "Explicit Allow Files", kRuleId2);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kGmailUrl)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kAllowLevel);
 
-  base::Value::List src_urls2;
-  src_urls2.Append(kExampleUrl);
-  base::Value::List dst_urls2;
-  dst_urls2.Append(kGmailUrl);
-  base::Value::List restrictions2;
-  restrictions2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kAllowLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Explicit Allow Files", std::move(src_urls2),
-      std::move(dst_urls2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions2)));
+  UpdatePolicyPref({rule1, rule2});
 
-  UpdatePolicyPref(std::move(rules));
+  // See call to PostTask in a test above for more detail. In this case,
+  // UpdatePolicyPref posts the task to the same task runner.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
 
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
@@ -987,25 +886,21 @@ TEST_F(DlpRulesManagerImplTest,
       features::kDataLeakPreventionFilesRestriction);
   chromeos::DlpClient::InitializeFake();
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block Files for all destinations",
+                              kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddDstUrl(kCompanyUrl)  // Since there is a wildcard, all specific
+                               // destinations will be ignored.
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls1;
-  src_urls1.Append(kExampleUrl);
-  base::Value::List dst_urls1;
-  dst_urls1.Append(kWildCardMatching);
-  // Since there is a wildcard, all specific destinations will be ignored.
-  dst_urls1.Append(kCompanyUrl);
-  base::Value::List restrictions1;
-  restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files for all destinations", std::move(src_urls1),
-      std::move(dst_urls1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions1)));
+  UpdatePolicyPref({rule});
 
-  UpdatePolicyPref(std::move(rules));
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
 
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
@@ -1019,44 +914,24 @@ TEST_F(DlpRulesManagerImplTest,
 }
 
 TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedLevels) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block Clipboard", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kCompanyUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls1;
-  src_urls1.Append(kExampleUrl);
-  base::Value::List dst_urls1;
-  dst_urls1.Append(kCompanyUrl);
-  base::Value::List restrictions1;
-  restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Clipboard", std::move(src_urls1), std::move(dst_urls1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions1)));
+  dlp_test_util::DlpRule rule2(kRuleName2, "Warn Clipboard", kRuleId1);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kCompanyUrl)  // Ignored because of a block restriction for the
+                               // same destination.
+      .AddDstUrl(kGmailUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kWarnLevel);
 
-  base::Value::List src_urls2;
-  src_urls2.Append(kExampleUrl);
-  base::Value::List dst_urls2;
-  // Ignored because of a block restriction for the same destination.
-  dst_urls2.Append(kCompanyUrl);
-  dst_urls2.Append(kGmailUrl);
-  base::Value::List restrictions2;
-  restrictions2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kWarnLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Warn Clipboard", std::move(src_urls2), std::move(dst_urls2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions2)));
+  dlp_test_util::DlpRule rule3(kRuleName3, "Report Clipboard", kRuleId3);
+  rule3.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kGoogleUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kReportLevel);
 
-  base::Value::List src_urls3;
-  src_urls3.Append(kExampleUrl);
-  base::Value::List dst_urls3;
-  dst_urls3.Append(kGoogleUrl);
-  base::Value::List restrictions3;
-  restrictions3.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kReportLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Report Clipboard", std::move(src_urls3), std::move(dst_urls3),
-      /*dst_components=*/base::Value::List(), std::move(restrictions3)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2, rule3});
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
       GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard);
@@ -1069,44 +944,23 @@ TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedLevels) {
 }
 
 TEST_F(DlpRulesManagerImplTest, GetAggregatedDestinations_MixedWithWildcard) {
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block Clipboard", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kCompanyUrl)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls1;
-  src_urls1.Append(kExampleUrl);
-  base::Value::List dst_urls1;
-  dst_urls1.Append(kCompanyUrl);
-  base::Value::List restrictions1;
-  restrictions1.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Clipboard", std::move(src_urls1), std::move(dst_urls1),
-      /*dst_components=*/base::Value::List(), std::move(restrictions1)));
+  dlp_test_util::DlpRule rule2(kRuleName2, "Warn Clipboard", kRuleId2);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kWarnLevel);
 
-  base::Value::List src_urls2;
-  src_urls2.Append(kExampleUrl);
-  base::Value::List dst_urls2;
-  dst_urls2.Append(kWildCardMatching);
-  base::Value::List restrictions2;
-  restrictions2.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kWarnLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Warn Clipboard", std::move(src_urls2), std::move(dst_urls2),
-      /*dst_components=*/base::Value::List(), std::move(restrictions2)));
+  dlp_test_util::DlpRule rule3(kRuleName3, "Report Clipboard", kRuleId3);
+  rule3.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kGoogleUrl)  // Ignored because of "*" at warn level.
+      .AddDstUrl(kWildCardMatching)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kReportLevel);
 
-  base::Value::List src_urls3;
-  src_urls3.Append(kExampleUrl);
-  base::Value::List dst_urls3;
-  // Ignored because of "*" at warn level.
-  dst_urls3.Append(kGoogleUrl);
-  dst_urls3.Append(kWildCardMatching);
-  base::Value::List restrictions3;
-  restrictions3.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kClipboardRestriction, dlp::kReportLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #2", "Report Clipboard", std::move(src_urls3), std::move(dst_urls3),
-      /*dst_components=*/base::Value::List(), std::move(restrictions3)));
-
-  UpdatePolicyPref(std::move(rules));
+  UpdatePolicyPref({rule1, rule2, rule3});
 
   auto result = dlp_rules_manager_.GetAggregatedDestinations(
       GURL(kExampleUrl), DlpRulesManager::Restriction::kClipboard);
@@ -1135,24 +989,19 @@ TEST_F(DlpRulesManagerImplTest, FilesRestriction_GetAggregatedComponents) {
       features::kDataLeakPreventionFilesRestriction);
   chromeos::DlpClient::InitializeFake();
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block Files", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstComponent(dlp::kArc)
+      .AddDstComponent(dlp::kCrostini)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-  base::Value::List dst_components;
-  dst_components.Append("ARC");
-  dst_components.Append("CROSTINI");
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files", std::move(src_urls),
-      /*dst_urls=*/base::Value::List(), std::move(dst_components),
-      std::move(restrictions)));
+  UpdatePolicyPref({rule});
 
-  UpdatePolicyPref(std::move(rules));
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
 
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
 
   auto result = dlp_rules_manager_.GetAggregatedComponents(
@@ -1183,23 +1032,19 @@ TEST_F(DlpRulesManagerImplTest, SetFilesPolicyWithOnlyComponents) {
       features::kDataLeakPreventionFilesRestriction);
   chromeos::DlpClient::InitializeFake();
 
-  base::Value::List rules;
+  dlp_test_util::DlpRule rule(kRuleName1, "Block Files", kRuleId1);
+  rule.AddSrcUrl(kExampleUrl)
+      .AddDstComponent(dlp::kArc)
+      .AddDstComponent(dlp::kCrostini)
+      .AddRestriction(dlp::kFilesRestriction, dlp::kBlockLevel);
 
-  base::Value::List src_urls;
-  src_urls.Append(kExampleUrl);
-  base::Value::List dst_components;
-  dst_components.Append("ARC");
-  dst_components.Append("CROSTINI");
-  base::Value::List restrictions;
-  restrictions.Append(dlp_test_util::CreateRestrictionWithLevel(
-      dlp::kFilesRestriction, dlp::kBlockLevel));
-  rules.Append(dlp_test_util::CreateRule(
-      "rule #1", "Block Files", std::move(src_urls), absl::nullopt,
-      std::move(dst_components), std::move(restrictions)));
+  UpdatePolicyPref({rule});
 
-  UpdatePolicyPref(std::move(rules));
+  // See call to PostTask in a test above for more detail.
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, run_loop_.QuitClosure());
+  run_loop_.Run();
 
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(dlp_rules_manager_.IsFilesPolicyEnabled());
   EXPECT_EQ(chromeos::DlpClient::Get()
                 ->GetTestInterface()
@@ -1207,6 +1052,97 @@ TEST_F(DlpRulesManagerImplTest, SetFilesPolicyWithOnlyComponents) {
             1);
 
   chromeos::DlpClient::Shutdown();
+}
+
+// Test that returned rule metadata is empty if name is set, but id is unset.
+TEST_F(DlpRulesManagerImplTest, EmptyMetadataReportedIfRuleidUnset) {
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block Printing", std::string());
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddRestriction(dlp::kPrintingRestriction, dlp::kBlockLevel);
+  UpdatePolicyPref({rule1});
+
+  DlpRulesManager::RuleMetadata rule_metadata;
+
+  EXPECT_EQ(std::string(kExampleUrl),
+            dlp_rules_manager_.GetSourceUrlPattern(
+                GURL(kExampleUrl), DlpRulesManager::Restriction::kPrinting,
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+
+  EXPECT_TRUE(rule_metadata.name.empty());
+  EXPECT_TRUE(rule_metadata.obfuscated_id.empty());
+}
+
+// Test that for overlapping rules with same restriction, metadata of the first
+// rule in the policy is reported.
+TEST_F(DlpRulesManagerImplTest, TestOrderSameLevelPrinting) {
+  dlp_test_util::DlpRule rule1(kRuleName1, "Block Printing", kRuleId1);
+  rule1.AddSrcUrl(kExampleUrl)
+      .AddRestriction(dlp::kPrintingRestriction, dlp::kBlockLevel);
+
+  dlp_test_util::DlpRule rule2(kRuleName2, "Block Printing and copy paste",
+                               kRuleId2);
+  rule2.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddDstComponent(dlp::kCrostini)
+      .AddRestriction(dlp::kPrintingRestriction, dlp::kBlockLevel)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel);
+
+  dlp_test_util::DlpRule rule3(kRuleName3, "Block Screenshare and copy paste",
+                               kRuleId3);
+  rule3.AddSrcUrl(kExampleUrl)
+      .AddDstUrl(kWildCardMatching)
+      .AddDstComponent(dlp::kCrostini)
+      .AddRestriction(dlp::kClipboardRestriction, dlp::kBlockLevel)
+      .AddRestriction(dlp::kScreenShareRestriction, dlp::kBlockLevel);
+
+  UpdatePolicyPref({rule1, rule2, rule3});
+
+  std::string src_pattern;
+  std::string dst_pattern;
+  DlpRulesManager::RuleMetadata rule_metadata;
+
+  EXPECT_EQ(std::string(kExampleUrl),
+            dlp_rules_manager_.GetSourceUrlPattern(
+                GURL(kExampleUrl), DlpRulesManager::Restriction::kPrinting,
+                DlpRulesManager::Level::kBlock, &rule_metadata));
+  EXPECT_EQ(kRuleName1, rule_metadata.name);
+  EXPECT_EQ(kRuleId1, rule_metadata.obfuscated_id);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
+
+  EXPECT_EQ(DlpRulesManager::Level::kBlock,
+            dlp_rules_manager_.IsRestrictedByAnyRule(
+                GURL(kExampleUrl), DlpRulesManager::Restriction::kPrinting,
+                &src_pattern, &rule_metadata));
+  EXPECT_EQ(kRuleName1, rule_metadata.name);
+  EXPECT_EQ(kRuleId1, rule_metadata.obfuscated_id);
+  EXPECT_EQ(src_pattern, kExampleUrl);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
+
+  EXPECT_EQ(DlpRulesManager::Level::kBlock,
+            dlp_rules_manager_.IsRestrictedDestination(
+                GURL(kExampleUrl), GURL(kCompanyPattern),
+                DlpRulesManager::Restriction::kClipboard, &src_pattern,
+                &dst_pattern, &rule_metadata));
+  EXPECT_EQ(kRuleName2, rule_metadata.name);
+  EXPECT_EQ(kRuleId2, rule_metadata.obfuscated_id);
+  EXPECT_EQ(src_pattern, kExampleUrl);
+  EXPECT_EQ(dst_pattern, kWildCardMatching);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
+
+  EXPECT_EQ(DlpRulesManager::Level::kBlock,
+            dlp_rules_manager_.IsRestrictedComponent(
+                GURL(kExampleUrl), DlpRulesManager::Component::kCrostini,
+                DlpRulesManager::Restriction::kClipboard, &src_pattern,
+                &rule_metadata));
+  EXPECT_EQ(kRuleName2, rule_metadata.name);
+  EXPECT_EQ(kRuleId2, rule_metadata.obfuscated_id);
+  EXPECT_EQ(src_pattern, kExampleUrl);
+  EXPECT_EQ(dst_pattern, kWildCardMatching);
+  rule_metadata.name.clear();
+  rule_metadata.obfuscated_id.clear();
 }
 
 }  // namespace policy

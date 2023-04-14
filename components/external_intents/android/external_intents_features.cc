@@ -18,18 +18,13 @@ namespace {
 
 // Array of features exposed through the Java ExternalIntentsFeatures API.
 const base::Feature* kFeaturesExposedToJava[] = {
-    &kBlockExternalFormSubmitWithoutGesture, &kExternalNavigationDebugLogs,
-    &kExternalNavigationSubframeRedirects, &kBlockSubframeIntentToSelf};
+    &kExternalNavigationDebugLogs, &kExternalNavigationSubframeRedirects,
+    &kBlockSubframeIntentToSelf, &kBlockFrameRenavigations,
+    &kDoNotRequireSpecializedCCTHandler};
 
 }  // namespace
 
 // Alphabetical:
-
-// Kill switch for blocking form submissions redirecting to apps without an
-// associated user gesture.
-BASE_FEATURE(kBlockExternalFormSubmitWithoutGesture,
-             "BlockExternalFormSubmitWithoutGesture",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExternalNavigationDebugLogs,
              "ExternalNavigationDebugLogs",
@@ -41,6 +36,14 @@ BASE_FEATURE(kExternalNavigationSubframeRedirects,
 
 BASE_FEATURE(kBlockSubframeIntentToSelf,
              "BlockSubframeIntentToSelf",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBlockFrameRenavigations,
+             "BlockFrameRenavigations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kDoNotRequireSpecializedCCTHandler,
+             "DoNotRequireSpecializedCCTHandler",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 static jlong JNI_ExternalIntentsFeatures_GetFeature(JNIEnv* env, jint ordinal) {

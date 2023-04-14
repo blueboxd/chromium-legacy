@@ -27,10 +27,7 @@
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "cc/base/math_util.h"
-#include "cc/layers/layer.h"
-#include "cc/layers/surface_layer.h"
-#include "cc/trees/latency_info_swap_promise.h"
-#include "cc/trees/layer_tree_host.h"
+#include "cc/slim/layer.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id_allocator.h"
@@ -602,7 +599,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       screen_state_change_handler_(this) {
   // Set the layer which will hold the content layer for this view. The content
   // layer is managed by the DelegatedFrameHost.
-  view_.SetLayer(cc::Layer::Create());
+  view_.SetLayer(cc::slim::Layer::Create());
   view_.set_event_handler(this);
 
   // If we're showing at creation time, we won't get a visibility change, so
@@ -1314,15 +1311,17 @@ bool RenderWidgetHostViewAndroid::TransformPointToCoordSpaceForView(
 void RenderWidgetHostViewAndroid::SetGestureListenerManager(
     GestureListenerManager* manager) {
   gesture_listener_manager_ = manager;
-  UpdateReportAllRootScrolls();
+  UpdateRootScrollOffsetUpdateFrequency();
 }
 
-void RenderWidgetHostViewAndroid::UpdateReportAllRootScrolls() {
+void RenderWidgetHostViewAndroid::UpdateRootScrollOffsetUpdateFrequency() {
   if (!host())
     return;
 
-  host()->render_frame_metadata_provider()->ReportAllRootScrolls(
-      ShouldReportAllRootScrolls());
+  host()
+      ->render_frame_metadata_provider()
+      ->UpdateRootScrollOffsetUpdateFrequency(
+          RootScrollOffsetUpdateFrequency());
 }
 
 base::WeakPtr<RenderWidgetHostViewAndroid>
@@ -1497,9 +1496,9 @@ bool RenderWidgetHostViewAndroid::RequestStartStylusWriting() {
          ime_adapter_android_->RequestStartStylusWriting();
 }
 
-void RenderWidgetHostViewAndroid::SetHoverActionStylusWritable(
+void RenderWidgetHostViewAndroid::NotifyHoverActionStylusWritable(
     bool stylus_writable) {
-  view_.SetHoverActionStylusWritable(stylus_writable);
+  view_.NotifyHoverActionStylusWritable(stylus_writable);
 }
 
 void RenderWidgetHostViewAndroid::OnEditElementFocusedForStylusWriting(
@@ -1964,6 +1963,14 @@ void RenderWidgetHostViewAndroid::HideInternal() {
   // ShowInternal() is invoked the most up to date visual properties will be
   // used.
   fullscreen_rotation_ = false;
+
+  // If a RWHVA gets hidden and swapped out then gets swapped back in and shown,
+  // the last known controls offsets may be the same as the latest values we get
+  // from the renderer. In this case, we would skip pushing the offset to
+  // `ViewAndroid` assuming there was no change. To prevent this, we should
+  // reset `controls_initialized_` to make sure the offsets are pushed once the
+  // RWHVA is shown again.
+  controls_initialized_ = false;
 
   // Only preserve the frontbuffer if the activity was stopped while the
   // window is still visible. This avoids visual artifacts when transitioning
@@ -2484,13 +2491,18 @@ void RenderWidgetHostViewAndroid::UpdateNativeViewTree(
   CreateOverscrollControllerIfPossible();
 }
 
-bool RenderWidgetHostViewAndroid::ShouldReportAllRootScrolls() {
+cc::mojom::RootScrollOffsetUpdateFrequency
+RenderWidgetHostViewAndroid::RootScrollOffsetUpdateFrequency() {
   // In order to provide support for onScrollOffsetOrExtentChanged()
-  // GestureListenerManager needs root-scroll-offsets. This is only necessary
-  // if a GestureStateListenerWithScroll is added.
-  return web_contents_accessibility_ != nullptr ||
-         (gesture_listener_manager_ &&
-          gesture_listener_manager_->has_listeners_attached());
+  // GestureListenerManager needs root-scroll-offsets. The frequency of the
+  // updates depends on the needs of the `GestureStateListenerWithScroll`s, if
+  // any.
+  if (web_contents_accessibility_ != nullptr) {
+    return cc::mojom::RootScrollOffsetUpdateFrequency::kAllUpdates;
+  }
+  return gesture_listener_manager_
+             ? gesture_listener_manager_->root_scroll_offset_update_frequency()
+             : cc::mojom::RootScrollOffsetUpdateFrequency::kNone;
 }
 
 MouseWheelPhaseHandler*
@@ -3082,25 +3094,29 @@ void RenderWidgetHostViewAndroid::NotifyHostAndDelegateOnWasShown(
     screen_state_change_handler_.WasShownAfterEviction();
 }
 
-void RenderWidgetHostViewAndroid::RequestPresentationTimeFromHostOrDelegate(
-    blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
+void RenderWidgetHostViewAndroid::
+    RequestSuccessfulPresentationTimeFromHostOrDelegate(
+        blink::mojom::RecordContentToVisibleTimeRequestPtr
+            visible_time_request) {
   bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
   // No need to check for saved frames for the case of bfcache restore.
-  if (visible_time_request->show_reason_bfcache_restore || !has_saved_frame)
-    host()->RequestPresentationTimeForNextFrame(visible_time_request.Clone());
+  if (visible_time_request->show_reason_bfcache_restore || !has_saved_frame) {
+    host()->RequestSuccessfulPresentationTimeForNextFrame(
+        visible_time_request.Clone());
+  }
 
   // If the frame for the renderer is already available, then the
   // tab-switching time is the presentation time for the browser-compositor.
   if (has_saved_frame) {
-    delegated_frame_host_->RequestPresentationTimeForNextFrame(
+    delegated_frame_host_->RequestSuccessfulPresentationTimeForNextFrame(
         std::move(visible_time_request));
   }
 }
 
 void RenderWidgetHostViewAndroid::
-    CancelPresentationTimeRequestForHostAndDelegate() {
-  host()->CancelPresentationTimeRequest();
-  delegated_frame_host_->CancelPresentationTimeRequest();
+    CancelSuccessfulPresentationTimeRequestForHostAndDelegate() {
+  host()->CancelSuccessfulPresentationTimeRequest();
+  delegated_frame_host_->CancelSuccessfulPresentationTimeRequest();
 }
 
 void RenderWidgetHostViewAndroid::EnterFullscreenMode(
@@ -3215,7 +3231,7 @@ void RenderWidgetHostViewAndroid::OnUpdateScopedSelectionHandles() {
 void RenderWidgetHostViewAndroid::SetWebContentsAccessibility(
     WebContentsAccessibilityAndroid* web_contents_accessibility) {
   web_contents_accessibility_ = web_contents_accessibility;
-  UpdateReportAllRootScrolls();
+  UpdateRootScrollOffsetUpdateFrequency();
 }
 
 void RenderWidgetHostViewAndroid::SetNeedsBeginFrameForFlingProgress() {

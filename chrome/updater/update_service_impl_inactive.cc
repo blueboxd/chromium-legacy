@@ -68,6 +68,7 @@ class UpdateServiceImplInactive : public UpdateService {
               const std::string& /*install_data_index*/,
               Priority /*priority*/,
               PolicySameVersionUpdate /*policy_same_version_update*/,
+              bool /*do_update_check_only*/,
               StateChangeCallback /*state_update*/,
               Callback callback) override {
     VLOG(1) << __func__ << " (Inactive)";

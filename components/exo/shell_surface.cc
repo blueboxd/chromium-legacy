@@ -23,6 +23,7 @@
 #include "components/exo/window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -592,9 +593,18 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds,
   DCHECK(notify_bounds_changes_);
   notify_bounds_changes_ = adjusted_by_server;
 
-  // TODO(oshima): Probably ignore while dragging.
-
-  widget_->SetBounds(bounds);
+  if (IsDragged()) {
+    // Do not move the root window.
+    auto* window = widget_->GetNativeWindow();
+    auto* screen_position_client =
+        aura::client::GetScreenPositionClient(window->GetRootWindow());
+    gfx::PointF origin(bounds.origin());
+    screen_position_client->ConvertPointFromScreen(window->parent(), &origin);
+    widget_->GetNativeWindow()->SetBounds(
+        gfx::Rect(origin.x(), origin.y(), bounds.width(), bounds.height()));
+  } else {
+    widget_->SetBounds(bounds);
+  }
   UpdateSurfaceBounds();
 
   notify_bounds_changes_ = true;
@@ -687,16 +697,17 @@ void ShellSurface::Configure(bool ends_drag) {
 
   if (!configure_callback_.is_null()) {
     if (window_state) {
-      serial = configure_callback_.Run(
-          GetClientBoundsInScreen(widget_), window_state->GetStateType(),
-          IsResizing(), widget_->IsActive(), origin_offset);
+      serial = configure_callback_.Run(GetClientBoundsInScreen(widget_),
+                                       window_state->GetStateType(),
+                                       IsResizing(), widget_->IsActive(),
+                                       origin_offset, pending_raster_scale_);
     } else {
       gfx::Rect bounds;
       if (initial_bounds_)
         bounds.set_origin(initial_bounds_->origin());
-      serial =
-          configure_callback_.Run(bounds, chromeos::WindowStateType::kNormal,
-                                  false, false, origin_offset);
+      serial = configure_callback_.Run(
+          bounds, chromeos::WindowStateType::kNormal, false, false,
+          origin_offset, pending_raster_scale_);
     }
   }
 

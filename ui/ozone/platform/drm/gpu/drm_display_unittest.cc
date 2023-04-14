@@ -19,6 +19,10 @@ using ::testing::_;
 using ::testing::Return;
 using ::testing::SizeIs;
 
+namespace ui {
+
+namespace {
+
 // Verifies that the argument goes from 0 to the maximum uint16_t times |scale|
 // following a power function with |exponent|.
 MATCHER_P2(MatchesPowerFunction, scale, exponent, "") {
@@ -38,10 +42,6 @@ MATCHER_P2(MatchesPowerFunction, scale, exponent, "") {
   return true;
 }
 
-namespace ui {
-
-namespace {
-
 class MockHardwareDisplayPlaneManager : public HardwareDisplayPlaneManager {
  public:
   explicit MockHardwareDisplayPlaneManager(DrmDevice* drm)
@@ -53,10 +53,6 @@ class MockHardwareDisplayPlaneManager : public HardwareDisplayPlaneManager {
               (uint32_t crtc_id,
                const std::vector<display::GammaRampRGBEntry>& degamma_lut,
                const std::vector<display::GammaRampRGBEntry>& gamma_lut),
-              (override));
-  MOCK_METHOD(bool,
-              SetVrrEnabled,
-              (uint32_t crtc_id, bool vrr_enabled),
               (override));
 
   bool Commit(CommitRequest commit_request, uint32_t flags) override {
@@ -182,17 +178,6 @@ TEST_F(DrmDisplayTest, SetEmptyGammaCorrectionHDRDisplay) {
                                  MatchesPowerFunction(kSDRLevel, kExponent)));
   drm_display_.SetGammaCorrection(std::vector<display::GammaRampRGBEntry>(),
                                   std::vector<display::GammaRampRGBEntry>());
-}
-
-TEST_F(DrmDisplayTest, SetVrrEnabled) {
-  MockHardwareDisplayPlaneManager* plane_manager =
-      AddMockHardwareDisplayPlaneManager();
-
-  EXPECT_CALL(*plane_manager, SetVrrEnabled(_, _)).WillOnce(Return(false));
-  EXPECT_FALSE(drm_display_.SetVrrEnabled(true));
-
-  EXPECT_CALL(*plane_manager, SetVrrEnabled(_, _)).WillOnce(Return(true));
-  EXPECT_TRUE(drm_display_.SetVrrEnabled(true));
 }
 
 }  // namespace ui

@@ -7,16 +7,17 @@
 #include <algorithm>
 
 #include "base/containers/cxx20_erase.h"
+#include "base/functional/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -32,14 +33,17 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/chromeos_ui_constants.h"
 #include "chromeos/ui/base/tablet_state.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/base/window_state_type.h"
 #include "chromeos/ui/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "chromeos/ui/frame/caption_buttons/frame_size_button.h"
 #include "chromeos/ui/frame/default_frame_header.h"
 #include "chromeos/ui/frame/frame_utils.h"
+#include "chromeos/ui/wm/features.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
@@ -74,6 +78,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
@@ -161,6 +166,15 @@ void BrowserNonClientFrameViewChromeOS::Init() {
       AddChildView(std::make_unique<chromeos::FrameCaptionButtonContainerView>(
           frame(), std::move(tab_search_button)));
   caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
+  auto* size_button = caption_button_container_->size_button();
+
+  if (chromeos::wm::features::IsWindowLayoutMenuEnabled() && size_button) {
+    // base::Unretained() is safe since `this` also destroys
+    // `caption_button_container` and its `size_button`.
+    size_button->SetFeedbackButtonCallback(base::BindRepeating(
+        &BrowserNonClientFrameViewChromeOS::ShowFeedbackPageForMenu,
+        base::Unretained(this)));
+  }
 
   // Initializing the TabIconView is expensive, so only do it if we need to.
   if (browser_view()->ShouldShowWindowIcon()) {
@@ -191,8 +205,11 @@ void BrowserNonClientFrameViewChromeOS::Init() {
        browser_view()->AppUsesWindowControlsOverlay() ||
        browser_view()->AppUsesBorderlessMode())) {
     // Add the container for extra web app buttons (e.g app menu button).
-    set_web_app_frame_toolbar(
-        AddChildView(std::make_unique<WebAppFrameToolbarView>(browser_view())));
+    if (!base::FeatureList::IsEnabled(
+            features::kWebAppFrameToolbarInBrowserView)) {
+      set_web_app_frame_toolbar(AddChildView(
+          std::make_unique<WebAppFrameToolbarView>(browser_view())));
+    }
     if (AppIsBorderlessPwa())
       UpdateBorderlessModeEnabled();
   }
@@ -207,6 +224,33 @@ gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForTabStripRegion(
   return gfx::Rect(left_inset, GetTopInset(restored),
                    std::max(0, width() - left_inset - GetTabStripRightInset()),
                    tabstrip_minimum_size.height());
+}
+
+gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForWebAppFrameToolbar(
+    const gfx::Size& toolbar_preferred_size) const {
+  if (!GetShowCaptionButtons()) {
+    return gfx::Rect();
+  }
+  if (browser_view()->browser()->is_type_app_popup() &&
+      !browser_view()->AppUsesWindowControlsOverlay() &&
+      !browser_view()->AppUsesBorderlessMode()) {
+    return gfx::Rect();
+  }
+
+  const int x = GetToolbarLeftInset();
+  const int available_width = caption_button_container_->x() - x;
+  int painted_height = GetTopInset(false);
+  if (browser_view()->GetTabStripVisible()) {
+    painted_height += browser_view()->tabstrip()->GetPreferredSize().height();
+  }
+  return gfx::Rect(x, 0, std::max(0, available_width), painted_height);
+}
+
+void BrowserNonClientFrameViewChromeOS::LayoutWebAppWindowTitle(
+    const gfx::Rect& available_space,
+    views::Label& window_title_label) const {
+  // No window titles on Chrome OS, so just hide the window title.
+  window_title_label.SetVisible(false);
 }
 
 int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
@@ -238,6 +282,10 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
   if (web_app_frame_toolbar()) {
     header_height = std::max(
         header_height, web_app_frame_toolbar()->GetPreferredSize().height());
+  }
+  auto toolbar_size = browser_view()->GetWebAppFrameToolbarPreferredSize();
+  if (!toolbar_size.IsEmpty()) {
+    header_height = std::max(header_height, toolbar_size.height());
   }
   if (browser_view()->GetTabStripVisible())
     return header_height - browser_view()->GetTabStripHeight();
@@ -376,7 +424,6 @@ void BrowserNonClientFrameViewChromeOS::WindowControlsOverlayEnabledChanged() {
   bool enabled = browser_view()->IsWindowControlsOverlayEnabled();
   caption_button_container_->OnWindowControlsOverlayEnabledChanged(
       enabled, GetFrameHeaderColor(browser_view()->IsActive()));
-  browser_view()->InvalidateLayout();
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateWindowIcon() {
@@ -422,12 +469,14 @@ void BrowserNonClientFrameViewChromeOS::LayoutWindowControlsOverlay() {
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateBorderlessModeEnabled() {
-  web_app_frame_toolbar()->UpdateBorderlessModeEnabled();
+  if (web_app_frame_toolbar()) {
+    web_app_frame_toolbar()->UpdateBorderlessModeEnabled();
+  }
   caption_button_container_->UpdateBorderlessModeEnabled(
       browser_view()->IsBorderlessModeEnabled());
 }
 
-bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() {
+bool BrowserNonClientFrameViewChromeOS::AppIsBorderlessPwa() const {
   return browser_view()->GetIsWebAppType() &&
          browser_view()->AppUsesBorderlessMode() &&
          browser_view()->IsBorderlessModeEnabled();
@@ -460,6 +509,8 @@ void BrowserNonClientFrameViewChromeOS::Layout() {
                                                  caption_button_container_->x(),
                                                  0, painted_height);
     }
+  } else if (AppIsBorderlessPwa()) {
+    UpdateBorderlessModeEnabled();
   }
 
   BrowserNonClientFrameView::Layout();
@@ -509,6 +560,17 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     // button container, which contains the WCO toggle and other windowing
     // controls.
     min_height = min_height + caption_button_container_->size().height();
+  }
+
+  if (browser_view()->IsBorderlessModeEnabled()) {
+    gfx::Size border_size =
+        highlight_border_overlay_->CalculateImageSourceSize();
+    // The minimum size of a borderless window is only limited by the window's
+    // `highlight_border_overlay_`s. The minimum size for the window is then
+    // twice as much as there are always two overlays vertically or
+    // horizontally.
+    min_width = 2 * border_size.width();
+    min_height = 2 * border_size.height();
   }
 
   return gfx::Size(min_width, min_height);
@@ -893,8 +955,15 @@ bool BrowserNonClientFrameViewChromeOS::GetShouldPaint() const {
 void BrowserNonClientFrameViewChromeOS::OnAddedToOrRemovedFromOverview() {
   const bool should_show_caption_buttons = GetShowCaptionButtons();
   caption_button_container_->SetVisible(should_show_caption_buttons);
-  if (web_app_frame_toolbar())
+  if (web_app_frame_toolbar()) {
     web_app_frame_toolbar()->SetVisible(should_show_caption_buttons);
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppFrameToolbarInBrowserView)) {
+    // The WebAppFrameToolbarView is part of the BrowserView, so make sure the
+    // BrowserView is re-layed out to take into account these changes.
+    browser_view()->InvalidateLayout();
+  }
 }
 
 std::unique_ptr<chromeos::FrameHeader>
@@ -911,6 +980,16 @@ BrowserNonClientFrameViewChromeOS::CreateFrameHeader() {
 
   header->SetLeftHeaderView(window_icon_);
   return header;
+}
+
+void BrowserNonClientFrameViewChromeOS::ShowFeedbackPageForMenu() {
+  chrome::ShowFeedbackPage(
+      /*browser=*/browser_view()->browser(),
+      /*source=*/chrome::kFeedbackSourceWindowLayoutMenu,
+      /*description_template*/ "#WindowLayoutMenu\n",
+      /*description_placeholder_text=*/std::string(),
+      /*category_tag=*/std::string(),
+      /*extra_diagnostics=*/std::string());
 }
 
 void BrowserNonClientFrameViewChromeOS::UpdateTopViewInset() {
@@ -1100,6 +1179,11 @@ bool BrowserNonClientFrameViewChromeOS::IsFloated() const {
 
 bool BrowserNonClientFrameViewChromeOS::ShouldEnableImmersiveModeController()
     const {
+  // Do not support immersive mode in kiosk.
+  if (profiles::IsKioskSession()) {
+    return false;
+  }
+
   if (chromeos::TabletState::Get()->InTabletMode()) {
     // Tabbed browsers do not support immersive mode in tablet mode. We use the
     // web ui touchable tabstrip, which has its own sliding mechanism to view

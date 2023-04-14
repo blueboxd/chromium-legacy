@@ -23,11 +23,10 @@ import {EarconId} from '../common/earcon_id.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureGranularity} from '../common/gesture_command_data.js';
 import {ChromeVoxKbHandler} from '../common/keyboard_handler.js';
-import {LogType} from '../common/log_types.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
 import {PermissionChecker} from '../common/permission_checker.js';
-import {TreeDumper} from '../common/tree_dumper.js';
+import {SettingsManager} from '../common/settings_manager.js';
 import {Personality, QueueMode, TtsSettings, TtsSpeechProperties} from '../common/tts_types.js';
 
 import {AutoScrollHandler} from './auto_scroll_handler.js';
@@ -45,7 +44,7 @@ import {TypingEcho} from './editing/editable_text_base.js';
 import {EventSource} from './event_source.js';
 import {GestureInterface} from './gesture_interface.js';
 import {BackgroundKeyboardHandler} from './keyboard_handler.js';
-import {LogStore} from './logging/log_store.js';
+import {LogManager} from './logging/log_manager.js';
 import {Output} from './output/output.js';
 import {OutputCustomEvent} from './output/output_types.js';
 import {PhoneticData} from './phonetic_data.js';
@@ -75,29 +74,6 @@ export class CommandHandler extends CommandHandlerInterface {
      * @private {?AutomationNode}
      */
     this.imageNode_;
-
-    /** @private {boolean} */
-    this.languageLoggingEnabled_ = false;
-
-    this.init_();
-  }
-
-  /**
-   * @param {boolean} flagEnabled
-   * @private
-   */
-  updateLanguageLoggingEnabled_(flagEnabled) {
-    this.languageLoggingEnabled_ |= flagEnabled;
-  }
-
-  /** @private */
-  init_() {
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection',
-        enabled => this.updateLanguageLoggingEnabled_(enabled));
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-language-detection-dynamic',
-        enabled => this.updateLanguageLoggingEnabled_(enabled));
   }
 
   /** @override */
@@ -127,43 +103,41 @@ export class CommandHandler extends CommandHandlerInterface {
         this.showLearnModePage_();
         break;
       case Command.SHOW_LOG_PAGE:
-        const logPage = {url: 'chromevox/log_page/log.html'};
-        chrome.tabs.create(logPage);
+        LogManager.showLogPage();
         break;
       case Command.ENABLE_LOGGING:
-        this.enableLogging_();
+        LogManager.setLoggingEnabled(true);
         break;
       case Command.DISABLE_LOGGING:
-        this.disableLogging_();
+        LogManager.setLoggingEnabled(false);
         break;
       case Command.DUMP_TREE:
-        chrome.automation.getDesktop(
-            root => LogStore.instance.writeTreeLog(new TreeDumper(root)));
+        LogManager.logTreeDump();
         break;
       case Command.DECREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.RATE, false);
         return false;
       case Command.INCREASE_TTS_RATE:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.RATE, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.RATE, true);
         return false;
       case Command.DECREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.PITCH, false);
         return false;
       case Command.INCREASE_TTS_PITCH:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.PITCH, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.PITCH, true);
         return false;
       case Command.DECREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, false);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.VOLUME, false);
         return false;
       case Command.INCREASE_TTS_VOLUME:
-        this.increaseOrDecreaseSpeechProperty_(TtsSettings.VOLUME, true);
+        ChromeVox.tts.increaseOrDecreaseProperty(TtsSettings.VOLUME, true);
         return false;
       case Command.STOP_SPEECH:
         ChromeVox.tts.stop();
         ChromeVoxState.instance.isReadingContinuously = false;
         return false;
       case Command.TOGGLE_EARCONS:
-        this.toggleEarcons_();
+        ChromeVox.earcons.toggle();
         return false;
       case Command.CYCLE_TYPING_ECHO:
         this.cycleTypingEcho_();
@@ -828,17 +802,6 @@ export class CommandHandler extends CommandHandlerInterface {
   }
 
   /**
-   * Increase or decrease a speech property and make an announcement.
-   * @param {string} propertyName The name of the property to change.
-   * @param {boolean} increase If true, increases the property value by one
-   *     step size, otherwise decreases.
-   * @private
-   */
-  increaseOrDecreaseSpeechProperty_(propertyName, increase) {
-    ChromeVox.tts.increaseOrDecreaseProperty(propertyName, increase);
-  }
-
-  /**
    * Called when an image frame is received on a node.
    * @param {!ChromeVoxEvent} event The event.
    * @private
@@ -1117,25 +1080,9 @@ export class CommandHandler extends CommandHandlerInterface {
   }
 
   /** @private */
-  disableLogging_() {
-    for (const type in ChromeVoxPrefs.loggingPrefs) {
-      ChromeVoxPrefs.instance.setLoggingPrefs(
-          ChromeVoxPrefs.loggingPrefs[type], false);
-    }
-  }
-
-  /** @private */
   enableChromeVoxArcSupportForCurrentApp_() {
     chrome.accessibilityPrivate.setNativeChromeVoxArcSupportForCurrentApp(
         true, response => {});
-  }
-
-  /** @private */
-  enableLogging_() {
-    for (const type in ChromeVoxPrefs.loggingPrefs) {
-      ChromeVoxPrefs.instance.setLoggingPrefs(
-          ChromeVoxPrefs.loggingPrefs[type], true);
-    }
   }
 
   /** @private */
@@ -1600,8 +1547,28 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   reportIssue_() {
-    const url = 'https://issuetracker.google.com/issues/new?component=1272895';
-    chrome.tabs.create({url});
+    let url =
+        'https://issuetracker.google.com/issues/new?component=1272895&type=BUG' +
+        '&priority=P2&severity=S2&description=';
+    const description = {};
+    description['Chrome OS Version'] = chrome.runtime.getManifest().version;
+    description['Lacros Version (if applicable)'] =
+        '(copy from chrome://version)';
+    description['Reproduction Steps'] = '%0a1.%0a2.%0a3.';
+    description['Expected result'] = '';
+    description['What actually happens'] = '';
+    for (const key in description) {
+      url += key + ':%20' + description[key] + '%0a';
+    }
+    chrome.windows.getAll((windows) => {
+      if (windows.length > 0) {
+        // Open in existing window.
+        chrome.tabs.create({url});
+      } else {
+        // No window open, cannot use chrome.tabs API.
+        chrome.windows.create({url});
+      }
+    });
   }
 
   /** @private */
@@ -1687,7 +1654,7 @@ export class CommandHandler extends CommandHandlerInterface {
 
   /** @private */
   toggleBrailleTable_() {
-    let brailleTableType = LocalStorage.get('brailleTableType');
+    let brailleTableType = SettingsManager.getString('brailleTableType');
     let output = '';
     if (brailleTableType === 'brailleTable6') {
       brailleTableType = 'brailleTable8';
@@ -1701,19 +1668,11 @@ export class CommandHandler extends CommandHandlerInterface {
       output = '@OPTIONS_BRAILLE_TABLE_TYPE_8';
     }
 
-    LocalStorage.set('brailleTable', LocalStorage.get(brailleTableType));
-    LocalStorage.set('brailleTableType', brailleTableType);
+    SettingsManager.set('brailleTable', SettingsManager.get(brailleTableType));
+    SettingsManager.set('brailleTableType', brailleTableType);
     BrailleBackground.instance.getTranslatorManager().refresh(
-        LocalStorage.getString(brailleTableType));
+        SettingsManager.getString(brailleTableType));
     new Output().format(output).go();
-  }
-
-  /** @private */
-  toggleEarcons_() {
-    ChromeVox.earcons.enabled = !ChromeVox.earcons.enabled;
-    const announce = ChromeVox.earcons.enabled ? Msgs.getMsg('earcons_on') :
-                                                 Msgs.getMsg('earcons_off');
-    ChromeVox.tts.speak(announce, QueueMode.FLUSH, Personality.ANNOTATION);
   }
 
   /** @private */

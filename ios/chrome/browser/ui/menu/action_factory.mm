@@ -77,7 +77,7 @@
 }
 
 - (UIAction*)actionToPinTabWithBlock:(ProceduralBlock)block {
-  UIImage* image = UseSymbols() ? DefaultSymbolWithPointSize(
+  UIImage* image = UseSymbols() ? CustomSymbolWithPointSize(
                                       kPinSymbol, kSymbolActionPointSize)
                                 : [UIImage imageNamed:@"pin"];
   return [self
@@ -88,7 +88,7 @@
 }
 
 - (UIAction*)actionToUnpinTabWithBlock:(ProceduralBlock)block {
-  UIImage* image = UseSymbols() ? DefaultSymbolWithPointSize(
+  UIImage* image = UseSymbols() ? CustomSymbolWithPointSize(
                                       kPinSlashSymbol, kSymbolActionPointSize)
                                 : [UIImage imageNamed:@"unpin"];
   return [self

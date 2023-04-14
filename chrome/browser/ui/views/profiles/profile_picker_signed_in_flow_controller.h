@@ -69,7 +69,7 @@ class ProfilePickerSignedInFlowController
 
   // Finishes the sign-in process by moving to the enterprise profile welcome
   // screen.
-  void SwitchToEnterpriseProfileWelcome(
+  virtual void SwitchToEnterpriseProfileWelcome(
       EnterpriseProfileWelcomeUI::ScreenType type,
       signin::SigninChoiceCallback proceed_callback);
 
@@ -94,12 +94,6 @@ class ProfilePickerSignedInFlowController
   // version of it, if `loading` is true).
   GURL GetSyncConfirmationURL(bool loading);
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Added for bug investigation purposes.
-  // TODO(crbug.com/1340791): Remove this once the source of the bug is found.
-  virtual void PreShowScreenForDebug() {}
-#endif
-
   ProfilePickerWebContentsHost* host() const { return host_; }
   Profile* profile() const { return profile_; }
   content::WebContents* contents() const { return contents_.get(); }
@@ -109,6 +103,9 @@ class ProfilePickerSignedInFlowController
   // content::WebContentsDelegate:
   bool HandleContextMenu(content::RenderFrameHost& render_frame_host,
                          const content::ContextMenuParams& params) override;
+  bool HandleKeyboardEvent(
+      content::WebContents* source,
+      const content::NativeWebKeyboardEvent& event) override;
 
   // Callbacks that finalize initialization of WebUI pages.
   void SwitchToSyncConfirmationFinished();

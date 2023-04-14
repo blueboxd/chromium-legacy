@@ -128,10 +128,9 @@ bool UpgradeAggregationServiceStorageSqlSchema(sql::Database& db,
   if (!db.Execute(kReportingOriginIndexSql))
     return false;
 
-  meta_table.SetVersionNumber(
-      AggregationServiceStorageSql::kCurrentVersionNumber);
-
-  return transaction.Commit();
+  return meta_table.SetVersionNumber(
+             AggregationServiceStorageSql::kCurrentVersionNumber) &&
+         transaction.Commit();
 }
 
 void RecordInitializationStatus(
@@ -762,7 +761,8 @@ void AggregationServiceStorageSql::ClearRequestsStoredBetween(
   while (select_requests_to_delete_statement.Step()) {
     url::Origin reporting_origin = url::Origin::Create(
         GURL(select_requests_to_delete_statement.ColumnString(1)));
-    if (filter.is_null() || filter.Run(blink::StorageKey(reporting_origin))) {
+    if (filter.is_null() ||
+        filter.Run(blink::StorageKey::CreateFirstParty(reporting_origin))) {
       if (!DeleteRequestImpl(
               RequestId(select_requests_to_delete_statement.ColumnInt64(0)))) {
         return;

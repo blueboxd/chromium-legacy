@@ -13,6 +13,7 @@ import '//bookmarks-side-panel.top-chrome/shared/sp_empty_state.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_filter_chip.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_footer.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_heading.js';
+import '//bookmarks-side-panel.top-chrome/shared/sp_icons.html.js';
 import '//bookmarks-side-panel.top-chrome/shared/sp_list_item_badge.js';
 import '//resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import '//resources/cr_elements/cr_button/cr_button.js';
@@ -32,14 +33,17 @@ import {CrToastElement} from '//resources/cr_elements/cr_toast/cr_toast.js';
 import {loadTimeData} from '//resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from '//resources/js/plural_string_proxy.js';
 import {listenOnce} from '//resources/js/util_ts.js';
+import {IronListElement} from '//resources/polymer/v3_0/iron-list/iron-list.js';
 import {DomRepeatEvent, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ActionSource} from './bookmarks.mojom-webui.js';
 import {BookmarksApiProxy, BookmarksApiProxyImpl} from './bookmarks_api_proxy.js';
+import {ShoppingListApiProxy, ShoppingListApiProxyImpl} from './commerce/shopping_list_api_proxy.js';
 import {PowerBookmarksContextMenuElement} from './power_bookmarks_context_menu.js';
 import {PowerBookmarksEditDialogElement} from './power_bookmarks_edit_dialog.js';
 import {getTemplate} from './power_bookmarks_list.html.js';
 import {Label, PowerBookmarksService} from './power_bookmarks_service.js';
+import {BookmarkProductInfo} from './shopping_list.mojom-webui.js';
 
 function getBookmarkName(bookmark: chrome.bookmarks.BookmarkTreeNode): string {
   return bookmark.title || bookmark.url || '';
@@ -50,6 +54,7 @@ export interface PowerBookmarksListElement {
     contextMenu: CrLazyRenderElement<PowerBookmarksContextMenuElement>,
     deletionToast: CrLazyRenderElement<CrToastElement>,
     powerBookmarksContainer: HTMLElement,
+    shownBookmarksIronList: IronListElement,
     sortMenu: CrActionMenuElement,
     editDialog: PowerBookmarksEditDialogElement,
   };
@@ -146,7 +151,12 @@ export class PowerBookmarksListElement extends PolymerElement {
 
   private bookmarksApi_: BookmarksApiProxy =
       BookmarksApiProxyImpl.getInstance();
+  private shoppingListApi_: ShoppingListApiProxy =
+      ShoppingListApiProxyImpl.getInstance();
+  private shoppingListenerIds_: number[] = [];
   private shownBookmarks_: chrome.bookmarks.BookmarkTreeNode[];
+  private trackedProductInfos_ = new Map<string, BookmarkProductInfo>();
+  private availableProductInfos_ = new Map<string, BookmarkProductInfo>();
   private bookmarksService_: PowerBookmarksService =
       new PowerBookmarksService(this);
   private compact_: boolean;
@@ -177,10 +187,32 @@ export class PowerBookmarksListElement extends PolymerElement {
       setTimeout(() => this.bookmarksApi_.showUi(), 0);
     });
     this.bookmarksService_.startListening();
+    this.shoppingListApi_.getAllPriceTrackedBookmarkProductInfo().then(res => {
+      res.productInfos.forEach(
+          product => this.set(
+              `trackedProductInfos_.${product.bookmarkId.toString()}`,
+              product));
+    });
+    this.shoppingListApi_.getAllShoppingBookmarkProductInfo().then(res => {
+      res.productInfos.forEach(
+          product => this.availableProductInfos_.set(
+              product.bookmarkId.toString(), product));
+    });
+    const callbackRouter = this.shoppingListApi_.getCallbackRouter();
+    this.shoppingListenerIds_.push(
+        callbackRouter.priceTrackedForBookmark.addListener(
+            (product: BookmarkProductInfo) =>
+                this.onBookmarkPriceTracked_(product)),
+        callbackRouter.priceUntrackedForBookmark.addListener(
+            (bookmarkId: bigint) =>
+                this.onBookmarkPriceUntracked_(bookmarkId.toString())),
+    );
   }
 
   override disconnectedCallback() {
     this.bookmarksService_.stopListening();
+    this.shoppingListenerIds_.forEach(
+        id => this.shoppingListApi_.getCallbackRouter().removeListener(id));
   }
 
   setCurrentUrl(url: string) {
@@ -208,6 +240,7 @@ export class PowerBookmarksListElement extends PolymerElement {
         this.notifyPath(`shownBookmarks_.${visibleIndex}.${key}`);
       }
     });
+    this.updateShoppingData_();
   }
 
   onBookmarkCreated(
@@ -225,6 +258,7 @@ export class PowerBookmarksListElement extends PolymerElement {
       this.renamingParentId_ = '';
       this.renamingId_ = bookmark.id;
     }
+    this.updateShoppingData_();
   }
 
   onBookmarkMoved(
@@ -262,6 +296,25 @@ export class PowerBookmarksListElement extends PolymerElement {
       getAnnouncerInstance().announce(loadTimeData.getStringF(
           'bookmarkDeleted', getBookmarkName(bookmark)));
     }
+    this.set(`trackedProductInfos_.${bookmark.id}`, null);
+    this.availableProductInfos_.delete(bookmark.id);
+  }
+
+  isPriceTracked(bookmark: chrome.bookmarks.BookmarkTreeNode): boolean {
+    return !!this.get(`trackedProductInfos_.${bookmark.id}`);
+  }
+
+  private isPriceTrackingEligible_(bookmark: chrome.bookmarks.BookmarkTreeNode):
+      boolean {
+    return !!this.availableProductInfos_.get(bookmark.id);
+  }
+
+  private onBookmarkPriceTracked_(product: BookmarkProductInfo) {
+    this.set(`trackedProductInfos_.${product.bookmarkId.toString()}`, product);
+  }
+
+  private onBookmarkPriceUntracked_(bookmarkId: string) {
+    this.set(`trackedProductInfos_.${bookmarkId}`, null);
   }
 
   /**
@@ -338,9 +391,13 @@ export class PowerBookmarksListElement extends PolymerElement {
     return id === this.renamingId_;
   }
 
-  private isPriceTracked_(bookmark: chrome.bookmarks.BookmarkTreeNode):
-      boolean {
-    return this.bookmarksService_.getProductInfo(bookmark) !== undefined;
+  private updateShoppingData_() {
+    this.availableProductInfos_.clear();
+    this.shoppingListApi_.getAllShoppingBookmarkProductInfo().then(res => {
+      res.productInfos.forEach(
+          product => this.availableProductInfos_.set(
+              product.bookmarkId.toString(), product));
+    });
   }
 
   /**
@@ -411,6 +468,16 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
   }
 
+  private onBookmarksEdited_(event: CustomEvent<{folderId: string}>) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.bookmarksApi_.editBookmarks(
+        this.selectedBookmarks_.map(bookmark => bookmark.id),
+        event.detail.folderId);
+    this.selectedBookmarks_ = [];
+    this.editing_ = false;
+  }
+
   private setRenamingId_(event: CustomEvent<{id: string}>) {
     this.renamingId_ = event.detail.id;
   }
@@ -466,12 +533,17 @@ export class PowerBookmarksListElement extends PolymerElement {
           {bookmark: chrome.bookmarks.BookmarkTreeNode, event: MouseEvent}>) {
     event.preventDefault();
     event.stopPropagation();
+    const priceTracked = this.isPriceTracked(event.detail.bookmark);
+    const priceTrackingEligible =
+        this.isPriceTrackingEligible_(event.detail.bookmark);
     if (event.detail.event.button === 0) {
       this.$.contextMenu.get().showAt(
-          event.detail.event, [event.detail.bookmark]);
+          event.detail.event, [event.detail.bookmark], priceTracked,
+          priceTrackingEligible);
     } else {
       this.$.contextMenu.get().showAtPosition(
-          event.detail.event, [event.detail.bookmark]);
+          event.detail.event, [event.detail.bookmark], priceTracked,
+          priceTrackingEligible);
     }
   }
 
@@ -542,14 +614,15 @@ export class PowerBookmarksListElement extends PolymerElement {
     event.preventDefault();
     event.stopPropagation();
     this.$.editDialog.showDialog(
-        this.getActiveFolder_(), this.bookmarksService_.getTopLevelBookmarks(),
+        this.activeFolderPath_, this.bookmarksService_.getTopLevelBookmarks(),
         this.selectedBookmarks_);
   }
 
   private onEditMenuClicked_(event: MouseEvent) {
     event.preventDefault();
     event.stopPropagation();
-    this.$.contextMenu.get().showAt(event, this.selectedBookmarks_.slice());
+    this.$.contextMenu.get().showAt(
+        event, this.selectedBookmarks_.slice(), false, false);
   }
 
   private onSortTypeClicked_(event: DomRepeatEvent<string>) {
@@ -564,6 +637,7 @@ export class PowerBookmarksListElement extends PolymerElement {
     event.stopPropagation();
     this.$.sortMenu.close();
     this.compact_ = false;
+    this.$.shownBookmarksIronList.notifyResize();
   }
 
   private onCompactViewClicked_(event: MouseEvent) {
@@ -571,6 +645,7 @@ export class PowerBookmarksListElement extends PolymerElement {
     event.stopPropagation();
     this.$.sortMenu.close();
     this.compact_ = true;
+    this.$.shownBookmarksIronList.notifyResize();
   }
 
   private onAddTabClicked_() {
@@ -607,7 +682,7 @@ export class PowerBookmarksListElement extends PolymerElement {
    */
   private showDiscountedPrice_(bookmark: chrome.bookmarks.BookmarkTreeNode):
       boolean {
-    const bookmarkProductInfo = this.bookmarksService_.getProductInfo(bookmark);
+    const bookmarkProductInfo = this.get(`trackedProductInfos_.${bookmark.id}`);
     if (bookmarkProductInfo) {
       return bookmarkProductInfo.info.previousPrice.length > 0;
     }
@@ -616,7 +691,7 @@ export class PowerBookmarksListElement extends PolymerElement {
 
   private getCurrentPrice_(bookmark: chrome.bookmarks.BookmarkTreeNode):
       string {
-    const bookmarkProductInfo = this.bookmarksService_.getProductInfo(bookmark);
+    const bookmarkProductInfo = this.get(`trackedProductInfos_.${bookmark.id}`);
     if (bookmarkProductInfo) {
       return bookmarkProductInfo.info.currentPrice;
     } else {
@@ -626,7 +701,7 @@ export class PowerBookmarksListElement extends PolymerElement {
 
   private getPreviousPrice_(bookmark: chrome.bookmarks.BookmarkTreeNode):
       string {
-    const bookmarkProductInfo = this.bookmarksService_.getProductInfo(bookmark);
+    const bookmarkProductInfo = this.get(`trackedProductInfos_.${bookmark.id}`);
     if (bookmarkProductInfo) {
       return bookmarkProductInfo.info.previousPrice;
     } else {

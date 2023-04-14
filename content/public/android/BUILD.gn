@@ -141,6 +141,7 @@ android_library("content_full_java") {
     "//base:process_launcher_java",
     "//build:chromeos_buildflags",
     "//build/android:build_java",
+    "//cc/mojom:mojom_java",
     "//components/download/public/common:public_java",
     "//components/payments/mojom:mojom_java",
     "//content/public/common:common_java",
@@ -195,6 +196,7 @@ android_library("content_full_java") {
 
   sources = [
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
+    "java/src/org/chromium/content/browser/AttributionOsLevelManager.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BindingManager.java",
@@ -238,6 +240,7 @@ android_library("content_full_java") {
     "java/src/org/chromium/content/browser/accessibility/AccessibilityDelegate.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityEventDispatcher.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityHistogramRecorder.java",
+    "java/src/org/chromium/content/browser/accessibility/AccessibilityNodeInfoBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/AccessibilityNodeInfoUtils.java",
     "java/src/org/chromium/content/browser/accessibility/OViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
@@ -327,7 +330,6 @@ android_library("content_full_java") {
     "java/src/org/chromium/content_public/browser/ContentViewStatics.java",
     "java/src/org/chromium/content_public/browser/GestureListenerManager.java",
     "java/src/org/chromium/content_public/browser/GestureStateListener.java",
-    "java/src/org/chromium/content_public/browser/GestureStateListenerWithScroll.java",
     "java/src/org/chromium/content_public/browser/GlobalRenderFrameHostId.java",
     "java/src/org/chromium/content_public/browser/HostZoomMap.java",
     "java/src/org/chromium/content_public/browser/ImageDownloadCallback.java",
@@ -418,6 +420,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/app/ContentChildProcessServiceDelegate.java",
     "java/src/org/chromium/content/app/ContentMain.java",
     "java/src/org/chromium/content/browser/AppWebMessagePort.java",
+    "java/src/org/chromium/content/browser/AttributionOsLevelManager.java",
     "java/src/org/chromium/content/browser/AudioFocusDelegate.java",
     "java/src/org/chromium/content/browser/BackgroundSyncNetworkObserver.java",
     "java/src/org/chromium/content/browser/BrowserContextHandleImpl.java",
@@ -444,6 +447,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/SyntheticGestureTarget.java",
     "java/src/org/chromium/content/browser/TracingControllerAndroidImpl.java",
     "java/src/org/chromium/content/browser/TtsPlatformImpl.java",
+    "java/src/org/chromium/content/browser/accessibility/AccessibilityNodeInfoBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/ViewStructureBuilder.java",
     "java/src/org/chromium/content/browser/accessibility/WebContentsAccessibilityImpl.java",
     "java/src/org/chromium/content/browser/accessibility/captioning/CaptioningController.java",
@@ -485,6 +489,8 @@ android_library("content_javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:process_launcher_java",
+    "//cc/mojom:mojom_java",
+    "//components/payments/mojom:mojom_java",
     "//content/public/test/android:content_java_test_support",
     "//content/shell/android:content_shell_apk_java",
     "//content/shell/android:content_shell_java",
@@ -528,6 +534,9 @@ android_library("content_javatests") {
     "//ui/base/ime/mojom:mojom_java",
     "//ui/gfx/geometry/mojom:mojom_java",
     "//url:gurl_java",
+    "//url:origin_java",
+    "//url/mojom:url_mojom_gurl_java",
+    "//url/mojom:url_mojom_origin_java",
   ]
 
   sources = [
@@ -599,6 +608,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/scheduler/NativePostTaskTest.java",
     "javatests/src/org/chromium/content/browser/scheduler/UiThreadSchedulerTest.java",
     "javatests/src/org/chromium/content/browser/webcontents/WebContentsTest.java",
+    "javatests/src/org/chromium/content_public/browser/ClientDataJsonTest.java",
   ]
 
   data = [
@@ -646,6 +656,7 @@ robolectric_binary("content_junit_tests") {
     "//base:base_java_process_launcher_test_support",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//cc/mojom:mojom_java",
     "//content/public/common:common_java",
     "//content/public/test/android:content_java_test_support",
     "//media/mojo/mojom:mojom_java",

@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/gpu/vulkan_context_provider.h"
-#include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/service/shared_image/external_vk_image_backing.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
@@ -76,9 +76,19 @@ base::flat_map<VkFormat, VkImageUsageFlags> CreateImageUsageCache(
 
 }  // namespace
 
+constexpr uint32_t kSupportedUsage =
+    SHARED_IMAGE_USAGE_GLES2 | SHARED_IMAGE_USAGE_GLES2_FRAMEBUFFER_HINT |
+    SHARED_IMAGE_USAGE_DISPLAY_WRITE | SHARED_IMAGE_USAGE_DISPLAY_READ |
+    SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+    SHARED_IMAGE_USAGE_SCANOUT | SHARED_IMAGE_USAGE_WEBGPU |
+    SHARED_IMAGE_USAGE_PROTECTED | SHARED_IMAGE_USAGE_VIDEO_DECODE |
+    SHARED_IMAGE_USAGE_WEBGPU_SWAP_CHAIN_TEXTURE |
+    SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU | SHARED_IMAGE_USAGE_CPU_UPLOAD;
+
 ExternalVkImageBackingFactory::ExternalVkImageBackingFactory(
     scoped_refptr<SharedContextState> context_state)
-    : context_state_(std::move(context_state)),
+    : SharedImageBackingFactory(kSupportedUsage),
+      context_state_(std::move(context_state)),
       command_pool_(context_state_->vk_context_provider()
                         ->GetDeviceQueue()
                         ->CreateCommandPool()),
@@ -167,6 +177,14 @@ bool ExternalVkImageBackingFactory::IsSupported(
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
   if (format.is_multi_plane()) {
+    return false;
+  }
+
+  // ALPHA_8 is only used by UI and should never need GL/Vulkan interop.
+  // LUMINANCE_8 is only used with GL ES2 contexts and shouldn't be relevant for
+  // devices that support Vulkan.
+  if (format == viz::SinglePlaneFormat::kALPHA_8 ||
+      format == viz::SinglePlaneFormat::kLUMINANCE_8) {
     return false;
   }
 

@@ -23,8 +23,8 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Compositing.Browser.LayersUpdateTime" units="microseconds"
-    expires_after="2023-05-27">
-  <owner>schenney@chromium.org</owner>
+    expires_after="2023-07-30">
+  <owner>pdr@chromium.org</owner>
   <owner>animations-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
@@ -40,7 +40,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Browser.LayerTreeImpl.CalculateDrawPropertiesUs"
     units="microseconds" expires_after="2023-03-19">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating layer draw properties, in microseconds. Recorded when a
@@ -56,7 +56,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Browser.NumActiveLayers" units="layers"
     expires_after="2023-09-11">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of layers in the active tree for each compositor frame. This is
@@ -66,7 +66,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Browser.NumActivePictureLayers" units="layers"
     expires_after="2023-09-11">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of PictureLayers in the active tree for each compositor frame.
@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Browser.NumRenderSurfaces" units="surfaces"
     expires_after="2023-09-11">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of render surfaces in the render surface layer list. Recorded
@@ -108,7 +108,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.DecodeLCPCandidateImage.{DecodeMethod}"
     enum="Boolean" expires_after="2023-01-31">
-  <owner>schenney@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -131,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DidMainThreadBlockDuringCommit" enum="Boolean"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>szager@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -143,7 +142,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.OverlayProcessingUs"
-    units="microseconds" expires_after="2023-06-04">
+    units="microseconds" expires_after="2023-08-08">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -207,7 +206,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.SkipAllNonRootRenderPassesPerFrame"
-    enum="BooleanSkipped" expires_after="2023-06-04">
+    enum="BooleanSkipped" expires_after="2023-08-06">
   <owner>magchen@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -218,7 +217,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.DirectRenderer.SkipNonRootRenderPass"
-    enum="BooleanSkipped" expires_after="2023-06-04">
+    enum="BooleanSkipped" expires_after="2023-08-08">
   <owner>magchen@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -229,7 +228,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.AdpfHintUs" units="microseconds"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>boliu@chromium.org</owner>
   <owner>vasilyt@chromium.org</owner>
   <summary>
@@ -257,7 +256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrawToSwapUs" units="microseconds"
-    expires_after="2023-06-11">
+    expires_after="2023-08-13">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -270,7 +269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.FirstTestPageFlipPassed"
-    enum="Boolean" expires_after="2023-06-18">
+    enum="Boolean" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -280,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipCount"
-    units="units" expires_after="2023-06-18">
+    units="units" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -290,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.DrmOverlayManager.TestPageFlipUs"
-    units="microseconds" expires_after="2023-06-18">
+    units="microseconds" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -313,7 +312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.FlattenedRenderPassCount" units="units"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>backer@chromium.org</owner>
   <owner>rjkroege@chromium.org</owner>
   <summary>
@@ -361,7 +360,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Display.OverlayProcessorOzone.MaxPlanesSupported"
-    units="units" expires_after="2023-06-18">
+    units="units" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -373,7 +372,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CandidateCombinationPreviouslySucceeded"
-    enum="Boolean" expires_after="2023-06-18">
+    enum="Boolean" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -385,7 +384,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportCallCount"
-    units="units" expires_after="2023-05-27">
+    units="units" expires_after="2023-07-30">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -396,7 +395,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.CheckOverlaySupportUs"
-    units="microseconds" expires_after="2023-06-04">
+    units="microseconds" expires_after="2023-08-08">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -436,7 +435,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.Display.OverlayProcessorUsingStrategy.ShouldAttemptMultipleOverlays"
-    enum="AttemptingMultipleOverlays" expires_after="2023-06-18">
+    enum="AttemptingMultipleOverlays" expires_after="2023-08-20">
   <owner>khaslett@chromium.org</owner>
   <owner>kylechar@chromium.org</owner>
   <summary>
@@ -486,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.MainThreadBlockedDuringCommitTime"
-    units="microseconds" expires_after="2023-06-04">
+    units="microseconds" expires_after="2023-08-08">
   <owner>szager@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <owner>sky@chromium.org</owner>
@@ -502,7 +501,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Compositing.MainThreadBlockedDuringCommitTime.ApplyCompositorChanges"
-    units="microseconds" expires_after="2023-06-04">
+    units="microseconds" expires_after="2023-08-08">
   <owner>szager@chromium.org</owner>
   <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -561,7 +560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.CALayerResult" enum="CALayerResult"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>ccameron@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -608,7 +607,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Renderer.LayersUpdateTime" units="microseconds"
     expires_after="2023-06-25">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     Time spent updating layers, in microseconds. Recorded when layers are
@@ -623,7 +622,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.Renderer.LCDTextDisallowedReasonKPixels"
-    enum="LCDTextDisallowedReason" expires_after="2023-06-18">
+    enum="LCDTextDisallowedReason" expires_after="2023-08-20">
   <owner>wangxianzhu@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
@@ -647,7 +646,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Renderer.NumActiveLayers" units="layers"
     expires_after="2023-06-25">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of layers in the active tree for each compositor frame. This is
@@ -657,7 +656,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Renderer.NumActivePictureLayers" units="layers"
     expires_after="2023-06-25">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of PictureLayers in the active tree for each compositor frame.
@@ -668,7 +667,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Compositing.Renderer.NumRenderSurfaces" units="surfaces"
     expires_after="2023-09-11">
-  <owner>schenney@chromium.org</owner>
+  <owner>pdr@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
   <summary>
     The number of render surfaces in the render surface layer list. Recorded
@@ -678,7 +677,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SkiaRenderer.DirectlyDrawableRenderPassWithRPDQ"
-    units="boolean" expires_after="2023-06-04">
+    units="boolean" expires_after="2023-08-08">
   <owner>khushalsagar@chromium.org</owner>
   <owner>vmpstr@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -697,7 +696,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SkiaRenderer.SkipOverlayRenderPassDrawQuad"
-    enum="BooleanSkipped" expires_after="2023-06-04">
+    enum="BooleanSkipped" expires_after="2023-08-06">
   <owner>magchen@chromium.org</owner>
   <owner>ccameron@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -725,7 +724,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.CopiedSurfaceCount"
-    units="surfaces" expires_after="2023-06-04">
+    units="surfaces" expires_after="2023-08-08">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -749,7 +748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.DeclareResourcesUs"
-    units="microseconds" expires_after="2023-06-18">
+    units="microseconds" expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -763,7 +762,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkedSurfaceCount"
-    units="surfaces" expires_after="2023-06-18">
+    units="surfaces" expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -773,7 +772,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Compositing.SurfaceAggregator.PrewalkUs" units="microseconds"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>kylechar@chromium.org</owner>
   <owner>jonross@chromium.org</owner>
   <summary>
@@ -929,6 +928,54 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
+<histogram name="Graphics.Exo.Smoothness.DidNotProduceToFrameArrival"
+    units="microseconds" expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Measures the time duration between Exo sending a DidNotProduceFrame response
+    and the next frame arrival, if the next frame arrives before a new
+    BeginFrame request. Reported for clients with high-resolution clocks.
+
+    This metric is used to measure whether the deadline Exo uses to wait for
+    frames is reasonable. Please note that a value is reported for each
+    DidNotProduceFrame. If (1) DidNotProduceFrame is issued when there are
+    already queued BeginFrame requests; or (2) a new BeginFrame request arrives
+    before the next frame, then the value reported is 0.
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Exo.Smoothness.PercentDidNotProduceFrame" units="%"
+    expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the percent of BeginFrame requests that Exo receives and responds
+    with DidNotProduceFrame.
+
+    A new value is reported for every 100 BeginFrame requests that a shell
+    surface receives. Note that this metric is reported only when there are
+    sufficient number of BeginFrame requests (&gt;= 100).
+  </summary>
+</histogram>
+
+<histogram name="Graphics.Exo.Smoothness.PercentFrameDiscarded" units="%"
+    expires_after="2023-12-31">
+  <owner>jonross@chromium.org</owner>
+  <owner>yzshen@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    Tracks the percent of compositor frames that are submitted from Exo clients
+    and directly discarded without being sent to the GPU process.
+
+    A new value is reported for every 100 frames that a shell surface submits.
+    Note that this metric is reported only when there are sufficient number of
+    frames (&gt;= 100).
+  </summary>
+</histogram>
+
 <histogram name="Graphics.Smoothness.95pctPercentDroppedFrames_1sWindow"
     units="%" expires_after="2023-07-02">
   <owner>jonross@chromium.org</owner>
@@ -952,7 +999,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.Checkerboarding" units="%"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -993,7 +1040,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2023-06-01">
+<histogram name="Graphics.Smoothness.Jank" units="%" expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
@@ -1083,148 +1130,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Graphics.Smoothness.PercentDroppedFrames" units="%"
-    expires_after="2023-02-19">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames
-    (e.g. during scroll, animation, etc.). This is reported in various
-    sub-metrics with suffixes describing the type of the sequence (e.g.
-    TouchScroll etc.).
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-  </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PercentDroppedFrames.AllAnimations"
-    units="%" expires_after="2023-06-25">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames for
-    all animations. This metric is reported for all animations (e.g.
-    comositor-driven animations, main-thread driven animations, and raf-driven
-    animations).
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-  </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PercentDroppedFrames.AllInteractions"
-    units="%" expires_after="2023-06-25">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames
-    where a user-input (e.g. scroll, pinch) is active. This metric is reported
-    for all sources of user-input (i.e. both touchscreen and
-    touchpad/mouse-wheel).
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-  </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PercentDroppedFrames.AllSequences"
-    units="%" expires_after="2023-06-25">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames.
-    This metric is reported for all animations and all interactions.
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-  </summary>
-</histogram>
-
-<histogram name="Graphics.Smoothness.PercentDroppedFrames2.{Thread}{Sequence}"
-    units="%" expires_after="2023-03-07">
-  <owner>jonross@chromium.org</owner>
-  <owner>graphics-dev@chromium.org</owner>
-  <summary>
-    Tracks the percent of dropped frames for a particular sequence of frames.
-    This metric aggregates data {Sequence}
-
-    PercentDroppedFrames is measured by tracking the number of frames which were
-    not displayed on screen out of the total number of frames expected to be
-    produced and displayed. In other words, the lower this number is, the
-    smoother experience.
-
-    Note that this metric is reported only when there are sufficient number of
-    frames (&gt;= 100). If there are sequences with fewer frames, then these are
-    aggregated until there are enough frames to produce the metric.
-
-    This is a new implementation of the older
-    Graphics.Smoothness.PercentDroppedFrames.AllInteractions metric.
-  </summary>
-  <token key="Thread">
-    <variant name=""/>
-    <variant name="CompositorThread."/>
-    <variant name="MainThread."/>
-  </token>
-  <token key="Sequence">
-    <variant name="AllAnimations"
-        summary="reported from all types of animations (e.g. comositor-driven
-                 animations, main-thread driven animations, and raf-driven
-                 animations, etc.)."/>
-    <variant name="AllInteractions"
-        summary="reported for all supported combinations of interaction types
-                 (e.g. scrolling, pinching, etc.) and input device types
-                 (e.g. touchscreen, touchpad, mousewheel, etc.)."/>
-    <variant name="AllSequences"
-        summary="from all animations and all interactions."/>
-    <variant name="CanvasAnimation"
-        summary="reported for all canvas animations."/>
-    <variant name="CompositorAnimation"
-        summary="reported for all compositor thread driven animations."/>
-    <variant name="JSAnimation"
-        summary="reported for all JS driven animations."/>
-    <variant name="MainThreadAnimation"
-        summary="reported for all main thread driven animations."/>
-    <variant name="PinchZoom"
-        summary="reported for all pinch to zoom interctions."/>
-    <variant name="RAF" summary="reported for all raf driven animations."/>
-    <variant name="ScrollbarScroll"
-        summary="reported for all scrollbar scrolling."/>
-    <variant name="SETCompositorAnimation"
-        summary="reported for all compositor animations during a shared
-                 element transition"/>
-    <variant name="SETMainThreadAnimation"
-        summary="reported for all main thread animations during a shared
-                 element transition"/>
-    <variant name="TouchScroll" summary="reported for all touch scrolling."/>
-    <variant name="WheelScroll" summary="reported for all wheel scrolling."/>
-  </token>
-</histogram>
-
 <histogram name="Graphics.Smoothness.PercentDroppedFrames3.AllSequences"
     units="%" expires_after="never">
 <!-- expires-never: guiding metric (internal: go/chrome-browser-guiding-metrics) -->
@@ -1307,6 +1212,7 @@ chromium-metrics-reviews@google.com.
     <variant name="SETMainThreadAnimation"
         summary="main thread animations during a view transition"/>
     <variant name="TouchScroll" summary="touch scrolling"/>
+    <variant name="Video" summary="video playback"/>
     <variant name="WheelScroll" summary="wheel scrolling"/>
   </token>
 </histogram>
@@ -1370,7 +1276,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Graphics.Smoothness.PercentMissedDeadlineFrames.AllSequences"
-    units="%" expires_after="2023-06-18">
+    units="%" expires_after="2023-08-20">
   <owner>jonross@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>

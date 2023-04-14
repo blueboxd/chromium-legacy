@@ -169,6 +169,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   bool IsPip() const;
   bool IsFloated() const;
 
+  // Gets the id of the display to show fullscreen on.
+  // Returns kInvalidDisplay if not set.
+  int64_t GetFullscreenTargetDisplayId() const;
+
   // True if the window's state type is chromeos::WindowStateType::kMaximized,
   // chromeos::WindowStateType::kFullscreen or
   // chromeos::WindowStateType::kPinned.
@@ -218,6 +222,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
 
   // Set the window state to its previous applicable window state.
   void Restore();
+
+  // Determines whether transitioning from the `previous_state` to the current
+  // state counts as restoring.
+  bool IsRestoring(chromeos::WindowStateType previous_state) const;
 
   // Caches, then disables z-ordering state and then stacks |window_| below
   // |window_on_top| if |window_| currently has a special z-order.
@@ -528,9 +536,12 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
       base::TimeDelta duration = kBoundsChangeSlideDuration,
       gfx::Tween::Type animation_type = gfx::Tween::LINEAR);
 
-  // Sets the window's |bounds| and transition to the new bounds with
-  // a cross fade animation.
-  void SetBoundsDirectCrossFade(const gfx::Rect& bounds);
+  // Sets the window's `bounds` and transition to the new bounds with
+  // a cross fade animation. If `float_state` has a value, sets a custom
+  // float/unfloat cross fade animation.
+  void SetBoundsDirectCrossFade(
+      const gfx::Rect& bounds,
+      absl::optional<bool> float_state = absl::nullopt);
 
   // Called before the state change and update PIP related state, such as next
   // window animation type, upon state change.
@@ -621,6 +632,8 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
   ui::ZOrderLevel cached_z_order_;
   bool allow_set_bounds_direct_ = false;
   bool is_moving_to_another_display_ = false;
+
+  bool is_handling_float_event_ = false;
 
   // Contains the window's target snap ratio if it's going to be snapped by a
   // WMEvent, and the updated window snap ratio if the snapped window's bounds

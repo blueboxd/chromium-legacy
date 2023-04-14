@@ -91,18 +91,8 @@ public abstract class PlatformServiceBridge {
         callback.onResult(false);
     }
 
-    // TODO(crbug/1410592) remove after downstream implementation lands
-    public void logMetrics(byte[] data) {}
-
     // Takes an uncompressed, serialized UMA proto and logs it via a platform-specific mechanism.
-    public void logMetrics(byte[] data, boolean useDefaultUploadQos) {
-        logMetrics(data);
-    }
-
-    // TODO(crbug/1410592) remove after downstream implementation lands
-    public int logMetricsBlocking(byte[] data) {
-        return logMetricsBlocking(data, false);
-    }
+    public void logMetrics(byte[] data, boolean useDefaultUploadQos) {}
 
     /**
      * Similar to {@link logMetrics}, logs a serialized UMA proto via a platform-specific mechanism
@@ -111,7 +101,14 @@ public abstract class PlatformServiceBridge {
      * @param data uncompressed, serialized UMA proto.
      * @param useDefaultUploadQos whether to use an experimental change that increases upload
      *         frequency
-     * @return Status code of the logging operation.
+     * @return Status code of the logging operation. The status codes are:
+     * - Success cache (went to the devices cache): -1
+     * - Success: 0
+     * - Internal error: 8
+     * - Interrupted: 14
+     * - Timeout: 15
+     * - Cancelled: 16
+     * - API not connected (probably means the API is not available on device): 17
      */
     public int logMetricsBlocking(byte[] data, boolean useDefaultUploadQos) {
         // TODO(crbug.com/1248039): remove this once downstream implementation lands.

@@ -23,12 +23,17 @@
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/scoped_hglobal.h"
 #include "base/win/windows_types.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_info_win.h"
 #include "printing/backend/win_helper.h"
 #include "printing/mojom/print.mojom.h"
+#include "printing/printing_utils.h"
+#include "printing/units.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace printing {
 
@@ -101,9 +106,31 @@ void GetDeviceCapabilityArray(const wchar_t* printer,
   result->swap(tmp);
 }
 
+gfx::Rect LoadPaperPrintableAreaUm(const wchar_t* printer, DEVMODE* devmode) {
+  base::win::ScopedCreateDC hdc(
+      CreateDC(L"WINSPOOL", printer, nullptr, devmode));
+
+  int dpi_x = GetDeviceCaps(hdc.get(), LOGPIXELSX);
+  int dpi_y = GetDeviceCaps(hdc.get(), LOGPIXELSY);
+
+  gfx::Rect printable_area_device_units =
+      GetPrintableAreaDeviceUnits(hdc.get());
+
+  // Device units can be non-square, so scale for non-square DPIs and convert to
+  // microns.
+  gfx::Rect printable_area_um = gfx::Rect(
+      ConvertUnit(printable_area_device_units.x(), dpi_x, kMicronsPerInch),
+      ConvertUnit(printable_area_device_units.y(), dpi_y, kMicronsPerInch),
+      ConvertUnit(printable_area_device_units.width(), dpi_x, kMicronsPerInch),
+      ConvertUnit(printable_area_device_units.height(), dpi_y,
+                  kMicronsPerInch));
+
+  return printable_area_um;
+}
+
 void LoadPaper(const wchar_t* printer,
                const wchar_t* port,
-               const DEVMODE* devmode,
+               DEVMODE* devmode,
                PrinterSemanticCapsAndDefaults* caps) {
   static const size_t kToUm = 100;  // Windows uses 0.1mm.
   static const size_t kMaxPaperName = 64;
@@ -132,9 +159,17 @@ void LoadPaper(const wchar_t* printer,
   if (names.size() != sizes.size())
     names.clear();
 
+  short initial_dm_paper_size = devmode ? devmode->dmPaperSize : -1;
+
   for (size_t i = 0; i < sizes.size(); ++i) {
     PrinterSemanticCapsAndDefaults::Paper paper;
     paper.size_um.SetSize(sizes[i].x * kToUm, sizes[i].y * kToUm);
+
+    // Skip papers with empty paper sizes.
+    if (paper.size_um.IsEmpty()) {
+      continue;
+    }
+
     if (!names.empty()) {
       const wchar_t* name_start = names[i].chars;
       std::wstring tmp_name(name_start, kMaxPaperName);
@@ -144,18 +179,37 @@ void LoadPaper(const wchar_t* printer,
     }
     if (!ids.empty())
       paper.vendor_id = base::NumberToString(ids[i]);
+
+    if (devmode) {
+      devmode->dmPaperSize = ids[i];
+      paper.printable_area_um = LoadPaperPrintableAreaUm(printer, devmode);
+    }
+
+    // Default to the paper size if printable area is missing.
+    // We've seen some drivers have a printable area that goes out of bounds of
+    // the paper size. In those cases, set the printable area to be the size.
+    // (See crbug.com/1412305.)
+    const gfx::Rect size_um_rect = gfx::Rect(paper.size_um);
+    if (paper.printable_area_um.IsEmpty() ||
+        !size_um_rect.Contains(paper.printable_area_um)) {
+      paper.printable_area_um = size_um_rect;
+    }
+
     caps->papers.push_back(paper);
   }
 
   if (!devmode)
     return;
 
+  // Restore the initial default paper size.
+  devmode->dmPaperSize = initial_dm_paper_size;
+
   // Copy paper with the same ID as default paper.
   if (devmode->dmFields & DM_PAPERSIZE) {
-    for (size_t i = 0; i < ids.size(); ++i) {
-      if (ids[i] == devmode->dmPaperSize) {
-        DCHECK_EQ(ids.size(), caps->papers.size());
-        caps->default_paper = caps->papers[i];
+    std::string default_vendor_id = base::NumberToString(devmode->dmPaperSize);
+    for (const PrinterSemanticCapsAndDefaults::Paper& paper : caps->papers) {
+      if (paper.vendor_id == default_vendor_id) {
+        caps->default_paper = paper;
         break;
       }
     }
@@ -170,8 +224,10 @@ void LoadPaper(const wchar_t* printer,
   if (!default_size.IsEmpty()) {
     // Reset default paper if `dmPaperWidth` or `dmPaperLength` does not
     // match default paper set by.
-    if (default_size != caps->default_paper.size_um)
+    if (default_size != caps->default_paper.size_um) {
       caps->default_paper = PrinterSemanticCapsAndDefaults::Paper();
+      caps->default_paper.printable_area_um = gfx::Rect(default_size);
+    }
     caps->default_paper.size_um = default_size;
   }
 }

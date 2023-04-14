@@ -28,12 +28,12 @@
 <translation id="1201402288615127009">Επόμενο</translation>
 <translation id="1209796539517632982">Αυτόματοι διακομιστές ονομάτων</translation>
 <translation id="1210831758834677569">Λάο</translation>
+<translation id="1221555006497674479">Περιορισμένος αποθηκευτικός χώρος. Απομένει το <ph name="REMAINING_PERCENTAGE" />% από τα <ph name="TOTAL_SPACE" /> του αποθηκευτικού χώρου του κοινού Drive.</translation>
 <translation id="1243314992276662751">Μεταφόρτωση</translation>
 <translation id="1249250836236328755">Είδος</translation>
 <translation id="1254593899333212300">Άμεση σύνδεση στο διαδίκτυο</translation>
 <translation id="1272293450992660632">Οι τιμές PIN δεν ταιριάζουν.</translation>
 <translation id="1280820357415527819">Αναζήτηση για δίκτυα κινητής τηλεφωνίας</translation>
-<translation id="1291603679744561561">Η κάρτα SIM είναι κλειδωμένη</translation>
 <translation id="1293556467332435079">Αρχεία</translation>
 <translation id="1297922636971898492">Το Google Drive δεν είναι διαθέσιμο αυτήν τη στιγμή. Η μεταφόρτωση θα ξεκινήσει ξανά, όταν το Google Drive είναι και πάλι διαθέσιμο.</translation>
 <translation id="1307931752636661898">Δεν είναι δυνατή η προβολή αρχείων Linux</translation>
@@ -52,6 +52,7 @@
 <translation id="1433628812591023318">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να μετακινηθεί στα αρχεία των Windows.</translation>
 <translation id="1435838927755162558">Κοινή χρήση φακέλου με το Parallels Desktop</translation>
 <translation id="1439919885608649279">Άτομο με λουλούδια</translation>
+<translation id="1458457385801829801">Αποσύνδεση <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Σλοβακικά</translation>
 <translation id="1482884275703521657">Φινλανδικά</translation>
 <translation id="148466539719134488">Ελβετικά</translation>
@@ -74,6 +75,7 @@
 <translation id="1641780993263690097">Κινεζικά Pinyin</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> αρχεία γίνονται διαθέσιμα εκτός σύνδεσης.</translation>
 <translation id="164969095109328410">Συσκευή Chrome</translation>
+<translation id="1661207570040737402">Έχετε χρησιμοποιήσει όλο τον αποθηκευτικό χώρο του κοινού Drive στο Google Workspace.</translation>
 <translation id="1661867754829461514">Απουσιάζει το PIN </translation>
 <translation id="166439687370499867">Δεν επιτρέπεται η αλλαγή διαμορφώσεων κοινόχρηστου δικτύου</translation>
 <translation id="1665611772925418501">Δεν ήταν δυνατή η τροποποίηση του αρχείου.</translation>
@@ -193,6 +195,7 @@
 <translation id="2574327434504608656">1 φάκελος κοινοποιήθηκε στο Bruschetta</translation>
 <translation id="2578394532502990878">Φωνητική εισαγωγή Ταμίλ</translation>
 <translation id="2579959351793446050">Όντια</translation>
+<translation id="2587195714949534472">Προετοιμασία για συγχρονισμό του <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Αποκλείστηκε από τον διαχειριστή σας, Λεπτομέρειες</translation>
 <translation id="2614589611416690597">Βίντεο <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Δεν είναι δυνατή η σύνδεση με το Google Drive αυτή τη φορά.</translation>
@@ -298,6 +301,7 @@
 <translation id="3486821258960016770">Μογγολικά</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> σφάλματα.</translation>
 <translation id="3509680540198371098">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />%, Λεπτομέρειες</translation>
+<translation id="3511705761158917664">Προετοιμασία για συγχρονισμό <ph name="NUMBER_OF_ITEMS" /> στοιχείων…</translation>
 <translation id="3522708245912499433">Πορτογαλικά</translation>
 <translation id="3524311639100184459">Προσοχή: Αυτά τα αρχεία είναι προσωρινά και ενδέχεται να διαγραφούν αυτόματα για να απελευθερωθεί χώρος στη μονάδα δίσκου.  <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Φάκελος</translation>
@@ -355,6 +359,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Επικόλληση</translation>
 <translation id="3952872973865944257">Φωνητική εισαγωγή Τελούγκου</translation>
+<translation id="3954354850384043518">Σε εξέλιξη</translation>
 <translation id="3958548648197196644">Ακτινίδιο</translation>
 <translation id="3971140002794351170">Λήψη προφίλ κινητού, Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Αγγλικά (ΗΒ)</translation>
@@ -414,6 +419,7 @@
 <translation id="4462159676511157176">Προσαρμοσμένοι διακομιστές ονομάτων</translation>
 <translation id="4465725236958772856">Δίκτυο <ph name="NETWORK_INDEX" /> από <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Διαχειριζόμενο από τον διαχειριστή σας, Σύνδεση</translation>
 <translation id="4470564870223067757">Σύνολο Χανγκίλ 2</translation>
+<translation id="4474142134969976028">Δεν υπάρχουν αποτελέσματα</translation>
 <translation id="4477002475007461989">Ρουμανικά</translation>
 <translation id="4477219268485577442">Φωνητικό Βουλγαρικά</translation>
 <translation id="4508265954913339219">Η ενεργοποίηση απέτυχε</translation>
@@ -487,6 +493,7 @@
 <translation id="4973523518332075481">Χρησιμοποιήστε ένα όνομα το οποίο αποτελείται από <ph name="MAX_LENGTH" /> χαρακτήρες ή λιγότερους</translation>
 <translation id="4973970068702235170">Αποτυχία συμπίεσης, μη αναμενόμενο σφάλμα: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Ιαπωνικά</translation>
+<translation id="4987699874727873250">Αγγλικά (Ινδίας)</translation>
 <translation id="4988205478593450158">Είστε βέβαιοι ότι θέλετε να διαγράψετε το "<ph name="FILE_NAME" />";</translation>
 <translation id="498902553138568924">Κόκκινη πεταλούδα</translation>
 <translation id="4992066212339426712">Κατάργηση σίγασης</translation>
@@ -801,6 +808,7 @@
 <translation id="7460898608667578234">Ουκρανικά
 </translation>
 <translation id="7469894403370665791">Αυτόματη σύνδεση σε αυτό το δίκτυο</translation>
+<translation id="7481358317100446445">Έτοιμο</translation>
 <translation id="7486315294984620427">Για να αποθέσετε αρχεία στο Parallels Desktop, το αρχείο θα πρέπει να αντιγραφεί στα αρχεία των Windows.</translation>
 <translation id="749452993132003881">Χιραγκάνα</translation>
 <translation id="7495372004724182530">Φωνητική εισαγωγή Μαλαγιαλαμικών</translation>
@@ -828,6 +836,7 @@
 <translation id="7655441028674523381">Εύκολη πρόσβαση στις Φωτογραφίες Google</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="7663224033570512922">Χίντι</translation>
+<translation id="7665680517722058469">Δοκιμάστε άλλη αναζήτηση</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> στοιχεία μετακινήθηκαν στον κάδο</translation>
 <translation id="7693909743393669729">Η μορφοποίηση ενός δίσκου θα διαγράψει όλα τα δεδομένα που είναι αποθηκευμένα σε αυτόν και θα καταργήσει τα υπάρχοντα διαμερίσματα, συμπεριλαμβανομένων των διαμερισμάτων που μπορεί να μην είναι ορατά. Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.</translation>
 <translation id="7695430100978772476">Δεν ήταν δυνατή η μορφοποίηση της συσκευής <ph name="DRIVE_NAME" /></translation>
@@ -988,6 +997,7 @@
 <translation id="8866284467018526531">Μεταγραφή σε Αραβικά</translation>
 <translation id="8873014196523807561">Για να επαναφέρετε αυτά τα στοιχεία, σύρετέ τα σε έναν νέο φάκελο. Οι αρχικοί φάκελοι για ορισμένα από αυτά τα στοιχεία έχουν διαγραφεί.</translation>
 <translation id="8874184842967597500">Καμία σύνδεση</translation>
+<translation id="8876368061475701452">Σε ουρά</translation>
 <translation id="8900820606136623064">Ουγγρικά
 </translation>
 <translation id="8903931173357132290">Απόφοιτος</translation>

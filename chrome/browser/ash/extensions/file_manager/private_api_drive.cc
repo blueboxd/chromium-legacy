@@ -25,7 +25,6 @@
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
-#include "chrome/browser/ash/drive/drivefs_native_message_host.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
@@ -38,11 +37,13 @@
 #include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
+#include "chrome/browser/ash/fileapi/recent_drive_source.h"
 #include "chrome/browser/ash/fusebox/fusebox_server.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/drivefs/drivefs_native_message_host.h"
+#include "chrome/browser/chromeos/drivefs/drivefs_native_message_host_origins.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/ash/manage_mirrorsync/manage_mirrorsync_dialog.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
@@ -623,6 +624,17 @@ ExtensionFunction::ResponseAction FileManagerPrivateSearchDriveFunction::Run() {
 
   auto query = drivefs::mojom::QueryParameters::New();
   query->text_content = params->search_params.query;
+  ash::RecentSource::FileType file_type;
+  if (!file_manager::util::ToRecentSourceFileType(
+          params->search_params.category, &file_type)) {
+    return RespondNow(Error("Unable to convert file category"));
+  }
+  auto type_filters = ash::RecentDriveSource::CreateTypeFilters(file_type);
+  if (type_filters.size() == 1) {
+    query->mime_type = type_filters.front();
+  } else if (type_filters.size() > 1) {
+    query->mime_types = std::move(type_filters);
+  }
   is_offline_ =
       SearchDriveFs(
           this, std::move(query), false,

@@ -28,22 +28,21 @@
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_error.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_policy_container.h"
-#include "third_party/blink/public/platform/web_url_loader_client.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_request_extra_data.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_factory.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_task_runner.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
@@ -51,11 +50,11 @@ namespace {
 
 const char* kNotFoundScriptURL = "https://www.example.com/sw-404.js";
 
-// A fake WebURLLoader which is used for off-main-thread script fetch tests.
-class FakeWebURLLoader final : public WebURLLoader {
+// A fake URLLoader which is used for off-main-thread script fetch tests.
+class FakeURLLoader final : public URLLoader {
  public:
-  FakeWebURLLoader() = default;
-  ~FakeWebURLLoader() override = default;
+  FakeURLLoader() = default;
+  ~FakeURLLoader() override = default;
 
   void LoadSynchronously(
       std::unique_ptr<network::ResourceRequest> request,
@@ -63,13 +62,13 @@ class FakeWebURLLoader final : public WebURLLoader {
       bool pass_response_pipe_to_client,
       bool no_mime_sniffing,
       base::TimeDelta timeout_interval,
-      WebURLLoaderClient*,
+      URLLoaderClient*,
       WebURLResponse&,
       absl::optional<WebURLError>&,
-      WebData&,
+      scoped_refptr<SharedBuffer>&,
       int64_t& encoded_data_length,
       uint64_t& encoded_body_length,
-      WebBlobInfo& downloaded_blob,
+      scoped_refptr<BlobDataHandle>& downloaded_blob,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper) override {
     NOTREACHED();
@@ -81,7 +80,7 @@ class FakeWebURLLoader final : public WebURLLoader {
       bool no_mime_sniffing,
       std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
           resource_load_info_notifier_wrapper,
-      WebURLLoaderClient* client) override {
+      URLLoaderClient* client) override {
     if (request->url.spec() == kNotFoundScriptURL) {
       WebURLResponse response;
       response.SetMimeType("text/javascript");
@@ -93,7 +92,7 @@ class FakeWebURLLoader final : public WebURLLoader {
     // Don't handle other requests intentionally to emulate ongoing load.
   }
 
-  void Freeze(WebLoaderFreezeMode) override {}
+  void Freeze(LoaderFreezeMode) override {}
   void DidChangePriority(WebURLRequest::Priority, int) override {}
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForBodyLoader()
       override {
@@ -101,17 +100,16 @@ class FakeWebURLLoader final : public WebURLLoader {
   }
 };
 
-// A fake WebURLLoaderFactory which is used for off-main-thread script fetch
-// tests.
-class FakeWebURLLoaderFactory final : public WebURLLoaderFactory {
+// A fake URLLoaderFactory which is used for off-main-thread script fetch tests.
+class FakeURLLoaderFactory final : public URLLoaderFactory {
  public:
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
+  std::unique_ptr<URLLoader> CreateURLLoader(
       const WebURLRequest&,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
-      std::unique_ptr<scheduler::WebResourceLoadingTaskRunnerHandle>,
-      CrossVariantMojoRemote<blink::mojom::KeepAliveHandleInterfaceBase>,
-      WebBackForwardCacheLoaderHelper) override {
-    return std::make_unique<FakeWebURLLoader>();
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      scoped_refptr<base::SingleThreadTaskRunner>,
+      mojo::PendingRemote<mojom::blink::KeepAliveHandle>,
+      BackForwardCacheLoaderHelper*) override {
+    return std::make_unique<FakeURLLoader>();
   }
 };
 
@@ -122,10 +120,10 @@ class FakeWebServiceWorkerFetchContext final
  public:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override {}
   void InitializeOnWorkerThread(AcceptLanguagesWatcher*) override {}
-  WebURLLoaderFactory* GetURLLoaderFactory() override {
-    return &fake_web_url_loader_factory_;
+  URLLoaderFactory* GetURLLoaderFactory() override {
+    return &fake_url_loader_factory_;
   }
-  std::unique_ptr<WebURLLoaderFactory> WrapURLLoaderFactory(
+  std::unique_ptr<URLLoaderFactory> WrapURLLoaderFactory(
       CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
           url_loader_factory) override {
     return nullptr;
@@ -145,7 +143,7 @@ class FakeWebServiceWorkerFetchContext final
   void SetIsOfflineMode(bool is_offline_mode) override {}
 
  private:
-  FakeWebURLLoaderFactory fake_web_url_loader_factory_;
+  FakeURLLoaderFactory fake_url_loader_factory_;
 };
 
 class FakeBrowserInterfaceBroker final

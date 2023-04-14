@@ -23,6 +23,13 @@ constexpr auto enabled_by_default_android_only =
     base::FEATURE_DISABLED_BY_DEFAULT;
 #endif
 
+constexpr auto enabled_by_default_ios_only =
+#if BUILDFLAG(IS_IOS)
+    base::FEATURE_ENABLED_BY_DEFAULT;
+#else
+    base::FEATURE_DISABLED_BY_DEFAULT;
+#endif
+
 constexpr auto enabled_by_default_desktop_android =
 #if BUILDFLAG(IS_IOS)
     base::FEATURE_DISABLED_BY_DEFAULT;
@@ -55,24 +62,6 @@ BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
 
-// Enables various tweaks to `AutocompleteController` autocompletion twiddling
-// that may improve autocompletion stability. Feature params control which
-// tweaks specifically are enabled. Enabling this feature without params is a
-// no-op.
-// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/23, when m110 reaches stable.
-BASE_FEATURE(kAutocompleteStability,
-             "OmniboxAutocompleteStability",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Feature to enable memoizing and filtering non-doc hosts for
-// `DocumentProvider::GetURLForDeduping()`.
-// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/23, when m110 reaches stable.
-BASE_FEATURE(kDocumentProviderDedupingOptimization,
-             "OmniboxDocumentProviderDedupingOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When enabled, uses the grouping framework (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
 BASE_FEATURE(kGroupingFramework,
@@ -96,9 +85,11 @@ BASE_FEATURE(kOmniboxRemoveExcessiveRecycledViewClearCalls,
 // Feature to tweak how the default suggestion is preserved. Feature params
 // control which tweaks specifically are enabled. Enabling this feature without
 // params is a no-op.
+// TODO(manukh) Enabled by default 2/15/23 m112. Clean up feature code 4/4 when
+//   m112 reaches stable.
 BASE_FEATURE(kPreserveDefault,
              "OmniboxPreserveDefault",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When disabled, when providers update their matches, the new set of matches
 // are sorted and culled, then merged with the old matches, then sorted and
@@ -106,14 +97,6 @@ BASE_FEATURE(kPreserveDefault,
 BASE_FEATURE(kSingleSortAndCullPass,
              "OmniboxSingleSortAndCullPass",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Feature to enable memoizing URLs when replacing search terms in
-// `AutocompleteMatch::GURLToStrippedGURL()`.
-// TODO(manukh) Enabled by default on 10/20/22 m109. Clean up feature code
-//  2/7/23, when m110 reaches stable.
-BASE_FEATURE(kStrippedGurlOptimization,
-             "OmniboxStrippedGurlOptimization",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature to debounce `AutocompleteController::NotifyChanged()`.
 BASE_FEATURE(kUpdateResultDebounce,
@@ -225,7 +208,7 @@ BASE_FEATURE(kNormalizeSearchSuggestions,
 // OmniboxEditModel for triggering zero-suggest prefetching on Web/SRP.
 BASE_FEATURE(kOmniboxOnClobberFocusTypeOnContent,
              "OmniboxOnClobberFocusTypeOnContent",
-             enabled_by_default_desktop_only);
+             enabled_by_default_desktop_android);
 
 // If enabled, zero prefix suggestions will be stored using an in-memory caching
 // service, instead of using the existing prefs-based cache.
@@ -293,17 +276,19 @@ BASE_FEATURE(kDisableCGIParamMatching,
 BASE_FEATURE(kShortBookmarkSuggestions,
              "OmniboxShortBookmarkSuggestions",
              base::FEATURE_DISABLED_BY_DEFAULT);
+// TODO(manukh): Clean up 4/4/23 when m112 reaches stable.
 BASE_FEATURE(kShortBookmarkSuggestionsByTotalInputLength,
              "OmniboxShortBookmarkSuggestionsByTotalInputLength",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, inputs may match bookmark paths. These path matches won't
 // contribute to scoring. E.g. 'planets jupiter' can suggest a bookmark titled
 // 'Jupiter' with URL 'en.wikipedia.org/wiki/Jupiter' located in a path
 // containing 'planet.'
+// TODO(manukh): Clean up 4/4/23 when m112 reaches stable.
 BASE_FEATURE(kBookmarkPaths,
              "OmniboxBookmarkPaths",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, when updating or creating a shortcut, the last word of the input
 // is expanded, if possible, to a complete word in the suggestion description.
@@ -338,12 +323,6 @@ BASE_FEATURE(kHistoryQuickProviderSpecificityScoreCountUniqueHosts,
 BASE_FEATURE(kDocumentProvider,
              "OmniboxDocumentProvider",
              enabled_by_default_desktop_only);
-
-// Feature to determine a value in the drive request indicating whether the
-// request should be served by the  ASO backend.
-BASE_FEATURE(kDocumentProviderAso,
-             "OmniboxDocumentProviderAso",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Feature to determine if the HQP should double as a domain provider by
 // suggesting up to the provider limit for each of the user's highly visited
@@ -412,6 +391,12 @@ BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
              "OmniboxMostVisitedTilesAddRecycledViewPool",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Feature used to add most visited tiles to the suggestions when the user is on
+// a search result page that does not do search term replacement.
+BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
+             "OmniboxMostVisitedTilesOnSrp",
+             enabled_by_default_ios_only);
+
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.
 BASE_FEATURE(kSquareSuggestIcons,
@@ -432,6 +417,12 @@ BASE_FEATURE(kWebUIOmniboxPopup,
 // Android's built-in voice recognition service. Only works on Android.
 BASE_FEATURE(kOmniboxAssistantVoiceSearch,
              "OmniboxAssistantVoiceSearch",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Omnibox "steady state" height is increased from 28 dp to 34 dp to
+// match GM3 guidelines.
+BASE_FEATURE(kOmniboxSteadyStateHeight,
+             "OmniboxSteadyStateHeight",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kClosePopupWithEscape,

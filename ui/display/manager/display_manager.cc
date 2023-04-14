@@ -30,7 +30,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chromeos/ash/components/system/devicemode.h"
 #include "chromeos/ui/base/display_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -75,7 +74,7 @@ const char kMirroringDisplayCountRangesHistogram[] =
 const char kMirroringImplementationHistogram[] =
     "DisplayManager.MirroringImplementation";
 
-// The UMA historgram that logs the zoom percentage level of the intenral
+// The UMA histogram that logs the zoom percentage level of the internal
 // display.
 constexpr char kInternalDisplayZoomPercentageHistogram[] =
     "DisplayManager.InternalDisplayZoomPercentage";
@@ -333,7 +332,7 @@ DisplayManager::BeginEndNotifier::~BeginEndNotifier() {
 
 DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
     : screen_(std::move(screen)), layout_store_(new DisplayLayoutStore) {
-  SetConfigureDisplays(chromeos::IsRunningAsSystemCompositor());
+  SetConfigureDisplays(base::SysInfo::IsRunningOnChromeOS());
   change_display_upon_host_resize_ = !configure_displays_;
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableUnifiedDesktop);
@@ -1027,7 +1026,7 @@ void DisplayManager::UpdateDisplaysWith(
   }
 
   // Clear focus if the display has been removed, but don't clear focus if
-  // the destkop has been moved from one display to another
+  // the desktop has been moved from one display to another
   // (mirror -> docked, docked -> single internal).
   bool clear_focus =
       !removed_displays.empty() &&

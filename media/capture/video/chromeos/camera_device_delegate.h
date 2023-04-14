@@ -12,9 +12,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "media/capture/video/chromeos/camera_device_context.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/capture_metadata_dispatcher.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/effects_pipeline.mojom.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -113,7 +115,8 @@ class CAPTURE_EXPORT StreamCaptureInterface {
 // second client for recording stream.
 // The second client will be a virtual camera device which is only used in CCA.
 class CAPTURE_EXPORT CameraDeviceDelegate final
-    : public CaptureMetadataDispatcher::ResultMetadataObserver {
+    : public CaptureMetadataDispatcher::ResultMetadataObserver,
+      public media::CameraEffectObserver {
  public:
   CameraDeviceDelegate() = delete;
 
@@ -241,6 +244,14 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
       uint32_t frame_number,
       const cros::mojom::CameraMetadataPtr& result_metadata) final;
 
+  // media::CameraEffectObserver AddObserver callback.
+  void OnCameraEffectObserverAdded(
+      cros::mojom::EffectsConfigPtr current_effects);
+
+  // media::CameraEffectObserver implementation.
+  void OnCameraEffectChanged(
+      const cros::mojom::EffectsConfigPtr& new_effects) final;
+
   void DoGetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
 
   // Gets the target frame rate range as std::pair<min, max>.
@@ -275,6 +286,9 @@ class CAPTURE_EXPORT CameraDeviceDelegate final
   // supported formats and resolution, various available exposure and apeture
   // settings, etc.
   cros::mojom::CameraMetadataPtr static_metadata_;
+
+  // Records current effects that is applied to camera hal server.
+  cros::mojom::EffectsConfigPtr current_effects_;
 
   mojo::Remote<cros::mojom::Camera3DeviceOps> device_ops_;
 

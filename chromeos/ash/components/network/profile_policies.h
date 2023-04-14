@@ -163,7 +163,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProfilePolicies {
   // The returned policy values will have ONC variables expanded, if they
   // contained any.
   // This clones all values in the map.
-  base::flat_map<std::string, base::Value> GetGuidToPolicyMap() const;
+  base::flat_map<std::string, base::Value::Dict> GetGuidToPolicyMap() const;
 
   // Returns the set of all network policy GUIDs.
   base::flat_set<std::string> GetAllPolicyGuids() const;
@@ -195,7 +195,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProfilePolicies {
   RuntimeValuesSetter runtime_values_setter_;
 
   base::flat_map<std::string, NetworkPolicy> guid_to_policy_;
-  base::Value global_network_config_{base::Value::Type::DICTIONARY};
+  base::Value global_network_config_{base::Value::Type::DICT};
 
   base::flat_map<std::string, std::string> profile_wide_expansions_;
 };

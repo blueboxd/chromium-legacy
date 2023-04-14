@@ -12,6 +12,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/ozone/platform/wayland/emulate/weston_test_input_emulate.h"
+#include "ui/ozone/platform/wayland/host/proxy/wayland_proxy.h"
 
 namespace wl {
 
@@ -153,22 +154,35 @@ WestonTestOzoneUIControlsTestHelper::WestonTestOzoneUIControlsTestHelper()
 WestonTestOzoneUIControlsTestHelper::~WestonTestOzoneUIControlsTestHelper() =
     default;
 
+bool WestonTestOzoneUIControlsTestHelper::SupportsScreenCoordinates() const {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  return true;
+#else
+  return false;
+#endif
+}
+
 unsigned WestonTestOzoneUIControlsTestHelper::ButtonDownMask() const {
   return button_down_mask_;
 }
 
-void WestonTestOzoneUIControlsTestHelper::SendKeyPressEvent(
+void WestonTestOzoneUIControlsTestHelper::SendKeyEvents(
     gfx::AcceleratedWidget widget,
     ui::KeyboardCode key,
-    bool control,
-    bool shift,
-    bool alt,
-    bool command,
+    int key_event_types,
+    int accelerator_state,
     base::OnceClosure closure) {
-  SendKeyPressInternal(widget, key, control, shift, alt, command, {},
-                       true /* key press */);
-  SendKeyPressInternal(widget, key, control, shift, alt, command,
-                       std::move(closure), false /* key release */);
+  if (key_event_types & ui_controls::kKeyPress) {
+    SendKeyPressInternal(widget, key, accelerator_state,
+                         key_event_types & ui_controls::kKeyRelease
+                             ? base::OnceClosure()
+                             : std::move(closure),
+                         true);
+  }
+  if (key_event_types & ui_controls::kKeyRelease) {
+    SendKeyPressInternal(widget, key, accelerator_state, std::move(closure),
+                         false);
+  }
 }
 
 void WestonTestOzoneUIControlsTestHelper::SendMouseMotionNotifyEvent(
@@ -218,10 +232,7 @@ void WestonTestOzoneUIControlsTestHelper::SendMouseEvent(
   // Press accelerator keys.
   if (accelerator_state) {
     SendKeyPressInternal(widget, ui::KeyboardCode::VKEY_UNKNOWN,
-                         accelerator_state & ui_controls::kControl,
-                         accelerator_state & ui_controls::kShift,
-                         accelerator_state & ui_controls::kAlt,
-                         accelerator_state & ui_controls::kCommand, {}, true);
+                         accelerator_state, {}, true);
   }
 
   if (button_state & DOWN) {
@@ -246,10 +257,7 @@ void WestonTestOzoneUIControlsTestHelper::SendMouseEvent(
   // Depress accelerator keys.
   if (accelerator_state) {
     SendKeyPressInternal(widget, ui::KeyboardCode::VKEY_UNKNOWN,
-                         accelerator_state & ui_controls::kControl,
-                         accelerator_state & ui_controls::kShift,
-                         accelerator_state & ui_controls::kAlt,
-                         accelerator_state & ui_controls::kCommand, {}, false);
+                         accelerator_state, {}, false);
   }
   if (!closure.is_null()) {
     // PostTask to avoid re-entrancy.
@@ -304,26 +312,23 @@ bool WestonTestOzoneUIControlsTestHelper::MustUseUiControlsForMoveCursorTo() {
 void WestonTestOzoneUIControlsTestHelper::SendKeyPressInternal(
     gfx::AcceleratedWidget widget,
     ui::KeyboardCode key,
-    bool control,
-    bool shift,
-    bool alt,
-    bool command,
+    int accelerator_state,
     base::OnceClosure closure,
     bool press_key) {
   auto dom_code = UsLayoutKeyboardCodeToDomCode(key);
 
   if (press_key) {
-    if (control) {
+    if (accelerator_state & ui_controls::kControl) {
       DispatchKeyPress(widget, ui::EventType::ET_KEY_PRESSED,
                        ui::DomCode::CONTROL_LEFT);
     }
 
-    if (shift) {
+    if (accelerator_state & ui_controls::kShift) {
       DispatchKeyPress(widget, ui::EventType::ET_KEY_PRESSED,
                        ui::DomCode::SHIFT_LEFT);
     }
 
-    if (alt) {
+    if (accelerator_state & ui_controls::kAlt) {
       DispatchKeyPress(widget, ui::EventType::ET_KEY_PRESSED,
                        ui::DomCode::ALT_LEFT);
     }
@@ -332,17 +337,17 @@ void WestonTestOzoneUIControlsTestHelper::SendKeyPressInternal(
   } else {
     DispatchKeyPress(widget, ui::EventType::ET_KEY_RELEASED, dom_code);
 
-    if (alt) {
+    if (accelerator_state & ui_controls::kAlt) {
       DispatchKeyPress(/*widget=*/0, ui::EventType::ET_KEY_RELEASED,
                        ui::DomCode::ALT_LEFT);
     }
 
-    if (shift) {
+    if (accelerator_state & ui_controls::kShift) {
       DispatchKeyPress(/*widget=*/0, ui::EventType::ET_KEY_RELEASED,
                        ui::DomCode::SHIFT_LEFT);
     }
 
-    if (control) {
+    if (accelerator_state & ui_controls::kControl) {
       DispatchKeyPress(/*widget=*/0, ui::EventType::ET_KEY_RELEASED,
                        ui::DomCode::CONTROL_LEFT);
     }

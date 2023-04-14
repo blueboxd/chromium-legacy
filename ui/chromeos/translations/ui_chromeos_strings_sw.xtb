@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Muunganisho wa Mtandao wa moja kwa moja</translation>
 <translation id="1272293450992660632">Nambari za PIN hazilingani.</translation>
 <translation id="1280820357415527819">Inatafuta mitandao ya simu</translation>
-<translation id="1291603679744561561">SIM Imefungwa</translation>
 <translation id="1293556467332435079">Faili</translation>
 <translation id="1297922636971898492">Hifadhi ya Google haipatikani kwa sasa kupakia kutafungua upya kiotomatiki baada Hifadhi ya Google imerudi.</translation>
 <translation id="1307931752636661898">Imeshindwa kuona faili za Linux</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Ili uweze kudondosha faili katika Parallels Desktop, ni lazima faili hiyo iwe imehamishiwa kwenye folda ya faili za Windows.</translation>
 <translation id="1435838927755162558">Shiriki folda na Parallels Desktop</translation>
 <translation id="1439919885608649279">Mtu aliye na maua</translation>
+<translation id="1458457385801829801">Ondoa <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Kislovakia</translation>
 <translation id="1482884275703521657">Kifini</translation>
 <translation id="148466539719134488">Kiswisi</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Folda 1 imeshirikiwa na Bruschetta</translation>
 <translation id="2578394532502990878">Fonetiki ya Kitamili</translation>
 <translation id="2579959351793446050">Kiodia</translation>
+<translation id="2587195714949534472">Inajitayarisha kusawazisha <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao, <ph name="SIGNAL_STRENGTH" />%, Umezuiwa na Msimamizi wako, Maelezo</translation>
 <translation id="2614589611416690597">Video ya <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Hifadhi ya Google haiwezi kufikiwa kwa wakati huu.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Kimongolia</translation>
 <translation id="3495304270784461826">Hitilafu <ph name="COUNT" />.</translation>
 <translation id="3509680540198371098">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Uthabiti wa Mtandao <ph name="SIGNAL_STRENGTH" />%, Maelezo</translation>
+<translation id="3511705761158917664">Inajitayarisha kusawazisha vipengee <ph name="NUMBER_OF_ITEMS" />...</translation>
 <translation id="3522708245912499433">Kireno</translation>
 <translation id="3524311639100184459">Tahadhari: Faili hizi ni za muda na huenda zikafutwa kiotomatiki ili upate nafasi zaidi ya hifadhi kwenye diski.  <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folda</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Bandika</translation>
 <translation id="3952872973865944257">Fonetiki ya Kitelugu</translation>
+<translation id="3954354850384043518">Unaendelea</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Pakua maelezo ya eSIM ya vifaa vya mkononi, Mtandao <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Kiingereza (Uingereza)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Seva za jina maalum</translation>
 <translation id="4465725236958772856">Mtandao wa <ph name="NETWORK_INDEX" /> kati ya <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Unadhibitiwa na Msimamizi wako, Unganisha</translation>
 <translation id="4470564870223067757">Seti ya Hangul 2</translation>
+<translation id="4474142134969976028">Hakuna matokeo yanayolingana</translation>
 <translation id="4477002475007461989">Kiromania</translation>
 <translation id="4477219268485577442">Fonetiki ya Kibulgaria</translation>
 <translation id="4508265954913339219">Uamilisho umeshindikana</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Tumia jina lenye herufi <ph name="MAX_LENGTH" /> au chache</translation>
 <translation id="4973970068702235170">Imeshindwa kubana, hitilafu isiyotarajiwa imetokea: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Kijapani</translation>
+<translation id="4987699874727873250">Kiingereza (India)</translation>
 <translation id="4988205478593450158">Je, una uhakika unataka kufuta "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Kipepeo mwekundu</translation>
 <translation id="4992066212339426712">Rejesha sauti</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">Hakuna picha za hivi karibuni</translation>
 <translation id="7460898608667578234">Kiukrania</translation>
 <translation id="7469894403370665791">Unganisha otomatiki kwenye mtandao huu</translation>
+<translation id="7481358317100446445">Iko tayari</translation>
 <translation id="7486315294984620427">Ili uweze kudondosha faili katika Parallels Desktop, ni lazima faili hiyo iwe imenakiliwa kwenye folda ya faili za Windows.</translation>
 <translation id="749452993132003881">Kihiragana</translation>
 <translation id="7495372004724182530">Fonetiki ya Kimalayalamu</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Fikia Picha kwenye Google kwa urahisi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7663224033570512922">Kihindi</translation>
+<translation id="7665680517722058469">Jaribu kutafuta hoja tofauti</translation>
 <translation id="7689532716264131859">Vipengee <ph name="NUMBER_OF_ITEMS" /> vimehamishiwa kwenye tupio</translation>
 <translation id="7693909743393669729">Hatua ya kuweka upya muundo wa hifadhi ya USB itafuta data yote iliyomo na iondoe sehemu zote zilizopo, ikiwa ni pamoja na sehemu ambazo hazionekani. Kitendo hiki hakiwezi kutenduliwa.</translation>
 <translation id="7695430100978772476">Imeshindwa kubadilisha muundo <ph name="DRIVE_NAME" /></translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">Unukuzi wa mfumo wa kuandika Kiarabu</translation>
 <translation id="8873014196523807561">Ili urejeshe vipengee hivi, buruta uvipeleke kwenye folda mpya. Folda za awali za baadhi ya vipengee hivi zimefutwa.</translation>
 <translation id="8874184842967597500">Hujaunganishwa</translation>
+<translation id="8876368061475701452">Iliyo kwenye foleni</translation>
 <translation id="8900820606136623064">Kihungari</translation>
 <translation id="8903931173357132290">Kuhitimu</translation>
 <translation id="8912078710089354287">Mbwa anayetikisa mkia</translation>

@@ -172,15 +172,16 @@ class DeviceTrustBrowserTestBase : public InProcessBrowserTest {
   void SetPolicy(bool as_empty_list = false,
                  Browser* active_browser = nullptr) {
     policy::PolicyMap policy_map;
-    base::Value list_value(base::Value::Type::LIST);
+    base::Value::List list;
 
     if (!as_empty_list) {
-      list_value.Append(kAllowedHost);
+      list.Append(kAllowedHost);
     }
 
     policy_map.Set(policy::key::kContextAwareAccessSignalsAllowlist,
                    policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-                   policy::POLICY_SOURCE_CLOUD, std::move(list_value), nullptr);
+                   policy::POLICY_SOURCE_CLOUD, base::Value(std::move(list)),
+                   nullptr);
 
     EXPECT_NO_FATAL_FAILURE(provider_.UpdateChromePolicy(policy_map));
     base::RunLoop().RunUntilIdle();
@@ -449,6 +450,9 @@ class DeviceTrustDesktopBrowserTest : public DeviceTrustBrowserTestBase {
 
 #if BUILDFLAG(IS_WIN)
     device_trust_test_environment_win_.emplace();
+    device_trust_test_environment_win_->SetExpectedDMToken(kFakeBrowserDMToken);
+    device_trust_test_environment_win_->SetExpectedClientID(
+        kFakeBrowserClientId);
 #else  // BUILDFLAG(IS_WIN)
     scoped_persistence_delegate_factory_.emplace();
     scoped_rotation_command_factory_.emplace();

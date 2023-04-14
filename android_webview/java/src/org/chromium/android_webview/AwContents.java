@@ -85,6 +85,7 @@ import org.chromium.components.embedder_support.util.WebResourceResponseInfo;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.stylus_handwriting.StylusWritingController;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.zoom.ZoomConstants;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.ContentViewStatics;
 import org.chromium.content_public.browser.GestureListenerManager;
@@ -625,6 +626,11 @@ public class AwContents implements SmartClipProvider {
         }
 
         @Override
+        public boolean shouldBlockSpecialFileUrls() {
+            return mSettings.getBlockSpecialFileUrls();
+        }
+
+        @Override
         public boolean shouldBlockNetworkLoads() {
             return mSettings.getBlockNetworkLoads();
         }
@@ -682,7 +688,8 @@ public class AwContents implements SmartClipProvider {
     //
     private class InterceptNavigationDelegateImpl extends InterceptNavigationDelegate {
         @Override
-        public boolean shouldIgnoreNavigation(NavigationHandle navigationHandle, GURL escapedUrl) {
+        public boolean shouldIgnoreNavigation(
+                NavigationHandle navigationHandle, GURL escapedUrl, boolean crossFrame) {
             // The shouldOverrideUrlLoading call might have resulted in posting messages to the
             // UI thread. Using sendMessage here (instead of calling onPageStarted directly)
             // will allow those to run in order.
@@ -2953,7 +2960,7 @@ public class AwContents implements SmartClipProvider {
         if (!canZoomIn()) {
             return false;
         }
-        zoomBy(1.25f);
+        zoomBy(ZoomConstants.ZOOM_IN_DELTA);
         return true;
     }
 
@@ -2966,7 +2973,17 @@ public class AwContents implements SmartClipProvider {
         if (!canZoomOut()) {
             return false;
         }
-        zoomBy(0.8f);
+        zoomBy(ZoomConstants.ZOOM_OUT_DELTA);
+        return true;
+    }
+
+    /**
+     * Resets the zoom to default
+     */
+    // This method uses the term 'zoom' for legacy reasons, but relates
+    // to what chrome calls the 'page scale factor'.
+    public boolean zoomReset() {
+        zoomByInternal(ZoomConstants.ZOOM_RESET_DELTA);
         return true;
     }
 
@@ -2976,11 +2993,15 @@ public class AwContents implements SmartClipProvider {
     // This method uses the term 'zoom' for legacy reasons, but relates
     // to what chrome calls the 'page scale factor'.
     public void zoomBy(float delta) {
-        if (TRACE) Log.i(TAG, "%s zoomBy=%f", this, delta);
-        if (isDestroyed(WARN)) return;
         if (delta < 0.01f || delta > 100.0f) {
             throw new IllegalStateException("zoom delta value outside [0.01, 100] range.");
         }
+        zoomByInternal(delta);
+    }
+
+    private void zoomByInternal(float delta) {
+        if (TRACE) Log.i(TAG, "%s zoomBy=%f", this, delta);
+        if (isDestroyed(WARN)) return;
         AwContentsJni.get().zoomBy(mNativeAwContents, delta);
     }
 
@@ -3404,10 +3425,6 @@ public class AwContents implements SmartClipProvider {
      */
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         return mAwViewMethods.getAccessibilityNodeProvider();
-    }
-
-    public boolean supportsAccessibilityAction(int action) {
-        return isDestroyed(WARN) ? false : getWebContentsAccessibility().supportsAction(action);
     }
 
     /**
@@ -4080,10 +4097,10 @@ public class AwContents implements SmartClipProvider {
         }
 
         private void updateHardwareAcceleratedFeaturesToggle() {
-            mSettings.setEnableSupportedHardwareAcceleratedFeatures(
-                    mIsAttachedToWindow && mContainerView.isHardwareAccelerated()
-                            && (mLayerType == View.LAYER_TYPE_NONE
-                                    || mLayerType == View.LAYER_TYPE_HARDWARE));
+            mSettings.setEnableSupportedHardwareAcceleratedFeatures(mIsAttachedToWindow
+                    && mContainerView.isHardwareAccelerated()
+                    && (mLayerType == View.LAYER_TYPE_NONE
+                            || mLayerType == View.LAYER_TYPE_HARDWARE));
         }
 
         @Override
@@ -4344,9 +4361,7 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean performAccessibilityAction(final int action, final Bundle arguments) {
-            if (isDestroyed(NO_WARN)) return false;
-            WebContentsAccessibility wcax = getWebContentsAccessibility();
-            return wcax != null ? wcax.performAction(action, arguments) : false;
+            return false;
         }
     }
 

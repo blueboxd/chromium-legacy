@@ -7,33 +7,24 @@
 
 #include <string>
 
-namespace supervised_user_error_page {
+#include "components/supervised_user/core/common/supervised_user_utils.h"
 
-enum FilteringBehaviorReason {
-  DEFAULT = 0,
-  ASYNC_CHECKER = 1,
-  DENYLIST = 2,
-  MANUAL = 3,
-  ALLOWLIST = 4,
-  NOT_SIGNED_IN = 5,
-};
+namespace supervised_user {
 
-int GetBlockMessageID(
-    supervised_user_error_page::FilteringBehaviorReason reason,
-    bool single_parent);
+int GetBlockMessageID(FilteringBehaviorReason reason, bool single_parent);
 
-std::string BuildHtml(bool allow_access_requests,
-                      const std::string& profile_image_url,
-                      const std::string& profile_image_url2,
-                      const std::string& custodian,
-                      const std::string& custodian_email,
-                      const std::string& second_custodian,
-                      const std::string& second_custodian_email,
-                      FilteringBehaviorReason reason,
-                      const std::string& app_locale,
-                      bool already_sent_remote_request,
-                      bool is_main_frame);
+std::string BuildErrorPageHtml(bool allow_access_requests,
+                               const std::string& profile_image_url,
+                               const std::string& profile_image_url2,
+                               const std::string& custodian,
+                               const std::string& custodian_email,
+                               const std::string& second_custodian,
+                               const std::string& second_custodian_email,
+                               FilteringBehaviorReason reason,
+                               const std::string& app_locale,
+                               bool already_sent_remote_request,
+                               bool is_main_frame);
 
-}  //  namespace supervised_user_error_page
+}  //  namespace supervised_user
 
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_BROWSER_SUPERVISED_USER_ERROR_PAGE_H_

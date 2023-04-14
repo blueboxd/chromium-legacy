@@ -1,15 +1,24 @@
 <style include="settings-shared md-select">
   .audio-mute-button {
-    margin-inline-end: var(--settings-control-label-spacing);
+    margin-inline-end: 8px;
+  }
+
+  /* Allows the mute button tooltips to be visible even when disabled. */
+  .audio-mute-button[disabled] {
+    background-color: transparent;
+    pointer-events: auto;
   }
 
   .audio-options-container {
+    align-items: center;
     display: flex;
     flex-direction: row;
   }
 
   .audio-slider {
-    width: 100px;
+    margin-inline-end: 16px;
+    padding: 0;
+    width: 142px;
   }
 
   h2 {
@@ -67,15 +76,15 @@
     <div id="audioOutputSubsection" class="subsection">
       <div id="outputDeviceSubsection" class="settings-box">
         <div class="start settings-box-text" id="audioOutputDeviceLabel">
-          $i18n{audioDeviceTitle}
+          $i18n{audioOutputDeviceTitle}
         </div>
         <select id="audioOutputDeviceDropdown" class="md-select"
-            aria-labelledby="audioOutputDeviceLabel"
-            on-change="onOutputDeviceChanged">
+            on-change="onOutputDeviceChanged"
+            aria-labelledby="audioOutputTitle audioOutputDeviceLabel">
           <template is="dom-repeat"
               items="[[audioSystemProperties_.outputDevices]]">
             <option value="[[item.id]]" selected="[[item.isActive]]">
-              [[item.displayName]]
+              [[getDeviceName_(item)]]
             </option>
           </template>
         </select>
@@ -85,20 +94,36 @@
           $i18n{audioVolumeTitle}
         </div>
         <div class="audio-options-container">
+          <template is="dom-if" if="[[isOutputMutedByPolicy_(
+                audioSystemProperties_.outputMuteState
+              )]]">
+            <cr-policy-indicator id="audioOutputMuteByPolicyIndicator"
+                indicator-type="userPolicy">
+            </cr-policy-indicator>
+          </template>
           <cr-icon-button class="audio-mute-button"
               id="audioOutputMuteButton"
               iron-icon="[[getOutputIcon_(isOutputMuted_, outputVolume_)]]"
-              on-click="onOutputMuteButtonClicked">
+              on-click="onOutputMuteButtonClicked"
+              disabled="[[isOutputMutedByPolicy_(
+                  audioSystemProperties_.outputMuteState
+                )]]">
           </cr-icon-button>
+          <paper-tooltip id="audioOutputMuteButtonTooltip"
+              for="audioOutputMuteButton">
+            [[getMuteTooltip_(audioSystemProperties_.outputMuteState)]]
+          </paper-tooltip>
           <cr-slider class="audio-slider"
               id ="outputVolumeSlider"
               min="0"
               max="100"
-              disabled="[[isOutputVolumeSliderDisabled_(
+              key-press-slider-increment="10"
+              disabled="[[isOutputMutedByPolicy_(
                   audioSystemProperties_.outputMuteState
                 )]]"
               value="[[audioSystemProperties_.outputVolumePercent]]"
-              on-cr-slider-value-changed="onOutputVolumeSliderChanged_">
+              on-cr-slider-value-changed="onOutputVolumeSliderChanged_"
+              aria-labelledby="audioOutputTitle audioOutputVolumeLabel">
           </cr-slider>
         </div>
       </div>
@@ -108,35 +133,46 @@
     available. Add styling. -->
   <div id="input"
       hidden="[[getInputHidden_(audioSystemProperties_.inputDevices)]]">
-    <h2 id="audioInputTitle">Input</h2>
+    <h2 id="audioInputTitle">$i18n{audioInputTitle}</h2>
     <div id="audioInputSection" class="subsection">
       <div id="audioInputDeviceSubsection" class="settings-box">
         <div id="audioInputDeviceLabel" class="start settings-box-text">
-          Device
+          $i18n{audioInputDeviceTitle}
         </div>
-        <select id="audioInputDeviceDropdown" on-change="onInputDeviceChanged">
+        <select id="audioInputDeviceDropdown" on-change="onInputDeviceChanged"
+            class="md-select"
+            aria-labelledby="audioInputTitle audioInputDeviceLabel">
           <template is="dom-repeat"
               items="[[audioSystemProperties_.inputDevices]]">
             <option value="[[item.id]]" selected="[[item.isActive]]">
-              [[item.displayName]]
+              [[getDeviceName_(item)]]
             </option>
           </template>
         </select>
       </div>
       <div id="audioInputDeviceSubsection" class="settings-box">
         <div id="audioInputGainLabel" class="start settings-box-text">
-          Volume
+          $i18n{audioInputGainTitle}
         </div>
         <div class="audio-options-container">
           <cr-icon-button id="audioInputGainMuteButton"
               iron-icon="[[getInputIcon_(isInputMuted_)]]"
-              on-click="onInputMuteClicked">
+              on-click="onInputMuteClicked"
+              class="audio-mute-button"
+              disabled="[[shouldDisableInputGainControls(isInputMuted_)]]">
           </cr-icon-button>
+          <paper-tooltip id="audioInputMuteButtonTooltip"
+              for="audioInputGainMuteButton">
+            [[getMuteTooltip_(audioSystemProperties_.inputMuteState)]]
+          </paper-tooltip>
           <cr-slider id="audioInputGainVolumeSlider" min="0" max="100"
+              key-press-slider-increment="10"
               iron-icon="[[getInputIcon_(isInputMuted_)]]"
               value="[[audioSystemProperties_.inputGainPercent]]"
               on-cr-slider-value-changed="onInputVolumeSliderChanged"
-              class="audio-slider">
+              class="audio-slider"
+              aria-labelledby="audioInputTitle audioInputGainLabel"
+              disabled="[[shouldDisableInputGainControls(isInputMuted_)]]">
           </cr-slider>
         </div>
       </div>
@@ -144,7 +180,7 @@
           hidden="[[!isNoiseCancellationSupported_]]">
         <div id="audioInputNoiseCancellationLabel"
             class="settings-box-text start">
-          Noise Cancellation
+          $i18n{audioInputNoiseCancellationTitle}
         </div>
         <cr-toggle id="audioInputNoiseCancellationToggle"
             checked="{{isNoiseCancellationEnabled_}}">

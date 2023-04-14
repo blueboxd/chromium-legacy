@@ -57,6 +57,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "net/http/http_request_headers.h"
@@ -801,7 +802,7 @@ bool WallpaperControllerImpl::ShouldApplyShield() const {
   bool needs_shield = false;
 
   if (Shell::Get()->overview_controller()->InOverviewSession()) {
-    needs_shield = !features::IsJellyrollEnabled();
+    needs_shield = !chromeos::features::IsJellyrollEnabled();
   } else if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
     needs_shield = true;
   } else if (Shell::Get()->tablet_mode_controller()->InTabletMode() &&
@@ -913,6 +914,19 @@ void WallpaperControllerImpl::Init(
       chromeos_wallpapers_path.Append("google_photos/"));
   SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
   SetDevicePolicyWallpaperPath(device_policy_wallpaper_path);
+}
+
+bool WallpaperControllerImpl::CanSetUserWallpaper(
+    const AccountId& account_id) const {
+  // There is no visible wallpaper in kiosk mode.
+  if (IsInKioskMode()) {
+    return false;
+  }
+  // Don't allow user wallpapers while policy is in effect.
+  if (IsWallpaperControlledByPolicy(account_id)) {
+    return false;
+  }
+  return true;
 }
 
 void WallpaperControllerImpl::SetCustomWallpaper(
@@ -1138,7 +1152,7 @@ void WallpaperControllerImpl::SetDefaultWallpaper(
 
   update_wallpaper_timer_.Stop();
 
-  RemoveUserWallpaper(account_id);
+  RemoveUserWallpaper(account_id, /*on_removed=*/base::DoNothing());
   if (!SetDefaultWallpaperInfo(account_id, base::Time::Now())) {
     LOG(ERROR) << "Initializing user wallpaper info fails. This should never "
                   "happen except in tests.";
@@ -1462,11 +1476,13 @@ void WallpaperControllerImpl::RemoveAlwaysOnTopWallpaper() {
   ReloadWallpaper(/*clear_cache=*/false);
 }
 
-void WallpaperControllerImpl::RemoveUserWallpaper(const AccountId& account_id) {
+void WallpaperControllerImpl::RemoveUserWallpaper(
+    const AccountId& account_id,
+    base::OnceClosure on_removed) {
   if (base::Contains(wallpaper_cache_map_, account_id))
     wallpaper_cache_map_.erase(account_id);
   pref_manager_->RemoveUserWallpaperInfo(account_id);
-  RemoveUserWallpaperImpl(account_id);
+  RemoveUserWallpaperImpl(account_id, std::move(on_removed));
 }
 
 void WallpaperControllerImpl::RemovePolicyWallpaper(
@@ -1636,6 +1652,10 @@ void WallpaperControllerImpl::OnColorCalculationComplete(
       info.location, wallpaper_calculated_colors.prominent_colors);
   pref_manager_->CacheKMeanColor(info.location,
                                  wallpaper_calculated_colors.k_mean_color);
+  if (features::IsJellyEnabled()) {
+    pref_manager_->CacheCelebiColor(info.location,
+                                    wallpaper_calculated_colors.celebi_color);
+  }
   SetCalculatedColors(wallpaper_calculated_colors);
 
   // Release the color calculator after it has returned a result by calling this
@@ -1737,7 +1757,7 @@ void WallpaperControllerImpl::OnOverviewModeStarting() {
   // don't apply the wallpaper shield no matter it's in overview mode or not if
   // the feature `kJellyroll` is enabled. However, in tablet mode, we need to
   // apply the wallpaper shield when it's not in the overview mode.
-  if (features::IsJellyrollEnabled() &&
+  if (chromeos::features::IsJellyrollEnabled() &&
       Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     RepaintWallpaper();
   }
@@ -1745,7 +1765,7 @@ void WallpaperControllerImpl::OnOverviewModeStarting() {
 
 void WallpaperControllerImpl::OnOverviewModeEnded() {
   // Refer to the comment in `OnOverviewModeStarting`.
-  if (features::IsJellyrollEnabled() &&
+  if (chromeos::features::IsJellyrollEnabled() &&
       Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     RepaintWallpaper();
   }
@@ -1880,13 +1900,14 @@ int WallpaperControllerImpl::GetWallpaperContainerId(bool locked) {
 }
 
 void WallpaperControllerImpl::RemoveUserWallpaperImpl(
-    const AccountId& account_id) {
+    const AccountId& account_id,
+    base::OnceClosure on_removed) {
   if (wallpaper_controller_client_) {
     wallpaper_controller_client_->GetFilesId(
         account_id,
         base::BindOnce(
             &WallpaperControllerImpl::RemoveUserWallpaperImplWithFilesId,
-            weak_factory_.GetWeakPtr(), account_id));
+            weak_factory_.GetWeakPtr(), account_id, std::move(on_removed)));
   } else {
     LOG(ERROR) << "Failed to remove wallpaper. wallpaper_controller_client_ no "
                   "longer exists.";
@@ -1895,6 +1916,7 @@ void WallpaperControllerImpl::RemoveUserWallpaperImpl(
 
 void WallpaperControllerImpl::RemoveUserWallpaperImplWithFilesId(
     const AccountId& account_id,
+    base::OnceClosure on_removed,
     const std::string& wallpaper_files_id) {
   if (wallpaper_files_id.empty())
     return;
@@ -1913,11 +1935,12 @@ void WallpaperControllerImpl::RemoveUserWallpaperImplWithFilesId(
   wallpaper_path = GetCustomWallpaperDir(kOriginalWallpaperSubDir);
   files_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
 
-  base::ThreadPool::PostTask(
+  base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&DeleteWallpaperInList, std::move(files_to_remove)));
+      base::BindOnce(&DeleteWallpaperInList, std::move(files_to_remove)),
+      std::move(on_removed));
 }
 
 void WallpaperControllerImpl::SetDefaultWallpaperImpl(
@@ -1951,17 +1974,6 @@ void WallpaperControllerImpl::SetDefaultWallpaperImpl(
                        show_wallpaper, std::move(callback)),
         file_path);
   }
-}
-
-bool WallpaperControllerImpl::CanSetUserWallpaper(
-    const AccountId& account_id) const {
-  // There is no visible wallpaper in kiosk mode.
-  if (IsInKioskMode())
-    return false;
-  // Don't allow user wallpapers while policy is in effect.
-  if (IsWallpaperControlledByPolicy(account_id))
-    return false;
-  return true;
 }
 
 bool WallpaperControllerImpl::WallpaperIsAlreadyLoaded(
@@ -2037,7 +2049,7 @@ void WallpaperControllerImpl::OnWallpaperVariantsFetched(
     bool start_daily_refresh_timer,
     SetWallpaperCallback callback,
     absl::optional<OnlineWallpaperParams> params) {
-  DCHECK(type == WallpaperType::kDaily || type == WallpaperType::kOnline);
+  DCHECK(IsOnlineWallpaper(type));
   if (params) {
     SetOnlineWallpaper(*params, std::move(callback));
 
@@ -2371,8 +2383,7 @@ void WallpaperControllerImpl::SetWallpaperFromInfo(const AccountId& account_id,
   }
 
   base::FilePath wallpaper_path;
-  if (info.type == WallpaperType::kOnline ||
-      info.type == WallpaperType::kDaily) {
+  if (IsOnlineWallpaper(info.type)) {
     wallpaper_path =
         GetOnlineWallpaperPath(info.location, GetAppropriateResolution());
 
@@ -2886,6 +2897,11 @@ constexpr bool WallpaperControllerImpl::IsWallpaperTypeSyncable(
 void WallpaperControllerImpl::SetDailyRefreshCollectionId(
     const AccountId& account_id,
     const std::string& collection_id) {
+  if (!CanSetUserWallpaper(account_id)) {
+    LOG(WARNING) << "Invalid request to set daily refresh collection id";
+    return;
+  }
+
   WallpaperInfo info;
   if (!GetUserWallpaperInfo(account_id, &info))
     return;
@@ -3222,8 +3238,7 @@ void WallpaperControllerImpl::HandleGooglePhotosWallpaperInfoSyncedIn(
 void WallpaperControllerImpl::HandleSettingOnlineWallpaperFromWallpaperInfo(
     const AccountId& account_id,
     const WallpaperInfo& info) {
-  DCHECK(info.type == WallpaperType::kDaily ||
-         info.type == WallpaperType::kOnline);
+  DCHECK(IsOnlineWallpaper(info.type));
   if (!info.asset_id.has_value()) {
     // If a user has not changed their wallpaper since the addition of asset_id,
     // we can have a WallpaperInfo without an asset_id from synced data.

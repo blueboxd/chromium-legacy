@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/ui/reuse_check_utility.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/ui/credential_ui_entry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -39,7 +40,7 @@ TEST(ReuseCheckUtilityTest, CheckNoReuse) {
       CreateCredential(u"user1", u"password1", {"https://test1.com"}));
   credentials.push_back(
       CreateCredential(u"user2", u"password2", {"https://test2.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), testing::IsEmpty());
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), testing::IsEmpty());
 }
 
 TEST(ReuseCheckUtilityTest, ReuseDetected) {
@@ -48,7 +49,7 @@ TEST(ReuseCheckUtilityTest, ReuseDetected) {
       CreateCredential(u"user1", u"password", {"https://test1.com"}));
   credentials.push_back(
       CreateCredential(u"user2", u"password", {"https://test2.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), ElementsAre(u"password"));
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), ElementsAre(u"password"));
 }
 
 TEST(ReuseCheckUtilityTest, ReuseDetectedSameWebsite) {
@@ -57,7 +58,7 @@ TEST(ReuseCheckUtilityTest, ReuseDetectedSameWebsite) {
       CreateCredential(u"user1", u"password", {"https://test.com"}));
   credentials.push_back(
       CreateCredential(u"user2", u"password", {"https://test.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), ElementsAre(u"password"));
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), ElementsAre(u"password"));
 }
 
 TEST(ReuseCheckUtilityTest, NoReuseIfNormalizedUsernamesEqualForSameWebsite) {
@@ -66,7 +67,7 @@ TEST(ReuseCheckUtilityTest, NoReuseIfNormalizedUsernamesEqualForSameWebsite) {
       CreateCredential(u"user", u"password", {"https://test.com"}));
   credentials.push_back(
       CreateCredential(u"UsEr", u"password", {"https://test.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), testing::IsEmpty());
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), testing::IsEmpty());
 }
 
 TEST(ReuseCheckUtilityTest, ReuseDetectedAndroidApp) {
@@ -75,7 +76,7 @@ TEST(ReuseCheckUtilityTest, ReuseDetectedAndroidApp) {
       u"user", u"password", {"android://certificate_hash@test.com"}));
   credentials.push_back(
       CreateCredential(u"user", u"password", {"https://test.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), ElementsAre(u"password"));
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), ElementsAre(u"password"));
 }
 
 TEST(ReuseCheckUtilityTest, NoReuseIfWebsitesPSLMatch) {
@@ -84,7 +85,22 @@ TEST(ReuseCheckUtilityTest, NoReuseIfWebsitesPSLMatch) {
       CreateCredential(u"user", u"password", {"https://example.com"}));
   credentials.push_back(
       CreateCredential(u"user", u"password", {"https://m.example.com"}));
-  EXPECT_THAT(BulkReuseCheck(credentials), testing::IsEmpty());
+  EXPECT_THAT(BulkReuseCheck(credentials, {}), testing::IsEmpty());
+}
+
+TEST(ReuseCheckUtilityTest, NoReuseIfFromTheSameAffiliatedGroup) {
+  AffiliatedGroup affiliated_group(
+      {CreateCredential(u"Jan", u"password", {"https://example.com"}),
+       CreateCredential(u"Mohamed", u"password",
+                        {"android://certificate_hash@test.com"})},
+      FacetBrandingInfo());
+
+  std::vector<CredentialUIEntry> credentials;
+  credentials.insert(credentials.end(),
+                     affiliated_group.GetCredentials().begin(),
+                     affiliated_group.GetCredentials().end());
+  EXPECT_THAT(BulkReuseCheck(credentials, {affiliated_group}),
+              testing::IsEmpty());
 }
 
 }  // namespace password_manager

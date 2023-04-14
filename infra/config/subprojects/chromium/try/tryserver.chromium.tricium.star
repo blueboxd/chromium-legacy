@@ -14,8 +14,6 @@ try_.defaults.set(
     builderless = True,
     cores = 8,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
-    goma_backend = goma.backend.RBE_PROD,
-    goma_jobs = goma.jobs.J150,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
@@ -45,7 +43,6 @@ try_.builder(
     os = os.LINUX_DEFAULT,
     # src checkouts are only required by bots spawned by this builder.
     caches = SOURCELESS_BUILDER_CACHES,
-    goma_backend = None,
 )
 
 # Clang-tidy builders potentially spawned by the `tricium-clang-tidy`
@@ -54,14 +51,12 @@ try_.builder(
     name = "android-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-    goma_backend = None,
 )
 
 try_.builder(
     name = "fuchsia-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-    goma_backend = None,
 )
 
 try_.builder(
@@ -70,6 +65,8 @@ try_.builder(
     builderless = False,
     cores = None,
     os = os.MAC_DEFAULT,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_jobs = goma.jobs.J150,
     xcode = xcode.x13main,
 )
 
@@ -77,7 +74,6 @@ try_.builder(
     name = "linux-chromeos-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -85,7 +81,6 @@ try_.builder(
     name = "linux-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -93,7 +88,6 @@ try_.builder(
     name = "linux-lacros-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.LINUX_DEFAULT,
-    goma_backend = None,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
@@ -103,6 +97,8 @@ try_.builder(
     cores = None,
     os = os.MAC_DEFAULT,
     ssd = True,
+    goma_backend = goma.backend.RBE_PROD,
+    goma_jobs = goma.jobs.J150,
     # TODO(gbiv): Determine why this needs a system xcode and things like `Mac
     # Builder` don't.
     xcode = xcode.x13main,
@@ -112,5 +108,4 @@ try_.builder(
     name = "win10-clang-tidy-rel",
     executable = "recipe:tricium_clang_tidy_wrapper",
     os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
 )

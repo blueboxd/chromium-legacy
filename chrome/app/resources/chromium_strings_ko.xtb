@@ -12,7 +12,6 @@
 <translation id="1131805035311359397">암호가 정보 유출 및 다른 보안 문제로부터 안전한지 확인하려면 <ph name="BEGIN_LINK" />Chromium에 로그인<ph name="END_LINK" />하세요.</translation>
 <translation id="1185134272377778587">Chromium 정보</translation>
 <translation id="1203500561924088507">설치해 주셔서 감사합니다. <ph name="BUNDLE_NAME" />을(를) 사용하려면 브라우저를 다시 시작해야 합니다.</translation>
-<translation id="1231839967188101156">메모리 절약 모드를 사용 설정하면 Chromium이 비활성 탭에서 메모리를 확보합니다. 이에 따라 활성 탭과 기타 앱에 더 많은 컴퓨터 리소스가 제공되고 Chromium의 빠른 속도가 유지됩니다. 비활성 탭으로 돌아가면 탭이 자동으로 다시 활성화됩니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="1261119230216066228">메모리 절약 모드로 더 빨라진 Chromium</translation>
 <translation id="1315551408014407711">새 Chromium 프로필 설정</translation>
 <translation id="1396446129537741364">Chromium이 비밀번호를 표시하려고 합니다.</translation>
@@ -34,6 +33,7 @@
 <translation id="185970820835152459">로그인된 Google 계정을 관리할 수 있습니다. Google 계정은 Chromium 브라우저, Play 스토어, Gmail 등에서 사용됩니다. 가족 구성원 등 다른 사람을 위해 계정을 추가하고 싶다면 대신 <ph name="DEVICE_TYPE" />에 새 사용자를 추가하세요. <ph name="LINK_BEGIN" />자세히 알아보기<ph name="LINK_END" /></translation>
 <translation id="1863308913976887472">사이트에서는 Chromium에 내 관심분야에 관한 정보를 저장할 수 있습니다. 예를 들어 마라톤화를 구매하려고 사이트를 방문하면 사이트에서 내 관심분야를 마라톤으로 정의할 수 있습니다. 나중에 마라톤 대회에 등록하기 위해 다른 사이트에 방문하면 관심분야를 토대로 마라톤화 광고가 표시될 수 있습니다.</translation>
 <translation id="1881322772814446296">관리 계정으로 로그인하고 Chromium 프로필에 대한 관리자 제어권을 부여하려고 합니다. 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정 등 Chromium 데이터가 <ph name="USER_NAME" /> 계정에 영구적으로 연결됩니다. 이후 이 데이터를 Google 계정 대시보드에서 삭제할 수는 있지만 다른 계정에 연결할 수는 없습니다. 기존 Chromium 데이터를 유지하려면 새 프로필을 만드는 방법이 있습니다. <ph name="LEARN_MORE" /></translation>
+<translation id="1906696617298807388">주소 표시줄이나 검색창에 입력하면 Chromium에서 입력 내용을 Google Drive로 전송하여 항목을 추천합니다. 시크릿 모드에서는 이 기능이 사용 중지되어 있습니다.</translation>
 <translation id="1911763535808217981">이 기능을 사용 중지하면 Chromium에 로그인하지 않고도 Gmail 등의 Google 사이트에 로그인할 수 있습니다.</translation>
 <translation id="1929939181775079593">Chromium이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="193439633299369377">업데이트를 적용하려면 ChromiumOS를 다시 시작해야 합니다.</translation>
@@ -116,6 +116,7 @@
 <translation id="3567254597502212821">이 기기에서 Chromium을 사용해 방문한 사이트의 기록인 방문 기록이 사용됩니다.</translation>
 <translation id="3575459661164320785">컴퓨터에 유해한 소프트웨어가 있습니다. Chromium에서 유해한 소프트웨어를 삭제하고, 설정을 복원하고, 확장 프로그램을 사용 중지하여 브라우저가 다시 정상적으로 작동하도록 할 수 있습니다.</translation>
 <translation id="3593091352817399191">이미 다른 계정으로 로그인되어 있습니다. 인터넷 사용 기록을 별도로 보관하기 위해 Chromium에서 나만의 프로필을 만들 수 있습니다.</translation>
+<translation id="363078681319665186">향후 Chromium 업데이트를 받으려면 macOS 10.15 이상이 필요합니다. 이 컴퓨터에서는 macOS 10.13을 사용 중입니다.</translation>
 <translation id="3639635944603682591">선택한 사용자의 인터넷 사용 기록이 이 기기에서 삭제됩니다. 데이터를 복구하려면 <ph name="USER_EMAIL" />(으)로 Chromium에 로그인하세요.</translation>
 <translation id="364817392622123556">{COUNT,plural, =0{새 Chromium 업데이트가 있습니다. Chromium을 다시 실행하면 업데이트가 바로 적용됩니다.}=1{새 Chromium 업데이트가 있습니다. Chromium을 다시 실행하면 업데이트가 바로 적용됩니다. 시크릿 창이 다시 열리지 않습니다.}other{새 Chromium 업데이트가 있습니다. Chromium을 다시 실행하면 업데이트가 바로 적용됩니다. 시크릿 창 #개가 다시 열리지 않습니다.}}</translation>
 <translation id="3651803019964686660"><ph name="ORIGIN" />에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두에서 Chromium에 로그인하세요.</translation>
@@ -123,12 +124,12 @@
 <translation id="3702352323269013324">Chromium의 광고 개인 최적화에 관해 자세히 알아보기</translation>
 <translation id="370962675267501463">{COUNT,plural, =0{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다.}=1{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다. 시크릿 창이 다시 열리지 않습니다.}other{관리자가 이 업데이트를 적용하려면 사용자가 Chromium을 다시 시작하도록 설정했습니다. 시크릿 창 #개가 다시 열리지 않습니다.}}</translation>
 <translation id="3713809861844741608">새 Chromium 탭에서 링크 열기(&amp;T)</translation>
-<translation id="3728336900324680424">Chromium에서 내 드라이브에 액세스하여 주소 표시줄에 추천 검색어를 표시합니다.</translation>
 <translation id="378917192836375108">Chromium을 사용하면 웹에서 전화번호를 클릭하여 Skype로 통화할 수 있습니다.</translation>
 <translation id="3830894615770080216">ChromiumOS 시스템</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">ChromiumOS 도움말 보기</translation>
 <translation id="3871664619793219264"><ph name="ACCOUNT_EMAIL" /> 계정으로 Chromium 브라우저 기능을 이용해 보세요</translation>
+<translation id="387966568917439637">향후 Chromium 업데이트를 받으려면 macOS 10.15 이상이 필요합니다. 이 컴퓨터에서는 macOS 10.14를 사용 중입니다.</translation>
 <translation id="388648406173476553">Chromium을 맞춤설정 및 제어합니다. 확인이 필요한 항목이 있습니다. 클릭하여 세부정보를 보세요.</translation>
 <translation id="3889543394854987837">Chromium을 열고 탐색을 시작하려면 내 이름을 클릭하세요.</translation>
 <translation id="390528597099634151"><ph name="EXISTING_USER" />님이 이미 Chromium 프로필에 로그인되어 있습니다. 인터넷 사용 기록을 별도로 보관하기 위해 Chromium에서 나만의 프로필을 만들 수 있습니다.</translation>
@@ -218,6 +219,7 @@
 <translation id="6072463441809498330">Chromium의 속도를 높여보세요</translation>
 <translation id="608006075545470555">이 브라우저에 직장 프로필 추가</translation>
 <translation id="6096348254544841612">Chromium을 맞춤설정하고 제어하세요. 업데이트가 출시되었습니다.</translation>
+<translation id="6102072151902574948">사용 설정되면 Chromium은 부드러운 스크롤 및 동영상 프레임 속도 같은 시각적 효과와 백그라운드 활동을 제한하여 배터리 전원을 절약합니다.</translation>
 <translation id="6119438414301547735">확장 프로그램이 Chromium 툴바에 액세스 요청을 표시하도록 허용</translation>
 <translation id="6120345080069858279">Chromium에서 내 Google 계정에 이 비밀번호를 저장하므로 기억하지 않아도 됩니다.</translation>
 <translation id="6129621093834146363"><ph name="FILE_NAME" />은(는) 위험한 파일이므로 Chromium에서 차단했습니다.</translation>
@@ -278,6 +280,7 @@
 <translation id="6940431691900807093">이후 방문한 사이트에서 광고 개인 최적화를 위해 내 관심분야를 알려달라고 Chromium에 요청할 수 있습니다. Chromium은 최대 3개의 관심분야를 공유할 수 있습니다.</translation>
 <translation id="6964305034639999644">Chromium 시크릿 창에서 링크 열기(&amp;G)</translation>
 <translation id="6978145336957848883">취약한 비밀번호는 추측하기 쉽습니다. Chromium에서 <ph name="BEGIN_LINK" />안전한 비밀번호를 생성하고 기억하도록 설정<ph name="END_LINK" />하세요.</translation>
+<translation id="6981396265751285733">메모리 절약 모드를 사용 설정하면 Chromium이 비활성 탭에서 메모리를 확보합니다. 이에 따라 활성 탭과 기타 앱에 더 많은 컴퓨터 리소스가 제공되고 Chromium의 빠른 속도가 유지됩니다. 비활성 탭으로 돌아가면 탭이 자동으로 다시 활성화됩니다.</translation>
 <translation id="6984667024406244807">Chromium이 비활성 상태임</translation>
 <translation id="6985329841647292029">ChromiumOS 약관</translation>
 <translation id="6990124437352146030">이 사이트에서 마이크에 액세스하려면 Chromium에 권한이 필요합니다</translation>
@@ -322,6 +325,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7828947555739565424">이 계정을 사용하는 Chromium 프로필이 기기에 이미 존재합니다</translation>
 <translation id="7845233973568007926">설치해 주셔서 감사합니다. <ph name="BUNDLE_NAME" />을(를) 사용하려면 컴퓨터를 다시 시작해야 합니다.</translation>
+<translation id="7859018312476869945">주소 표시줄이나 검색창에 검색어를 입력하면 Chromium은 더 나은 추천 검색어를 제공하기 위해 사용자가 입력한 내용을 기본 검색엔진으로 전송합니다. 시크릿 모드에서는 이 기능이 사용 중지되어 있습니다.</translation>
 <translation id="7867198900892795913">Chromium을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 적용되지 않았습니다.</translation>
 <translation id="7872446069773932638">다운로드 중... <ph name="SECONDS" />초 남았습니다.</translation>
 <translation id="7877292582355102282"><ph name="BEGIN_BOLD" />데이터 관리 방법:<ph name="END_BOLD" /> 개인 정보를 보호하기 위해 Chrome에서는 4주가 지난 관심분야를 자동 삭제합니다. 인터넷 사용에 따라 특정 관심분야가 목록에 다시 표시될 수 있습니다. Chromium에서 고려하지 않았으면 하는 관심분야가 있으면 직접 삭제하세요.</translation>
@@ -349,9 +353,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
 <translation id="8550334526674375523">이 직장 프로필은 개인 프로필과 완전히 분리됩니다.</translation>
 <translation id="8558383651099478961">부모님이 Chromium의 ‘사이트, 앱, 확장 프로그램에 대한 권한’을 사용 중지하셨습니다. 이 <ph name="EXTENSION_TYPE_PARAMETER" /> 추가가 허용되지 않습니다.</translation>
-<translation id="8561285221328166383">향후 Chromium 업데이트를 받으려면 macOS 10.13 이상이 필요합니다. 이 컴퓨터에서는 macOS X 10.12를 사용하고 있습니다.</translation>
 <translation id="8568283329061645092">Google 계정으로 로그인하면 Chromium에서 비밀번호를 확인할 수 있습니다.</translation>
-<translation id="8574036838419011058">사용 설정되면 Chromium은 백그라운드 활동과 부드러운 스크롤 및 동영상 프레임 속도 같은 시각적 효과를 제한하여 배터리 전원을 절약합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8608079656141766906"><ph name="BEGIN_BOLD" />Chromium의 데이터 사용 방식:<ph name="END_BOLD" /> 사이트에서는 Chromium에 내 관심분야에 관한 정보를 저장할 수 있습니다. 예를 들어 마라톤화를 구매하려고 사이트를 방문하면 사이트에서 내 관심분야를 마라톤으로 정의할 수 있습니다. 나중에 마라톤 대회에 등록하기 위해 다른 사이트에 방문하면 관심분야를 토대로 마라톤화 광고가 표시될 수 있습니다.</translation>
 <translation id="8619360774459241877">Chromium 실행 중...</translation>
@@ -382,7 +384,6 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="9190841055450128916">Chromium(mDNS-In)</translation>
 <translation id="93478295209880648">Windows XP 또는 Windows Vista에서 더 이상 Chromium을 지원하지 않으므로 Chromium이 올바르게 작동하지 않을 수 있습니다</translation>
 <translation id="942598560705308788">Chromium이 관리하는 인증서</translation>
-<translation id="945990405696787151">향후 Chromium 업데이트를 받으려면 macOS 10.13 이상이 필요합니다. 이 컴퓨터에서는 OS X 10.11을 사용하고 있습니다.</translation>
 <translation id="965162752251293939">Chromium 사용자 선택</translation>
 <translation id="967427899662692980">Chromium의 가장 강력한 보안 기능을 이용하세요</translation>
 <translation id="9792300276217204">Chromium 종료 시 기기에 있는 사이트 데이터를 항상 삭제</translation>

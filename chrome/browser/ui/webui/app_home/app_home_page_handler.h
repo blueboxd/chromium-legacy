@@ -6,16 +6,19 @@
 #define CHROME_BROWSER_UI_WEBUI_APP_HOME_APP_HOME_PAGE_HANDLER_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow_delegate.h"
+#include "chrome/browser/ui/webui/app_home/app_home.mojom-shared.h"
 #include "chrome/browser/ui/webui/app_home/app_home.mojom.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/constants.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -29,7 +32,7 @@ class WebUI;
 
 namespace extensions {
 class Extension;
-class ExtensionService;
+class ExtensionSystem;
 class ExtensionUninstallDialog;
 }  // namespace extensions
 
@@ -90,12 +93,13 @@ class AppHomePageHandler
 
   // app_home::mojom::PageHandler:
   void GetApps(GetAppsCallback callback) override;
+  void GetDeprecationLinkString(
+      GetDeprecationLinkStringCallback callback) override;
   void UninstallApp(const std::string& app_id) override;
   void ShowAppSettings(const std::string& app_id) override;
   void CreateAppShortcut(const std::string& app_id,
                          CreateAppShortcutCallback callback) override;
   void LaunchApp(const std::string& app_id,
-                 int source,
                  app_home::mojom::ClickEventPtr click_event) override;
   void SetRunOnOsLoginMode(
       const std::string& app_id,
@@ -127,7 +131,7 @@ class AppHomePageHandler
 
   void InstallOsHooks(const web_app::AppId& app_id, web_app::AppLock* lock);
   void LaunchAppInternal(const std::string& app_id,
-                         int source,
+                         extension_misc::AppLaunchBucket bucket,
                          app_home::mojom::ClickEventPtr click_event,
                          bool force_launch_deprecated_apps);
   void ShowWebAppSettings(const std::string& app_id);
@@ -162,7 +166,7 @@ class AppHomePageHandler
 
   // The apps are represented in the extensions model, which
   // outlives this class since it's owned by |profile_|.
-  const raw_ptr<extensions::ExtensionService> extension_service_;
+  const raw_ref<extensions::ExtensionSystem> extension_system_;
 
   base::ScopedObservation<web_app::WebAppRegistrar,
                           web_app::AppRegistrarObserver>

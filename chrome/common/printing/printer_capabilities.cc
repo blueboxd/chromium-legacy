@@ -22,6 +22,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/common/printing/printing_buildflags.h"
 #include "components/crash/core/common/crash_keys.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/printing/common/cloud_print_cdd_conversion.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
@@ -109,11 +110,9 @@ void PopulateAdvancedCapsLocalization(
 
 // Returns a dictionary representing printer capabilities as CDD, or
 // a Value of type NONE if no capabilities are provided.
-base::Value AssemblePrinterCapabilities(
-    const std::string& device_name,
-    const PrinterSemanticCapsAndDefaults::Papers& user_defined_papers,
-    bool has_secure_protocol,
-    PrinterSemanticCapsAndDefaults* caps) {
+base::Value AssemblePrinterCapabilities(const std::string& device_name,
+                                        bool has_secure_protocol,
+                                        PrinterSemanticCapsAndDefaults* caps) {
   DCHECK(!device_name.empty());
   if (!caps)
     return base::Value();
@@ -130,8 +129,6 @@ base::Value AssemblePrinterCapabilities(
   if (populate_paper_display_names)
     PopulateAndSortAllPaperDisplayNames(*caps);
 #endif  // BUILDFLAG(PRINT_MEDIA_L10N_ENABLED)
-
-  caps->user_defined_papers = std::move(user_defined_papers);
 
 #if BUILDFLAG(IS_CHROMEOS)
   if (!has_secure_protocol)
@@ -169,7 +166,6 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 base::Value::Dict AssemblePrinterSettings(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
-    const PrinterSemanticCapsAndDefaults::Papers& user_defined_papers,
     bool has_secure_protocol,
     PrinterSemanticCapsAndDefaults* caps) {
   base::Value::Dict printer_info;
@@ -190,8 +186,8 @@ base::Value::Dict AssemblePrinterSettings(
 
   base::Value::Dict printer_info_capabilities;
   printer_info_capabilities.Set(kPrinter, std::move(printer_info));
-  base::Value capabilities = AssemblePrinterCapabilities(
-      device_name, user_defined_papers, has_secure_protocol, caps);
+  base::Value capabilities =
+      AssemblePrinterCapabilities(device_name, has_secure_protocol, caps);
   if (capabilities.is_dict()) {
     printer_info_capabilities.Set(kSettingCapabilities,
                                   std::move(capabilities));
@@ -203,26 +199,30 @@ base::Value::Dict GetSettingsOnBlockingTaskRunner(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info,
     PrinterSemanticCapsAndDefaults::Papers user_defined_papers,
-    bool has_secure_protocol,
     scoped_refptr<PrintBackend> print_backend) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  VLOG(1) << "Get printer capabilities start for " << device_name;
+  PRINTER_LOG(EVENT) << "Get printer capabilities start for " << device_name;
   crash_keys::ScopedPrinterInfo crash_key(
       print_backend->GetPrinterDriverInfo(device_name));
 
   auto caps = absl::make_optional<PrinterSemanticCapsAndDefaults>();
-  if (print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &*caps) !=
-      mojom::ResultCode::kSuccess) {
+  mojom::ResultCode result =
+      print_backend->GetPrinterSemanticCapsAndDefaults(device_name, &*caps);
+  if (result == mojom::ResultCode::kSuccess) {
+    PRINTER_LOG(EVENT) << "Got printer capabilities for " << device_name;
+    caps->user_defined_papers = std::move(user_defined_papers);
+  } else {
     // Failed to get capabilities, but proceed to assemble the settings to
     // return what information we do have.
-    LOG(WARNING) << "Failed to get capabilities for " << device_name;
+    PRINTER_LOG(ERROR) << "Failed to get capabilities for " << device_name
+                       << ", result: " << result;
     caps = absl::nullopt;
   }
 
-  return AssemblePrinterSettings(device_name, basic_info, user_defined_papers,
-                                 has_secure_protocol,
+  return AssemblePrinterSettings(device_name, basic_info,
+                                 /*has_secure_protocol=*/false,
                                  base::OptionalToPtr(caps));
 }
 

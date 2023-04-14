@@ -71,6 +71,10 @@ void AddStrings(content::WebUIDataSource* source) {
       {"defaultWallpaper", IDS_PERSONALIZATION_APP_DEFAULT_WALLPAPER},
       {"back", IDS_PERSONALIZATION_APP_BACK_BUTTON},
       {"currentlySet", IDS_PERSONALIZATION_APP_CURRENTLY_SET},
+      {"descriptionDialogOpen",
+       IDS_PERSONALIZATION_APP_WALLPAPER_DESCRIPTION_DIALOG_OPEN},
+      {"descriptionDialogClose",
+       IDS_PERSONALIZATION_APP_WALLPAPER_DESCRIPTION_DIALOG_CLOSE},
       {"myImagesLabel", IDS_PERSONALIZATION_APP_MY_IMAGES},
       {"wallpaperCollections", IDS_PERSONALIZATION_APP_WALLPAPER_COLLECTIONS},
       {"center", IDS_PERSONALIZATION_APP_CENTER},
@@ -244,6 +248,8 @@ void AddStrings(content::WebUIDataSource* source) {
        IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_RAINBOW_COLOR_LABEL},
       {"wallpaperColorNudgeText",
        IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_NUDGE_TEXT},
+      {"zoneCustomize",
+       IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_ZONE_CUSTOMIZATION_BUTTON},
 
       // Google Photos strings
       // TODO(b/229149314): Finalize error and retry strings.
@@ -359,9 +365,6 @@ void PersonalizationAppUI::BindInterface(
 }
 
 void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
-  source->AddBoolean("fullScreenPreviewEnabled",
-                     features::IsWallpaperFullScreenPreviewEnabled());
-
   source->AddBoolean("isGooglePhotosIntegrationEnabled",
                      wallpaper_provider_->IsEligibleForGooglePhotos());
 
@@ -378,19 +381,16 @@ void PersonalizationAppUI::AddBooleans(content::WebUIDataSource* source) {
       features::IsRgbKeyboardEnabled() &&
           Shell::Get()->rgb_keyboard_manager()->IsRgbKeyboardSupported());
 
-  source->AddBoolean("isAvatarsCloudMigrationEnabled",
-                     features::IsAvatarsCloudMigrationEnabled());
-
-  source->AddBoolean("isJellyEnabled", features::IsJellyEnabled());
-
   source->AddBoolean("isScreenSaverPreviewEnabled",
                      features::IsScreenSaverPreviewEnabled());
 
-  source->AddBoolean("isAmbientSubpageUiChangeEnabled",
-                     features::IsAmbientSubpageUIChangeEnabled());
+  source->AddBoolean("isPersonalizationJellyEnabled",
+                     features::IsPersonalizationJellyEnabled());
 
-  // TODO(b/258838122): update when the screen saver policy code is ready.
-  source->AddBoolean("isAmbientModeManaged", false);
+  source->AddBoolean(
+      "isMultiZoneRgbKeyboardSupported",
+      features::IsMultiZoneRgbKeyboardEnabled() &&
+          Shell::Get()->rgb_keyboard_manager()->GetZoneCount() > 1);
 }
 
 void PersonalizationAppUI::HandleWebUIRequest(

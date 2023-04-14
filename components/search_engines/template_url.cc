@@ -236,6 +236,8 @@ size_t TemplateURLRef::SearchTermsArgs::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(image_thumbnail_content_type);
   res += base::trace_event::EstimateMemoryUsage(image_url);
   res += base::trace_event::EstimateMemoryUsage(contextual_search_params);
+  res += base::trace_event::EstimateMemoryUsage(image_translate_source_locale);
+  res += base::trace_event::EstimateMemoryUsage(image_translate_target_locale);
 
   return res;
 }
@@ -302,25 +304,43 @@ TemplateURLRef& TemplateURLRef::operator=(const TemplateURLRef& source) =
 
 std::string TemplateURLRef::GetURL() const {
   switch (type_) {
-    case SEARCH:            return owner_->url();
-    case SUGGEST:           return owner_->suggestions_url();
-    case IMAGE:             return owner_->image_url();
-    case NEW_TAB:           return owner_->new_tab_url();
-    case CONTEXTUAL_SEARCH: return owner_->contextual_search_url();
-    case INDEXED:           return owner_->alternate_urls()[index_in_owner_];
-    default:       NOTREACHED(); return std::string();  // NOLINT
+    case SEARCH:
+      return owner_->url();
+    case SUGGEST:
+      return owner_->suggestions_url();
+    case IMAGE:
+      return owner_->image_url();
+    case IMAGE_TRANSLATE:
+      return owner_->image_translate_url();
+    case NEW_TAB:
+      return owner_->new_tab_url();
+    case CONTEXTUAL_SEARCH:
+      return owner_->contextual_search_url();
+    case INDEXED:
+      return owner_->alternate_urls()[index_in_owner_];
+    default:
+      NOTREACHED();
+      return std::string();
   }
 }
 
 std::string TemplateURLRef::GetPostParamsString() const {
   switch (type_) {
     case INDEXED:
-    case SEARCH:            return owner_->search_url_post_params();
-    case SUGGEST:           return owner_->suggestions_url_post_params();
-    case NEW_TAB:           return std::string();
-    case CONTEXTUAL_SEARCH: return std::string();
-    case IMAGE:             return owner_->image_url_post_params();
-    default:      NOTREACHED(); return std::string();  // NOLINT
+    case SEARCH:
+      return owner_->search_url_post_params();
+    case SUGGEST:
+      return owner_->suggestions_url_post_params();
+    case NEW_TAB:
+      return std::string();
+    case CONTEXTUAL_SEARCH:
+      return std::string();
+    case IMAGE:
+    case IMAGE_TRANSLATE:
+      return owner_->image_url_post_params();
+    default:
+      NOTREACHED();
+      return std::string();
   }
 }
 
@@ -763,6 +783,10 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(MAIL_RU_REFERRAL_ID, start));
   } else if (parameter == "yandex:searchPath") {
     url->insert(start, YandexSearchPathFromDeviceFormFactor());
+  } else if (parameter == "imageTranslateSourceLocale") {
+    replacements->push_back(Replacement(IMAGE_TRANSLATE_SOURCE_LOCALE, start));
+  } else if (parameter == "imageTranslateTargetLocale") {
+    replacements->push_back(Replacement(IMAGE_TRANSLATE_TARGET_LOCALE, start));
   } else if (parameter == "inputEncoding") {
     replacements->push_back(Replacement(ENCODING, start));
   } else if (parameter == "language") {
@@ -1233,7 +1257,7 @@ std::string TemplateURLRef::HandleReplacements(
         // empty string.  (If we don't handle this case, we hit a
         // NOTREACHED below.)
         std::u16string rlz_string = search_terms_data.GetRlzParameterValue(
-            search_terms_args.request_source == CROS_APP_LIST);
+            search_terms_args.request_source == RequestSource::CROS_APP_LIST);
         if (!rlz_string.empty()) {
           HandleReplacement("rlz", base::UTF16ToUTF8(rlz_string), replacement,
                             &url);
@@ -1267,19 +1291,17 @@ std::string TemplateURLRef::HandleReplacements(
       }
 
       case GOOGLE_SUGGEST_CLIENT:
-        HandleReplacement(
-            std::string(),
-            search_terms_data.GetSuggestClient(
-                search_terms_args.request_source == NON_SEARCHBOX_NTP),
-            replacement, &url);
+        HandleReplacement(std::string(),
+                          search_terms_data.GetSuggestClient(
+                              search_terms_args.request_source),
+                          replacement, &url);
         break;
 
       case GOOGLE_SUGGEST_REQUEST_ID:
-        HandleReplacement(
-            std::string(),
-            search_terms_data.GetSuggestRequestIdentifier(
-                search_terms_args.request_source == NON_SEARCHBOX_NTP),
-            replacement, &url);
+        HandleReplacement(std::string(),
+                          search_terms_data.GetSuggestRequestIdentifier(
+                              search_terms_args.request_source),
+                          replacement, &url);
         break;
 
       case GOOGLE_UNESCAPED_SEARCH_TERMS: {
@@ -1386,6 +1408,24 @@ std::string TemplateURLRef::HandleReplacements(
         break;
       }
 
+      case IMAGE_TRANSLATE_SOURCE_LOCALE: {
+        if (!search_terms_args.image_translate_source_locale.empty()) {
+          HandleReplacement(owner_->image_translate_source_language_param_key(),
+                            search_terms_args.image_translate_source_locale,
+                            replacement, &url);
+        }
+        break;
+      }
+
+      case IMAGE_TRANSLATE_TARGET_LOCALE: {
+        if (!search_terms_args.image_translate_target_locale.empty()) {
+          HandleReplacement(owner_->image_translate_target_language_param_key(),
+                            search_terms_args.image_translate_target_locale,
+                            replacement, &url);
+        }
+        break;
+      }
+
       default:
         NOTREACHED();
         break;
@@ -1394,7 +1434,6 @@ std::string TemplateURLRef::HandleReplacements(
 
   if (!post_params_.empty())
     EncodeFormData(post_params_, post_content);
-
   return url;
 }
 
@@ -1420,6 +1459,7 @@ TemplateURL::TemplateURL(const TemplateURLData& data, Type type)
     : data_(data),
       suggestions_url_ref_(this, TemplateURLRef::SUGGEST),
       image_url_ref_(this, TemplateURLRef::IMAGE),
+      image_translate_url_ref_(this, TemplateURLRef::IMAGE_TRANSLATE),
       new_tab_url_ref_(this, TemplateURLRef::NEW_TAB),
       contextual_search_url_ref_(this, TemplateURLRef::CONTEXTUAL_SEARCH),
       type_(type),
@@ -1525,6 +1565,7 @@ bool TemplateURL::MatchesData(const TemplateURL* t_url,
          (t_url->url() == data->url()) &&
          (t_url->suggestions_url() == data->suggestions_url) &&
          (t_url->image_url() == data->image_url) &&
+         (t_url->image_translate_url() == data->image_translate_url) &&
          (t_url->new_tab_url() == data->new_tab_url) &&
          (t_url->search_url_post_params() == data->search_url_post_params) &&
          (t_url->suggestions_url_post_params() ==
@@ -1554,9 +1595,10 @@ bool TemplateURL::HasGoogleBaseURLs(
     return true;
 
   return suggestions_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
-      image_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
-      new_tab_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
-      contextual_search_url_ref_.HasGoogleBaseURLs(search_terms_data);
+         image_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+         image_translate_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+         new_tab_url_ref_.HasGoogleBaseURLs(search_terms_data) ||
+         contextual_search_url_ref_.HasGoogleBaseURLs(search_terms_data);
 }
 
 bool TemplateURL::IsGoogleSearchURLWithReplaceableKeyword(
@@ -1630,11 +1672,17 @@ bool TemplateURL::KeepSearchTermsInURL(const GURL& url,
                                        const SearchTermsData& search_terms_data,
                                        const bool keep_search_intent_params,
                                        const bool normalize_search_terms,
-                                       GURL* result) const {
+                                       GURL* out_url,
+                                       std::u16string* out_search_terms) const {
   std::u16string search_terms;
   if (!ExtractSearchTermsFromURL(url, search_terms_data, &search_terms) ||
       search_terms.empty()) {
     return false;
+  }
+
+  if (normalize_search_terms) {
+    search_terms =
+        base::i18n::ToLower(base::CollapseWhitespace(search_terms, false));
   }
 
   if (!url_ref().SupportsReplacement(search_terms_data)) {
@@ -1651,14 +1699,14 @@ bool TemplateURL::KeepSearchTermsInURL(const GURL& url,
     }
   }
 
-  TemplateURLRef::SearchTermsArgs search_terms_args(
-      normalize_search_terms
-          ? base::i18n::ToLower(base::CollapseWhitespace(search_terms, false))
-          : search_terms);
+  TemplateURLRef::SearchTermsArgs search_terms_args(search_terms);
   search_terms_args.additional_query_params =
       base::JoinString(query_params, "&");
-  *result =
+  *out_url =
       GURL(url_ref().ReplaceSearchTerms(search_terms_args, search_terms_data));
+  if (out_search_terms) {
+    *out_search_terms = search_terms;
+  }
   return true;
 }
 
@@ -1830,6 +1878,7 @@ void TemplateURL::SetPrepopulateId(int id) {
     ref.prepopulated_ = prepopulated;
   suggestions_url_ref_.prepopulated_ = prepopulated;
   image_url_ref_.prepopulated_ = prepopulated;
+  image_translate_url_ref_.prepopulated_ = prepopulated;
   new_tab_url_ref_.prepopulated_ = prepopulated;
   contextual_search_url_ref_.prepopulated_ = prepopulated;
 }
@@ -1850,6 +1899,7 @@ void TemplateURL::InvalidateCachedValues() const {
     ref.InvalidateCachedValues();
   suggestions_url_ref_.InvalidateCachedValues();
   image_url_ref_.InvalidateCachedValues();
+  image_translate_url_ref_.InvalidateCachedValues();
   new_tab_url_ref_.InvalidateCachedValues();
   contextual_search_url_ref_.InvalidateCachedValues();
 }
@@ -1861,6 +1911,7 @@ size_t TemplateURL::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(url_refs_);
   res += base::trace_event::EstimateMemoryUsage(suggestions_url_ref_);
   res += base::trace_event::EstimateMemoryUsage(image_url_ref_);
+  res += base::trace_event::EstimateMemoryUsage(image_translate_url_ref_);
   res += base::trace_event::EstimateMemoryUsage(new_tab_url_ref_);
   res += base::trace_event::EstimateMemoryUsage(contextual_search_url_ref_);
   res += base::trace_event::EstimateMemoryUsage(extension_info_);

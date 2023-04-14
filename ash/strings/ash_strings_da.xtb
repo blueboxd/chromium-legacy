@@ -133,11 +133,13 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="163517899691012366">Notifikationer ignoreres, når Forstyr ikke er slået til</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> enheder</translation>
 <translation id="1639239467298939599">Indlæser</translation>
+<translation id="1647986356840967552">Forrige side</translation>
 <translation id="1654477262762802994">Start en stemmeforespørgsel</translation>
 <translation id="1668469839109562275">Indbygget VPN</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1677507110654891115">Der er ikke forbindelse til <ph name="FEATURE_NAME" />.</translation>
 <translation id="1677582821739292812">Nogen kigger med på din skærm</translation>
+<translation id="1683399938733266832">Aktuel CPU-brug: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Shift</translation>
 <translation id="1698080062160024910">Timer på <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">IPv6-adresse: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="1771761307086386028">Rul til højre</translation>
 <translation id="1774796056689732716">Kalender for <ph name="CURRENT_MONTH_YEAR" /> – <ph name="DATE" /> er valgt.</translation>
 <translation id="1787955149152357925">Fra</translation>
-<translation id="1797271123677381264">Glemt adgangskode</translation>
 <translation id="1807246157184219062">Lys</translation>
 <translation id="181103072419391116">Signalstyrke <ph name="SIGNAL_STRENGTH" />, administreret af din administrator</translation>
 <translation id="1816896987747843206">Dette giver alle apps og websites med kameratilladelse adgang til kameraet</translation>
@@ -381,6 +382,7 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3051189971848907985">Profilen omdøbes. Vent et par minutter.</translation>
 <translation id="3055162170959710888">Du har brugt denne enhed i <ph name="USED_TIME" /> i dag</translation>
 <translation id="3062298103034426069">Understøttes ikke</translation>
+<translation id="3068622547379332530">Version <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">Hylden er til venstre</translation>
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3081696990447829002">Udvid menu</translation>
@@ -421,9 +423,11 @@ Her er nogle af de ting, du kan prøve for at komme godt i gang.</translation>
 <translation id="3289674678944039601">Oplader via adapter</translation>
 <translation id="3290356915286466215">Ikke beskyttet</translation>
 <translation id="3294437725009624529">Gæst</translation>
+<translation id="3298690094479023523">Din pin- eller adgangskode kan stadig ikke verificeres. Prøv igen.</translation>
 <translation id="3307642347673023554">Skiftede til computertilstand</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> kan stadig logge ind senere.</translation>
 <translation id="3321628682574733415">Forkert forældrekode</translation>
+<translation id="332827762492701193">Notifikationer er skjult</translation>
 <translation id="3339826665088060472">Screenshot, værktøjer til screenshots og skærmoptagelser</translation>
 <translation id="3340978935015468852">indstillinger</translation>
 <translation id="3341303451326249809">Der blev taget et screenshot</translation>
@@ -554,12 +558,14 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="397726367135689299">Batteriopladningen er muligvis ikke pålidelig.</translation>
 <translation id="3977512764614765090">Batteriet er på <ph name="PERCENTAGE" /> % og oplader.</translation>
+<translation id="3984536049089846927">Næste side</translation>
 <translation id="3986082989454912832">Svar</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="40062176907008878">Håndskrift</translation>
 <translation id="4017989525502048489">Lasermarkør</translation>
 <translation id="401993194061514265">Markøren er ikke tilgængelig. Åbn Screencast igen.</translation>
 <translation id="4021716437419160885">Rul ned</translation>
+<translation id="4024840464866786680">Hvis du har glemt din pinkode og din adgangskode eller har ændret adgangskoden til din Google-konto for nylig, kan du prøve at gendanne denne bruger.</translation>
 <translation id="4028481283645788203">Der kræves en adgangskode som ekstra sikkerhed</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Du deler din skærm</translation>
@@ -575,9 +581,10 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4123259114412175274">Bluetooth skal aktiveres, før du kan låse din Chromebook op</translation>
 <translation id="4125970834901680537">Apps kan ikke streames i tablettilstand. Prøv igen i computertilstand.</translation>
 <translation id="4129129681837227511">Du kan se notifikationer på din låseskærm ved at låse skærmen op og ændre indstillingen</translation>
-<translation id="4130035430755296270">Bliv ved med at holde markøren over menuen for at se flere layoutmuligheder</translation>
+<translation id="4131973331381812765">Temperatur: <ph name="TEMPERATURE" /> °C – aktuel hastighed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Aktiveret indtil solopgang</translation>
 <translation id="4146833061457621061">Spil musik</translation>
+<translation id="4150201353443180367">Skærm</translation>
 <translation id="4165275524535002941">Kablet understøtter muligvis ikke skærme</translation>
 <translation id="4177913004758410636">{0,plural, =1{Genstart enheden inden for en dag}one{Genstart enheden inden for # dag}other{Genstart enheden inden for # dage}}</translation>
 <translation id="4181841719683918333">Sprog</translation>
@@ -646,7 +653,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4471432286288241507">{0,plural, =0{Genstart enheden nu}=1{Genstart enheden inden for 1 sekund}one{Genstart enheden inden for # sekund}other{Genstart enheden inden for # sekunder}}</translation>
 <translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4477350412780666475">Næste nummer</translation>
-<translation id="4477892968187500306">Denne enhed indeholder muligvis apps, der ikke er blevet verificeret af Google.</translation>
+<translation id="4477892968187500306">Denne enhed indeholder muligvis apps, der ikke er blevet bekræftet af Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Ikke-parrede enheder</translation>
 <translation id="4505050298327493054">Aktivt skrivebord.</translation>
@@ -699,10 +706,12 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4735944890391795473">Skrivebord 12</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="4740516757091333363">Vil du slette det gemte skrivebord?</translation>
+<translation id="4747410141429390146">Lås op for at se notifikationer</translation>
 <translation id="4752784485658729358">Der er en grænse på maks. 6 gemte skriveborde. Fjern et skrivebord for at gemme et nyt.</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4762573482154983647">Skjul apps</translation>
 <translation id="4774338217796918551">Kom tilbage i morgen kl. <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Din adgangskode kan stadig ikke verificeres. Prøv igen.</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Butik</translation>
 <translation id="4778095205580009397">Google Assistent er ikke tilgængelig i en demosession.</translation>
@@ -727,6 +736,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="4895488851634969361">Batteriet er helt opladet.</translation>
 <translation id="490375751687810070">Lodret</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % batteri</translation>
+<translation id="491504982845934899">Aktivér <ph name="NETWORK_NAME" /> efter konfiguration af enheden</translation>
 <translation id="4917385247580444890">Stærk</translation>
 <translation id="4918086044614829423">Accepter</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> anvender i øjeblikket dit kamera</translation>
@@ -842,6 +852,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5536723544185013515">Seneste apps, naviger med venstre eller højre piletast for at få adgang til alle seneste apps</translation>
 <translation id="553675580533261935">Afslutter session</translation>
 <translation id="5537725057119320332">Cast</translation>
+<translation id="5546397813406633847">Gendan bruger</translation>
 <translation id="554893713779400387">Slå diktering til/fra</translation>
 <translation id="5558091555391176027">Slå høj synlighed til/fra for Deling tæt på</translation>
 <translation id="5560420195677022218">Se din telefons apps på din <ph name="DEVICE_TYPE" /></translation>
@@ -858,6 +869,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5618148318840095371">Vi har ændret dit netværk til et bedre et</translation>
 <translation id="5619862035903135339">Administratorpolitikken tillader ikke screenshots</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">Din adgangskode kunne ikke verificeres. Prøv igen.</translation>
 <translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> kræver din opmærksomhed.</translation>
 <translation id="5662075790140998213">Skrivebord 10</translation>
@@ -876,6 +888,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5707775774148071965">Din enhed understøtter en højere datahastighed end dit kabel. Enhedens ydeevne kan være begrænset.</translation>
 <translation id="5710450975648804523">Forstyr ikke er aktiveret</translation>
 <translation id="571295407079589142">Mobildata er slået fra</translation>
+<translation id="5727460725221669831">Hvis du har glemt din adgangskode eller ændret adgangskoden til din Google-konto for nylig, kan du prøve at gendanne denne bruger.</translation>
 <translation id="573413375004481890">Denne enhed kunne ikke understøtte alle dine skærme, så tilslutningen af en af dem blev fjernet</translation>
 <translation id="5740328398383587084">Deling tæt på</translation>
 <translation id="574392208103952083">Mellem</translation>
@@ -905,6 +918,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="5867606971598166637">Din systemadministrator overvåger dine skærme</translation>
 <translation id="5876666360658629066">Angiv forældrekode</translation>
 <translation id="5881540930187678962">Konfigurer Telefonstyring senere</translation>
+<translation id="5881663018261910378">Fra</translation>
 <translation id="5887954372087850114">Vinduet <ph name="WINDOW_TITLE" /> er tildelt til <ph name="DESK_TITLE" /> og er ikke tildelt nogen af alle de øvrige skriveborde</translation>
 <translation id="5895138241574237353">Genstart</translation>
 <translation id="589817443623831496">Elementscanning</translation>
@@ -935,7 +949,7 @@ Slut din enhed til en strømkilde.</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" />, administreret af din administrator</translation>
 <translation id="6027518778343897451">Der er ingen begivenhed <ph name="CURRENT_MONTH_DAY" />. Tryk på Enter for at åbne Google Kalender i browseren.</translation>
 <translation id="6030495522958826102">Menuen blev flyttet til nederste venstre hjørne af skærmen.</translation>
-<translation id="6032620807120418574">Klik et vilkårligt sted for at optage hele skærmen</translation>
+<translation id="6032620807120418574">Klik et vilkårligt sted for at tage et billede af hele skærmen</translation>
 <translation id="6040071906258664830">Optag mikrofon er slået <ph name="STATE" /></translation>
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6043212731627905357">Denne skærm fungerer ikke sammen med <ph name="DEVICE_TYPE" /> (skærmen understøttes ikke).</translation>
@@ -1116,7 +1130,7 @@ Installeret for nylig</translation>
 <translation id="6981982820502123353">Hjælpefunktioner</translation>
 <translation id="698231206551913481">Alle filer og lokale data, der er knyttet til denne bruger, slettes permanent, når brugeren fjernes.</translation>
 <translation id="7005239792648594238">Åbn en app for at komme i gang</translation>
-<translation id="7007983414944123363">Din pin- eller adgangskode kunne ikke verificeres. Prøv igen.</translation>
+<translation id="7007983414944123363">Din pin- eller adgangskode kunne ikke bekræftes. Prøv igen.</translation>
 <translation id="7014684956566476813">Forbundet til en enhed ved navn <ph name="DEVICE_NAME" /></translation>
 <translation id="7015766095477679451">Vend tilbage kl. <ph name="COME_BACK_TIME" />.</translation>
 <translation id="70168403932084660">Skrivebord 6</translation>
@@ -1319,6 +1333,7 @@ Installeret for nylig</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8131994907636310308">Luk sorteringstoast</translation>
 <translation id="8132793192354020517">Forbundet til <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Aktivér efter enhedskonfiguration</translation>
 <translation id="813913629614996137">Initialiserer...</translation>
 <translation id="8142441511840089262">Dobbeltklik</translation>
 <translation id="8142699993796781067">Privat netværk</translation>
@@ -1448,7 +1463,7 @@ Installeret for nylig</translation>
 <translation id="8841375032071747811">Knappen Tilbage</translation>
 <translation id="8843682306134542540">Slå Lås rotation til eller fra. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Søg+Esc</translation>
-<translation id="8853703225951107899">Din pin- eller adgangskode kan stadig ikke verificeres. Bemærk! Hvis du har ændret din adgangskode for nylig, skal du bruge din gamle adgangskode. Den nye adgangskode anvendes, når du har logget ud.</translation>
+<translation id="8853703225951107899">Din pin- eller adgangskode kan stadig ikke bekræftes. Bemærk! Hvis du har ændret din adgangskode for nylig, skal du bruge din gamle adgangskode. Den nye adgangskode anvendes, når du har logget ud.</translation>
 <translation id="8855885154700222542">Tast til fuld skærm</translation>
 <translation id="8870509716567206129">Appen understøtter ikke opdelt skærm.</translation>
 <translation id="8874184842967597500">Ikke forbundet</translation>

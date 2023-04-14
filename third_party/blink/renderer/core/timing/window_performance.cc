@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -255,26 +254,19 @@ MemoryInfo* WindowPerformance::memory(ScriptState* script_state) const {
   return memory_info;
 }
 
-PerformanceNavigationTiming*
-WindowPerformance::CreateNavigationTimingInstance() {
-  if (!DomWindow())
-    return nullptr;
-  DocumentLoader* document_loader = DomWindow()->document()->Loader();
-  // TODO(npm): figure out when |document_loader| can be null and add tests.
-  DCHECK(document_loader);
-  if (!document_loader)
-    return nullptr;
-  ResourceTimingInfo* info = document_loader->GetNavigationTimingInfo();
-  if (!info)
-    return nullptr;
-  HeapVector<Member<PerformanceServerTiming>> server_timing =
-      PerformanceServerTiming::ParseServerTiming(*info);
-  if (!server_timing.empty())
-    document_loader->CountUse(WebFeature::kPerformanceServerTiming);
+void WindowPerformance::CreateNavigationTimingInstance(
+    mojom::blink::ResourceTimingInfoPtr info) {
+  DCHECK(DomWindow());
+  navigation_timing_ = MakeGarbageCollected<PerformanceNavigationTiming>(
+      *DomWindow(), std::move(info), time_origin_);
+}
 
-  return MakeGarbageCollected<PerformanceNavigationTiming>(
-      *DomWindow(), *info, time_origin_,
-      DomWindow()->CrossOriginIsolatedCapability(), std::move(server_timing));
+void WindowPerformance::OnBodyLoadFinished(int64_t encoded_body_size,
+                                           int64_t decoded_body_size) {
+  if (navigation_timing_) {
+    navigation_timing_->OnBodyLoadFinished(encoded_body_size,
+                                           decoded_body_size);
+  }
 }
 
 void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
@@ -724,7 +716,8 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
     base::TimeTicks first_animated_frame_time,
     const AtomicString& id,
     const String& url,
-    Element* element) {
+    Element* element,
+    bool is_triggered_by_soft_navigation) {
   DOMHighResTimeStamp start_timestamp =
       MonotonicTimeToDOMHighResTimeStamp(start_time);
   base::TimeDelta render_timestamp = MonotonicTimeToTimeDelta(render_time);
@@ -734,9 +727,11 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
   // TODO(yoav): Should we modify start to represent the animated frame?
   auto* entry = MakeGarbageCollected<LargestContentfulPaint>(
       start_timestamp, render_timestamp, paint_size, load_timestamp,
-      first_animated_frame_timestamp, id, url, element, DomWindow());
-  if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
+      first_animated_frame_timestamp, id, url, element, DomWindow(),
+      is_triggered_by_soft_navigation);
+  if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint)) {
     NotifyObserversOfEntry(*entry);
+  }
   AddLargestContentfulPaint(entry);
   if (HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element)) {
     image_element->SetIsLCPElement();

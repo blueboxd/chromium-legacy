@@ -37,6 +37,7 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
 
   bool IsVmStartedSignalConnected() override;
   bool IsVmStoppedSignalConnected() override;
+  bool IsVmStoppingSignalConnected() override;
   bool IsDiskImageProgressSignalConnected() override;
   void CreateDiskImage(
       const vm_tools::concierge::CreateDiskImageRequest& request,
@@ -153,6 +154,10 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
       chromeos::DBusMethodCallback<
           vm_tools::concierge::GetVmLaunchAllowedResponse> callback) override;
 
+  void SwapVm(const vm_tools::concierge::SwapVmRequest& request,
+              chromeos::DBusMethodCallback<vm_tools::concierge::SwapVmResponse>
+                  callback) override;
+
   const base::ObserverList<Observer>& observer_list() const {
     return observer_list_;
   }
@@ -209,6 +214,9 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
   }
   void set_vm_stopped_signal_connected(bool connected) {
     is_vm_stopped_signal_connected_ = connected;
+  }
+  void set_vm_stopping_signal_connected(bool connected) {
+    is_vm_stopping_signal_connected_ = connected;
   }
   void set_disk_image_progress_signal_connected(bool connected) {
     is_disk_image_progress_signal_connected_ = connected;
@@ -316,6 +324,10 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
           get_vm_launch_allowed_response) {
     get_vm_launch_allowed_response_ = get_vm_launch_allowed_response;
   }
+  void set_swap_vm_response(
+      absl::optional<vm_tools::concierge::SwapVmResponse> swap_vm_response) {
+    swap_vm_response_ = swap_vm_response;
+  }
 
   void set_send_create_disk_image_response_delay(base::TimeDelta delay) {
     send_create_disk_image_response_delay_ = delay;
@@ -333,6 +345,7 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
 
   void NotifyVmStarted(const vm_tools::concierge::VmStartedSignal& signal);
   void NotifyVmStopped(const vm_tools::concierge::VmStoppedSignal& signal);
+  void NotifyVmStopping(const vm_tools::concierge::VmStoppingSignal& signal);
   bool HasVmObservers() const;
 
   void NotifyConciergeStopped();
@@ -383,6 +396,7 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
 
   bool is_vm_started_signal_connected_ = true;
   bool is_vm_stopped_signal_connected_ = true;
+  bool is_vm_stopping_signal_connected_ = true;
   bool is_disk_image_progress_signal_connected_ = true;
 
   bool wait_for_service_to_be_available_response_ = true;
@@ -422,6 +436,7 @@ class COMPONENT_EXPORT(CONCIERGE) FakeConciergeClient : public ConciergeClient {
   absl::optional<vm_tools::concierge::ListVmsResponse> list_vms_response_;
   absl::optional<vm_tools::concierge::GetVmLaunchAllowedResponse>
       get_vm_launch_allowed_response_;
+  absl::optional<vm_tools::concierge::SwapVmResponse> swap_vm_response_;
 
   base::TimeDelta send_create_disk_image_response_delay_;
   base::TimeDelta send_start_vm_response_delay_;

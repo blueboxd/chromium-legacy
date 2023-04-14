@@ -287,8 +287,10 @@ void AppTestHelper::FirstTaskRun() {
     {"run_wake_active",
      WithSwitch("exit_code", WithSystemScope(Wrap(&RunWakeActive)))},
     {"update",
-     WithSwitch("install_data_index",
-                (WithSwitch("app_id", WithSystemScope(Wrap(&Update)))))},
+     WithSwitch(
+         "do_update_check_only",
+         WithSwitch("install_data_index",
+                    (WithSwitch("app_id", WithSystemScope(Wrap(&Update))))))},
     {"update_all", WithSystemScope(Wrap(&UpdateAll))},
     {"delete_updater_directory",
      WithSystemScope(Wrap(&DeleteUpdaterDirectory))},

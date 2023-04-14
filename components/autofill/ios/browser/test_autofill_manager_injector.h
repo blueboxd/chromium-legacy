@@ -17,7 +17,8 @@
 namespace autofill {
 
 // Upon construction, and in response to WebFrameDidBecomeAvailable, installs an
-// BrowserAutofillManager of type `T`.
+// BrowserAutofillManager of type `T` in the main frame of the given `web_state`
+// and all subsequently created frames of the `web_state`.
 //
 // Typical usage as a RAII type:
 //
@@ -25,8 +26,7 @@ namespace autofill {
 //    public:
 //     MockAutofillManager(AutofillDriverIOS* driver,
 //                         AutofillClient* client)
-//         : BrowserAutofillManager(driver, client, "en-US",
-//                                  EnableDownloadManager(true)) {}
+//         : BrowserAutofillManager(driver, client, "en-US") {}
 //     MOCK_METHOD(...);
 //     ...
 //   };
@@ -41,7 +41,7 @@ class TestAutofillManagerInjector : public web::WebStateObserver {
       : web_state_(web_state) {
     observation_.Observe(web_state);
     if (web::WebFrame* main_frame =
-            web_state->GetWebFramesManager()->GetMainWebFrame()) {
+            web_state->GetPageWorldWebFramesManager()->GetMainWebFrame()) {
       Inject(main_frame);
     }
   }
@@ -49,7 +49,8 @@ class TestAutofillManagerInjector : public web::WebStateObserver {
   ~TestAutofillManagerInjector() override = default;
 
   T* GetForMainFrame() {
-    return GetForFrame(web_state_->GetWebFramesManager()->GetMainWebFrame());
+    return GetForFrame(
+        web_state_->GetPageWorldWebFramesManager()->GetMainWebFrame());
   }
 
   T* GetForFrame(web::WebFrame* web_frame) {

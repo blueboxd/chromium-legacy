@@ -10,244 +10,255 @@
  * Binary Size Analysis HTML report.
  */
 
-const newTreeElement = (() => {
-  /** @type {RegExp} Capture one of: "::", "../", "./", "/", "#". */
-  const _SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
+/**
+ * @typedef {HTMLAnchorElement | HTMLSpanElement} TreeNodeElement
+ */
 
-  /** @type {string} Insert zero-width space after capture group */
-  const _ZERO_WIDTH_SPACE = '$&\u200b';
+/**
+ * Base class for UI to render and navigate a tree structure. In DOM this is
+ * rendered as a nested <ul> with <li> for each vertex. Each vertex can be:
+ * * A "group" containing <a class="node"> for structure. A group can be
+ *   expanded or unexpanded, and is controlled by the base class.
+ * * A "leaf" containing <span class="node"> for data ldaves. A leaf is
+ ,   controlled by derived classes.
+ * Element rendering is done by derived classes, using custom templates.
+ *
+ * @template NODE_DATA_TYPE The data type of a tree node (groups and leaves)
+ */
+class TreeUi {
+  /** @param {!HTMLUListElement} rootElt */
+  constructor(rootElt) {
+    /**
+     * @protected {HTMLCollectionOf<!TreeNodeElement>} Collection of all tree
+     * node elements. Updates itself automatically.
+     */
+    this.liveNodeList =
+        /** @type {HTMLCollectionOf<!TreeNodeElement>} */ (
+            rootElt.getElementsByClassName('node'));
 
-  // Templates for tree nodes in the UI.
-  /** @type {HTMLTemplateElement} Template for leaves in the tree */
-  const _leafTemplate = /** @type {HTMLTemplateElement} */ (
-      document.getElementById('treenode-symbol'));
+    /**
+     * @protected @const {WeakMap<HTMLElement, Readonly<NODE_DATA_TYPE>>}
+     * Maps from UI nodes to data object to enable queries by event listeners
+     * and other methods.
+     */
+    this.uiNodeToData = new WeakMap();
 
-  /** @type {HTMLTemplateElement} Template for trees */
-  const _treeTemplate = /** @type {HTMLTemplateElement} */ (
-      document.getElementById('treenode-template'));
-
-  /** @type {HTMLUListElement} Symbol tree element */
-  const _symbolTree = /** @type {HTMLUListElement} */ (
-      document.getElementById('symboltree'));
+    /** @private @const {function(!MouseEvent): *} */
+    this.boundToggleGroupElement = this.toggleGroupElement.bind(this);
+  }
 
   /**
-   * @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>}
-   * HTMLCollection of all tree node elements. Updates itself automatically.
+   * Decides whether |elt| is the node of a leaf or an unexpanded group.
+   * @param {!HTMLElement} elt
+   * @return {boolean}
+   * @protected
    */
-  const _liveNodeList =
-      /** @type {HTMLCollectionOf<HTMLAnchorElement | HTMLSpanElement>} */ (
-          document.getElementsByClassName('node'));
-
-  /**
-   * @type {WeakMap<HTMLElement, Readonly<TreeNode>>}
-   * Associates UI nodes with the corresponding tree data object so that event
-   * listeners and other methods can query the original data.
-   */
-  const _uiNodeData = new WeakMap();
-
-  /**
-   * Replaces the contents of the size element for a tree node.
-   * @param {HTMLElement} sizeElement Element that should display the size
-   * @param {TreeNode} node Data about this size element's tree node.
-   */
-  function _setSize(sizeElement, node) {
-    const {description, element, value} = getSizeContents(node);
-
-    // Replace the contents of '.size' and change its title
-    dom.replace(sizeElement, element);
-    sizeElement.title = description;
-    setSizeClasses(sizeElement, value);
+  isTerminalElement(elt) {
+    return elt.classList.contains('node') &&
+        elt.getAttribute('aria-expanded') === null;
   }
 
   /**
    * Sets focus to a new tree element while updating the element that last had
    * focus. The tabindex property is used to avoid needing to tab through every
    * single tree item in the page to reach other areas.
-   * @param {number | HTMLElement} indexOrEl Index of tree node in
-   *     `_liveNodeList`, or an element.
+   * @param {?TreeNodeElement} nodeElt A tree node element.
+   * @protected
    */
-  function _focusTreeElement(indexOrEl) {
+  setFocusElement(nodeElt) {
     const lastFocused = /** @type {HTMLElement} */ (document.activeElement);
     // If the last focused element was a tree node element, change its tabindex.
-    if (_uiNodeData.has(lastFocused)) {
-      // Update DOM.
+    if (this.uiNodeToData.has(lastFocused))
       lastFocused.tabIndex = -1;
-    }
-    const element = (typeof indexOrEl === 'number') ? _liveNodeList[indexOrEl]
-                                                    : indexOrEl;
-    if (element != null) {
-      // Update DOM.
-      element.tabIndex = 0;
-      element.focus();
+    if (nodeElt) {
+      nodeElt.tabIndex = 0;
+      nodeElt.focus();
     }
   }
 
   /**
-   * Click event handler to expand or close the child group of a tree.
-   * @param {Event} event
+   * Same as setFocusElement(), but takes index into |liveNodeList| instead.
+   * @param {number} index
+   * @protected
    */
-  async function _toggleTreeElement(event) {
+  setFocusElementByIndex(index) {
+    this.setFocusElement(this.liveNodeList[index]);
+  }
+
+  /**
+   * Creates an element for |nodeData| to represent a group or a leaf, which
+   * depends on whether there are >= 1 children. May bind events.
+   * @param {!NODE_DATA_TYPE} nodeData
+   * @return {!{fragment: !DocumentFragment, isLeaf: boolean}}
+   * @abstract @protected
+   */
+  makeGroupOrLeafFragment(nodeData) {
+    return null;
+  }
+
+  /**
+   * Creates an Element for |nodeData|, and binds click on group nodes to
+   * toggleGroupElement().
+   * @param {!NODE_DATA_TYPE} nodeData
+   * @return {!DocumentFragment}
+   * @public
+   */
+  makeNodeElement(nodeData) {
+    const {fragment, isLeaf} = this.makeGroupOrLeafFragment(nodeData);
+    const nodeElt = /** @type {TreeNodeElement} */ (
+        assertNotNull(fragment.querySelector('.node')));
+
+    // Associate clickable node & tree data.
+    this.uiNodeToData.set(nodeElt, Object.freeze(nodeData));
+
+    // Add click-to-toggle to group nodes.
+    if (!isLeaf)
+      nodeElt.addEventListener('click', this.boundToggleGroupElement);
+
+    return fragment;
+  }
+
+  /**
+   * Gets data for children of a group. Note that |link| is passed instead
+   * @param {!HTMLAnchorElement} link
+   * @return {!Promise<!Array<!NODE_DATA_TYPE>>}
+   * @abstract @protected
+   */
+  async getGroupChildrenData(link) {
+    return null;
+  }
+
+  /**
+   * Populates |link| with
+   * @param {!HTMLAnchorElement} link
+   * @protected
+   */
+  async expandGroupElement(link) {
+    const childrenData = await this.getGroupChildrenData(link);
+    const newElements = childrenData.map((data) => this.makeNodeElement(data));
+    if (newElements.length === 1) {
+      // Open inner element if it only has a single child; this ensures nodes
+      // like "java"->"com"->"google" are opened all at once.
+      /** @type {!TreeNodeElement} */
+      const childLink = newElements[0].querySelector('.node');
+      childLink.click();  // Can trigger further expansion.
+    }
+    const newElementsFragment = dom.createFragment(newElements);
+    requestAnimationFrame(() => {
+      link.nextElementSibling.appendChild(newElementsFragment);
+    });
+  }
+
+  /**
+   * Click event handler to expand or close a group node.
+   * @param {Event} event
+   * @protected
+   */
+  async toggleGroupElement(event) {
     event.preventDefault();
 
-    // See `#treenode-template` for the relation of these elements.
-    const link = /** @type {HTMLAnchorElement} */ (event.currentTarget);
-    const treeitem = /** @type {HTMLLIElement} */ (link.parentElement);
-    const group = /** @type {HTMLUListElement} */ (link.nextElementSibling);
+    // See #tmpl-symbol-tree-group for the relation of these elements.
+    const link = /** @type {!HTMLAnchorElement} */ (event.currentTarget);
+    const treeitem = /** @type {!HTMLLIElement} */ (link.parentElement);
+    const group = /** @type {!HTMLUListElement} */ (link.nextElementSibling);
 
     const isExpanded = treeitem.getAttribute('aria-expanded') === 'true';
     if (isExpanded) {
-      // Update DOM
+      // Take keyboard focus from descendent node.
+      const lastFocused = /** @type {HTMLElement} */ (document.activeElement);
+      if (lastFocused && group.contains(lastFocused))
+        this.setFocusElement(link);
+      // Update DOM.
       treeitem.setAttribute('aria-expanded', 'false');
       dom.replace(group, null);
     } else {
       treeitem.setAttribute('aria-expanded', 'true');
-
-      // Get data for the children of this tree node element. If the children
-      // have not yet been loaded, request for the data from the worker.
-      let data = _uiNodeData.get(link);
-      if (data == null || data.children == null) {
-        /** @type {HTMLSpanElement} */
-        const symbolName = link.querySelector('.symbol-name');
-        const idPath = symbolName.title;
-        data = await window.supersize.worker.openNode(idPath);
-        _uiNodeData.set(link, data);
-      }
-
-      const newElements = data.children.map(child => makeTreeElement(child));
-      if (newElements.length === 1) {
-        // Open the inner element if it only has a single child.
-        // Ensures nodes like "java"->"com"->"google" are opened all at once.
-        /** @type {HTMLAnchorElement | HTMLSpanElement} */
-        const link = newElements[0].querySelector('.node');
-        link.click();
-      }
-      const newElementsFragment = dom.createFragment(newElements);
-
-      // Update DOM
-      requestAnimationFrame(() => {
-        group.appendChild(newElementsFragment);
-      });
+      await this.expandGroupElement(link);
     }
   }
 
   /**
-   * Decides whether a given element is a leaf UI node in the tree view.
-   * @param {!HTMLElement} elt
-   * @return {boolean}
+   * Helper to handle tree navigation on keydown event.
+   * @param {!KeyboardEvent} event Event passed from keydown event listener.
+   * @param {!TreeNodeElement} link Tree node element, either a group or leaf.
+   *     Trees use <a> tags, leaves use <span> tags. For example, see
+   *     #tmpl-symbol-tree-group and #tmpl-symbol-tree-leaf.
+   * @param {number} focusIndex
+   * @return {boolean} Whether the event is handled.
+   * @protected
    */
-  function _isLeafNode(elt) {
-    return elt.classList.contains('node') &&
-        elt.getAttribute('aria-expanded') === null;
-  }
-
-  /**
-   * Tree view keydown event handler to move focus for the given element.
-   * @param {KeyboardEvent} event Event passed from keydown event listener.
-   */
-  function _handleKeyNavigation(event) {
-    if (event.altKey || event.ctrlKey || event.metaKey) {
-      return;
-    }
-
-    /**
-     * @type {HTMLAnchorElement | HTMLSpanElement} Tree node element, either a
-     * tree or leaf. Trees use `<a>` tags, leaves use `<span>` tags.
-     * See `#treenode-template` and `#treenode-symbol`.
-     */
-    const link = /** @type {HTMLAnchorElement | HTMLSpanElement} */ (
-        event.target);
-    /** @type {number} Index of this element in the node list */
-    const focusIndex = Array.prototype.indexOf.call(_liveNodeList, link);
-
+  handleKeyNavigationCommon(event, link, focusIndex) {
     /** Focuses the tree element immediately following this one. */
-    function _focusNext() {
-      if (focusIndex > -1 && focusIndex < _liveNodeList.length - 1) {
+    const focusNext = () => {
+      if (focusIndex > -1 && focusIndex < this.liveNodeList.length - 1) {
         event.preventDefault();
-        _focusTreeElement(focusIndex + 1);
+        this.setFocusElementByIndex(focusIndex + 1);
       }
-    }
+    };
 
     /** Opens or closes the tree element. */
-    function _toggle() {
+    const toggle = () => {
       event.preventDefault();
       /** @type {HTMLAnchorElement} */ (link).click();
-    }
-
-    /**
-     * Focuses the tree element at `index` if it starts with `char`.
-     * @param {string} char
-     * @param {number} index
-     * @returns {boolean} True if the short name did start with `char`.
-     */
-    function _focusIfStartsWith(char, index) {
-      const data = _uiNodeData.get(_liveNodeList[index]);
-      if (shortName(data).startsWith(char)) {
-        event.preventDefault();
-        _focusTreeElement(index);
-        return true;
-      } else {
-        return false;
-      }
-    }
+    };
 
     switch (event.key) {
       // Space should act like clicking or pressing enter & toggle the tree.
       case ' ':
-        _toggle();
-        break;
+        toggle();
+        return true;
       // Move to previous focusable node.
       case 'ArrowUp':
         if (focusIndex > 0) {
           event.preventDefault();
-          _focusTreeElement(focusIndex - 1);
+          this.setFocusElementByIndex(focusIndex - 1);
         }
-        break;
+        return true;
       // Move to next focusable node.
       case 'ArrowDown':
-        _focusNext();
-        break;
+        focusNext();
+        return true;
       // If closed tree, open tree. Otherwise, move to first child.
       case 'ArrowRight': {
         const expanded = link.parentElement.getAttribute('aria-expanded');
-        if (expanded != null) {
-          // Leafs do not have the aria-expanded property.
+        // Handle groups only (leaves do not have aria-expanded property).
+        if (expanded !== null) {
           if (expanded === 'true') {
-            _focusNext();
+            focusNext();
           } else {
-            _toggle();
+            toggle();
           }
         }
-        break;
+        return true;
       }
       // If opened tree, close tree. Otherwise, move to parent.
-      case 'ArrowLeft':
-        {
-          const isExpanded =
+      case 'ArrowLeft': {
+        const isExpanded =
             link.parentElement.getAttribute('aria-expanded') === 'true';
-          if (isExpanded) {
-            _toggle();
-          } else {
-            const groupList = link.parentElement.parentElement;
-            if (groupList.getAttribute('role') === 'group') {
-              event.preventDefault();
-              /** @type {HTMLAnchorElement} */
-              const parentLink = /** @type {HTMLAnchorElement} */ (
-                  groupList.previousElementSibling);
-              _focusTreeElement(parentLink);
-            }
+        if (isExpanded) {
+          toggle();
+        } else {
+          const groupList = link.parentElement.parentElement;
+          if (groupList.getAttribute('role') === 'group') {
+            event.preventDefault();
+            /** @type {HTMLAnchorElement} */
+            const parentLink = /** @type {HTMLAnchorElement} */ (
+                groupList.previousElementSibling);
+            this.setFocusElement(parentLink);
           }
         }
-        break;
+        return true;
+      }
       // Focus first node.
       case 'Home':
         event.preventDefault();
-        _focusTreeElement(0);
-        break;
+        this.setFocusElementByIndex(0);
+        return true;
       // Focus last node on screen.
       case 'End':
         event.preventDefault();
-        _focusTreeElement(_liveNodeList.length - 1);
-        break;
+        this.setFocusElementByIndex(this.liveNodeList.length - 1);
+        return true;
       // Expand all sibling nodes.
       case '*':
         const groupList = link.parentElement.parentElement;
@@ -255,197 +266,263 @@ const newTreeElement = (() => {
           event.preventDefault();
           for (const li of groupList.children) {
             if (li.getAttribute('aria-expanded') !== 'true') {
-              /** @type {HTMLAnchorElement | HTMLSpanElement} */
-              const otherLink = li.querySelector('.node');
+              const otherLink =
+                  /** @type {!TreeNodeElement} */ (li.querySelector('.node'));
               otherLink.click();
             }
           }
         }
-        break;
+        return true;
       // Remove focus from the tree view.
       case 'Escape':
         link.blur();
-        break;
-      // If a letter was pressed, find a node starting with that character.
-      default:
-        if (event.key.length === 1 && event.key.match(/\S/)) {
-          // Check all nodes below this one.
-          for (let i = focusIndex + 1; i < _liveNodeList.length; i++) {
-            if (_focusIfStartsWith(event.key, i)) return;
-          }
-          // Starting from the top, check all nodes above this one.
-          for (let i = 0; i < focusIndex; i++) {
-            if (_focusIfStartsWith(event.key, i)) return;
-          }
-        }
-        break;
+        return true;
     }
+
+    return false;
+  }
+
+  /** @public */
+  init() {}
+}
+
+/**
+ * Class to manage UI to display a hierarchical TreeNode, supporting branch
+ * expansion and contraction with dynamic loading.
+ * @extends {TreeUi<TreeNode>}
+ */
+class SymbolTreeUi extends TreeUi {
+  constructor() {
+    super(g_el.ulSymbolTree);
+
+    /**
+     * @protected @const {RegExp} Capture one of: "::", "../", "./", "/", "#".
+     */
+    this.SPECIAL_CHAR_REGEX = /(::|(?:\.*\/)+|#)/g;
+
+    /**
+     * @protected @const {string} Insert zero-width space after capture group.
+     */
+    this.ZERO_WIDTH_SPACE = '$&\u200b';
+
+    // Event listeners need to be bound to this, but each fresh .bind creates a
+    // function, which wastes memory and not usable for removeEventListener().
+    // The |_bound*()| functions aim to solve the abolve.
+
+    /** @private @const {function(!KeyboardEvent): *} */
+    this.boundHandleKeyDown = this.handleKeyDown.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this.boundHandleMouseOver = this.handleMouseOver.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this.boundHandleRefocus = this.handleRefocus.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this.boundHandleFocusIn = this.handleFocusIn.bind(this);
+
+    /** @private @const {function(!MouseEvent): *} */
+    this.boundHandleFocusOut = this.handleFocusOut.bind(this);
   }
 
   /**
-   * Returns an event handler for elements with the `data-dynamic` attribute.
-   * The handler updates the state manually, then iterates all nodes and applies
-   * `callback` to certain child elements of each node.
-   * The elements are expected to be direct children of `.node` elements.
-   * @param {string} selector
-   * @param {(el: HTMLElement, data: TreeNode) => void} callback
-   * @returns {(event: Event) => void}
+   * Replaces the contents of the size element for a tree node.
+   * @param {!TreeNode} nodeData Data about this size element's tree node.
+   * @param {HTMLElement} sizeElement Element that should display the size
+   * @private
    */
-  function _handleDynamicInputChange(selector, callback) {
-    return event => {
-      // Update state early.
-      // This way, the state will be correct if `callback` looks at it.
-      state.set(/** @type {HTMLInputElement} */ (event.target).name,
-                /** @type {HTMLInputElement} */ (event.target).value);
+  setSize(nodeData, sizeElement) {
+    const {description, element, value} = getSizeContents(nodeData);
 
-      for (const link of _liveNodeList) {
-        /** @type {HTMLElement} */
-        const element = link.querySelector(selector);
-        callback(element, _uiNodeData.get(link));
+    // Replace the contents of '.size' and change its title
+    dom.replace(sizeElement, element);
+    sizeElement.title = description;
+    setSizeClasses(sizeElement, value);
+  }
+
+  /** @override @protected */
+  makeGroupOrLeafFragment(nodeData) {
+    const isLeaf = nodeData.children && nodeData.children.length === 0;
+    // Use different template depending on whether node is group or leaf.
+    const tmpl = isLeaf ? g_el.tmplSymbolTreeLeaf : g_el.tmplSymbolTreeGroup;
+    const fragment = document.importNode(tmpl.content, true);
+    const listItemElt = fragment.firstElementChild;
+    const nodeElt =
+        /** @type {HTMLAnchorElement} */ (listItemElt.firstElementChild);
+
+    // Insert type dependent SVG icon at the start of |nodeElt|.
+    const fill = isLeaf ? null : getIconStyle(nodeData.type[1]).color;
+    const icon = getIconTemplateWithFill(nodeData.type[0], fill);
+    nodeElt.insertBefore(icon, nodeElt.firstElementChild);
+
+    // Insert diff status dependent SVG icon at the start of |listItemElt|.
+    const diffStatusIcon = getDiffStatusTemplate(nodeData);
+    if (diffStatusIcon)
+      listItemElt.insertBefore(diffStatusIcon, listItemElt.firstElementChild);
+
+    // Set the symbol name and hover text.
+    /** @type {HTMLSpanElement} */
+    const symbolName = fragment.querySelector('.symbol-name');
+    symbolName.textContent = shortName(nodeData).replace(
+        this.SPECIAL_CHAR_REGEX, this.ZERO_WIDTH_SPACE);
+    symbolName.title = nodeData.idPath;
+
+    // Set the byte size and hover text.
+    this.setSize(nodeData, fragment.querySelector('.size'));
+
+    nodeElt.addEventListener('mouseover', this.boundHandleMouseOver);
+    return {fragment, isLeaf};
+  }
+
+  /** @override @protected */
+  async getGroupChildrenData(link) {
+    // If the children data have not yet been loaded, request from the worker.
+    let data = this.uiNodeToData.get(link);
+    if (!data?.children) {
+      /** @type {HTMLSpanElement} */
+      const symbolName = link.querySelector('.symbol-name');
+      const idPath = symbolName.title;
+      data = await window.supersize.worker.openNode(idPath);
+      this.uiNodeToData.set(link, data);
+    }
+    return data.children;
+  }
+
+  /**
+   * @param {!KeyboardEvent} event
+   * @protected
+   */
+  handleKeyDown(event) {
+    if (event.altKey || event.ctrlKey || event.metaKey)
+      return;
+
+    /** @type {!TreeNodeElement} */
+    const nodeElt = /** @type {!TreeNodeElement} */ (event.target);
+    /** @type {number} Index of this element in the node list */
+    const focusIndex = Array.prototype.indexOf.call(this.liveNodeList, nodeElt);
+
+    if (this.handleKeyNavigationCommon(event, nodeElt, focusIndex))
+      return;
+
+    /**
+     * Focuses the tree element at |index| if it starts with |ch|.
+     * @param {string} ch
+     * @param {number} index
+     * @return {boolean} True if the short name did start with |ch|.
+     */
+    const focusIfStartsWith = (ch, index) => {
+      const data = this.uiNodeToData.get(this.liveNodeList[index]);
+      if (shortName(data).startsWith(ch)) {
+        event.preventDefault();
+        this.setFocusElementByIndex(index);
+        return true;
       }
+      return false;
     };
+
+    // If a letter was pressed, find a node starting with that character.
+    if (event.key.length === 1 && event.key.match(/\S/)) {
+      // Check all nodes below this one.
+      for (let i = focusIndex + 1; i < this.liveNodeList.length; i++) {
+        if (focusIfStartsWith(event.key, i))
+          return;
+      }
+      // Wrap around: Starting from the top, check all nodes above this one.
+      for (let i = 0; i < focusIndex; i++) {
+        if (focusIfStartsWith(event.key, i))
+          return;
+      }
+    }
   }
 
   /**
    * Displays the infocard when a node is hovered over, unless a node is
    * currently focused.
-   * @param {MouseEvent} event Event from mouseover listener.
+   * @param {!MouseEvent} event
+   * @protected
    */
-  function _handleMouseOver(event) {
+  handleMouseOver(event) {
     const active = document.activeElement;
     if (!active || !active.classList.contains('node')) {
-      displayInfocard(_uiNodeData.get(
+      displayInfocard(this.uiNodeToData.get(
           /** @type {HTMLElement} */ (event.currentTarget)));
     }
   }
 
   /**
    * Mousedown handler for an already-focused leaf node, to toggle it off.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
+   * @protected
    */
-  function _handleRefocus(event) {
+  handleRefocus(event) {
     // Prevent click that would cause another focus event.
     event.preventDefault();
-    const node = /** @type {!HTMLElement} */ (event.currentTarget);
-    node.blur();  // focusout handler will handle cleanup.
+    // focusout handler will handle cleanup.
+    /** @type {!HTMLElement} */ (event.currentTarget).blur();
   }
 
   /**
    * Focusin handler for a node.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
+   * @protected
    */
-  function _handleFocusIn(event) {
-    const node = /** @type {!HTMLElement} */ (event.target);
-    if (_isLeafNode(node)) {
-      node.addEventListener('mousedown', _handleRefocus);
-    }
-    displayInfocard(_uiNodeData.get(node));
+  handleFocusIn(event) {
+    const elt = /** @type {!HTMLElement} */ (event.target);
+    if (this.isTerminalElement(elt))
+      elt.addEventListener('mousedown', this.boundHandleRefocus);
+    displayInfocard(/** @type {!TreeNode} */ (this.uiNodeToData.get(elt)));
     /** @type {HTMLElement} */ (event.currentTarget)
         .parentElement.classList.add('focused');
   }
 
   /**
    * Focusout handler for a node.
-   * @param {!Event} event
+   * @param {!MouseEvent} event
+   * @protected
    */
-  function _handleFocusOut(event) {
-    const node = /** @type {!HTMLElement} */ (event.target);
-    if (_isLeafNode(node)) {
-      node.removeEventListener('mousedown', _handleRefocus);
-    }
+  handleFocusOut(event) {
+    const elt = /** @type {!HTMLElement} */ (event.target);
+    if (this.isTerminalElement(elt))
+      elt.removeEventListener('mousedown', this.boundHandleRefocus);
     /** @type {HTMLElement} */ (event.currentTarget)
         .parentElement.classList.remove('focused');
   }
 
-  /**
-   * Inflates a template to create an element that represents one tree node.
-   * The element will represent a tree or a leaf, depending on if the tree node
-   * object has any children. Trees use a slightly different template and have
-   * click event listeners attached.
-   * @param {TreeNode} node Data to use for the UI.
-   * @returns {DocumentFragment}
-   */
-  function makeTreeElement(node) {
-    const isLeaf = node.children && node.children.length === 0;
-    const template = isLeaf ? _leafTemplate : _treeTemplate;
-    const element = document.importNode(template.content, true);
-    const listItemEl = element.firstElementChild;
-    const link = /** @type {HTMLElement} */ (listItemEl.firstElementChild);
+  /** @public @override */
+  init() {
+    super.init();
 
-    // Associate clickable node & tree data.
-    _uiNodeData.set(link, Object.freeze(node));
+    // When the "byteunit" state changes, update all .size elements.
+    state.stByteUnit.addObserver(() => {
+      for (const link of this.liveNodeList) {
+        /** @type {HTMLElement} */
+        const element = link.querySelector('.size');
+        this.setSize(this.uiNodeToData.get(link), element);
+      }
+    });
 
-    // Icons are predefined in the HTML through hidden SVG elements.
-    const type = node.type[0];
-    const icon = getIconTemplate(type);
-    if (!isLeaf) {
-      const symbolStyle = getIconStyle(node.type[1]);
-      icon.setAttribute('fill', symbolStyle.color);
-    }
-
-    // Insert an SVG icon at the start of the link to represent adds/removals.
-    const diffStatusIcon = getDiffStatusTemplate(node);
-    if (diffStatusIcon) {
-      listItemEl.insertBefore(diffStatusIcon, listItemEl.firstElementChild);
-    }
-
-    // Insert an SVG icon at the start of the link to represent type.
-    link.insertBefore(icon, link.firstElementChild);
-
-    // Set the symbol name and hover text.
-    /** @type {HTMLSpanElement} */
-    const symbolName = element.querySelector('.symbol-name');
-    symbolName.textContent =
-        shortName(node).replace(_SPECIAL_CHAR_REGEX, _ZERO_WIDTH_SPACE);
-    symbolName.title = node.idPath;
-
-    // Set the byte size and hover text.
-    _setSize(element.querySelector('.size'), node);
-
-    link.addEventListener('mouseover', _handleMouseOver);
-    if (!isLeaf) {
-      link.addEventListener('click', _toggleTreeElement);
-    }
-
-    return element;
+    g_el.ulSymbolTree.addEventListener('keydown', this.boundHandleKeyDown);
+    g_el.ulSymbolTree.addEventListener('focusin', this.boundHandleFocusIn);
+    g_el.ulSymbolTree.addEventListener('focusout', this.boundHandleFocusOut);
   }
-
-  // When the `byteunit` state changes, update all .size elements.
-  /** @type {HTMLElement} */ (form.elements.namedItem('byteunit'))
-      .addEventListener('change', _handleDynamicInputChange('.size', _setSize));
-
-  _symbolTree.addEventListener('keydown', _handleKeyNavigation);
-  _symbolTree.addEventListener('focusin', _handleFocusIn);
-  _symbolTree.addEventListener('focusout', _handleFocusOut);
-
-  window.addEventListener('keydown', event => {
-    if (event.key === '?' &&
-        /** @type {HTMLElement} */ (event.target).tagName !== 'INPUT') {
-      // Open help when "?" is pressed.
-      document.getElementById('faq').click();
-    }
-  });
-
-  return makeTreeElement;
-})();
+}
 
 {
   class ProgressBar {
-    /** @param {string} id */
-    constructor(id) {
-      /** @type {HTMLProgressElement} */
-      this._element = /** @type {HTMLProgressElement} */ (
-          document.getElementById(id));
+    /** @param {!HTMLProgressElement} elt */
+    constructor(elt) {
+      /** @private {HTMLProgressElement} */
+      this.elt = elt;
 
-      /** @type {number} */
-      this._lastValue = this._element.value;
+      /** @private {number} */
+      this.prevVal = this.elt.value;
     }
 
     /** @param {number} val */
     setValue(val) {
-      if (val === 0 || val >= this._lastValue) {
-        this._element.value = val;
-        this._lastValue = val;
+      if (val === 0 || val >= this.prevVal) {
+        this.elt.value = val;
+        this.prevVal = val;
       } else {
         // Reset to 0 so the progress bar doesn't animate backwards.
         this.setValue(0);
@@ -454,26 +531,12 @@ const newTreeElement = (() => {
     }
   }
 
-  /** @type {HTMLUListElement} */
-  const _symbolTree = /** @type {HTMLUListElement} */ (
-      document.getElementById('symboltree'));
-
-  /** @type {HTMLInputElement} */
-  const _fileUpload = /** @type {HTMLInputElement} */ (
-      document.getElementById('upload'));
-
-  /** @type {HTMLInputElement} */
-  const _dataUrlInput = /** @type {HTMLInputElement} */ (
-      form.elements.namedItem('load_url'));
-
-  /** @type {HTMLInputElement} */
-  const _metadataView = document.querySelector('#metadata-view');
-
-  /** @type {HTMLInputElement} */
-  const _metadataContent = document.querySelector('#metadata-content');
-
   /** @type {ProgressBar} */
-  const _progress = new ProgressBar('progress');
+  const _progress = new ProgressBar(g_el.progAppbar);
+
+  /** @type {!SymbolTreeUi} */
+  const _symbolTreeUi = new SymbolTreeUi();
+  _symbolTreeUi.init();
 
   /** @param {TreeProgress} message */
   function onProgressMessage(message) {
@@ -496,22 +559,12 @@ const newTreeElement = (() => {
 
     displayOrHideDownloadButton(beforeBlobUrl, loadBlobUrl);
 
-    state.set('diff_mode', diffMode ? 'on' : null);
+    state.setDiffMode(diffMode);
     document.body.classList.toggle('diff', Boolean(diffMode));
 
-    const groupByEl = /** @type {HTMLInputElement} */ (
-        document.getElementById('group-by-container'));
-    groupByEl.toggleAttribute('disabled', !isMultiContainer);
-    if (isMultiContainer) {
-      groupByEl.checked = true;
-      // Fire a change event manually to reload the tree.
-      // TODO(crbug/1186921): Rework such that we don't build the tree twice.
-      document.getElementById('options').dispatchEvent(new Event('change'));
-    } else {
-      processBuildTreeResponse(message);
-    }
+    processBuildTreeResponse(message);
     setMetadataContent(metadata);
-    _metadataView.classList.toggle('active', true);
+    g_el.divMetadataView.classList.toggle('active', true);
     setReviewInfo(metadata);
   }
 
@@ -521,16 +574,13 @@ const newTreeElement = (() => {
    */
   function setReviewInfo(metadata) {
     const processReviewInfo = (field) => {
-      const reviewTextElement = /** @type {HTMLAnchorElement} */ (
-          document.getElementById('review-text'));
-      const reviewInfoElement = document.getElementById('review-info');
       const urlExists = Boolean(
           field?.hasOwnProperty('url') && field?.hasOwnProperty('title'));
       if (urlExists) {
-        reviewTextElement.href = field['url'];
-        reviewTextElement.textContent = field['title'];
+        g_el.linkReviewText.href = field['url'];
+        g_el.linkReviewText.textContent = field['title'];
       }
-      reviewInfoElement.style.display = urlExists ? '' : 'none';
+      g_el.divReviewInfo.style.display = urlExists ? '' : 'none';
     };
     const sizeFile = metadata['size_file'];
     if (sizeFile?.hasOwnProperty('build_config')) {
@@ -552,8 +602,8 @@ const newTreeElement = (() => {
     /** @type {?DocumentFragment} */
     let rootElement = null;
     if (root) {
-      rootElement = newTreeElement(root);
-      /** @type {HTMLAnchorElement} */
+      rootElement = _symbolTreeUi.makeNodeElement(root);
+      /** @type {!HTMLAnchorElement} */
       const link = rootElement.querySelector('.node');
       // Expand the root UI node
       link.click();
@@ -564,7 +614,7 @@ const newTreeElement = (() => {
     // different frame than the above tree element creation.
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        dom.replace(_symbolTree, rootElement);
+        dom.replace(g_el.ulSymbolTree, rootElement);
       });
     });
   }
@@ -574,12 +624,7 @@ const newTreeElement = (() => {
    * @param {?string=} beforeUrl
    * @param {?string=} loadUrl
    */
-  function displayOrHideDownloadButton(beforeUrl=null, loadUrl=null) {
-    const beforeAnchor = /** @type {HTMLAnchorElement} */ (
-        document.getElementById('before-anchor'));
-    const loadAnchor =  /** @type {HTMLAnchorElement} */ (
-        document.getElementById('load-anchor'));
-
+  function displayOrHideDownloadButton(beforeUrl = null, loadUrl = null) {
     const updateAnchor = (anchor, url) => {
       anchor.style.display = url ? '' : 'none';
       if (anchor.href && anchor.href.startsWith('blob:')) {
@@ -587,12 +632,12 @@ const newTreeElement = (() => {
       }
       anchor.href = url;
     };
-    updateAnchor(beforeAnchor, beforeUrl);
-    updateAnchor(loadAnchor, loadUrl);
+    updateAnchor(g_el.linkDownloadBefore, beforeUrl);
+    updateAnchor(g_el.linkDownloadLoad, loadUrl);
 
-    if (_dataUrlInput.value.includes('.sizediff')) {
-      loadAnchor.title = 'Download .sizediff file';
-      loadAnchor.download = 'load_size.sizediff';
+    if (/** @type {string} */ (state.stLoadUrl.get()).includes('.sizediff')) {
+      g_el.linkDownloadLoad.title = 'Download .sizediff file';
+      g_el.linkDownloadLoad.download = 'load_size.sizediff';
     }
   }
 
@@ -601,8 +646,7 @@ const newTreeElement = (() => {
    * @param {boolean} show
    */
   function toggleNoSymbolsMessage(show) {
-    const errorModal = document.getElementById('no-symbols-msg');
-    errorModal.style.display = show ? '' : 'none';
+    g_el.divNoSymbolsMsg.style.display = show ? '' : 'none';
   }
 
   /**
@@ -619,7 +663,7 @@ const newTreeElement = (() => {
   /**
    * Renders the metadata for provided size file.
    * @param {MetadataType} sizeMetadata
-   * @returns {string}
+   * @return {string}
    */
   function renderMetadata(sizeMetadata) {
     const processContainer = (container) => {
@@ -659,13 +703,14 @@ const newTreeElement = (() => {
       }
       metadataStr += 'Metadata for Load Size File:\n' + sizeMetadataStr;
     }
-    _metadataContent.textContent = metadataStr;
+    g_el.preMetadataContent.textContent = metadataStr;
   }
 
-  async function performInitialLoad() {
+  /** @param {!Array<!URL>} urlsToLoad */
+  async function performInitialLoad(urlsToLoad) {
     let accessToken = null;
     _progress.setValue(0.1);
-    if (requiresAuthentication()) {
+    if (requiresAuthentication(urlsToLoad)) {
       accessToken = await fetchAccessToken();
       _progress.setValue(0.2);
     }
@@ -681,14 +726,13 @@ const newTreeElement = (() => {
     processBuildTreeResponse(message);
   }
 
-  _fileUpload.addEventListener('change', async (event) => {
+  g_el.fileUpload.addEventListener('change', async (event) => {
     _progress.setValue(0.1);
     const input = /** @type {HTMLInputElement} */ (event.currentTarget);
     const file = input.files.item(0);
     const fileUrl = URL.createObjectURL(file);
 
-    _dataUrlInput.value = '';
-    _dataUrlInput.dispatchEvent(new Event('change'));
+    state.stLoadUrl.set(fileUrl);
 
     const worker = restartWorker(onProgressMessage);
     _progress.setValue(0.3);
@@ -699,26 +743,30 @@ const newTreeElement = (() => {
     input.value = '';
   });
 
-  form.addEventListener('change', event => {
+  g_el.frmOptions.addEventListener('change', event => {
     // Update the tree when options change.
     // Some options update the tree themselves, don't regenerate when those
-    // options (marked by `data-dynamic`) are changed.
+    // options (marked by "data-dynamic") are changed.
     if (!/** @type {HTMLElement} */ (event.target)
             .dataset.hasOwnProperty('dynamic')) {
       rebuildTree();
     }
   });
-  form.addEventListener('submit', event => {
+  g_el.frmOptions.addEventListener('submit', event => {
     event.preventDefault();
     rebuildTree();
   });
 
   // Toggles the metadata HTML element on click.
-  _metadataView.addEventListener('click', () => {
-    _metadataContent.classList.toggle('active');
+  g_el.divMetadataView.addEventListener('click', () => {
+    g_el.preMetadataContent.classList.toggle('active');
   });
 
-  if (new URLSearchParams(location.search).has('load_url')) {
-    performInitialLoad();
+  const urlsToLoad = [];
+  for (const url of [state.stBeforeUrl.get(), state.stLoadUrl.get()]) {
+    if (url)
+      urlsToLoad.push(new URL(/** @type {string} */ (url), document.baseURI));
   }
+  if (urlsToLoad.length > 0)
+    performInitialLoad(urlsToLoad);
 }

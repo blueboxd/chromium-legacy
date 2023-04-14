@@ -137,6 +137,7 @@ void ClientTagBasedModelTypeProcessor::ConnectIfReady() {
   if (!model_ready_to_sync_) {
     return;
   }
+  DCHECK(!pending_clear_metadata_);
 
   CheckForInvalidPersistedModelTypeState();
 
@@ -204,6 +205,11 @@ void ClientTagBasedModelTypeProcessor::OnSyncStopping(
   // Disabling sync for a type never happens before the model is ready to sync.
   DCHECK(model_ready_to_sync_);
   DCHECK(!start_callback_);
+
+  // Reset `activation_request_`. This acts as a flag that the processor has
+  // been stopped or has not been started yet. Note: this avoids calling
+  // bridge's OnSyncStarting() from ClearAllTrackedMetadataAndResetState().
+  activation_request_ = DataTypeActivationRequest{};
 
   switch (metadata_fate) {
     case KEEP_METADATA: {
@@ -905,6 +911,15 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                     << ModelTypeToDebugString(type_);
       continue;
     }
+
+    if (!bridge_->IsEntityDataValid(update.entity)) {
+      SyncRecordModelTypeUpdateDropReason(UpdateDropReason::kDroppedByBridge,
+                                          type_);
+      DLOG(WARNING) << "Received entity with invalid update for "
+                    << ModelTypeToDebugString(type_);
+      continue;
+    }
+
     if (bridge_->SupportsGetClientTag() &&
         client_tag_hash != ClientTagHash::FromUnhashed(
                                type_, bridge_->GetClientTag(update.entity))) {
@@ -912,14 +927,6 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
           UpdateDropReason::kInconsistentClientTag, type_);
       DLOG(WARNING) << "Received unexpected client tag hash: "
                     << client_tag_hash << " for "
-                    << ModelTypeToDebugString(type_);
-      continue;
-    }
-
-    if (!bridge_->IsEntityDataValid(update.entity)) {
-      SyncRecordModelTypeUpdateDropReason(UpdateDropReason::kDroppedByBridge,
-                                          type_);
-      DLOG(WARNING) << "Received entity with invalid update for "
                     << ModelTypeToDebugString(type_);
       continue;
     }
@@ -1226,15 +1233,30 @@ bool ClientTagBasedModelTypeProcessor::CheckForInvalidPersistedMetadata(
     base::UmaHistogramEnumeration(
         "Sync.ModelTypeEntityMetadataWithoutInitialSync",
         ModelTypeHistogramValue(type_));
-    // In older versions of the binary, commit-only types did not persist
-    // initial_sync_done(). So this branch can legitimately be exercised for
-    // commit-only types exactly once as an upgrade flow.
-    if (!CommitOnlyTypes().Has(type_)) {
+
+    ClearAllProvidedMetadataAndResetState(metadata_map);
+    // Not having `entity_tracker_` results in doing the initial sync again.
+    DCHECK(!entity_tracker_);
+    return false;
+  }
+
+  // Check if ClearMetadataWhileStopped() was called before ModelReadyToSync().
+  // If so, clear the metadata from storage (using bridge's
+  // ApplyStopSyncChanges()).
+  if (pending_clear_metadata_) {
+    pending_clear_metadata_ = false;
+    // Avoid calling bridge if there's nothing to clear.
+    if (!metadata_map.empty()) {
+      LogClearMetadataWhileStoppedHistogram(type_, /*is_delayed_call=*/true);
+      DCHECK(metadata.GetModelTypeState().initial_sync_done() ||
+             CommitOnlyTypes().Has(type_));
+      // This will incur an I/O operation by asking the bridge to clear the
+      // metadata in storage.
       ClearAllProvidedMetadataAndResetState(metadata_map);
-      // Not having `entity_tracker_` results in doing the initial sync again.
-      DCHECK(!entity_tracker_);
-      return false;
     }
+    // Not having `entity_tracker_` results in doing the initial sync again.
+    DCHECK(!entity_tracker_);
+    return false;
   }
 
   // Check that there are no duplicate client tags.
@@ -1334,6 +1356,22 @@ base::WeakPtr<ModelTypeChangeProcessor>
 ClientTagBasedModelTypeProcessor::GetWeakPtr() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return weak_ptr_factory_for_controller_.GetWeakPtr();
+}
+
+void ClientTagBasedModelTypeProcessor::ClearMetadataWhileStopped() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!model_ready_to_sync_) {
+    // Defer clearing metadata until ModelReadyToSync() is invoked.
+    pending_clear_metadata_ = true;
+  } else if (!model_error_ && IsTrackingMetadata()) {
+    // Proceed only if there is metadata to clear and no error has been reported
+    // yet.
+    LogClearMetadataWhileStoppedHistogram(type_, /*is_delayed_call=*/false);
+    DCHECK(!activation_request_.IsValid());
+    // This will incur an I/O operation by asking the bridge to clear the
+    // metadata in storage.
+    ClearAllTrackedMetadataAndResetState();
+  }
 }
 
 }  // namespace syncer

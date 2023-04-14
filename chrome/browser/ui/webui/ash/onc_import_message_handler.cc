@@ -75,11 +75,9 @@ void OncImportMessageHandler::OnImportONC(const base::Value::List& list) {
           &GetCertDBOnIOThread,
           NssServiceFactory::GetForContext(Profile::FromWebUI(web_ui()))
               ->CreateNSSCertDatabaseGetterForIOThread(),
-          base::BindPostTask(
-              base::SequencedTaskRunner::GetCurrentDefault(),
-              base::BindOnce(&OncImportMessageHandler::ImportONCToNSSDB,
-                             weak_factory_.GetWeakPtr(), callback_id,
-                             onc_blob))));
+          base::BindPostTaskToCurrentDefault(base::BindOnce(
+              &OncImportMessageHandler::ImportONCToNSSDB,
+              weak_factory_.GetWeakPtr(), callback_id, onc_blob))));
 }
 
 void OncImportMessageHandler::ImportONCToNSSDB(const std::string& callback_id,
@@ -107,8 +105,8 @@ void OncImportMessageHandler::ImportONCToNSSDB(const std::string& callback_id,
   }
 
   std::string import_error;
-  int num_networks_imported = onc::ImportNetworksForUser(
-      user, base::Value(std::move(network_configs)), &import_error);
+  int num_networks_imported =
+      onc::ImportNetworksForUser(user, network_configs, &import_error);
   if (!import_error.empty()) {
     has_error = true;
     result += "Error importing networks: " + import_error + "\n";

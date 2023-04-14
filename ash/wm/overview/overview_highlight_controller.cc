@@ -10,7 +10,8 @@
 #include "ash/accessibility/scoped_a11y_override_window_setter.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
-#include "ash/wm/desks/cros_next_desk_button.h"
+#include "ash/wm/desks/cros_next_default_desk_button.h"
+#include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
@@ -31,6 +32,7 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "base/containers/contains.h"
 #include "base/ranges/algorithm.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/views/view.h"
 
@@ -50,7 +52,7 @@ void AddDesksBarTraversableViews(
 
   // The desk items are always traversable from left to right, even in RTL
   // languages.
-  if (features::IsJellyrollEnabled()) {
+  if (chromeos::features::IsJellyrollEnabled()) {
     if (is_zero_state) {
       out_traversable_views.push_back(bar_view->default_desk_button());
     } else {

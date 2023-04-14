@@ -9,6 +9,8 @@ source_set("prefs") {
     "ios_chrome_pref_model_associator_client.h",
     "ios_chrome_pref_service_factory.h",
     "ios_chrome_pref_service_factory.mm",
+    "ios_chrome_syncable_prefs_database.cc",
+    "ios_chrome_syncable_prefs_database.h",
   ]
   deps = [
     "//base",
@@ -70,6 +72,7 @@ source_set("browser_prefs") {
     "//components/reading_list/core",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
+    "//components/segmentation_platform/embedder/default_model:default_model",
     "//components/segmentation_platform/public",
     "//components/sessions",
     "//components/signin/public/identity_manager",
@@ -99,6 +102,7 @@ source_set("browser_prefs") {
     "//ios/chrome/browser/ui/bookmarks:constants",
     "//ios/chrome/browser/ui/bookmarks:core",
     "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions:field_trial",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/incognito_reauth:incognito_reauth_scene_agent",
     "//ios/chrome/browser/ui/ntp:field_trial",

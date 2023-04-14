@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
 
 #import "base/ios/ios_util.h"
+#import "base/memory/scoped_refptr.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -36,9 +37,8 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_menu_provider.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
-#import "ios/chrome/browser/ui/sharing/activity_services/activity_params.h"
 #import "ios/chrome/browser/ui/sharing/sharing_coordinator.h"
-#import "ios/chrome/browser/ui/table_view/table_view_animator.h"
+#import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
@@ -190,7 +190,8 @@
 - (void)readingListListViewController:(UIViewController*)viewController
                              openItem:(id<ReadingListListItem>)item {
   DCHECK_EQ(self.tableViewController, viewController);
-  const ReadingListEntry* entry = [self.mediator entryFromItem:item];
+  scoped_refptr<const ReadingListEntry> entry =
+      [self.mediator entryFromItem:item];
   if (!entry) {
     [self.tableViewController reloadData];
     return;
@@ -206,7 +207,8 @@
                      openItemInNewTab:(id<ReadingListListItem>)item
                             incognito:(BOOL)incognito {
   DCHECK_EQ(self.tableViewController, viewController);
-  const ReadingListEntry* entry = [self.mediator entryFromItem:item];
+  scoped_refptr<const ReadingListEntry> entry =
+      [self.mediator entryFromItem:item];
   if (!entry) {
     [self.tableViewController reloadData];
     return;
@@ -316,7 +318,8 @@
 }
 
 - (void)openItemOfflineInNewTab:(id<ReadingListListItem>)item {
-  const ReadingListEntry* entry = [self.mediator entryFromItem:item];
+  scoped_refptr<const ReadingListEntry> entry =
+      [self.mediator entryFromItem:item];
   if (!entry)
     return;
 
@@ -401,7 +404,8 @@
         }
         [menuElements addObject:openInNewIncognitoTab];
 
-        const ReadingListEntry* entry = [self.mediator entryFromItem:item];
+        scoped_refptr<const ReadingListEntry> entry =
+            [self.mediator entryFromItem:item];
         if (entry && entry->DistilledState() == ReadingListEntry::PROCESSED) {
           [menuElements
               addObject:[actionFactory
@@ -458,10 +462,10 @@
 - (void)shareURL:(const GURL&)URL
            title:(NSString*)title
         fromView:(UIView*)view {
-  ActivityParams* params =
-      [[ActivityParams alloc] initWithURL:URL
-                                    title:title
-                                 scenario:ActivityScenario::ReadingListEntry];
+  SharingParams* params =
+      [[SharingParams alloc] initWithURL:URL
+                                   title:title
+                                scenario:SharingScenario::ReadingListEntry];
   self.sharingCoordinator = [[SharingCoordinator alloc]
       initWithBaseViewController:self.tableViewController
                          browser:self.browser

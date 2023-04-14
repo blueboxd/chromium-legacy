@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Lidhje direkte e internetit</translation>
 <translation id="1272293450992660632">Vlerat e kodit PIN nuk përputhen.</translation>
 <translation id="1280820357415527819">Po kërkon për rrjete celulare</translation>
-<translation id="1291603679744561561">Karta SIM e kyçur</translation>
 <translation id="1293556467332435079">Skedarët</translation>
 <translation id="1297922636971898492">"Disku i Google" nuk ofrohet tani. Ngarkimi do të rifillojë automatikisht pasi të kthehet "Disku i Google".</translation>
 <translation id="1307931752636661898">Nuk mund të shihen skedarët e Linux</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Për t'i lëshuar skedarët në Parallels Desktop, skedari duhet të zhvendoset te dosja e skedarëve të Windows.</translation>
 <translation id="1435838927755162558">Ndaje dosjen me Parallels Desktop</translation>
 <translation id="1439919885608649279">Person me lule</translation>
+<translation id="1458457385801829801">Nxirr <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Sllovakisht</translation>
 <translation id="1482884275703521657">Finlandisht</translation>
 <translation id="148466539719134488">Zvicerane</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 dosje është ndarë me Bruschetta</translation>
 <translation id="2578394532502990878">Tamilisht fonetike</translation>
 <translation id="2579959351793446050">Odiaisht</translation>
+<translation id="2587195714949534472">Po përgatitet për të sinkronizuar <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, bllokuar nga administratori yt, detajet</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">"Disku i Google" nuk mund të arrihet në këtë moment.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongolisht</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> gabime.</translation>
 <translation id="3509680540198371098">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, detaje</translation>
+<translation id="3511705761158917664">Po përgatitet për të sinkronizuar <ph name="NUMBER_OF_ITEMS" /> artikuj...</translation>
 <translation id="3522708245912499433">Portugalisht</translation>
 <translation id="3524311639100184459">Kujdes! Këta skedarë janë të përkohshëm dhe mund të fshihen automatikisht për të liruar hapësirën në disk.  <ph name="BEGIN_LINK" />Mëso më shumë<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Dosje</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Ngjite</translation>
 <translation id="3952872973865944257">Teluguisht fonetike</translation>
+<translation id="3954354850384043518">Në vazhdim</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3971140002794351170">Shkarko profilin e celularit, rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Anglisht (Mbretëria e Bashkuar)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Serverët e personalizuar të emrit</translation>
 <translation id="4465725236958772856">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, menaxhuar nga administratori yt, lidhu</translation>
 <translation id="4470564870223067757">Paketa hangul 2</translation>
+<translation id="4474142134969976028">Nuk përputhet asnjë rezultat</translation>
 <translation id="4477002475007461989">Rumanisht</translation>
 <translation id="4477219268485577442">Tastierë fonetike bullgare</translation>
 <translation id="4508265954913339219">Aktivizimi dështoi</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Përdor një emër që është <ph name="MAX_LENGTH" /> karaktere i gjatë ose më pak</translation>
 <translation id="4973970068702235170">Ngjeshja dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japonisht</translation>
+<translation id="4987699874727873250">Anglisht (Indi)</translation>
 <translation id="4988205478593450158">Je i sigurt se dëshiron të fshish "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Flutur e kuqe</translation>
 <translation id="4992066212339426712">Aktivizo zërin</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">Nuk ka imazhe të fundit</translation>
 <translation id="7460898608667578234">Ukrainisht</translation>
 <translation id="7469894403370665791">Lidhu automatikisht me këtë rrjet</translation>
+<translation id="7481358317100446445">Gati</translation>
 <translation id="7486315294984620427">Për t'i lëshuar skedarët në Parallels Desktop, skedari duhet të kopjohet te dosja e skedarëve të Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malajalamisht fonetike</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Qasu me lehtësi në "Fotografitë e Google"</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7663224033570512922">Hindisht</translation>
+<translation id="7665680517722058469">Provo një kërkim tjetër</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> artikuj u zhvendosën te koshi</translation>
 <translation id="7693909743393669729">Formatimi i një disku do të spastrojë të gjitha të dhënat e ruajtura në të dhe do të heqë të gjitha ndarjet ekzistuese, duke përfshirë ndarjet që mund të mos jenë të dukshme. Ky veprim nuk mund të zhbëhet.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> nuk mund të formatohej</translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">Arabisht me transliterim</translation>
 <translation id="8873014196523807561">Për t'i restauruar këta artikuj, zvarriti ata te një dosje e re. Dosjet origjinale për disa nga këta artikuj janë fshirë.</translation>
 <translation id="8874184842967597500">Nuk u lidh</translation>
+<translation id="8876368061475701452">Në radhë</translation>
 <translation id="8900820606136623064">Hungarisht</translation>
 <translation id="8903931173357132290">I diplomuar</translation>
 <translation id="8912078710089354287">Qen duke tundur bishtin</translation>

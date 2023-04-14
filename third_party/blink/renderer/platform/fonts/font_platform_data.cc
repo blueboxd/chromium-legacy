@@ -208,8 +208,10 @@ SkTypeface* FontPlatformData::Typeface() const {
 }
 
 HarfBuzzFace* FontPlatformData::GetHarfBuzzFace() const {
-  if (!harfbuzz_face_)
-    harfbuzz_face_ = HarfBuzzFace::Create(const_cast<FontPlatformData*>(this));
+  if (!harfbuzz_face_) {
+    harfbuzz_face_ =
+        HarfBuzzFace::Create(const_cast<FontPlatformData*>(this), UniqueID());
+  }
 
   return harfbuzz_face_.get();
 }
@@ -255,7 +257,7 @@ WebFontRenderStyle FontPlatformData::QuerySystemRenderStyle(
     TextRenderingMode text_rendering) {
   WebFontRenderStyle result;
 
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_FUCHSIA) && !BUILDFLAG(IS_IOS)
   // If the font name is missing (i.e. probably a web font) or the sandbox is
   // disabled, use the system defaults.
   if (family.length() && Platform::Current()->GetSandboxSupport()) {

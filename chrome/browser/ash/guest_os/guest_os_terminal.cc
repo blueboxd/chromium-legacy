@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_terminal.h"
 
 #include "ash/public/cpp/app_menu_constants.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_terminal_provider.h"
 #include "chrome/browser/ash/guest_os/public/types.h"
-#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -37,7 +37,6 @@
 #include "components/app_restore/app_launch_info.h"
 #include "components/app_restore/full_restore_save_handler.h"
 #include "components/app_restore/full_restore_utils.h"
-#include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/cpp/menu.h"
@@ -139,11 +138,6 @@ void LaunchTerminalImpl(Profile* profile,
 }
 
 }  // namespace
-
-void RemoveTerminalFromRegistry(PrefService* prefs) {
-  ScopedDictPrefUpdate update(prefs, guest_os::prefs::kGuestOsRegistry);
-  update->Remove(kTerminalSystemAppId);
-}
 
 const std::string& GetTerminalHomeUrl() {
   static const base::NoDestructor<std::string> url(
@@ -292,7 +286,7 @@ void LaunchTerminalWithIntent(
     storage::ExternalMountPoints* mount_points =
         storage::ExternalMountPoints::GetSystemInstance();
     storage::FileSystemURL url = mount_points->CrackURL(
-        gurl, blink::StorageKey(url::Origin::Create(gurl)));
+        gurl, blink::StorageKey::CreateFirstParty(url::Origin::Create(gurl)));
 
     cwd = provider->PrepareCwd(url);
   }

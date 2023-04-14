@@ -197,7 +197,7 @@ class TouchInjector : public ui::EventRewriter {
   //   "key": "KeyA",
   //   "modifier": [""]
   // }
-  void ParseMouseLock(const base::Value& value);
+  void ParseMouseLock(const base::Value::Dict& dict);
 
   void FlipMouseLockFlag();
   // Check if the event located on menu entry. |press_required| tells whether or
@@ -235,6 +235,9 @@ class TouchInjector : public ui::EventRewriter {
   void AddMenuEntryToProtoIfCustomized(AppDataProto& proto) const;
   // Load menu entry position from |proto|, if it exists.
   void LoadMenuEntryFromProto(AppDataProto& proto);
+
+  void AddSystemVersionToProto(AppDataProto& proto);
+  void LoadSystemVersionFromProto(AppDataProto& proto);
 
   // Create Action by |action_type| without any input bindings.
   std::unique_ptr<Action> CreateRawAction(ActionType action_type);

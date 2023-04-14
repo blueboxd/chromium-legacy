@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">I-EAP-TTLS</translation>
 <translation id="1145018782460575098">Iwindi lesibuyekezo se-firmware samadivayisi wangaphandle livuliwe. izibuyekezo ezitholakalayo <ph name="NUM_UPDATES" /></translation>
 <translation id="1145516343487477149">Thola izindaba ezichaza ngosizo nezimpendulo zemibuzo ye-Chromebook</translation>
+<translation id="1167755866710282443">Vula imenyu ukuze wenze ngokwezifiso okhiye. Hudula imenyu ukuze uhambise.</translation>
 <translation id="1175697296044146566">Le-<ph name="DEVICE_TYPE" /> iphethwe yi-<ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Ngokusesilinganisweni (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Susa</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Khetha i-albhamu <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Iphedi yokuthinta ye-USB</translation>
 <translation id="4117637339509843559">Imodi emnyama</translation>
+<translation id="4130035430755296270">Qhubeka uhambisa phezulu ukuze uthole izinketho ezengeziwe zohlaka</translation>
 <translation id="4131410914670010031">Okumnyama nokumhlophe</translation>
 <translation id="4145784616224233563">Uhlelo lokuvikela le-HTTP</translation>
 <translation id="4147897805161313378">Izithombe ze-Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) ukucaca kwe-DNS</translation>
 <translation id="4848429997038228357">IYAQHUBEKA</translation>
 <translation id="4854586501323951986">Isikrini esithintwayo esakhelwe ngaphakathi</translation>
+<translation id="4855250849489639581">Swayiphela phansi ukuze uthole okukhethwa kukho okuningi kohlaka</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> kusele umzamo ongu-{0}}one{<ph name="ERROR_MESSAGE" /> kusele imizamo engu-{0}}other{<ph name="ERROR_MESSAGE" /> kusele imizamo engu-{0}}}</translation>
 <translation id="4873827928179867585">Ukufakazela ubuqiniso be-algorithm</translation>
 <translation id="4880328057631981605">Igama lephoyinti lokufinyelela</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">Isithombe esi-1</translation>
 <translation id="7177485034254901881">Le-<ph name="DEVICE_TYPE" /> iphethwe yi-<ph name="MANAGER" />. Abalawuli bangase balungiselele ngokulawula kude idivayisi.</translation>
 <translation id="7180611975245234373">Qala kabusha</translation>
+<translation id="7180865173735832675">Yenza ngokwezifiso</translation>
 <translation id="7212734716605298123">Izibuyekezo ze-Firmware zamadivayisi angaphandle</translation>
 <translation id="7216409898977639127">Umhlinzeki weselula</translation>
 <translation id="725133483556299729">Khetha i-imeyili</translation>

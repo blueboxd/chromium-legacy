@@ -165,7 +165,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text_combine.h"
@@ -1178,9 +1177,6 @@ void Element::scrollIntoView(bool align_to_top) {
 }
 
 void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions* options) {
-  if (auto* ds_controller = DeferredShapingController::From(GetDocument())) {
-    ds_controller->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
-  }
   ActivateDisplayLockIfNeeded(DisplayLockActivationReason::kScrollIntoView);
   GetDocument().EnsurePaintLocationDataValidForNode(
       this, DocumentUpdateReason::kJavaScript);
@@ -1603,8 +1599,6 @@ void Element::setScrollLeft(double new_left) {
     return;
   }
 
-  DeferredShapingController::From(GetDocument())
-      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
 
@@ -1658,8 +1652,6 @@ void Element::setScrollTop(double new_top) {
     return;
   }
 
-  DeferredShapingController::From(GetDocument())
-      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   GetDocument().UpdateStyleAndLayoutForNode(this,
                                             DocumentUpdateReason::kJavaScript);
 
@@ -2754,16 +2746,17 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
               false);
     }
   }
-
-  if (GetDocument().GetPage()) {
-    GetDocument().GetPage()->GetPointerLockController().ElementRemoved(this);
+  Document& document = GetDocument();
+  Page* page = document.GetPage();
+  if (page) {
+    page->GetPointerLockController().ElementRemoved(this);
   }
 
-  GetDocument().UnobserveForIntrinsicSize(this);
+  document.UnobserveForIntrinsicSize(this);
 
   SetSavedLayerScrollOffset(ScrollOffset());
 
-  if (insertion_point.IsInTreeScope() && GetTreeScope() == GetDocument()) {
+  if (insertion_point.IsInTreeScope() && GetTreeScope() == document) {
     const AtomicString& id_value = GetIdAttribute();
     if (!id_value.IsNull()) {
       UpdateId(insertion_point.GetTreeScope(), id_value, g_null_atom);
@@ -2778,8 +2771,8 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
   ContainerNode::RemovedFrom(insertion_point);
 
   if (was_in_document) {
-    if (this == GetDocument().CssTarget()) {
-      GetDocument().SetCSSTarget(nullptr);
+    if (this == document.CssTarget()) {
+      document.SetCSSTarget(nullptr);
     }
 
     if (GetCustomElementState() == CustomElementState::kCustom) {
@@ -2787,11 +2780,11 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     }
   }
 
-  GetDocument().GetRootScrollerController().ElementRemoved(*this);
+  document.GetRootScrollerController().ElementRemoved(*this);
 
   if (IsInTopLayer()) {
     Fullscreen::ElementRemoved(*this);
-    GetDocument().RemoveFromTopLayer(this);
+    document.RemoveFromTopLayerImmediately(this);
   }
 
   ClearElementFlag(ElementFlags::kIsInCanvasSubtree);
@@ -2808,14 +2801,15 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
 
     NodeRareData* node_data = RareData();
     node_data->InvalidateAssociatedAnimationEffects();
-
-    if (was_in_document && data->IntersectionObserverData()) {
-      data->IntersectionObserverData()->ComputeIntersectionsForTarget(
-          IntersectionObservation::kExplicitRootObserversNeedUpdate |
-          IntersectionObservation::kImplicitRootObserversNeedUpdate |
-          IntersectionObservation::kIgnoreDelay);
-      data->IntersectionObserverData()->StopTrackingWithController(
-          GetDocument().EnsureIntersectionObserverController());
+    if (was_in_document) {
+      if (auto* observer_data = data->IntersectionObserverData()) {
+        observer_data->ComputeIntersectionsForTarget(
+            IntersectionObservation::kExplicitRootObserversNeedUpdate |
+            IntersectionObservation::kImplicitRootObserversNeedUpdate |
+            IntersectionObservation::kIgnoreDelay);
+        observer_data->StopTrackingWithController(
+            document.EnsureIntersectionObserverController());
+      }
     }
 
     if (auto* context = data->GetDisplayLockContext()) {
@@ -2830,7 +2824,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     }
   }
 
-  if (auto* const frame = GetDocument().GetFrame()) {
+  if (auto* const frame = document.GetFrame()) {
     if (UNLIKELY(HasUndoStack())) {
       frame->GetEditor().GetUndoStack().ElementRemoved(this);
     }
@@ -2979,8 +2973,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
   DetachPrecedingPseudoElements(performing_reattach);
 
   auto* context = GetDisplayLockContext();
-  bool was_shaping_deferred =
-      context && GetLayoutObject() && GetLayoutObject()->IsShapingDeferred();
 
   // TODO(futhark): We need to traverse into IsUserActionElement() subtrees,
   // even if they are already display:none because we do not clear the
@@ -3006,6 +2998,7 @@ void Element::DetachLayoutTree(bool performing_reattach) {
 
   if (!performing_reattach) {
     UpdateCallbackSelectors(GetComputedStyle(), nullptr);
+    NotifyIfMatchedDocumentRulesSelectorsChanged(GetComputedStyle(), nullptr);
     SetComputedStyle(nullptr);
   }
 
@@ -3021,9 +3014,6 @@ void Element::DetachLayoutTree(bool performing_reattach) {
 
   if (context) {
     context->DetachLayoutTree();
-  }
-  if (was_shaping_deferred && GetDocument().View()) {
-    DeferredShapingController::From(GetDocument())->UnregisterDeferred(*this);
   }
 }
 
@@ -3075,9 +3065,11 @@ void Element::ReattachLayoutTreeChildren(base::PassKey<StyleEngine>) {
   ClearNeedsReattachLayoutTree();
 }
 
-scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
+scoped_refptr<const ComputedStyle> Element::StyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
   DCHECK(GetDocument().InStyleRecalc());
+
+  StyleRecalcContext new_style_recalc_context(style_recalc_context);
 
   if (ElementAnimations* element_animations = GetElementAnimations()) {
     // For multiple style recalc passes for the same element in the same
@@ -3092,16 +3084,27 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
     element_animations->CssAnimations().ClearPendingUpdate();
   }
 
-  scoped_refptr<ComputedStyle> style =
+  new_style_recalc_context.old_style = PostStyleUpdateScope::GetOldStyle(*this);
+  scoped_refptr<const ComputedStyle> style =
       HasCustomStyleCallbacks()
-          ? CustomStyleForLayoutObject(style_recalc_context)
-          : OriginalStyleForLayoutObject(style_recalc_context);
+          ? CustomStyleForLayoutObject(new_style_recalc_context)
+          : OriginalStyleForLayoutObject(new_style_recalc_context);
   if (!style) {
     DCHECK(IsPseudoElement());
     return nullptr;
   }
+  if (style->IsPseudoInitialStyle()) {
+    // :initial pseudo styles matched. We need to compute the style a second
+    // time to compute the actual style and trigger transitions using the
+    // starting from the :initial style.
+    new_style_recalc_context.old_style =
+        style->Display() == EDisplay::kNone ? nullptr : style.get();
+    style = HasCustomStyleCallbacks()
+                ? CustomStyleForLayoutObject(new_style_recalc_context)
+                : OriginalStyleForLayoutObject(new_style_recalc_context);
+  }
 
-  auto* context = GetDisplayLockContext();
+  DisplayLockContext* context = GetDisplayLockContext();
   // The common case for most elements is that we don't have a context and have
   // the default (visible) content-visibility value.
   if (UNLIKELY(context || !style->IsContentVisibilityVisible())) {
@@ -3134,7 +3137,7 @@ void Element::AdjustStyle(base::PassKey<StyleAdjuster>,
   AdjustStyle(builder);
 }
 
-scoped_refptr<ComputedStyle> Element::OriginalStyleForLayoutObject(
+scoped_refptr<const ComputedStyle> Element::OriginalStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
   return GetDocument().GetStyleResolver().ResolveStyle(this,
                                                        style_recalc_context);
@@ -3189,7 +3192,7 @@ bool Element::SkipStyleRecalcForContainer(
   // preceding sibling of the originating element's box which means we will not
   // reach the box for ::backdrop during layout. Don't skip style recalc for
   // children of containers in the top layer for this reason.
-  if (IsInTopLayer()) {
+  if (style.IsInTopLayer(*this)) {
     return false;
   }
 
@@ -3267,9 +3270,14 @@ StyleRecalcChange Element::RecalcStyle(
     WillRecalcStyle(change);
   }
 
+  StyleScopeFrame style_scope_frame(
+      *this, /* parent */ style_recalc_context.style_scope_frame);
+  StyleRecalcContext local_style_recalc_context = style_recalc_context;
+  local_style_recalc_context.style_scope_frame = &style_scope_frame;
+
   StyleRecalcChange child_change = change.ForChildren(*this);
   if (change.ShouldRecalcStyleFor(*this)) {
-    child_change = RecalcOwnStyle(change, style_recalc_context);
+    child_change = RecalcOwnStyle(change, local_style_recalc_context);
     if (GetStyleChangeType() == kSubtreeStyleChange) {
       child_change =
           child_change.EnsureAtLeast(StyleRecalcChange::kRecalcDescendants);
@@ -3329,7 +3337,7 @@ StyleRecalcChange Element::RecalcStyle(
     }
   }
 
-  StyleRecalcContext child_recalc_context = style_recalc_context;
+  StyleRecalcContext child_recalc_context = local_style_recalc_context;
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->CanMatchSizeContainerQueries(*this)) {
@@ -3412,7 +3420,7 @@ StyleRecalcChange Element::RecalcStyle(
   return sibling_change;
 }
 
-scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
+scoped_refptr<const ComputedStyle> Element::PropagateInheritedProperties() {
   if (IsPseudoElement()) {
     return nullptr;
   }
@@ -3439,7 +3447,7 @@ scoped_refptr<ComputedStyle> Element::PropagateInheritedProperties() {
     // of whether the property was inherited or not.
     return nullptr;
   }
-  if (style->TextDecorationsInEffect() != TextDecorationLine::kNone) {
+  if (style->HasAppliedTextDecorations()) {
     // If we have text decorations, they can depend on currentColor,
     // and are normally updated by the StyleAdjuster. We can, however,
     // reach this path when color is modified, leading to the decoration
@@ -3588,7 +3596,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
     new_style_recalc_context.parent_forces_recalc = true;
   }
 
-  scoped_refptr<ComputedStyle> new_style;
+  scoped_refptr<const ComputedStyle> new_style;
   scoped_refptr<const ComputedStyle> old_style = GetComputedStyle();
 
   StyleRecalcChange child_change = change.ForChildren(*this);
@@ -4047,6 +4055,21 @@ void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
       !(HasTagName(html_names::kATag) || HasTagName(html_names::kAreaTag))) {
     return;
   }
+
+  HTMLAnchorElement* link = HasTagName(html_names::kATag)
+                                ? To<HTMLAnchorElement>(this)
+                                : To<HTMLAreaElement>(this);
+  auto* document_rules = DocumentSpeculationRules::FromIfExists(GetDocument());
+  if (!document_rules) {
+    return;
+  }
+
+  if (ComputedStyle::IsNullOrEnsured(old_style) !=
+      ComputedStyle::IsNullOrEnsured(new_style)) {
+    document_rules->LinkGainedOrLostComputedStyle(link);
+    return;
+  }
+
   auto get_selectors_from_computed_style = [](const ComputedStyle* style) {
     HeapHashSet<WeakMember<StyleRule>> empty_set;
     if (!style || !style->DocumentRulesSelectors()) {
@@ -4064,11 +4087,7 @@ void Element::NotifyIfMatchedDocumentRulesSelectorsChanged(
     return;
   }
   if (old_document_rules_selectors != new_document_rules_selectors) {
-    HTMLAnchorElement* link = nullptr;
-    link = HasTagName(html_names::kATag) ? To<HTMLAnchorElement>(this)
-                                         : To<HTMLAreaElement>(this);
-    DocumentSpeculationRules::From(GetDocument())
-        .LinkMatchedSelectorsUpdated(link);
+    document_rules->LinkMatchedSelectorsUpdated(link);
   }
 }
 
@@ -4205,12 +4224,16 @@ void Element::PseudoStateChanged(
   // we'd never process them.
   // TODO(esprehn): Make this an ASSERT and fix places that call into this
   // like HTMLSelectElement.
-  if (GetDocument().InStyleRecalc()) {
+  Document& document = GetDocument();
+  if (document.InStyleRecalc()) {
     return;
   }
-  GetDocument().GetStyleEngine().PseudoStateChangedForElement(
-      pseudo, *this, affected_by_pseudo.children_or_siblings,
-      affected_by_pseudo.ancestors_or_siblings);
+  if (affected_by_pseudo.children_or_siblings ||
+      affected_by_pseudo.ancestors_or_siblings) {
+    document.GetStyleEngine().PseudoStateChangedForElement(
+        pseudo, *this, affected_by_pseudo.children_or_siblings,
+        affected_by_pseudo.ancestors_or_siblings);
+  }
 }
 
 Element::HighlightRecalc Element::CalculateHighlightRecalc(
@@ -4485,13 +4508,17 @@ ShadowRoot* Element::attachShadow(const ShadowRootInit* shadow_root_init_dict,
   return &shadow_root;
 }
 
+// TODO(crbug.com/1396384) Remove this entire function when the older version
+// of declarative shadow DOM is removed.
 bool Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
                                           ShadowRootType type,
                                           FocusDelegation focus_delegation,
                                           SlotAssignmentMode slot_assignment) {
   DCHECK(template_element);
   DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
-  UseCounter::Count(GetDocument(), WebFeature::kDeclarativeShadowRoot);
+  Deprecation::CountDeprecation(
+      GetDocument().GetExecutionContext(),
+      mojom::blink::WebFeature::kDeclarativeShadowRoot);
 
   // 12. Run attach a shadow root with shadow host equal to declarative shadow
   // host element, mode equal to declarative shadow mode, and delegates focus
@@ -4987,7 +5014,12 @@ bool Element::DelegatesFocus() const {
 
 // https://html.spec.whatwg.org/C/#get-the-focusable-area
 Element* Element::GetFocusableArea(bool in_descendant_traversal) const {
-  DCHECK(!IsFocusable());
+  // GetFocusableArea should only be called as a fallback on elements which
+  // aren't focusable, unless we are looking for an initial focus candidate for
+  // a dialog element in which case we are looking for a keyboard focusable
+  // element and will be calling this for mouse focusable elements.
+  DCHECK(!IsFocusable() || FocusController::AdjustedTabIndex(*this) < 0);
+
   // TODO(crbug.com/1018619): Support AREA -> IMG delegation.
   if (!DelegatesFocus()) {
     return nullptr;
@@ -5030,7 +5062,11 @@ Element* Element::GetFocusDelegate(bool autofocus_only,
   }
 
   for (Element& descendant : ElementTraversal::DescendantsOf(*where_to_look)) {
-    if (descendant.IsFocusable()) {
+    // Dialog elements should only initially focus keyboard focusable elements,
+    // not mouse focusable elements.
+    if (descendant.IsFocusable() &&
+        (!IsA<HTMLDialogElement>(this) ||
+         FocusController::AdjustedTabIndex(descendant) >= 0)) {
       return &descendant;
     }
     if (Element* focusable_area =
@@ -5137,7 +5173,6 @@ void Element::Focus(const FocusParams& params) {
                                       mojom::blink::FocusType::kScript
                                   ? DisplayLockActivationReason::kScriptFocus
                                   : DisplayLockActivationReason::kUserFocus);
-  DeferredShapingController::From(GetDocument())->OnFocus(*this);
 
   if (!GetDocument().GetPage()->GetFocusController().SetFocusedElement(
           this, GetDocument().GetFrame(), params_to_use)) {
@@ -6397,7 +6432,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
     if (!element_style) {
       StyleRecalcContext local_style_recalc_context = style_recalc_context;
       local_style_recalc_context.is_ensuring_style = true;
-      scoped_refptr<ComputedStyle> new_style = nullptr;
+      scoped_refptr<const ComputedStyle> new_style = nullptr;
       // TODO(crbug.com/953707): Avoid setting inline style during
       // HTMLImageElement::CustomStyleForLayoutObject.
       if (HasCustomStyleCallbacks() && !IsA<HTMLImageElement>(*this)) {
@@ -6458,7 +6493,7 @@ const ComputedStyle* Element::EnsureOwnComputedStyle(
     child_recalc_context.container = this;
   }
 
-  scoped_refptr<ComputedStyle> result =
+  scoped_refptr<const ComputedStyle> result =
       GetDocument().GetStyleResolver().ResolveStyle(this, child_recalc_context,
                                                     style_request);
   DCHECK(result);
@@ -6479,7 +6514,7 @@ bool Element::ShouldStoreComputedStyle(const ComputedStyle& style) const {
   // force-updating style on the locked subtree and reach this node. Note that
   // we already detached layout when this element was added to top-layer, so we
   // simply maintain the fact that it doesn't have a layout object/subtree.
-  if (IsInTopLayer() &&
+  if (style.IsInTopLayer(*this) &&
       DisplayLockUtilities::LockedAncestorPreventingPaint(*this)) {
     return false;
   }
@@ -6675,7 +6710,7 @@ void Element::UpdateFirstLetterPseudoElement(
     // RemainingTextLayoutObject should have been cleared from DetachLayoutTree.
     DCHECK(!To<FirstLetterPseudoElement>(element)->RemainingTextLayoutObject());
     DCHECK(text_node_changed);
-    scoped_refptr<ComputedStyle> pseudo_style =
+    scoped_refptr<const ComputedStyle> pseudo_style =
         element->StyleForLayoutObject(style_recalc_context);
     if (PseudoElementLayoutObjectIsNeeded(pseudo_style.get(), this)) {
       element->SetComputedStyle(std::move(pseudo_style));
@@ -6760,7 +6795,7 @@ PseudoElement* Element::CreatePseudoElementIfNeeded(
                                            view_transition_name);
   pseudo_element->InsertedInto(*this);
 
-  scoped_refptr<ComputedStyle> pseudo_style =
+  scoped_refptr<const ComputedStyle> pseudo_style =
       pseudo_element->StyleForLayoutObject(style_recalc_context);
   if (!PseudoElementLayoutObjectIsNeeded(pseudo_style.get(), this)) {
     GetElementRareData()->SetPseudoElement(pseudo_id, nullptr,
@@ -6907,7 +6942,7 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
     return cached;
   }
 
-  scoped_refptr<ComputedStyle> result = UncachedStyleForPseudoElement(
+  scoped_refptr<const ComputedStyle> result = UncachedStyleForPseudoElement(
       StyleRequest(pseudo_id, style, pseudo_argument));
   if (result) {
     return style->AddCachedPseudoElementStyle(std::move(result), pseudo_id,
@@ -6916,7 +6951,7 @@ const ComputedStyle* Element::CachedStyleForPseudoElement(
   return nullptr;
 }
 
-scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
+scoped_refptr<const ComputedStyle> Element::UncachedStyleForPseudoElement(
     const StyleRequest& request) {
   // Highlight pseudos are resolved into StyleHighlightData during originating
   // style recalc, where we have the actual StyleRecalcContext.
@@ -6926,7 +6961,7 @@ scoped_refptr<ComputedStyle> Element::UncachedStyleForPseudoElement(
       StyleRecalcContext::FromInclusiveAncestors(*this), request);
 }
 
-scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
+scoped_refptr<const ComputedStyle> Element::StyleForPseudoElement(
     const StyleRecalcContext& style_recalc_context,
     const StyleRequest& request) {
   const bool is_before_or_after = request.pseudo_id == kPseudoIdBefore ||
@@ -6949,7 +6984,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     }
     StyleRequest before_after_request = request;
     before_after_request.layout_parent_override = layout_parent_style;
-    scoped_refptr<ComputedStyle> result =
+    scoped_refptr<const ComputedStyle> result =
         GetDocument().GetStyleResolver().ResolveStyle(
             this, style_recalc_context, before_after_request);
     if (result) {
@@ -6968,7 +7003,7 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
         IsPseudoElement() ? To<PseudoElement>(this)->GetPseudoId()
                           : kPseudoIdNone;
     Element* target = IsPseudoElement() ? parentElement() : this;
-    scoped_refptr<ComputedStyle> result =
+    scoped_refptr<const ComputedStyle> result =
         GetDocument().GetStyleResolver().ResolveStyle(
             target, style_recalc_context, first_line_inherited_request);
     if (result) {
@@ -6993,9 +7028,6 @@ bool Element::CanGeneratePseudoElement(PseudoId pseudo_id) const {
   if (pseudo_id == kPseudoIdViewTransition) {
     DCHECK_EQ(this, GetDocument().documentElement());
     return !GetDocument().GetStyleEngine().ViewTransitionTags().empty();
-  }
-  if (pseudo_id == kPseudoIdBackdrop && !IsInTopLayer()) {
-    return false;
   }
   if (pseudo_id == kPseudoIdFirstLetter && IsSVGElement()) {
     return false;
@@ -7216,8 +7248,22 @@ void Element::SetIsInTopLayer(bool in_top_layer) {
   if (!isConnected()) {
     return;
   }
+
   if (!GetDocument().InStyleRecalc()) {
-    SetForceReattachLayoutTree();
+    if (in_top_layer) {
+      // Need to force re-attachment in case the element was removed and re-
+      // added between two lifecycle updates since the top-layer computed value
+      // would not change, but the layout object order may have.
+      SetForceReattachLayoutTree();
+    }
+
+    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
+      // Needs a style recalc to update the top-layer property in
+      // StyleAdjuster.
+      SetNeedsStyleRecalc(
+          kLocalStyleChange,
+          StyleChangeReasonForTracing::Create(style_change_reason::kTopLayer));
+    }
   }
 }
 
@@ -7575,6 +7621,10 @@ void Element::DidMoveToNewDocument(Document& old_document) {
   if (auto* context = GetDisplayLockContext()) {
     context->DidMoveToNewDocument(old_document);
   }
+
+  if (CSSToggleMap* css_toggle_map = GetToggleMap()) {
+    css_toggle_map->DidMoveToNewDocument(old_document);
+  }
 }
 
 void Element::UpdateNamedItemRegistration(NamedItemType type,
@@ -7697,7 +7747,7 @@ void Element::DidRecalcStyle(const StyleRecalcChange) {
   DCHECK(HasCustomStyleCallbacks());
 }
 
-scoped_refptr<ComputedStyle> Element::CustomStyleForLayoutObject(
+scoped_refptr<const ComputedStyle> Element::CustomStyleForLayoutObject(
     const StyleRecalcContext& style_recalc_context) {
   DCHECK(HasCustomStyleCallbacks());
   return OriginalStyleForLayoutObject(style_recalc_context);
@@ -8852,11 +8902,11 @@ bool Element::HasAnchoredPopover() const {
          IsA<HTMLSelectMenuElement>(this);
 }
 
-Element* Element::ImplicitAnchorElement() const {
+Element* Element::ImplicitAnchorElement() {
   if (!RuntimeEnabledFeatures::CSSAnchorPositioningEnabled()) {
     return nullptr;
   }
-  const HTMLElement* html_element = DynamicTo<HTMLElement>(this);
+  HTMLElement* html_element = DynamicTo<HTMLElement>(this);
   if (!html_element) {
     return nullptr;
   }

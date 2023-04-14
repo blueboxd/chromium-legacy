@@ -18,6 +18,9 @@ sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'node'))
 import node
 import node_modules
 
+from path_mappings import GetDepToPathMappings
+from validate_tsconfig import validateTsconfigJson, validateJavaScriptAllowed, validateRootDir
+
 
 def _write_tsconfig_json(gen_dir, tsconfig, tsconfig_file):
   if not os.path.exists(gen_dir):
@@ -27,34 +30,15 @@ def _write_tsconfig_json(gen_dir, tsconfig, tsconfig_file):
     json.dump(tsconfig, generated_tsconfig, indent=2)
   return
 
-
-def _validate_tsconfig_json(tsconfig, tsconfig_file):
-  if 'compilerOptions' in tsconfig and \
-      'composite' in tsconfig['compilerOptions']:
-    return False, f'Invalid |composite| flag detected in {tsconfig_file}.' + \
-        ' Use the dedicated |composite=true| attribute in ts_library() ' + \
-        'instead.'
-  return True, None
-
-
-def _is_sourcemap_enabled(tsconfig):
-  if 'compilerOptions' in tsconfig:
-    if 'sourceMap' in tsconfig['compilerOptions'] and \
-        tsconfig['compilerOptions']['sourceMap']:
-      return True
-
-    if 'inlineSourceMap' in tsconfig['compilerOptions'] and \
-        tsconfig['compilerOptions']['inlineSourceMap']:
-      return True
-
-  return False
-
-
 def main(argv):
   parser = argparse.ArgumentParser()
+  parser.add_argument('--raw_deps', nargs='*')
   parser.add_argument('--deps', nargs='*')
   parser.add_argument('--gen_dir', required=True)
   parser.add_argument('--path_mappings', nargs='*')
+
+  parser.add_argument('--root_gen_dir', required=True)
+
   parser.add_argument('--root_dir', required=True)
   parser.add_argument('--out_dir', required=True)
   parser.add_argument('--tsconfig_base')
@@ -62,11 +46,20 @@ def main(argv):
   parser.add_argument('--manifest_excludes', nargs='*')
   parser.add_argument('--definitions', nargs='*')
   parser.add_argument('--composite', action='store_true')
+  parser.add_argument('--allow_js', action='store_true')
+  parser.add_argument('--is_ios', action='store_true')
+  parser.add_argument('--enable_source_maps', action='store_true')
   parser.add_argument('--output_suffix', required=True)
   args = parser.parse_args(argv)
 
   root_dir = os.path.relpath(args.root_dir, args.gen_dir)
   out_dir = os.path.relpath(args.out_dir, args.gen_dir)
+
+  is_root_dir_valid, error = validateRootDir(args.root_dir, args.gen_dir,
+                                             args.root_gen_dir, args.is_ios)
+  if not is_root_dir_valid:
+    raise AssertionError(error)
+
   TSCONFIG_BASE_PATH = os.path.join(_HERE_DIR, 'tsconfig_base.json')
 
   tsconfig = collections.OrderedDict()
@@ -83,8 +76,9 @@ def main(argv):
   with io.open(tsconfig_base_file, encoding='utf-8', mode='r') as f:
     tsconfig_base = json.loads(f.read())
 
-    is_tsconfig_valid, error = _validate_tsconfig_json(tsconfig_base,
-                                                       tsconfig_base_file)
+    is_tsconfig_valid, error = validateTsconfigJson(tsconfig_base,
+                                                    tsconfig_base_file,
+                                                    args.tsconfig_base is None)
     if not is_tsconfig_valid:
       raise AssertionError(error)
 
@@ -111,14 +105,19 @@ def main(argv):
         augmented_types.append('trusted-types')
         tsconfig['compilerOptions']['types'] = augmented_types
 
-    # If "sourceMap" or "inlineSourceMap" option have been provided in the
-    # tsconfig file, include the "sourceRoot" key.
-    if _is_sourcemap_enabled(tsconfig_base):
-      tsconfig['compilerOptions']['sourceRoot'] = os.path.realpath(
-          os.path.join(_CWD, args.gen_dir, root_dir))
-
   tsconfig['compilerOptions']['rootDir'] = root_dir
   tsconfig['compilerOptions']['outDir'] = out_dir
+
+  if args.allow_js:
+    source_dir = os.path.realpath(os.path.join(_CWD, args.gen_dir,
+                                               root_dir)).replace('\\', '/')
+    out_dir = os.path.realpath(os.path.join(_CWD, args.gen_dir,
+                                            out_dir)).replace('\\', '/')
+    is_js_allowed, error = validateJavaScriptAllowed(source_dir, out_dir,
+                                                     args.is_ios)
+    if not is_js_allowed:
+      raise AssertionError(error)
+    tsconfig['compilerOptions']['allowJs'] = True
 
   if args.composite:
     tsbuildinfo_name = f'tsconfig_{args.output_suffix}.tsbuildinfo'
@@ -126,24 +125,50 @@ def main(argv):
     tsconfig['compilerOptions']['declaration'] = True
     tsconfig['compilerOptions']['tsBuildInfoFile'] = tsbuildinfo_name
 
+  if args.enable_source_maps:
+    tsconfig['compilerOptions']['inlineSourceMap'] = True
+    tsconfig['compilerOptions']['inlineSources'] = True
+    tsconfig['compilerOptions']['sourceRoot'] = os.path.realpath(
+        os.path.join(_CWD, args.gen_dir, root_dir))
+
   tsconfig['files'] = []
   if args.in_files is not None:
     # Source .ts files are always resolved as being relative to |root_dir|.
     tsconfig['files'].extend([os.path.join(root_dir, f) for f in args.in_files])
 
   if args.definitions is not None:
+    for d in args.definitions:
+      assert d.endswith(
+          '.d.ts'), f'Invalid definition \'{d}\'. Should end with \'.d.ts\''
     tsconfig['files'].extend(args.definitions)
 
-  # Handle custom path mappings, for example chrome://resources/ URLs.
-  if args.path_mappings is not None:
-    path_mappings = collections.defaultdict(list)
-    for m in args.path_mappings:
-      mapping = m.split('|')
-      path_mappings[mapping[0]].append(os.path.join('./', mapping[1]))
-    tsconfig['compilerOptions']['paths'] = path_mappings
+  # Handle path mappings, for example chrome://resources/ URLs.
+  path_mappings = collections.defaultdict(list)
 
   if args.deps is not None:
     tsconfig['references'] = [{'path': dep} for dep in args.deps]
+
+    assert args.raw_deps is not None
+    dep_to_path_mappings = GetDepToPathMappings(args.root_gen_dir)
+
+    for dep in args.raw_deps:
+      if dep not in dep_to_path_mappings:
+        assert not (dep.startswith("//ui/webui/resources")
+                    and dep.endswith(':build_ts'))
+        # Dependencies outside of ui/webui/resources are not inferred yet.
+        continue
+
+      mappings = dep_to_path_mappings[dep]
+      for (url, dir) in mappings:
+        path_mappings[url].append(os.path.join('./', dir))
+        path_mappings['chrome:' + url].append(os.path.join('./', dir))
+
+  if args.path_mappings is not None:
+    for m in args.path_mappings:
+      mapping = m.split('|')
+      path_mappings[mapping[0]].append(os.path.join('./', mapping[1]))
+
+  tsconfig['compilerOptions']['paths'] = path_mappings
 
   tsconfig_file = f'tsconfig_{args.output_suffix}.json'
   _write_tsconfig_json(args.gen_dir, tsconfig, tsconfig_file)

@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Sasisho la programu dhibiti kwa ajili ya dirisha la vifaa vinavyochomekwa lipo wazi. Masasisho <ph name="NUM_UPDATES" /> yanapatikana.</translation>
 <translation id="1145516343487477149">Pata makala ya usaidizi na majibu ya maswali ya kawaida yanayohusu Chromebook</translation>
+<translation id="1167755866710282443">Fungua menyu ili uweke mapendeleo kwenye vitufe. Buruta menyu ili uhamishe.</translation>
 <translation id="1175697296044146566"><ph name="DEVICE_TYPE" /> hii inasimamiwa na <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Wastani (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Ondoa</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Chagua albamu ya <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Padi ya kugusa yenye USB</translation>
 <translation id="4117637339509843559">Hali nyeusi</translation>
+<translation id="4130035430755296270">Endelea kuelea juu yake ili upate chaguo zaidi za muundo</translation>
 <translation id="4131410914670010031">Nyeusi na nyeupe</translation>
 <translation id="4145784616224233563">Kinga mtandao ya HTTP</translation>
 <translation id="4147897805161313378">Picha kwenye Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">Usuluhishaji wa DNS (Android)</translation>
 <translation id="4848429997038228357">LINATEKELEZWA</translation>
 <translation id="4854586501323951986">Skrini ya kugusa iliyojumuishwa ndani ya kifaa</translation>
+<translation id="4855250849489639581">Telezesha kidole chini ili uone chaguo zaidi za muundo</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> umebakisha mara {0} ya kujaribu}other{<ph name="ERROR_MESSAGE" /> umebakisha mara {0} za kujaribu}}</translation>
 <translation id="4873827928179867585">Algorithi ya uthibitishaji</translation>
 <translation id="4880328057631981605">Jina la lango la mtandao</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">Picha moja</translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> hii inadhibitiwa na <ph name="MANAGER" />. Wasimamizi wanaweza kuweka mipangilio ya kifaa kwa mbali.</translation>
 <translation id="7180611975245234373">Onyesha upya</translation>
+<translation id="7180865173735832675">Binafsisha</translation>
 <translation id="7212734716605298123">Masasisho ya programu dhibiti kwa vifaa vya nje</translation>
 <translation id="7216409898977639127">Mtoa huduma za vifaa vya mkononi</translation>
 <translation id="725133483556299729">Chagua barua pepe</translation>

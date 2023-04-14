@@ -4,17 +4,31 @@
 
 #import "ios/chrome/browser/ui/browser_view/tab_lifecycle_mediator.h"
 
+#import "ios/chrome/browser/autofill/autofill_tab_helper.h"
+#import "ios/chrome/browser/commerce/price_notifications/price_notifications_iph_presenter.h"
+#import "ios/chrome/browser/commerce/price_notifications/price_notifications_tab_helper.h"
 #import "ios/chrome/browser/download/download_manager_tab_helper.h"
 #import "ios/chrome/browser/download/pass_kit_tab_helper.h"
+#import "ios/chrome/browser/follow/follow_iph_presenter.h"
+#import "ios/chrome/browser/follow/follow_tab_helper.h"
 #import "ios/chrome/browser/itunes_urls/itunes_urls_handler_tab_helper.h"
+#import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overscroll_actions/overscroll_actions_tab_helper.h"
 #import "ios/chrome/browser/passwords/password_tab_helper.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/web_content_commands.h"
 #import "ios/chrome/browser/ui/download/download_manager_coordinator.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
+#import "ios/chrome/browser/ui/print/print_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
+#import "ios/chrome/browser/web/annotations/annotations_tab_helper.h"
+#import "ios/chrome/browser/web/print/print_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper.h"
+#import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
+#import "ios/chrome/browser/web_state_list/tab_insertion_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_dependency_installation_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_dependency_installer_bridge.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -33,40 +47,10 @@
 @implementation TabLifecycleMediator {
   // Bridge to observe the web state list from Objective-C.
   std::unique_ptr<WebStateDependencyInstallerBridge> _dependencyInstallerBridge;
-
-  // Delegate object for many tab helpers.
-  __weak id<CommonTabHelperDelegate> _delegate;
-
-  // Delegate object for Snapshot Generator.
-  __weak id<SnapshotGeneratorDelegate> _snapshotGeneratorDelegate;
-
-  // Other tab helper dependencies.
-  PrerenderService* _prerenderService;
-  __weak SideSwipeController* _sideSwipeController;
-  __weak DownloadManagerCoordinator* _downloadManagerCoordinator;
-  __weak UIViewController* _baseViewController;
-  __weak CommandDispatcher* _commandDispatcher;
-  __weak id<NetExportTabHelperDelegate> _tabHelperDelegate;
 }
 
-- (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                            delegate:(id<CommonTabHelperDelegate>)delegate
-           snapshotGeneratorDelegate:
-               (id<SnapshotGeneratorDelegate>)snapshotGeneratorDelegate
-                        dependencies:(TabLifecycleDependencies)dependencies {
+- (instancetype)initWithWebStateList:(WebStateList*)webStateList {
   if (self = [super init]) {
-    _prerenderService = dependencies.prerenderService;
-    _sideSwipeController = dependencies.sideSwipeController;
-    _downloadManagerCoordinator = dependencies.downloadManagerCoordinator;
-    _baseViewController = dependencies.baseViewController;
-    _commandDispatcher = dependencies.commandDispatcher;
-    _tabHelperDelegate = dependencies.tabHelperDelegate;
-
-    // Set the delegate before any of the dependency observers, because they
-    // will do delegate installation on creation.
-    _delegate = delegate;
-    _snapshotGeneratorDelegate = snapshotGeneratorDelegate;
-
     _dependencyInstallerBridge =
         std::make_unique<WebStateDependencyInstallerBridge>(self, webStateList);
   }
@@ -93,15 +77,14 @@
   SnapshotTabHelper::FromWebState(webState)->SetDelegate(
       _snapshotGeneratorDelegate);
 
-  if (PasswordTabHelper* passwordTabHelper =
-          PasswordTabHelper::FromWebState(webState)) {
-    DCHECK(_baseViewController);
-    DCHECK(_delegate);
-    DCHECK(_commandDispatcher);
-    passwordTabHelper->SetBaseViewController(_baseViewController);
-    passwordTabHelper->SetPasswordControllerDelegate(_delegate);
-    passwordTabHelper->SetDispatcher(_commandDispatcher);
-  }
+  PasswordTabHelper* passwordTabHelper =
+      PasswordTabHelper::FromWebState(webState);
+  DCHECK(_baseViewController);
+  DCHECK(_delegate);
+  DCHECK(_commandDispatcher);
+  passwordTabHelper->SetBaseViewController(_baseViewController);
+  passwordTabHelper->SetPasswordControllerDelegate(_delegate);
+  passwordTabHelper->SetDispatcher(_commandDispatcher);
 
   DCHECK(_delegate);
   OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(_delegate);
@@ -124,6 +107,42 @@
       webContentsHandler);
   PassKitTabHelper::FromWebState(webState)->SetWebContentsHandler(
       webContentsHandler);
+
+  DCHECK(_baseViewController);
+  AutofillTabHelper::FromWebState(webState)->SetBaseViewController(
+      _baseViewController);
+
+  DCHECK(_printController);
+  PrintTabHelper::FromWebState(webState)->set_printer(_printController);
+
+  RepostFormTabHelper::FromWebState(webState)->SetDelegate(_repostFormDelegate);
+
+  FollowTabHelper* followTabHelper = FollowTabHelper::FromWebState(webState);
+  if (followTabHelper) {
+    DCHECK(_followIPHPresenter);
+    followTabHelper->set_follow_iph_presenter(_followIPHPresenter);
+  }
+
+  DCHECK(_tabInsertionBrowserAgent);
+  CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
+      _tabInsertionBrowserAgent);
+
+  NewTabPageTabHelper::FromWebState(webState)->SetDelegate(
+      _NTPTabHelperDelegate);
+
+  if (AnnotationsTabHelper::FromWebState(webState)) {
+    DCHECK(_baseViewController);
+    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(
+        _baseViewController);
+  }
+
+  PriceNotificationsTabHelper* priceNotificationsTabHelper =
+      PriceNotificationsTabHelper::FromWebState(webState);
+  if (priceNotificationsTabHelper) {
+    DCHECK(_priceNotificationsIPHPresenter);
+    priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(
+        _priceNotificationsIPHPresenter);
+  }
 }
 
 - (void)uninstallDependencyForWebState:(web::WebState*)webState {
@@ -134,12 +153,11 @@
   // shutdown.
   SnapshotTabHelper::FromWebState(webState)->SetDelegate(nil);
 
-  if (PasswordTabHelper* passwordTabHelper =
-          PasswordTabHelper::FromWebState(webState)) {
-    passwordTabHelper->SetBaseViewController(nil);
-    passwordTabHelper->SetPasswordControllerDelegate(nil);
-    passwordTabHelper->SetDispatcher(nil);
-  }
+  PasswordTabHelper* passwordTabHelper =
+      PasswordTabHelper::FromWebState(webState);
+  passwordTabHelper->SetBaseViewController(nil);
+  passwordTabHelper->SetPasswordControllerDelegate(nil);
+  passwordTabHelper->SetDispatcher(nil);
 
   OverscrollActionsTabHelper::FromWebState(webState)->SetDelegate(nil);
 
@@ -148,6 +166,33 @@
   DownloadManagerTabHelper::FromWebState(webState)->SetDelegate(nil);
 
   NetExportTabHelper::FromWebState(webState)->SetDelegate(nil);
+
+  AutofillTabHelper::FromWebState(webState)->SetBaseViewController(nil);
+
+  PrintTabHelper::FromWebState(webState)->set_printer(nil);
+
+  RepostFormTabHelper::FromWebState(webState)->SetDelegate(nil);
+
+  FollowTabHelper* followTabHelper = FollowTabHelper::FromWebState(webState);
+  if (followTabHelper) {
+    followTabHelper->set_follow_iph_presenter(nil);
+  }
+
+  CaptivePortalTabHelper::FromWebState(webState)->SetTabInsertionBrowserAgent(
+      nil);
+
+  NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
+
+  if (AnnotationsTabHelper::FromWebState(webState)) {
+    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(nil);
+  }
+
+  PriceNotificationsTabHelper* priceNotificationsTabHelper =
+      PriceNotificationsTabHelper::FromWebState(webState);
+  if (priceNotificationsTabHelper) {
+    priceNotificationsTabHelper->SetPriceNotificationsIPHPresenter(nil);
+  }
+  [self.NTPCoordinator stopIfNeeded];
 }
 
 @end

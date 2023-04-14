@@ -251,6 +251,20 @@ _BANNED_JAVA_FUNCTIONS : Sequence[BanRule] = (
           'ui/android/java/src/org/chromium/ui/base/ViewUtils.java',
       ),
     ),
+    BanRule(
+      'Profile.getLastUsedRegularProfile()',
+      (
+       'Prefer passing in the Profile reference instead of relying on the '
+       'static getLastUsedRegularProfile() call. Only top level entry points '
+       '(e.g. Activities) should call this method. Otherwise, the Profile '
+       'should either be passed in explicitly or retreived from an existing '
+       'entity with a reference to the Profile (e.g. WebContents).',
+      ),
+      False,
+      excluded_paths=(
+        r'.*Test[A-Z]?.*\.java',
+      ),
+    ),
 )
 
 _BANNED_JAVASCRIPT_FUNCTIONS : Sequence [BanRule] = (
@@ -406,11 +420,11 @@ _BANNED_IOS_OBJC_FUNCTIONS = (
       (
         '+[UIImage systemImageNamed:] should not be used to create symbols.',
         'Instead use a wrapper defined in:',
-        'ios/chrome/browser/ui/icons/chrome_symbol.h'
+        'ios/chrome/browser/ui/icons/symbol_helpers.h'
       ),
       True,
       excluded_paths=(
-        'ios/chrome/browser/ui/icons/chrome_symbol.mm',
+        'ios/chrome/browser/ui/icons/symbol_helpers.mm',
       ),
     ),
 )
@@ -651,76 +665,18 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ['third_party/abseil-cpp/.*_benchmark.cc'],
     ),
     BanRule(
-      r'/\bstd::stoi\b',
+      r'/\bstd::sto(i|l|ul|ll|ull)\b',
       (
-        'std::stoi uses exceptions to communicate results. ',
-        'Use base::StringToInt() instead.',
+        'std::sto{i,l,ul,ll,ull}() use exceptions to communicate results. ',
+        'Use base::StringTo[U]Int[64]() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::stol\b',
+      r'/\bstd::sto(f|d|ld)\b',
       (
-        'std::stol uses exceptions to communicate results. ',
-        'Use base::StringToInt() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoul\b',
-      (
-        'std::stoul uses exceptions to communicate results. ',
-        'Use base::StringToUint() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoll\b',
-      (
-        'std::stoll uses exceptions to communicate results. ',
-        'Use base::StringToInt64() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stoull\b',
-      (
-        'std::stoull uses exceptions to communicate results. ',
-        'Use base::StringToUint64() instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stof\b',
-      (
-        'std::stof uses exceptions to communicate results. ',
-        'For locale-independent values, e.g. reading numbers from disk',
-        'profiles, use base::StringToDouble().',
-        'For user-visible values, parse using ICU.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stod\b',
-      (
-        'std::stod uses exceptions to communicate results. ',
-        'For locale-independent values, e.g. reading numbers from disk',
-        'profiles, use base::StringToDouble().',
-        'For user-visible values, parse using ICU.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
-      r'/\bstd::stold\b',
-      (
-        'std::stold uses exceptions to communicate results. ',
+        'std::sto{f,d,ld}() use exceptions to communicate results. ',
         'For locale-independent values, e.g. reading numbers from disk',
         'profiles, use base::StringToDouble().',
         'For user-visible values, parse using ICU.',
@@ -731,7 +687,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::to_string\b',
       (
-        'std::to_string is locale dependent and slower than alternatives.',
+        'std::to_string() is locale dependent and slower than alternatives.',
         'For locale-independent strings, e.g. writing numbers to disk',
         'profiles, use base::NumberToString().',
         'For user-visible strings, use base::FormatNumber() and',
@@ -743,7 +699,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::shared_ptr\b',
       (
-        'std::shared_ptr should not be used. Use scoped_refptr instead.',
+        'std::shared_ptr is banned. Use scoped_refptr instead.',
       ),
       True,
       [
@@ -778,7 +734,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::weak_ptr\b',
       (
-        'std::weak_ptr should not be used. Use base::WeakPtr instead.',
+        'std::weak_ptr is banned. Use base::WeakPtr instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -786,7 +742,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\blong long\b',
       (
-        'long long is banned. Use stdint.h if you need a 64 bit number.',
+        'long long is banned. Use [u]int64_t instead.',
       ),
       False,  # Only a warning since it is already used.
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
@@ -794,7 +750,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\b(absl|std)::any\b',
       (
-        'absl::any / std::any are not safe to use in a component build.',
+        '{absl,std}::any are banned due to incompatibility with the component ',
+        'build.',
       ),
       True,
       # Not an error in third party folders, though it probably should be :)
@@ -803,8 +760,8 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::bind\b',
       (
-        'std::bind is banned because of lifetime risks.',
-        'Use base::BindOnce or base::BindRepeating instead.',
+        'std::bind() is banned because of lifetime risks. Use ',
+        'base::Bind{Once,Repeating}() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -870,10 +827,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'/\babsl::bind_front\b',
+      r'/\b(absl,std)::bind_front\b',
       (
-        'absl::bind_front is banned. Use base::BindOnce() or '
-        'base::BindRepeating() instead.',
+        '{absl,std}::bind_front() are banned. Use base::Bind{Once,Repeating}() '
+        'instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
@@ -889,7 +846,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\babsl::c_',
       (
-        'Abseil container utilities are banned. Use base/ranges/algorithm.h',
+        'Abseil container utilities are banned. Use base/ranges/algorithm.h ',
         'instead.',
       ),
       True,
@@ -922,9 +879,10 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\babsl::Span\b',
+      r'/(\babsl::Span\b|#include <span>)',
       (
-        'absl::Span is banned. Use base::span instead.',
+        'absl::Span is banned and <span> is not allowed yet ',
+        '(https://crbug.com/1414652). Use base::span instead.',
       ),
       True,
       [
@@ -950,15 +908,17 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\babsl::StrFormat\b',
       (
-        'absl::StrFormat is banned for now. Use base::StringPrintf instead.',
+        'absl::StrFormat() is not allowed yet (https://crbug.com/1371963). ',
+        'Use base::StringPrintf() instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\babsl::string_view\b',
+      r'/\b(absl|std)::(u16)?string_view\b',
       (
-        'absl::string_view is banned. Use base::StringPiece instead.',
+        'absl::string_view is banned and std::[u16]string_view are not allowed',
+        ' yet (https://crbug.com/691162). Use base::StringPiece[16] instead.',
       ),
       True,
       [
@@ -1002,22 +962,22 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::optional\b',
       (
-        'std::optional is banned. Use absl::optional instead.',
+        'std::optional is not allowed yet (https://crbug.com/1373619). Use ',
+        'absl::optional instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <chrono>\b',
+      r'/#include <chrono>',
       (
-        '<chrono> overlaps with Time APIs in base. Keep using',
-        'base classes.',
+        '<chrono> is banned. Use base/time instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <exception>\b',
+      r'/#include <exception>',
       (
         'Exceptions are banned and disabled in Chromium.',
       ),
@@ -1027,9 +987,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
     BanRule(
       r'/\bstd::function\b',
       (
-        'std::function is banned. Instead use base::OnceCallback or ',
-        'base::RepeatingCallback, which directly support Chromium\'s weak ',
-        'pointers, ref counting and more.',
+        'std::function is banned. Use base::{Once,Repeating}Callback instead.',
       ),
       True,
       [
@@ -1113,16 +1071,15 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ],
     ),
     BanRule(
-      r'/\b#include <random>\b',
+      r'/#include <random>',
       (
-        'Do not use any random number engines from <random>. Instead',
-        'use base::RandomBitGenerator.',
+        '<random> is banned. Use base::RandomBitGenerator instead.',
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b#include <X11/',
+      r'/#include <X11/',
       (
         'Do not use Xlib. Use xproto (from //ui/gfx/x:xproto) instead.',
       ),
@@ -1136,6 +1093,99 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       ),
       True,
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
+      r'/\bstd::aligned_alloc\b',
+      (
+        'std::aligned_alloc() is not yet allowed (crbug.com/1412818). Use ',
+        'base::AlignedAlloc() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\bstd::(u16)?string_view\b',
+      (
+        'std::[u16]string_view is not yet allowed (crbug.com/691162). Use ',
+        'base::StringPiece[16] instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <(barrier|latch|semaphore|stop_token)>',
+      (
+        'The thread support library is banned. Use base/synchronization '
+        'instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\bstd::(c8rtomb|mbrtoc8)\b',
+      (
+        'std::c8rtomb() and std::mbrtoc8() are banned.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\bchar8_t|std::u8string\b',
+      (
+        'char8_t and std::u8string are not yet allowed. Can you use [unsigned]',
+        ' char and std::string instead?',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/(\b(co_await|co_return|co_yield)\b|#include <coroutine>)',
+      (
+        'Coroutines are not yet allowed (https://crbug.com/1403840).',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\[\[(un)?likely\]\]',
+      (
+        '[[likely]] and [[unlikely]] are not yet allowed ',
+        '(https://crbug.com/1414620). Use [UN]LIKELY instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <format>',
+      (
+        '<format> is not yet allowed. Use base::StringPrintf() instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <ranges>',
+      (
+        '<ranges> is not yet allowed. Use base/ranges/algorithm.h instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <source_location>',
+      (
+        '<source_location> is not yet allowed. Use base/location.h instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/#include <syncstream>',
+      (
+        '<syncstream> is banned.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
       r'/\bRunMessageLoop\b',
@@ -1449,6 +1499,16 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         # Exceptions to this rule should have a fuzzer.
       ],
     ),
+  BanRule(
+    r'/\b#include "base/atomicops\.h"\b',
+    (
+      'Do not use base::subtle atomics, but std::atomic, which are simpler to '
+      'use, have better understood, clearer and richer semantics, and are '
+      'harder to mis-use. See details in base/atomicops.h.'
+    ),
+    False,
+    [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+  ),
 )
 
 _BANNED_MOJOM_PATTERNS : Sequence[BanRule] = (
@@ -1614,7 +1674,7 @@ _KNOWN_ROBOTS = set(
                     'lacros-version-skew-roller', 'skylab-test-cros-roller',
                     'infra-try-recipes-tester', 'lacros-tracking-roller',
                     'lacros-sdk-version-roller', 'chrome-automated-expectation',
-                    'chromium-automated-expectation')
+                    'chromium-automated-expectation', 'chrome-branch-day')
   ) | set('%s@skia-public.iam.gserviceaccount.com' % s
           for s in ('chromium-autoroll', 'chromium-release-autoroll')
   ) | set('%s@skia-corp.google.com.iam.gserviceaccount.com' % s
@@ -2879,6 +2939,8 @@ def CheckSpamLogging(input_api, output_api):
             r"^base/logging\.cc$",
             r"^base/task/thread_pool/task_tracker\.cc$",
             r"^chrome/app/chrome_main_delegate\.cc$",
+            r"^chrome/browser/ash/arc/enterprise/cert_store/arc_cert_installer\.cc$",
+            r"^chrome/browser/ash/policy/remote_commands/user_command_arc_job\.cc$",
             r"^chrome/browser/chrome_browser_main\.cc$",
             r"^chrome/browser/ui/startup/startup_browser_creator\.cc$",
             r"^chrome/browser/browser_switcher/bho/.*",
@@ -2889,6 +2951,7 @@ def CheckSpamLogging(input_api, output_api):
             r"^chromecast/",
             r"^components/browser_watcher/dump_stability_report_main_win\.cc$",
             r"^components/media_control/renderer/media_playback_options\.cc$",
+            r"^components/policy/core/common/policy_logger\.cc$",
             r"^components/viz/service/display/"
             r"overlay_strategy_underlay_cast\.cc$",
             r"^components/zucchini/.*",
@@ -6417,130 +6480,6 @@ def CheckConsistentGrdChanges(input_api, output_api):
     return errors
 
 
-def CheckMPArchApiUsage(input_api, output_api):
-    """CC the MPArch watchlist if the CL uses an API that is ambiguous in the
-    presence of MPArch features such as bfcache, prerendering, and fenced frames.
-    """
-
-    # Only consider top-level directories that (1) can use content APIs or
-    # problematic blink APIs, (2) apply to desktop or android chrome, and (3)
-    # are known to have a significant number of uses of the APIs of concern.
-    files_to_check = (
-        r'^(chrome|components|content|extensions|third_party/blink/renderer)/.+%s' %
-        _IMPLEMENTATION_EXTENSIONS,
-        r'^(chrome|components|content|extensions|third_party/blink/renderer)/.+%s' %
-        _HEADER_EXTENSIONS,
-    )
-    files_to_skip = (_EXCLUDED_PATHS + _TEST_CODE_EXCLUDED_PATHS +
-                     input_api.DEFAULT_FILES_TO_SKIP)
-    source_file_filter = lambda f: input_api.FilterSourceFile(
-        f, files_to_check=files_to_check, files_to_skip=files_to_skip)
-
-    # Here we list the classes/methods we're monitoring. For the "fyi" cases,
-    # we add the CL to the watchlist, but we don't omit a warning or have it be
-    # included in the triage rotation.
-    # Note that since these are are just regular expressions and we don't have
-    # the compiler's AST, we could have spurious matches (e.g. an unrelated class
-    # could have a method named IsInMainFrame).
-    fyi_concerning_class_pattern = input_api.re.compile(
-        r'WebContentsObserver|WebContentsUserData')
-    # A subset of WebContentsObserver overrides where there's particular risk for
-    # confusing tab and page level operations and data (e.g. incorrectly
-    # resetting page state in DidFinishNavigation).
-    fyi_concerning_wco_methods = [
-        'DidStartNavigation',
-        'ReadyToCommitNavigation',
-        'DidFinishNavigation',
-        'RenderViewReady',
-        'RenderViewDeleted',
-        'RenderViewHostChanged',
-        'DOMContentLoaded',
-        'DidFinishLoad',
-    ]
-    concerning_nav_handle_methods = [
-        'IsInMainFrame',
-    ]
-    concerning_web_contents_methods = [
-        'FromRenderFrameHost',
-        'FromRenderViewHost',
-    ]
-    fyi_concerning_web_contents_methods = [
-        'GetRenderViewHost',
-    ]
-    concerning_rfh_methods = [
-        'GetParent',
-        'GetMainFrame',
-    ]
-    fyi_concerning_rfh_methods = [
-        'GetFrameTreeNodeId',
-    ]
-    concerning_rfhi_methods = [
-        'is_main_frame',
-    ]
-    concerning_ftn_methods = [
-        'IsMainFrame',
-    ]
-    concerning_blink_frame_methods = [
-        'IsCrossOriginToNearestMainFrame',
-    ]
-    concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
-        item for sublist in [
-            concerning_nav_handle_methods,
-            concerning_web_contents_methods, concerning_rfh_methods,
-            concerning_rfhi_methods, concerning_ftn_methods,
-            concerning_blink_frame_methods,
-        ] for item in sublist) + r')\(')
-    fyi_concerning_method_pattern = input_api.re.compile(r'(' + r'|'.join(
-        item for sublist in [
-            fyi_concerning_wco_methods, fyi_concerning_web_contents_methods,
-            fyi_concerning_rfh_methods,
-        ] for item in sublist) + r')\(')
-
-    used_apis = set()
-    used_fyi_methods = False
-    for f in input_api.AffectedFiles(include_deletes=False,
-                                     file_filter=source_file_filter):
-        for line_num, line in f.ChangedContents():
-            fyi_class_match = fyi_concerning_class_pattern.search(line)
-            if fyi_class_match:
-                used_fyi_methods = True
-            fyi_method_match = fyi_concerning_method_pattern.search(line)
-            if fyi_method_match:
-                used_fyi_methods = True
-            method_match = concerning_method_pattern.search(line)
-            if method_match:
-                used_apis.add(method_match[1])
-
-    if not used_apis:
-        if used_fyi_methods:
-            output_api.AppendCC('mparch-reviews+watchfyi@chromium.org')
-
-        return []
-
-    output_api.AppendCC('mparch-reviews+watch@chromium.org')
-    message = ('This change uses API(s) that are ambiguous in the presence of '
-               'MPArch features such as bfcache, prerendering, and fenced '
-               'frames.')
-    explanation = (
-        'Please double check whether new code assumes that a WebContents only '
-        'contains a single page at a time. Notably, checking whether a frame '
-        'is the \"main frame\" is not specific enough to determine whether it '
-        'corresponds to the document reflected in the omnibox. A WebContents '
-        'may have additional main frames for prerendered pages, bfcached '
-        'pages, fenced frames, etc. '
-        'See this doc [1] and the comments on the individual APIs '
-        'for guidance and this doc [2] for context. The MPArch review '
-        'watchlist has been CC\'d on this change to help identify any issues.\n'
-        '[1] https://docs.google.com/document/d/13l16rWTal3o5wce4i0RwdpMP5ESELLKr439Faj2BBRo/edit?usp=sharing\n'
-        '[2] https://docs.google.com/document/d/1NginQ8k0w3znuwTiJ5qjYmBKgZDekvEPC22q0I4swxQ/edit?usp=sharing'
-    )
-    return [
-        output_api.PresubmitNotifyResult(message,
-                                         items=list(used_apis),
-                                         long_text=explanation)
-    ]
-
-
 def CheckAssertAshOnlyCode(input_api, output_api):
     """Errors if a BUILD.gn file in an ash/ directory doesn't include
     assert(is_chromeos_ash).
@@ -6686,8 +6625,10 @@ def CheckBatchAnnotation(input_api, output_api):
         results.append(
             output_api.PresubmitPromptWarning(
                 """
-Instrumentation tests should use either @Batch or @DoNotBatch. If tests are not
-safe to run in batch, please use @DoNotBatch with reasons.
+Instrumentation tests should use either @Batch or @DoNotBatch. Use
+@Batch(Batch.PER_CLASS) in most cases. Use @Batch(Batch.UNIT_TESTS) when tests
+have no side-effects. If the tests are not safe to run in batch, please use
+@DoNotBatch with reasons.
 """, missing_annotation_errors))
     if extra_annotation_errors:
         results.append(

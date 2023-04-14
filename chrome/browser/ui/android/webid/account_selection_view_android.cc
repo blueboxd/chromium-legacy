@@ -114,7 +114,8 @@ AccountSelectionViewAndroid::~AccountSelectionViewAndroid() {
 void AccountSelectionViewAndroid::Show(
     const std::string& rp_for_display,
     const std::vector<content::IdentityProviderData>& identity_provider_data,
-    Account::SignInMode sign_in_mode) {
+    Account::SignInMode sign_in_mode,
+    bool show_auto_reauthn_checkbox) {
   if (!RecreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
@@ -167,11 +168,6 @@ void AccountSelectionViewAndroid::OnAccountSelected(
 
 void AccountSelectionViewAndroid::OnDismiss(JNIEnv* env, jint dismiss_reason) {
   delegate_->OnDismiss(static_cast<DismissReason>(dismiss_reason));
-}
-
-void AccountSelectionViewAndroid::OnAutoSignInCancelled(JNIEnv* env) {
-  // TODO(yigu): Alternatively we could fall back to manual sign in flow.
-  delegate_->OnDismiss(DismissReason::OTHER);
 }
 
 bool AccountSelectionViewAndroid::RecreateJavaObject() {

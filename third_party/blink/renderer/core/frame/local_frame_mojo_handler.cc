@@ -733,8 +733,8 @@ void LocalFrameMojoHandler::AdvanceFocusForIME(
     return;
 
   Element* next_element =
-      GetPage()->GetFocusController().NextFocusableElementForIME(element,
-                                                                 focus_type);
+      GetPage()->GetFocusController().NextFocusableElementForImeAndAutofill(
+          element, focus_type);
   if (!next_element)
     return;
 
@@ -952,7 +952,7 @@ void LocalFrameMojoHandler::JavaScriptExecuteRequestInIsolatedWorld(
 
   WebScriptSource web_script_source(javascript);
   frame_->RequestExecuteScript(
-      world_id, {&web_script_source, 1},
+      world_id, {&web_script_source, 1u},
       mojom::blink::UserActivationOption::kDoNotActivate,
       mojom::blink::EvaluationTiming::kSynchronous,
       mojom::blink::LoadEventBlockingOption::kDoNotBlock,

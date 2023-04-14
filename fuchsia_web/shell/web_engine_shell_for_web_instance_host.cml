@@ -1,11 +1,14 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+// A component that is launched by web_engine_shell since web_engine_shell
+// itself runs as a test component, and therefore cannot run WebInstanceHost
+// directly.
 {
   include: [
     "//fuchsia_web/webinstance_host/web_instance_host.shard.cml",
     "syslog/client.shard.cml",
-    "vulkan/client.shard.cml",
   ],
   program: {
     runner: "elf",
@@ -26,6 +29,8 @@
     {
       protocol: [
         "fuchsia.element.GraphicalPresenter",
+
+        // TODO(crbug.com/1402457): Remove fuchsia.ui.policy.Presenter.
         "fuchsia.ui.policy.Presenter",
       ],
       availability: "optional",
@@ -41,12 +46,7 @@
     {
       storage: "tmp",
       path: "/tmp",
+      availability: "optional",
     },
   ],
-  facets: {
-    "fuchsia.test.deprecated-allowed-packages": [
-      "web_engine",
-      "web_engine_with_webui",
-    ],
-  },
 }

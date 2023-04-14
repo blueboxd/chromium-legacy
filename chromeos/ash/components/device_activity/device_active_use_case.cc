@@ -45,6 +45,8 @@ DeviceActiveUseCase::DeviceActiveUseCase(
 DeviceActiveUseCase::~DeviceActiveUseCase() = default;
 
 void DeviceActiveUseCase::ClearSavedState() {
+  active_ts_ = base::Time();
+
   window_id_ = absl::nullopt;
 
   psm_id_ = absl::nullopt;
@@ -102,6 +104,7 @@ bool DeviceActiveUseCase::SetWindowIdentifier(base::Time ts) {
     return false;
   }
 
+  active_ts_ = ts;
   window_id_ = window_id;
   return true;
 }
@@ -116,6 +119,22 @@ std::string DeviceActiveUseCase::GenerateWindowIdentifier(base::Time ts) const {
   ts.UTCExplode(&exploded);
   return base::StringPrintf("%04d%02d%02d", exploded.year, exploded.month,
                             exploded.day_of_month);
+}
+
+void DeviceActiveUseCase::SetChurnActiveStatus(
+    ChurnActiveStatus* churn_active_status) {
+  churn_active_status_ = churn_active_status;
+}
+
+ChurnActiveStatus* DeviceActiveUseCase::GetChurnActiveStatus() {
+  DCHECK(churn_active_status_);
+
+  return churn_active_status_;
+}
+
+base::Time DeviceActiveUseCase::GetActiveTs() const {
+  DCHECK(active_ts_ != base::Time());
+  return active_ts_;
 }
 
 bool DeviceActiveUseCase::SavePsmIdToDateMap(base::Time ts) {
@@ -214,16 +233,6 @@ void DeviceActiveUseCase::SetPsmRlweClient(
   psm_rlwe_client_ = std::move(status_or_client.value());
 }
 
-void DeviceActiveUseCase::SetChurnActiveStatus(
-    ChurnActiveStatus* churn_active_status) {
-  churn_active_status_ = churn_active_status;
-}
-
-ChurnActiveStatus* DeviceActiveUseCase::GetChurnActiveStatus() {
-  DCHECK(churn_active_status_);
-
-  return churn_active_status_;
-}
 
 std::string DeviceActiveUseCase::FormatPTDateString(base::Time ts) {
   base::Time::Exploded exploded;

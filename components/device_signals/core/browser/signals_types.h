@@ -10,7 +10,6 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
-#include "components/device_signals/core/browser/user_context.h"
 #include "components/device_signals/core/common/common_types.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -30,7 +29,8 @@ enum class SignalName {
   kHotfixes,
   kFileSystemInfo,
   kSystemSettings,
-  kMaxValue = kSystemSettings
+  kAgent,
+  kMaxValue = kAgent
 };
 
 // Superset of all signal collection errors that can occur, including top-level
@@ -46,7 +46,9 @@ enum class SignalCollectionError {
   kMissingBundle,
   kInvalidUser,
   kMissingParameters,
-  kMaxValue = kMissingParameters
+  kParsingFailed,
+  kUnexpectedValue,
+  kMaxValue = kUnexpectedValue
 };
 
 const std::string ErrorToString(SignalCollectionError error);
@@ -178,6 +180,17 @@ struct FileSystemInfoResponse : BaseSignalResponse {
   std::vector<FileSystemItem> file_system_items{};
 };
 
+struct AgentSignalsResponse : BaseSignalResponse {
+  AgentSignalsResponse();
+
+  AgentSignalsResponse(const AgentSignalsResponse&);
+  AgentSignalsResponse& operator=(const AgentSignalsResponse&);
+
+  ~AgentSignalsResponse() override;
+
+  absl::optional<CrowdStrikeSignals> crowdstrike_signals = absl::nullopt;
+};
+
 // Request struct containing properties that will be used by the
 // SignalAggregator to validate signals access permissions while delegating
 // the collection to the right Collectors. Signals that require parameters (e.g.
@@ -189,9 +202,6 @@ struct SignalsAggregationRequest {
   SignalsAggregationRequest& operator=(const SignalsAggregationRequest&);
 
   ~SignalsAggregationRequest();
-
-  // Information about the user for whom these signals are collected.
-  UserContext user_context{};
 
   // Names of the signals that need to be collected.
   std::unordered_set<SignalName> signal_names{};
@@ -228,6 +238,8 @@ struct SignalsAggregationResponse {
 
   absl::optional<FileSystemInfoResponse> file_system_info_response =
       absl::nullopt;
+
+  absl::optional<AgentSignalsResponse> agent_signals_response = absl::nullopt;
 };
 
 }  // namespace device_signals

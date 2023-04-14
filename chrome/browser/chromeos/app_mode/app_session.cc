@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/app_session_browser_window_handler.h"
 #include "chrome/browser/chromeos/app_mode/app_session_metrics_service.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_troubleshooting_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -63,7 +64,7 @@ void RebootDevice() {
       power_manager::REQUEST_RESTART_OTHER, "kiosk app session");
 }
 
-// Sends a SIGFPE signal to plugin subprocesses that matches |child_ids|
+// Sends a SIGFPE signal to plugin subprocesses that matches `child_ids`
 // to trigger a dump.
 void DumpPluginProcess(const std::set<int>& child_ids) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -108,16 +109,18 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
   void Init(Profile* profile, const std::string& app_id) {
     DCHECK(!window_registry_);
     window_registry_ = AppWindowRegistry::Get(profile);
-    if (window_registry_)
+    if (window_registry_) {
       window_registry_->AddObserver(this);
+    }
     app_id_ = app_id;
   }
 
  private:
   // extensions::AppWindowRegistry::Observer overrides:
   void OnAppWindowAdded(AppWindow* app_window) override {
-    if (app_window->extension_id() != app_id_)
+    if (app_window->extension_id() != app_id_) {
       return;
+    }
 
     app_session_->OnAppWindowAdded(app_window);
     app_window_created_ = true;
@@ -129,7 +132,7 @@ class AppSession::AppWindowHandler : public AppWindowRegistry::Observer {
       return;
     }
 
-    app_session_->OnLastAppWindowClosed();
+    app_session_->ShutdownAppSession();
     window_registry_->RemoveObserver(this);
   }
 
@@ -156,8 +159,9 @@ class AppSession::PluginHandlerDelegateImpl
     return IsPepperPlugin(plugin_path);
   }
   void OnPluginCrashed(const base::FilePath& plugin_path) override {
-    if (owner_->is_shutting_down())
+    if (owner_->is_shutting_down()) {
       return;
+    }
     owner_->metrics_service_->RecordKioskSessionPluginCrashed();
     owner_->is_shutting_down_ = true;
 
@@ -166,8 +170,9 @@ class AppSession::PluginHandlerDelegateImpl
   }
 
   void OnPluginHung(const std::set<int>& hung_plugins) override {
-    if (owner_->is_shutting_down())
+    if (owner_->is_shutting_down()) {
       return;
+    }
     owner_->metrics_service_->RecordKioskSessionPluginHung();
     owner_->is_shutting_down_ = true;
 
@@ -193,8 +198,9 @@ AppSession::AppSession(Profile* profile,
                  std::make_unique<AppSessionMetricsService>(local_state)) {}
 
 AppSession::~AppSession() {
-  if (!is_shutting_down())
+  if (!is_shutting_down()) {
     metrics_service_->RecordKioskSessionStopped();
+  }
 }
 
 // static
@@ -215,7 +221,8 @@ void AppSession::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 void AppSession::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kNewWindowsInKioskAllowed, false);
-  registry->RegisterBooleanPref(prefs::kKioskTroubleshootingToolsEnabled, false);
+  registry->RegisterBooleanPref(prefs::kKioskTroubleshootingToolsEnabled,
+                                false);
 }
 
 void AppSession::Init(const std::string& app_id) {
@@ -253,34 +260,41 @@ AppSession::AppSession(
     Profile* profile,
     base::OnceClosure attempt_user_exit,
     std::unique_ptr<AppSessionMetricsService> metrics_service)
-    :
+    : profile_(profile),
 #if BUILDFLAG(ENABLE_PLUGINS)
       plugin_handler_delegate_(
           std::make_unique<PluginHandlerDelegateImpl>(this)),
 #endif
-      profile_(profile),
       attempt_user_exit_(std::move(attempt_user_exit)),
       metrics_service_(std::move(metrics_service)) {
 }
 
 void AppSession::CreateBrowserWindowHandler(
     const absl::optional<std::string>& web_app_name) {
+  // TODO(b/269431236): share ShutdownAppSession callback between
+  // KioskTroubleshootingController and AppSessionBrowserWindowHandler.
   browser_window_handler_ = std::make_unique<AppSessionBrowserWindowHandler>(
       profile(), web_app_name,
       base::BindRepeating(&AppSession::OnHandledNewBrowserWindow,
                           weak_ptr_factory_.GetWeakPtr()),
-      base::BindRepeating(&AppSession::OnLastAppWindowClosed,
-                          weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&AppSession::ShutdownAppSession,
+                          weak_ptr_factory_.GetWeakPtr()),
+      std::make_unique<KioskTroubleshootingController>(
+          profile_->GetPrefs(),
+          base::BindOnce(&AppSession::ShutdownAppSession,
+                         weak_ptr_factory_.GetWeakPtr())));
 }
 
 void AppSession::OnHandledNewBrowserWindow(bool is_closing) {
-  if (on_handle_browser_callback_)
+  if (on_handle_browser_callback_) {
     on_handle_browser_callback_.Run(is_closing);
+  }
 }
 
 void AppSession::OnAppWindowAdded(AppWindow* app_window) {
-  if (is_shutting_down())
+  if (is_shutting_down()) {
     return;
+  }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_handler_->Observe(app_window->web_contents());
@@ -289,21 +303,24 @@ void AppSession::OnAppWindowAdded(AppWindow* app_window) {
 
 void AppSession::OnGuestAdded(content::WebContents* guest_web_contents) {
   // Bail if the session is shutting down.
-  if (is_shutting_down())
+  if (is_shutting_down()) {
     return;
+  }
 
   // Bail if the guest is not a WebViewGuest.
-  if (!extensions::WebViewGuest::FromWebContents(guest_web_contents))
+  if (!extensions::WebViewGuest::FromWebContents(guest_web_contents)) {
     return;
+  }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   plugin_handler_->Observe(guest_web_contents);
 #endif
 }
 
-void AppSession::OnLastAppWindowClosed() {
-  if (is_shutting_down())
+void AppSession::ShutdownAppSession() {
+  if (is_shutting_down()) {
     return;
+  }
   is_shutting_down_ = true;
   metrics_service_->RecordKioskSessionStopped();
 

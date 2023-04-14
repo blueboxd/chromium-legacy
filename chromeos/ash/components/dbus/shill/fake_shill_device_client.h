@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
       ShillPropertyChangedObserver* observer) override;
   void GetProperties(
       const dbus::ObjectPath& device_path,
-      chromeos::DBusMethodCallback<base::Value> callback) override;
+      chromeos::DBusMethodCallback<base::Value::Dict> callback) override;
   void SetProperty(const dbus::ObjectPath& device_path,
                    const std::string& name,
                    const base::Value& value,
@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   bool SimTryPuk(const std::string& device_path, const std::string& pin);
   void PassStubDeviceProperties(
       const dbus::ObjectPath& device_path,
-      chromeos::DBusMethodCallback<base::Value> callback) const;
+      chromeos::DBusMethodCallback<base::Value::Dict> callback) const;
 
   // Posts a task to run a void callback with status code |result|.
   void PostVoidCallback(chromeos::VoidDBusMethodCallback callback, bool result);
@@ -138,13 +138,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
 
   void NotifyObserversPropertyChanged(const dbus::ObjectPath& device_path,
                                       const std::string& property);
-  base::Value* GetDeviceProperties(const std::string& device_path);
   PropertyObserverList& GetObserverList(const dbus::ObjectPath& device_path);
 
   void SetScanning(const dbus::ObjectPath& device_path, bool is_scanning);
 
   // Dictionary of <device_name, Dictionary>.
-  base::Value stub_devices_{base::Value::Type::DICTIONARY};
+  base::Value::Dict stub_devices_;
 
   // Observer list for each device.
   std::map<dbus::ObjectPath, std::unique_ptr<PropertyObserverList>>

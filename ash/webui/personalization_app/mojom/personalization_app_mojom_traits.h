@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/constants/ambient_animation_theme.h"
+#include "ash/constants/ambient_theme.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/default_user_image.h"
@@ -59,12 +59,28 @@ struct StructTraits<
     backdrop::Collection> {
   static const std::string& id(const backdrop::Collection& collection);
   static const std::string& name(const backdrop::Collection& collection);
+  static const std::string& description(const backdrop::Collection& collection);
   static std::vector<GURL> previews(const backdrop::Collection& collection);
 
   static bool Read(
       ash::personalization_app::mojom::WallpaperCollectionDataView data,
       backdrop::Collection* out);
   static bool IsNull(const backdrop::Collection& collection);
+};
+
+template <>
+struct StructTraits<
+    ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView,
+    backdrop::Image::Description> {
+  static const std::string& title(
+      const backdrop::Image::Description& description);
+  static const std::string& content(
+      const backdrop::Image::Description& description);
+
+  static bool Read(
+      ash::personalization_app::mojom::CurrentWallpaperDescriptionDataView data,
+      backdrop::Image::Description* out);
+  static bool IsNull(const backdrop::Image::Description& description);
 };
 
 template <>
@@ -126,11 +142,10 @@ struct StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
 
 template <>
 struct EnumTraits<ash::personalization_app::mojom::AnimationTheme,
-                  ash::AmbientAnimationTheme> {
+                  ash::AmbientTheme> {
   using MojomAnimationTheme = ::ash::personalization_app::mojom::AnimationTheme;
-  static MojomAnimationTheme ToMojom(ash::AmbientAnimationTheme input);
-  static bool FromMojom(MojomAnimationTheme input,
-                        ash::AmbientAnimationTheme* output);
+  static MojomAnimationTheme ToMojom(ash::AmbientTheme input);
+  static bool FromMojom(MojomAnimationTheme input, ash::AmbientTheme* output);
 };
 
 template <>

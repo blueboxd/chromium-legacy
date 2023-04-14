@@ -6,13 +6,16 @@
 
 namespace updater {
 
-const wchar_t kLegacyGoogleUpdaterAppID[] =
-    L"{430FD4D0-B729-4F61-AA34-91526481799D}";
+const wchar_t kLegacyGoogleUpdateAppID[] = L"" LEGACY_GOOGLE_UPDATE_APPID;
+
+const wchar_t kGoogleUpdate3WebSystemClassProgId[] =
+    COMPANY_SHORTNAME_STRING L"Update.Update3WebMachine";
+const wchar_t kGoogleUpdate3WebUserClassProgId[] =
+    COMPANY_SHORTNAME_STRING L"Update.Update3WebUser";
 
 const wchar_t kGlobalPrefix[] = L"Global\\G";
 
-// TODO(crbug.com/1097297): need to add branding support.
-const wchar_t kPrefsAccessMutex[] = L"{D8E4A6FE-EA7A-4D20-A8C8-B4628776A101}";
+const wchar_t kPrefsAccessMutex[] = L"" PREFS_ACCESS_MUTEX;
 
 const wchar_t kRegKeyCommands[] = L"Commands";
 const wchar_t kRegValueCommandLine[] = L"CommandLine";
@@ -46,6 +49,6 @@ const wchar_t kWindowsInternalServiceName[] = L"InternalService";
 
 const wchar_t kShutdownEvent[] = L"{A0C1F415-D2CE-4ddc-9B48-14E56FD55162}";
 
-const wchar_t kLegacyExeName[] = L"GoogleUpdate.exe";
+const wchar_t kLegacyExeName[] = COMPANY_SHORTNAME_STRING L"Update.exe";
 
 }  // namespace updater

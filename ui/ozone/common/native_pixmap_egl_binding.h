@@ -41,9 +41,6 @@ class NativePixmapEGLBinding : public NativePixmapGLBinding {
   GLenum GetDataType() override;
 
  private:
-  // Invokes NativePixmapGLBinding::BindTexture, passing |gl_image_|.
-  bool BindTexture(GLenum target, GLuint texture_id);
-
   // TODO(hitawala): Merge BindTexImage, Initialize from GLImage and its
   // subclass NativePixmap to NativePixmapEGLBinding once we stop using them
   // elsewhere eg. VDA decoders in media.

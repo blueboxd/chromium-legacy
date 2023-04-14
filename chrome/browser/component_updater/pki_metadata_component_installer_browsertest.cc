@@ -24,6 +24,7 @@
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "net/net_buildflags.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +47,7 @@ enum class CTEnforcement { kEnabled, kDisabled };
 
 void SetRequireCTForTesting() {
   mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
+  content::GetNetworkService()->BindTestInterfaceForTesting(
       network_service_test.BindNewPipeAndPassReceiver());
 
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;

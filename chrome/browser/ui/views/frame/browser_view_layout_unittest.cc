@@ -64,6 +64,12 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   gfx::Rect GetBoundsForTabStripRegionInBrowserView() const override {
     return gfx::Rect();
   }
+  gfx::Rect GetBoundsForWebAppFrameToolbarInBrowserView() const override {
+    return gfx::Rect();
+  }
+  void LayoutWebAppWindowTitle(
+      const gfx::Rect& available_space,
+      views::Label& window_title_label) const override {}
   int GetTopInsetInBrowserView() const override { return 0; }
   int GetThemeBackgroundXInset() const override { return 0; }
   bool IsToolbarVisible() const override { return toolbar_visible_; }
@@ -98,6 +104,8 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
   bool BrowserIsTypeNormal() const override { return true; }
   bool HasFindBarController() const override { return false; }
   void MoveWindowForFindBarIfNecessary() const override {}
+  bool IsWindowControlsOverlayEnabled() const override { return false; }
+  void UpdateWindowControlsOverlay(const gfx::Rect& rect) const override {}
 
  private:
   bool tab_strip_visible_ = true;
@@ -214,8 +222,10 @@ class BrowserViewLayoutTest : public ChromeViewsTestBase {
     delegate_ = delegate.get();
     auto layout = std::make_unique<BrowserViewLayout>(
         std::move(delegate),
-        /*browser_view=*/nullptr, top_container_, tab_strip_region_view,
-        tab_strip_, toolbar_, infobar_container_, contents_container_,
+        /*browser_view=*/nullptr, top_container_,
+        /*web_app_frame_toolbar=*/nullptr,
+        /*web_app_window_title=*/nullptr, tab_strip_region_view, tab_strip_,
+        toolbar_, infobar_container_, contents_container_,
         /*left_aligned_side_panel=*/nullptr,
         /*left_aligned_side_panel_separator=*/nullptr,
         /*unified_side_panel=*/nullptr,

@@ -15,6 +15,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersTabHelper;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -244,7 +245,8 @@ public class ShareDelegateImpl implements ShareDelegate {
 
     @Override
     public boolean isSharingHubEnabled() {
-        return !mIsCustomTab;
+        return !(mIsCustomTab
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.SHARE_SHEET_MIGRATION_ANDROID));
     }
 
     /**
@@ -289,7 +291,8 @@ public class ShareDelegateImpl implements ShareDelegate {
                 RecordHistogram.recordEnumeratedHistogram(
                         "Sharing.DefaultSharesheetAndroid.Opened", shareOrigin, ShareOrigin.COUNT);
                 // Profile can be null here since it is checked later on before being used.
-                ShareHelper.showDefaultShareUi(params, profile, chromeShareExtras.saveLastUsed());
+                ShareHelper.shareWithSystemShareSheetUi(
+                        params, profile, chromeShareExtras.saveLastUsed());
             }
         }
     }

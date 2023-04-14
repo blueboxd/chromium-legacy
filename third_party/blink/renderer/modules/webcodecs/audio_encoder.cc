@@ -281,7 +281,6 @@ bool VerifyCodecSupportStatic(AudioEncoderTraits::ParsedConfig* config,
                                    {44100, 48000})) {
           return false;
         }
-
         return true;
       }
       [[fallthrough]];

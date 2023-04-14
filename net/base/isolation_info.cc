@@ -178,33 +178,6 @@ IsolationInfo IsolationInfo::Create(
                        site_for_cookies, nonce, std::move(party_context));
 }
 
-IsolationInfo IsolationInfo::CreatePartial(
-    RequestType request_type,
-    const net::NetworkIsolationKey& network_isolation_key) {
-  if (!network_isolation_key.IsFullyPopulated())
-    return IsolationInfo();
-
-  // TODO(https://crbug.com/1148927): Use null origins in this case.
-  url::Origin top_frame_origin =
-      network_isolation_key.GetTopFrameSite()->site_as_origin_;
-  absl::optional<url::Origin> frame_origin;
-  if (IsFrameSiteEnabled() &&
-      network_isolation_key.GetFrameSite().has_value()) {
-    frame_origin = network_isolation_key.GetFrameSite()->site_as_origin_;
-  } else {
-    frame_origin = absl::nullopt;
-  }
-
-  const base::UnguessableToken* nonce =
-      network_isolation_key.GetNonce()
-          ? &network_isolation_key.GetNonce().value()
-          : nullptr;
-
-  return IsolationInfo(request_type, top_frame_origin, frame_origin,
-                       SiteForCookies(), nonce,
-                       absl::nullopt /* party_context */);
-}
-
 IsolationInfo IsolationInfo::DoNotUseCreatePartialFromNak(
     const net::NetworkAnonymizationKey& network_anonymization_key) {
   if (!network_anonymization_key.IsFullyPopulated()) {
@@ -215,22 +188,15 @@ IsolationInfo IsolationInfo::DoNotUseCreatePartialFromNak(
       network_anonymization_key.GetTopFrameSite()->site_as_origin_;
 
   absl::optional<url::Origin> frame_origin;
-  if (NetworkAnonymizationKey::IsFrameSiteEnabled() &&
-      network_anonymization_key.GetFrameSite().has_value()) {
-    // If frame site is set on the network anonymization key, use it to set the
-    // frame origin on the isolation info.
-    frame_origin = network_anonymization_key.GetFrameSite()->site_as_origin_;
-  } else if (NetworkAnonymizationKey::IsCrossSiteFlagSchemeEnabled() &&
-             network_anonymization_key.GetIsCrossSite().value()) {
-    // If frame site is not set on the network anonymization key but we know
-    // that it is cross site to the top level site, create an empty origin to
-    // use as the frame origin for the isolation info. This should be cross site
-    // with the top level origin.
+  if (NetworkAnonymizationKey::IsCrossSiteFlagSchemeEnabled() &&
+      network_anonymization_key.GetIsCrossSite().value()) {
+    // If we know that the origin is cross site to the top level site, create an
+    // empty origin to use as the frame origin for the isolation info. This
+    // should be cross site with the top level origin.
     frame_origin = url::Origin();
   } else {
-    // If frame sit is not set on the network anonymization key and we don't
-    // know that it's cross site to the top level site, use the top frame site
-    // to set the frame origin.
+    // If we don't know that it's cross site to the top level site, use the top
+    // frame site to set the frame origin.
     frame_origin = top_frame_origin;
   }
 
@@ -343,6 +309,68 @@ bool IsolationInfo::IsFrameSiteEnabled() {
       net::features::kForceIsolationInfoFrameOriginToTopLevelFrame);
 }
 
+std::string IsolationInfo::DebugString() const {
+  std::string s;
+  s += "request_type: ";
+  switch (request_type_) {
+    case IsolationInfo::RequestType::kMainFrame:
+      s += "kMainFrame";
+      break;
+    case IsolationInfo::RequestType::kSubFrame:
+      s += "kSubFrame";
+      break;
+    case IsolationInfo::RequestType::kOther:
+      s += "kOther";
+      break;
+  }
+
+  s += "; top_frame_origin: ";
+  if (top_frame_origin_) {
+    s += top_frame_origin_.value().GetDebugString(true);
+  } else {
+    s += "(none)";
+  }
+
+  if (IsFrameSiteEnabled()) {
+    s += "; frame_origin: ";
+    if (frame_origin_) {
+      s += frame_origin_.value().GetDebugString(true);
+    } else {
+      s += "(none)";
+    }
+  }
+
+  s += "; network_anonymization_key: ";
+  s += network_anonymization_key_.ToDebugString();
+
+  s += "; network_isolation_key: ";
+  s += network_isolation_key_.ToDebugString();
+
+  s += "; party_context: ";
+  if (party_context_) {
+    s += "{";
+    for (auto& site : party_context_.value()) {
+      s += site.GetDebugString();
+      s += ", ";
+    }
+    s += "}";
+  } else {
+    s += "(none)";
+  }
+
+  s += "; nonce: ";
+  if (nonce_) {
+    s += nonce_.value().ToString();
+  } else {
+    s += "(none)";
+  }
+
+  s += "; site_for_cookies: ";
+  s += site_for_cookies_.ToDebugString();
+
+  return s;
+}
+
 NetworkAnonymizationKey
 IsolationInfo::CreateNetworkAnonymizationKeyForIsolationInfo(
     const absl::optional<url::Origin>& top_frame_origin,
@@ -351,18 +379,6 @@ IsolationInfo::CreateNetworkAnonymizationKeyForIsolationInfo(
   if (!top_frame_origin) {
     return NetworkAnonymizationKey();
   }
-
-  // When IsolationInfo::IsFrameSiteEnabled and
-  // NetworkAnonymizationKey::IsFrameSiteEnabled set the `nak_frame_site` to the
-  // passed value. When NetworkAnonymizationKey::IsFrameSiteEnabled is false set
-  // the `nak_frame_site` to nullopt. When IsolationInfo::IsFrameSiteEnabled is
-  // false but NetworkAnonymizationKey::IsFrameSiteEnabled is true we might have
-  // the frame_site passed correctly to the constructor OR we might have created
-  // a double key in which case we cannot determine the `nak_frame_site`.
-  absl::optional<SchemefulSite> nak_frame_site =
-      NetworkAnonymizationKey::IsFrameSiteEnabled() && frame_origin.has_value()
-          ? absl::make_optional((SchemefulSite(*frame_origin)))
-          : absl::nullopt;
 
   bool nak_is_cross_site;
   if (frame_origin) {
@@ -376,7 +392,7 @@ IsolationInfo::CreateNetworkAnonymizationKeyForIsolationInfo(
   }
 
   return NetworkAnonymizationKey(
-      SchemefulSite(*top_frame_origin), nak_frame_site,
+      SchemefulSite(*top_frame_origin), absl::nullopt,
       absl::make_optional(nak_is_cross_site),
       nonce ? absl::make_optional(*nonce) : absl::nullopt);
 }

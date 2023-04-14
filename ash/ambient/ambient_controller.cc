@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/ambient_weather_controller.h"
 #include "ash/ambient/metrics/ambient_multi_screen_metrics_recorder.h"
 #include "ash/ambient/model/ambient_animation_photo_config.h"
@@ -44,6 +45,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "build/buildflag.h"
@@ -140,51 +142,48 @@ class AmbientWidgetDelegate : public views::WidgetDelegate {
 
 // static
 void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
-  if (features::IsAmbientModeEnabled()) {
-    registry->RegisterStringPref(ash::ambient::prefs::kAmbientBackdropClientId,
-                                 std::string());
+  registry->RegisterStringPref(ash::ambient::prefs::kAmbientBackdropClientId,
+                               std::string());
 
-    // Do not sync across devices to allow different usages for different
-    // devices.
-    registry->RegisterBooleanPref(ash::ambient::prefs::kAmbientModeEnabled,
-                                  false);
+  // Do not sync across devices to allow different usages for different
+  // devices.
+  registry->RegisterBooleanPref(ash::ambient::prefs::kAmbientModeEnabled,
+                                false);
 
-    // Used to upload usage metrics. Derived from |AmbientSettings| when
-    // settings are successfully saved by the user. This pref is not displayed
-    // to the user.
-    registry->RegisterIntegerPref(
-        ash::ambient::prefs::kAmbientModePhotoSourcePref,
-        static_cast<int>(ash::ambient::AmbientModePhotoSource::kUnset));
+  // Used to upload usage metrics. Derived from |AmbientSettings| when
+  // settings are successfully saved by the user. This pref is not displayed
+  // to the user.
+  registry->RegisterIntegerPref(
+      ash::ambient::prefs::kAmbientModePhotoSourcePref,
+      static_cast<int>(ash::ambient::AmbientModePhotoSource::kUnset));
 
-    // Used to control the number of seconds of inactivity on lock screen before
-    // showing Ambient mode. This pref is not displayed to the user. Registered
-    // as integer rather than TimeDelta to work with prefs_util.
-    registry->RegisterIntegerPref(
-        ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
-        kLockScreenInactivityTimeout.InSeconds());
+  // Used to control the number of seconds of inactivity on lock screen before
+  // showing Ambient mode. This pref is not displayed to the user. Registered
+  // as integer rather than TimeDelta to work with prefs_util.
+  registry->RegisterIntegerPref(
+      ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
+      kLockScreenInactivityTimeout.InSeconds());
 
-    // Used to control the number of seconds to lock the session after starting
-    // Ambient mode. This pref is not displayed to the user. Registered as
-    // integer rather than TimeDelta to work with prefs_util.
-    registry->RegisterIntegerPref(
-        ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
-        kLockScreenBackgroundTimeout.InSeconds());
+  // Used to control the number of seconds to lock the session after starting
+  // Ambient mode. This pref is not displayed to the user. Registered as
+  // integer rather than TimeDelta to work with prefs_util.
+  registry->RegisterIntegerPref(
+      ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
+      kLockScreenBackgroundTimeout.InSeconds());
 
-    // Used to control the photo refresh interval in Ambient mode. This pref is
-    // not displayed to the user. Registered as integer rather than TimeDelta to
-    // work with prefs_util.
-    registry->RegisterIntegerPref(
-        ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
-        kPhotoRefreshInterval.InSeconds());
+  // Used to control the photo refresh interval in Ambient mode. This pref is
+  // not displayed to the user. Registered as integer rather than TimeDelta to
+  // work with prefs_util.
+  registry->RegisterIntegerPref(
+      ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
+      kPhotoRefreshInterval.InSeconds());
 
-    registry->RegisterIntegerPref(
-        ambient::prefs::kAmbientAnimationTheme,
-        static_cast<int>(kDefaultAmbientAnimationTheme));
+  registry->RegisterIntegerPref(ambient::prefs::kAmbientTheme,
+                                static_cast<int>(kDefaultAmbientTheme));
 
-    registry->RegisterDoublePref(
-        ambient::prefs::kAmbientModeAnimationPlaybackSpeed,
-        kAnimationPlaybackSpeed);
-  }
+  registry->RegisterDoublePref(
+      ambient::prefs::kAmbientModeAnimationPlaybackSpeed,
+      kAnimationPlaybackSpeed);
 }
 
 AmbientController::AmbientController(
@@ -262,7 +261,7 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       // ambient mode has just started.
       if (start_time_) {
         auto elapsed = base::Time::Now() - start_time_.value();
-        AmbientAnimationTheme theme = GetCurrentTheme();
+        AmbientTheme theme = GetCurrentTheme();
         DVLOG(2) << "Exit ambient mode. Elapsed time: " << elapsed;
         ambient::RecordAmbientModeTimeElapsed(
             elapsed, Shell::Get()->IsInTabletMode(), theme);
@@ -493,19 +492,17 @@ void AmbientController::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void AmbientController::OnMouseEvent(ui::MouseEvent* event) {
-  // Prevent dispatching mouse event to the windows behind screen saver.
-  event->StopPropagation();
   // |DismissUI| on actual mouse move only if the screen saver widget is shown
   // (images are downloaded).
   if (event->type() == ui::ET_MOUSE_MOVED) {
-    if (last_mouse_event_was_move_ &&
-        Shell::GetPrimaryRootWindowController()->HasAmbientWidget()) {
-      DismissUI();
-    }
+    MaybeDismissUIOnMouseMove();
     last_mouse_event_was_move_ = true;
     return;
   }
 
+  // Prevent dispatching mouse event to the windows behind screen saver.
+  // Let move event pass through, so that it clears hover states.
+  event->StopPropagation();
   if (event->IsAnyButton()) {
     DismissUI();
   }
@@ -551,6 +548,7 @@ void AmbientController::StartScreenSaverPreview() {
   }
 
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kPreview);
+  base::RecordAction(base::UserMetricsAction(kScreenSaverPreviewUserAction));
 }
 
 void AmbientController::ShowHiddenUi() {
@@ -579,6 +577,7 @@ void AmbientController::CloseUi(bool immediately) {
 
   close_widgets_immediately_ = immediately;
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);
+  Shell::Get()->cursor_manager()->ShowCursor();
 }
 
 void AmbientController::ToggleInSessionUi() {
@@ -661,8 +660,8 @@ void AmbientController::OnEnabledPrefChanged() {
             weak_ptr_factory_.GetWeakPtr()));
 
     pref_change_registrar_->Add(
-        ambient::prefs::kAmbientAnimationTheme,
-        base::BindRepeating(&AmbientController::OnAnimationThemePrefChanged,
+        ambient::prefs::kAmbientTheme,
+        base::BindRepeating(&AmbientController::OnThemePrefChanged,
                             weak_ptr_factory_.GetWeakPtr()));
 
     pref_change_registrar_->Add(
@@ -674,7 +673,7 @@ void AmbientController::OnEnabledPrefChanged() {
     OnLockScreenInactivityTimeoutPrefChanged();
     OnLockScreenBackgroundTimeoutPrefChanged();
     OnPhotoRefreshIntervalPrefChanged();
-    OnAnimationThemePrefChanged();
+    OnThemePrefChanged();
     OnAnimationPlaybackSpeedChanged();
 
     DCHECK(AmbientClient::Get());
@@ -709,7 +708,7 @@ void AmbientController::OnEnabledPrefChanged() {
          {ambient::prefs::kAmbientModeLockScreenBackgroundTimeoutSeconds,
           ambient::prefs::kAmbientModeLockScreenInactivityTimeoutSeconds,
           ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds,
-          ambient::prefs::kAmbientAnimationTheme,
+          ambient::prefs::kAmbientTheme,
           ambient::prefs::kAmbientModeAnimationPlaybackSpeed}) {
       if (pref_change_registrar_->IsObserved(pref_name))
         pref_change_registrar_->Remove(pref_name);
@@ -757,27 +756,25 @@ void AmbientController::OnPhotoRefreshIntervalPrefChanged() {
           ambient::prefs::kAmbientModePhotoRefreshIntervalSeconds)));
 }
 
-void AmbientController::OnAnimationThemePrefChanged() {
-  absl::optional<AmbientAnimationTheme> previous_theme_from_pref =
+void AmbientController::OnThemePrefChanged() {
+  absl::optional<AmbientTheme> previous_theme_from_pref =
       current_theme_from_pref_;
   DCHECK(GetPrimaryUserPrefService());
-  int current_theme_as_int = GetPrimaryUserPrefService()->GetInteger(
-      ambient::prefs::kAmbientAnimationTheme);
+  int current_theme_as_int =
+      GetPrimaryUserPrefService()->GetInteger(ambient::prefs::kAmbientTheme);
   // Gracefully handle pref having invalid value in case pref storage is
   // corrupted somehow.
   if (current_theme_as_int < 0 ||
-      current_theme_as_int >
-          static_cast<int>(AmbientAnimationTheme::kMaxValue)) {
+      current_theme_as_int > static_cast<int>(AmbientTheme::kMaxValue)) {
     LOG(WARNING) << "Loaded invalid ambient theme from pref storage: "
                  << current_theme_as_int << ". Default to "
-                 << ToString(kDefaultAmbientAnimationTheme);
-    current_theme_as_int = static_cast<int>(kDefaultAmbientAnimationTheme);
+                 << ToString(kDefaultAmbientTheme);
+    current_theme_as_int = static_cast<int>(kDefaultAmbientTheme);
   }
-  current_theme_from_pref_ =
-      static_cast<AmbientAnimationTheme>(current_theme_as_int);
+  current_theme_from_pref_ = static_cast<AmbientTheme>(current_theme_as_int);
 
   if (previous_theme_from_pref.has_value()) {
-    DVLOG(4) << "AmbientAnimationTheme changed from "
+    DVLOG(4) << "AmbientTheme changed from "
              << ToString(*previous_theme_from_pref) << " to "
              << ToString(*current_theme_from_pref_);
     // For a given topic category, the topics downloaded from IMAX and saved to
@@ -799,7 +796,7 @@ void AmbientController::OnAnimationThemePrefChanged() {
     DCHECK(ambient_photo_controller_);
     ambient_photo_controller_->ClearCache();
   } else {
-    DVLOG(4) << "AmbientAnimationTheme initialized to "
+    DVLOG(4) << "AmbientTheme initialized to "
              << ToString(*current_theme_from_pref_);
   }
 }
@@ -860,7 +857,7 @@ void AmbientController::OnImagesFailed() {
 
 std::unique_ptr<views::Widget> AmbientController::CreateWidget(
     aura::Window* container) {
-  AmbientAnimationTheme current_theme = GetCurrentTheme();
+  AmbientTheme current_theme = GetCurrentTheme();
   auto container_view = std::make_unique<AmbientContainerView>(
       &delegate_, ambient_animation_progress_tracker_.get(),
       AmbientAnimationStaticResources::Create(current_theme,
@@ -909,6 +906,9 @@ std::unique_ptr<views::Widget> AmbientController::CreateWidget(
 }
 
 void AmbientController::CreateAndShowWidgets() {
+  if (ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kPreview) {
+    preview_widget_created_at_ = base::Time::Now();
+  }
   // Hide cursor.
   Shell::Get()->cursor_manager()->HideCursor();
   for (auto* root_window_controller :
@@ -924,12 +924,12 @@ void AmbientController::StartRefreshingImages() {
   // model/controller with the appropriate config each time before calling
   // StartScreenUpdate().
   DCHECK(!ambient_photo_controller_->IsScreenUpdateActive());
-  AmbientAnimationTheme current_theme = GetCurrentTheme();
+  AmbientTheme current_theme = GetCurrentTheme();
   DVLOG(4) << "Loaded ambient theme " << ToString(current_theme);
 
   AmbientPhotoConfig photo_config;
   std::unique_ptr<AmbientTopicQueue::Delegate> topic_queue_delegate;
-  if (current_theme == AmbientAnimationTheme::kSlideshow) {
+  if (current_theme == AmbientTheme::kSlideshow) {
     photo_config = CreateAmbientSlideshowPhotoConfig();
     topic_queue_delegate =
         std::make_unique<AmbientTopicQueueSlideshowDelegate>();
@@ -974,9 +974,27 @@ void AmbientController::MaybeStartScreenSaver() {
   StartRefreshingImages();
 }
 
-AmbientAnimationTheme AmbientController::GetCurrentTheme() const {
+AmbientTheme AmbientController::GetCurrentTheme() const {
   DCHECK(current_theme_from_pref_);
   return *current_theme_from_pref_;
 }
 
+void AmbientController::MaybeDismissUIOnMouseMove() {
+  // If the move was not an actual mouse move event or the screen saver widget
+  // is not shown yet (images are not downloaded), don't dismiss.
+  if (!last_mouse_event_was_move_ ||
+      !Shell::GetPrimaryRootWindowController()->HasAmbientWidget()) {
+    return;
+  }
+
+  // In preview mode, don't dismiss until the timer stops running (avoids
+  // accidental dismissal).
+  if (ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kPreview) {
+    auto elapsed = base::Time::Now() - preview_widget_created_at_;
+    if (elapsed < kDismissPreviewOnMouseMoveDelay) {
+      return;
+    }
+  }
+  DismissUI();
+}
 }  // namespace ash

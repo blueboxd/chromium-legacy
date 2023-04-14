@@ -15,6 +15,7 @@ static_library("test_support") {
     "//chrome/browser/profiles:profile",
     "//chrome/common:constants",
     "//components/prefs",
+    "//components/supervised_user/core/browser",
     "//components/supervised_user/core/common",
   ]
   if (is_android) {
@@ -125,6 +126,7 @@ if (is_android) {
       "//build/android:build_java",
       "//chrome/android:chrome_java",
       "//chrome/browser/profiles/android:java",
+      "//components/browser_ui/bottomsheet/android/test:java",
       "//content/public/test/android:content_java_test_support",
     ]
     annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
@@ -134,7 +136,9 @@ if (is_android) {
     testonly = true
     sources = [
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalMetricsTest.java",
+      "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalNativesTest.java",
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalTest.java",
+      "android/javatests/src/org/chromium/chrome/browser/supervised_user/WebsiteParentApprovalTestUtils.java",
       "android/javatests/src/org/chromium/chrome/browser/supervised_user/website_approval/WebsiteApprovalSheetContentTest.java",
     ]
     deps = [

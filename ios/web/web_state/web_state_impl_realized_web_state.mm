@@ -15,6 +15,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/time/time.h"
 #import "ios/web/common/features.h"
+#import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/js_messaging/web_view_js_utils.h"
 #import "ios/web/navigation/crw_error_page_helper.h"
 #import "ios/web/navigation/navigation_context_impl.h"
@@ -24,6 +25,7 @@
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/favicon/favicon_url.h"
+#import "ios/web/public/js_messaging/content_world.h"
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
@@ -62,9 +64,11 @@ WebStateImpl::RealizedWebState::RealizedWebState(WebStateImpl* owner)
 WebStateImpl::RealizedWebState::~RealizedWebState() = default;
 
 void WebStateImpl::RealizedWebState::Init(const CreateParams& params,
-                                          CRWSessionStorage* session_storage) {
+                                          CRWSessionStorage* session_storage,
+                                          FaviconStatus favicon_status) {
   created_with_opener_ = params.created_with_opener;
   navigation_manager_ = std::make_unique<NavigationManagerImpl>();
+  favicon_status_ = std::move(favicon_status);
 
   navigation_manager_->SetDelegate(this);
   navigation_manager_->SetBrowserState(params.browser_state);
@@ -147,12 +151,15 @@ NavigationManagerImpl& WebStateImpl::RealizedWebState::GetNavigationManager() {
 }
 
 const WebFramesManagerImpl&
-WebStateImpl::RealizedWebState::GetWebFramesManager() const {
-  return web_frames_manager_;
+WebStateImpl::RealizedWebState::GetPageWorldWebFramesManager() const {
+  return WebFramesManagerImpl::FromWebState(owner_,
+                                            ContentWorld::kPageContentWorld);
 }
 
-WebFramesManagerImpl& WebStateImpl::RealizedWebState::GetWebFramesManager() {
-  return web_frames_manager_;
+WebFramesManagerImpl&
+WebStateImpl::RealizedWebState::GetPageWorldWebFramesManager() {
+  return WebFramesManagerImpl::FromWebState(owner_,
+                                            ContentWorld::kPageContentWorld);
 }
 
 const SessionCertificatePolicyCacheImpl&
@@ -488,7 +495,7 @@ void WebStateImpl::RealizedWebState::OnAuthRequired(
 void WebStateImpl::RealizedWebState::WebFrameBecameAvailable(
     std::unique_ptr<WebFrame> frame) {
   WebFrame* frame_ptr = frame.get();
-  bool success = GetWebFramesManager().AddFrame(std::move(frame));
+  bool success = GetPageWorldWebFramesManager().AddFrame(std::move(frame));
   if (!success) {
     // Frame was not added, do not notify observers.
     return;
@@ -500,7 +507,7 @@ void WebStateImpl::RealizedWebState::WebFrameBecameAvailable(
 
 void WebStateImpl::RealizedWebState::WebFrameBecameUnavailable(
     const std::string& frame_id) {
-  WebFrame* frame = GetWebFramesManager().GetFrameWithId(frame_id);
+  WebFrame* frame = GetPageWorldWebFramesManager().GetFrameWithId(frame_id);
   if (!frame) {
     return;
   }
@@ -517,7 +524,7 @@ void WebStateImpl::RealizedWebState::RetrieveExistingFrames() {
 }
 
 void WebStateImpl::RealizedWebState::RemoveAllWebFrames() {
-  for (WebFrame* frame : GetWebFramesManager().GetAllWebFrames()) {
+  for (WebFrame* frame : GetPageWorldWebFramesManager().GetAllWebFrames()) {
     NotifyObserversAndRemoveWebFrame(frame);
   }
 }
@@ -691,16 +698,24 @@ bool WebStateImpl::RealizedWebState::IsWebPageInFullscreenMode() const {
 }
 
 const FaviconStatus& WebStateImpl::RealizedWebState::GetFaviconStatus() const {
-  static const FaviconStatus missing_favicon_status;
   NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-  return item ? item->GetFaviconStatus() : missing_favicon_status;
+  if (item) {
+    const FaviconStatus& favicon_status = item->GetFaviconStatus();
+    if (favicon_status.valid) {
+      return favicon_status;
+    }
+  }
+
+  return favicon_status_;
 }
 
 void WebStateImpl::RealizedWebState::SetFaviconStatus(
     const FaviconStatus& favicon_status) {
   NavigationItem* item = navigation_manager_->GetLastCommittedItem();
-  if (item)
+  if (item) {
     item->SetFaviconStatus(favicon_status);
+    favicon_status_ = FaviconStatus{};
+  }
 }
 
 int WebStateImpl::RealizedWebState::GetNavigationItemCount() const {
@@ -969,7 +984,7 @@ void WebStateImpl::RealizedWebState::NotifyObserversAndRemoveWebFrame(
   for (auto& observer : observers())
     observer.WebFrameWillBecomeUnavailable(owner_, frame);
 
-  GetWebFramesManager().RemoveFrameWithId(frame->GetFrameId());
+  GetPageWorldWebFramesManager().RemoveFrameWithId(frame->GetFrameId());
 }
 
 std::unique_ptr<WebUIIOS> WebStateImpl::RealizedWebState::CreateWebUIIOS(
@@ -1018,4 +1033,5 @@ WebStateImpl::RealizedWebState::WrapCallbackForJavaScriptDialog(
       },
       owner_->weak_factory_.GetWeakPtr(), std::move(callback));
 }
-}
+
+}  // namespace web

@@ -7,7 +7,6 @@
 #include "third_party/blink/renderer/core/animation/css_interpolation_environment.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 
 namespace blink {
 
@@ -46,15 +45,10 @@ void CSSDefaultInterpolationType::Apply(
     InterpolationEnvironment& environment) const {
   DCHECK(
       To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
-  // TODO(crbug.com/1395026): Populate the correct tree scope here, and stop
-  // using ScopedCSSValue.
   StyleBuilder::ApplyProperty(
       GetProperty().GetCSSPropertyName(),
       To<CSSInterpolationEnvironment>(environment).GetState(),
-      ScopedCSSValue(To<CSSDefaultNonInterpolableValue>(non_interpolable_value)
-                         ->CssValue()
-                         ->EnsureScopedValue(nullptr),
-                     nullptr));
+      *To<CSSDefaultNonInterpolableValue>(non_interpolable_value)->CssValue());
 }
 
 }  // namespace blink

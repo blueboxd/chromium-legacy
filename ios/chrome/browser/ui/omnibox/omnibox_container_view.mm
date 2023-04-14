@@ -102,8 +102,10 @@ const CGFloat kTextFieldClearButtonTrailingOffset = 4;
   return self;
 }
 
-- (void)setLeadingImage:(UIImage*)image {
+- (void)setLeadingImage:(UIImage*)image
+    withAccessibilityIdentifier:(NSString*)accessibilityIdentifier {
   [self.leadingImageView setImage:image];
+  [self.leadingImageView setAccessibilityIdentifier:accessibilityIdentifier];
 }
 
 - (void)setIncognito:(BOOL)incognito {

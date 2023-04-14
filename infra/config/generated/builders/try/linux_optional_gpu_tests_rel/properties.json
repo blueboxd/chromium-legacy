@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "try",
               "builder": "linux_optional_gpu_tests_rel",
-              "project": "chromium-m111"
+              "project": "chromium"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-fyi-archive",
@@ -35,16 +35,11 @@
         {
           "bucket": "try",
           "builder": "linux_optional_gpu_tests_rel",
-          "project": "chromium-m111"
+          "project": "chromium"
         }
       ],
       "retry_failed_shards": false
     }
-  },
-  "$build/goma": {
-    "enable_ats": true,
-    "rpc_extra_params": "?prod",
-    "server_host": "goma.chromium.org"
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",

@@ -46,6 +46,10 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient
     virtual void OnVmStopped(
         const vm_tools::concierge::VmStoppedSignal& signal) = 0;
 
+    // OnVmStopping is signaled by Concierge when a VM is stopping.
+    virtual void OnVmStopping(
+        const vm_tools::concierge::VmStoppingSignal& signal) {}
+
    protected:
     virtual ~VmObserver() = default;
   };
@@ -82,10 +86,11 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient
   // Adds an observer for disk image operations.
   virtual void RemoveDiskImageObserver(DiskImageObserver* observer) = 0;
 
-  // IsVmSartedSignalConnected and IsVmStoppedSignalConnected must return true
+  // IsVmStartedSignalConnected and IsVmStoppedSignalConnected must return true
   // before RestartCrostini is called.
   virtual bool IsVmStartedSignalConnected() = 0;
   virtual bool IsVmStoppedSignalConnected() = 0;
+  virtual bool IsVmStoppingSignalConnected() = 0;
 
   // IsDiskImageProgressSignalConnected must return true before
   // ImportDiskImage is called.
@@ -284,6 +289,13 @@ class COMPONENT_EXPORT(CONCIERGE) ConciergeClient
       const vm_tools::concierge::GetVmLaunchAllowedRequest& request,
       chromeos::DBusMethodCallback<
           vm_tools::concierge::GetVmLaunchAllowedResponse> callback) = 0;
+
+  // Swap out VMs.
+  // |callback| is called after the method call finishes.
+  virtual void SwapVm(
+      const vm_tools::concierge::SwapVmRequest& request,
+      chromeos::DBusMethodCallback<vm_tools::concierge::SwapVmResponse>
+          callback) = 0;
 
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);

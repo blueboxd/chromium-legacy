@@ -7,6 +7,7 @@
 #import <WebKit/WebKit.h>
 
 #import "base/ios/ios_util.h"
+#import "ios/web/public/js_messaging/content_world.h"
 #import "ios/web/public/js_messaging/java_script_feature.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/web_test.h"
@@ -42,15 +43,6 @@ class JavaScriptFeatureManagerTest : public web::WebTest {
   }
 };
 
-// Tests that JavaScriptFeatureManager adds base shared user scripts.
-TEST_F(JavaScriptFeatureManagerTest, Configure) {
-  ASSERT_TRUE(GetJavaScriptFeatureManager());
-  ASSERT_EQ(0ul, [GetUserContentController().userScripts count]);
-
-  GetJavaScriptFeatureManager()->ConfigureFeatures({});
-  EXPECT_EQ(6ul, [GetUserContentController().userScripts count]);
-}
-
 // Tests that JavaScriptFeatureManager adds a JavaScriptFeature for all frames
 // at document start time for the page content world.
 TEST_F(JavaScriptFeatureManagerTest, AllFramesStartFeature) {
@@ -64,12 +56,11 @@ TEST_F(JavaScriptFeatureManagerTest, AllFramesStartFeature) {
 
   std::unique_ptr<web::JavaScriptFeature> feature =
       std::make_unique<web::JavaScriptFeature>(
-          web::JavaScriptFeature::ContentWorld::kPageContentWorld,
-          feature_scripts);
+          web::ContentWorld::kPageContentWorld, feature_scripts);
 
   GetJavaScriptFeatureManager()->ConfigureFeatures({feature.get()});
 
-  EXPECT_EQ(7ul, [GetUserContentController().userScripts count]);
+  EXPECT_EQ(1ul, [GetUserContentController().userScripts count]);
   WKUserScript* user_script =
       [GetUserContentController().userScripts lastObject];
   EXPECT_TRUE(
@@ -80,7 +71,7 @@ TEST_F(JavaScriptFeatureManagerTest, AllFramesStartFeature) {
 }
 
 // Tests that JavaScriptFeatureManager adds a JavaScriptFeature for all frames
-// at document end time for any content world.
+// at document end time for the page content world.
 TEST_F(JavaScriptFeatureManagerTest, MainFrameEndFeature) {
   ASSERT_TRUE(GetJavaScriptFeatureManager());
 
@@ -92,12 +83,11 @@ TEST_F(JavaScriptFeatureManagerTest, MainFrameEndFeature) {
 
   std::unique_ptr<web::JavaScriptFeature> feature =
       std::make_unique<web::JavaScriptFeature>(
-          web::JavaScriptFeature::ContentWorld::kAnyContentWorld,
-          feature_scripts);
+          web::ContentWorld::kPageContentWorld, feature_scripts);
 
   GetJavaScriptFeatureManager()->ConfigureFeatures({feature.get()});
 
-  EXPECT_EQ(7ul, [GetUserContentController().userScripts count]);
+  EXPECT_EQ(1ul, [GetUserContentController().userScripts count]);
   WKUserScript* user_script =
       [GetUserContentController().userScripts lastObject];
   EXPECT_TRUE(
@@ -119,12 +109,11 @@ TEST_F(JavaScriptFeatureManagerTest, MainFrameEndFeatureIsolatedWorld) {
 
   std::unique_ptr<web::JavaScriptFeature> feature =
       std::make_unique<web::JavaScriptFeature>(
-          web::JavaScriptFeature::ContentWorld::kIsolatedWorldOnly,
-          feature_scripts);
+          web::ContentWorld::kIsolatedWorld, feature_scripts);
 
   GetJavaScriptFeatureManager()->ConfigureFeatures({feature.get()});
 
-  EXPECT_EQ(7ul, [GetUserContentController().userScripts count]);
+  EXPECT_EQ(1ul, [GetUserContentController().userScripts count]);
   WKUserScript* user_script =
       [GetUserContentController().userScripts lastObject];
   EXPECT_TRUE(

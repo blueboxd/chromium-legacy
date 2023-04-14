@@ -12,9 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
-#include "base/allocator/partition_allocator/starscan/pcscan.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -101,7 +99,6 @@
 #include "content/browser/screen_orientation/screen_orientation_provider.h"
 #include "content/browser/shared_storage/shared_storage_budget_charger.h"
 #include "content/browser/site_instance_impl.h"
-#include "content/browser/starscan_load_observer.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
 #include "content/browser/web_contents/java_script_dialog_commit_deferring_condition.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -206,6 +203,11 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
+#endif
+
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
+#include "base/allocator/partition_allocator/starscan/pcscan.h"
+#include "content/browser/starscan_load_observer.h"
 #endif
 
 namespace content {
@@ -1051,13 +1053,13 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
     SharedStorageBudgetCharger::CreateForWebContents(this);
   }
 
-#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && PA_CONFIG(ALLOW_PCSCAN)
+#if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
   // TODO(1231679): Remove or move to another place after finishing the PCScan
   // experiment.
   if (partition_alloc::internal::PCScan::IsInitialized()) {
     star_scan_load_observer_ = std::make_unique<StarScanLoadObserver>(this);
   }
-#endif
+#endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC) && BUILDFLAG(USE_STARSCAN)
 }
 
 WebContentsImpl::~WebContentsImpl() {
@@ -1726,6 +1728,7 @@ void WebContentsImpl::SetAccessibilityMode(ui::AXMode mode) {
     return;
 
   accessibility_mode_ = mode;
+
   // Update state for all frames in this tree and inner trees. Should also
   // include speculative frame hosts.
   GetPrimaryMainFrame()->ForEachRenderFrameHostIncludingSpeculative(
@@ -1761,7 +1764,7 @@ class AXTreeSnapshotCombiner : public base::RefCounted<AXTreeSnapshotCombiner> {
   void AXTreeSnapshotOnFrame(RenderFrameHostImpl* rfhi) {
     OPTIONAL_TRACE_EVENT0("content",
                           "AXTreeSnapshotCombiner::AXTreeSnapshotOnFrame");
-    bool is_root = !rfhi->GetParentOrOuterDocumentOrEmbedder();
+    bool is_root = rfhi->AccessibilityIsRootFrame();
     rfhi->RequestAXTreeSnapshot(AddFrame(is_root), params_.Clone());
   }
 
@@ -2658,15 +2661,13 @@ std::unique_ptr<WebContents> WebContentsImpl::DetachFromOuterWebContents() {
   // current one, since the view can be swapped due to a cross-origin
   // navigation.
   std::set<RenderViewHostImpl*> render_view_hosts;
-  for (auto& render_view_host : GetPrimaryFrameTree().render_view_hosts()) {
-    if (render_view_host.second->GetWidget() &&
-        render_view_host.second->GetWidget()->GetView()) {
-      DCHECK(render_view_host.second->GetWidget()
-                 ->GetView()
-                 ->IsRenderWidgetHostViewChildFrame());
-      render_view_hosts.insert(render_view_host.second);
+  primary_frame_tree_.ForEachRenderViewHost([&render_view_hosts](
+                                                RenderViewHostImpl* rvh) {
+    if (rvh->GetWidget() && rvh->GetWidget()->GetView()) {
+      DCHECK(rvh->GetWidget()->GetView()->IsRenderWidgetHostViewChildFrame());
+      render_view_hosts.insert(rvh);
     }
-  }
+  });
 
   for (auto* render_view_host : render_view_hosts)
     render_view_host->GetWidget()->GetView()->Destroy();
@@ -3100,9 +3101,8 @@ void WebContentsImpl::SetPageFrozen(bool frozen) {
   // A visible page is never frozen.
   DCHECK_NE(Visibility::VISIBLE, GetVisibility());
 
-  for (auto& entry : primary_frame_tree_.render_view_hosts()) {
-    entry.second->SetIsFrozen(frozen);
-  }
+  primary_frame_tree_.ForEachRenderViewHost(
+      [&frozen](RenderViewHostImpl* rvh) { rvh->SetIsFrozen(frozen); });
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::Clone() {
@@ -4597,13 +4597,6 @@ std::string WebContentsImpl::DumpAccessibilityTree(
     std::vector<ui::AXPropertyFilter> property_filters) {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DumpAccessibilityTree");
   auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
-  DCHECK(ax_mgr);
-
-  // Developer mode: crash immediately on any accessibility fatal error.
-  // This only runs during integration tests, or if a developer is
-  // using an inspection tool, e.g. chrome://accessibility.
-  BrowserAccessibilityManager::AlwaysFailFast();
-
   // Since for Web Content we get the AXTree updates through the renderer at a
   // point after the manager is created, there are cases where at this point in
   // the lifecycle the AXTree associated with `ax_mgr` does not have a valid
@@ -4611,8 +4604,13 @@ std::string WebContentsImpl::DumpAccessibilityTree(
   // we don't have this check, there will be a scenario where we then try to get
   // the manager using the ID (which at this point is invalid) which leads to a
   // crash. See https://crbug.com/1405036.
-  if (!ax_mgr->HasValidTreeID())
+  if (!ax_mgr || !ax_mgr->HasValidTreeID())
     return "-";
+
+  // Developer mode: crash immediately on any accessibility fatal error.
+  // This only runs during integration tests, or if a developer is
+  // using an inspection tool, e.g. chrome://accessibility.
+  BrowserAccessibilityManager::AlwaysFailFast();
 
   std::unique_ptr<ui::AXTreeFormatter> formatter =
       internal ? AXInspectFactory::CreateBlinkFormatter()
@@ -4632,7 +4630,7 @@ void WebContentsImpl::RecordAccessibilityEvents(
   DCHECK_EQ(start_recording, callback.has_value());
   if (start_recording) {
     BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
-        ui::kAXModeBasic.flags());
+        ui::kAXModeBasic);
     auto* ax_mgr = GetOrCreateRootBrowserAccessibilityManager();
     CHECK(ax_mgr);
     base::ProcessId pid = base::Process::Current().Pid();
@@ -6323,9 +6321,8 @@ void WebContentsImpl::SetWebPreferences(
   // cached pages), and make them send the current WebPreferences
   // to the renderer. WebPreferences updates for back-forward cached pages will
   // be sent when we restore those pages from the back-forward cache.
-  for (auto& rvh : primary_frame_tree_.render_view_hosts()) {
-    rvh.second->SendWebPreferencesToRenderer();
-  }
+  primary_frame_tree_.ForEachRenderViewHost(
+      [](RenderViewHostImpl* rvh) { rvh->SendWebPreferencesToRenderer(); });
 }
 
 void WebContentsImpl::RecomputeWebPreferencesSlow() {
@@ -7331,17 +7328,8 @@ std::vector<WebContents*> WebContentsImpl::GetInnerWebContents() {
 }
 
 WebContentsImpl* WebContentsImpl::GetResponsibleWebContents() {
-  // Iteratively ask delegates which other contents is responsible until a fixed
-  // point is found.
-  WebContentsImpl* contents = this;
-  while (WebContentsDelegate* delegate = contents->GetDelegate()) {
-    auto* responsible_contents = static_cast<WebContentsImpl*>(
-        delegate->GetResponsibleWebContents(contents));
-    if (responsible_contents == contents)
-      break;
-    contents = responsible_contents;
-  }
-  return contents;
+  return FromRenderFrameHostImpl(
+      GetPrimaryMainFrame()->GetOutermostMainFrameOrEmbedder());
 }
 
 WebContentsImpl* WebContentsImpl::GetFocusedWebContents() {
@@ -8159,12 +8147,10 @@ void WebContentsImpl::RendererResponsive(
 
 void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
     bool proceed,
-    const base::TimeTicks& proceed_time,
     bool* proceed_to_fire_unload) {
   OPTIONAL_TRACE_EVENT0("content",
                         "WebContentsImpl::BeforeUnloadFiredFromRenderManager");
-  observers_.NotifyObservers(&WebContentsObserver::BeforeUnloadFired, proceed,
-                             proceed_time);
+  observers_.NotifyObservers(&WebContentsObserver::BeforeUnloadFired, proceed);
   if (delegate_)
     delegate_->BeforeUnloadFired(this, proceed, proceed_to_fire_unload);
   // Note: |this| might be deleted at this point.
@@ -8525,6 +8511,10 @@ gfx::Size WebContentsImpl::GetSize() {
 #elif BUILDFLAG(IS_ANDROID)
   ui::ViewAndroid* view_android = GetNativeView();
   return view_android->bounds().size();
+#elif BUILDFLAG(IS_IOS)
+  // TODO(crbug.com/1411704): Implement me.
+  NOTREACHED();
+  return gfx::Size();
 #endif
 }
 
@@ -9125,6 +9115,8 @@ WebContentsImpl::GetRecordAggregateWatchTimeCallback(
       delegate_->GetDelegateWeakPtr(), page_main_frame_last_committed_url);
 }
 
+// Cf. `GetProspectiveOuterDocument` which applies to the same situation, but is
+// for ascending.
 std::vector<FrameTreeNode*> WebContentsImpl::GetUnattachedOwnedNodes(
     RenderFrameHostImpl* owner) {
   std::vector<FrameTreeNode*> unattached_owned_nodes;
@@ -9435,9 +9427,10 @@ void WebContentsImpl::ForEachRenderViewHost(
             if ((view_mask & ForEachRenderViewHostTypes::kActiveViews) == 0)
               return;
           }
-          for (auto& render_view_host : frame_tree.render_view_hosts()) {
-            render_view_hosts.insert(render_view_host.second);
-          }
+          frame_tree.ForEachRenderViewHost(
+              [&render_view_hosts](RenderViewHostImpl* rvh) {
+                render_view_hosts.insert(rvh);
+              });
         },
         view_mask, std::ref(render_view_hosts)));
   }
@@ -9471,6 +9464,30 @@ void WebContentsImpl::NotifyPageBecamePrimary(PageImpl& page) {
 
 int WebContentsImpl::GetOuterDelegateFrameTreeNodeId() {
   return node_.outer_contents_frame_tree_node_id();
+}
+
+// Cf. `GetUnattachedOwnedNodes` which applies to the same situation, but is for
+// descending.
+RenderFrameHostImpl* WebContentsImpl::GetProspectiveOuterDocument() {
+  // If the outer WebContents is already known, then there was no need to call
+  // this method.
+  DCHECK(!GetOuterWebContents());
+
+  RenderFrameHostImpl* unattached_guest_owner =
+      browser_plugin_guest_
+          ? browser_plugin_guest_->GetProspectiveOuterDocument()
+          : nullptr;
+  if (unattached_guest_owner) {
+    return unattached_guest_owner;
+  }
+
+  RenderFrameHostImpl* orphaned_portal_owner =
+      portal() ? portal()->owner_render_frame_host() : nullptr;
+  if (orphaned_portal_owner) {
+    return orphaned_portal_owner;
+  }
+
+  return nullptr;
 }
 
 void WebContentsImpl::RenderFrameHostStateChanged(
@@ -9583,7 +9600,7 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
         url_match_predicate) {
   PrerenderAttributes attributes(
       prerendering_url, trigger_type, embedder_histogram_suffix,
-      content::Referrer(), /*initiator_origin=*/absl::nullopt, prerendering_url,
+      content::Referrer(), /*initiator_origin=*/absl::nullopt,
       content::ChildProcessHost::kInvalidUniqueID, GetWeakPtr(),
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,

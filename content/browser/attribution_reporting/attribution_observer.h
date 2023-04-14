@@ -11,7 +11,8 @@
 #include "base/time/time.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "content/browser/attribution_reporting/attribution_report.h"
-#include "content/browser/attribution_reporting/storable_source.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
+#include "content/browser/attribution_reporting/store_source_result.mojom-forward.h"
 
 namespace attribution_reporting {
 class SuitableOrigin;
@@ -22,6 +23,7 @@ namespace content {
 class AttributionDebugReport;
 class AttributionTrigger;
 class CreateReportResult;
+class StorableSource;
 
 struct SendResult;
 
@@ -38,9 +40,10 @@ class AttributionObserver : public base::CheckedObserver {
   virtual void OnReportsChanged(AttributionReport::Type report_type) {}
 
   // Called when a source is registered, regardless of success.
-  virtual void OnSourceHandled(const StorableSource& source,
-                               absl::optional<uint64_t> cleared_debug_key,
-                               StorableSource::Result result) {}
+  virtual void OnSourceHandled(
+      const StorableSource& source,
+      absl::optional<uint64_t> cleared_debug_key,
+      attribution_reporting::mojom::StoreSourceResult) {}
 
   // Called when a report is sent, regardless of success, but not for attempts
   // that will be retried.
@@ -66,6 +69,7 @@ class AttributionObserver : public base::CheckedObserver {
       base::Time source_time,
       const attribution_reporting::SuitableOrigin& source_origin,
       const attribution_reporting::SuitableOrigin& reporting_origin,
+      AttributionSourceType,
       attribution_reporting::mojom::SourceRegistrationError) {}
 };
 

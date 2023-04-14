@@ -13,11 +13,14 @@
 #include "base/containers/flat_map.h"
 #include "base/files/file.h"
 #include "base/files/file_error_or.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/file_manager_copy_or_move_hook_delegate.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/speedometer.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "components/drive/file_errors.h"
 #include "storage/browser/file_system/file_system_context.h"
 #include "storage/browser/file_system/file_system_operation_runner.h"
 #include "storage/browser/file_system/file_system_url.h"
@@ -64,6 +67,9 @@ class CopyOrMoveIOTaskImpl {
   virtual void Execute(ProgressCallback progress_callback,
                        CompleteCallback complete_callback);
 
+  // Resumes the copy or move.
+  void Resume(ResumeParams);
+
   // Cancels the copy or move.
   void Cancel();
 
@@ -104,6 +110,9 @@ class CopyOrMoveIOTaskImpl {
   ProgressCallback progress_callback_;
 
  private:
+  friend class CopyOrMoveIOTaskTest;
+  FRIEND_TEST_ALL_PREFIXES(CopyOrMoveIOTaskTest, DriveQuota);
+
   // Verifies the transfer, e.g., by using enterprise connectors for checking
   // whether a transfer is allowed.
   virtual void VerifyTransfer();
@@ -120,11 +129,26 @@ class CopyOrMoveIOTaskImpl {
                    base::File::Error error,
                    const base::File::Info& file_info);
   void GotFreeDiskSpace(int64_t free_space);
+  void GotDrivePooledQuota(int64_t required_bytes,
+                           bool is_shared_drive,
+                           drive::FileError error,
+                           drivefs::mojom::PooledQuotaUsagePtr usage);
+  void GotSharedDriveMetadata(int64_t required_bytes,
+                              drive::FileError error,
+                              drivefs::mojom::FileMetadataPtr metadata);
   void GenerateDestinationURL(size_t idx);
   void CopyOrMoveFile(
       size_t idx,
       base::FileErrorOr<storage::FileSystemURL> destination_result);
-
+  void ResumeCopyOrMoveFile(size_t idx,
+                            storage::FileSystemURL replace_url,
+                            storage::FileSystemURL destination_url,
+                            ResumeParams params);
+  void ContinueCopyOrMoveFile(size_t idx,
+                              storage::FileSystemURL destination_url);
+  void DidDeleteDestinationURL(size_t idx,
+                               storage::FileSystemURL replace_url,
+                               base::File::Error error);
   void OnCopyOrMoveComplete(size_t idx, base::File::Error error);
   void SetCurrentOperationID(
       storage::FileSystemOperationRunner::OperationID id);
@@ -149,7 +173,21 @@ class CopyOrMoveIOTaskImpl {
   // std::vector::size here MUST be the same as progress_.sources size.
   std::vector<base::FilePath> destination_file_names_;
 
-  // Stores the sizes reported by the last progress update so we can compute the
+  // CopyOrMoveIOTaskImpl supports IOTask pause and resume: declare the resume
+  // callback type.
+  using ResumeCallback = base::OnceCallback<void(ResumeParams)>;
+
+  // Callback to ResumeCopyOrMoveFile() that is setup when we notify the UI of
+  // a file name conflict, and want the UI to resolve it. The UI will call our
+  // IOTask::Resume() override with the conflict resolve result (ResumeParams)
+  // which invokes the |resume_callback_| to ResumeCopyOrMoveFile().
+  ResumeCallback resume_callback_;
+
+  // ResumeCopyOrMoveFile() can use the UI resolve result to setup an automatic
+  // resolve for future file name conflicts (no need to ask the UI again).
+  std::string conflict_resolve_;
+
+  // Stores the size reported by the last progress update so we can compute the
   // delta on the next progress update.
   std::vector<ItemProgress> item_progresses;
 

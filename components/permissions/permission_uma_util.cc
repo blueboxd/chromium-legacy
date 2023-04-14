@@ -486,6 +486,10 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_IGNORES);
       break;
+    case PermissionStatusSource::RECENT_DISPLAY:
+      PermissionUmaUtil::RecordEmbargoPromptSuppression(
+          PermissionEmbargoStatus::RECENT_DISPLAY);
+      break;
     case PermissionStatusSource::UNSPECIFIED:
     case PermissionStatusSource::KILL_SWITCH:
     case PermissionStatusSource::INSECURE_ORIGIN:
@@ -1121,6 +1125,52 @@ void PermissionUmaUtil::RecordPageInfoPermissionChangeWithin1m(
     case PermissionAction::REVOKED:  // not a relevant use case for this metric
     case PermissionAction::NUM:      // placeholder
       break;                         // NOP
+  }
+}
+
+// static
+void PermissionUmaUtil::RecordPageInfoPermissionChange(
+    ContentSettingsType type,
+    ContentSetting setting_before,
+    ContentSetting setting_after,
+    bool suppress_reload_page_bar) {
+  DCHECK(IsRequestablePermissionType(type));
+  // Currently only Camera and Mic are supported.
+  DCHECK(type == ContentSettingsType::MEDIASTREAM_MIC ||
+         type == ContentSettingsType::MEDIASTREAM_CAMERA);
+  std::string permission_type = GetPermissionRequestString(
+      GetUmaValueForRequestType(ContentSettingsTypeToRequestType(type)));
+  std::string histogram_name =
+      "Permissions.PageInfo.Changed." + permission_type;
+
+  if (suppress_reload_page_bar) {
+    histogram_name = histogram_name + ".ReloadInfobarNotShown";
+  } else {
+    histogram_name = histogram_name + ".ReloadInfobarShown";
+  }
+
+  if (setting_before == ContentSetting::CONTENT_SETTING_BLOCK) {
+    if (setting_after == ContentSetting::CONTENT_SETTING_ALLOW) {
+      base::UmaHistogramEnumeration(histogram_name,
+                                    PermissionChangeAction::REALLOWED);
+    } else if (setting_after == ContentSetting::CONTENT_SETTING_ASK ||
+               setting_after == ContentSetting::CONTENT_SETTING_DEFAULT) {
+      base::UmaHistogramEnumeration(histogram_name,
+                                    PermissionChangeAction::RESET_FROM_DENIED);
+    } else {
+      NOTREACHED();
+    }
+  } else if (setting_before == ContentSetting::CONTENT_SETTING_ALLOW) {
+    if (setting_after == ContentSetting::CONTENT_SETTING_BLOCK) {
+      base::UmaHistogramEnumeration(histogram_name,
+                                    PermissionChangeAction::REVOKED);
+    } else if (setting_after == ContentSetting::CONTENT_SETTING_ASK ||
+               setting_after == ContentSetting::CONTENT_SETTING_DEFAULT) {
+      base::UmaHistogramEnumeration(histogram_name,
+                                    PermissionChangeAction::RESET_FROM_ALLOWED);
+    } else {
+      NOTREACHED();
+    }
   }
 }
 

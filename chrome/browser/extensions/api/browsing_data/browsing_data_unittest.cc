@@ -82,11 +82,12 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     return remover_->GetLastUsedOriginTypeMaskForTesting();
   }
 
-  uint64_t GetAsMask(const base::Value* dict,
+  uint64_t GetAsMask(const base::Value::Dict* dict,
                      std::string path,
                      uint64_t mask_value) {
-    EXPECT_TRUE(dict->FindBoolKey(path));
-    return *dict->FindBoolKey(path) ? mask_value : 0;
+    absl::optional<bool> value = dict->FindBool(path);
+    DCHECK(value.has_value());
+    return *value ? mask_value : 0;
   }
 
   void RunBrowsingDataRemoveFunctionAndCompareRemovalMask(
@@ -135,8 +136,11 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
 
   void SetSinceAndVerify(browsing_data::TimePeriod since_pref) {
     PrefService* prefs = browser()->profile()->GetPrefs();
-    prefs->SetInteger(browsing_data::prefs::kDeleteTimePeriod,
-                      static_cast<int>(since_pref));
+    browsing_data::ClearBrowsingDataTab tab =
+        static_cast<browsing_data::ClearBrowsingDataTab>(
+            prefs->GetInteger(browsing_data::prefs::kLastClearBrowsingDataTab));
+    auto* time_period_pref = browsing_data::GetTimePeriodPreferenceName(tab);
+    prefs->SetInteger(time_period_pref, static_cast<int>(since_pref));
 
     scoped_refptr<BrowsingDataSettingsFunction> function =
         new BrowsingDataSettingsFunction();
@@ -227,18 +231,21 @@ class BrowsingDataApiTest : public ExtensionServiceTestBase {
     std::unique_ptr<base::Value> result(RunFunctionAndReturnSingleResult(
         function.get(), std::string("[]"), browser()));
 
-    EXPECT_TRUE(result->is_dict());
+    ASSERT_TRUE(result->is_dict());
+    const base::Value::Dict& result_dict = result->GetDict();
+    const base::Value::Dict* origin_types =
+        result_dict.FindDictByDottedPath("options.originTypes");
 
-    base::Value* origin_types = result->FindDictPath("options.originTypes");
-    EXPECT_TRUE(origin_types);
+    ASSERT_TRUE(origin_types);
     uint64_t origin_type_mask =
         GetAsMask(origin_types, "unprotectedWeb", UNPROTECTED_WEB) |
         GetAsMask(origin_types, "protectedWeb", PROTECTED_WEB) |
         GetAsMask(origin_types, "extension", EXTENSION);
     EXPECT_EQ(expected_origin_type_mask, origin_type_mask);
 
-    base::Value* data_to_remove = result->FindDictKey("dataToRemove");
-    EXPECT_TRUE(data_to_remove);
+    const base::Value::Dict* data_to_remove =
+        result_dict.FindDict("dataToRemove");
+    ASSERT_TRUE(data_to_remove);
     uint64_t removal_mask =
         GetAsMask(data_to_remove, "cache",
                   content::BrowsingDataRemover::DATA_TYPE_CACHE) |
@@ -515,6 +522,7 @@ TEST_F(BrowsingDataApiTest, ShortcutFunctionRemovalMask) {
 // Test the processing of the 'delete since' preference.
 TEST_F(BrowsingDataApiTest, SettingsFunctionSince) {
   SetSinceAndVerify(browsing_data::TimePeriod::ALL_TIME);
+  SetSinceAndVerify(browsing_data::TimePeriod::LAST_15_MINUTES);
   SetSinceAndVerify(browsing_data::TimePeriod::LAST_HOUR);
   SetSinceAndVerify(browsing_data::TimePeriod::LAST_DAY);
   SetSinceAndVerify(browsing_data::TimePeriod::LAST_WEEK);

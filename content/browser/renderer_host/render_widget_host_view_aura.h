@@ -417,10 +417,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void NotifyHostAndDelegateOnWasShown(
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
       final;
-  void RequestPresentationTimeFromHostOrDelegate(
+  void RequestSuccessfulPresentationTimeFromHostOrDelegate(
       blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request)
       final;
-  void CancelPresentationTimeRequestForHostAndDelegate() final;
+  void CancelSuccessfulPresentationTimeRequestForHostAndDelegate() final;
 
   // May be overridden in tests.
   virtual bool ShouldSkipCursorUpdate() const;
@@ -647,9 +647,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void SetTooltipText(const std::u16string& tooltip_text);
 
-  // TODO(crbug.com/1298696): content_browsertests breaks with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<aura::Window, DegradeToNoOpWhenMTE> window_;
+  raw_ptr<aura::Window> window_;
 
   std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client_;
   // NOTE: this may be null during destruction.

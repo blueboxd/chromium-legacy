@@ -19,6 +19,7 @@
 #include "chrome/browser/ui/autofill/payments/autofill_error_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/autofill_progress_dialog_controller_impl.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -67,18 +68,18 @@ class ChromeAutofillClient
  public:
   ChromeAutofillClient(const ChromeAutofillClient&) = delete;
   ChromeAutofillClient& operator=(const ChromeAutofillClient&) = delete;
-
   ~ChromeAutofillClient() override;
 
   // AutofillClient:
   version_info::Channel GetChannel() const override;
   bool IsOffTheRecord() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  AutofillDownloadManager* GetDownloadManager() override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
   IBANManager* GetIBANManager() override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
-  CreditCardCVCAuthenticator* GetCVCAuthenticator() override;
+  CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;
@@ -101,7 +102,7 @@ class ChromeAutofillClient
   std::unique_ptr<webauthn::InternalAuthenticator>
   CreateCreditCardInternalAuthenticator(AutofillDriver* driver) override;
 
-  void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowAutofillSettings(PopupType popup_type) override;
   void ShowCardUnmaskOtpInputDialog(
       const size_t& otp_length,
       base::WeakPtr<OtpUnmaskDelegate> delegate) override;
@@ -182,9 +183,10 @@ class ChromeAutofillClient
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(const FormData& form,
-                             const FormFieldData& field,
-                             AutofillDriver* driver) override;
+  bool TryToShowFastCheckout(
+      const FormData& form,
+      const FormFieldData& field,
+      base::WeakPtr<AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
   bool IsShowingFastCheckoutUI() override;
@@ -199,7 +201,7 @@ class ChromeAutofillClient
   void UpdateAutofillPopupDataListValues(
       const std::vector<std::u16string>& values,
       const std::vector<std::u16string>& labels) override;
-  base::span<const Suggestion> GetPopupSuggestions() const override;
+  std::vector<Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<Suggestion>& suggestions,
@@ -225,7 +227,6 @@ class ChromeAutofillClient
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
-  bool ShouldShowSigninPromo() override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   LogManager* GetLogManager() const override;
@@ -255,15 +256,16 @@ class ChromeAutofillClient
 
 #if !BUILDFLAG(IS_ANDROID)
   // ZoomObserver:
-  void OnZoomControllerDestroyed() override;
+  void OnZoomControllerDestroyed(zoom::ZoomController* source) override;
   void OnZoomChanged(
       const zoom::ZoomController::ZoomChangedEventData& data) override;
 #endif
 
+ protected:
+  explicit ChromeAutofillClient(content::WebContents* web_contents);
+
  private:
   friend class content::WebContentsUserData<ChromeAutofillClient>;
-
-  explicit ChromeAutofillClient(content::WebContents* web_contents);
 
   Profile* GetProfile() const;
   bool IsMultipleAccountUser();
@@ -273,8 +275,9 @@ class ChromeAutofillClient
 
   // These members are initialized lazily in their respective getters.
   // Therefore, do not access the members directly.
+  std::unique_ptr<AutofillDownloadManager> download_manager_;
   std::unique_ptr<payments::PaymentsClient> payments_client_;
-  std::unique_ptr<CreditCardCVCAuthenticator> cvc_authenticator_;
+  std::unique_ptr<CreditCardCvcAuthenticator> cvc_authenticator_;
   std::unique_ptr<CreditCardOtpAuthenticator> otp_authenticator_;
   std::unique_ptr<FormDataImporter> form_data_importer_;
 

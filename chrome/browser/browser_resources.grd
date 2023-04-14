@@ -217,10 +217,10 @@
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_high.wav" type="BINDATA" />
         <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_low.wav" type="BINDATA" />
         <include name="IDR_SOUND_TOUCH_TYPE_WAV" file="resources\chromeos\sounds\touch_type.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_HIGH_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_high.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_MEDIUM_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_medium.wav" type="BINDATA" />
-        <include name="IDR_SOUND_CHARGE_LOW_BATTERY_WAV" file="resources\chromeos\sounds\power\charging_started_low.wav" type="BINDATA" />
-        <include name="IDR_SOUND_NO_CHARGE_LOW_BATTERY_WAV" file="resources\chromeos\sounds\power\low_battery.wav" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_HIGH_BATTERY_FLAC" file="resources\chromeos\sounds\power\charging_started_high.flac" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_MEDIUM_BATTERY_FLAC" file="resources\chromeos\sounds\power\charging_started_medium.flac" type="BINDATA" />
+        <include name="IDR_SOUND_CHARGE_LOW_BATTERY_FLAC" file="resources\chromeos\sounds\power\charging_started_low.flac" type="BINDATA" />
+        <include name="IDR_SOUND_NO_CHARGE_LOW_BATTERY_FLAC" file="resources\chromeos\sounds\power\low_battery.flac" type="BINDATA" />
       </if>
       <if expr="chromeos_ash">
         <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" type="BINDATA" />
@@ -303,10 +303,13 @@
         <include name="IDR_PARENT_ACCESS_UI_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_ui.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_AFTER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_after.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_BEFORE_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_before.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_PARENT_ACCESS_DISABLED_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\parent_access_disabled.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_WEBVIEW_MANAGER_JS" file="resources\chromeos\parent_access\webview_manager.js" type="BINDATA" />
         <include name="IDR_LOCAL_WEB_APPROVALS_AFTER_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\flows\local_web_approvals_after.js" use_base_dir="false" type="BINDATA" />
+        <include name="IDR_EXTENSION_APPROVALS_DISABLED_JS" file="${root_gen_dir}\chrome\browser\resources\chromeos\parent_access\flows\extension_approvals_disabled.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_CONTROLLER_JS" file="resources\chromeos\parent_access\parent_access_controller.js" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_UI_HANDLER_JS" file="resources\chromeos\parent_access\parent_access_ui_handler.js" type="BINDATA" />
+        <include name="IDR_PARENT_ACCESS_SCREEN_JS" file="resources\chromeos\parent_access\parent_access_screen.js" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_UI_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\chrome\browser\ui\webui\ash\parent_access\parent_access_ui.mojom-webui.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_REQUEST_APPROVAL_SVG" file="resources\chromeos\parent_access\images\request_approval.svg" type="BINDATA" />
         <include name="IDR_PARENT_ACCESS_REQUEST_APPROVAL_DARK_SVG" file="resources\chromeos\parent_access\images\request_approval_dark.svg" type="BINDATA" />
@@ -339,9 +342,6 @@
       <if expr="not is_android">
         <!-- Chrome Cart -->
         <part file="cart/resources/cart_resources.grdp" />
-      </if>
-      <if expr="not is_android">
-        <include name="IDR_DESKTOP_SHARING_HUB_PB" file="${root_gen_dir}\chrome\browser\share\core\resources\desktop_sharing_hub.pb" use_base_dir="false" type="BINDATA" compress="gzip" />
       </if>
     </includes>
   </release>

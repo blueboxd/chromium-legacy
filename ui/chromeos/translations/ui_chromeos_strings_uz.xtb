@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Keyingisi</translation>
 <translation id="1209796539517632982">Avtomatik nom serverlari</translation>
 <translation id="1210831758834677569">Lao</translation>
+<translation id="1221555006497674479">Xotirada joy kam, umumiy diskda <ph name="REMAINING_PERCENTAGE" />% / <ph name="TOTAL_SPACE" /> qoldi.</translation>
 <translation id="1243314992276662751">Yuklash</translation>
 <translation id="1249250836236328755">Janri</translation>
 <translation id="1254593899333212300">Internetga to‘g‘ridan-to‘g‘ri ulanish</translation>
 <translation id="1272293450992660632">PIN qiymatlari mos kelmadi.</translation>
 <translation id="1280820357415527819">Mobil tarmoqlar qidirilmoqda</translation>
-<translation id="1291603679744561561">SIM karta qulflandi</translation>
 <translation id="1293556467332435079">Fayllar</translation>
 <translation id="1297922636971898492">Google Disk hozir ish faoliyatida emas. Xizmat ish faoliyatiga qaytishi bilan yuklash amali avtomatik davom ettiriladi.</translation>
 <translation id="1307931752636661898">Linux fayllari ochilmadi</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Windows tizmiga nusxalanishi kerak fayllarni Parallels Desktop oynasiga tashlang.</translation>
 <translation id="1435838927755162558">Jildni Parallels Desktopga ulashish</translation>
 <translation id="1439919885608649279">Gullari bor odam</translation>
+<translation id="1458457385801829801">Chiqarib olish: <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Slovak</translation>
 <translation id="1482884275703521657">Fin</translation>
 <translation id="148466539719134488">Shveytsariya</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">Xitoy (Pinyin)</translation>
 <translation id="1646019627374511909"><ph name="NUMBER_OF_ITEMS" /> ta fayl oflaynga nusxalanmoqda</translation>
 <translation id="164969095109328410">Chrome qurilmasi</translation>
+<translation id="1661207570040737402">Umumiy disk va Google Workspace xotirasida joy qolmadi.</translation>
 <translation id="1661867754829461514">PIN-kod kiritilmagan</translation>
 <translation id="166439687370499867">Umumiy tarmoq sozlamalarini o‘zgartirib bo‘lmaydi</translation>
 <translation id="1665611772925418501">Faylni o‘zgartirib bo‘lmadi.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">1 ta jild Bruschettaga ulashildi</translation>
 <translation id="2578394532502990878">Tamil (fonetik)</translation>
 <translation id="2579959351793446050">Oriya</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> sinxronlashga tayyorlanmoqda...</translation>
 <translation id="2602810353103180630">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Administrator tomonidan bloklangan, Batafsil</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> video</translation>
 <translation id="2620090360073999360">Ayni paytda Google Disk ish faoliyatida emas.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">Mongol</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ta xatolik.</translation>
 <translation id="3509680540198371098">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Himoya: <ph name="SECURITY_STATUS" />, Ulanish: <ph name="CONNECTION_STATUS" />, Signal darajasi: <ph name="SIGNAL_STRENGTH" />%, Batafsil</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> ta element sinxronlashga tayyorlanmoqda...</translation>
 <translation id="3522708245912499433">Portugal tili</translation>
 <translation id="3524311639100184459">Diqqat! Bu vaqtinchalik fayllar diskda joy boʻshatish uchun avtomatik oʻchirib yuborilishi mumkin.  <ph name="BEGIN_LINK" />Batafsil<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Jild</translation>
@@ -347,10 +351,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Joylash</translation>
 <translation id="3952872973865944257">Telugu (fonetik)</translation>
+<translation id="3954354850384043518">Davom etmoqda</translation>
 <translation id="3958548648197196644">Kivi</translation>
 <translation id="3971140002794351170">Mobil profil, tarmoq <ph name="NETWORK_INDEX" /><ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /> kabilarni yuklab olish</translation>
 <translation id="3973925058222872294">Ingliz (Buyuk Britaniya)</translation>
 <translation id="3975895378829046965">Bangla (Fonetik)</translation>
+<translation id="3999574733850440202">Yaqinda ochilgan OneDrive omboriga olingan Microsoft fayllari</translation>
 <translation id="4002066346123236978">Nomi</translation>
 <translation id="4017788180641807848">Ingliz (AQSH) va Workman klaviaturasi</translation>
 <translation id="4019998208269143058">Tezkor fayllarga mahkamlash</translation>
@@ -406,6 +412,7 @@
 <translation id="4462159676511157176">Boshqa nom serverlari</translation>
 <translation id="4465725236958772856">Tarmoq: <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, Nomi: <ph name="NETWORK_NAME" />, Administrator boshqaruvida, Ulanish</translation>
 <translation id="4470564870223067757">Hangul 2 majmuali</translation>
+<translation id="4474142134969976028">Hech narsa topilmadi</translation>
 <translation id="4477002475007461989">Rumin</translation>
 <translation id="4477219268485577442">Bolgar fonetik</translation>
 <translation id="4508265954913339219">Faollashtirib bo‘lmadi</translation>
@@ -477,6 +484,7 @@
 <translation id="4973523518332075481">Nom <ph name="MAX_LENGTH" /> yoki undan kam belgilardan iborat bo‘lishi zarur</translation>
 <translation id="4973970068702235170">Arxivlashda kutilmagan xatolik yuz berdi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Yapon</translation>
+<translation id="4987699874727873250">Ingliz (Hindiston)</translation>
 <translation id="4988205478593450158">“<ph name="FILE_NAME" />” fayli oʻchirib tashlansinmi?</translation>
 <translation id="498902553138568924">Qizil kapalak</translation>
 <translation id="4992066212339426712">Ovozni yoqish</translation>
@@ -785,6 +793,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7458955835361612701">Oxirgi rasmlar yoʻq</translation>
 <translation id="7460898608667578234">Ukrayin tili</translation>
 <translation id="7469894403370665791">Bu tarmoqqa avtomatik ravishda ulanish</translation>
+<translation id="7481358317100446445">Tayyor</translation>
 <translation id="7486315294984620427">Windowsga nusxalanishi kerak fayllarni Parallels Desktop oynasiga tashlang.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam, fonetik</translation>
@@ -810,6 +819,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="7655441028674523381">Google Photosni oson oching</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
 <translation id="7663224033570512922">Hind</translation>
+<translation id="7665680517722058469">Qaytadan qidiring</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> ta fayl chiqitdonga tashlandi</translation>
 <translation id="7693909743393669729">Disk formatlansa, undagi barcha maʼlumotlar oʻchib ketadi va undagi barcha mavjud boʻlimlar, jumladan yashirinlari ham olib tashlanadi. Bu amal bekor qilinmaydi.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> formatlanmadi</translation>
@@ -897,6 +907,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8300849813060516376">OTASP amalga oshmadi</translation>
 <translation id="8312871300878166382">Jild ichiga qo‘shib qo‘yish</translation>
 <translation id="8329978297633540474">Oddiy matn</translation>
+<translation id="8332007959299458842">Yaqinda ochilgan Google Drive omboriga olingan Microsoft fayllari</translation>
 <translation id="8335587457941836791">Javondan olib tashlash</translation>
 <translation id="8335837413233998004">Belarus</translation>
 <translation id="8336153091935557858">Kecha <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -966,6 +977,7 @@ Amal bajarilishini kuting va qurilmani “Fayllar” ilovasida chiqarib oling. A
 <translation id="8866284467018526531">Arab (transliteratsiya)</translation>
 <translation id="8873014196523807561">Bu elementlarni tiklash uchun ularni yangi jildga sudrang. Bu elementlarning asl jildi oʻchib ketgan.</translation>
 <translation id="8874184842967597500">Ulanmagan</translation>
+<translation id="8876368061475701452">Navbatda</translation>
 <translation id="8900820606136623064">Venger tili</translation>
 <translation id="8903931173357132290">Bitiruvchi</translation>
 <translation id="8912078710089354287">Dumini likkillatayotgan it</translation>

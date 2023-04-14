@@ -16,6 +16,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/synchronization/lock.h"
 #include "base/timer/elapsed_timer.h"
@@ -23,6 +24,7 @@
 #include "net/base/features.h"
 #include "net/base/hash_value.h"
 #include "net/base/network_notification_thread_mac.h"
+#include "net/cert/internal/trust_store_features.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/cert_issuer_source_static.h"
 #include "net/cert/pki/extended_key_usage.h"
@@ -402,7 +404,8 @@ class TrustDomainCacheFullCerts {
         continue;
       }
       auto buffer = x509_util::CreateCryptoBuffer(base::make_span(
-          CFDataGetBytePtr(der_data.get()), CFDataGetLength(der_data.get())));
+          CFDataGetBytePtr(der_data.get()),
+          base::checked_cast<size_t>(CFDataGetLength(der_data.get()))));
       CertErrors errors;
       ParseCertificateOptions options;
       options.allow_invalid_serial_numbers = true;
@@ -830,7 +833,8 @@ class TrustStoreMac::TrustImplDomainCacheFullCerts
         continue;
       }
       auto buffer = x509_util::CreateCryptoBuffer(base::make_span(
-          CFDataGetBytePtr(der_data.get()), CFDataGetLength(der_data.get())));
+          CFDataGetBytePtr(der_data.get()),
+          base::checked_cast<size_t>(CFDataGetLength(der_data.get()))));
       CertErrors errors;
       ParseCertificateOptions options;
       options.allow_invalid_serial_numbers = true;
@@ -1002,7 +1006,8 @@ class TrustStoreMac::TrustImplKeychainCacheFullCerts
         continue;
       }
       auto buffer = x509_util::CreateCryptoBuffer(base::make_span(
-          CFDataGetBytePtr(der_data.get()), CFDataGetLength(der_data.get())));
+          CFDataGetBytePtr(der_data.get()),
+          base::checked_cast<size_t>(CFDataGetLength(der_data.get()))));
       CertErrors errors;
       ParseCertificateOptions options;
       options.allow_invalid_serial_numbers = true;
@@ -1156,17 +1161,24 @@ CertificateTrust TrustStoreMac::GetTrust(const ParsedCertificate* cert,
                                          base::SupportsUserData* debug_data) {
   TrustStatus trust_status = trust_cache_->IsCertTrusted(cert, debug_data);
   switch (trust_status) {
-    case TrustStatus::TRUSTED:
+    case TrustStatus::TRUSTED: {
+      CertificateTrust trust;
       if (base::FeatureList::IsEnabled(
               features::kTrustStoreTrustedLeafSupport)) {
         // Mac trust settings don't distinguish between trusted anchors and
         // trusted leafs, return a trust record valid for both, which will
         // depend on the context the certificate is encountered in.
-        return CertificateTrust::ForTrustAnchorOrLeaf()
-            .WithEnforceAnchorExpiry();
+        trust =
+            CertificateTrust::ForTrustAnchorOrLeaf().WithEnforceAnchorExpiry();
       } else {
-        return CertificateTrust::ForTrustAnchor().WithEnforceAnchorExpiry();
+        trust = CertificateTrust::ForTrustAnchor().WithEnforceAnchorExpiry();
       }
+      if (IsLocalAnchorConstraintsEnforcementEnabled()) {
+        trust = trust.WithEnforceAnchorConstraints()
+                    .WithRequireAnchorBasicConstraints();
+      }
+      return trust;
+    }
     case TrustStatus::DISTRUSTED:
       return CertificateTrust::ForDistrusted();
     case TrustStatus::UNSPECIFIED:
@@ -1236,9 +1248,10 @@ TrustStoreMac::FindMatchingCertificatesForMacNormalizedSubject(
       LOG(ERROR) << "SecCertificateCopyData error";
       continue;
     }
-    matching_cert_buffers.push_back(x509_util::CreateCryptoBuffer(
-        base::make_span(CFDataGetBytePtr(der_data.get()),
-                        CFDataGetLength(der_data.get()))));
+    matching_cert_buffers.push_back(
+        x509_util::CreateCryptoBuffer(base::make_span(
+            CFDataGetBytePtr(der_data.get()),
+            base::checked_cast<size_t>(CFDataGetLength(der_data.get())))));
   }
   return matching_cert_buffers;
 }

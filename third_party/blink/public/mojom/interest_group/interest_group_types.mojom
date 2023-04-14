@@ -19,6 +19,23 @@ struct InterestGroupAd {
   string? metadata;
 };
 
+// The dimensions that an ad for an interest group can be. Note that an interest
+// group can have more than one `InterestGroupSize` associated with it.
+struct InterestGroupSize {
+  //  This is stable because it is persisted to storage.
+  [Stable, Extensible]
+  enum LengthUnit {
+    [Default] kInvalid,
+    kPixels,
+    kScreenWidth,
+  };
+  // Must be valid dimensions (ex. 100px, 50sw)
+  double width;
+  LengthUnit width_units;
+  double height;
+  LengthUnit height_units;
+};
+
 // The maximum size of a valid interest group in bytes.
 const uint32 kMaxInterestGroupSize = 51200; // 50 * 1024
 
@@ -35,15 +52,20 @@ struct SellerCapabilities {
 // by (owner, name) already exists, we "merge" by overwriting specified fields,
 // leaving other existing fields intact.
 //
+// Interest groups are persisted and used as inputs to FLEDGE auctions.
+// Therefore, any enumeration types used in the interest group should be
+// marked [Stable].
+//
 // All URLs and origins must use https.
 //
 // https://github.com/WICG/turtledove/blob/main/FLEDGE.md#11-joining-interest-groups
 struct InterestGroup {
+  [Stable, Extensible]
   enum ExecutionMode {
     // kCompatibilityMode creates a new context for every execution. This is
     // potentially slow as it is only able to reuse the compilation cache from
     // other interest groups with the same bidding script.
-    kCompatibilityMode,
+    [Default] kCompatibilityMode,
     // kGroupedByOriginMode, mode uses the same JavaScript context for groups
     // with the same joining origin. This can be much faster, but to mitigate
     // any privacy leaks FLEDGE will clear all of the interest groups for a
@@ -100,6 +122,8 @@ struct InterestGroup {
   string?        user_bidding_signals;
   array<InterestGroupAd>? ads;
   array<InterestGroupAd>? ad_components;
+  map<string, InterestGroupSize>? ad_sizes;
+  map<string, array<string>>? size_groups;
 };
 
 // Packages the details necessary for the browser process to retrieve a
@@ -191,18 +215,17 @@ struct DirectFromSellerSignals {
 
 // See blink::AuctionConfig::MaybePromiseJson.
 union AuctionAdConfigMaybePromiseJson {
-  uint32 nothing;  // value unused.
   uint32 promise;  // value unused.
-  string json;
+  string? value;
 };
 
 // See blink::AuctionConfig::MaybePromisePerBuyerSignals
 union AuctionAdConfigMaybePromisePerBuyerSignals {
   uint32 promise;  // value unused
 
-  // Keys of `per_buyer_signals` must be valid HTTPS origins. Value is opaque
+  // Keys of `value` must be valid HTTPS origins. Value is opaque
   // JSON data, passed as object to auction worklet.
-  map<url.mojom.Origin, string>? per_buyer_signals;
+  map<url.mojom.Origin, string>? value;
 };
 
 // See blink::AuctionConfig::BuyerTimeouts
@@ -220,6 +243,11 @@ struct AuctionAdConfigBuyerTimeouts {
 union AuctionAdConfigMaybePromiseBuyerTimeouts {
   uint32 promise;  // value unused
   AuctionAdConfigBuyerTimeouts value;
+};
+
+union AuctionAdConfigMaybePromiseDirectFromSellerSignals {
+  uint32 promise;  // value unused
+  DirectFromSellerSignals? value;
 };
 
 // For each report type, provides the bucket offset and scalar multiplier for
@@ -279,7 +307,13 @@ struct AuctionAdConfigNonSharedParams {
 
   AuctionAdConfigMaybePromisePerBuyerSignals per_buyer_signals;
 
+  // Timeouts for individual interest group worklet Javascript execution.
   AuctionAdConfigMaybePromiseBuyerTimeouts buyer_timeouts;
+
+  // Cumulative timeouts for all interest groups with the same buyer. Includes
+  // launching worklet processes, loading scripts and signals, and running
+  // the buyer's generateBid() functions.
+  AuctionAdConfigMaybePromiseBuyerTimeouts buyer_cumulative_timeouts;
 
   // Keys of `per_buyer_group_limits` must be valid HTTPS origins. Values
   // restrict the number of bidding interest groups for a particular buyer
@@ -353,7 +387,7 @@ struct AuctionAdConfig {
   // bundle(s).  Like `seller_signals`,`per_buyer_signals`, and
   // `auction_signals`, but the signals' contents are not revealed to the
   // renderer process. See details in the DirectFromSellerSignals comment.
-  DirectFromSellerSignals? direct_from_seller_signals;
+  AuctionAdConfigMaybePromiseDirectFromSellerSignals direct_from_seller_signals;
 
   // Optional identifier for an experiment group, used when getting trusted
   // signals (and as part of AuctionConfig given to worklets).

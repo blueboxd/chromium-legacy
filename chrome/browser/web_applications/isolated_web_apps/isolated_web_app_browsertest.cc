@@ -30,6 +30,7 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/gcm_driver/common/gcm_message.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
@@ -181,7 +182,8 @@ class ServiceWorkerVersionStoppedRunningWaiter
 class IsolatedWebAppBrowserTest : public IsolatedWebAppBrowserTestHarness {
  public:
   IsolatedWebAppBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kIsolatedWebApps, features::kIsolatedWebAppDevMode}, {});
     isolated_web_app_dev_server_ =
         CreateAndStartServer(FILE_PATH_LITERAL("web_apps/simple_isolated_app"));
   }
@@ -209,33 +211,6 @@ class IsolatedWebAppBrowserTest : public IsolatedWebAppBrowserTestHarness {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<net::EmbeddedTestServer> isolated_web_app_dev_server_;
 };
-
-class IsolatedWebAppUsingOriginsFlagBrowserTest
-    : public IsolatedWebAppBrowserTest {
- public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    IsolatedWebAppBrowserTestHarness::SetUpCommandLine(command_line);
-
-    std::string isolated_web_app_origins = std::string("https://") + kAppHost;
-    command_line->AppendSwitchASCII(switches::kIsolatedAppOrigins,
-                                    isolated_web_app_origins);
-  }
-
- protected:
-  static constexpr char kAppHost[] = "app.com";
-};
-
-IN_PROC_BROWSER_TEST_F(
-    IsolatedWebAppUsingOriginsFlagBrowserTest,
-    CanInstallAppWithManifestFieldAndIsolatedAppOriginsFlag) {
-  AppId app_id = InstallIsolatedWebApp(kAppHost);
-  content::RenderFrameHost* app_frame = OpenApp(app_id);
-
-  EXPECT_NE(default_storage_partition(), app_frame->GetStoragePartition());
-  EXPECT_EQ(content::RenderFrameHost::WebExposedIsolationLevel::
-                kMaybeIsolatedApplication,
-            app_frame->GetWebExposedIsolationLevel());
-}
 
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppBrowserTest, AppsPartitioned) {
   web_app::IsolatedWebAppUrlInfo url_info1 = InstallDevModeProxyIsolatedWebApp(

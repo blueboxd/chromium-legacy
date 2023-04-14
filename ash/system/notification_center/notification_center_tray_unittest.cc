@@ -4,12 +4,16 @@
 
 #include "ash/system/notification_center/notification_center_tray.h"
 
+#include <memory>
+
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/system/toast_manager.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
+#include "ash/system/privacy/privacy_indicators_tray_item_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
+#include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
@@ -221,6 +225,88 @@ TEST_F(NotificationCenterTrayTest, DoNotDisturbIconVisibility) {
   message_center::MessageCenter::Get()->SetQuietMode(false);
   EXPECT_TRUE(test_api()->IsTrayShown());
   EXPECT_FALSE(test_api()->IsDoNotDisturbIconShown());
+}
+
+TEST_F(NotificationCenterTrayTest, DoNotDisturbUpdatesPinnedIcons) {
+  test_api()->AddPinnedNotification();
+  EXPECT_TRUE(test_api()->IsPinnedIconShown());
+
+  message_center::MessageCenter::Get()->SetQuietMode(true);
+  EXPECT_FALSE(test_api()->IsPinnedIconShown());
+
+  message_center::MessageCenter::Get()->SetQuietMode(false);
+  EXPECT_TRUE(test_api()->IsPinnedIconShown());
+}
+
+TEST_F(NotificationCenterTrayTest, NoPrivacyIndicators) {
+  // No privacy indicators when the feature is not enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{},
+      /*disabled_features=*/{features::kVideoConference,
+                             features::kPrivacyIndicators});
+
+  auto notification_tray =
+      std::make_unique<NotificationCenterTray>(GetPrimaryShelf());
+  EXPECT_FALSE(notification_tray->privacy_indicators_view());
+}
+
+TEST_F(NotificationCenterTrayTest, NoPrivacyIndicatorsWhenVcEnabled) {
+  // No privacy indicators when `kVideoConference` is enabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kVideoConference,
+                            features::kPrivacyIndicators},
+      /*disabled_features=*/{});
+
+  auto notification_tray =
+      std::make_unique<NotificationCenterTray>(GetPrimaryShelf());
+  EXPECT_FALSE(notification_tray->privacy_indicators_view());
+}
+
+TEST_F(NotificationCenterTrayTest, PrivacyIndicatorsVisibility) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      /*enabled_features=*/{features::kPrivacyIndicators},
+      /*disabled_features=*/{features::kVideoConference});
+
+  // Privacy indicators should be created and show/hide when updated.
+  auto notification_tray =
+      std::make_unique<NotificationCenterTray>(GetPrimaryShelf());
+  auto* privacy_indicators_view = notification_tray->privacy_indicators_view();
+  EXPECT_TRUE(privacy_indicators_view);
+
+  privacy_indicators_view->Update(
+      /*app_id=*/"app_id",
+      /*is_camera_used=*/true,
+      /*is_microphone_used=*/false);
+  EXPECT_TRUE(privacy_indicators_view->GetVisible());
+
+  privacy_indicators_view->Update(
+      /*app_id=*/"app_id",
+      /*is_camera_used=*/false,
+      /*is_microphone_used=*/false);
+  EXPECT_FALSE(privacy_indicators_view->GetVisible());
+}
+
+// Tests that the focus ring is visible and has proper size when the
+// notification center tray is focused.
+TEST_F(NotificationCenterTrayTest, FocusRing) {
+  // Add a notification to make the notification center tray visible.
+  test_api()->AddNotification();
+  ASSERT_TRUE(test_api()->IsTrayShown());
+
+  // Verify that the focus ring is not already visible.
+  EXPECT_FALSE(test_api()->GetFocusRing()->GetVisible());
+
+  // Focus the notification center tray.
+  test_api()->FocusTray();
+
+  // Verify that the focus ring is visible and is larger than the notification
+  // center tray by `kTrayBackgroundFocusPadding`.
+  EXPECT_TRUE(test_api()->GetFocusRing()->GetVisible());
+  EXPECT_EQ(test_api()->GetFocusRing()->size(),
+            test_api()->GetTray()->size() + kTrayBackgroundFocusPadding.size());
 }
 
 // TODO(b/252875025):

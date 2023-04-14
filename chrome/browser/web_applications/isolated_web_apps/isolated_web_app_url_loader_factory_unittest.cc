@@ -7,17 +7,19 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/isolated_web_apps/pending_install_info.h"
-#include "chrome/browser/web_applications/isolation_data.h"
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -25,6 +27,7 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/web_package/signed_web_bundles/ed25519_public_key.h"
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
@@ -88,8 +91,9 @@ std::unique_ptr<WebApp> CreateWebApp(const GURL& start_url) {
   return web_app;
 }
 
-std::unique_ptr<WebApp> CreateIsolatedWebApp(const GURL& start_url,
-                                             IsolationData isolation_data) {
+std::unique_ptr<WebApp> CreateIsolatedWebApp(
+    const GURL& start_url,
+    WebApp::IsolationData isolation_data) {
   auto web_app = CreateWebApp(start_url);
   web_app->SetIsolationData(isolation_data);
   return web_app;
@@ -127,14 +131,21 @@ class ScopedUrlHandler {
 class IsolatedWebAppURLLoaderFactoryTest : public WebAppTest {
  public:
   explicit IsolatedWebAppURLLoaderFactoryTest(
-      bool enable_isolated_web_apps_feature_flag = true)
+      bool enable_isolated_web_apps_feature_flag = true,
+      bool enable_dev_mode_feature_flag = true)
       : enable_isolated_web_apps_feature_flag_(
-            enable_isolated_web_apps_feature_flag) {}
+            enable_isolated_web_apps_feature_flag),
+        enable_dev_mode_feature_flag_(enable_dev_mode_feature_flag) {}
 
   void SetUp() override {
+    std::vector<base::test::FeatureRef> features;
     if (enable_isolated_web_apps_feature_flag_) {
-      scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
+      features.push_back(features::kIsolatedWebApps);
     }
+    if (enable_dev_mode_feature_flag_) {
+      features.push_back(features::kIsolatedWebAppDevMode);
+    }
+    scoped_feature_list_.InitWithFeatures(features, {});
 
     WebAppTest::SetUp();
 
@@ -244,6 +255,7 @@ class IsolatedWebAppURLLoaderFactoryTest : public WebAppTest {
 
  private:
   bool enable_isolated_web_apps_feature_flag_;
+  bool enable_dev_mode_feature_flag_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   raw_ptr<FakeWebAppProvider> provider_;
@@ -290,7 +302,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestFailsWithErrFailedIfAppNotLocallyInstalled) {
   std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}});
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}});
   iwa->SetIsLocallyInstalled(false);
   RegisterWebApp(std::move(iwa));
 
@@ -311,7 +323,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, GetRequestsSucceed) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}}));
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}}));
 
   CreateFactory();
 
@@ -326,7 +338,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, GetRequestsSucceed) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, HeadRequestsSucceed) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}}));
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}}));
 
   CreateFactory();
 
@@ -342,7 +354,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        PostRequestsReturnMethodNotSupportedWhenAppIsInstalled) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}}));
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}}));
 
   CreateFactory();
 
@@ -361,14 +373,14 @@ TEST_F(
     IsolatedWebAppURLLoaderFactoryTest,
     PostRequestsReturnMethodNotSupportedWhenAppIsInstalledAndThereIsPendingInstall) {
   RegisterWebApp(CreateIsolatedWebApp(
-      kDevAppStartUrl, IsolationData{IsolationData::DevModeProxy{
+      kDevAppStartUrl, WebApp::IsolationData{DevModeProxy{
                            .proxy_url = url::Origin::Create(
                                GURL("http://installed-app-proxy-url.com"))}}));
 
   IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents())
-      .set_isolation_data(IsolationData{IsolationData::DevModeProxy{
-          .proxy_url = url::Origin::Create(
-              GURL("http://pending-install-proxy-url.com"))}});
+      .set_isolated_web_app_location(
+          DevModeProxy{.proxy_url = url::Origin::Create(
+                           GURL("http://pending-install-proxy-url.com"))});
 
   CreateFactory();
 
@@ -401,10 +413,10 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
 
 TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestFailsWithErrFailedIfStoragePartitionDoesNotExist) {
-  RegisterWebApp(CreateIsolatedWebApp(kDevAppStartUrl,
-                                      IsolationData{IsolationData::DevModeProxy{
-                                          .proxy_url = kProxyOrigin}}),
-                 /*create_storage_partition=*/false);
+  RegisterWebApp(
+      CreateIsolatedWebApp(kDevAppStartUrl, WebApp::IsolationData{DevModeProxy{
+                                                .proxy_url = kProxyOrigin}}),
+      /*create_storage_partition=*/false);
 
   CreateFactory();
 
@@ -419,7 +431,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestUsesNonDefaultStoragePartition) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}}));
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}}));
 
   CreateFactory();
 
@@ -434,7 +446,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestSucceedsIfProxyUrlHasTrailingSlash) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com/"))}}));
 
   CreateFactory();
@@ -450,7 +462,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestSucceedsIfProxyUrlDoesNotHaveTrailingSlash) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -465,7 +477,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlDoesNotHaveUrlQuery) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -481,7 +493,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlDoesNotHaveUrlQuery) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlDoesNotHaveUrlFragment) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -497,7 +509,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlDoesNotHaveUrlFragment) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlKeepsOriginUrlPath) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -513,7 +525,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlKeepsOriginUrlPath) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlRemovesOriginalRequestData) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -532,7 +544,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyUrlRemovesOriginalRequestData) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestCopiesAcceptHeader) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -552,7 +564,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestCopiesAcceptHeader) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDisablesCaching) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -572,7 +584,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDisablesCaching) {
 TEST_F(IsolatedWebAppURLLoaderFactoryTest, ProxyRequestDefaultsToAcceptingAll) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -592,7 +604,7 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        DoNotReturnGeneratedPageWhenNotInstallingApplication) {
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -612,13 +624,12 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
 TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        ReturnGeneratedPageWhenInstallingApplication) {
   IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents())
-      .set_isolation_data(IsolationData{IsolationData::DevModeProxy{
-          .proxy_url =
-              url::Origin::Create(GURL("http://some-proxy-url.com"))}});
+      .set_isolated_web_app_location(DevModeProxy{
+          .proxy_url = url::Origin::Create(GURL("http://some-proxy-url.com"))});
 
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -639,13 +650,12 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
 TEST_F(IsolatedWebAppURLLoaderFactoryTest,
        RequestsRedirectedToPendingInstallIsolationDataWhenAppIsInstalled) {
   IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents())
-      .set_isolation_data(IsolationData{IsolationData::DevModeProxy{
-          .proxy_url =
-              url::Origin::Create(GURL("http://some-proxy-url.com"))}});
+      .set_isolated_web_app_location(DevModeProxy{
+          .proxy_url = url::Origin::Create(GURL("http://some-proxy-url.com"))});
 
   RegisterWebApp(CreateIsolatedWebApp(
       kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{
+      WebApp::IsolationData{DevModeProxy{
           .proxy_url = url::Origin::Create(GURL("http://example.com"))}}));
 
   CreateFactory();
@@ -667,9 +677,8 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
   CreateStoragePartitionForUrl(GURL("isolated-app://" + kDevWebBundleId));
 
   IsolatedWebAppPendingInstallInfo::FromWebContents(*web_contents())
-      .set_isolation_data(IsolationData{IsolationData::DevModeProxy{
-          .proxy_url =
-              url::Origin::Create(GURL("http://some-proxy-url.com"))}});
+      .set_isolated_web_app_location(DevModeProxy{
+          .proxy_url = url::Origin::Create(GURL("http://some-proxy-url.com"))});
 
   CreateFactory();
 
@@ -701,20 +710,40 @@ TEST_F(IsolatedWebAppURLLoaderFactoryTest,
   EXPECT_THAT(ResponseInfo(), IsNull());
 }
 
+using IsolatedWebAppURLLoaderFactoryForServiceWorkerTest =
+    IsolatedWebAppURLLoaderFactoryTest;
+
+TEST_F(IsolatedWebAppURLLoaderFactoryForServiceWorkerTest, GetRequestsSucceed) {
+  RegisterWebApp(CreateIsolatedWebApp(
+      kDevAppStartUrl,
+      WebApp::IsolationData{DevModeProxy{.proxy_url = kProxyOrigin}}));
+
+  CreateFactoryForServiceWorker();
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->method = net::HttpRequestHeaders::kGetMethod;
+  request->url = kDevAppStartUrl;
+  int status = CreateLoaderAndRun(std::move(request));
+
+  EXPECT_THAT(status, IsNetError(net::OK));
+}
+
 class IsolatedWebAppURLLoaderFactorySignedWebBundleTest
     : public IsolatedWebAppURLLoaderFactoryTest,
-      public ::testing::WithParamInterface<std::tuple</*is_dev_mode=*/bool,
-                                                      /*relative_urls=*/bool>> {
+      public ::testing::WithParamInterface<
+          std::tuple</*is_dev_mode_bundle=*/bool,
+                     /*relative_urls=*/bool>> {
  public:
   explicit IsolatedWebAppURLLoaderFactorySignedWebBundleTest(
-      bool enable_isolated_web_apps_feature_flag = true)
+      bool enable_isolated_web_apps_feature_flag = true,
+      bool enable_dev_mode_feature_flag = std::get<0>(GetParam()))
       : IsolatedWebAppURLLoaderFactoryTest(
-            enable_isolated_web_apps_feature_flag) {}
+            enable_isolated_web_apps_feature_flag,
+            enable_dev_mode_feature_flag),
+        is_dev_mode_bundle_(std::get<0>(GetParam())) {}
 
  protected:
   void SetUp() override {
-    bool is_dev_mode = std::get<0>(GetParam());
-
     IsolatedWebAppURLLoaderFactoryTest::SetUp();
 
     EXPECT_THAT(temp_dir_.CreateUniqueTempDir(), IsTrue());
@@ -722,10 +751,9 @@ class IsolatedWebAppURLLoaderFactorySignedWebBundleTest
     auto bundle_path = CreateSignedBundleAndWriteToDisk();
     std::unique_ptr<WebApp> iwa = CreateIsolatedWebApp(
         kEd25519AppOriginUrl,
-        is_dev_mode
-            ? IsolationData{IsolationData::DevModeBundle{.path = bundle_path}}
-            : IsolationData{
-                  IsolationData::InstalledBundle{.path = bundle_path}});
+        is_dev_mode_bundle_
+            ? WebApp::IsolationData{DevModeBundle{.path = bundle_path}}
+            : WebApp::IsolationData{InstalledBundle{.path = bundle_path}});
     RegisterWebApp(std::move(iwa));
   }
 
@@ -771,6 +799,7 @@ class IsolatedWebAppURLLoaderFactorySignedWebBundleTest
       base::StrCat({chrome::kIsolatedAppScheme, url::kStandardSchemeSeparator,
                     kTestEd25519WebBundleId}));
 
+  bool is_dev_mode_bundle_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -794,10 +823,19 @@ TEST_P(IsolatedWebAppURLLoaderFactorySignedWebBundleTest,
   request->url = kEd25519AppOriginUrl;
   int status = CreateLoaderAndRun(std::move(request));
 
-  // TODO(crbug.com/1365852): This should probably be `ERR_FAILED`, not
-  // `ERR_INVALID_WEB_BUNDLE`.
-  EXPECT_THAT(status, IsNetError(net::ERR_INVALID_WEB_BUNDLE));
-  EXPECT_THAT(ResponseInfo(), IsNull());
+  if (is_dev_mode_bundle_) {
+    // All public keys of dev mode bundles are trusted when
+    // `features::kIsolatedWebAppDevMode` is enabled.
+    EXPECT_THAT(base::FeatureList::IsEnabled(features::kIsolatedWebAppDevMode),
+                IsTrue());
+    EXPECT_THAT(status, IsNetError(net::OK));
+    EXPECT_THAT(ResponseInfo(), NotNull());
+  } else {
+    // TODO(crbug.com/1365852): This should probably be `ERR_FAILED`, not
+    // `ERR_INVALID_WEB_BUNDLE`.
+    EXPECT_THAT(status, IsNetError(net::ERR_INVALID_WEB_BUNDLE));
+    EXPECT_THAT(ResponseInfo(), IsNull());
+  }
 }
 
 TEST_P(IsolatedWebAppURLLoaderFactorySignedWebBundleTest,
@@ -877,29 +915,13 @@ INSTANTIATE_TEST_SUITE_P(
            std::get<1>(param_info.param) ? "RelativeUrls" : "AbsoluteUrls"});
     });
 
-using IsolatedWebAppURLLoaderFactoryForServiceWorkerTest =
-    IsolatedWebAppURLLoaderFactoryTest;
-
-TEST_F(IsolatedWebAppURLLoaderFactoryForServiceWorkerTest, GetRequestsSucceed) {
-  RegisterWebApp(CreateIsolatedWebApp(
-      kDevAppStartUrl,
-      IsolationData{IsolationData::DevModeProxy{.proxy_url = kProxyOrigin}}));
-
-  CreateFactoryForServiceWorker();
-
-  auto request = std::make_unique<network::ResourceRequest>();
-  request->method = net::HttpRequestHeaders::kGetMethod;
-  request->url = kDevAppStartUrl;
-  int status = CreateLoaderAndRun(std::move(request));
-
-  EXPECT_THAT(status, IsNetError(net::OK));
-}
-
 class IsolatedWebAppURLLoaderFactoryFeatureFlagDisabledTest
     : public IsolatedWebAppURLLoaderFactorySignedWebBundleTest {
  public:
   IsolatedWebAppURLLoaderFactoryFeatureFlagDisabledTest()
-      : IsolatedWebAppURLLoaderFactorySignedWebBundleTest(false) {}
+      : IsolatedWebAppURLLoaderFactorySignedWebBundleTest(
+            /*enable_isolated_web_apps_feature_flag=*/false,
+            /*enable_dev_mode_feature_flag=*/true) {}
 };
 
 TEST_P(IsolatedWebAppURLLoaderFactoryFeatureFlagDisabledTest,
@@ -916,6 +938,43 @@ TEST_P(IsolatedWebAppURLLoaderFactoryFeatureFlagDisabledTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     IsolatedWebAppURLLoaderFactoryFeatureFlagDisabledTest,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()),
+    [](::testing::TestParamInfo<std::tuple<bool, bool>> param_info) {
+      return base::StrCat(
+          {std::get<0>(param_info.param) ? "DevModeBundle" : "InstalledBundle",
+           std::get<1>(param_info.param) ? "RelativeUrls" : "AbsoluteUrls"});
+    });
+
+class IsolatedWebAppURLLoaderFactoryDevModeDisabledTest
+    : public IsolatedWebAppURLLoaderFactorySignedWebBundleTest {
+ public:
+  IsolatedWebAppURLLoaderFactoryDevModeDisabledTest()
+      : IsolatedWebAppURLLoaderFactorySignedWebBundleTest(
+            /*enable_isolated_web_apps_feature_flag=*/true,
+            /*enable_dev_mode_feature_flag=*/false) {}
+};
+
+TEST_P(IsolatedWebAppURLLoaderFactoryDevModeDisabledTest,
+       DevModeBundleRequestFailsWhenDevModeIsDisabled) {
+  CreateFactory();
+  TrustWebBundleId();
+
+  auto request = std::make_unique<network::ResourceRequest>();
+  request->url = kEd25519AppOriginUrl;
+
+  int status = CreateLoaderAndRun(std::move(request));
+  if (is_dev_mode_bundle_) {
+    EXPECT_THAT(status, IsNetError(net::ERR_FAILED));
+    EXPECT_THAT(ResponseInfo(), IsNull());
+  } else {
+    EXPECT_THAT(status, IsNetError(net::OK));
+    EXPECT_THAT(ResponseInfo(), NotNull());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    IsolatedWebAppURLLoaderFactoryDevModeDisabledTest,
     ::testing::Combine(::testing::Bool(), ::testing::Bool()),
     [](::testing::TestParamInfo<std::tuple<bool, bool>> param_info) {
       return base::StrCat(

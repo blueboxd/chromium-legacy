@@ -130,6 +130,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   // Receive |buffer|, that is now unused by the client.
   void ReceivePictureBufferFromClient(scoped_refptr<D3D11PictureBuffer> buffer);
 
+  // Picture buffer and related gpu resource initialization done.
+  void PictureBufferGPUResourceInitDone(
+      scoped_refptr<D3D11PictureBuffer> buffer);
+
   // Called when the gpu side of initialization is complete.
   void OnGpuInitComplete(
       bool success,
@@ -164,39 +168,6 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
 
   // Create a D3D11VideoDecoder, if possible, based on the current config.
   D3D11Status::Or<ComD3D11VideoDecoder> CreateD3D11Decoder();
-
-  enum class NotSupportedReason {
-    kVideoIsSupported = 0,
-
-    // D3D11 version 11.1 required.
-    kInsufficientD3D11FeatureLevel = 1,
-
-    // The video profile is not supported .
-    kProfileNotSupported = 2,
-
-    // GPU options: require zero copy.
-    kZeroCopyNv12Required = 3,
-
-    // GPU options: require zero copy.
-    kZeroCopyVideoRequired = 4,
-
-    // The video codec must be H264.
-    kCodecNotSupported = 5,
-
-    // The media was encrypted.
-    kEncryptedMedia = 6,
-
-    // Call to get the D3D11 device failed.
-    kCouldNotGetD3D11Device = 7,
-
-    // GPU workarounds has turned this off.
-    kOffByWorkaround = 8,
-
-    // For UMA. Must be the last entry. It should be initialized to the
-    // numerically largest value above; if you add more entries, then please
-    // update this to the last one.
-    kMaxValue = kOffByWorkaround
-  };
 
   enum class D3D11LifetimeProgression {
     kInitializeStarted = 0,
@@ -259,7 +230,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoder : public VideoDecoder,
   OutputCB output_cb_;
 
   // Callback to be used as a release CB for VideoFrames.  Be sure to
-  // BindToCurrentLoop the closure that it takes.
+  // base::BindPostTaskToCurrentDefault the closure that it takes.
   D3D11VideoDecoderImpl::ReleaseMailboxCB release_mailbox_cb_;
 
   // Right now, this is used both for the video decoder and for display.  In

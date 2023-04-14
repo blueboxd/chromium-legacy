@@ -13,6 +13,10 @@
 // Use IsFeedBackgroundRefreshEnabled() instead of this constant directly.
 BASE_DECLARE_FEATURE(kEnableFeedBackgroundRefresh);
 
+// Feature flag to enable feed foreground refresh. Check feature params instead
+// of using this constant.
+BASE_DECLARE_FEATURE(kEnableFeedForegroundRefresh);
+
 // Feature flag to enable the Following feed in the NTP.
 // Use IsWebChannelsEnabled() instead of this constant directly.
 BASE_DECLARE_FEATURE(kEnableWebChannels);
@@ -31,6 +35,9 @@ BASE_DECLARE_FEATURE(kEnableFeedCardMenuSignInPromo);
 
 // Feature flag to disable the feed.
 BASE_DECLARE_FEATURE(kEnableFeedAblation);
+
+// Feature flag to enable feed experiment tagging.
+BASE_DECLARE_FEATURE(kEnableFeedExperimentTagging);
 
 // Feature param under `kEnableFeedBackgroundRefresh` to also enable background
 // refresh for the Following feed.
@@ -56,6 +63,14 @@ extern const char kBackgroundRefreshIntervalInSeconds[];
 // max age in seconds. This value is compared against the age of the feed when
 // performing a background refresh. A zero value means the age check is ignored.
 extern const char kBackgroundRefreshMaxAgeInSeconds[];
+
+// Feature param under `kEnableFeedForegroundRefresh` to enable refresh
+// following a Feed session.
+extern const char kEnableFeedRefreshPostFeedSession[];
+
+// Feature param under `kEnableFeedForegroundRefresh` to enable refresh on app
+// backgrounding.
+extern const char kEnableFeedRefreshOnAppBackgrounding[];
 
 // Whether the Following Feed is enabled on NTP.
 bool IsWebChannelsEnabled();
@@ -111,6 +126,15 @@ double GetBackgroundRefreshIntervalInSeconds();
 // Returns the background refresh max age in seconds.
 double GetBackgroundRefreshMaxAgeInSeconds();
 
+// Whether feed is refreshed after the user ends a Feed session, but while the
+// app is still in the foreground (e.g., user switches tabs, user navigates away
+// from Feed in current tab).
+bool IsFeedRefreshPostFeedSessionEnabled();
+
+// Whether feed is refreshed at the moment the app is backgrounding. This is
+// different from background refresh.
+bool IsFeedRefreshOnAppBackgroundingEnabled();
+
 // YES if enabled Feed bottom sign-in promo.
 bool IsFeedBottomSignInPromoEnabled();
 
@@ -119,5 +143,8 @@ bool IsFeedCardMenuSignInPromoEnabled();
 
 // Whether the feed is disabled.
 bool IsFeedAblationEnabled();
+
+// Whether the feed experiment tagging is enabled.
+bool IsFeedExperimentTaggingEnabled();
 
 #endif  // IOS_CHROME_BROWSER_NTP_FEATURES_H_

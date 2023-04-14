@@ -28,7 +28,7 @@ import {NearbyShareSettingsBehavior, NearbyShareSettingsBehaviorInterface} from 
 import {Constructor} from '../common/types.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteObserverMixin, RouteObserverMixinInterface} from '../route_observer_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -133,7 +133,7 @@ class SettingsMultidevicePageElement extends
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
@@ -230,7 +230,7 @@ class SettingsMultidevicePageElement extends
   }
 
   /**
-   * Overridden from RouteObserverBehavior.
+   * RouteObserverMixin override
    */
   override currentRouteChanged(route: Route): void {
     this.leaveNestedPageIfNoHostIsSet_();
@@ -489,15 +489,15 @@ class SettingsMultidevicePageElement extends
 
     // Host status doesn't matter if we are navigating to Nearby Share
     // settings.
-    if (routes.NEARBY_SHARE === Router.getInstance().getCurrentRoute()) {
+    if (routes.NEARBY_SHARE === Router.getInstance().currentRoute) {
       return;
     }
 
     // If the user gets to the a nested page without a host (e.g. by clicking a
     // stale 'existing user' notifications after forgetting their host) we
     // direct them back to the main settings page.
-    if (routes.MULTIDEVICE !== Router.getInstance().getCurrentRoute() &&
-        routes.MULTIDEVICE.contains(Router.getInstance().getCurrentRoute()) &&
+    if (routes.MULTIDEVICE !== Router.getInstance().currentRoute &&
+        routes.MULTIDEVICE.contains(Router.getInstance().currentRoute) &&
         !this.isHostSet()) {
       // Render MULTIDEVICE page before the MULTIDEVICE_FEATURES has a chance.
       beforeNextRender(this, () => {

@@ -69,7 +69,8 @@ and hidden when focus is gone. It is often drawn by a
 handles drawing a colored border along a path. When creating focus rings, it's
 important to color them such that they contrast with both the color inside and
 the color outside the ring; see the uses of the
-[`PickGoogleColorTwoBackgrounds`](/ui/color/color_transform.cc) function.
+[`PickGoogleColorTwoBackgrounds()`](/chrome/browser/ui/color/chrome_color_mixer.cc)
+function.
 
 ### HWND
 

@@ -26,6 +26,7 @@
 #include "chrome/updater/test/server.h"
 #include "chrome/updater/update_service.h"
 #include "chrome/updater/updater_version.h"
+#include "chrome/updater/util/unittest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -113,7 +114,7 @@ class IntegrationTest : public ::testing::Test {
     PrintLog();
 
     // TODO(crbug.com/1159189): Use a specific test output directory
-    // because Uninstall() deletes the files under GetDataDirPath().
+    // because Uninstall() deletes the files under GetInstallDirectory().
     CopyLog();
 
     // TODO(crbug.com/1233612) - reenable the code when system tests pass.
@@ -275,8 +276,9 @@ class IntegrationTest : public ::testing::Test {
   }
 
   void Update(const std::string& app_id,
-              const std::string& install_data_index) {
-    test_commands_->Update(app_id, install_data_index);
+              const std::string& install_data_index,
+              bool do_update_check_only) {
+    test_commands_->Update(app_id, install_data_index, do_update_check_only);
   }
 
   void UpdateAll() { test_commands_->UpdateAll(); }
@@ -301,6 +303,15 @@ class IntegrationTest : public ::testing::Test {
 #if BUILDFLAG(IS_WIN)
     test_commands_->TearDownTestService();
 #endif  // BUILDFLAG(IS_WIN)
+  }
+
+  void ExpectUpdateCheckSequence(ScopedServer* test_server,
+                                 const std::string& app_id,
+                                 const std::string& install_data_index,
+                                 const base::Version& from_version,
+                                 const base::Version& to_version) {
+    test_commands_->ExpectUpdateCheckSequence(
+        test_server, app_id, install_data_index, from_version, to_version);
   }
 
   void ExpectUpdateSequence(ScopedServer* test_server,
@@ -388,9 +399,7 @@ TEST_F(IntegrationTest, Install) {
 
 // TODO(crbug.com/1398845) Enable test once SetupRealUpdaterLowerVersion
 // is implemented.
-// TODO(crbug.com/1339108): Re-enable once the CIPD build is rolled to a version
-// that uses mojo for IPC.
-#if !BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_LINUX)
 TEST_F(IntegrationTest, OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ASSERT_TRUE(WaitForUpdaterExit());
@@ -416,6 +425,13 @@ TEST_F(IntegrationTest, OverinstallBroken) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
 
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+
+  // Cleanup the older version by reinstalling and uninstalling.
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 #endif  // !BUILDFLAG(IS_LINUX)
@@ -546,6 +562,19 @@ TEST_F(IntegrationTest, ReportsActive) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+TEST_F(IntegrationTest, CheckForUpdate) {
+  ScopedServer test_server(test_commands_);
+  ASSERT_NO_FATAL_FAILURE(Install());
+
+  const std::string kAppId("test");
+  ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateCheckSequence(
+      &test_server, kAppId, "", base::Version("0.1"), base::Version("1")));
+  ASSERT_NO_FATAL_FAILURE(Update(kAppId, "", /*do_update_check_only=*/true));
+
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
 TEST_F(IntegrationTest, UpdateApp) {
   ScopedServer test_server(test_commands_);
   ASSERT_NO_FATAL_FAILURE(Install());
@@ -561,7 +590,9 @@ TEST_F(IntegrationTest, UpdateApp) {
   const std::string kInstallDataIndex("test_install_data_index");
   ASSERT_NO_FATAL_FAILURE(
       ExpectUpdateSequence(&test_server, kAppId, kInstallDataIndex, v1, v2));
-  ASSERT_NO_FATAL_FAILURE(Update(kAppId, kInstallDataIndex));
+  ASSERT_NO_FATAL_FAILURE(Update(kAppId, kInstallDataIndex,
+                                 /*do_update_check_only=*/false));
+
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kAppId, v2));
   ASSERT_NO_FATAL_FAILURE(ExpectLastChecked());
@@ -640,38 +671,6 @@ TEST_F(IntegrationTest, MultipleUpdateAllsMultipleNetRequests) {
 TEST_F(IntegrationTest, MarshalInterface) {
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectMarshalInterfaceSucceeds());
-  ASSERT_NO_FATAL_FAILURE(Uninstall());
-}
-
-TEST_F(IntegrationTest, LegacyUpdate3Web) {
-  ScopedServer test_server(test_commands_);
-  ASSERT_NO_FATAL_FAILURE(Install());
-
-  const char kAppId[] = "test1";
-  ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
-
-  ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(&test_server, kAppId));
-  ASSERT_NO_FATAL_FAILURE(
-      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK));
-
-  base::Value::Dict group_policies;
-  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdate3WebSucceeds(
-      kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL));
-
-  group_policies.Set("Updatetest1", kPolicyDisabled);
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
-                                 GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
-
-  group_policies.clear();
-  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
-  ASSERT_NO_FATAL_FAILURE(ExpectUpdateSequence(
-      &test_server, kAppId, "", base::Version("0.1"), base::Version("0.2")));
-  ASSERT_NO_FATAL_FAILURE(
-      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_INSTALL_COMPLETE, S_OK));
-
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
@@ -841,6 +840,36 @@ TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+TEST_F(IntegrationTest, UninstallIfUnusedSelfAndOldReal) {
+  ScopedServer test_server(test_commands_);
+
+  ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
+  ASSERT_NO_FATAL_FAILURE(ExpectVersionNotActive(kUpdaterVersion));
+
+  // Trigger an old instance update check.
+  ASSERT_NO_FATAL_FAILURE(ExpectSelfUpdateSequence(&test_server));
+  ASSERT_NO_FATAL_FAILURE(RunWakeActive(0));
+
+  // Qualify the new instance.
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectUpdateSequence(&test_server, kQualificationAppId, "",
+                           base::Version("0.1"), base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Activate the new instance. (It should not check itself for updates.)
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  ASSERT_NO_FATAL_FAILURE(ExpectVersionActive(kUpdaterVersion));
+
+  ASSERT_NO_FATAL_FAILURE(SetServerStarts(24));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+
+  // Expect that the updater uninstalled itself as well as the lower version.
+}
+
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
 TEST_F(IntegrationTest, InstallLowerVersion) {
@@ -955,6 +984,7 @@ TEST_F(IntegrationTest, InstallDataIndex) {
 TEST_F(IntegrationTest, MigrateLegacyUpdater) {
   ASSERT_NO_FATAL_FAILURE(SetupFakeLegacyUpdaterData());
   ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdaterDataMigrated());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
@@ -993,6 +1023,73 @@ TEST_F(IntegrationTest, LegacySilentOfflineInstall) {
                                             /*is_silent_install=*/true));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
+
+#if BUILDFLAG(IS_WIN)
+class IntegrationTestLegacyUpdate3Web : public IntegrationTest {
+ public:
+  IntegrationTestLegacyUpdate3Web() = default;
+  ~IntegrationTestLegacyUpdate3Web() override = default;
+
+ protected:
+  void SetUp() override {
+    IntegrationTest::SetUp();
+
+    test_server_ = std::make_unique<ScopedServer>(test_commands_);
+    ASSERT_NO_FATAL_FAILURE(Install());
+    ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
+  }
+
+  void TearDown() override {
+    ASSERT_NO_FATAL_FAILURE(Uninstall());
+
+    IntegrationTest::TearDown();
+  }
+
+  std::unique_ptr<ScopedServer> test_server_;
+  static constexpr char kAppId[] = "test1";
+};
+
+TEST_F(IntegrationTestLegacyUpdate3Web, NoUpdate) {
+  ASSERT_NO_FATAL_FAILURE(ExpectNoUpdateSequence(test_server_.get(), kAppId));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_NO_UPDATE, S_OK));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicyManual) {
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyAutomaticUpdatesOnly);
+  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
+  ASSERT_NO_FATAL_FAILURE(ExpectLegacyUpdate3WebSucceeds(
+      kAppId, STATE_ERROR, GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY_MANUAL));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, DisabledPolicy) {
+  base::Value::Dict group_policies;
+  group_policies.Set("Updatetest1", kPolicyDisabled);
+  ASSERT_NO_FATAL_FAILURE(SetGroupPolicies(group_policies));
+  ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_ERROR,
+                                 GOOPDATE_E_APP_UPDATE_DISABLED_BY_POLICY);
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, CheckForUpdate) {
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateCheckSequence(test_server_.get(), kAppId,
+                                                    "", base::Version("0.1"),
+                                                    base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_UPDATE_AVAILABLE, S_OK));
+}
+
+TEST_F(IntegrationTestLegacyUpdate3Web, Update) {
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateCheckSequence(test_server_.get(), kAppId,
+                                                    "", base::Version("0.1"),
+                                                    base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateSequence(test_server_.get(), kAppId, "",
+                                               base::Version("0.1"),
+                                               base::Version("0.2")));
+  ASSERT_NO_FATAL_FAILURE(
+      ExpectLegacyUpdate3WebSucceeds(kAppId, STATE_INSTALL_COMPLETE, S_OK));
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
 

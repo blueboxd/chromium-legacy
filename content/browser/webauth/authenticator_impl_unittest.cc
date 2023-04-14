@@ -53,6 +53,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "crypto/sha2.h"
 #include "device/base/features.h"
@@ -83,6 +84,7 @@
 #include "device/fido/pin.h"
 #include "device/fido/public_key.h"
 #include "device/fido/public_key_credential_descriptor.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_fido_device.h"
@@ -100,6 +102,7 @@
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ec_key.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
+#include "third_party/boringssl/src/include/openssl/hmac.h"
 #include "third_party/boringssl/src/include/openssl/obj.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -520,6 +523,17 @@ device::AttestationConveyancePreference ConvertAttestationConveyancePreference(
   }
 }
 
+std::array<uint8_t, crypto::kSHA256Length> EvaluateHMAC(
+    base::span<const uint8_t> key,
+    base::span<const uint8_t> salt) {
+  std::array<uint8_t, crypto::kSHA256Length> ret;
+  unsigned hmac_out_length;
+  HMAC(EVP_sha256(), key.data(), key.size(), salt.data(), salt.size(),
+       ret.data(), &hmac_out_length);
+  CHECK_EQ(hmac_out_length, ret.size());
+  return ret;
+}
+
 }  // namespace
 
 class AuthenticatorTestBase : public RenderViewHostTestHarness {
@@ -823,16 +837,16 @@ TEST_F(AuthenticatorImplTest, ClientDataJSONSerialization) {
         expected_type = "payment.get";
         break;
     }
-
-    EXPECT_EQ(*parsed->FindStringKey(type_key), expected_type);
-    EXPECT_EQ(*parsed->FindStringKey("origin"), test.origin.Serialize());
+    ASSERT_TRUE(parsed->is_dict());
+    EXPECT_EQ(*parsed->GetDict().FindString(type_key), expected_type);
+    EXPECT_EQ(*parsed->GetDict().FindString("origin"), test.origin.Serialize());
     std::string expected_challenge;
     base::Base64UrlEncode(
         base::StringPiece(reinterpret_cast<const char*>(test.challenge.data()),
                           test.challenge.size()),
         base::Base64UrlEncodePolicy::OMIT_PADDING, &expected_challenge);
-    EXPECT_EQ(*parsed->FindStringKey("challenge"), expected_challenge);
-    EXPECT_EQ(*parsed->FindBoolKey("crossOrigin"), test.is_cross_origin);
+    EXPECT_EQ(*parsed->GetDict().FindString("challenge"), expected_challenge);
+    EXPECT_EQ(*parsed->GetDict().FindBool("crossOrigin"), test.is_cross_origin);
   }
 }
 
@@ -1490,6 +1504,40 @@ TEST_F(AuthenticatorImplTest, IsUVPAA) {
   EXPECT_FALSE(cb.value());
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN)
+class OffTheRecordAuthenticatorImplTest : public AuthenticatorImplTest {
+ protected:
+  std::unique_ptr<BrowserContext> CreateBrowserContext() override {
+    auto browser_context = std::make_unique<TestBrowserContext>();
+    browser_context->set_is_off_the_record(true);
+    return browser_context;
+  }
+};
+
+// Tests that IsUVPAA returns true if the version of Windows supports an
+// appropriate warning.
+TEST_F(OffTheRecordAuthenticatorImplTest, WinIsUVPAAIncognito) {
+  NavigateAndCommit(GURL(kTestOrigin1));
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  fake_win_webauthn_api_.set_available(true);
+  fake_win_webauthn_api_.set_is_uvpaa(true);
+
+  for (bool win_api_supports_incognito_warning : {false, true}) {
+    TestIsUvpaaCallback cb;
+    SCOPED_TRACE(win_api_supports_incognito_warning
+                     ? "supports incognito"
+                     : "does not support incognito");
+    fake_win_webauthn_api_.set_version(win_api_supports_incognito_warning
+                                           ? WEBAUTHN_API_VERSION_4
+                                           : WEBAUTHN_API_VERSION_3);
+    authenticator->IsUserVerifyingPlatformAuthenticatorAvailable(cb.callback());
+    cb.WaitForCallback();
+    EXPECT_EQ(cb.value(), win_api_supports_incognito_warning);
+  }
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 // TestWebAuthenticationRequestProxy is a test fake implementation of the
 // WebAuthenticationRequestProxy embedder interface.
@@ -7432,32 +7480,51 @@ static const char* BlobSupportDescription(device::LargeBlobSupport support) {
 }
 
 TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialLargeBlob) {
-  const auto BlobRequired = device::LargeBlobSupport::kRequired;
-  const auto BlobPreferred = device::LargeBlobSupport::kPreferred;
-  const auto BlobNotRequested = device::LargeBlobSupport::kNotRequested;
+  constexpr auto BlobRequired = device::LargeBlobSupport::kRequired;
+  constexpr auto BlobPreferred = device::LargeBlobSupport::kPreferred;
+  constexpr auto BlobNotRequested = device::LargeBlobSupport::kNotRequested;
+  constexpr auto nullopt = absl::nullopt;
 
   constexpr struct {
-    bool large_blob_support;
+    bool large_blob_extension;
+    absl::optional<bool> large_blob_support;
     bool rk_required;
     device::LargeBlobSupport large_blob_enable;
     bool request_success;
     bool did_create_large_blob;
   } kLargeBlobTestCases[] = {
       // clang-format off
-      // support, rk,    enabled,          success, did create
-      { true,     true,  BlobRequired,     true,    true},
-      { true,     true,  BlobPreferred,    true,    true},
-      { true,     true,  BlobNotRequested, true,    false},
-      { true,     false, BlobRequired,     false,   false},
-      { true,     false, BlobPreferred,    true,    false},
-      { true,     true,  BlobNotRequested, true,    false},
-      { false,    true,  BlobRequired,     false,   false},
-      { false,    true,  BlobPreferred,    true,    false},
-      { true,     true,  BlobNotRequested, true,    false},
+      // ext,  support,  rk,    enabled,          success, did create
+      { false, true,     true,  BlobRequired,     true,    true},
+      { false, true,     true,  BlobPreferred,    true,    true},
+      { false, true,     true,  BlobNotRequested, true,    false},
+      { false, true,     false, BlobRequired,     false,   false},
+      { false, true,     false, BlobPreferred,    true,    false},
+      { false, true,     true,  BlobNotRequested, true,    false},
+      { false, false,    true,  BlobRequired,     false,   false},
+      { false, false,    true,  BlobPreferred,    true,    false},
+      { false, true,     true,  BlobNotRequested, true,    false},
+
+      { true,  true,     true,  BlobRequired,     true,    true},
+      { true,  true,     true,  BlobPreferred,    true,    true},
+      { true,  true,     true,  BlobNotRequested, true,    false},
+      { true,  true,     false, BlobRequired,     false,   false},
+      { true,  true,     false, BlobPreferred,    true,    false},
+      { true,  true,     true,  BlobNotRequested, true,    false},
+      { true,  nullopt,  true,  BlobRequired,     false,   false},
+      { true,  nullopt,  true,  BlobPreferred,    true,    false},
+      { true,  true,     true,  BlobNotRequested, true,    false},
+      { true,  false,    true,  BlobPreferred,    true,    false},
+      { true,  false,    true,  BlobRequired,     false,   false},
       // clang-format on
   };
   for (auto& test : kLargeBlobTestCases) {
-    SCOPED_TRACE(::testing::Message() << "support=" << test.large_blob_support);
+    if (test.large_blob_support) {
+      SCOPED_TRACE(::testing::Message()
+                   << "support=" << *test.large_blob_support);
+    } else {
+      SCOPED_TRACE(::testing::Message() << "support={}");
+    }
     SCOPED_TRACE(::testing::Message() << "rk_required=" << test.rk_required);
     SCOPED_TRACE(::testing::Message()
                  << "enabled="
@@ -7465,6 +7532,8 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialLargeBlob) {
     SCOPED_TRACE(::testing::Message() << "success=" << test.request_success);
     SCOPED_TRACE(::testing::Message()
                  << "did create=" << test.did_create_large_blob);
+    SCOPED_TRACE(::testing::Message()
+                 << "large_blob_extension=" << test.large_blob_extension);
 
     device::VirtualCtap2Device::Config config;
     config.pin_support = true;
@@ -7472,7 +7541,11 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialLargeBlob) {
     config.resident_key_support = true;
     config.ctap2_versions = {std::begin(device::kCtap2Versions2_1),
                              std::end(device::kCtap2Versions2_1)};
-    config.large_blob_support = test.large_blob_support;
+    if (test.large_blob_extension) {
+      config.large_blob_extension_support = test.large_blob_support;
+    } else {
+      config.large_blob_support = *test.large_blob_support;
+    }
     virtual_device_factory_->SetCtap2Config(config);
 
     PublicKeyCredentialCreationOptionsPtr options = make_credential_options(
@@ -7490,7 +7563,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialLargeBlob) {
           virtual_device_factory_->mutable_state()
               ->registrations.begin()
               ->second;
-      EXPECT_EQ(test.did_create_large_blob,
+      EXPECT_EQ(test.did_create_large_blob && !test.large_blob_extension,
                 registration.large_blob_key.has_value());
       EXPECT_EQ(test.large_blob_enable != BlobNotRequested,
                 result.response->echo_large_blob);
@@ -7642,6 +7715,109 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobWrite) {
   }
 }
 
+TEST_F(ResidentKeyAuthenticatorImplTest,
+       GetAssertionLargeBlobExtensionNoSupport) {
+  device::VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.pin_uv_auth_token_support = true;
+  config.resident_key_support = true;
+  config.ctap2_versions = {std::begin(device::kCtap2Versions2_1),
+                           std::end(device::kCtap2Versions2_1)};
+  virtual_device_factory_->SetCtap2Config(config);
+
+  const std::vector<uint8_t> cred_id = {4, 3, 2, 1};
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      cred_id, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, absl::nullopt, absl::nullopt));
+
+  // Try to read a large blob that doesn't exist and couldn't exist because the
+  // authenticator doesn't support large blobs.
+  PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+  options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+      device::CredentialType::kPublicKey, cred_id)};
+  options->large_blob_read = true;
+  GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+  ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+  EXPECT_TRUE(result.response->echo_large_blob);
+  EXPECT_FALSE(result.response->echo_large_blob_written);
+  ASSERT_FALSE(result.response->large_blob);
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionLargeBlobExtension) {
+  device::VirtualCtap2Device::Config config;
+  config.pin_support = true;
+  config.pin_uv_auth_token_support = true;
+  config.resident_key_support = true;
+  config.large_blob_extension_support = true;
+  config.ctap2_versions = {std::begin(device::kCtap2Versions2_1),
+                           std::end(device::kCtap2Versions2_1)};
+  virtual_device_factory_->SetCtap2Config(config);
+
+  const std::vector<uint8_t> large_blob = {'b', 'l', 'o', 'b'};
+  const std::vector<uint8_t> cred_id = {4, 3, 2, 1};
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      cred_id, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, absl::nullopt, absl::nullopt));
+
+  {
+    // Try to read a large blob that doesn't exist.
+    PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+    options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, cred_id)};
+    options->large_blob_read = true;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    EXPECT_TRUE(result.response->echo_large_blob);
+    EXPECT_FALSE(result.response->echo_large_blob_written);
+    ASSERT_FALSE(result.response->large_blob);
+  }
+
+  {
+    // Write a large blob.
+    PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+    options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, cred_id)};
+    options->large_blob_write = large_blob;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    EXPECT_TRUE(result.response->echo_large_blob);
+    EXPECT_TRUE(result.response->echo_large_blob_written);
+    EXPECT_FALSE(result.response->large_blob);
+  }
+
+  {
+    // Read it back.
+    PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+    options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, cred_id)};
+    options->large_blob_read = true;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    EXPECT_TRUE(result.response->echo_large_blob);
+    EXPECT_FALSE(result.response->echo_large_blob_written);
+    ASSERT_TRUE(result.response->large_blob);
+    EXPECT_EQ(large_blob, *result.response->large_blob);
+  }
+
+  // Corrupt the large blob data and attempt to read it back. The invalid
+  // large blob should be ignored.
+  virtual_device_factory_->mutable_state()
+      ->registrations.begin()
+      ->second.large_blob->compressed_data = {1, 2, 3, 4};
+
+  {
+    PublicKeyCredentialRequestOptionsPtr options = get_credential_options();
+    options->allow_credentials = {device::PublicKeyCredentialDescriptor(
+        device::CredentialType::kPublicKey, cred_id)};
+    options->large_blob_read = true;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    ASSERT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    EXPECT_TRUE(result.response->echo_large_blob);
+    EXPECT_FALSE(result.response->echo_large_blob_written);
+    ASSERT_FALSE(result.response->large_blob);
+  }
+}
+
 static const char* ProtectionPolicyDescription(
     blink::mojom::ProtectionPolicy p) {
   switch (p) {
@@ -7676,58 +7852,68 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
   const int kOk = 0;
   const int kNonsense = 1;
   const int kNotAllow = 2;
+  const device::UserVerificationRequirement kUV =
+      device::UserVerificationRequirement::kRequired;
+  const device::UserVerificationRequirement kUP =
+      device::UserVerificationRequirement::kDiscouraged;
+  const device::UserVerificationRequirement kUVPref =
+      device::UserVerificationRequirement::kPreferred;
 
   const struct {
     bool supported_by_authenticator;
     bool is_resident;
     blink::mojom::ProtectionPolicy protection;
     bool enforce;
-    bool uv;
+    device::UserVerificationRequirement uv;
     int expected_outcome;
     blink::mojom::ProtectionPolicy resulting_policy;
   } kExpectations[] = {
       // clang-format off
     // Support | Resdnt | Level      | Enf  |  UV  || Result   | Prot level
-    {  false,   false,   UNSPECIFIED, false, false,   kOk,       NONE},
-    {  false,   false,   UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   NONE,        false, false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   NONE,        true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  false, false,   kOk,       NONE},
-    {  false,   false,   UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
-    {  false,   false,   UV_OR_CRED,  false, true,    kOk,       NONE},
-    {  false,   false,   UV_OR_CRED,  true,  true,    kNotAllow, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      false, true,    kOk,       NONE},
-    {  false,   false,   UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   false,   UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
-    {  false,   true,    UNSPECIFIED, false, false,   kOk,       NONE},
-    {  false,   true,    UNSPECIFIED, true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    NONE,        false, false,   kOk,       NONE},
-    {  false,   true,    NONE,        true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_OR_CRED,  false, false,   kOk,       NONE},
-    {  false,   true,    UV_OR_CRED,  true,  false,   kNotAllow, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      false, false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      false, true,    kOk,       NONE},
-    {  false,   true,    UV_REQ,      true,  false,   kNonsense, UNSPECIFIED},
-    {  false,   true,    UV_REQ,      true,  true,    kNotAllow, UNSPECIFIED},
+    {  false,   false,   UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  false,   false,   UNSPECIFIED, true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UNSPECIFIED, false, kUVPref, kOk,       NONE},
+    {  false,   false,   NONE,        false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   NONE,        true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, kUP,     kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  kUP,     kNotAllow, UNSPECIFIED},
+    {  false,   false,   UV_OR_CRED,  false, kUV,     kOk,       NONE},
+    {  false,   false,   UV_OR_CRED,  true,  kUV,     kNotAllow, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      false, kUV,     kOk,       NONE},
+    {  false,   false,   UV_REQ,      true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   false,   UV_REQ,      true,  kUV,     kNotAllow, UNSPECIFIED},
+    {  false,   true,    UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  false,   true,    UNSPECIFIED, true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    NONE,        false, kUP,     kOk,       NONE},
+    {  false,   true,    NONE,        true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_OR_CRED,  false, kUP,     kOk,       NONE},
+    {  false,   true,    UV_OR_CRED,  true,  kUP,     kNotAllow, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      false, kUV,     kOk,       NONE},
+    {  false,   true,    UV_REQ,      true,  kUP,     kNonsense, UNSPECIFIED},
+    {  false,   true,    UV_REQ,      true,  kUV,     kNotAllow, UNSPECIFIED},
 
     // For the case where the authenticator supports credProtect we do not
     // repeat the cases above that are |kNonsense| on the assumption that
     // authenticator support is irrelevant. Therefore these are just the non-
     // kNonsense cases from the prior block.
-    {  true,    false,   UNSPECIFIED, false, false,   kOk,       NONE},
-    {  true,    false,   UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  false, true,    kOk,       UV_OR_CRED},
-    {  true,    false,   UV_OR_CRED,  true,  true,    kOk,       UV_OR_CRED},
-    {  true,    false,   UV_REQ,      false, true,    kOk,       UV_REQ},
-    {  true,    false,   UV_REQ,      true,  true,    kOk,       UV_REQ},
-    {  true,    true,    UNSPECIFIED, false, false,   kOk,       UV_OR_CRED},
-    {  true,    true,    NONE,        false, false,   kOk,       NONE},
-    {  true,    true,    UV_OR_CRED,  false, false,   kOk,       UV_OR_CRED},
-    {  true,    true,    UV_OR_CRED,  true,  false,   kOk,       UV_OR_CRED},
-    {  true,    true,    UV_REQ,      false, true,    kOk,       UV_REQ},
-    {  true,    true,    UV_REQ,      true,  true,    kOk,       UV_REQ},
+    {  true,    false,   UNSPECIFIED, false, kUP,     kOk,       NONE},
+    {  true,    false,   UV_OR_CRED,  false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  kUP,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  false, kUV,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_OR_CRED,  true,  kUV,     kOk,       UV_OR_CRED},
+    {  true,    false,   UV_REQ,      false, kUV,     kOk,       UV_REQ},
+    {  true,    false,   UV_REQ,      true,  kUV,     kOk,       UV_REQ},
+    {  true,    true,    UNSPECIFIED, false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UNSPECIFIED, false, kUVPref, kOk,       UV_REQ},
+    {  true,    true,    NONE,        false, kUP,     kOk,       NONE},
+    {  true,    true,    NONE,        false, kUVPref, kOk,       NONE},
+    {  true,    true,    UV_OR_CRED,  false, kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UV_OR_CRED,  true,  kUP,     kOk,       UV_OR_CRED},
+    {  true,    true,    UV_OR_CRED,  false, kUVPref, kOk,       UV_OR_CRED},
+    {  true,    true,    UV_REQ,      false, kUV,     kOk,       UV_REQ},
+    {  true,    true,    UV_REQ,      true,  kUV,     kOk,       UV_REQ},
       // clang-format on
   };
 
@@ -7739,7 +7925,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
     virtual_device_factory_->SetCtap2Config(config);
     virtual_device_factory_->mutable_state()->registrations.clear();
 
-    SCOPED_TRACE(::testing::Message() << "uv=" << test.uv);
+    SCOPED_TRACE(::testing::Message() << "uv=" << UVToString(test.uv));
     SCOPED_TRACE(::testing::Message() << "enforce=" << test.enforce);
     SCOPED_TRACE(::testing::Message()
                  << "level=" << ProtectionPolicyDescription(test.protection));
@@ -7753,9 +7939,7 @@ TEST_F(ResidentKeyAuthenticatorImplTest, CredProtectRegistration) {
                          : device::ResidentKeyRequirement::kDiscouraged;
     options->protection_policy = test.protection;
     options->enforce_protection_policy = test.enforce;
-    options->authenticator_selection->user_verification_requirement =
-        test.uv ? device::UserVerificationRequirement::kRequired
-                : device::UserVerificationRequirement::kDiscouraged;
+    options->authenticator_selection->user_verification_requirement = test.uv;
 
     AuthenticatorStatus status =
         AuthenticatorMakeCredential(std::move(options)).status;
@@ -8021,6 +8205,55 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WinCredProtectApiVersion) {
                                     : AuthenticatorStatus::NOT_ALLOWED_ERROR);
   }
 }
+
+// Tests that the incognito flag is plumbed through conditional UI requests.
+TEST_F(ResidentKeyAuthenticatorImplTest, ConditionalUI_Incognito) {
+  fake_win_webauthn_api_.set_available(true);
+  fake_win_webauthn_api_.set_version(WEBAUTHN_API_VERSION_4);
+  fake_win_webauthn_api_.set_supports_silent_discovery(true);
+  device::PublicKeyCredentialRpEntity rp(kTestRelyingPartyId);
+  device::PublicKeyCredentialUserEntity user({1, 2, 3, 4});
+  fake_win_webauthn_api_.InjectDiscoverableCredential(
+      /*credential_id=*/{{4, 3, 2, 1}}, std::move(rp), std::move(user));
+
+  // |SelectAccount| should not be called for conditional UI requests.
+  test_client_.delegate_config.expected_accounts = "<invalid>";
+  test_client_.delegate_config.expect_conditional = true;
+
+  for (bool is_off_the_record : {true, false}) {
+    SCOPED_TRACE(is_off_the_record ? "off the record" : "on the record");
+    static_cast<TestBrowserContext*>(GetBrowserContext())
+        ->set_is_off_the_record(is_off_the_record);
+    PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
+    options->is_conditional = true;
+    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, result.status);
+    ASSERT_TRUE(fake_win_webauthn_api_.last_get_credentials_options());
+    EXPECT_EQ(fake_win_webauthn_api_.last_get_credentials_options()
+                  ->bBrowserInPrivateMode,
+              is_off_the_record);
+  }
+}
+
+// Tests that attempting to make a credential with large blob = required and
+// attachment = platform on Windows fails and the request is not sent to the
+// WebAuthn API.
+// This is because largeBlob = required is ignored by the Windows platform
+// authenticator at the time of writing (Feb 2023).
+TEST_F(ResidentKeyAuthenticatorImplTest, MakeCredentialLargeBlobWinPlatform) {
+  fake_win_webauthn_api_.set_available(true);
+  fake_win_webauthn_api_.set_version(WEBAUTHN_API_VERSION_3);
+  PublicKeyCredentialCreationOptionsPtr options =
+      GetTestPublicKeyCredentialCreationOptions();
+  options->large_blob_enable = device::LargeBlobSupport::kRequired;
+  options->authenticator_selection->resident_key =
+      device::ResidentKeyRequirement::kRequired;
+  options->authenticator_selection->authenticator_attachment =
+      device::AuthenticatorAttachment::kPlatform;
+  MakeCredentialResult result = AuthenticatorMakeCredential(std::move(options));
+  EXPECT_EQ(result.status, AuthenticatorStatus::NOT_ALLOWED_ERROR);
+  EXPECT_FALSE(fake_win_webauthn_api_.last_make_credential_options());
+}
 #endif  // BUILDFLAG(IS_WIN)
 
 // Tests that chrome does not attempt setting the PRF extension during a
@@ -8063,197 +8296,226 @@ TEST_F(ResidentKeyAuthenticatorImplTest, PRFNotSupportedWithPinUvAuthToken) {
 TEST_F(ResidentKeyAuthenticatorImplTest, PRFExtension) {
   NavigateAndCommit(GURL(kTestOrigin1));
 
-  absl::optional<device::PublicKeyCredentialDescriptor> credential;
-  for (bool hmac_secret_supported : {false, true}) {
-    // Setting the PRF extension on an authenticator that doesn't support it
-    // should cause the extension to be echoed, but with enabled=false.
-    // Otherwise, enabled should be true.
-    device::VirtualCtap2Device::Config config;
-    config.hmac_secret_support = hmac_secret_supported;
-    config.max_credential_count_in_list = 3;
-    config.max_credential_id_length = 256;
-    config.pin_support = true;
-    config.resident_key_support = true;
-    virtual_device_factory_->SetCtap2Config(config);
-
-    PublicKeyCredentialCreationOptionsPtr options =
-        GetTestPublicKeyCredentialCreationOptions();
-    options->prf_enable = true;
-    options->authenticator_selection->resident_key =
-        hmac_secret_supported ? device::ResidentKeyRequirement::kRequired
-                              : device::ResidentKeyRequirement::kDiscouraged;
-    options->user.id = {1, 2, 3, 4};
-    options->user.name = "name";
-    options->user.display_name = "displayName";
-    MakeCredentialResult result =
-        AuthenticatorMakeCredential(std::move(options));
-    EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-
-    ASSERT_TRUE(result.response->echo_prf);
-    ASSERT_EQ(result.response->prf, hmac_secret_supported);
-
-    if (hmac_secret_supported) {
-      device::AuthenticatorData auth_data =
-          AuthDataFromMakeCredentialResponse(result.response);
-      credential.emplace(device::CredentialType::kPublicKey,
-                         auth_data.GetCredentialId());
-    }
-  }
-
-  auto assertion = [&](std::vector<blink::mojom::PRFValuesPtr> inputs,
-                       unsigned allow_list_size =
-                           1) -> blink::mojom::PRFValuesPtr {
-    PublicKeyCredentialRequestOptionsPtr options =
-        GetTestPublicKeyCredentialRequestOptions();
-    options->prf = true;
-    options->prf_inputs = std::move(inputs);
-    options->allow_credentials.clear();
-    if (allow_list_size >= 1) {
-      for (unsigned i = 0; i < allow_list_size - 1; i++) {
-        std::vector<uint8_t> random_credential_id(32, static_cast<uint8_t>(i));
-        options->allow_credentials.emplace_back(
-            device::CredentialType::kPublicKey,
-            std::move(random_credential_id));
+  for (bool use_prf_extension_instead : {false, true}) {
+    SCOPED_TRACE(use_prf_extension_instead);
+    absl::optional<device::PublicKeyCredentialDescriptor> credential;
+    for (bool authenticator_support : {false, true}) {
+      // Setting the PRF extension on an authenticator that doesn't support it
+      // should cause the extension to be echoed, but with enabled=false.
+      // Otherwise, enabled should be true.
+      device::VirtualCtap2Device::Config config;
+      if (authenticator_support) {
+        config.prf_support = use_prf_extension_instead;
+        config.hmac_secret_support = !use_prf_extension_instead;
       }
-      options->allow_credentials.push_back(*credential);
+      config.internal_account_chooser = config.prf_support;
+      config.always_uv = config.prf_support;
+      config.max_credential_count_in_list = 3;
+      config.max_credential_id_length = 256;
+      config.pin_support = true;
+      config.resident_key_support = true;
+      virtual_device_factory_->SetCtap2Config(config);
+
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      options->prf_enable = true;
+      options->authenticator_selection->resident_key =
+          authenticator_support ? device::ResidentKeyRequirement::kRequired
+                                : device::ResidentKeyRequirement::kDiscouraged;
+      options->user.id = {1, 2, 3, 4};
+      options->user.name = "name";
+      options->user.display_name = "displayName";
+      MakeCredentialResult result =
+          AuthenticatorMakeCredential(std::move(options));
+      EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+
+      ASSERT_TRUE(result.response->echo_prf);
+      ASSERT_EQ(result.response->prf, authenticator_support);
+
+      if (authenticator_support) {
+        device::AuthenticatorData auth_data =
+            AuthDataFromMakeCredentialResponse(result.response);
+        credential.emplace(device::CredentialType::kPublicKey,
+                           auth_data.GetCredentialId());
+      }
     }
 
-    GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
+    auto assertion = [&](std::vector<blink::mojom::PRFValuesPtr> inputs,
+                         unsigned allow_list_size = 1,
+                         device::UserVerificationRequirement uv =
+                             device::UserVerificationRequirement::kPreferred)
+        -> blink::mojom::PRFValuesPtr {
+      PublicKeyCredentialRequestOptionsPtr options =
+          GetTestPublicKeyCredentialRequestOptions();
+      options->prf = true;
+      options->prf_inputs = std::move(inputs);
+      options->allow_credentials.clear();
+      options->user_verification = uv;
+      if (allow_list_size >= 1) {
+        for (unsigned i = 0; i < allow_list_size - 1; i++) {
+          std::vector<uint8_t> random_credential_id(32,
+                                                    static_cast<uint8_t>(i));
+          options->allow_credentials.emplace_back(
+              device::CredentialType::kPublicKey,
+              std::move(random_credential_id));
+        }
+        options->allow_credentials.push_back(*credential);
+      }
 
-    EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
-    CHECK(result.response->prf_results);
-    CHECK(!result.response->prf_results->id);
-    return std::move(result.response->prf_results);
-  };
+      GetAssertionResult result = AuthenticatorGetAssertion(std::move(options));
 
-  const std::vector<uint8_t> salt1(32, 1);
-  const std::vector<uint8_t> salt2(32, 2);
-  std::vector<uint8_t> salt1_eval;
-  std::vector<uint8_t> salt2_eval;
+      EXPECT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+      CHECK(result.response->prf_results);
+      CHECK(!result.response->prf_results->id);
+      return std::move(result.response->prf_results);
+    };
 
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->first = salt1;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs));
-    salt1_eval = std::move(result->first);
-  }
+    const std::vector<uint8_t> salt1(32, 1);
+    const std::vector<uint8_t> salt2(32, 2);
+    std::vector<uint8_t> salt1_eval;
+    std::vector<uint8_t> salt2_eval;
 
-  // The result should be consistent
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->first = salt1;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs));
-    ASSERT_EQ(result->first, salt1_eval);
-  }
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt1;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs));
+      salt1_eval = std::move(result->first);
+    }
 
-  // Should be able to evaluate two points at once.
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->first = salt1;
-    prf_value->second = salt2;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs));
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_TRUE(result->second);
-    salt2_eval = std::move(*result->second);
-    ASSERT_NE(salt1_eval, salt2_eval);
-  }
+    // The result should be consistent
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt1;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs));
+      ASSERT_EQ(result->first, salt1_eval);
+    }
 
-  // Should be consistent if swapped.
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->first = salt2;
-    prf_value->second = salt1;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs));
-    ASSERT_EQ(result->first, salt2_eval);
-    ASSERT_TRUE(result->second);
-    ASSERT_EQ(*result->second, salt1_eval);
-  }
+    // When uv=discouraged security keys will use a different PRF. But hybrid
+    // devices always do a UV and only have a single PRF.
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt1;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result =
+          assertion(std::move(inputs), 1,
+                    device::UserVerificationRequirement::kDiscouraged);
+      if (use_prf_extension_instead) {
+        ASSERT_EQ(result->first, salt1_eval);
+      } else {
+        ASSERT_NE(result->first, salt1_eval);
+      }
+    }
 
-  // Should still trigger if the credential ID is specified
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->id.emplace(credential->id);
-    prf_value->first = salt1;
-    prf_value->second = salt2;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs));
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_TRUE(result->second);
-    ASSERT_EQ(*result->second, salt2_eval);
-  }
+    // Should be able to evaluate two points at once.
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt1;
+      prf_value->second = salt2;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs));
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_TRUE(result->second);
+      salt2_eval = std::move(*result->second);
+      ASSERT_NE(salt1_eval, salt2_eval);
+    }
 
-  // And the specified credential ID should override any default inputs.
-  {
-    auto prf_value1 = blink::mojom::PRFValues::New();
-    prf_value1->first = std::vector<uint8_t>(32, 3);
-    auto prf_value2 = blink::mojom::PRFValues::New();
-    prf_value2->id.emplace(credential->id);
-    prf_value2->first = salt1;
-    prf_value2->second = salt2;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value1));
-    inputs.emplace_back(std::move(prf_value2));
-    auto result = assertion(std::move(inputs));
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_TRUE(result->second);
-    ASSERT_EQ(*result->second, salt2_eval);
-  }
+    // Should be consistent if swapped.
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt2;
+      prf_value->second = salt1;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs));
+      ASSERT_EQ(result->first, salt2_eval);
+      ASSERT_TRUE(result->second);
+      ASSERT_EQ(*result->second, salt1_eval);
+    }
 
-  // ... and that should still be true if there there are lots of dummy entries
-  // in the allowlist. Note that the virtual authenticator was configured such
-  // that this will cause multiple batches.
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->id.emplace(credential->id);
-    prf_value->first = salt1;
-    prf_value->second = salt2;
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs), /*allowlist_size=*/20);
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_TRUE(result->second);
-    ASSERT_EQ(*result->second, salt2_eval);
-  }
+    // Should still trigger if the credential ID is specified
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->id.emplace(credential->id);
+      prf_value->first = salt1;
+      prf_value->second = salt2;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs));
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_TRUE(result->second);
+      ASSERT_EQ(*result->second, salt2_eval);
+    }
 
-  // Default PRF values should be passed down when the allowlist is empty.
-  {
-    auto prf_value = blink::mojom::PRFValues::New();
-    prf_value->first = salt1;
-    prf_value->second = salt2;
-    test_client_.delegate_config.expected_accounts =
-        "01020304:name:displayName";
-    test_client_.delegate_config.selected_user_id = {1, 2, 3, 4};
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value));
-    auto result = assertion(std::move(inputs), /*allowlist_size=*/0);
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_TRUE(result->second);
-    ASSERT_EQ(*result->second, salt2_eval);
-  }
+    // And the specified credential ID should override any default inputs.
+    {
+      auto prf_value1 = blink::mojom::PRFValues::New();
+      prf_value1->first = std::vector<uint8_t>(32, 3);
+      auto prf_value2 = blink::mojom::PRFValues::New();
+      prf_value2->id.emplace(credential->id);
+      prf_value2->first = salt1;
+      prf_value2->second = salt2;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value1));
+      inputs.emplace_back(std::move(prf_value2));
+      auto result = assertion(std::move(inputs));
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_TRUE(result->second);
+      ASSERT_EQ(*result->second, salt2_eval);
+    }
 
-  // And the default PRF values should be used if none of the specific values
-  // match.
-  {
-    auto prf_value1 = blink::mojom::PRFValues::New();
-    prf_value1->first = salt1;
-    auto prf_value2 = blink::mojom::PRFValues::New();
-    prf_value2->first = std::vector<uint8_t>(32, 3);
-    prf_value2->id = std::vector<uint8_t>(32, 4);
-    std::vector<blink::mojom::PRFValuesPtr> inputs;
-    inputs.emplace_back(std::move(prf_value1));
-    inputs.emplace_back(std::move(prf_value2));
-    auto result = assertion(std::move(inputs), /*allowlist_size=*/20);
-    ASSERT_EQ(result->first, salt1_eval);
-    ASSERT_FALSE(result->second);
+    // ... and that should still be true if there there are lots of dummy
+    // entries in the allowlist. Note that the virtual authenticator was
+    // configured such that this will cause multiple batches.
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->id.emplace(credential->id);
+      prf_value->first = salt1;
+      prf_value->second = salt2;
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs), /*allowlist_size=*/20);
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_TRUE(result->second);
+      ASSERT_EQ(*result->second, salt2_eval);
+    }
+
+    // Default PRF values should be passed down when the allowlist is empty.
+    {
+      auto prf_value = blink::mojom::PRFValues::New();
+      prf_value->first = salt1;
+      prf_value->second = salt2;
+      test_client_.delegate_config.expected_accounts =
+          "01020304:name:displayName";
+      test_client_.delegate_config.selected_user_id = {1, 2, 3, 4};
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value));
+      auto result = assertion(std::move(inputs), /*allowlist_size=*/0);
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_TRUE(result->second);
+      ASSERT_EQ(*result->second, salt2_eval);
+    }
+
+    // And the default PRF values should be used if none of the specific values
+    // match.
+    {
+      auto prf_value1 = blink::mojom::PRFValues::New();
+      prf_value1->first = salt1;
+      auto prf_value2 = blink::mojom::PRFValues::New();
+      prf_value2->first = std::vector<uint8_t>(32, 3);
+      prf_value2->id = std::vector<uint8_t>(32, 4);
+      std::vector<blink::mojom::PRFValuesPtr> inputs;
+      inputs.emplace_back(std::move(prf_value1));
+      inputs.emplace_back(std::move(prf_value2));
+      auto result = assertion(std::move(inputs), /*allowlist_size=*/20);
+      ASSERT_EQ(result->first, salt1_eval);
+      ASSERT_FALSE(result->second);
+    }
   }
 }
 
@@ -8584,15 +8846,6 @@ class AuthenticatorCableV2Test
     : public AuthenticatorImplTest,
       public ::testing::WithParamInterface<unsigned> {
  public:
-  AuthenticatorCableV2Test()
-      : network_context_(device::cablev2::NewMockTunnelServer(
-            base::BindRepeating(&AuthenticatorCableV2Test::OnContact,
-                                base::Unretained(this)))),
-        virtual_device_(new VirtualFidoDevice::State, DeviceConfig()),
-        browser_client_(
-            base::BindRepeating(&AuthenticatorCableV2Test::MaybeContactPhones,
-                                base::Unretained(this))) {}
-
   void SetUp() override {
     AuthenticatorImplTest::SetUp();
 
@@ -8742,9 +8995,12 @@ class AuthenticatorCableV2Test
       0};
   const std::array<uint8_t, device::cablev2::kQRSeedSize> zero_seed_ = {0};
 
-  std::unique_ptr<network::mojom::NetworkContext> network_context_;
+  std::unique_ptr<network::mojom::NetworkContext> network_context_ =
+      device::cablev2::NewMockTunnelServer(
+          base::BindRepeating(&AuthenticatorCableV2Test::OnContact,
+                              base::Unretained(this)));
   uint8_t peer_identity_x962_[device::kP256X962Length] = {0};
-  device::VirtualCtap2Device virtual_device_;
+  device::VirtualCtap2Device virtual_device_{DeviceState(), DeviceConfig()};
   std::vector<std::unique_ptr<device::cablev2::Pairing>> pairings_;
   base::OnceCallback<void(
       base::span<const uint8_t, device::cablev2::kTunnelIdSize> tunnel_id,
@@ -8752,16 +9008,22 @@ class AuthenticatorCableV2Test
       base::span<const uint8_t, device::cablev2::kClientNonceSize> client_nonce,
       const std::string& request_type_hint)>
       contact_callback_;
-
   std::unique_ptr<device::cablev2::Discovery::AdvertEventStream>
       ble_advert_events_;
   device::cablev2::Discovery::AdvertEventStream::Callback ble_advert_callback_;
-
-  ContactWhenReadyContentBrowserClient browser_client_;
+  ContactWhenReadyContentBrowserClient browser_client_{
+      base::BindRepeating(&AuthenticatorCableV2Test::MaybeContactPhones,
+                          base::Unretained(this))};
   raw_ptr<ContentBrowserClient> old_client_ = nullptr;
   base::OnceClosure maybe_contact_phones_callback_;
 
  private:
+  static VirtualCtap2Device::State* DeviceState() {
+    VirtualCtap2Device::State* state = new VirtualCtap2Device::State;
+    state->fingerprints_enrolled = true;
+    return state;
+  }
+
   static VirtualCtap2Device::Config DeviceConfig() {
     // `MockPlatform` uses a virtual device to answer requests, but it can't
     // handle the credential ID being omitted in responses.
@@ -8769,6 +9031,10 @@ class AuthenticatorCableV2Test
     ret.include_credential_in_assertion_response =
         VirtualCtap2Device::Config::IncludeCredential::ALWAYS;
     ret.device_public_key_support = true;
+    ret.prf_support = true;
+    ret.internal_account_chooser = true;
+    ret.internal_uv_support = true;
+    ret.always_uv = true;
     ret.backup_eligible = true;
     // None attestation is needed because, otherwise, zeroing the AAGUID
     // invalidates the DPK signature.
@@ -9106,6 +9372,8 @@ class AuthenticatorCableV2AuthenticatorTest
   std::unique_ptr<device::cablev2::authenticator::Transaction> transaction_;
   bool did_complete_ = false;
   absl::optional<device::cablev2::authenticator::Platform::Error> error_;
+  base::test::ScopedFeatureList scoped_feature_list_{
+      device::kWebAuthnPRFAsAuthenticator};
 };
 
 TEST_F(AuthenticatorCableV2AuthenticatorTest, GetAssertion) {
@@ -9170,6 +9438,88 @@ TEST_F(AuthenticatorCableV2AuthenticatorTest, DevicePublicKeyGetAssertion) {
 
   ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
   EXPECT_TRUE(result.response->device_public_key);
+}
+
+TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFMakeCredential) {
+  auto options = GetTestPublicKeyCredentialCreationOptions();
+  options->prf_enable = true;
+
+  const auto result = AuthenticatorMakeCredential(std::move(options));
+
+  ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  EXPECT_TRUE(result.response->echo_prf);
+  EXPECT_TRUE(result.response->prf);
+}
+
+static std::tuple<PublicKeyCredentialRequestOptionsPtr,
+                  std::vector<uint8_t>,
+                  std::vector<uint8_t>>
+BuildPRFGetAssertion(device::VirtualCtap2Device& virtual_device,
+                     bool use_eval_by_credential) {
+  const std::vector<uint8_t> salt1(32, 1);
+  const std::vector<uint8_t> salt2(32, 2);
+  const std::array<uint8_t, 32> key1 = {1};
+  const std::array<uint8_t, 32> key2 = {2};
+  const std::array<uint8_t, 32> output1 = EvaluateHMAC(key2, salt1);
+  const std::array<uint8_t, 32> output2 = EvaluateHMAC(key2, salt2);
+  auto options = GetTestPublicKeyCredentialRequestOptions();
+
+  CHECK(virtual_device.mutable_state()->InjectRegistration(
+      options->allow_credentials[0].id, options->relying_party_id));
+  virtual_device.mutable_state()
+      ->registrations.begin()
+      ->second.hmac_key.emplace(key1, key2);
+
+  std::vector<blink::mojom::PRFValuesPtr> prf_inputs;
+  auto prf_value = blink::mojom::PRFValues::New();
+  prf_value->first = salt1;
+  prf_value->second = salt2;
+  if (use_eval_by_credential) {
+    prf_value->id = options->allow_credentials[0].id;
+  }
+  prf_inputs.emplace_back(std::move(prf_value));
+
+  options->allow_credentials[0].transports.insert(
+      device::FidoTransportProtocol::kHybrid);
+  options->prf = true;
+  options->prf_inputs = std::move(prf_inputs);
+  options->user_verification = device::UserVerificationRequirement::kRequired;
+
+  return std::make_tuple(std::move(options),
+                         device::fido_parsing_utils::Materialize(output1),
+                         device::fido_parsing_utils::Materialize(output2));
+}
+
+TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFGetAssertion) {
+  PublicKeyCredentialRequestOptionsPtr options;
+  std::vector<uint8_t> output1, output2;
+  std::tie(options, output1, output2) = BuildPRFGetAssertion(
+      virtual_device_, /* use_eval_by_credential= */ false);
+
+  const auto result = AuthenticatorGetAssertion(std::move(options));
+
+  ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  EXPECT_TRUE(result.response->echo_prf);
+  EXPECT_TRUE(result.response->prf_results);
+  EXPECT_EQ(result.response->prf_results->first, output1);
+  ASSERT_TRUE(result.response->prf_results->second.has_value());
+  EXPECT_EQ(*result.response->prf_results->second, output2);
+}
+
+TEST_F(AuthenticatorCableV2AuthenticatorTest, PRFGetAssertionByCredential) {
+  PublicKeyCredentialRequestOptionsPtr options;
+  std::vector<uint8_t> output1, output2;
+  std::tie(options, output1, output2) =
+      BuildPRFGetAssertion(virtual_device_, /* use_eval_by_credential= */ true);
+
+  const auto result = AuthenticatorGetAssertion(std::move(options));
+
+  ASSERT_EQ(result.status, AuthenticatorStatus::SUCCESS);
+  EXPECT_TRUE(result.response->echo_prf);
+  EXPECT_TRUE(result.response->prf_results);
+  EXPECT_EQ(result.response->prf_results->first, output1);
+  ASSERT_TRUE(result.response->prf_results->second.has_value());
+  EXPECT_EQ(*result.response->prf_results->second, output2);
 }
 
 // AuthenticatorImplWithRequestProxyTest tests behavior with an installed

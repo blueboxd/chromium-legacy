@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="Chrome.KAnonymityService.JoinSet.Action"
-    enum="KAnonymityServiceJoinSetAction" expires_after="2023-05-27">
+    enum="KAnonymityServiceJoinSetAction" expires_after="2023-07-30">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -47,7 +47,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Action"
-    enum="KAnonymityServiceQuerySetAction" expires_after="2023-06-04">
+    enum="KAnonymityServiceQuerySetAction" expires_after="2023-08-08">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -59,7 +59,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.QuerySet.Size" units="count"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.KAnonymityService.TrustTokenGetter.Latency" units="ms"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>
@@ -106,6 +106,11 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Chrome.Lacros.Smoothness.PercentDroppedFrames_1sWindow"
     units="%" expires_after="2023-07-25">
+  <obsolete>
+    This metric is reported on every dropped frame instead of every frame. It is
+    deprecated in favor of
+    Chrome.Lacros.Smoothness.PercentDroppedFrames_1sWindow2
+  </obsolete>
   <owner>xiyuan@chromium.org</owner>
   <owner>chromeos-perfmetrics-eng@google.com</owner>
   <summary>
@@ -114,19 +119,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Chrome.MessageLoopProblem" enum="MessageLoopProblems"
-    expires_after="2021-07-31">
-  <owner>fdoray@chromium.org</owner>
-  <owner>gab@chromium.org</owner>
+<histogram name="Chrome.Lacros.Smoothness.PercentDroppedFrames_1sWindow2"
+    units="%" expires_after="2024-01-29">
+  <owner>xiyuan@chromium.org</owner>
+  <owner>chromeos-perfmetrics-eng@google.com</owner>
   <summary>
-    Track set of Windows errors inside the meessage loop/pump system, where
-    system calls fail, and we try to gracefully recover. These errors should
-    really never happen, so we should be sure to look closer if they do.
+    Similar to Ash.Smoothness.PercentDroppedFrames_1sWindow2 but emitted for the
+    browser UI of lacros-chrome.
   </summary>
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.NotifyResult" enum="NotifyResult"
-    expires_after="2023-05-31">
+    expires_after="2023-07-30">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -135,7 +139,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.RemoteHungProcessTerminateReason"
-    enum="RemoteHungProcessTerminateReason" expires_after="2023-05-31">
+    enum="RemoteHungProcessTerminateReason" expires_after="2023-07-30">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>The reason of remote hang processes termination.</summary>
@@ -162,7 +166,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessErrorCode.Windows"
-    enum="WinGetLastError" expires_after="2023-05-31">
+    enum="WinGetLastError" expires_after="2023-07-30">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -172,7 +176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminateProcessTime" units="ms"
-    expires_after="2023-05-31">
+    expires_after="2023-07-30">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -182,7 +186,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TerminationWaitErrorCode.Windows"
-    enum="WinGetLastError" expires_after="2023-05-31">
+    enum="WinGetLastError" expires_after="2023-07-30">
   <owner>gab@chromium.org</owner>
   <owner>etienneb@chromium.org</owner>
   <summary>
@@ -191,7 +195,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToCreate" units="ms"
-    expires_after="2023-05-31">
+    expires_after="2023-07-30">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -201,7 +205,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToFailure" units="ms"
-    expires_after="2023-05-31">
+    expires_after="2023-07-30">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -212,7 +216,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Chrome.ProcessSingleton.TimeToNotify" units="ms"
-    expires_after="2023-05-31">
+    expires_after="2023-07-30">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>
@@ -292,7 +296,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ChromeColors.ColorOnLoad" enum="ChromeColorsInfo"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>gayane@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <summary>

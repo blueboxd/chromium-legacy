@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
@@ -186,19 +187,17 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
     // Add multiple entries for the same extension.
     ScopedDictPrefUpdate update(prefs, ExtensionWebUI::kExtensionURLOverrides);
     base::Value::Dict& all_overrides = update.Get();
-    base::Value newtab_list(base::Value::Type::LIST);
+    base::Value::List newtab_list;
     {
-      base::Value newtab(base::Value::Type::DICTIONARY);
-      newtab.SetKey("entry", base::Value(newtab_url.spec()));
-      newtab.SetKey("active", base::Value(true));
+      base::Value::Dict newtab;
+      newtab.Set("entry", newtab_url.spec());
+      newtab.Set("active", true);
       newtab_list.Append(std::move(newtab));
     }
     {
-      base::Value newtab(base::Value::Type::DICTIONARY);
-      newtab.SetKey(
-          "entry",
-          base::Value(extension->GetResourceURL("oldtab.html").spec()));
-      newtab.SetKey("active", base::Value(true));
+      base::Value::Dict newtab;
+      newtab.Set("entry", extension->GetResourceURL("oldtab.html").spec());
+      newtab.Set("active", true);
       newtab_list.Append(std::move(newtab));
     }
 
@@ -217,9 +216,9 @@ TEST_F(ExtensionWebUITest, TestRemovingDuplicateEntriesForHosts) {
   const base::Value::List* newtab_overrides = overrides.FindList("newtab");
   ASSERT_TRUE(newtab_overrides);
   ASSERT_EQ(1u, newtab_overrides->size());
-  const base::Value& override_dict = (*newtab_overrides)[0];
-  EXPECT_EQ(newtab_url.spec(), override_dict.FindKey("entry")->GetString());
-  EXPECT_TRUE(override_dict.FindKey("active")->GetBool());
+  const base::Value::Dict& override_dict = (*newtab_overrides)[0].GetDict();
+  EXPECT_EQ(newtab_url.spec(), CHECK_DEREF(override_dict.FindString("entry")));
+  EXPECT_TRUE(override_dict.FindBool("active").value_or(false));
 }
 
 TEST_F(ExtensionWebUITest, TestFaviconAlwaysAvailable) {

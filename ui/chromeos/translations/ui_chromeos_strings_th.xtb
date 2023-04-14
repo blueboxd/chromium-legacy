@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">ถัดไป</translation>
 <translation id="1209796539517632982">เซิร์ฟเวอร์ชื่ออัตโนมัติ</translation>
 <translation id="1210831758834677569">ลาว</translation>
+<translation id="1221555006497674479">มีพื้นที่เก็บข้อมูลน้อย โดยเหลือ <ph name="REMAINING_PERCENTAGE" />% จากพื้นที่เก็บข้อมูลของไดรฟ์ที่แชร์ <ph name="TOTAL_SPACE" /></translation>
 <translation id="1243314992276662751">อัปโหลด</translation>
 <translation id="1249250836236328755">ประเภท</translation>
 <translation id="1254593899333212300">เชื่อมต่ออินเทอร์เน็ตโดยตรง</translation>
 <translation id="1272293450992660632">ค่า PIN ไม่ตรงกัน</translation>
 <translation id="1280820357415527819">กำลังค้นหาเครือข่ายมือถือ</translation>
-<translation id="1291603679744561561">ล็อกซิมแล้ว</translation>
 <translation id="1293556467332435079">ไฟล์</translation>
 <translation id="1297922636971898492">Google ไดรฟ์ไม่พร้อมใช้งานในขณะนี้ การอัปโหลดจะเริ่มต้นอีกครั้งโดยอัตโนมัติเมื่อ Google ไดรฟ์ใช้งานได้</translation>
 <translation id="1307931752636661898">ดูไฟล์ Linux ไม่ได้</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">ต้องย้ายไฟล์ดังกล่าวไปยังไฟล์ Windows เพื่อวางใน Parallels Desktop</translation>
 <translation id="1435838927755162558">แชร์โฟลเดอร์กับ Parallels Desktop</translation>
 <translation id="1439919885608649279">คนกับดอกไม้</translation>
+<translation id="1458457385801829801">ยกเลิกการต่อเชื่อม <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">สโลวัก</translation>
 <translation id="1482884275703521657">ฟินแลนด์</translation>
 <translation id="148466539719134488">สวิส</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">พินอินภาษาจีน</translation>
 <translation id="1646019627374511909">กำลังทำให้ไฟล์ <ph name="NUMBER_OF_ITEMS" /> ไฟล์ใช้งานแบบออฟไลน์ได้</translation>
 <translation id="164969095109328410">อุปกรณ์ Chrome</translation>
+<translation id="1661207570040737402">คุณใช้พื้นที่เก็บข้อมูลใน Google Workspace ของไดรฟ์ที่แชร์หมดแล้ว</translation>
 <translation id="1661867754829461514">ไม่พบ PIN</translation>
 <translation id="166439687370499867">ไม่อนุญาตให้เปลี่ยนการกำหนดค่าเครือข่ายที่ใช้ร่วมกัน</translation>
 <translation id="1665611772925418501">ไม่สามารถแก้ไขไฟล์</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">แชร์ 1 โฟลเดอร์กับ Bruschetta แล้ว</translation>
 <translation id="2578394532502990878">ทมิฬ (ตามการออกเสียง)</translation>
 <translation id="2579959351793446050">โอเดีย</translation>
+<translation id="2587195714949534472">กำลังเตรียมการซิงค์ <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />%, ถูกผู้ดูแลระบบบล็อก, รายละเอียด</translation>
 <translation id="2614589611416690597">วิดีโอ <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">ไม่สามารถเข้าถึง Google ไดรฟ์ได้ในเวลานี้</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">มองโกเลีย</translation>
 <translation id="3495304270784461826">ข้อผิดพลาด <ph name="COUNT" /> รายการ</translation>
 <translation id="3509680540198371098">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ความแรงสัญญาณ <ph name="SIGNAL_STRENGTH" />%, รายละเอียด</translation>
+<translation id="3511705761158917664">กำลังเตรียมการซิงค์ <ph name="NUMBER_OF_ITEMS" /> รายการ...</translation>
 <translation id="3522708245912499433">โปรตุเกส</translation>
 <translation id="3524311639100184459">ข้อควรระวัง: ไฟล์เหล่านี้ใช้ชั่วคราวและอาจถูกลบโดยอัตโนมัติเพื่อเพิ่มพื้นที่ว่างในดิสก์  <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
@@ -347,10 +351,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">วาง</translation>
 <translation id="3952872973865944257">เตลูกู (ตามการออกเสียง)</translation>
+<translation id="3954354850384043518">กำลังดำเนินการ</translation>
 <translation id="3958548648197196644">กีวี</translation>
 <translation id="3971140002794351170">ดาวน์โหลดโปรไฟล์อุปกรณ์เคลื่อนที่, เครือข่าย <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">อังกฤษ (สหราชอาณาจักร)</translation>
 <translation id="3975895378829046965">บังกลา (ตามการออกเสียง)</translation>
+<translation id="3999574733850440202">ไฟล์ Microsoft ที่เปิดล่าสุดได้ย้ายไปยัง OneDrive แล้ว</translation>
 <translation id="4002066346123236978">ชื่อ</translation>
 <translation id="4017788180641807848">อังกฤษ (สหรัฐฯ) ด้วยแป้นพิมพ์ Workman</translation>
 <translation id="4019998208269143058">ปักหมุดไว้ที่ไฟล์ด่วน</translation>
@@ -406,6 +412,7 @@
 <translation id="4462159676511157176">เซิร์ฟเวอร์ชื่อที่กำหนดเอง</translation>
 <translation id="4465725236958772856">เครือข่ายที่ <ph name="NETWORK_INDEX" /> จาก <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, จัดการโดยผู้ดูแลระบบ, เชื่อมต่อ</translation>
 <translation id="4470564870223067757">ฮังกูลแบบ 2 ชุด</translation>
+<translation id="4474142134969976028">ไม่มีผลลัพธ์ที่ตรงกัน</translation>
 <translation id="4477002475007461989">โรมาเนีย</translation>
 <translation id="4477219268485577442">การออกเสียงภาษาบัลแกเรีย</translation>
 <translation id="4508265954913339219">การเปิดใช้งานล้มเหลว</translation>
@@ -477,6 +484,7 @@
 <translation id="4973523518332075481">ใช้ชื่อที่มีอักขระไม่เกิน <ph name="MAX_LENGTH" /> อักขระ</translation>
 <translation id="4973970068702235170">การซิปล้มเหลว ข้อผิดพลาดที่ไม่คาดคิด: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ญี่ปุ่น</translation>
+<translation id="4987699874727873250">อังกฤษ (อินเดีย)</translation>
 <translation id="4988205478593450158">แน่ใจไหมว่าต้องการลบ "<ph name="FILE_NAME" />"</translation>
 <translation id="498902553138568924">ผีเสื้อสีแดง</translation>
 <translation id="4992066212339426712">เปิดเสียง</translation>
@@ -786,6 +794,7 @@
 <translation id="7458955835361612701">ไม่มีรูปภาพล่าสุด</translation>
 <translation id="7460898608667578234">ยูเครน</translation>
 <translation id="7469894403370665791">เชื่อมต่อกับเครือข่ายนี้อัตโนมัติ</translation>
+<translation id="7481358317100446445">พร้อม</translation>
 <translation id="7486315294984620427">ต้องคัดลอกไฟล์ดังกล่าวไปยังไฟล์ Windows เพื่อวางใน Parallels Desktop</translation>
 <translation id="749452993132003881">ฮิระงะนะ</translation>
 <translation id="7495372004724182530">มาลายาลัม (ตามการออกเสียง)</translation>
@@ -811,6 +820,7 @@
 <translation id="7655441028674523381">เข้าถึง Google Photos ได้ง่ายๆ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7663224033570512922">ฮินดี</translation>
+<translation id="7665680517722058469">ลองค้นหาด้วยข้อความอื่น</translation>
 <translation id="7689532716264131859">ย้าย <ph name="NUMBER_OF_ITEMS" /> รายการไปที่ถังขยะแล้ว</translation>
 <translation id="7693909743393669729">การฟอร์แมตไดรฟ์จะลบข้อมูลทั้งหมดที่เก็บไว้ในไดรฟ์และลบพาร์ติชันที่มีอยู่ทั้งหมด รวมถึงพาร์ติชันที่อาจมองไม่เห็น การดำเนินการนี้เลิกทำไม่ได้</translation>
 <translation id="7695430100978772476">จัดรูปแบบ <ph name="DRIVE_NAME" /> ไม่ได้</translation>
@@ -898,6 +908,7 @@
 <translation id="8300849813060516376">OTASP ล้มเหลว</translation>
 <translation id="8312871300878166382">วางลงในโฟลเดอร์</translation>
 <translation id="8329978297633540474">ข้อความล้วน</translation>
+<translation id="8332007959299458842">ไฟล์ Microsoft ที่เปิดล่าสุดได้ย้ายไปยัง Google ไดรฟ์แล้ว</translation>
 <translation id="8335587457941836791">เลิกปักหมุดในชั้นวาง</translation>
 <translation id="8335837413233998004">เบลารุส</translation>
 <translation id="8336153091935557858">เมื่อวานนี้ <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -967,6 +978,7 @@
 <translation id="8866284467018526531">อาหรับ (การทับศัพท์)</translation>
 <translation id="8873014196523807561">หากต้องการกู้คืนรายการเหล่านี้ ให้ลากไปที่โฟลเดอร์ใหม่ ระบบลบโฟลเดอร์เดิมของบางรายการเหล่านี้แล้ว</translation>
 <translation id="8874184842967597500">ไม่เชื่อมต่อ</translation>
+<translation id="8876368061475701452">อยู่ในคิว</translation>
 <translation id="8900820606136623064">ฮังการี</translation>
 <translation id="8903931173357132290">รับปริญญา</translation>
 <translation id="8912078710089354287">สุนัขกำลังกระดิกหาง</translation>

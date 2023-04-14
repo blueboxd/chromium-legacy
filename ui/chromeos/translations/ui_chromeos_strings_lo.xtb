@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">ການເຊື່ອມຕໍ່ອິນເຕີເນັດໂດຍກົງ</translation>
 <translation id="1272293450992660632">ຄ່າ PIN ບໍ່ກົງກັນ.</translation>
 <translation id="1280820357415527819">ກຳລັງຊອກຫາເຄືອຂ່າຍມືຖື</translation>
-<translation id="1291603679744561561">ຊິມຖືກລັອກ</translation>
 <translation id="1293556467332435079">ໄຟລ໌</translation>
 <translation id="1297922636971898492">ບໍ່ມີ Google Drive ຢູ່ໃນເວລານີ້. ການອັບໂຫຼດຈະເລີ່ມຕົ້ນໃໝ່ອັດຕະໂນມັດ ເມື່ອ Google Drive ກັບຄືນມາ.</translation>
 <translation id="1307931752636661898">ບໍ່ສາມາດເບິ່ງໄຟລ໌ Linux ໄດ້</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">ເພື່ອວາງໄຟລ໌ໃນ Parallels Desktop, ໄຟລ໌ນັ້ນຈະຕ້ອງຖືກຍ້າຍໄປໃສ່ໄຟລ໌ Windows ກ່ອນ.</translation>
 <translation id="1435838927755162558">ແບ່ງປັນໂຟນເດີກັບ Parallels Desktop</translation>
 <translation id="1439919885608649279">ຄົນຖືດອກໄມ້</translation>
+<translation id="1458457385801829801">ຖອດ <ph name="TARGET_NAME" /> ອອກ</translation>
 <translation id="1471718551822868769">ພາສາສະໂລແວັກ</translation>
 <translation id="1482884275703521657">ພາສາຟິນນິຊ</translation>
 <translation id="148466539719134488">ພາສາ​ສະ​ວິດ</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">ແບ່ງປັນ 1 ໂຟນເດີກັບ Bruschetta ແລ້ວ</translation>
 <translation id="2578394532502990878">ພາສາທາມິລ (ຕາມການອອກສຽງ)</translation>
 <translation id="2579959351793446050">ພາສາໂອເດຍ</translation>
+<translation id="2587195714949534472">ກຳລັງກະກຽມຊິ້ງຂໍ້ມູນ <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ຖືກບລັອກໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ລາຍລະອຽດ</translation>
 <translation id="2614589611416690597">ວິດີໂອ <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">ບໍ່ສາມາດເຂົ້າເຖິງ Google Drive ໄດ້ໃນເວລານີ້.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">ພາສາມອງໂກລຽນ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ຄວາມ​ຜິດ​ພາດ​.</translation>
 <translation id="3509680540198371098">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ຄວາມແຮງສັນຍານ <ph name="SIGNAL_STRENGTH" />%, ລາຍລະອຽດ</translation>
+<translation id="3511705761158917664">ກຳລັງກະກຽມຊິ້ງຂໍ້ມູນ <ph name="NUMBER_OF_ITEMS" /> ລາຍການ...</translation>
 <translation id="3522708245912499433">ພາສາປັອກຕຸຍການ</translation>
 <translation id="3524311639100184459">ລະວັງ: ໄຟລ໌ເຫຼົ່ານີ້ເປັນໄຟລ໌ຊົ່ວຄາວ ແລະອາດຈະຖືກລຶບໄປໂດຍອັດຕະໂນມັດເພື່ອຂະຫຍາຍພື້ນທີ່ດິສ.  <ph name="BEGIN_LINK" />ສຶກສາເພີ່ມເຕີມ<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ໂຟລເດີ</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">ແປະໃສ່</translation>
 <translation id="3952872973865944257">ການອອກສຽງພາສາເຕລູກູ</translation>
+<translation id="3954354850384043518">ດໍາເນີນການຢູ່</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">ດາວໂຫຼດໂປຣໄຟລ໌ມືຖື, ເຄືອຂ່າຍ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">ພາສາອັງກິດ (ສະຫະລາດຊະອານາຈັກ)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">ເຊີບເວີຊື່ກໍານົດເອງ</translation>
 <translation id="4465725236958772856">ເຄືອຂ່າຍທີ <ph name="NETWORK_INDEX" /> ຈາກທັງໝົດ <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ຈັດການໂດຍຜູ້ເບິ່ງແຍງລະບົບຂອງທ່ານ, ເຊື່ອມຕໍ່</translation>
 <translation id="4470564870223067757">ຮາງກຸລ 2 ຊຸດ</translation>
+<translation id="4474142134969976028">ບໍ່ພົບຜົນການຊອກຫາທີ່ກົງກັນ</translation>
 <translation id="4477002475007461989">ໂຣມານຽນ</translation>
 <translation id="4477219268485577442">ການອອກສຽງພາສາບຸນ​ກາ​ຣີ</translation>
 <translation id="4508265954913339219">ການເປີດໃຊ້ງານບໍ່ສໍາເລັດ</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">ໃຊ້ຊື່ທີ່ມີຕົວອັກສອນ <ph name="MAX_LENGTH" /> ຕົວລົງມາ</translation>
 <translation id="4973970068702235170">ການຊິບບໍ່ສຳເລັດ, ເກີດຄວາມຜິດພາດທີ່ບໍ່ຄາດຄິດ: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ພາສາຍີ່ປຸ່ນ</translation>
+<translation id="4987699874727873250">ອັງກິດ (ອິນເດຍ)</translation>
 <translation id="4988205478593450158">ທ່ານແນ່ໃຈບໍ່ວ່າທ່ານຕ້ອງການລຶບ "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">ແມງກະເບື້ອສີແດງ</translation>
 <translation id="4992066212339426712">ເປີດສຽງ</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">ບໍ່ມີຮູບຫຼ້າສຸດ</translation>
 <translation id="7460898608667578234">ພາສາຢູ​ເຄຣນ</translation>
 <translation id="7469894403370665791">ເຊື່ອມຕໍ່ກັບເຄືອຂ່າຍນີ້ອັດຕະໂນມັດ</translation>
+<translation id="7481358317100446445">ພ້ອມແລ້ວ</translation>
 <translation id="7486315294984620427">ເພື່ອວາງໄຟລ໌ໃນ Parallels Desktop, ໄຟລ໌ນັ້ນຈະຕ້ອງຖືກສຳເນົາໄປໃສ່ໄຟລ໌ Windows ກ່ອນ.</translation>
 <translation id="749452993132003881">ຮິຣະງະນະ</translation>
 <translation id="7495372004724182530">ການອອກສຽງພາສາມາລາຢາລຳ</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">ເຂົ້າເຖິງ Google ຮູບພາບໄດ້ຢ່າງງ່າຍດາຍ</translation>
 <translation id="7658239707568436148">ຍົກ​ເລີກ​</translation>
 <translation id="7663224033570512922">ພາສາຮິນດິ</translation>
+<translation id="7665680517722058469">ລອງຊອກຫາອັນໃໝ່</translation>
 <translation id="7689532716264131859">ຍ້າຍ <ph name="NUMBER_OF_ITEMS" /> ລາຍການໄປໃສ່ຖັງຂີ້ເຫຍື້ອແລ້ວ</translation>
 <translation id="7693909743393669729">ການຟໍແມັດໄດຣຈະລຶບຂໍ້ມູນທັງໝົດທີ່ເກັບໄວ້ໃນມັນ ແລະ ລຶບຫ້ອງຂໍ້ມູນທີ່ມີຢູ່ທັງໝົດ, ຮວມທັງຫ້ອງຂໍ້ມູນທີ່ອາດຈະເບິ່ງບໍ່ເຫັນ. ຄຳສັ່ງນີ້ບໍ່ສາມາດຍົກເລີກໄດ້.</translation>
 <translation id="7695430100978772476">ບໍ່ສາມາດຟໍແມັດ <ph name="DRIVE_NAME" /> ໄດ້</translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">ການແປທັບສັບພາສາອາຣັບ</translation>
 <translation id="8873014196523807561">ເພື່ອກູ້ຄືນລາຍການເຫຼົ່ານີ້, ກະລຸນາລາກພວກມັນໄປໃສ່ໂຟນເດີໃໝ່. ໂຟນເດີເດີມສຳລັບບາງລາຍການເຫຼົ່ານີ້ຖືກລຶບແລ້ວ.</translation>
 <translation id="8874184842967597500">ບໍ່​ໄດ້​ເຊື່ອມ​ຕໍ່</translation>
+<translation id="8876368061475701452">ຢູ່ໃນຄິວ</translation>
 <translation id="8900820606136623064">ພາສາຮັງກາຣີ</translation>
 <translation id="8903931173357132290">ຈົບ​ການ​ສຶກ​ສາ</translation>
 <translation id="8912078710089354287">ໝາກະດິກຫາງ</translation>

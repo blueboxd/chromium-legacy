@@ -61,16 +61,8 @@
 namespace arc {
 namespace {
 
-constexpr const char kArcVmPerBoardFeaturesJobName[] =
-    "arcvm_2dper_2dboard_2dfeatures";
 constexpr const char kArcVmBootNotificationServerAddressPrefix[] =
     "\0test_arcvm_boot_notification_server";
-constexpr char kArcVmPreLoginServicesJobName[] =
-    "arcvm_2dpre_2dlogin_2dservices";
-constexpr char kArcVmPostLoginServicesJobName[] =
-    "arcvm_2dpost_2dlogin_2dservices";
-constexpr char kArcVmPostVmStartServicesJobName[] =
-    "arcvm_2dpost_2dvm_2dstart_2dservices";
 
 // Disk path contained in CreateDiskImageResponse().
 constexpr const char kCreatedDiskImagePath[] = "test/data.img";
@@ -794,25 +786,27 @@ TEST_F(ArcVmClientAdapterTest, StartMiniArc_StopArcVmPreLoginServicesJobFail) {
   StopArcInstance();
 }
 
-// Tests that StartMiniArc()'s JOB_STOP_AND_START for
-// |kArcVmPreLoginServicesJobName| is properly implemented.
+// Tests that |kArcVmPreLoginServicesJobName| is properly stopped and then
+// started in StartMiniArc().
 TEST_F(ArcVmClientAdapterTest, StartMiniArc_JobRestart) {
   StartRecordingUpstartOperations();
   StartMiniArc();
 
   const auto& ops = upstart_operations();
   // Find the STOP operation for the job.
-  auto it =
-      base::ranges::find_if(ops, [](const UpstartOperation& op) {
-        return op.type == UpstartOperationType::STOP &&
-               kArcVmPreLoginServicesJobName == op.name;
-      });
-  ASSERT_NE(ops.end(), it);
+  auto it = base::ranges::find_if(ops, [](const UpstartOperation& op) {
+    return op.type == UpstartOperationType::STOP &&
+           op.name == kArcVmPreLoginServicesJobName;
+  });
+  ASSERT_NE(it, ops.end());
   ++it;
-  ASSERT_NE(ops.end(), it);
-  // The next operation must be START for the job.
-  EXPECT_EQ(it->name, kArcVmPreLoginServicesJobName);
-  EXPECT_EQ(UpstartOperationType::START, it->type);
+  ASSERT_NE(it, ops.end());
+  // Find the START operation for the job.
+  it = base::ranges::find_if(it, ops.end(), [](const UpstartOperation& op) {
+    return op.type == UpstartOperationType::START &&
+           op.name == kArcVmPreLoginServicesJobName;
+  });
+  ASSERT_NE(it, ops.end());
 }
 
 // Tests that StopArcInstance() eventually notifies the observer.
@@ -2308,6 +2302,34 @@ TEST_F(ArcVmClientAdapterTest,
   EXPECT_FALSE(request.enable_consumer_auto_update_toggle());
   EXPECT_FALSE(
       request.mini_instance_request().enable_consumer_auto_update_toggle());
+}
+
+TEST_F(ArcVmClientAdapterTest, StartArc_EnablePrivacyHubForChrome_Default) {
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(request.mini_instance_request().enable_privacy_hub_for_chrome());
+}
+
+TEST_F(ArcVmClientAdapterTest, StartArc_EnablePrivacyHubForChrome_Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(ash::features::kCrosPrivacyHub);
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_TRUE(request.mini_instance_request().enable_privacy_hub_for_chrome());
+}
+
+TEST_F(ArcVmClientAdapterTest, StartArc_EnablePrivacyHubForChrome_Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(ash::features::kCrosPrivacyHub);
+  StartMiniArc();
+  EXPECT_GE(GetTestConciergeClient()->start_arc_vm_call_count(), 1);
+  EXPECT_FALSE(is_system_shutdown().has_value());
+  const auto& request = GetTestConciergeClient()->start_arc_vm_request();
+  EXPECT_FALSE(request.mini_instance_request().enable_privacy_hub_for_chrome());
 }
 
 // Test that the value of swappiness is default value when kGuestZram is

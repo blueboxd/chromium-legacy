@@ -27,6 +27,7 @@
 #include "content/services/auction_worklet/report_bindings.h"
 #include "content/services/auction_worklet/set_bid_bindings.h"
 #include "content/services/auction_worklet/set_priority_bindings.h"
+#include "content/services/auction_worklet/worklet_test_util.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
@@ -80,6 +81,19 @@ class ContextRecyclerTest : public testing::Test {
     std::vector<v8::Local<v8::Value>> args;
     if (!maybe_arg.IsEmpty())
       args.push_back(maybe_arg);
+    return helper_->RunScript(scope.GetContext(), script,
+                              /*debug_id=*/nullptr,
+                              AuctionV8Helper::ExecMode::kTopLevelAndFunction,
+                              function_name, args,
+                              /*script_timeout=*/absl::nullopt, error_msgs);
+  }
+
+  // Runs a function with a list of arguments.
+  v8::MaybeLocal<v8::Value> Run(ContextRecyclerScope& scope,
+                                v8::Local<v8::UnboundScript> script,
+                                const std::string& function_name,
+                                std::vector<std::string>& error_msgs,
+                                std::vector<v8::Local<v8::Value>> args) {
     return helper_->RunScript(scope.GetContext(), script,
                               /*debug_id=*/nullptr,
                               AuctionV8Helper::ExecMode::kTopLevelAndFunction,
@@ -270,6 +284,11 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
   ContextRecycler context_recycler(helper_.get());
   context_recycler.AddSetBidBindings();
 
+  base::RepeatingCallback<bool(const GURL&)> matches_ad1 = base::BindRepeating(
+      [](const GURL& url) { return url == GURL("https://example.com/ad1"); });
+  base::RepeatingCallback<bool(const GURL&)> ignore_arg_return_false =
+      base::BindRepeating([](const GURL& ignored) { return false; });
+
   {
     ContextRecyclerScope scope(context_recycler);
     mojom::BidderWorkletNonSharedParamsPtr params =
@@ -281,7 +300,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*restrict_to_kanon_ads=*/false);
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
 
     task_environment_.FastForwardBy(base::Milliseconds(500));
 
@@ -314,7 +334,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*restrict_to_kanon_ads=*/false);
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
 
     task_environment_.FastForwardBy(base::Milliseconds(500));
 
@@ -351,7 +372,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
-        /*restrict_to_kanon_ads=*/false);
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
 
     task_environment_.FastForwardBy(base::Milliseconds(100));
 
@@ -390,7 +412,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
-        /*restrict_to_kanon_ads=*/false);
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
 
     task_environment_.FastForwardBy(base::Milliseconds(200));
 
@@ -441,7 +464,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*restrict_to_kanon_ads=*/false);
+        /*is_ad_excluded=*/ignore_arg_return_false,
+        /*is_component_ad_excluded=*/ignore_arg_return_false);
 
     task_environment_.FastForwardBy(base::Milliseconds(200));
 
@@ -470,7 +494,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
   }
 
   {
-    // restrict_to_kanon_ads = true affects checking.
+    // use ad filter function - ads excluded.
     ContextRecyclerScope scope(context_recycler);
     mojom::BidderWorkletNonSharedParamsPtr params =
         mojom::BidderWorkletNonSharedParams::New();
@@ -481,7 +505,8 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*restrict_to_kanon_ads=*/true);
+        /*is_ad_excluded=*/matches_ad1,
+        /*is_component_ad_excluded=*/matches_ad1);
 
     task_environment_.FastForwardBy(base::Milliseconds(500));
 
@@ -501,24 +526,24 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
   }
 
   {
-    // restrict_to_kanon_ads = true affects checking, with ad permitted.
+    // use ad filter function - ads permitted.
     ContextRecyclerScope scope(context_recycler);
     mojom::BidderWorkletNonSharedParamsPtr params =
         mojom::BidderWorkletNonSharedParams::New();
     params->ads.emplace();
-    params->ads.value().emplace_back(GURL("https://example.com/ad1"),
+    params->ads.value().emplace_back(GURL("https://example.com/ad2"),
                                      absl::nullopt);
-    params->ads_kanon.emplace(GURL("https://example.com/ad1"), true);
 
     context_recycler.set_bid_bindings()->ReInitialize(
         base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
-        /*restrict_to_kanon_ads=*/true);
+        /*is_ad_excluded=*/matches_ad1,
+        /*is_component_ad_excluded=*/matches_ad1);
 
     task_environment_.FastForwardBy(base::Milliseconds(500));
 
     gin::Dictionary bid_dict = gin::Dictionary::CreateEmpty(helper_->isolate());
-    bid_dict.Set("render", std::string("https://example.com/ad1"));
+    bid_dict.Set("render", std::string("https://example.com/ad2"));
     bid_dict.Set("bid", 10.0);
 
     std::vector<std::string> error_msgs;
@@ -529,7 +554,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     ASSERT_TRUE(context_recycler.set_bid_bindings()->has_bid());
     mojom::BidderWorkletBidPtr bid =
         context_recycler.set_bid_bindings()->TakeBid();
-    EXPECT_EQ("https://example.com/ad1", bid->render_url);
+    EXPECT_EQ("https://example.com/ad2", bid->render_url);
     EXPECT_EQ(10.0, bid->bid);
     EXPECT_EQ(base::Milliseconds(500), bid->bid_duration);
   }
@@ -778,6 +803,301 @@ TEST_F(ContextRecyclerTest, BidderLazyFiller2) {
         "\"priorityVector\":null,"
         "\"prevWins\":[]}",
         str_result);
+  }
+}
+
+TEST_F(ContextRecyclerTest, SharedStorageMethods) {
+  using RequestType =
+      auction_worklet::TestAuctionSharedStorageHost::RequestType;
+  using Request = auction_worklet::TestAuctionSharedStorageHost::Request;
+
+  const char kScript[] = R"(
+    function testSet(...args) {
+      sharedStorage.set(...args);
+    }
+
+    function testAppend(...args) {
+      sharedStorage.append(...args);
+    }
+
+    function testDelete(...args) {
+      sharedStorage.delete(...args);
+    }
+
+    function testClear(...args) {
+      sharedStorage.clear(...args);
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  auction_worklet::TestAuctionSharedStorageHost test_shared_storage_host;
+
+  ContextRecycler context_recycler(helper_.get());
+  context_recycler.AddSharedStorageBindings(
+      &test_shared_storage_host,
+      /*shared_storage_permissions_policy_allowed=*/true);
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs,
+        /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b"))}));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_THAT(test_shared_storage_host.observed_requests(),
+                ElementsAre(Request{.type = RequestType::kSet,
+                                    .key = u"a",
+                                    .value = u"b",
+                                    .ignore_if_present = false}));
+
+    test_shared_storage_host.ClearObservedRequests();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary options_dict =
+        gin::Dictionary::CreateEmpty(helper_->isolate());
+    options_dict.Set("ignoreIfPresent", true);
+
+    Run(scope, script, "testSet", error_msgs,
+        /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b")),
+             gin::ConvertToV8(helper_->isolate(), options_dict)}));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_THAT(test_shared_storage_host.observed_requests(),
+                ElementsAre(Request{.type = RequestType::kSet,
+                                    .key = u"a",
+                                    .value = u"b",
+                                    .ignore_if_present = true}));
+
+    test_shared_storage_host.ClearObservedRequests();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs,
+        /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b"))}));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_THAT(test_shared_storage_host.observed_requests(),
+                ElementsAre(Request{.type = RequestType::kAppend,
+                                    .key = u"a",
+                                    .value = u"b",
+                                    .ignore_if_present = false}));
+
+    test_shared_storage_host.ClearObservedRequests();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testDelete", error_msgs,
+        /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a"))}));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_THAT(test_shared_storage_host.observed_requests(),
+                ElementsAre(Request{.type = RequestType::kDelete,
+                                    .key = u"a",
+                                    .value = std::u16string(),
+                                    .ignore_if_present = false}));
+
+    test_shared_storage_host.ClearObservedRequests();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testClear", error_msgs,
+        /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a"))}));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_THAT(test_shared_storage_host.observed_requests(),
+                ElementsAre(Request{.type = RequestType::kClear,
+                                    .key = std::u16string(),
+                                    .value = std::u16string(),
+                                    .ignore_if_present = false}));
+
+    test_shared_storage_host.ClearObservedRequests();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:3 Uncaught TypeError: Missing or "
+            "invalid \"key\" argument in sharedStorage.set()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a"))}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:3 Uncaught TypeError: Missing or "
+            "invalid \"value\" argument in sharedStorage.set()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b")),
+             gin::ConvertToV8(helper_->isolate(), true)}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
+                    "Invalid \"options\" argument in sharedStorage.set()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:7 Uncaught TypeError: Missing or "
+            "invalid \"key\" argument in sharedStorage.append()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a"))}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:7 Uncaught TypeError: Missing or "
+            "invalid \"value\" argument in sharedStorage.append()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testDelete", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:11 Uncaught TypeError: Missing or "
+            "invalid \"key\" argument in sharedStorage.delete()."));
+  }
+}
+
+TEST_F(ContextRecyclerTest, SharedStorageMethodsPermissionsPolicyDisabled) {
+  const char kScript[] = R"(
+    function testSet(...args) {
+      sharedStorage.set(...args);
+    }
+
+    function testAppend(...args) {
+      sharedStorage.append(...args);
+    }
+
+    function testDelete(...args) {
+      sharedStorage.delete(...args);
+    }
+
+    function testClear(...args) {
+      sharedStorage.clear(...args);
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  ContextRecycler context_recycler(helper_.get());
+  context_recycler.AddSharedStorageBindings(
+      nullptr,
+      /*shared_storage_permissions_policy_allowed=*/false);
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:3 Uncaught "
+                            "TypeError: The \"shared-storage\" Permissions "
+                            "Policy denied the method on sharedStorage."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:7 Uncaught "
+                            "TypeError: The \"shared-storage\" Permissions "
+                            "Policy denied the method on sharedStorage."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testDelete", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:11 Uncaught "
+                            "TypeError: The \"shared-storage\" Permissions "
+                            "Policy denied the method on sharedStorage."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testClear", error_msgs,
+        /*args=*/std::vector<v8::Local<v8::Value>>());
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:15 Uncaught "
+                            "TypeError: The \"shared-storage\" Permissions "
+                            "Policy denied the method on sharedStorage."));
   }
 }
 

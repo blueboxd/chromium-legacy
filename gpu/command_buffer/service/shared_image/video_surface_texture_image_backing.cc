@@ -10,6 +10,7 @@
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/command_buffer/service/abstract_texture_android.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
@@ -85,9 +86,15 @@ class VideoSurfaceTextureImageBacking::GLTextureVideoImageRepresentation
       SharedImageManager* manager,
       VideoSurfaceTextureImageBacking* backing,
       MemoryTypeTracker* tracker,
-      std::unique_ptr<gles2::AbstractTexture> texture)
+      std::unique_ptr<AbstractTextureAndroid> texture)
       : GLTextureImageRepresentation(manager, backing, tracker),
         texture_(std::move(texture)) {}
+
+  ~GLTextureVideoImageRepresentation() override {
+    if (!has_context()) {
+      texture_->NotifyOnContextLost();
+    }
+  }
 
   // Disallow copy and assign.
   GLTextureVideoImageRepresentation(const GLTextureVideoImageRepresentation&) =
@@ -118,7 +125,7 @@ class VideoSurfaceTextureImageBacking::GLTextureVideoImageRepresentation
   void EndAccess() override {}
 
  private:
-  std::unique_ptr<gles2::AbstractTexture> texture_;
+  std::unique_ptr<AbstractTextureAndroid> texture_;
 };
 
 // Representation of VideoSurfaceTextureImageBacking as a GL Texture.
@@ -130,13 +137,19 @@ class VideoSurfaceTextureImageBacking::
       SharedImageManager* manager,
       VideoSurfaceTextureImageBacking* backing,
       MemoryTypeTracker* tracker,
-      std::unique_ptr<gles2::AbstractTexture> abstract_texture)
+      std::unique_ptr<AbstractTextureAndroid> abstract_texture)
       : GLTexturePassthroughImageRepresentation(manager, backing, tracker),
         abstract_texture_(std::move(abstract_texture)),
         passthrough_texture_(gles2::TexturePassthrough::CheckedCast(
             abstract_texture_->GetTextureBase())) {
     // TODO(https://crbug.com/1172769): Remove this CHECK.
     CHECK(passthrough_texture_);
+  }
+
+  ~GLTexturePassthroughVideoImageRepresentation() override {
+    if (!has_context()) {
+      abstract_texture_->NotifyOnContextLost();
+    }
   }
 
   // Disallow copy and assign.
@@ -165,7 +178,7 @@ class VideoSurfaceTextureImageBacking::
   void EndAccess() override {}
 
  private:
-  std::unique_ptr<gles2::AbstractTexture> abstract_texture_;
+  std::unique_ptr<AbstractTextureAndroid> abstract_texture_;
   scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
 };
 

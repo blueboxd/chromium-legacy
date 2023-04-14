@@ -18,7 +18,7 @@ import {SkColor} from 'chrome://resources/mojo/skia/public/mojom/skcolor.mojom-w
 import {IronA11yKeysElement} from 'chrome://resources/polymer/v3_0/iron-a11y-keys/iron-a11y-keys.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 
-import {ColorScheme, SampleColorScheme} from '../personalization_app.mojom-webui.js';
+import {ColorScheme, SampleColorScheme} from '../../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {convertToRgbHexStr} from '../utils.js';
 
@@ -148,19 +148,15 @@ export class DynamicColorElement extends WithPersonalizationStore {
   }
 
   private getColorSchemeAriaChecked_(
-      colorScheme: string, colorSchemeSelected: string): 'true'|'false' {
-    if (!colorSchemeSelected) {
-      return 'false';
-    }
-    return colorSchemeSelected === colorScheme ? 'true' : 'false';
+      colorScheme: number, colorSchemeSelected: number|null): 'true'|'false' {
+    const checkedColorScheme = colorSchemeSelected || DEFAULT_COLOR_SCHEME;
+    return checkedColorScheme === colorScheme ? 'true' : 'false';
   }
 
   private getStaticColorAriaChecked_(
       staticColor: string, staticColorSelected: SkColor|null): 'true'|'false' {
-    if (!staticColorSelected) {
-      return 'false';
-    }
-    return staticColor === convertToRgbHexStr(staticColorSelected.value) ?
+    const checkedStaticColor = staticColorSelected || DEFAULT_STATIC_COLOR;
+    return staticColor === convertToRgbHexStr(checkedStaticColor.value) ?
         'true' :
         'false';
   }
@@ -206,11 +202,20 @@ export class DynamicColorElement extends WithPersonalizationStore {
     e.detail.keyboardEvent.preventDefault();
   }
 
-  private getTabIndex_(id: string): string {
-    return id === String(DEFAULT_COLOR_SCHEME) ||
-            hexColorToSkColor(id) === DEFAULT_STATIC_COLOR ?
-        '0' :
-        '-1';
+  /**
+   * Returns the tab index for static color and color scheme buttons. Static
+   * color id is a string whereas color scheme id is an enum.
+   */
+  private getTabIndex_(id: string|number): string {
+    if (typeof id === 'string' &&
+        hexColorToSkColor(id).value === DEFAULT_STATIC_COLOR.value) {
+      // Handles static color.
+      return '0';
+    } else if (typeof id === 'number' && id === DEFAULT_COLOR_SCHEME) {
+      // Handles color scheme.
+      return '0';
+    }
+    return '-1';
   }
 }
 

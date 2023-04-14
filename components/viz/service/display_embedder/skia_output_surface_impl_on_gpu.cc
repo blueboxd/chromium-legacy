@@ -16,6 +16,7 @@
 #include "base/notreached.h"
 #include "base/task/bind_post_task.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/blit_request.h"
@@ -54,10 +55,12 @@
 #include "skia/ext/rgba_to_yuva.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libyuv/include/libyuv/planar_functions.h"
+#include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkDeferredDisplayList.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
@@ -351,18 +354,12 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   // first.
   output_device_.reset();
 
-  // Destroy solid color shared images created by this class.
-  for (gpu::Mailbox& mb : solid_color_images_) {
-    shared_image_factory_->DestroySharedImage(mb);
-  }
-
-  // Destroy shared images created by this class.
-  for (auto& entry : skia_representations_) {
-    shared_image_factory_->DestroySharedImage(entry.first);
-  }
   // Clear any open accesses before destroying the skia representations.
   overlay_pass_accesses_.clear();
   skia_representations_.clear();
+
+  // Destroy shared images created by this class.
+  shared_image_factory_->DestroyAllSharedImages(has_context);
 
   // Since SharedImageFactory also has a reference to ImplOnGpu's member
   // SharedContextState, we need to explicitly invoke the factory's destructor
@@ -1146,24 +1143,18 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
   }
 
   // Create a destination for the scaled & clipped result:
-  auto intermediate_representation = CreateSharedImageRepresentationSkia(
-      ResourceFormat::RGBA_8888, intermediate_dst_size, color_space);
-  if (!intermediate_representation) {
-    DVLOG(1) << "failed to create shared image representation for the "
-                "intermediate surface";
+  auto intermediate_surface = SkSurface::MakeRenderTarget(
+      gr_context(), skgpu::Budgeted::kYes,
+      SkImageInfo::Make(gfx::SizeToSkISize(intermediate_dst_size),
+                        SkColorType::kRGBA_8888_SkColorType,
+                        SkAlphaType::kPremul_SkAlphaType,
+                        color_space.ToSkColorSpace()));
+
+  if (!intermediate_surface) {
+    DVLOG(1) << "failed to create surface for the intermediate texture";
     // Send empty result.
     return;
   }
-
-  SkSurfaceProps surface_props{0, kUnknown_SkPixelGeometry};
-  std::vector<GrBackendSemaphore> begin_semaphores;
-  std::vector<GrBackendSemaphore> end_semaphores;
-
-  auto intermediate_scoped_write =
-      intermediate_representation->BeginScopedWriteAccess(
-          /*final_msaa_count=*/1, surface_props, &begin_semaphores,
-          &end_semaphores,
-          gpu::SharedImageRepresentation::AllowUnclearedAccess::kYes);
 
   absl::optional<SkVector> scaling;
   if (request->is_scaled()) {
@@ -1173,20 +1164,18 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
                                  request->scale_from().y());
   }
 
-  intermediate_scoped_write->surface()->wait(begin_semaphores.size(),
-                                             begin_semaphores.data());
-
   RenderSurface(surface, src_rect, scaling,
                 is_downscale_or_identity_in_both_dimensions,
-                intermediate_scoped_write->surface());
+                intermediate_surface.get());
 
   if (request->has_blit_request()) {
-    BlendBitmapOverlays(intermediate_scoped_write->surface()->getCanvas(),
+    BlendBitmapOverlays(intermediate_surface->getCanvas(),
                         request->blit_request());
   }
 
-  auto intermediate_image =
-      intermediate_scoped_write->surface()->makeImageSnapshot();
+  intermediate_surface->flush();
+
+  auto intermediate_image = intermediate_surface->makeImageSnapshot();
   if (!intermediate_image) {
     DLOG(ERROR) << "failed to retrieve `intermediate_image`.";
     return;
@@ -1285,16 +1274,6 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutputNV12(
       FailedSkiaFlush("CopyOutputNV12 plane_surfaces[i]->flush()");
       return;
     }
-  }
-
-  should_submit |= !end_semaphores.empty();
-
-  intermediate_representation->SetCleared();
-  if (!FlushSurface(intermediate_scoped_write->surface(), end_semaphores,
-                    intermediate_scoped_write->TakeEndState())) {
-    // TODO(penghuang): handle vulkan device lost.
-    FailedSkiaFlush("CopyOutputNV12 dest_surface->flush()");
-    return;
   }
 
   if (should_submit && !gr_context()->submit()) {

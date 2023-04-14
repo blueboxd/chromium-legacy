@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">直接连接到互联网</translation>
 <translation id="1272293450992660632">PIN 码的值不一致。</translation>
 <translation id="1280820357415527819">正在搜索移动网络</translation>
-<translation id="1291603679744561561">SIM 卡已锁定</translation>
 <translation id="1293556467332435079">文件</translation>
 <translation id="1297922636971898492">Google云端硬盘暂时无法使用。Google云端硬盘恢复正常后，系统将自动重新开始上传。</translation>
 <translation id="1307931752636661898">无法查看 Linux 文件</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">若要将某个文件拖放到 Parallels Desktop，必须先将此文件移至“Windows 文件”文件夹。</translation>
 <translation id="1435838927755162558">与 Parallels Desktop 共享文件夹</translation>
 <translation id="1439919885608649279">一个人捧着鲜花</translation>
+<translation id="1458457385801829801">卸载 <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">斯洛伐克语</translation>
 <translation id="1482884275703521657">芬兰语</translation>
 <translation id="148466539719134488">瑞士语</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">已与 Bruschetta 共享 1 个文件夹</translation>
 <translation id="2578394532502990878">泰米尔语注音</translation>
 <translation id="2579959351793446050">奥里亚语</translation>
+<translation id="2587195714949534472">正在准备同步“<ph name="FILE_NAME" />”…</translation>
 <translation id="2602810353103180630">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，详细信息</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> 视频</translation>
 <translation id="2620090360073999360">Google 云端硬盘目前无法访问。</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">蒙古语</translation>
 <translation id="3495304270784461826"><ph name="COUNT" />个错误。</translation>
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，详细信息</translation>
+<translation id="3511705761158917664">正在准备同步 <ph name="NUMBER_OF_ITEMS" /> 项内容…</translation>
 <translation id="3522708245912499433">葡萄牙语</translation>
 <translation id="3524311639100184459">警告：这些都是临时文件，可能会被系统自动删除以释放磁盘空间。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">文件夹</translation>
@@ -347,10 +349,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">粘贴</translation>
 <translation id="3952872973865944257">泰卢固语注音</translation>
+<translation id="3954354850384043518">正在下载</translation>
 <translation id="3958548648197196644">猕猴桃</translation>
 <translation id="3971140002794351170">下载移动网络配置文件，第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），网络名称为“<ph name="NETWORK_NAME" />”，网络服务提供商为“<ph name="NETWORK_PROVIDER_NAME" />”</translation>
 <translation id="3973925058222872294">英语（英国）</translation>
 <translation id="3975895378829046965">孟加拉语注音</translation>
+<translation id="3999574733850440202">最近打开的 Microsoft 文件已移至 OneDrive</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4017788180641807848">英语（美国）Workman 键盘</translation>
 <translation id="4019998208269143058">固定到“快捷文件”空间</translation>
@@ -406,6 +410,7 @@
 <translation id="4462159676511157176">自定义域名服务器</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，由您的管理员管理，连接</translation>
 <translation id="4470564870223067757">韩语(2 Set)</translation>
+<translation id="4474142134969976028">没有符合条件的结果</translation>
 <translation id="4477002475007461989">罗马尼亚语</translation>
 <translation id="4477219268485577442">保加利亚语（注音）</translation>
 <translation id="4508265954913339219">激活失败</translation>
@@ -477,6 +482,7 @@
 <translation id="4973523518332075481">所用名称的长度不得超过 <ph name="MAX_LENGTH" /> 个字符</translation>
 <translation id="4973970068702235170">压缩失败，出现了意外的错误：<ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">日语</translation>
+<translation id="4987699874727873250">英语（印度）</translation>
 <translation id="4988205478593450158">确定要删除“<ph name="FILE_NAME" />”吗？</translation>
 <translation id="498902553138568924">红蝴蝶</translation>
 <translation id="4992066212339426712">取消静音</translation>
@@ -781,6 +787,7 @@
 <translation id="7458955835361612701">没有任何近期图片</translation>
 <translation id="7460898608667578234">乌克兰语</translation>
 <translation id="7469894403370665791">自动连接到该网络</translation>
+<translation id="7481358317100446445">准备就绪</translation>
 <translation id="7486315294984620427">若要将某个文件拖放到 Parallels Desktop，必须先将此文件复制到“Windows 文件”文件夹。</translation>
 <translation id="749452993132003881">平假名</translation>
 <translation id="7495372004724182530">马拉雅拉姆语注音</translation>
@@ -806,6 +813,7 @@
 <translation id="7655441028674523381">轻松访问 Google 相册</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7663224033570512922">印地语</translation>
+<translation id="7665680517722058469">请尝试换个字词进行搜索</translation>
 <translation id="7689532716264131859">已将 <ph name="NUMBER_OF_ITEMS" /> 项内容移至回收站</translation>
 <translation id="7693909743393669729">将 U 盘格式化会清空其中存储的所有数据，并会移除所有现有分区（包括未必可见的分区）。此操作无法撤消。</translation>
 <translation id="7695430100978772476">无法将“<ph name="DRIVE_NAME" />”格式化</translation>
@@ -893,6 +901,7 @@
 <translation id="8300849813060516376">OTASP 失败</translation>
 <translation id="8312871300878166382">粘贴到文件夹中</translation>
 <translation id="8329978297633540474">纯文本</translation>
+<translation id="8332007959299458842">最近打开的 Microsoft 文件已移至 Google 云端硬盘</translation>
 <translation id="8335587457941836791">取消固定到任务栏</translation>
 <translation id="8335837413233998004">白俄罗斯语</translation>
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME" /></translation>
@@ -962,6 +971,7 @@
 <translation id="8866284467018526531">阿拉伯语音译</translation>
 <translation id="8873014196523807561">若要恢复这些内容，请将其拖至新文件夹。其中部分内容的原始文件夹已被删除。</translation>
 <translation id="8874184842967597500">未连接</translation>
+<translation id="8876368061475701452">已加入队列</translation>
 <translation id="8900820606136623064">匈牙利语</translation>
 <translation id="8903931173357132290">毕业</translation>
 <translation id="8912078710089354287">一只狗在摇尾巴</translation>

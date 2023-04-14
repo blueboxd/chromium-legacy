@@ -49,7 +49,22 @@ enum class SkipStatus {
   kMaxValue = kFillingLimitReachedType
 };
 
-// Compare two field log events of absl::monostate.
+// Enum for different data types filled during autofill filling events,
+// including those of the SingleFieldFormFiller.
+// Values are recorded as metrics and must not change or be reused.
+enum class FillDataType {
+  kUndefined = 0,
+  kAutofillProfile = 1,
+  kCreditCard = 2,
+  kSingleFieldFormFillerAutocomplete = 3,
+  kSingleFieldFormFillerIban = 4,
+  kSingleFieldFormFillerPromoCode = 5,
+};
+
+// AreCollapsible(..., ...) are a set of functions that checks whether two
+// consecutive events in the event log of a form can be merged into one.
+// This is a best effort mechanism to reduce the memory footprint caused by
+// redundant events.
 bool AreCollapsible(const absl::monostate& event1,
                     const absl::monostate& event2);
 
@@ -61,7 +76,6 @@ struct AskForValuesToFillFieldLogEventImpl {
 };
 using AskForValuesToFillFieldLogEvent = AskForValuesToFillFieldLogEventImpl<>;
 
-// Compare two field log events of AskForValuesToFillFieldLogEvent type.
 bool AreCollapsible(const AskForValuesToFillFieldLogEvent& event1,
                     const AskForValuesToFillFieldLogEvent& event2);
 
@@ -69,10 +83,16 @@ bool AreCollapsible(const AskForValuesToFillFieldLogEvent& event1,
 template <typename IsRequired = void>
 struct TriggerFillFieldLogEventImpl {
   FillEventId fill_event_id = GetNextFillEventId();
+  // The type of filled data for the autofil event.
+  FillDataType data_type = IsRequired();
+  // The country_code associated with the information filled. Only present for
+  // autofill addresses (i.e. `AutofillEventType::kAutofillProfile`).
+  std::string associated_country_code = IsRequired();
+  // The time at which the event occurred.
+  base::Time timestamp = IsRequired();
 };
 using TriggerFillFieldLogEvent = TriggerFillFieldLogEventImpl<>;
 
-// Compare two field log events of TriggerFillFieldLogEvent type.
 bool AreCollapsible(const TriggerFillFieldLogEvent& event1,
                     const TriggerFillFieldLogEvent& event2);
 
@@ -95,7 +115,6 @@ struct FillFieldLogEventImpl {
 };
 using FillFieldLogEvent = FillFieldLogEventImpl<>;
 
-// Compare two field log events of FillFieldLogEvent type.
 bool AreCollapsible(const FillFieldLogEvent& event1,
                     const FillFieldLogEvent& event2);
 
@@ -106,11 +125,10 @@ struct TypingFieldLogEventImpl {
 };
 using TypingFieldLogEvent = TypingFieldLogEventImpl<>;
 
-// Compare two field log events of TypingFieldLogEvent type.
 bool AreCollapsible(const TypingFieldLogEvent& event1,
                     const TypingFieldLogEvent& event2);
 
-// Predict the field type from local heuristic.
+// Events recorded after local heuristic prediction happened.
 template <typename IsRequired = void>
 struct HeuristicPredictionFieldLogEventImpl {
   ServerFieldType field_type = IsRequired();
@@ -120,11 +138,10 @@ struct HeuristicPredictionFieldLogEventImpl {
 };
 using HeuristicPredictionFieldLogEvent = HeuristicPredictionFieldLogEventImpl<>;
 
-// Compare two field log events of HeuristicPredictionFieldLogEvent type.
 bool AreCollapsible(const HeuristicPredictionFieldLogEvent& event1,
                     const HeuristicPredictionFieldLogEvent& event2);
 
-// Predict the field type from Autocomplete attribute.
+// Events recorded after parsing autocomplete attribute.
 template <typename IsRequired = void>
 struct AutocompleteAttributeFieldLogEventImpl {
   HtmlFieldType html_type = IsRequired();
@@ -134,11 +151,10 @@ struct AutocompleteAttributeFieldLogEventImpl {
 using AutocompleteAttributeFieldLogEvent =
     AutocompleteAttributeFieldLogEventImpl<>;
 
-// Compare two field log events from AutocompleteAttributeFieldLogEvent type.
 bool AreCollapsible(const AutocompleteAttributeFieldLogEvent& event1,
                     const AutocompleteAttributeFieldLogEvent& event2);
 
-// Predict the field type from Autofill server.
+// Events recorded after autofill server prediction happened.
 template <typename IsRequired = void>
 struct ServerPredictionFieldLogEventImpl {
   ServerFieldType server_type1 = IsRequired();
@@ -150,9 +166,20 @@ struct ServerPredictionFieldLogEventImpl {
 };
 using ServerPredictionFieldLogEvent = ServerPredictionFieldLogEventImpl<>;
 
-// Compare two field log events from ServerPredictionFieldLogEvent type.
 bool AreCollapsible(const ServerPredictionFieldLogEvent& event1,
                     const ServerPredictionFieldLogEvent& event2);
+
+// Events recorded after rationalization happened.
+template <typename IsRequired = void>
+struct RationalizationFieldLogEventImpl {
+  ServerFieldType field_type = IsRequired();
+  size_t section_id = IsRequired();
+  bool type_changed = IsRequired();
+};
+using RationalizationFieldLogEvent = RationalizationFieldLogEventImpl<>;
+
+bool AreCollapsible(const RationalizationFieldLogEvent& event1,
+                    const RationalizationFieldLogEvent& event2);
 
 }  // namespace autofill
 

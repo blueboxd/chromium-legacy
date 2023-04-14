@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">တိုက်ရိုက် အင်တာနက် ချိတ်ဆက်မှု</translation>
 <translation id="1272293450992660632">ပင်နံပါတ် အချက်အလက်မတူညီပါ။</translation>
 <translation id="1280820357415527819">မိုဘိုင်းကွန်ရက်များကို ရှာဖွေနေပါသည်</translation>
-<translation id="1291603679744561561">ဆင်းမ် လော့ခ်ချထားသည်</translation>
 <translation id="1293556467332435079">ဖိုင်များ</translation>
 <translation id="1297922636971898492">Google Drive ယခုမရသေးပါ။ Google Drive ပြန်လာသည်နှင့် တင်ခြင်း အလိုအလျောက် ပြန်စပါမည်။</translation>
 <translation id="1307931752636661898">Linux ဖိုင်များကို ကြည့်၍မရပါ</translation>
@@ -47,10 +46,11 @@
 <translation id="1395262318152388157">ဆလိုက်ဒါးကို ရှာပါ</translation>
 <translation id="1399511500114202393">အသုံးပြုသူ အသိအမှတ်ပြုလက်မှတ် မရှိပါ</translation>
 <translation id="1403008701842173542">နေရာအနှံ့</translation>
-<translation id="1404323374378969387">နော်ဝေး</translation>
+<translation id="1404323374378969387">နော်ဝေ</translation>
 <translation id="1433628812591023318">Parallels Desktop တွင် ဖိုင်များဆွဲချရန် ဖိုင်ကို Windows ဖိုင်များသို့ ရွှေ့ရပါမည်။</translation>
 <translation id="1435838927755162558">ဖိုင်တွဲကို Parallels Desktop အား မျှဝေခြင်း</translation>
 <translation id="1439919885608649279">ပန်းများနှင့်လူ</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> ထုတ်ရန်</translation>
 <translation id="1471718551822868769">ဆလိုဗက်</translation>
 <translation id="1482884275703521657">ဖင်လန်</translation>
 <translation id="148466539719134488">ဆွစ်</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">ဖိုင်တွဲ ၁ ခုကို Bruschetta အား မျှဝေထားသည်</translation>
 <translation id="2578394532502990878">တမီးလ် အသံထွက်</translation>
 <translation id="2579959351793446050">အိုဒီယာ</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> ကို စင့်ခ်လုပ်ရန် ပြင်ဆင်နေသည်...</translation>
 <translation id="2602810353103180630">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက် <ph name="NETWORK_INDEX" /> ခုမြောက်၊ <ph name="NETWORK_NAME" />၊ <ph name="CONNECTION_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ သင့်စီမံခန့်ခွဲသူက ပိတ်ထားသည်၊ အသေးစိတ်</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> ဗီဒီယို</translation>
 <translation id="2620090360073999360">ဒီတစ်ချီမှာ Google ဒရိုက်ဗ် လက်လှမ်း မမှီပါ။</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">မွန်ဂိုလီးယား</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> အမှားများ။</translation>
 <translation id="3509680540198371098">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="SECURITY_STATUS" />၊ <ph name="CONNECTION_STATUS" />၊ လိုင်းဆွဲအား <ph name="SIGNAL_STRENGTH" />%၊ အသေးစိတ်များ</translation>
+<translation id="3511705761158917664">ဖိုင် <ph name="NUMBER_OF_ITEMS" /> ဖိုင်ကို စင့်ခ်လုပ်ရန် ပြင်ဆင်နေသည်...</translation>
 <translation id="3522708245912499433">ပေါ်တူဂီ</translation>
 <translation id="3524311639100184459">သတိ- ဤဖိုင်များသည် ယာယီဖြစ်ပြီး ဒစ်ခ်နေရာလွတ်ပြုလုပ်ရန် အလိုအလျောက် ဖျက်နိုင်ပါသည်။  <ph name="BEGIN_LINK" />ပိုမိုလေ့လာရန်<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ဖိုင်တွဲ</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">ကူးဖြည့်ရန်</translation>
 <translation id="3952872973865944257">တယ်လူဂူ အသံထွက်</translation>
+<translation id="3954354850384043518">ဆောင်ရွက်နေဆဲ</translation>
 <translation id="3958548648197196644">NOTHING</translation>
 <translation id="3971140002794351170">မိုဘိုင်းပရိုဖိုင် ဒေါင်းလုဒ်လုပ်ရန်၊ ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက် <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">အင်္ဂလိပ် (ယူကေ)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">စိတ်ကြိုက်အမည် ဆာဗာများ</translation>
 <translation id="4465725236958772856">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ သင့် 'ကြီးကြပ်သူ' က စီမံထားသည်၊ ချိတ်ဆက်ရန်</translation>
 <translation id="4470564870223067757">ဟံဂူလ် ၂ စုံ</translation>
+<translation id="4474142134969976028">ထပ်တူကျသည့် ရလဒ်မရှိပါ</translation>
 <translation id="4477002475007461989">ရိုမေနီယား</translation>
 <translation id="4477219268485577442">ဘာလ်ဂေရီယမ် အသံထွက်</translation>
 <translation id="4508265954913339219">ဖွင့်သုံးမှု မအောင်မြင်</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">စကားလုံး <ph name="MAX_LENGTH" /> လုံးနှင့် အောက်ရှိသည့် အမည်ကို အသုံးပြုပါ</translation>
 <translation id="4973970068702235170">ဇစ်လုပ်၍ မရပါ၊ မမျှော်လင့်သည့် အမှား- <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ဂျပန်</translation>
+<translation id="4987699874727873250">အင်္ဂလိပ် (အိန္ဒိယ)</translation>
 <translation id="4988205478593450158">"<ph name="FILE_NAME" />" ကို ဖျက်လိုသည်မှာ သေချာသလား။</translation>
 <translation id="498902553138568924">အနီရောင်လိပ်ပြာ</translation>
 <translation id="4992066212339426712">အသံတိတ်မှုဖြုတ်မည်</translation>
@@ -671,7 +676,7 @@
 <translation id="649877868557234318"><ph name="FILE_NAME" /> ကို <ph name="FOLDER_NAME" /> တွင် ထုတ်ယူနေသည်</translation>
 <translation id="6499681088828539489">မျှဝေထားသည့် ကွန်ရက်များအတွက် ပရောက်စီများကို ခွင့်မပြုရန်</translation>
 <translation id="6503285896705205014">ဖိုင် <ph name="COUNT" /> ဖိုင် မိတ္တူကူးခြင်းကို စီမံခန့်ခွဲသူမူဝါဒက ပိတ်ထားသည်</translation>
-<translation id="6509122719576673235">နော်ဝေး ဂျီယန်</translation>
+<translation id="6509122719576673235">နော်ဝေ ဂျီယန်</translation>
 <translation id="6528513914570774834">ဤစက်ပစ္စည်း၏ အခြားအသုံးပြုသူများအား ဤကွန်ရက်ကို အသုံးပြုခွင့်ပေးရန်</translation>
 <translation id="653019979737152879">စင့်ခ် လုပ်နေ <ph name="FILE_NAME" />...</translation>
 <translation id="6549689063733911810">မကြာခင်</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">လတ်တလောပုံများ မရှိပါ</translation>
 <translation id="7460898608667578234">ယူကရိန်းနီးယန်း</translation>
 <translation id="7469894403370665791">ဒီကွန်ရက်သို့ အလိုအလျောက် ချိတ်ဆက်ရန်</translation>
+<translation id="7481358317100446445">အသင့်ဖြစ်ပြီ</translation>
 <translation id="7486315294984620427">Parallels Desktop တွင် ဖိုင်များဆွဲချရန် ဖိုင်ကို Windows ဖိုင်များသို့ မိတ္တူကူးရပါမည်။</translation>
 <translation id="749452993132003881">ဟိရဂန</translation>
 <translation id="7495372004724182530">မလေယာလမ် အသံထွက်</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Google Photos ကို အလွယ်ဝင်ကြည့်ခြင်း</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
 <translation id="7663224033570512922">ဟင်ဒီ</translation>
+<translation id="7665680517722058469">အခြားတစ်ခု ရှာဖွေကြည့်ပါ</translation>
 <translation id="7689532716264131859">ဖိုင် <ph name="NUMBER_OF_ITEMS" /> ဖိုင်ကို အမှိုက်ပုံးသို့ ရွှေ့လိုက်သည်</translation>
 <translation id="7693909743393669729">ဒရိုက်ဗ်တစ်ခုကို ဖော်မက်ချခြင်းက ၎င်းပေါ်ရှိ ဒေတာများအားလုံးကို ဖျက်ပြီး မမြင်ရသောအကန့်ခွဲများ အပါအဝင် လက်ရှိအကန့်ခွဲများအားလုံးကို ဖယ်ရှားပါမည်။ ဤလုပ်ဆောင်ချက်ကို ပြန်ပြင်၍ မရပါ။</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> ကို ဖော်မက်ချ၍မရပါ</translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">အာရဗီ အက္ခရာဖလှယ်ခြင်း</translation>
 <translation id="8873014196523807561">ဤဖိုင်များကို ပြန်ယူရန် ဖိုင်တွဲအသစ်ထဲသို့ ဖိဆွဲပါ။ ဤဖိုင်များအနက် အချို့၏ မူရင်းဖိုင်တွဲများကို ဖျက်လိုက်သည်။</translation>
 <translation id="8874184842967597500">ချိတ်ဆက် မထား</translation>
+<translation id="8876368061475701452">တန်းစီထားသည်</translation>
 <translation id="8900820606136623064">ဟန်ဂေရီ</translation>
 <translation id="8903931173357132290">ဘွဲ့ရပုဂ္ဂိုလ်</translation>
 <translation id="8912078710089354287">အမြီးလှုပ်နေသည့်ခွေး</translation>

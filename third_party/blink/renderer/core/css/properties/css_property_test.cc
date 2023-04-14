@@ -15,7 +15,6 @@
 #include "third_party/blink/renderer/core/css/resolver/style_builder.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -37,11 +36,11 @@ class CSSPropertyTest : public PageTestBase {
     return &set->PropertyAt(0).Value();
   }
 
-  scoped_refptr<ComputedStyle> ComputedStyleWithValue(
+  scoped_refptr<const ComputedStyle> ComputedStyleWithValue(
       const CSSProperty& property,
       const CSSValue& value) {
     StyleResolverState state(GetDocument(), *GetDocument().body());
-    state.SetStyle(GetDocument().GetStyleResolver().CreateComputedStyle());
+    state.SetStyle(GetDocument().GetStyleResolver().InitialStyle());
 
     // The border-style needs to be non-hidden and non-none, otherwise
     // the computed values of border-width properties are always zero.
@@ -52,8 +51,7 @@ class CSSPropertyTest : public PageTestBase {
     state.StyleBuilder().SetBorderRightStyle(EBorderStyle::kSolid);
     state.StyleBuilder().SetBorderTopStyle(EBorderStyle::kSolid);
 
-    StyleBuilder::ApplyProperty(property, state,
-                                ScopedCSSValue(value, &GetDocument()));
+    StyleBuilder::ApplyProperty(property, state, value);
     return state.TakeStyle();
   }
 
@@ -92,8 +90,8 @@ TEST_F(CSSPropertyTest, InternalFontSizeDeltaNotWebExposed) {
 }
 
 TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
-  scoped_refptr<ComputedStyle> initial_style =
-      GetDocument().GetStyleResolver().CreateComputedStyle();
+  const ComputedStyle& initial_style =
+      GetDocument().GetStyleResolver().InitialStyle();
 
   // Count the number of 'visited' properties seen.
   size_t num_visited = 0;
@@ -107,7 +105,7 @@ TEST_F(CSSPropertyTest, VisitedPropertiesCanParseValues) {
 
     // Get any value compatible with 'property'. The initial value will do.
     const CSSValue* initial_value = property.CSSValueFromComputedStyle(
-        *initial_style, nullptr /* layout_object */,
+        initial_style, nullptr /* layout_object */,
         false /* allow_visited_style */);
     ASSERT_TRUE(initial_value);
     String css_text = initial_value->CssText();

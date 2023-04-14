@@ -8,6 +8,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/isolation_prefs_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
@@ -197,30 +197,6 @@ IN_PROC_BROWSER_TEST_F(WebAppUninstallBrowserTest, TwoUninstallCalls) {
 
   run_loop.Run();
   EXPECT_FALSE(provider->registrar_unsafe().IsInstalled(app_id));
-}
-
-IN_PROC_BROWSER_TEST_F(WebAppUninstallBrowserTest, PrefsRemovedAfterUninstall) {
-  const GURL app_url = GetSecureAppURL();
-  const url::Origin origin = url::Origin::Create(app_url);
-  auto web_app_info = std::make_unique<WebAppInstallInfo>();
-  web_app_info->start_url = app_url;
-  web_app_info->scope = app_url.GetWithoutFilename();
-  web_app_info->is_storage_isolated = true;
-  const AppId app_id = InstallWebApp(std::move(web_app_info));
-
-  {
-    const std::string* storage_isolation_key =
-        GetStorageIsolationKey(profile()->GetPrefs(), origin);
-    EXPECT_EQ(*storage_isolation_key, app_id);
-  }
-
-  UninstallWebApp(app_id);
-
-  {
-    const std::string* storage_isolation_key =
-        GetStorageIsolationKey(profile()->GetPrefs(), origin);
-    EXPECT_EQ(storage_isolation_key, nullptr);
-  }
 }
 
 }  // namespace web_app

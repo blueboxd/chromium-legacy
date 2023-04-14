@@ -75,7 +75,7 @@ const storage::mojom::StorageType kStorageSync =
 const int64_t kAvailableSpaceForApp = 13377331U;
 const int64_t kMustRemainAvailableForSystem = kAvailableSpaceForApp / 2;
 const int64_t kDefaultPoolSize = 1000;
-const int64_t kDefaultPerStorageKeyQuota = 200;
+const int64_t kDefaultPerStorageKeyQuota = 200 * 1024 * 1024;
 const int64_t kGigabytes = QuotaManagerImpl::kGBytes;
 
 struct UsageAndQuotaResult {
@@ -818,6 +818,28 @@ TEST_F(QuotaManagerImplTest, UpdateOrCreateBucket_Expiration) {
   QuotaDatabase::SetClockForTesting(nullptr);
 }
 
+TEST_F(QuotaManagerImplTest, UpdateOrCreateBucket_Overflow) {
+  const int kPoolSize = 100;
+  // This quota for the storage key implies only two buckets can be constructed.
+  const int kPerStorageKeyQuota = 40 * 1024 * 1024;
+  SetQuotaSettings(kPoolSize, kPerStorageKeyQuota,
+                   kMustRemainAvailableForSystem);
+
+  StorageKey storage_key = ToStorageKey("http://a.com/");
+
+  auto bucket_a = UpdateOrCreateBucket({storage_key, "bucket_a"});
+  EXPECT_TRUE(bucket_a.ok());
+  auto bucket_b = UpdateOrCreateBucket({storage_key, "bucket_b"});
+  EXPECT_TRUE(bucket_b.ok());
+  auto bucket_c = UpdateOrCreateBucket({storage_key, "bucket_c"});
+  EXPECT_FALSE(bucket_c.ok());
+  EXPECT_EQ(QuotaError::kQuotaExceeded, bucket_c.error());
+
+  // Default bucket shouldn't be limited by the quota.
+  auto bucket_default = UpdateOrCreateBucket({storage_key, "default"});
+  EXPECT_TRUE(bucket_default.ok());
+}
+
 // Make sure `EvictExpiredBuckets` deletes expired buckets.
 TEST_F(QuotaManagerImplTest, EvictExpiredBuckets) {
   auto clock = std::make_unique<base::SimpleTestClock>();
@@ -950,6 +972,40 @@ TEST_F(QuotaManagerImplTest, GetStorageKeysForTypeWithDatabaseError) {
   // Return empty set when error is encountered.
   std::set<StorageKey> storage_keys = GetStorageKeysForType(kTemp);
   EXPECT_TRUE(storage_keys.empty());
+}
+
+TEST_F(QuotaManagerImplTest, QuotaDatabaseResultHistogram) {
+  static const ClientBucketData kData[] = {
+      {"http://foo.com/", kDefaultBucketName, kTemp, 123},
+  };
+  MockQuotaClient* fs_client =
+      CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kSync});
+  RegisterClientBucketData(fs_client, kData);
+  base::HistogramTester histograms;
+
+  auto bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
+  ASSERT_TRUE(bucket.ok());
+
+  histograms.ExpectBucketCount("Quota.QuotaDatabaseResultSuccess",
+                               /*sample=*/true, /*expected_count=*/1);
+
+  // Corrupt QuotaDatabase so any future request returns a QuotaError.
+  QuotaError corruption_error = CorruptDatabaseForTesting(
+      base::BindOnce([](const base::FilePath& db_path) {
+        ASSERT_TRUE(
+            sql::test::CorruptIndexRootPage(db_path, "buckets_by_storage_key"));
+      }));
+  ASSERT_EQ(QuotaError::kNone, corruption_error);
+
+  // Refetching the bucket with a corrupted database should return an error.
+  bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
+  ASSERT_FALSE(bucket.ok());
+  EXPECT_EQ(QuotaError::kDatabaseError, bucket.error());
+
+  histograms.ExpectBucketCount("Quota.QuotaDatabaseResultSuccess",
+                               /*sample=*/false, /*expected_count=*/1);
 }
 
 TEST_F(QuotaManagerImplTest, GetBucketsForType) {

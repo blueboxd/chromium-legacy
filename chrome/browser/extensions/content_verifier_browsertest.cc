@@ -67,9 +67,12 @@ class MockUpdateService : public UpdateService {
                void(const std::string& id,
                     const base::Version& version,
                     int reason));
-  MOCK_METHOD2(StartUpdateCheck,
-               void(const ExtensionUpdateCheckParams& params,
-                    base::OnceClosure callback));
+  MOCK_METHOD(void,
+              StartUpdateCheck,
+              (const ExtensionUpdateCheckParams& params,
+               UpdateFoundCallback update_found_callback,
+               base::OnceClosure callback),
+              (override));
 };
 
 void ExtensionUpdateComplete(base::OnceClosure callback,
@@ -109,15 +112,17 @@ class ContentVerifierTest : public ExtensionBrowserTest {
 
   void AssertIsCorruptBitSetOnUpdateCheck(
       const ExtensionUpdateCheckParams& params,
+      UpdateFoundCallback update_found_callback,
       base::OnceClosure callback) {
     ASSERT_FALSE(params.update_info.empty());
     for (auto element : params.update_info) {
       ASSERT_TRUE(element.second.is_corrupt_reinstall);
     }
-    OnUpdateCheck(params, std::move(callback));
+    OnUpdateCheck(params, update_found_callback, std::move(callback));
   }
 
   virtual void OnUpdateCheck(const ExtensionUpdateCheckParams& params,
+                             UpdateFoundCallback update_found_callback,
                              base::OnceClosure callback) {
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::CreateSilent(extension_service()));
@@ -233,6 +238,17 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     return crx_file::id_util::GenerateId(public_key_str);
   }
 
+  // Creates a random signing key and sets |extension_id| according to it.
+  std::unique_ptr<crypto::RSAPrivateKey> CreateExtensionSigningKey(
+      std::string& extension_id) {
+    auto signing_key = crypto::RSAPrivateKey::Create(2048);
+    std::vector<uint8_t> public_key;
+    signing_key->ExportPublicKey(&public_key);
+    const std::string public_key_str(public_key.begin(), public_key.end());
+    extension_id = crx_file::id_util::GenerateId(public_key_str);
+    return signing_key;
+  }
+
   // Creates a CRX in a temporary directory under |temp_dir| using contents from
   // |unpacked_path|. Compresses the |verified_contents| and injects these
   // contents into the the header of the CRX. Creates a random signing key
@@ -240,8 +256,8 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   testing::AssertionResult CreateCrxWithVerifiedContentsInHeader(
       base::ScopedTempDir* temp_dir,
       const base::FilePath& unpacked_path,
+      crypto::RSAPrivateKey* private_key,
       const std::string& verified_contents,
-      std::string* extension_id,
       base::FilePath* crx_path) {
     std::string compressed_verified_contents;
     if (!compression::GzipCompress(verified_contents,
@@ -255,8 +271,8 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     *crx_path = temp_dir->GetPath().AppendASCII("temp.crx");
 
     ExtensionCreator creator;
-    creator.CreateCrxWithVerifiedContentsInHeaderForTesting(
-        unpacked_path, *crx_path, compressed_verified_contents, extension_id);
+    creator.CreateCrxAndPerformCleanup(unpacked_path, *crx_path, private_key,
+                                       compressed_verified_contents);
     return testing::AssertionSuccess();
   }
 
@@ -493,6 +509,7 @@ class UserInstalledContentVerifierTest : public ContentVerifierTest {
 
  protected:
   void OnUpdateCheck(const ExtensionUpdateCheckParams& params,
+                     UpdateFoundCallback update_found_callback,
                      base::OnceClosure callback) override {
     scoped_refptr<CrxInstaller> installer(
         CrxInstaller::CreateSilent(extension_service()));
@@ -644,8 +661,11 @@ IN_PROC_BROWSER_TEST_F(
       test_data_dir_.AppendASCII("content_verifier/storage_permission");
   base::FilePath resource_path = base::FilePath().AppendASCII("background.js");
 
+  std::string extension_id;
+  auto signing_key = CreateExtensionSigningKey(extension_id);
+
   extensions::content_verifier_test_utils::TestExtensionBuilder
-      verified_contents_builder;
+      verified_contents_builder(extension_id);
 
   std::string resource_contents;
   base::ReadFileToString(extension_dir.Append(resource_path),
@@ -663,10 +683,10 @@ IN_PROC_BROWSER_TEST_F(
       ->content_verifier()
       ->OverrideDelegateForTesting(std::move(mock_content_verifier_delegate));
 
-  std::string extension_id;
   base::FilePath crx_path;
   ASSERT_TRUE(CreateCrxWithVerifiedContentsInHeader(
-      &temp_dir, extension_dir, verified_contents, &extension_id, &crx_path));
+      &temp_dir, extension_dir, signing_key.get(), verified_contents,
+      &crx_path));
 
   TestContentVerifySingleJobObserver observer(extension_id, resource_path);
 
@@ -690,8 +710,9 @@ IN_PROC_BROWSER_TEST_F(
   std::string verified_contents =
       "Not a valid verified contents, not even a valid JSON.";
   base::FilePath crx_path;
+  auto signing_key = CreateExtensionSigningKey(extension_id);
   ASSERT_TRUE(CreateCrxWithVerifiedContentsInHeader(
-      &temp_dir, test_dir, verified_contents, &extension_id, &crx_path));
+      &temp_dir, test_dir, signing_key.get(), verified_contents, &crx_path));
 
   const Extension* extension = InstallExtensionFromWebstore(crx_path, 0);
   EXPECT_FALSE(extension);

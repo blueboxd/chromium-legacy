@@ -43,6 +43,7 @@
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/common/frame/frame_ad_evidence.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/common/frame/history_user_activation_state.h"
 #include "third_party/blink/public/common/frame/transient_allow_fullscreen.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/back_forward_cache_not_restored_reasons.mojom-blink.h"
@@ -70,6 +71,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator_behavior.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -100,6 +102,10 @@ class Range;
 class Size;
 class SizeF;
 }  // namespace gfx
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace blink {
 
@@ -150,7 +156,7 @@ class WebContentSettingsClient;
 class WebInputEventAttribution;
 class WebPluginContainerImpl;
 class WebPrescientNetworking;
-class WebURLLoaderFactory;
+class URLLoader;
 struct BlinkTransferableMessage;
 struct WebScriptSource;
 
@@ -328,6 +334,11 @@ class CORE_EXPORT LocalFrame final
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer);
 
+  bool IsHistoryUserActivationActive() const {
+    return history_user_activation_state_.IsActive();
+  }
+  void ConsumeHistoryUserActivation();
+
   // Registers an observer that will be notified if a VK occludes
   // the content when it raises/dismisses. The observer is a HeapHashSet
   // data structure that doesn't allow duplicates.
@@ -410,6 +421,7 @@ class CORE_EXPORT LocalFrame final
   device::mojom::blink::DevicePostureType GetDevicePosture();
 
   String SelectedText() const;
+  String SelectedText(const TextIteratorBehavior& behavior) const;
   String SelectedTextForClipboard() const;
   void TextSelectionChanged(const WTF::String& selection_text,
                             uint32_t offset,
@@ -493,8 +505,11 @@ class CORE_EXPORT LocalFrame final
   // Returns the enabled state of lazyloading of images.
   LazyLoadImageSetting GetLazyLoadImageSetting() const;
 
-  // The returned value is a off-heap raw-ptr and should not be stored.
-  WebURLLoaderFactory* GetURLLoaderFactory();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
+  // For some tests, we use this method to create a URLLoader instead of using
+  // GetURLLoaderFactory().
+  std::unique_ptr<URLLoader> CreateURLLoaderForTesting();
 
   bool IsInert() const { return is_inert_; }
 
@@ -864,6 +879,14 @@ class CORE_EXPORT LocalFrame final
   bool IsLocalFrame() const override { return true; }
   bool IsRemoteFrame() const override { return false; }
 
+  void ActivateHistoryUserActivationState() override {
+    history_user_activation_state_.Activate();
+  }
+
+  void ClearHistoryUserActivationState() override {
+    history_user_activation_state_.Clear();
+  }
+
   void EnableNavigation() { --navigation_disable_count_; }
   void DisableNavigation() { ++navigation_disable_count_; }
 
@@ -908,6 +931,9 @@ class CORE_EXPORT LocalFrame final
   void DidFreeze();
   void DidResume();
   void SetContextPaused(bool);
+
+  // Helper for NavigationShouldReplaceCurrentHistoryEntry
+  bool ShouldReplaceForSameUrlNavigation(const FrameLoadRequest&);
 
   HitTestResult HitTestResultForVisualViewportPos(
       const gfx::Point& pos_in_viewport);
@@ -990,15 +1016,14 @@ class CORE_EXPORT LocalFrame final
   // because WebContentCaptureClient might already stop the capture.
   Member<ContentCaptureManager> content_capture_manager_;
 
+  HistoryUserActivationState history_user_activation_state_;
+
   InterfaceRegistry* const interface_registry_;
 
   mojom::blink::ViewportIntersectionState intersection_state_;
 
   // Only set for outermost main frame.
   mojom::blink::BackForwardCacheNotRestoredReasonsPtr not_restored_reasons_;
-
-  // Per-frame URLLoader factory.
-  std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
 
   ClientHintsPreferences client_hints_preferences_;
 

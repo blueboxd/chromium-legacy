@@ -163,7 +163,8 @@ bool CSSSelectorParser::SupportsComplexSelector(
                            nullptr, arena);
   parser.SetInSupportsParsing();
   base::span<CSSSelector> selectors =
-      parser.ConsumeComplexSelector(range, /*in_nested_style_rule=*/false);
+      parser.ConsumeComplexSelector(range, /*in_nested_style_rule=*/false,
+                                    /*first_in_complex_selector_list=*/true);
   if (parser.failed_parsing_ || !range.AtEnd() || selectors.empty()) {
     return false;
   }
@@ -186,12 +187,16 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelectorList(
     CSSParserTokenRange& range,
     bool in_nested_style_rule) {
   ResetVectorAfterScope reset_vector(output_);
-  if (ConsumeComplexSelector(range, in_nested_style_rule).empty()) {
+  if (ConsumeComplexSelector(range, in_nested_style_rule,
+                             /*first_in_complex_selector_list=*/true)
+          .empty()) {
     return {};
   }
   while (!range.AtEnd() && range.Peek().GetType() == kCommaToken) {
     range.ConsumeIncludingWhitespace();
-    if (ConsumeComplexSelector(range, in_nested_style_rule).empty()) {
+    if (ConsumeComplexSelector(range, in_nested_style_rule,
+                               /*first_in_complex_selector_list=*/false)
+            .empty()) {
       return {};
     }
   }
@@ -209,6 +214,7 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelectorList(
     bool in_nested_style_rule) {
   ResetVectorAfterScope reset_vector(output_);
 
+  bool first_in_complex_selector_list = true;
   while (true) {
     const wtf_size_t selector_offset_start = stream.LookAheadOffset();
     CSSParserTokenRange complex_selector =
@@ -222,11 +228,13 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelectorList(
       return {};
     }
 
-    if (ConsumeComplexSelector(complex_selector, in_nested_style_rule)
+    if (ConsumeComplexSelector(complex_selector, in_nested_style_rule,
+                               first_in_complex_selector_list)
             .empty() ||
         failed_parsing_ || !complex_selector.AtEnd()) {
       return {};
     }
+    first_in_complex_selector_list = false;
 
     if (observer) {
       observer->ObserveSelector(selector_offset_start, selector_offset_end);
@@ -399,14 +407,18 @@ CSSSelectorList* CSSSelectorParser::ConsumeForgivingComplexSelectorList(
     base::AutoReset<bool> reset_failure(&failed_parsing_, false);
     CSSParserTokenRange argument = ConsumeNestedArgument(range);
     wtf_size_t subpos = output_.size();
+    // NOTE: first_in_complex_selector_list is irrelevant here,
+    // since in_nested_style_rule is false.
     base::span<CSSSelector> selector =
-        ConsumeComplexSelector(argument, /*in_nested_style_rule=*/false);
+        ConsumeComplexSelector(argument, /*in_nested_style_rule=*/false,
+                               /*first_in_complex_selector_list=*/false);
     if (selector.empty() || failed_parsing_ || !argument.AtEnd()) {
       if (in_supports_parsing_) {
         at_supports_drop_invalid_counter.Count();
       }
       output_.resize(subpos);  // Drop what we parsed so far.
       valid_and_invalid_counter.CountInvalid();
+      AddPlaceholderParentSelectorIfNeeded(argument);
     } else {
       valid_and_invalid_counter.CountValid();
     }
@@ -426,6 +438,29 @@ CSSSelectorList* CSSSelectorParser::ConsumeForgivingComplexSelectorList(
   }
 
   return CSSSelectorList::AdoptSelectorVector(reset_vector.AddedElements());
+}
+
+// If the argument was unparsable but contained a & token,
+// we need to keep it so that we still consider the :is()
+// as nest-containing; furthermore, we need to keep it
+// on serialization so that round-tripping does not risk
+// making the :is() no longer nest-containing. We have similar
+// weaknesses here as in CSS custom properties, such as not
+// preserving comments fully.
+void CSSSelectorParser::AddPlaceholderParentSelectorIfNeeded(
+    const CSSParserTokenRange& argument) {
+  const bool contains_nest_token = std::any_of(
+      argument.begin(), argument.end(), [](const CSSParserToken& token) {
+        return token.GetType() == kDelimiterToken && token.Delimiter() == '&';
+      });
+  if (contains_nest_token) {
+    CSSSelector placeholder_selector;
+    placeholder_selector.SetMatch(CSSSelector::kPseudoClass);
+    placeholder_selector.SetUnparsedPlaceholder(
+        AtomicString(argument.Serialize()));
+    placeholder_selector.SetLastInTagHistory(true);
+    output_.push_back(placeholder_selector);
+  }
 }
 
 CSSSelectorList* CSSSelectorParser::ConsumeForgivingCompoundSelectorList(
@@ -660,7 +695,8 @@ static bool SelectorListIsNestContaining(const CSSSelector* selector) {
   }
   for (;;) {  // Termination condition within loop.
     if (selector->Match() == CSSSelector::kPseudoClass &&
-        selector->GetPseudoType() == CSSSelector::kPseudoParent) {
+        (selector->GetPseudoType() == CSSSelector::kPseudoParent ||
+         selector->GetPseudoType() == CSSSelector::kPseudoParentUnparsed)) {
       return true;
     }
     if (selector->SelectorList() != nullptr &&
@@ -676,7 +712,8 @@ static bool SelectorListIsNestContaining(const CSSSelector* selector) {
 
 base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelector(
     CSSParserTokenRange& range,
-    bool in_nested_style_rule) {
+    bool in_nested_style_rule,
+    bool first_in_complex_selector_list) {
   if (in_nested_style_rule && PeekIsCombinator(range)) {
     // Nested selectors that start with a combinator are to be
     // interpreted as relative selectors (with the anchor being
@@ -687,6 +724,20 @@ base::span<CSSSelector> CSSSelectorParser::ConsumeComplexSelector(
   ResetVectorAfterScope reset_vector(output_);
   base::span<CSSSelector> compound_selector = ConsumeCompoundSelector(range);
   if (compound_selector.empty()) {
+    return {};
+  }
+
+  // When nesting, the complex selector list cannot start with a tag,
+  // since that would cause ambiguous parsing without adding more
+  // lookahead. We normally cannot get here if so (since seeing an ident
+  // would cause us to parse it as a property declaration, not a selector),
+  // but if we tried to set the selector text via CSSOM, we could.
+  // Thus, we need the explicit test here.
+  //
+  // (This only covers the first rule in the complex selector list;
+  // see https://github.com/w3c/csswg-drafts/issues/7980.)
+  if (in_nested_style_rule && first_in_complex_selector_list &&
+      compound_selector[0].Match() == CSSSelector::MatchType::kTag) {
     return {};
   }
 
@@ -927,6 +978,11 @@ bool IsPseudoClassValidAfterPseudoElement(
     CSSSelector::PseudoType pseudo_class,
     CSSSelector::PseudoType compound_pseudo_element) {
   switch (compound_pseudo_element) {
+    case CSSSelector::kPseudoBefore:
+    case CSSSelector::kPseudoAfter:
+    case CSSSelector::kPseudoMarker:
+    case CSSSelector::kPseudoPlaceholder:
+      return pseudo_class == CSSSelector::kPseudoInitial;
     case CSSSelector::kPseudoResizer:
     case CSSSelector::kPseudoScrollbar:
     case CSSSelector::kPseudoScrollbarCorner:
@@ -939,11 +995,13 @@ bool IsPseudoClassValidAfterPseudoElement(
       return pseudo_class == CSSSelector::kPseudoWindowInactive;
     case CSSSelector::kPseudoPart:
       return IsUserActionPseudoClass(pseudo_class) ||
-             pseudo_class == CSSSelector::kPseudoState;
+             pseudo_class == CSSSelector::kPseudoState ||
+             pseudo_class == CSSSelector::kPseudoInitial;
     case CSSSelector::kPseudoWebKitCustomElement:
     case CSSSelector::kPseudoBlinkInternalElement:
     case CSSSelector::kPseudoFileSelectorButton:
-      return IsUserActionPseudoClass(pseudo_class);
+      return IsUserActionPseudoClass(pseudo_class) ||
+             pseudo_class == CSSSelector::kPseudoInitial;
     case CSSSelector::kPseudoViewTransitionGroup:
     case CSSSelector::kPseudoViewTransitionImagePair:
     case CSSSelector::kPseudoViewTransitionOld:

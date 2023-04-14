@@ -14,6 +14,7 @@ NavigationLoaderInterceptor::MaybeCreateSubresourceLoaderParams() {
 }
 
 bool NavigationLoaderInterceptor::MaybeCreateLoaderForResponse(
+    const network::URLLoaderCompletionStatus& status,
     const network::ResourceRequest& request,
     network::mojom::URLResponseHeadPtr* response,
     mojo::ScopedDataPipeConsumerHandle* response_body,

@@ -23,7 +23,6 @@
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/fullscreen_window_finder.h"
-#include "ash/wm/multitask_menu_nudge_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/window_positioner.h"
 #include "ash/wm/window_properties.h"
@@ -152,7 +151,7 @@ void WorkspaceLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   UpdateWindowWorkspace(child);
 
   backdrop_controller_->OnWindowAddedToLayout(child);
-  WindowPositioner::RearrangeVisibleWindowOnShow(child);
+  window_positioner::RearrangeVisibleWindowOnShow(child);
   if (Shell::Get()->screen_pinning_controller()->IsPinned())
     WindowState::Get(child)->DisableZOrdering(nullptr);
 }
@@ -175,7 +174,7 @@ void WorkspaceLayoutManager::OnWillRemoveWindowFromLayout(aura::Window* child) {
   }
 
   if (child->layer()->GetTargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
+    window_positioner::RearrangeVisibleWindowOnHideOrRemove(child);
 }
 
 void WorkspaceLayoutManager::OnWindowRemovedFromLayout(aura::Window* child) {
@@ -192,9 +191,9 @@ void WorkspaceLayoutManager::OnChildWindowVisibilityChanged(aura::Window* child,
     window_state->Unminimize();
 
   if (child->layer()->GetTargetVisibility())
-    WindowPositioner::RearrangeVisibleWindowOnShow(child);
+    window_positioner::RearrangeVisibleWindowOnShow(child);
   else
-    WindowPositioner::RearrangeVisibleWindowOnHideOrRemove(child);
+    window_positioner::RearrangeVisibleWindowOnHideOrRemove(child);
   UpdateFullscreenState();
   UpdateShelfVisibility();
   backdrop_controller_->OnChildWindowVisibilityChanged(child);
@@ -394,11 +393,6 @@ void WorkspaceLayoutManager::OnPostWindowStateTypeChange(
 
   UpdateShelfVisibility();
   backdrop_controller_->OnPostWindowStateTypeChange(window_state->window());
-
-  if (window_state->IsNormalOrSnapped() || window_state->IsMaximized()) {
-    Shell::Get()->multitask_menu_nudge_controller()->MaybeShowNudge(
-        window_state->window());
-  }
 }
 
 //////////////////////////////////////////////////////////////////////////////

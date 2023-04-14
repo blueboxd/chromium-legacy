@@ -820,7 +820,11 @@ export class ActionsModel extends EventTarget {
                         // URLs.
                         // TODO(b/237216270): Restrict to the ODFS extension ID.
                         if (action.id ===
-                            constants.FSP_ACTION_HIDDEN_ODFS_URL) {
+                            constants.FSP_ACTION_HIDDEN_ONEDRIVE_URL) {
+                          return;
+                        }
+                        if (action.id ===
+                            constants.FSP_ACTION_HIDDEN_ONEDRIVE_USER_EMAIL) {
                           return;
                         }
                         actions[action.id] = new CustomAction(

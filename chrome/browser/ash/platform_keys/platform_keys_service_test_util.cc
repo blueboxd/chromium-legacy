@@ -4,12 +4,10 @@
 
 #include "chrome/browser/ash/platform_keys/platform_keys_service_test_util.h"
 
-#include "chrome/browser/ash/platform_keys/chaps_util.h"
+#include "chrome/browser/chromeos/platform_keys/chaps_util.h"
 #include "crypto/nss_key_util.h"
 
-namespace ash {
-namespace platform_keys {
-namespace test_util {
+namespace ash::platform_keys::test_util {
 
 using ::chromeos::platform_keys::Status;
 using ::chromeos::platform_keys::TokenId;
@@ -27,59 +25,11 @@ Status GetTokensExecutionWaiter::status() {
   return Get<1>();
 }
 
-const std::string& GenerateKeyExecutionWaiter::public_key_spki_der() {
-  return Get<0>();
-}
-
-Status GenerateKeyExecutionWaiter::status() {
-  return Get<1>();
-}
-
-base::OnceCallback<void(const std::string&, Status)>
-GenerateKeyExecutionWaiter::GetCallback() {
-  return TestFuture::GetCallback<const std::string&, Status>();
-}
-
-const std::string& SignExecutionWaiter::signature() {
-  return Get<0>();
-}
-
-Status SignExecutionWaiter::status() {
-  return Get<1>();
-}
-
-base::OnceCallback<void(const std::string&, Status)>
-SignExecutionWaiter::GetCallback() {
-  return TestFuture::GetCallback<const std::string&, Status>();
-}
-
 const net::CertificateList& GetCertificatesExecutionWaiter::matches() {
   return *Get<0>();
 }
 
 Status GetCertificatesExecutionWaiter::status() {
-  return Get<1>();
-}
-
-const absl::optional<std::string>&
-GetAttributeForKeyExecutionWaiter::attribute_value() {
-  return Get<0>();
-}
-
-Status GetAttributeForKeyExecutionWaiter::status() {
-  return Get<1>();
-}
-
-base::OnceCallback<void(const absl::optional<std::string>&, Status)>
-GetAttributeForKeyExecutionWaiter::GetCallback() {
-  return TestFuture::GetCallback<const absl::optional<std::string>&, Status>();
-}
-
-const std::vector<std::string>& GetAllKeysExecutionWaiter::public_keys() {
-  return Get<0>();
-}
-
-Status GetAllKeysExecutionWaiter::status() {
   return Get<1>();
 }
 
@@ -125,15 +75,17 @@ bool FakeChapsUtil::GenerateSoftwareBackedRSAKey(
 }
 
 ScopedChapsUtilOverride::ScopedChapsUtilOverride() {
-  ChapsUtil::SetFactoryForTesting(base::BindRepeating(
+  chromeos::platform_keys::ChapsUtil::SetFactoryForTesting(base::BindRepeating(
       &ScopedChapsUtilOverride::CreateChapsUtil, base::Unretained(this)));
 }
 
 ScopedChapsUtilOverride::~ScopedChapsUtilOverride() {
-  ChapsUtil::SetFactoryForTesting(ChapsUtil::FactoryCallback());
+  chromeos::platform_keys::ChapsUtil::SetFactoryForTesting(
+      chromeos::platform_keys::ChapsUtil::FactoryCallback());
 }
 
-std::unique_ptr<ChapsUtil> ScopedChapsUtilOverride::CreateChapsUtil() {
+std::unique_ptr<chromeos::platform_keys::ChapsUtil>
+ScopedChapsUtilOverride::CreateChapsUtil() {
   return std::make_unique<FakeChapsUtil>(
       base::BindRepeating(&ScopedChapsUtilOverride::OnKeyGenerated,
                           weak_ptr_factory_.GetWeakPtr()));
@@ -143,6 +95,4 @@ void ScopedChapsUtilOverride::OnKeyGenerated(const std::string& spki) {
   generated_key_spkis_.push_back(spki);
 }
 
-}  // namespace test_util
-}  // namespace platform_keys
-}  // namespace ash
+}  // namespace ash::platform_keys::test_util

@@ -22,6 +22,7 @@
 #include "chromeos/ash/components/network/network_profile_handler.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "chromeos/ash/components/network/network_state_handler.h"
+#include "chromeos/ash/components/network/technology_state_controller.h"
 #include "chromeos/ash/components/network/tether_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -278,7 +279,7 @@ void NetworkConnectImpl::CallCreateConfiguration(
   NetworkHandler::Get()
       ->network_configuration_handler()
       ->CreateShillConfiguration(
-          base::Value(std::move(shill_properties)),
+          std::move(shill_properties),
           base::BindOnce(&NetworkConnectImpl::OnConfigureSucceeded,
                          weak_factory_.GetWeakPtr(), connect_on_configure),
           base::BindOnce(&NetworkConnectImpl::OnConfigureFailed,
@@ -344,7 +345,7 @@ void NetworkConnectImpl::ConfigureSetProfileSucceeded(
     return;
   }
   NetworkHandler::Get()->network_configuration_handler()->SetShillProperties(
-      network->path(), properties_to_set,
+      network->path(), properties_to_set.GetDict(),
       base::BindOnce(&NetworkConnectImpl::ClearPropertiesAndConnect,
                      weak_factory_.GetWeakPtr(), network_id,
                      properties_to_clear),
@@ -400,6 +401,8 @@ void NetworkConnectImpl::SetTechnologyEnabled(
       (enabled_state ? "ENABLED" : "DISABLED"));
   NET_LOG(USER) << "SetTechnologyEnabled: " << log_string;
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  TechnologyStateController* controller =
+      NetworkHandler::Get()->technology_state_controller();
   bool enabled = handler->IsTechnologyEnabled(technology);
   if (enabled_state == enabled) {
     NET_LOG(USER) << "Technology already in target state: " << log_string;
@@ -408,8 +411,8 @@ void NetworkConnectImpl::SetTechnologyEnabled(
   if (enabled) {
     // User requested to disable the technology.
     NET_LOG(USER) << __func__ << " " << technology_string << ":" << false;
-    handler->SetTechnologyEnabled(technology, false,
-                                  network_handler::ErrorCallback());
+    controller->SetTechnologiesEnabled(technology, false,
+                                       network_handler::ErrorCallback());
     return;
   }
   // If we're dealing with a cellular network, then handle SIM lock here.
@@ -438,8 +441,8 @@ void NetworkConnectImpl::SetTechnologyEnabled(
     }
   }
   NET_LOG(USER) << __func__ << " " << technology_string << ":" << true;
-  handler->SetTechnologyEnabled(technology, true,
-                                network_handler::ErrorCallback());
+  controller->SetTechnologiesEnabled(technology, true,
+                                     network_handler::ErrorCallback());
 }
 
 void NetworkConnectImpl::ActivateCellular(const std::string& network_id) {

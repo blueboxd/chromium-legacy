@@ -34,10 +34,9 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/timer/elapsed_timer.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/single_request_url_loader_factory.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/platform/web_back_forward_cache_loader_helper.h"
-#include "third_party/blink/public/platform/web_url_loader_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -83,7 +82,9 @@
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/loader/fetch/url_loader/url_loader_client.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -92,8 +93,6 @@
 #endif
 
 namespace blink {
-
-using TaskRunnerHandle = scheduler::WebResourceLoadingTaskRunnerHandle;
 
 class AttributeChange {
   DISALLOW_NEW();
@@ -124,110 +123,25 @@ namespace blink {
 
 namespace {
 
-class FailingLoader final : public WebURLLoader {
- public:
-  explicit FailingLoader(
-      std::unique_ptr<TaskRunnerHandle> freezable_task_runner_handle,
-      std::unique_ptr<TaskRunnerHandle> unfreezable_task_runner_handle)
-      : freezable_task_runner_handle_(std::move(freezable_task_runner_handle)),
-        unfreezable_task_runner_handle_(
-            std::move(unfreezable_task_runner_handle)) {}
-  ~FailingLoader() override = default;
-
-  // WebURLLoader implementation:
-  void LoadSynchronously(
-      std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      bool pass_response_pipe_to_client,
-      bool no_mime_sniffing,
-      base::TimeDelta timeout_interval,
-      WebURLLoaderClient*,
-      WebURLResponse&,
-      absl::optional<WebURLError>& error,
-      WebData&,
-      int64_t& encoded_data_length,
-      uint64_t& encoded_body_length,
-      WebBlobInfo& downloaded_blob,
-      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-          resource_load_info_notifier_wrapper) override {
-    error.emplace(ResourceError::Failure(KURL(request->url)));
-  }
-  void LoadAsynchronously(
-      std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<WebURLRequestExtraData> url_request_extra_data,
-      bool no_mime_sniffing,
-      std::unique_ptr<blink::ResourceLoadInfoNotifierWrapper>
-          resource_load_info_notifier_wrapper,
-      WebURLLoaderClient* client) override {
-    url_ = KURL(request->url);
-    client_ = client;
-    freezable_task_runner_handle_->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        WTF::BindOnce(&FailingLoader::Fail, weak_ptr_factory_.GetWeakPtr()));
-  }
-  void Freeze(LoaderFreezeMode mode) override {
-    mode_ = mode;
-    if (mode_ != LoaderFreezeMode::kNone || !client_) {
-      return;
-    }
-    freezable_task_runner_handle_->GetTaskRunner()->PostTask(
-        FROM_HERE,
-        WTF::BindOnce(&FailingLoader::Fail, weak_ptr_factory_.GetWeakPtr()));
-  }
-  void DidChangePriority(WebURLRequest::Priority, int) override {}
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunnerForBodyLoader()
-      override {
-    return freezable_task_runner_handle_->GetTaskRunner();
-  }
-
- private:
-  void Fail() {
-    if (mode_ != LoaderFreezeMode::kNone || !client_) {
-      return;
-    }
-
-    auto* client = client_;
-    client_ = nullptr;
-    client->DidFail(static_cast<WebURLError>(ResourceError::Failure(url_)),
-                    /*finish_time=*/base::TimeTicks::Now(),
-                    /*total_encoded_data_length=*/0,
-                    /*total_encoded_body_length=*/0,
-                    /*total_decoded_body_length=*/0);
-  }
-
-  KURL url_;
-  WebURLLoaderClient* client_ = nullptr;
-  LoaderFreezeMode mode_ = LoaderFreezeMode::kNone;
-
-  const std::unique_ptr<TaskRunnerHandle> freezable_task_runner_handle_;
-  const std::unique_ptr<TaskRunnerHandle> unfreezable_task_runner_handle_;
-
-  // This must be the last member.
-  base::WeakPtrFactory<FailingLoader> weak_ptr_factory_{this};
-};
-
-class FailingLoaderFactory final : public WebURLLoaderFactory {
- public:
-  // WebURLLoaderFactory implementation:
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const WebURLRequest&,
-      std::unique_ptr<TaskRunnerHandle> freezable_task_runner_handle,
-      std::unique_ptr<TaskRunnerHandle> unfreezable_task_runner_handle,
-      CrossVariantMojoRemote<mojom::KeepAliveHandleInterfaceBase>
-          keep_alive_handle,
-      WebBackForwardCacheLoaderHelper back_forward_cache_loader_helper)
-      override {
-    return std::make_unique<FailingLoader>(
-        std::move(freezable_task_runner_handle),
-        std::move(unfreezable_task_runner_handle));
-  }
-};
-
 class EmptyLocalFrameClientWithFailingLoaderFactory final
     : public EmptyLocalFrameClient {
  public:
-  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return std::make_unique<FailingLoaderFactory>();
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory()
+      override {
+    // TODO(crbug.com/1413912): CreateSanitizedFragmentFromMarkupWithContext may
+    // call this method for data: URL resources. But ResourceLoader::Start()
+    // don't need to call GetURLLoaderFactory() for data: URL because
+    // ResourceLoader handles the data: URL resource load without the returned
+    // SharedURLLoaderFactory.
+    // Note: Non-data: URL resource can't be loaded because the CORS check in
+    // BaseFetchContext::CanRequestInternal fails for non-data: URL resources.
+    return base::MakeRefCounted<network::SingleRequestURLLoaderFactory>(
+        WTF::BindOnce(
+            [](const network::ResourceRequest& resource_request,
+               mojo::PendingReceiver<network::mojom::URLLoader> receiver,
+               mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
+              NOTREACHED();
+            }));
   }
 };
 
@@ -763,13 +677,14 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
 
   if (IsA<HTMLDocument>(document)) {
 #if defined(USE_INNER_HTML_PARSER_FAST_PATH)
+    bool log_tag_stats = false;
     const bool fast_path_enabled =
         RuntimeEnabledFeatures::InnerHTMLParserFastpathEnabled();
     base::ElapsedTimer parse_timer;
     if (fast_path_enabled) {
-      const bool parsed_fast_path =
-          TryParsingHTMLFragment(markup, document, *fragment, *context_element,
-                                 parser_content_policy, include_shadow_roots);
+      const bool parsed_fast_path = TryParsingHTMLFragment(
+          markup, document, *fragment, *context_element, parser_content_policy,
+          include_shadow_roots, &log_tag_stats);
       if (parsed_fast_path) {
         LogFastPathParserTotalTime(parse_timer.Elapsed());
 #if DCHECK_IS_ON()
@@ -791,6 +706,9 @@ DocumentFragment* CreateFragmentForInnerOuterHTML(
     fragment->ParseHTML(markup, context_element, parser_content_policy);
 #if defined(USE_INNER_HTML_PARSER_FAST_PATH)
     LogFastPathParserTotalTime(parse_timer.Elapsed());
+    if (log_tag_stats) {
+      LogTagsForUnsupportedTagTypeFailure(*fragment);
+    }
 #endif
     return fragment;
   }

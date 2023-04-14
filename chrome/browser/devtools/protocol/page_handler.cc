@@ -5,7 +5,9 @@
 #include "chrome/browser/devtools/protocol/page_handler.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/subresource_filter/content/browser/devtools_interaction_tracker.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
@@ -70,7 +72,7 @@ protocol::Response PageHandler::Enable() {
 protocol::Response PageHandler::Disable() {
   enabled_ = false;
   ToggleAdBlocking(false /* enable */);
-  SetSPCTransactionMode(protocol::Page::SetSPCTransactionMode::ModeEnum::None);
+  SetSPCTransactionMode(protocol::Page::AutoResponseModeEnum::None);
   // Do not mark the command as handled. Let it fall through instead, so that
   // the handler in content gets a chance to process the command.
   return protocol::Response::FallThrough();
@@ -89,15 +91,13 @@ protocol::Response PageHandler::SetSPCTransactionMode(
     return protocol::Response::ServerError("No web contents to host a dialog.");
 
   payments::SPCTransactionMode spc_mode = payments::SPCTransactionMode::NONE;
-  if (mode == protocol::Page::SetSPCTransactionMode::ModeEnum::AutoAccept) {
+  if (mode == protocol::Page::AutoResponseModeEnum::AutoAccept) {
     spc_mode = payments::SPCTransactionMode::AUTOACCEPT;
-  } else if (mode ==
-             protocol::Page::SetSPCTransactionMode::ModeEnum::AutoReject) {
+  } else if (mode == protocol::Page::AutoResponseModeEnum::AutoReject) {
     spc_mode = payments::SPCTransactionMode::AUTOREJECT;
-  } else if (mode ==
-             protocol::Page::SetSPCTransactionMode::ModeEnum::AutoOptOut) {
+  } else if (mode == protocol::Page::AutoResponseModeEnum::AutoOptOut) {
     spc_mode = payments::SPCTransactionMode::AUTOOPTOUT;
-  } else if (mode != protocol::Page::SetSPCTransactionMode::ModeEnum::None) {
+  } else if (mode != protocol::Page::AutoResponseModeEnum::None) {
     return protocol::Response::ServerError("Unrecognized mode value");
   }
 
@@ -105,6 +105,29 @@ protocol::Response PageHandler::SetSPCTransactionMode(
       payments::PaymentRequestWebContentsManager::GetOrCreateForWebContents(
           *web_contents_);
   payment_request_manager->SetSPCTransactionMode(spc_mode);
+  return protocol::Response::Success();
+}
+
+protocol::Response PageHandler::SetRPHRegistrationMode(
+    const protocol::String& mode) {
+  if (!web_contents_) {
+    return protocol::Response::ServerError("No web contents to host a dialog.");
+  }
+
+  custom_handlers::RphRegistrationMode rph_mode =
+      custom_handlers::RphRegistrationMode::kNone;
+  if (mode == protocol::Page::AutoResponseModeEnum::AutoAccept) {
+    rph_mode = custom_handlers::RphRegistrationMode::kAutoAccept;
+  } else if (mode == protocol::Page::AutoResponseModeEnum::AutoReject) {
+    rph_mode = custom_handlers::RphRegistrationMode::kAutoReject;
+  } else if (mode != protocol::Page::AutoResponseModeEnum::None) {
+    return protocol::Response::ServerError("Unrecognized mode value");
+  }
+
+  custom_handlers::ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          web_contents_->GetBrowserContext());
+  registry->SetRphRegistrationMode(rph_mode);
   return protocol::Response::Success();
 }
 
@@ -235,7 +258,7 @@ void PageHandler::PrintToPDF(protocol::Maybe<bool> landscape,
       protocol::Page::PrintToPDF::TransferModeEnum::ReturnAsStream;
 
   // First check if headless printer manager is active and use it if so.
-  // Note that headless mode uses alternae print manager that shortcuts
+  // Note that headless mode uses alternate print manager that shortcuts
   // most of the regular print manager calls providing only the PrintToPDF
   // functionality.
   if (auto* print_manager = headless::HeadlessPrintManager::FromWebContents(

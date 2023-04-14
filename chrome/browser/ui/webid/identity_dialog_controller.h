@@ -43,12 +43,14 @@ class IdentityDialogController
       const std::string& rp_for_display,
       const std::vector<content::IdentityProviderData>& identity_provider_data,
       content::IdentityRequestAccount::SignInMode sign_in_mode,
+      bool show_auto_reauthn_checkbox,
       AccountSelectionCallback on_selected,
       DismissCallback dismiss_callback) override;
   void ShowFailureDialog(content::WebContents* rp_web_contents,
                          const std::string& rp_for_display,
                          const std::string& idp_for_display,
                          DismissCallback dismiss_callback) override;
+  void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback) override;
 
   // AccountSelectionView::Delegate:
   void OnAccountSelected(const GURL& idp_config_url,
@@ -58,8 +60,6 @@ class IdentityDialogController
   content::WebContents* GetWebContents() override;
 
  private:
-  void OnViewClosed();
-
   std::unique_ptr<AccountSelectionView> account_view_{nullptr};
   AccountSelectionCallback on_account_selection_;
   DismissCallback on_dismiss_;

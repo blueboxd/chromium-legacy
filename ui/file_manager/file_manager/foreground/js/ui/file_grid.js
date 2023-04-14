@@ -9,9 +9,10 @@ import {isRTL} from 'chrome://resources/ash/common/util.js';
 import {RateLimiter} from '../../../common/js/async_util.js';
 import {maybeShowTooltip} from '../../../common/js/dom_utils.js';
 import {FileType} from '../../../common/js/file_type.js';
-import {util} from '../../../common/js/util.js';
+import {str, util} from '../../../common/js/util.js';
 import {FilesAppEntry} from '../../../externs/files_app_entry_interfaces.js';
 import {VolumeManager} from '../../../externs/volume_manager.js';
+import {FilesTooltip} from '../../elements/files_tooltip.js';
 import {FileListModel, GROUP_BY_FIELD_DIRECTORY, GROUP_BY_FIELD_MODIFICATION_TIME, GroupValue} from '../file_list_model.js';
 import {ListThumbnailLoader} from '../list_thumbnail_loader.js';
 import {MetadataModel} from '../metadata/metadata_model.js';
@@ -265,8 +266,6 @@ export class FileGrid extends Grid {
           this.setGenericThumbnail_(
               assertInstanceof(box, HTMLDivElement), entry, mimeType);
         } else {
-          listItem.querySelector('xf-icon').type =
-              this.getOfflineIconForEntry(entry, true);
           FileGrid.setThumbnailImage_(
               assertInstanceof(box, HTMLDivElement), entry,
               assert(event.dataUrl), assert(event.width), assert(event.height),
@@ -744,15 +743,20 @@ export class FileGrid extends Grid {
       listItem = /** @type {!FileGrid.Item} */ (listItem);
       this.decorateThumbnailBox_(listItem, entry);
       this.updateSharedStatus_(listItem, entry);
+      const {availableOffline, pinned} =
+          this.metadataModel_.getCache(
+              [entry], ['availableOffline', 'pinned'])[0] ||
+          {};
+      const inlineStatus = listItem.querySelector('.inline-status');
+      // Clear the inline status' aria label and set it to "in progress",
+      // "queued", or "available offline" with the respective order of
+      // precedence if applicable.
+      inlineStatus.removeAttribute('aria-label');
+      listItem.classList.toggle('dim-offline', availableOffline === false);
+      listItem.classList.toggle('pinned', pinned);
+      inlineStatus.setAttribute(
+          'aria-label', pinned ? str('OFFLINE_COLUMN_LABEL') : '');
       this.updateInlineSyncStatus_(listItem, entry);
-      const metadata =
-          this.metadataModel_.getCache([entry], ['availableOffline'])[0];
-      if (metadata) {
-        const {availableOffline} = metadata;
-        listItem.classList.toggle('dim-offline', availableOffline === false);
-        listItem.querySelector('xf-icon').type =
-            this.getOfflineIconForEntry(entry);
-      }
       listItem.toggleAttribute(
           'disabled',
           filelist.isDlpBlocked(
@@ -804,12 +808,15 @@ export class FileGrid extends Grid {
 
     const bottom = li.ownerDocument.createElement('div');
     bottom.className = 'thumbnail-bottom';
-    const mimeType =
-        this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
-            .contentMimeType;
+
+    const {contentMimeType, availableOffline, pinned} =
+        this.metadataModel_.getCache(
+            [entry], ['contentMimeType', 'availableOffline', 'pinned'])[0] ||
+        {};
+
     const locationInfo = this.volumeManager_.getLocationInfo(entry);
     const detailIcon = filelist.renderFileTypeIcon(
-        li.ownerDocument, entry, locationInfo, mimeType);
+        li.ownerDocument, entry, locationInfo, contentMimeType);
 
     // For FilesNg we add the checkmark in the same location.
     const checkmark = li.ownerDocument.createElement('div');
@@ -821,53 +828,36 @@ export class FileGrid extends Grid {
     frame.appendChild(bottom);
     li.setAttribute('file-name', util.getEntryLabel(locationInfo, entry));
 
-    const syncStatus = li.ownerDocument.createElement('div');
-    syncStatus.className = 'inline-status';
+    // The inline status box contains both sync status indicators and available
+    // offline indicators.
+    const inlineStatus = li.ownerDocument.createElement('div');
+    inlineStatus.className = 'inline-status';
 
     const inlineStatusIcon = li.ownerDocument.createElement('xf-icon');
     inlineStatusIcon.size = 'extra_small';
-    inlineStatusIcon.type = '';
-    syncStatus.appendChild(inlineStatusIcon);
+    inlineStatusIcon.type = 'offline';
+    inlineStatus.appendChild(inlineStatusIcon);
 
     if (util.isInlineSyncStatusEnabled()) {
       const syncProgress = li.ownerDocument.createElement('xf-pie-progress');
-      syncProgress.drawBackground = true;
       syncProgress.className = 'progress';
-      syncStatus.appendChild(syncProgress);
+      inlineStatus.appendChild(syncProgress);
     }
 
-    frame.appendChild(syncStatus);
+    /** @type {!FilesTooltip} */ (
+        li.ownerDocument.querySelector('files-tooltip'))
+        .addTarget(/** @type {!HTMLElement} */ (inlineStatus));
 
-    const metadata =
-        this.metadataModel_.getCache([entry], ['availableOffline'])[0];
-    if (metadata) {
-      const {availableOffline} = metadata;
-      li.classList.toggle('dim-offline', availableOffline === false);
-      inlineStatusIcon.type = this.getOfflineIconForEntry(entry);
-    }
+    frame.appendChild(inlineStatus);
+
+    li.classList.toggle('dim-offline', availableOffline === false);
+    li.classList.toggle('pinned', pinned);
 
     if (entry) {
       this.decorateThumbnailBox_(assertInstanceof(li, HTMLLIElement), entry);
     }
     this.updateSharedStatus_(li, entry);
     this.updateInlineSyncStatus_(li, entry);
-  }
-
-  /**
-   * @param {Entry} entry
-   * @param {boolean} useOutline Whether the icon whose identifier is returned
-   *     should have an outline around it.
-   * @returns string
-   */
-  getOfflineIconForEntry(entry, useOutline = false) {
-    const metadata = this.metadataModel_.getCache([entry], ['pinned'])[0];
-    if (!metadata) {
-      return;
-    }
-    return metadata.pinned ?
-        // TODO: use "XfIcon.types.OFFLINE*" instead when converting to TS.
-        useOutline ? 'offline_outlined' : 'offline' :
-        '';
   }
 
   /**
@@ -896,8 +886,6 @@ export class FileGrid extends Grid {
         this.metadataModel_.getCache([entry], ['contentMimeType'])[0]
             .contentMimeType;
     if (thumbnailData && thumbnailData.dataUrl) {
-      li.querySelector('xf-icon').type =
-          this.getOfflineIconForEntry(entry, true);
       FileGrid.setThumbnailImage_(
           box, entry, thumbnailData.dataUrl, (thumbnailData.width || 0),
           (thumbnailData.height || 0), mimeType);
@@ -949,16 +937,32 @@ export class FileGrid extends Grid {
       return;
     }
 
-    const {syncStatus, progress} = metadata;
+    const {syncStatus} = metadata;
+    let progress = metadata.progress ?? 0;
+    const inlineStatus = li.querySelector('.inline-status');
 
-    if (!syncStatus) {
+    if (!syncStatus || !inlineStatus) {
       return;
     }
 
+    switch (syncStatus) {
+      case chrome.fileManagerPrivate.SyncStatus.QUEUED:
+      case chrome.fileManagerPrivate.SyncStatus.ERROR:
+        progress = 0;
+        inlineStatus.setAttribute('aria-label', str('QUEUED_LABEL'));
+        break;
+      case chrome.fileManagerPrivate.SyncStatus.IN_PROGRESS:
+        inlineStatus.setAttribute(
+            'aria-label',
+            `${str('IN_PROGRESS_LABEL')} - ${(progress * 100).toFixed(0)}%`);
+        break;
+      default:
+        break;
+    }
+
     li.setAttribute('data-sync-status', syncStatus);
-    li.querySelector('.progress')
-        .setAttribute('progress', (progress || 0).toFixed(2));
-    // TODO(b/255474670): set sync status aria-label.
+    inlineStatus.querySelector('.progress')
+        .setAttribute('progress', progress.toFixed(2));
   }
 
   /**
@@ -1050,7 +1054,10 @@ export class FileGrid extends Grid {
    */
   setGenericThumbnail_(box, entry, opt_mimeType) {
     if (entry.isDirectory) {
-      box.setAttribute('generic-thumbnail', 'folder');
+      // There is no space to show the thumbnail so don't adde one for Jelly.
+      if (!util.isJellyEnabled()) {
+        box.setAttribute('generic-thumbnail', 'folder');
+      }
     } else {
       box.classList.toggle('no-thumbnail', true);
       const locationInfo = this.volumeManager_.getLocationInfo(entry);

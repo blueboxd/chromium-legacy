@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/web_applications/externally_installed_web_app_prefs.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
 #include "chrome/browser/web_applications/test/web_app_test_observers.h"
@@ -236,6 +237,25 @@ std::vector<apps::UrlHandlerInfo> CreateRandomUrlHandlers(uint32_t suffix) {
   }
 
   return url_handlers;
+}
+
+std::vector<ScopeExtensionInfo> CreateRandomScopeExtensions(
+    uint32_t suffix,
+    RandomHelper& random) {
+  std::vector<ScopeExtensionInfo> scope_extensions;
+
+  for (unsigned int i = 0; i < 3; ++i) {
+    std::string suffix_str =
+        base::NumberToString(suffix) + base::NumberToString(i);
+
+    ScopeExtensionInfo scope_extension;
+    scope_extension.origin =
+        url::Origin::Create(GURL("https://app-" + suffix_str + ".com/"));
+    scope_extension.has_origin_wildcard = random.next_bool();
+    scope_extensions.push_back(std::move(scope_extension));
+  }
+
+  return scope_extensions;
 }
 
 std::vector<WebAppShortcutsMenuItemInfo> CreateRandomShortcutsMenuItemInfos(
@@ -566,6 +586,8 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
     app->SetShareTarget(CreateRandomShareTarget(random.next_uint()));
   app->SetProtocolHandlers(CreateRandomProtocolHandlers(random.next_uint()));
   app->SetUrlHandlers(CreateRandomUrlHandlers(random.next_uint()));
+  app->SetScopeExtensions(
+      CreateRandomScopeExtensions(random.next_uint(), random));
   if (random.next_bool()) {
     app->SetLockScreenStartUrl(scope.Resolve(
         "lock_screen_start_url" + base::NumberToString(random.next_uint())));
@@ -607,8 +629,6 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
         "web+disallowed_" + seed_str + "_" + base::NumberToString(i);
   }
   app->SetDisallowedLaunchProtocols(std::move(disallowed_launch_protocols));
-
-  app->SetStorageIsolated(random.next_bool());
 
   app->SetWindowControlsOverlayEnabled(false);
 
@@ -713,22 +733,20 @@ std::unique_ptr<WebApp> CreateRandomWebApp(const GURL& base_url,
   }
 
   if (random.next_bool()) {
-    using IsolationDataContent = decltype(IsolationData::content);
-    constexpr size_t kNumContentTypes =
-        absl::variant_size<IsolationDataContent>::value;
+    constexpr size_t kNumLocationTypes =
+        absl::variant_size<IsolatedWebAppLocation>::value;
     auto path = base::FilePath::FromUTF8Unsafe(seed_str);
-    IsolationDataContent content_types[] = {
-        IsolationData::InstalledBundle{.path = path},
-        IsolationData::DevModeBundle{.path = path},
-        IsolationData::DevModeProxy{
-            .proxy_url = url::Origin::Create(
-                GURL(base::StrCat({"https://proxy-", seed_str, ".com/"})))},
+    IsolatedWebAppLocation location_types[] = {
+        InstalledBundle{.path = path},
+        DevModeBundle{.path = path},
+        DevModeProxy{.proxy_url = url::Origin::Create(GURL(
+                         base::StrCat({"https://proxy-", seed_str, ".com/"})))},
     };
-    static_assert(std::size(content_types) == kNumContentTypes);
+    static_assert(std::size(location_types) == kNumLocationTypes);
 
-    IsolationData isolation_data(
-        content_types[random.next_uint(kNumContentTypes)]);
-    app->SetIsolationData(isolation_data);
+    IsolatedWebAppLocation location(
+        location_types[random.next_uint(kNumLocationTypes)]);
+    app->SetIsolationData(WebApp::IsolationData(location));
   }
 
   return app;
@@ -772,7 +790,7 @@ void CheckServiceWorkerStatus(const GURL& url,
   content::ServiceWorkerContext* service_worker_context =
       storage_partition->GetServiceWorkerContext();
   service_worker_context->CheckHasServiceWorker(
-      url, blink::StorageKey(url::Origin::Create(url)),
+      url, blink::StorageKey::CreateFirstParty(url::Origin::Create(url)),
       base::BindLambdaForTesting(
           [&run_loop, status](content::ServiceWorkerCapability capability) {
             CHECK_EQ(status, capability);

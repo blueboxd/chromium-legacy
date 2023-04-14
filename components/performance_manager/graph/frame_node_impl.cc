@@ -93,11 +93,6 @@ void FrameNodeImpl::SetHadFormInteraction() {
   document_.had_form_interaction.SetAndMaybeNotify(this, true);
 }
 
-void FrameNodeImpl::SetHadUserEdits() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  document_.had_user_edits.SetAndMaybeNotify(this, true);
-}
-
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* observer : GetObservers())
@@ -231,11 +226,6 @@ const PriorityAndReason& FrameNodeImpl::priority_and_reason() const {
 bool FrameNodeImpl::had_form_interaction() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return document_.had_form_interaction.value();
-}
-
-bool FrameNodeImpl::had_user_edits() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return document_.had_user_edits.value();
 }
 
 bool FrameNodeImpl::is_audible() const {
@@ -469,8 +459,9 @@ bool FrameNodeImpl::VisitChildFrameNodes(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* frame_impl : child_frame_nodes()) {
     const FrameNode* frame = frame_impl;
-    if (!visitor.Run(frame))
+    if (!visitor(frame)) {
       return false;
+    }
   }
   return true;
 }
@@ -486,8 +477,9 @@ bool FrameNodeImpl::VisitOpenedPageNodes(const PageNodeVisitor& visitor) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* page_impl : opened_page_nodes()) {
     const PageNode* page = page_impl;
-    if (!visitor.Run(page))
+    if (!visitor(page)) {
       return false;
+    }
   }
   return true;
 }
@@ -503,8 +495,9 @@ bool FrameNodeImpl::VisitEmbeddedPageNodes(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto* page_impl : embedded_page_nodes()) {
     const PageNode* page = page_impl;
-    if (!visitor.Run(page))
+    if (!visitor(page)) {
       return false;
+    }
   }
   return true;
 }
@@ -567,8 +560,9 @@ bool FrameNodeImpl::VisitChildDedicatedWorkers(
   for (auto* worker_node_impl : child_worker_nodes()) {
     const WorkerNode* node = worker_node_impl;
     if (node->GetWorkerType() == WorkerNode::WorkerType::kDedicated &&
-        !visitor.Run(node))
+        !visitor(node)) {
       return false;
+    }
   }
   return true;
 }
@@ -581,11 +575,6 @@ const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
 bool FrameNodeImpl::HadFormInteraction() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return had_form_interaction();
-}
-
-bool FrameNodeImpl::HadUserEdits() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return had_user_edits();
 }
 
 bool FrameNodeImpl::IsAudible() const {
@@ -792,7 +781,6 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
   had_form_interaction.SetAndMaybeNotify(frame_node, false);
-  had_user_edits.SetAndMaybeNotify(frame_node, false);
 }
 
 void FrameNodeImpl::OnWebMemoryMeasurementRequested(

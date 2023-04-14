@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/values.h"
 #include "chromeos/ash/components/dbus/shill/shill_property_changed_observer.h"
 #include "chromeos/ash/components/network/network_handler.h"
 #include "chromeos/ash/components/network/network_profile.h"
@@ -36,14 +37,15 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   void RemoveObserver(NetworkProfileObserver* observer);
   bool HasObserver(NetworkProfileObserver* observer);
 
-  void GetManagerPropertiesCallback(absl::optional<base::Value> properties);
+  void GetManagerPropertiesCallback(
+      absl::optional<base::Value::Dict> properties);
 
   // ShillPropertyChangedObserver overrides
   void OnPropertyChanged(const std::string& name,
                          const base::Value& value) override;
 
   void GetProfilePropertiesCallback(const std::string& profile_path,
-                                    base::Value properties);
+                                    base::Value::Dict properties);
 
   const NetworkProfile* GetProfileForPath(
       const std::string& profile_path) const;
@@ -93,7 +95,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkProfileHandler
   // settings and transmit them to the original caller through |callback|.
   void GetAlwaysOnVpnConfigurationCallback(
       base::OnceCallback<void(std::string, std::string)> callback,
-      base::Value properties);
+      base::Value::Dict properties);
 
   ProfileList profiles_;
 

@@ -232,8 +232,7 @@ class ObfuscatedFileEnumerator final
   }
 
   raw_ptr<SandboxDirectoryDatabase> db_;
-  // TODO(crbug.com/1298696): Breaks storage_unittests.
-  raw_ptr<FileSystemOperationContext, DegradeToNoOpWhenMTE> context_;
+  raw_ptr<FileSystemOperationContext> context_;
   raw_ptr<ObfuscatedFileUtil> obfuscated_file_util_;
   FileSystemURL root_url_;
   bool recursive_;
@@ -281,7 +280,8 @@ class ObfuscatedStorageKeyEnumerator
     record = origin_records_.back();
     origin_records_.pop_back();
     current_ = record;
-    return blink::StorageKey(GetOriginFromIdentifier(record.origin));
+    return blink::StorageKey::CreateFirstParty(
+        GetOriginFromIdentifier(record.origin));
   }
 
   // Returns the current StorageKey.origin()'s information.

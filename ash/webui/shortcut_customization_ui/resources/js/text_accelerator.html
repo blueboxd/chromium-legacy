@@ -12,6 +12,7 @@
   .parts-container {
     align-items: center;
     display: flex;
+    flex-wrap: wrap;
   }
 
   iron-icon {
@@ -24,6 +25,8 @@
   accelerator parts. -->
   <div id="text-wrapper">
     <div class="parts-container"></div>
-    <iron-icon id="lock" icon="shortcut-customization:lock"></iron-icon>
+    <div hidden="[[!shouldShowLockIcon()]]">
+      <iron-icon id="lock" icon="shortcut-customization:lock"></iron-icon>
+    </div>
   </div>
 </div>

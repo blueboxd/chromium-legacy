@@ -146,8 +146,13 @@ void ReadAnythingController::OnLineSpacingChanged(int new_index) {
 
   model_->SetSelectedLineSpacingByIndex(new_index);
 
+  // Saved preferences correspond to LineSpacing. However, since it contains a
+  // deprecated value, the drop-down indices don't correspond exactly.
+  LineSpacing line_spacing =
+      model_->GetLineSpacingModel()->GetLineSpacingAt(new_index);
   browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingLineSpacing, new_index);
+      prefs::kAccessibilityReadAnythingLineSpacing,
+      static_cast<size_t>(line_spacing));
 }
 
 ReadAnythingMenuModel* ReadAnythingController::GetLineSpacingModel() {
@@ -160,8 +165,13 @@ void ReadAnythingController::OnLetterSpacingChanged(int new_index) {
 
   model_->SetSelectedLetterSpacingByIndex(new_index);
 
+  // Saved preferences correspond to LetterSpacing. However, since it contains a
+  // deprecated value, the drop-down indices don't correspond exactly.
+  LetterSpacing letter_spacing =
+      model_->GetLetterSpacingModel()->GetLetterSpacingAt(new_index);
   browser_->profile()->GetPrefs()->SetInteger(
-      prefs::kAccessibilityReadAnythingLetterSpacing, new_index);
+      prefs::kAccessibilityReadAnythingLetterSpacing,
+      static_cast<size_t>(letter_spacing));
 }
 
 ReadAnythingMenuModel* ReadAnythingController::GetLetterSpacingModel() {
@@ -260,6 +270,7 @@ void ReadAnythingController::WebContentsDestroyed(
 
 void ReadAnythingController::NotifyActiveAXTreeIDChanged() {
   ui::AXTreeID tree_id = ui::AXTreeIDUnknown();
+  ukm::SourceId ukm_source_id = ukm::kInvalidSourceId;
   if (active_) {
     content::WebContents* web_contents =
         browser_->tab_strip_model()->GetActiveWebContents();
@@ -272,9 +283,10 @@ void ReadAnythingController::NotifyActiveAXTreeIDChanged() {
       return;
     }
     tree_id = render_frame_host->GetAXTreeID();
+    ukm_source_id = render_frame_host->GetPageUkmSourceId();
     ObserveAccessibilityEventsOnActiveTab();
   }
-  model_->OnActiveAXTreeIDChanged(tree_id);
+  model_->OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
 }
 
 void ReadAnythingController::ObserveAccessibilityEventsOnActiveTab() {

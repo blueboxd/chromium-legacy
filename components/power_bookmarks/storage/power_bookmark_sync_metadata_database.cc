@@ -106,31 +106,17 @@ bool PowerBookmarkSyncMetadataDatabase::ClearModelTypeState(
   return meta_table_->DeleteKey(kPowerBookmarkModelTypeStateKey);
 }
 
-std::unique_ptr<syncer::MetadataBatch>
-PowerBookmarkSyncMetadataDatabase::GetAllSyncMetadata() {
-  auto metadata_batch = std::make_unique<syncer::MetadataBatch>();
-  if (!GetAllSyncEntityMetadata(metadata_batch.get())) {
-    return nullptr;
-  }
-
-  if (!GetModelTypeState(metadata_batch.get())) {
-    return nullptr;
-  }
-
-  return metadata_batch;
-}
-
-bool PowerBookmarkSyncMetadataDatabase::GetAllSyncEntityMetadata(
+bool PowerBookmarkSyncMetadataDatabase::GetAllEntityMetadata(
     syncer::MetadataBatch* metadata_batch) {
   DCHECK(metadata_batch);
 
-  static constexpr char kGetAllSyncEntityMetadataSql[] =
+  static constexpr char kGetAllEntityMetadataSql[] =
       // clang-format off
     "SELECT storage_key, value FROM sync_metadata";
   // clang-format on
-  DCHECK(db_->IsSQLValid(kGetAllSyncEntityMetadataSql));
+  DCHECK(db_->IsSQLValid(kGetAllEntityMetadataSql));
 
-  sql::Statement s(db_->GetUniqueStatement(kGetAllSyncEntityMetadataSql));
+  sql::Statement s(db_->GetUniqueStatement(kGetAllEntityMetadataSql));
 
   while (s.Step()) {
     std::string storage_key = s.ColumnString(0);
@@ -143,22 +129,7 @@ bool PowerBookmarkSyncMetadataDatabase::GetAllSyncEntityMetadata(
     }
     metadata_batch->AddMetadata(storage_key, std::move(entity_metadata));
   }
-
   return true;
-}
-
-bool PowerBookmarkSyncMetadataDatabase::GetModelTypeState(
-    syncer::MetadataBatch* metadata_batch) const {
-  sync_pb::ModelTypeState state;
-  std::string serialized_state;
-  meta_table_->GetValue(kPowerBookmarkModelTypeStateKey, &serialized_state);
-
-  if (state.ParseFromString(serialized_state)) {
-    metadata_batch->SetModelTypeState(state);
-    return true;
-  }
-
-  return false;
 }
 
 }  // namespace power_bookmarks

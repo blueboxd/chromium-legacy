@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
+#include "base/types/expected.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/protocol/vault.pb.h"
@@ -21,7 +22,9 @@
 #include "components/sync/trusted_vault/trusted_vault_access_token_fetcher.h"
 #include "components/sync/trusted_vault/trusted_vault_crypto.h"
 #include "components/sync/trusted_vault/trusted_vault_server_constants.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -74,28 +77,28 @@ sync_pb::JoinSecurityDomainsResponse MakeJoinSecurityDomainsResponse(
   return response;
 }
 
+signin::AccessTokenInfo MakeAccessTokenInfo(const std::string& access_token) {
+  return signin::AccessTokenInfo(
+      access_token,
+      /*expiration_time_param=*/base::Time::Now() + base::Hours(1),
+      /*id_token=*/std::string());
+}
+
 class FakeTrustedVaultAccessTokenFetcher
     : public TrustedVaultAccessTokenFetcher {
  public:
   explicit FakeTrustedVaultAccessTokenFetcher(
-      const absl::optional<std::string>& access_token)
-      : access_token_(access_token) {}
+      const AccessTokenInfoOrError& access_token_info_or_error)
+      : access_token_info_or_error_(access_token_info_or_error) {}
   ~FakeTrustedVaultAccessTokenFetcher() override = default;
 
   void FetchAccessToken(const CoreAccountId& account_id,
                         TokenCallback callback) override {
-    absl::optional<signin::AccessTokenInfo> access_token_info;
-    if (access_token_) {
-      access_token_info = signin::AccessTokenInfo(
-          *access_token_,
-          /*expiration_time_param=*/base::Time::Now() + base::Hours(1),
-          /*id_token=*/std::string());
-    }
-    std::move(callback).Run(access_token_info);
+    std::move(callback).Run(access_token_info_or_error_);
   }
 
  private:
-  const absl::optional<std::string> access_token_;
+  const AccessTokenInfoOrError access_token_info_or_error_;
 };
 
 // TODO(crbug.com/1113598): revisit this tests suite and determine what actually
@@ -110,7 +113,7 @@ class TrustedVaultConnectionImplTest : public testing::Test {
                 &test_url_loader_factory_)
                 ->Clone(),
             std::make_unique<FakeTrustedVaultAccessTokenFetcher>(
-                kAccessToken)) {}
+                MakeAccessTokenInfo(kAccessToken))) {}
 
   ~TrustedVaultConnectionImplTest() override = default;
 
@@ -118,14 +121,16 @@ class TrustedVaultConnectionImplTest : public testing::Test {
 
   // Allows overloading of FakeTrustedVaultAccessTokenFetcher behavior, doesn't
   // overwrite connection().
-  std::unique_ptr<TrustedVaultConnectionImpl> CreateConnectionWithAccessToken(
-      absl::optional<std::string> access_token) {
+  std::unique_ptr<TrustedVaultConnectionImpl>
+  CreateConnectionWithAccessTokenError(
+      TrustedVaultAccessTokenFetcher::FetchingError fetching_error) {
     return std::make_unique<TrustedVaultConnectionImpl>(
         kTestURL,
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_)
             ->Clone(),
-        std::make_unique<FakeTrustedVaultAccessTokenFetcher>(access_token));
+        std::make_unique<FakeTrustedVaultAccessTokenFetcher>(
+            base::unexpected(fetching_error)));
   }
 
   network::TestURLLoaderFactory::PendingRequest* GetPendingHTTPRequest() {
@@ -142,6 +147,16 @@ class TrustedVaultConnectionImplTest : public testing::Test {
     return test_url_loader_factory_.SimulateResponseForPendingRequest(
         GetFullJoinSecurityDomainsURLForTesting(kTestURL).spec(),
         response_content, response_http_code);
+  }
+
+  bool RespondToJoinSecurityDomainsRequestWithNetworkError() {
+    // Allow request to reach |test_url_loader_factory_|.
+    base::RunLoop().RunUntilIdle();
+    return test_url_loader_factory_.SimulateResponseForPendingRequest(
+        GetFullJoinSecurityDomainsURLForTesting(kTestURL),
+        network::URLLoaderCompletionStatus(net::ERR_FAILED),
+        /*response_head=*/network::mojom::URLResponseHead::New(),
+        /*content=*/std::string());
   }
 
   bool RespondToGetSecurityDomainMemberRequest(
@@ -466,7 +481,7 @@ TEST_F(TrustedVaultConnectionImplTest,
 }
 
 TEST_F(TrustedVaultConnectionImplTest,
-       ShouldHandleFailedJoinSecurityDomainsRequest) {
+       ShouldHandleFailedJoinSecurityDomainsRequestWithHttpError) {
   std::unique_ptr<SecureBoxKeyPair> key_pair = MakeTestKeyPair();
   ASSERT_THAT(key_pair, NotNull());
 
@@ -486,6 +501,27 @@ TEST_F(TrustedVaultConnectionImplTest,
   EXPECT_TRUE(
       RespondToJoinSecurityDomainsRequest(net::HTTP_INTERNAL_SERVER_ERROR,
                                           /*response_content=*/std::string()));
+}
+
+TEST_F(TrustedVaultConnectionImplTest,
+       ShouldHandleFailedJoinSecurityDomainsRequestWithNetworkError) {
+  std::unique_ptr<SecureBoxKeyPair> key_pair = MakeTestKeyPair();
+  ASSERT_THAT(key_pair, NotNull());
+
+  base::MockCallback<
+      TrustedVaultConnection::RegisterAuthenticationFactorCallback>
+      callback;
+
+  std::unique_ptr<TrustedVaultConnection::Request> request =
+      connection()->RegisterAuthenticationFactor(
+          /*account_info=*/CoreAccountInfo(), kTrustedVaultKeys,
+          /*last_trusted_vault_key_version=*/1, key_pair->public_key(),
+          AuthenticationFactorType::kPhysicalDevice,
+          /*authentication_factor_type_hint=*/absl::nullopt, callback.Get());
+  ASSERT_THAT(request, NotNull());
+
+  EXPECT_CALL(callback, Run(Eq(TrustedVaultRegistrationStatus::kNetworkError)));
+  EXPECT_TRUE(RespondToJoinSecurityDomainsRequestWithNetworkError());
 }
 
 TEST_F(TrustedVaultConnectionImplTest,
@@ -544,8 +580,8 @@ TEST_F(
     TrustedVaultConnectionImplTest,
     ShouldHandleAccessTokenFetchingFailureWhenRegisteringAuthenticationFactor) {
   std::unique_ptr<TrustedVaultConnectionImpl> connection =
-      CreateConnectionWithAccessToken(
-          /*access_token=*/absl::nullopt);
+      CreateConnectionWithAccessTokenError(
+          TrustedVaultAccessTokenFetcher::FetchingError::kPersistentAuthError);
 
   std::unique_ptr<SecureBoxKeyPair> key_pair = MakeTestKeyPair();
   ASSERT_THAT(key_pair, NotNull());
@@ -558,7 +594,8 @@ TEST_F(
   // because there is no access token.
   EXPECT_CALL(
       callback,
-      Run(Eq(TrustedVaultRegistrationStatus::kAccessTokenFetchingFailure)));
+      Run(Eq(
+          TrustedVaultRegistrationStatus::kPersistentAccessTokenFetchError)));
   std::unique_ptr<TrustedVaultConnection::Request> request =
       connection->RegisterAuthenticationFactor(
           /*account_info=*/CoreAccountInfo(), kTrustedVaultKeys,
@@ -640,8 +677,8 @@ TEST_F(TrustedVaultConnectionImplTest,
 TEST_F(TrustedVaultConnectionImplTest,
        ShouldHandleAccessTokenFetchingFailureWhenDownloadingKeys) {
   std::unique_ptr<TrustedVaultConnectionImpl> connection =
-      CreateConnectionWithAccessToken(
-          /*access_token=*/absl::nullopt);
+      CreateConnectionWithAccessTokenError(
+          TrustedVaultAccessTokenFetcher::FetchingError::kPersistentAuthError);
 
   base::MockCallback<TrustedVaultConnection::DownloadNewKeysCallback> callback;
 

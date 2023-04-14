@@ -12,6 +12,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -60,12 +61,13 @@ constexpr base::TimeDelta kRetryFinishCsrRequestDelay = base::Hours(1);
 // take more time to solve.
 constexpr base::TimeDelta kRetryDownloadCsrRequestDelay = base::Hours(8);
 
-constexpr net::BackoffEntry::Policy kBackoffPolicy{
+const net::BackoffEntry::Policy kBackoffPolicy{
     /*num_errors_to_ignore=*/0,
-    /*initial_delay_ms=*/30 * 1000 /* (30 seconds) */,
+    /*initial_delay_ms=*/
+    base::checked_cast<int>(base::Seconds(30).InMilliseconds()),
     /*multiply_factor=*/2.0,
     /*jitter_factor=*/0.15,
-    /*maximum_backoff_ms=*/12 * 60 * 60 * 1000 /* (12 hours) */,
+    /*maximum_backoff_ms=*/base::Hours(12).InMilliseconds(),
     /*entry_lifetime_ms=*/-1,
     /*always_use_initial_delay=*/false};
 
@@ -124,6 +126,13 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
     case CertProvisioningWorkerState::kFailed:
     case CertProvisioningWorkerState::kCanceled:
       res -= 1;
+      break;
+    case CertProvisioningWorkerState::kReadyForNextOperation:
+    case CertProvisioningWorkerState::kAuthorizeInstructionReceived:
+    case CertProvisioningWorkerState::kProofOfPossessionInstructionReceived:
+    case CertProvisioningWorkerState::kImportCertificateInstructionReceived:
+      // These states are not used in the "static" flow.
+      CHECK(false);
   }
   return res;
 }
@@ -207,7 +216,6 @@ CertProvisioningWorkerStatic::CertProvisioningWorkerStatic(
       request_backoff_(&kBackoffPolicy),
       cert_provisioning_client_(cert_provisioning_client),
       invalidator_(std::move(invalidator)) {
-  CHECK(cert_profile.protocol_version == ProtocolVersion::kStatic);
   CHECK(profile || cert_scope == CertScope::kDevice);
   platform_keys_service_ = GetPlatformKeysService(cert_scope, profile);
   CHECK(platform_keys_service_);
@@ -315,6 +323,13 @@ void CertProvisioningWorkerStatic::DoStep() {
     case CertProvisioningWorkerState::kCanceled:
       DCHECK(false);
       return;
+    case CertProvisioningWorkerState::kReadyForNextOperation:
+    case CertProvisioningWorkerState::kAuthorizeInstructionReceived:
+    case CertProvisioningWorkerState::kProofOfPossessionInstructionReceived:
+    case CertProvisioningWorkerState::kImportCertificateInstructionReceived:
+      // These states are not used in the "static" flow.
+      CHECK(false);
+      return;
   }
   NOTREACHED() << " " << static_cast<uint>(state_);
 }
@@ -324,6 +339,7 @@ void CertProvisioningWorkerStatic::UpdateState(
     CertProvisioningWorkerState new_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  DCHECK(kStaticWorkerStates.Has(new_state)) << static_cast<int>(new_state);
   DCHECK(GetStateOrderedIndex(state_) < GetStateOrderedIndex(new_state));
 
   prev_state_ = state_;
@@ -367,7 +383,7 @@ void CertProvisioningWorkerStatic::GenerateRegularKey() {
 }
 
 void CertProvisioningWorkerStatic::OnGenerateRegularKeyDone(
-    const std::string& public_key_spki_der,
+    std::vector<uint8_t> public_key_spki_der,
     chromeos::platform_keys::Status status) {
   if (status != chromeos::platform_keys::Status::kSuccess ||
       public_key_spki_der.empty()) {
@@ -378,7 +394,7 @@ void CertProvisioningWorkerStatic::OnGenerateRegularKeyDone(
     return;
   }
 
-  public_key_ = StrToBytes(public_key_spki_der);
+  public_key_ = std::move(public_key_spki_der);
   UpdateState(FROM_HERE, CertProvisioningWorkerState::kKeypairGenerated);
   DoStep();
 }
@@ -442,7 +458,7 @@ void CertProvisioningWorkerStatic::OnStartCsrDone(
     const std::string& invalidation_topic,
     const std::string& va_challenge,
     enterprise_management::HashingAlgorithm hashing_algorithm,
-    const std::string& data_to_sign) {
+    std::vector<uint8_t> data_to_sign) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!ProcessResponseErrors(DeviceManagementServerRequestType::kStartCsr,
@@ -462,7 +478,7 @@ void CertProvisioningWorkerStatic::OnStartCsrDone(
     return;
   }
 
-  csr_ = data_to_sign;
+  csr_ = BytesToStr(data_to_sign);
   invalidation_topic_ = invalidation_topic;
   va_challenge_ = va_challenge;
   UpdateState(FROM_HERE,
@@ -551,7 +567,7 @@ void CertProvisioningWorkerStatic::MarkKey() {
   platform_keys_service_->SetAttributeForKey(
       GetPlatformKeysTokenId(cert_scope_), BytesToStr(public_key_),
       chromeos::platform_keys::KeyAttributeType::kCertificateProvisioningId,
-      cert_profile_.profile_id,
+      StrToBytes(cert_profile_.profile_id),
       base::BindOnce(&CertProvisioningWorkerStatic::OnMarkKeyDone,
                      weak_factory_.GetWeakPtr()));
 }
@@ -584,14 +600,14 @@ void CertProvisioningWorkerStatic::SignCsr() {
   if (hashing_algorithm_ ==
       chromeos::platform_keys::HashAlgorithm::HASH_ALGORITHM_NONE) {
     platform_keys_service_->SignRSAPKCS1Raw(
-        GetPlatformKeysTokenId(cert_scope_), csr_, BytesToStr(public_key_),
+        GetPlatformKeysTokenId(cert_scope_), StrToBytes(csr_), public_key_,
         base::BindRepeating(&CertProvisioningWorkerStatic::OnSignCsrDone,
                             weak_factory_.GetWeakPtr(),
                             base::TimeTicks::Now()));
     return;
   }
   platform_keys_service_->SignRSAPKCS1Digest(
-      GetPlatformKeysTokenId(cert_scope_), csr_, BytesToStr(public_key_),
+      GetPlatformKeysTokenId(cert_scope_), StrToBytes(csr_), public_key_,
       hashing_algorithm_.value(),
       base::BindRepeating(&CertProvisioningWorkerStatic::OnSignCsrDone,
                           weak_factory_.GetWeakPtr(), base::TimeTicks::Now()));
@@ -599,7 +615,7 @@ void CertProvisioningWorkerStatic::SignCsr() {
 
 void CertProvisioningWorkerStatic::OnSignCsrDone(
     base::TimeTicks start_time,
-    const std::string& signature,
+    std::vector<uint8_t> signature,
     chromeos::platform_keys::Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -614,7 +630,7 @@ void CertProvisioningWorkerStatic::OnSignCsrDone(
     return;
   }
 
-  signature_ = signature;
+  signature_ = BytesToStr(signature);
   UpdateState(FROM_HERE, CertProvisioningWorkerState::kSignCsrFinished);
   DoStep();
 }
@@ -862,7 +878,7 @@ void CertProvisioningWorkerStatic::CleanUpAndRunCallback() {
   // Keep conditions mutually exclusive.
   if (!public_key_.empty() && (prev_state_idx >= key_registered_idx)) {
     platform_keys_service_->RemoveKey(
-        GetPlatformKeysTokenId(cert_scope_), BytesToStr(public_key_),
+        GetPlatformKeysTokenId(cert_scope_), public_key_,
         base::BindOnce(&CertProvisioningWorkerStatic::OnRemoveKeyDone,
                        weak_factory_.GetWeakPtr()));
     return;
@@ -941,6 +957,13 @@ void CertProvisioningWorkerStatic::HandleSerialization() {
     case CertProvisioningWorkerState::kFailed:
     case CertProvisioningWorkerState::kCanceled:
       CertProvisioningSerializer::DeleteWorkerFromPrefs(pref_service_, *this);
+      break;
+    case CertProvisioningWorkerState::kReadyForNextOperation:
+    case CertProvisioningWorkerState::kAuthorizeInstructionReceived:
+    case CertProvisioningWorkerState::kProofOfPossessionInstructionReceived:
+    case CertProvisioningWorkerState::kImportCertificateInstructionReceived:
+      // These states are not used in the "static" flow.
+      CHECK(false);
       break;
   }
 }

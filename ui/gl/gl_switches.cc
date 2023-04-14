@@ -260,7 +260,12 @@ BASE_FEATURE(kDefaultANGLEOpenGL,
 // Default to using ANGLE's Metal backend.
 BASE_FEATURE(kDefaultANGLEMetal,
              "DefaultANGLEMetal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 // Default to using ANGLE's Vulkan backend.
 BASE_FEATURE(kDefaultANGLEVulkan,
@@ -310,6 +315,12 @@ bool IsDefaultANGLEVulkan() {
   // crbug.com/1340081
   if (active_gpu.driverId == VK_DRIVER_ID_AMD_OPEN_SOURCE)
     return false;
+
+  // The performance of MESA llvmpipe is really bad.
+  if (active_gpu.driverId == VK_DRIVER_ID_MESA_LLVMPIPE) {
+    return false;
+  }
+
 #endif
   return base::FeatureList::IsEnabled(kDefaultANGLEVulkan);
 #endif  // defined(MEMORY_SANITIZER)

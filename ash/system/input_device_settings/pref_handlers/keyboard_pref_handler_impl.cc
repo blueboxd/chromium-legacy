@@ -3,15 +3,46 @@
 // found in the LICENSE file.
 
 #include "ash/system/input_device_settings/pref_handlers/keyboard_pref_handler_impl.h"
+#include "ash/constants/ash_pref_names.h"
 
 #include "ash/public/mojom/input_device_settings.mojom.h"
+#include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_defaults.h"
 #include "ash/system/input_device_settings/input_device_settings_pref_names.h"
 #include "ash/system/input_device_settings/input_device_settings_utils.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "components/prefs/pref_service.h"
+#include "ui/chromeos/events/mojom/modifier_key.mojom.h"
 
 namespace ash {
+namespace {
+mojom::KeyboardSettingsPtr GetDefaultKeyboardSettings() {
+  mojom::KeyboardSettingsPtr settings = mojom::KeyboardSettings::New();
+  settings->auto_repeat_delay = kDefaultAutoRepeatDelay;
+  settings->auto_repeat_interval = kDefaultAutoRepeatInterval;
+  settings->auto_repeat_enabled = kDefaultAutoRepeatEnabled;
+  settings->suppress_meta_fkey_rewrites = kDefaultSuppressMetaFKeyRewrites;
+  settings->top_row_are_fkeys = kDefaultTopRowAreFKeys;
+  settings->suppress_meta_fkey_rewrites = kDefaultSuppressMetaFKeyRewrites;
+  return settings;
+}
+
+mojom::KeyboardSettingsPtr GetKeyboardSettingsFromGlobalPrefs(
+    PrefService* prefs) {
+  mojom::KeyboardSettingsPtr settings = mojom::KeyboardSettings::New();
+  settings->auto_repeat_delay =
+      base::Milliseconds(prefs->GetInteger(prefs::kXkbAutoRepeatDelay));
+  settings->auto_repeat_interval =
+      base::Milliseconds(prefs->GetInteger(prefs::kXkbAutoRepeatInterval));
+  settings->auto_repeat_enabled =
+      prefs->GetBoolean(prefs::kXkbAutoRepeatEnabled);
+  settings->top_row_are_fkeys = prefs->GetBoolean(prefs::kSendFunctionKeys);
+  settings->suppress_meta_fkey_rewrites = kDefaultSuppressMetaFKeyRewrites;
+  return settings;
+}
+
+}  // namespace
 
 KeyboardPrefHandlerImpl::KeyboardPrefHandlerImpl() = default;
 KeyboardPrefHandlerImpl::~KeyboardPrefHandlerImpl() = default;
@@ -23,7 +54,7 @@ void KeyboardPrefHandlerImpl::InitializeKeyboardSettings(
       pref_service->GetDict(prefs::kKeyboardDeviceSettingsDictPref);
   const auto* settings_dict = devices_dict.FindDict(keyboard->device_key);
   if (!settings_dict) {
-    keyboard->settings = GetNewKeyboardSettings(*keyboard);
+    keyboard->settings = GetNewKeyboardSettings(pref_service, *keyboard);
   } else {
     keyboard->settings =
         RetreiveKeyboardSettings(pref_service, *keyboard, *settings_dict);
@@ -71,15 +102,16 @@ mojom::KeyboardSettingsPtr KeyboardPrefHandlerImpl::RetreiveKeyboardSettings(
     }
     to_int = to.GetInt();
 
-    // Validate the ints can be cast to `mojom::ModifierKey` and cast them.
+    // Validate the ints can be cast to `ui::mojom::ModifierKey` and cast them.
     if (!IsValidModifier(from_int) || !IsValidModifier(to_int)) {
       LOG(ERROR) << "Read invalid modifier keys from pref. From: " << from_int
                  << " To: " << to_int;
       continue;
     }
-    const mojom::ModifierKey from_key =
-        static_cast<mojom::ModifierKey>(from_int);
-    const mojom::ModifierKey to_key = static_cast<mojom::ModifierKey>(to_int);
+    const ui::mojom::ModifierKey from_key =
+        static_cast<ui::mojom::ModifierKey>(from_int);
+    const ui::mojom::ModifierKey to_key =
+        static_cast<ui::mojom::ModifierKey>(to_int);
 
     settings->modifier_remappings[from_key] = to_key;
   }
@@ -88,16 +120,16 @@ mojom::KeyboardSettingsPtr KeyboardPrefHandlerImpl::RetreiveKeyboardSettings(
 }
 
 mojom::KeyboardSettingsPtr KeyboardPrefHandlerImpl::GetNewKeyboardSettings(
+    PrefService* prefs,
     const mojom::Keyboard& keyboard) {
-  // TODO(dpad): Implement pulling from old device settings if the device was
-  // observed in the transition period.
-  mojom::KeyboardSettingsPtr settings = mojom::KeyboardSettings::New();
-  settings->auto_repeat_delay = kDefaultAutoRepeatDelay;
-  settings->auto_repeat_interval = kDefaultAutoRepeatInterval;
-  settings->auto_repeat_enabled = kDefaultAutoRepeatEnabled;
-  settings->suppress_meta_fkey_rewrites = kDefaultSuppressMetaFKeyRewrites;
-  settings->top_row_are_fkeys = kDefaultTopRowAreFKeys;
-  return settings;
+  // TODO(michaelcheco): Remove once transitioned to per-device settings.
+  if (Shell::Get()->input_device_tracker()->WasDevicePreviouslyConnected(
+          InputDeviceTracker::InputDeviceCategory::kKeyboard,
+          keyboard.device_key)) {
+    return GetKeyboardSettingsFromGlobalPrefs(prefs);
+  }
+
+  return GetDefaultKeyboardSettings();
 }
 
 void KeyboardPrefHandlerImpl::UpdateKeyboardSettings(
@@ -122,8 +154,8 @@ void KeyboardPrefHandlerImpl::UpdateKeyboardSettings(
                     settings.top_row_are_fkeys);
 
   // Modifier remappings get stored in a dict by casting the
-  // `mojom::ModifierKey` enum to ints. Since `base::Value::Dict` only supports
-  // strings as keys, this is then converted into a string.
+  // `ui::mojom::ModifierKey` enum to ints. Since `base::Value::Dict` only
+  // supports strings as keys, this is then converted into a string.
   base::Value::Dict modifier_remappings;
   for (const auto& [from, to] : settings.modifier_remappings) {
     modifier_remappings.Set(base::NumberToString(static_cast<int>(from)),

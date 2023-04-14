@@ -19,7 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/commands/run_on_os_login_command.h"
-#include "chrome/browser/web_applications/isolation_data.h"
+#include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/test/fake_web_app_database_factory.h"
@@ -31,6 +31,8 @@
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/web_applications/web_app_install_finalizer.h"
+#include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
@@ -99,9 +101,11 @@ class WebAppRegistrarTest : public WebAppTest {
     sync_bridge_ = std::make_unique<WebAppSyncBridge>(
         registrar_mutable_.get(), mock_processor_.CreateForwardingProcessor());
     database_factory_ = std::make_unique<FakeWebAppDatabaseFactory>();
+    install_manager_ = std::make_unique<WebAppInstallManager>(profile());
 
     sync_bridge_->SetSubsystems(database_factory_.get(), command_manager_.get(),
-                                command_scheduler_.get());
+                                command_scheduler_.get(),
+                                install_manager_.get());
 
     ON_CALL(mock_processor_, IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
@@ -220,6 +224,7 @@ class WebAppRegistrarTest : public WebAppTest {
   std::unique_ptr<FakeWebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppCommandManager> command_manager_;
   std::unique_ptr<WebAppCommandScheduler> command_scheduler_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
 
   testing::NiceMock<syncer::MockModelTypeChangeProcessor> mock_processor_;
 };
@@ -951,7 +956,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeBrowser) {
   EXPECT_EQ(DisplayMode::kBrowser,
             registrar().GetAppEffectiveDisplayMode(app_id));
 
-  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+  sync_bridge().SetAppIsLocallyInstalledForTesting(app_id, true);
 
   EXPECT_EQ(DisplayMode::kStandalone,
             registrar().GetAppEffectiveDisplayMode(app_id));
@@ -966,10 +971,6 @@ TEST_F(WebAppRegistrarTest,
   web_app->SetDisplayMode(DisplayMode::kStandalone);
   web_app->SetUserDisplayMode(mojom::UserDisplayMode::kStandalone);
   web_app->SetIsLocallyInstalled(false);
-
-  // Not locally installed apps get browser display mode because they do not
-  // have information aboud isolation because manifest is not available.
-  web_app->SetStorageIsolated(true);
 
   RegisterApp(std::move(web_app));
 
@@ -988,8 +989,7 @@ TEST_F(WebAppRegistrarTest,
   web_app->SetDisplayMode(DisplayMode::kStandalone);
   web_app->SetUserDisplayMode(mojom::UserDisplayMode::kBrowser);
   web_app->SetIsLocallyInstalled(true);
-  web_app->SetStorageIsolated(true);
-  web_app->SetIsolationData(IsolationData(IsolationData::DevModeProxy{
+  web_app->SetIsolationData(WebApp::IsolationData(DevModeProxy{
       .proxy_url = url::Origin::Create(GURL("http://127.0.0.1:8080"))}));
 
   RegisterApp(std::move(web_app));
@@ -1016,7 +1016,7 @@ TEST_F(WebAppRegistrarTest, NotLocallyInstalledAppGetsDisplayModeOverride) {
   EXPECT_EQ(DisplayMode::kBrowser,
             registrar().GetAppEffectiveDisplayMode(app_id));
 
-  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+  sync_bridge().SetAppIsLocallyInstalledForTesting(app_id, true);
 
   EXPECT_EQ(DisplayMode::kMinimalUi,
             registrar().GetAppEffectiveDisplayMode(app_id));
@@ -1041,7 +1041,7 @@ TEST_F(WebAppRegistrarTest,
   EXPECT_EQ(DisplayMode::kFullscreen,
             registrar().GetEffectiveDisplayModeFromManifest(app_id));
 
-  sync_bridge().SetAppIsLocallyInstalled(app_id, true);
+  sync_bridge().SetAppIsLocallyInstalledForTesting(app_id, true);
   EXPECT_EQ(DisplayMode::kFullscreen,
             registrar().GetEffectiveDisplayModeFromManifest(app_id));
 }

@@ -4,7 +4,7 @@
 
 package org.chromium.components.background_task_scheduler.internal;
 
-import android.os.Bundle;
+import android.os.PersistableBundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.components.background_task_scheduler.TaskInfo;
@@ -43,15 +43,16 @@ public class TaskInfoBridge {
     }
 
     @CalledByNative
-    private static TaskInfo createTaskInfo(
-            int taskId, TaskInfo.TimingInfo timingInfo, String extras) {
-        Bundle bundle = new Bundle();
+    private static TaskInfo createTaskInfo(int taskId, TaskInfo.TimingInfo timingInfo,
+            String extras, int networkType, boolean requiresCharging, boolean isPersisted,
+            boolean updateCurrent) {
+        PersistableBundle bundle = new PersistableBundle();
         bundle.putString(TaskInfo.SERIALIZED_TASK_EXTRAS, extras);
         TaskInfo taskInfo = TaskInfo.createTask(taskId, timingInfo)
-                                    .setRequiredNetworkType(TaskInfo.NetworkType.ANY)
-                                    .setRequiresCharging(false)
-                                    .setUpdateCurrent(true)
-                                    .setIsPersisted(true)
+                                    .setRequiredNetworkType(networkType)
+                                    .setRequiresCharging(requiresCharging)
+                                    .setUpdateCurrent(updateCurrent)
+                                    .setIsPersisted(isPersisted)
                                     .setExtras(bundle)
                                     .build();
         return taskInfo;

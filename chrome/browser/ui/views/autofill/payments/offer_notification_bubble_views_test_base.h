@@ -42,10 +42,7 @@ class OfferNotificationBubbleViewsTestBase
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     testing::AssertionResult WaitForFormsSeen(int min_num_awaited_calls) {
       return forms_seen_waiter_.Wait(min_num_awaited_calls);
@@ -54,7 +51,7 @@ class OfferNotificationBubbleViewsTestBase
    private:
     TestAutofillManagerWaiter forms_seen_waiter_{
         *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+        {AutofillManagerEvent::kFormsSeen}};
   };
 
   // Various events that can be waited on by the DialogEventWaiter.
@@ -149,8 +146,7 @@ class OfferNotificationBubbleViewsTestBase
   std::string GetDefaultTestDetailsUrlString() const;
 
  private:
-  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
-      autofill_manager_injector_;
+  TestAutofillManagerInjector<TestAutofillManager> autofill_manager_injector_;
   raw_ptr<PersonalDataManager, DanglingUntriaged> personal_data_;
   raw_ptr<CouponService, DanglingUntriaged> coupon_service_;
   std::unique_ptr<autofill::EventWaiter<DialogEvent>> event_waiter_;

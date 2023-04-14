@@ -29,9 +29,11 @@
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_function_registry.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_ui_component.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/localization.h"
@@ -54,6 +56,7 @@ constexpr auto kUserVerified = autofill::VerificationStatus::kUserVerified;
 constexpr char kFieldTypeKey[] = "field";
 constexpr char kFieldLengthKey[] = "isLongField";
 constexpr char kFieldNameKey[] = "fieldName";
+constexpr char kFieldRequired[] = "isRequired";
 
 // Field names for the address components.
 constexpr char kFullNameField[] = "FULL_NAME";
@@ -97,7 +100,7 @@ const char* GetStringFromAddressField(i18n::addressinput::AddressField type) {
 
 // Serializes the AddressUiComponent a map from string to base::Value().
 base::Value::Dict AddressUiComponentAsValueMap(
-    const i18n::addressinput::AddressUiComponent& address_ui_component) {
+    const autofill::ExtendedAddressUiComponent& address_ui_component) {
   base::Value::Dict info;
   info.Set(kFieldNameKey, address_ui_component.name);
   info.Set(kFieldTypeKey,
@@ -105,6 +108,7 @@ base::Value::Dict AddressUiComponentAsValueMap(
   info.Set(kFieldLengthKey,
            address_ui_component.length_hint ==
                i18n::addressinput::AddressUiComponent::HINT_LONG);
+  info.Set(kFieldRequired, address_ui_component.is_required);
   return info;
 }
 
@@ -153,6 +157,27 @@ autofill::AutofillManager* GetAutofillManager(
 }  // namespace
 
 namespace extensions {
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateGetAccountInfoFunction
+
+ExtensionFunction::ResponseAction AutofillPrivateGetAccountInfoFunction::Run() {
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
+
+  DCHECK(personal_data && personal_data->IsDataLoaded());
+
+  absl::optional<api::autofill_private::AccountInfo> account_info =
+      autofill_util::GetAccountInfo(*personal_data);
+  if (account_info.has_value()) {
+    return RespondNow(
+        ArgumentList(api::autofill_private::GetAccountInfo::Results::Create(
+            account_info.value())));
+  }
+
+  return RespondNow(NoArguments());
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // AutofillPrivateSaveAddressFunction
@@ -312,7 +337,7 @@ AutofillPrivateGetAddressComponentsFunction::Run() {
           api::autofill_private::GetAddressComponents::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters.get());
 
-  std::vector<std::vector<::i18n::addressinput::AddressUiComponent>> lines;
+  std::vector<std::vector<autofill::ExtendedAddressUiComponent>> lines;
   std::string language_code;
 
   autofill::GetAddressComponents(
@@ -325,7 +350,7 @@ AutofillPrivateGetAddressComponentsFunction::Run() {
 
   for (auto& line : lines) {
     base::Value::List row_values;
-    for (const ::i18n::addressinput::AddressUiComponent& component : line) {
+    for (const autofill::ExtendedAddressUiComponent& component : line) {
       row_values.Append(AddressUiComponentAsValueMap(component));
     }
     base::Value::Dict row;
@@ -449,6 +474,10 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
           Profile::FromBrowserContext(browser_context()));
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
+
+  if (personal_data->GetIBANByGUID(parameters->guid)) {
+    base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
+  }
 
   personal_data->RemoveByGUID(parameters->guid);
 
@@ -635,8 +664,22 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
 
   if (guid.empty()) {
     personal_data->AddIBAN(iban);
-  } else if (existing_iban->Compare(iban) != 0) {
+    base::RecordAction(base::UserMetricsAction("AutofillIbanAdded"));
+    if (!iban.nickname().empty()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillIbanAddedWithNickname"));
+    }
+    return RespondNow(NoArguments());
+  }
+
+  if (existing_iban->Compare(iban) != 0) {
     personal_data->UpdateIBAN(iban);
+    base::RecordAction(base::UserMetricsAction("AutofillIbanEdited"));
+    // Record when nickname is updated.
+    if (existing_iban->nickname() != iban.nickname()) {
+      base::RecordAction(
+          base::UserMetricsAction("AutofillIbanEditedWithNickname"));
+    }
   }
 
   return RespondNow(NoArguments());

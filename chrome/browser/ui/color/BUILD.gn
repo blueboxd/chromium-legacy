@@ -21,6 +21,8 @@ source_set("mixers") {
     "chrome_color_mixers.h",
     "chrome_color_provider_utils.cc",
     "chrome_color_provider_utils.h",
+    "material_side_panel_color_mixer.cc",
+    "material_side_panel_color_mixer.h",
     "native_chrome_color_mixer.cc",
     "native_chrome_color_mixer.h",
     "new_tab_page_color_mixer.cc",
@@ -30,6 +32,8 @@ source_set("mixers") {
     "tab_strip_color_mixer.cc",
     "tab_strip_color_mixer.h",
   ]
+
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
   deps = [
     ":color_headers",

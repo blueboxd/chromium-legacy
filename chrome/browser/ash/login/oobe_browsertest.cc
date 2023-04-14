@@ -24,7 +24,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/welcome_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -45,10 +44,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/test/ui_controls.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -111,7 +110,8 @@ IN_PROC_BROWSER_TEST_F(OobeTest, NewUser) {
 
   // Verify the parameters that were passed to the latest AddAuthFactor call.
   const user_data_auth::AddAuthFactorRequest& request =
-      FakeUserDataAuthClient::Get()->get_last_add_authfactor_request();
+      FakeUserDataAuthClient::Get()
+          ->GetLastRequest<FakeUserDataAuthClient::Operation::kAddAuthFactor>();
   EXPECT_EQ(request.auth_factor().label(), kCryptohomeGaiaKeyLabel);
   EXPECT_FALSE(request.auth_input().password_input().secret().empty());
   EXPECT_EQ(user_data_auth::AUTH_FACTOR_TYPE_PASSWORD,
@@ -123,11 +123,9 @@ IN_PROC_BROWSER_TEST_F(OobeTest, Accelerator) {
 
   gfx::NativeWindow login_window = GetLoginWindowWidget()->GetNativeWindow();
 
-  ui_controls::SendKeyPress(login_window, ui::VKEY_E,
-                            true,    // control
-                            false,   // shift
-                            true,    // alt
-                            false);  // command
+  ui::test::EventGenerator generator(login_window->GetRootWindow());
+
+  generator.PressKey(ui::VKEY_E, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 }
 

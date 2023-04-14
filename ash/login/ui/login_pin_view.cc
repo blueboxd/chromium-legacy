@@ -91,7 +91,8 @@ class BasePinButton : public views::View {
   BasePinButton(const gfx::Size& size,
                 const std::u16string& accessible_name,
                 const base::RepeatingClosure& on_press)
-      : on_press_(on_press), accessible_name_(accessible_name) {
+      : on_press_(on_press) {
+    SetAccessibleName(accessible_name);
     SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
     SetPreferredSize(size);
 
@@ -127,7 +128,8 @@ class BasePinButton : public views::View {
                                  kInkDropCornerRadiusDp * 2);
 
           return std::make_unique<views::FloodFillInkDropRipple>(
-              host->size(), host->GetLocalBounds().InsetsFrom(bounds),
+              views::InkDrop::Get(host), host->size(),
+              host->GetLocalBounds().InsetsFrom(bounds),
               views::InkDrop::Get(host)->GetInkDropCenterBasedOnLastEvent(),
               host->GetColorProvider()->GetColor(kColorAshInkDrop),
               /*visible_opacity=*/1.f);
@@ -173,7 +175,7 @@ class BasePinButton : public views::View {
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     node_data->role = ax::mojom::Role::kButton;
-    node_data->SetName(accessible_name_);
+    node_data->SetName(GetAccessibleName());
   }
 
  protected:
@@ -196,9 +198,6 @@ class BasePinButton : public views::View {
 
   // Handler for press events. May be null.
   base::RepeatingClosure on_press_;
-
- private:
-  const std::u16string accessible_name_;
 };
 
 }  // namespace
@@ -270,6 +269,14 @@ class LoginPinView::BackspacePinButton : public BasePinButton {
                            std::unique_ptr<base::RepeatingTimer> repeat_timer) {
     delay_timer_ = std::move(delay_timer);
     repeat_timer_ = std::move(repeat_timer);
+  }
+
+  views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
+    return this;
+  }
+
+  std::u16string GetTooltipText(const gfx::Point& p) const override {
+    return GetAccessibleName();
   }
 
   void OnEnabledChanged() {

@@ -45,7 +45,6 @@
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
 #include "content/browser/web_package/signed_exchange_utils.h"
-#include "content/browser/web_package/web_bundle_utils.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -87,11 +86,13 @@
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_destination.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/cpp/url_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom-forward.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
@@ -141,6 +142,21 @@ class NavigationLoaderInterceptorBrowserContainer
               }
             },
             std::move(callback)));
+  }
+
+  bool MaybeCreateLoaderForResponse(
+      const network::URLLoaderCompletionStatus& status,
+      const network::ResourceRequest& request,
+      network::mojom::URLResponseHeadPtr* response_head,
+      mojo::ScopedDataPipeConsumerHandle* response_body,
+      mojo::PendingRemote<network::mojom::URLLoader>* loader,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>* client_receiver,
+      blink::ThrottlingURLLoader* url_loader,
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect) override {
+    return browser_interceptor_->MaybeCreateLoaderForResponse(
+        status, request, response_head, response_body, loader, client_receiver,
+        url_loader, skip_other_interceptors, will_return_unsafe_redirect);
   }
 
  private:
@@ -411,8 +427,6 @@ NavigationURLLoaderImpl::~NavigationURLLoaderImpl() {
 void NavigationURLLoaderImpl::StartImpl(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder>
-        signed_exchange_prefetch_metric_recorder,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_for_webui,
     std::string accept_langs) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -460,16 +474,13 @@ void NavigationURLLoaderImpl::StartImpl(
     }
   }
 
-  CreateInterceptors(prefetched_signed_exchange_cache,
-                     signed_exchange_prefetch_metric_recorder, accept_langs);
+  CreateInterceptors(prefetched_signed_exchange_cache, accept_langs);
   Restart();
 }
 
 void NavigationURLLoaderImpl::CreateInterceptors(
     scoped_refptr<PrefetchedSignedExchangeCache>
         prefetched_signed_exchange_cache,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder>
-        signed_exchange_prefetch_metric_recorder,
     const std::string& accept_langs) {
   if (prefetched_signed_exchange_cache) {
     std::unique_ptr<NavigationLoaderInterceptor>
@@ -499,9 +510,7 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
           browser_context_)) {
     interceptors_.push_back(CreateSignedExchangeRequestHandler(
-        *request_info_, network_loader_factory_,
-        std::move(signed_exchange_prefetch_metric_recorder),
-        std::move(accept_langs)));
+        *request_info_, network_loader_factory_, std::move(accept_langs)));
   }
 
   // Set up an interceptor for prefetch.
@@ -829,8 +838,14 @@ void NavigationURLLoaderImpl::OnReceiveResponse(
   // If the default loader (network) was used to handle the URL load request
   // we need to see if the interceptors want to potentially create a new
   // loader for the response. e.g. service workers.
-  if (MaybeCreateLoaderForResponse(&head_))
+  //
+  // As the navigation request has received a response, the URLLoader has
+  // completed without any network errors. Some interceptors may still wish to
+  // handle the response.
+  auto status = network::URLLoaderCompletionStatus(net::OK);
+  if (MaybeCreateLoaderForResponse(status, &head_)) {
     return;
+  }
 
   network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints;
 
@@ -1005,8 +1020,9 @@ void NavigationURLLoaderImpl::OnComplete(
   //       be used in this case.
   if (!received_response_) {
     auto response = network::mojom::URLResponseHead::New();
-    if (MaybeCreateLoaderForResponse(&response))
+    if (MaybeCreateLoaderForResponse(status, &response)) {
       return;
+    }
   }
 
   status_ = status;
@@ -1121,9 +1137,9 @@ void NavigationURLLoaderImpl::Clone(
 // Returns true if an interceptor wants to handle the response, i.e. return a
 // different response, e.g. service workers.
 bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
+    const network::URLLoaderCompletionStatus& status,
     network::mojom::URLResponseHeadPtr* response) {
-  if (!default_loader_used_ &&
-      !web_bundle_utils::CanLoadAsWebBundle(url_, (*response)->mime_type)) {
+  if (!default_loader_used_) {
     return false;
   }
   for (auto& interceptor : interceptors_) {
@@ -1132,7 +1148,7 @@ bool NavigationURLLoaderImpl::MaybeCreateLoaderForResponse(
     bool skip_other_interceptors = false;
     bool will_return_unsafe_redirect = false;
     if (interceptor->MaybeCreateLoaderForResponse(
-            *resource_request_, response, &response_body_,
+            status, *resource_request_, response, &response_body_,
             &response_url_loader_, &response_client_receiver, url_loader_.get(),
             &skip_other_interceptors, &will_return_unsafe_redirect)) {
       if (will_return_unsafe_redirect)
@@ -1187,8 +1203,6 @@ std::unique_ptr<SignedExchangeRequestHandler>
 NavigationURLLoaderImpl::CreateSignedExchangeRequestHandler(
     const NavigationRequestInfo& request_info,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    scoped_refptr<SignedExchangePrefetchMetricRecorder>
-        signed_exchange_prefetch_metric_recorder,
     std::string accept_langs) {
   // It is safe to pass the callback of CreateURLLoaderThrottles with the
   // unretained `this`, because the passed callback will be used by a
@@ -1200,7 +1214,6 @@ NavigationURLLoaderImpl::CreateSignedExchangeRequestHandler(
       std::move(url_loader_factory),
       base::BindRepeating(&NavigationURLLoaderImpl::CreateURLLoaderThrottles,
                           base::Unretained(this)),
-      std::move(signed_exchange_prefetch_metric_recorder),
       std::move(accept_langs));
 }
 
@@ -1297,11 +1310,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       "navigation", "Navigation timeToResponseStarted", TRACE_ID_LOCAL(this),
       request_info_->common_params->navigation_start, "FrameTreeNode id",
       frame_tree_node_id_);
-
-  scoped_refptr<SignedExchangePrefetchMetricRecorder>
-      signed_exchange_prefetch_metric_recorder =
-          storage_partition_->GetPrefetchURLLoaderService()
-              ->signed_exchange_prefetch_metric_recorder();
 
   mojo::PendingRemote<network::mojom::AcceptCHFrameObserver>
       accept_ch_frame_observer;
@@ -1403,7 +1411,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
             ChildProcessHost::kInvalidUniqueID,
             frame_tree_node->frame_tree_node_id(),
             storage_partition_->GetFileSystemContext(), storage_domain,
-            blink::StorageKey(url::Origin::Create(url_))));
+            blink::StorageKey::CreateFirstParty(url::Origin::Create(url_))));
   }
 
   non_network_url_loader_factories_.emplace(url::kAboutScheme,
@@ -1445,9 +1453,8 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   start_closure_ = base::BindOnce(
       &NavigationURLLoaderImpl::StartImpl, base::Unretained(this),
-      std::move(prefetched_signed_exchange_cache),
-      std::move(signed_exchange_prefetch_metric_recorder),
-      std::move(factory_for_webui), std::move(accept_langs));
+      std::move(prefetched_signed_exchange_cache), std::move(factory_for_webui),
+      std::move(accept_langs));
 }
 
 void NavigationURLLoaderImpl::Start() {
@@ -1520,10 +1527,12 @@ bool NavigationURLLoaderImpl::SetNavigationTimeout(base::TimeDelta timeout) {
     return false;
 
   // Fail the navigation with error code ERR_TIMED_OUT if the timer triggers
-  // before the navigation commits.
+  // before the navigation commits. (This triggers OnComplete() rather than
+  // NotifyRequestFailed() to make sure that any NavigationLoaderInterceptors
+  // can handle the result if needed.)
   timeout_timer_.Start(
       FROM_HERE, timeout,
-      base::BindOnce(&NavigationURLLoaderImpl::NotifyRequestFailed,
+      base::BindOnce(&NavigationURLLoaderImpl::OnComplete,
                      base::Unretained(this),
                      network::URLLoaderCompletionStatus(net::ERR_TIMED_OUT)));
   return true;

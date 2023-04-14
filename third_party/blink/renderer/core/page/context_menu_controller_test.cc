@@ -47,9 +47,9 @@
 #include "third_party/blink/renderer/platform/testing/empty_web_media_player.h"
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory_impl.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
-#include "third_party/blink/renderer/platform/testing/weburl_loader_mock.h"
-#include "third_party/blink/renderer/platform/testing/weburl_loader_mock_factory_impl.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -2082,6 +2082,33 @@ TEST_P(ContextMenuControllerTest, AttributionSrc) {
                 mojom::blink::AttributionNavigationType::kContextMenu);
     }
   }
+}
+
+// Test that if text selection contains unselectable content, the opened context
+// menu should omit the unselectable content.
+TEST_P(ContextMenuControllerTest, SelectUnselectableContent) {
+  GetDocument()->documentElement()->setInnerHTML(R"HTML(
+    <body>
+      <p id="test">A <span style="user-select:none;">test_none <span>test_span
+        </span><span style="user-select:all;">test_all</span></span> B</p>
+    </body>
+  )HTML");
+
+  Document* document = GetDocument();
+  Element* element = document->getElementById("test");
+
+  // Select text, which has nested unselectable and selectable content.
+  const auto& start = Position(element->firstChild(), 0);
+  const auto& end = Position(element->lastChild(), 2);
+  document->GetFrame()->Selection().SetSelection(
+      SelectionInDOMTree::Builder().SetBaseAndExtent(start, end).Build(),
+      SetSelectionOptions());
+
+  // The context menu should omit the unselectable content from the selected
+  // text.
+  EXPECT_TRUE(ShowContextMenuForElement(element, kMenuSourceMouse));
+  ContextMenuData context_menu_data = GetWebFrameClient().GetContextMenuData();
+  EXPECT_EQ(context_menu_data.selected_text, "A test_all B");
 }
 
 // TODO(crbug.com/1184996): Add additional unit test for blocking frame logging.

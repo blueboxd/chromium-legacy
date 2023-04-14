@@ -81,6 +81,10 @@ bool FakeConciergeClient::IsVmStoppedSignalConnected() {
   return is_vm_stopped_signal_connected_;
 }
 
+bool FakeConciergeClient::IsVmStoppingSignalConnected() {
+  return is_vm_stopping_signal_connected_;
+}
+
 bool FakeConciergeClient::IsDiskImageProgressSignalConnected() {
   return is_disk_image_progress_signal_connected_;
 }
@@ -403,6 +407,14 @@ void FakeConciergeClient::GetVmLaunchAllowed(
       base::BindOnce(std::move(callback), get_vm_launch_allowed_response_));
 }
 
+void FakeConciergeClient::SwapVm(
+    const vm_tools::concierge::SwapVmRequest& request,
+    chromeos::DBusMethodCallback<vm_tools::concierge::SwapVmResponse>
+        callback) {
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), swap_vm_response_));
+}
+
 void FakeConciergeClient::NotifyVmStarted(
     const vm_tools::concierge::VmStartedSignal& signal) {
   // Now GetVmInfo can return success.
@@ -413,10 +425,17 @@ void FakeConciergeClient::NotifyVmStarted(
 
 void FakeConciergeClient::NotifyVmStopped(
     const vm_tools::concierge::VmStoppedSignal& signal) {
-  // Now GetVmInfo can return success.
+  // Now GetVmInfo can no longer succeed.
   get_vm_info_response_->set_success(false);
   for (auto& observer : vm_observer_list_)
     observer.OnVmStopped(signal);
+}
+
+void FakeConciergeClient::NotifyVmStopping(
+    const vm_tools::concierge::VmStoppingSignal& signal) {
+  for (auto& observer : vm_observer_list_) {
+    observer.OnVmStopping(signal);
+  }
 }
 
 bool FakeConciergeClient::HasVmObservers() const {

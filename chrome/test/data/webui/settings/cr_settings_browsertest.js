@@ -895,6 +895,7 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['CollapseRadioButton', 'collapse_radio_button_tests.js'],
  ['ControlledButton', 'controlled_button_tests.js'],
  ['ControlledRadioButton', 'controlled_radio_button_tests.js'],
+ ['AutofillAddressValidation', 'autofill_section_address_validation_test.js'],
  ['DoNotTrackToggle', 'do_not_track_toggle_test.js'],
  ['DownloadsPage', 'downloads_page_test.js'],
  ['DropdownMenu', 'dropdown_menu_tests.js'],
@@ -903,7 +904,6 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['PasswordView', 'password_view_test.js'],
  ['PasswordsExportDialog', 'passwords_export_dialog_test.js'],
  ['PasswordsImportDialog', 'passwords_import_dialog_test.js'],
- ['PaymentsSection', 'payments_section_test.js'],
  ['PeoplePage', 'people_page_test.js'],
  ['PeoplePageSyncControls', 'people_page_sync_controls_test.js'],
  ['Prefs', 'prefs_tests.js'],
@@ -917,6 +917,7 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['SearchEngines', 'search_engines_page_test.js'],
  ['SearchPage', 'search_page_test.js'],
  ['Search', 'search_settings_test.js'],
+ ['Section', 'settings_section_test.js'],
  ['SecurityKeysBioEnrollment', 'security_keys_bio_enrollment_test.js'],
  [
    'SecurityKeysCredentialManagement',
@@ -928,6 +929,10 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
  ['SecureDns', 'secure_dns_test.js'],
  ['SiteDataTest', 'site_data_test.js'],
  ['SiteDetailsPermission', 'site_details_permission_tests.js'],
+ [
+   'SiteDetailsPermissionDeviceEntry',
+   'site_details_permission_device_entry_tests.js'
+ ],
  ['SiteEntry', 'site_entry_tests.js'],
  ['SiteFavicon', 'site_favicon_test.js'],
  ['SiteListEntry', 'site_list_entry_tests.js'],
@@ -943,6 +948,12 @@ TEST_F('CrSettingsMenuTest', 'All', function() {
 // Timeout on Linux dbg bots: https://crbug.com/1394737
 GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
 [['PeoplePageSyncPage', 'people_page_sync_page_test.js']].forEach(
+    test => registerTest(...test));
+GEN('#endif');
+
+// Flaky on Linux dbg bots: https://crbug.com/1411294
+GEN('#if !(BUILDFLAG(IS_LINUX) && !defined(NDEBUG))');
+[['PaymentsSection', 'payments_section_test.js']].forEach(
     test => registerTest(...test));
 GEN('#endif');
 

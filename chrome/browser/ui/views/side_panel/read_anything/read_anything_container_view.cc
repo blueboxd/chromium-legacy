@@ -14,20 +14,22 @@
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/geometry/geometry_export.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/flex_layout.h"
 
 ReadAnythingContainerView::ReadAnythingContainerView(
+    ReadAnythingCoordinator* coordinator,
     std::unique_ptr<ReadAnythingToolbarView> toolbar,
-    std::unique_ptr<SidePanelWebUIViewT<ReadAnythingUI>> content) {
+    std::unique_ptr<SidePanelWebUIViewT<ReadAnythingUI>> content)
+    : coordinator_(std::move(coordinator)) {
   // Create and set a FlexLayout LayoutManager for this view, set background.
   auto layout = std::make_unique<views::FlexLayout>();
   layout->SetOrientation(views::LayoutOrientation::kVertical)
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
-      .SetCrossAxisAlignment(views::LayoutAlignment::kStretch)
-      .SetInteriorMargin(gfx::Insets(kInternalInsets));
+      .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
   SetLayoutManager(std::move(layout));
   SetBackground(
@@ -54,8 +56,37 @@ ReadAnythingContainerView::ReadAnythingContainerView(
 
   // Add all views as children.
   AddChildView(std::move(toolbar));
-  AddChildView(std::move(separator));
+  separator_ = AddChildView(std::move(separator));
   AddChildView(std::move(content));
+
+  coordinator_->AddObserver(this);
+  coordinator_->AddModelObserver(this);
 }
 
-ReadAnythingContainerView::~ReadAnythingContainerView() = default;
+void ReadAnythingContainerView::OnReadAnythingThemeChanged(
+    const std::string& font_name,
+    double font_scale,
+    ui::ColorId foreground_color_id,
+    ui::ColorId background_color_id,
+    ui::ColorId separator_color_id,
+    read_anything::mojom::LineSpacing line_spacing,
+    read_anything::mojom::LetterSpacing letter_spacing) {
+  separator_->SetColorId(separator_color_id);
+}
+
+void ReadAnythingContainerView::OnCoordinatorDestroyed() {
+  // When the coordinator that created |this| is destroyed, clean up pointers.
+  coordinator_ = nullptr;
+}
+
+BEGIN_METADATA(ReadAnythingContainerView, views::View)
+END_METADATA
+
+ReadAnythingContainerView::~ReadAnythingContainerView() {
+  // If |this| is being destroyed before the associated coordinator, then
+  // remove |this| as an observer.
+  if (coordinator_) {
+    coordinator_->RemoveObserver(this);
+    coordinator_->RemoveModelObserver(this);
+  }
+}

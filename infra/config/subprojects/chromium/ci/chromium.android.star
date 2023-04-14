@@ -18,9 +18,6 @@ ci.defaults.set(
     os = os.LINUX_DEFAULT,
     sheriff_rotations = sheriff_rotations.ANDROID,
     execution_timeout = ci.DEFAULT_EXECUTION_TIMEOUT,
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     service_account = ci.DEFAULT_SERVICE_ACCOUNT,
@@ -338,7 +335,6 @@ ci.builder(
     name = "Android x64 Builder All Targets (dbg)",
     branch_selector = branches.selector.ANDROID_BRANCHES,
     builder_spec = builder_config.copy_from("ci/Android x64 Builder (dbg)"),
-    free_space = builders.free_space.high,
     console_view_entry = consoles.console_view_entry(
         category = "builder|x86",
         short_name = "64-all",
@@ -478,9 +474,6 @@ ci.builder(
     ),
     execution_timeout = 7 * time.hour,
     notifies = ["Deterministic Android"],
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
 )
 
 ci.builder(
@@ -495,9 +488,6 @@ ci.builder(
     ),
     execution_timeout = 6 * time.hour,
     notifies = ["Deterministic Android"],
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -700,9 +690,6 @@ ci.builder(
         category = "builder|other",
         short_name = "size",
     ),
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 
@@ -870,9 +857,6 @@ ci.builder(
         short_name = "m",
     ),
     notifies = ["cronet"],
-
-    # TODO(crbug.com/1362440): remove this.
-    omit_python2 = False,
     reclient_jobs = reclient.jobs.DEFAULT,
 )
 

@@ -4,6 +4,7 @@
 
 import("///build/config/ozone.gni")
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/features.gni")
 import("//build/config/ui.gni")
 
 component("clipboard_types") {
@@ -14,8 +15,12 @@ component("clipboard_types") {
     "clipboard_constants.h",
   ]
 
-  if (!is_ios) {
+  if (use_blink) {
     sources += [ "clipboard_format_type.h" ]
+
+    if (is_ios) {
+      sources += [ "clipboard_format_type_ios.mm" ]
+    }
   }
 
   if (is_android) {
@@ -70,6 +75,7 @@ component("clipboard") {
   sources = [
     "clipboard.cc",
     "clipboard.h",
+    "clipboard_content_type.h",
     "clipboard_metrics.cc",
     "clipboard_metrics.h",
     "clipboard_monitor.cc",
@@ -88,6 +94,13 @@ component("clipboard") {
       "clipboard_android.cc",
       "clipboard_android.h",
     ]
+  } else {
+    sources += [
+      "clipboard_data.cc",
+      "clipboard_data.h",
+      "clipboard_non_backed.cc",
+      "clipboard_non_backed.h",
+    ]
   }
 
   if (is_mac) {
@@ -99,6 +112,9 @@ component("clipboard") {
     ]
   }
 
+  if (is_ios) {
+    sources += [ "clipboard_ios.mm" ]
+  }
   if (is_win) {
     sources += [
       "clipboard_util_win.cc",
@@ -130,11 +146,7 @@ component("clipboard") {
   if (use_aura) {
     if (use_ozone) {
       sources += [
-        "clipboard_data.cc",
-        "clipboard_data.h",
         "clipboard_factory_ozone.cc",
-        "clipboard_non_backed.cc",
-        "clipboard_non_backed.h",
         "clipboard_ozone.cc",
         "clipboard_ozone.h",
       ]
@@ -161,7 +173,7 @@ component("clipboard") {
 source_set("clipboard_test_support") {
   testonly = true
 
-  if (!is_ios) {
+  if (use_blink) {
     sources = [
       "test/clipboard_test_util.cc",
       "test/clipboard_test_util.h",

@@ -121,6 +121,11 @@ class MEDIA_GPU_EXPORT VideoDecoderMixin : public VideoDecoder {
   // V4L2.
   virtual void SetDmaIncoherentV4L2(bool incoherent) {}
 
+  // The VideoDecoderPipeline can use this to query a decoder for an upper bound
+  // on the size of the frame pool that the decoder writes into. The default
+  // implementation indicates no limit.
+  virtual size_t GetMaxOutputFramePoolSize() const;
+
  protected:
   const std::unique_ptr<MediaLog> media_log_;
 
@@ -143,15 +148,40 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   // Creates a VideoDecoderPipeline instance that allocates VideoFrames from
   // |frame_pool| and converts the decoded VideoFrames using |frame_converter|.
+  // |renderable_fourccs| is the list of formats that VideoDecoderPipeline may
+  // use when outputting frames, in order of preference.
   static std::unique_ptr<VideoDecoder> Create(
       const gpu::GpuDriverBugWorkarounds& workarounds,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
+      std::vector<Fourcc> renderable_fourccs,
       std::unique_ptr<MediaLog> media_log,
       mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder);
 
+  static std::vector<Fourcc> DefaultPreferredRenderableFourccs();
+
+  // Ensures that the video decoder supported configurations are known. When
+  // they are, |cb| is called with a PendingRemote that corresponds to the same
+  // connection as |oop_video_decoder| (which may be |oop_video_decoder|
+  // itself). If |oop_video_decoder| is valid, the supported configurations are
+  // those of an out-of-process video decoder (and in this case,
+  // |oop_video_decoder| may be used internally to query those configurations).
+  // Otherwise, the supported configurations are those of an in-process,
+  // platform-specific decoder (e.g., VaapiVideoDecoder or V4L2VideoDecoder).
+  //
+  // |cb| is called with |oop_video_decoder| before NotifySupportKnown() returns
+  // if the supported configurations are already known.
+  //
+  // This method is thread- and sequence-safe. |cb| is always called on the same
+  // sequence as NotifySupportKnown().
+  static void NotifySupportKnown(
+      mojo::PendingRemote<stable::mojom::StableVideoDecoder> oop_video_decoder,
+      base::OnceCallback<
+          void(mojo::PendingRemote<stable::mojom::StableVideoDecoder>)> cb);
+
   static absl::optional<SupportedVideoDecoderConfigs> GetSupportedConfigs(
+      VideoDecoderType decoder_type,
       const gpu::GpuDriverBugWorkarounds& workarounds);
 
   ~VideoDecoderPipeline() override;
@@ -198,8 +228,10 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
       std::unique_ptr<VideoFrameConverter> frame_converter,
+      std::vector<Fourcc> renderable_fourccs,
       std::unique_ptr<MediaLog> media_log,
-      CreateDecoderFunctionCB create_decoder_function_cb);
+      CreateDecoderFunctionCB create_decoder_function_cb,
+      bool uses_oop_video_decoder);
 
   void InitializeTask(const VideoDecoderConfig& config,
                       bool low_delay,
@@ -256,6 +288,9 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
                             DecodeCB decode_callback);
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
+  // Used to determine the decoder's maximum output frame pool size.
+  size_t GetDecoderMaxOutputFramePoolSize() const;
+
   // Used to figure out the supported configurations in Initialize().
   const gpu::GpuDriverBugWorkarounds gpu_workarounds_;
 
@@ -292,6 +327,12 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // The frame converter passed from the client, otherwise used and destroyed on
   // |decoder_task_runner_|.
   std::unique_ptr<VideoFrameConverter> frame_converter_
+      GUARDED_BY_CONTEXT(decoder_sequence_checker_);
+
+  // The set of output formats allowed to be used in order of preference.
+  // VideoDecoderPipeline may perform copies to convert from the decoder's
+  // output to one of these formats.
+  const std::vector<Fourcc> renderable_fourccs_
       GUARDED_BY_CONTEXT(decoder_sequence_checker_);
 
   const std::unique_ptr<MediaLog> media_log_;
@@ -360,6 +401,9 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   // the Renderer pipeline.
   size_t estimated_num_buffers_for_renderer_ GUARDED_BY_CONTEXT(
       decoder_sequence_checker_) = limits::kMaxVideoFrames + 1;
+
+  // Set to true when the underlying |decoder_| is an OOPVideoDecoder.
+  const bool uses_oop_video_decoder_;
 
   // Set to true to bypass checks for encrypted content support for testing.
   bool allow_encrypted_content_for_testing_ = false;

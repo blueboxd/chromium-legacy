@@ -15,6 +15,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -33,7 +34,6 @@
 #include "content/renderer/media/renderer_webmediaplayer_delegate.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/decoder_factory.h"
 #include "media/base/demuxer.h"
@@ -89,8 +89,9 @@
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
-#include "media/fuchsia/cdm/client/fuchsia_cdm_util.h"
+#include "media/cdm/fuchsia/fuchsia_cdm_factory.h"
 #include "media/fuchsia/video/fuchsia_decoder_factory.h"
+#include "media/mojo/clients/mojo_fuchsia_cdm_provider.h"
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
 #include "media/mojo/clients/mojo_cdm_factory.h"  // nogncheck
 #else
@@ -201,7 +202,8 @@ void PostContextProviderToCallback(
                               std::move(context_provider));
           },
           unwanted_context_provider,
-          media::BindToCurrentLoop(std::move(set_context_provider_callback))),
+          base::BindPostTaskToCurrentDefault(
+              std::move(set_context_provider_callback))),
       base::BindOnce([](scoped_refptr<viz::RasterContextProvider>
                             unwanted_context_provider) {},
                      unwanted_context_provider));
@@ -851,7 +853,8 @@ media::CdmFactory* MediaFactory::GetCdmFactory() {
 
 #if BUILDFLAG(IS_FUCHSIA)
   DCHECK(interface_broker_);
-  cdm_factory_ = media::CreateFuchsiaCdmFactory(interface_broker_);
+  cdm_factory_ = std::make_unique<media::FuchsiaCdmFactory>(
+      std::make_unique<media::MojoFuchsiaCdmProvider>(interface_broker_));
 #elif BUILDFLAG(ENABLE_MOJO_CDM)
   cdm_factory_ =
       std::make_unique<media::MojoCdmFactory>(GetMediaInterfaceFactory());

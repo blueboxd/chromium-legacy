@@ -82,15 +82,17 @@ class QueryClustersStateTest : public testing::Test {
 
 TEST_F(QueryClustersStateTest, PostProcessingOccursAndLogsHistograms) {
   base::HistogramTester histogram_tester;
-  QueryClustersState state(nullptr, nullptr, "");
+  QueryClustersState state(nullptr, "");
 
   std::vector<history::Cluster> raw_clusters;
-  raw_clusters.push_back(
-      history::Cluster(1, {}, {{u"keyword_one", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/false));
-  raw_clusters.push_back(
-      history::Cluster(2, {}, {{u"keyword_two", history::ClusterKeywordData()}},
-                       /*should_show_on_prominent_ui_surfaces=*/true));
+  raw_clusters.push_back(history::Cluster(
+      1, {GetHardcodedClusterVisit(1), GetHardcodedClusterVisit(2)},
+      {{u"keyword_one", history::ClusterKeywordData()}},
+      /*should_show_on_prominent_ui_surfaces=*/false));
+  raw_clusters.push_back(history::Cluster(
+      2, {GetHardcodedClusterVisit(3), GetHardcodedClusterVisit(4)},
+      {{u"keyword_two", history::ClusterKeywordData()}},
+      /*should_show_on_prominent_ui_surfaces=*/true));
 
   auto result =
       InjectRawClustersAndAwaitPostProcessing(&state, raw_clusters, {});
@@ -111,7 +113,7 @@ TEST_F(QueryClustersStateTest, PostProcessingOccursAndLogsHistograms) {
 }
 
 TEST_F(QueryClustersStateTest, CrossBatchDeduplication) {
-  QueryClustersState state(nullptr, nullptr, "myquery");
+  QueryClustersState state(nullptr, "myquery");
 
   {
     std::vector<history::Cluster> raw_clusters;
@@ -177,11 +179,13 @@ TEST_F(QueryClustersStateTest, CrossBatchDeduplication) {
 }
 
 TEST_F(QueryClustersStateTest, OnGotClusters) {
-  const history::Cluster hidden_cluster = {1, {}, {}, false};
-  const history::Cluster visible_cluster = {2, {}, {}, true};
+  const history::Cluster hidden_cluster = {
+      1, {GetHardcodedClusterVisit(1), GetHardcodedClusterVisit(2)}, {}, false};
+  const history::Cluster visible_cluster = {
+      2, {GetHardcodedClusterVisit(3), GetHardcodedClusterVisit(4)}, {}, true};
 
   {
-    QueryClustersState state(nullptr, nullptr, "");
+    QueryClustersState state(nullptr, "");
 
     // If the response clusters is empty, the callback should not be invoked.
     InjectRawClustersAndExpectNoCallback(
@@ -220,7 +224,7 @@ TEST_F(QueryClustersStateTest, OnGotClusters) {
   }
 
   {
-    QueryClustersState state(nullptr, nullptr, "");
+    QueryClustersState state(nullptr, "");
 
     // `is_continuation` should be false on the first callback.
     // `can_load_more` should be true on non-last callback.
@@ -266,19 +270,22 @@ TEST_F(QueryClustersStateTest, OnGotClusters) {
 }
 
 TEST_F(QueryClustersStateTest, UniqueRawLabels) {
-  QueryClustersState state(nullptr, nullptr, "");
+  QueryClustersState state(nullptr, "");
 
-  auto cluster1 = history::Cluster(1, {}, {});
+  std::vector<history::ClusterVisit> cluster_visits = {
+      GetHardcodedClusterVisit(1), GetHardcodedClusterVisit(2)};
+
+  auto cluster1 = history::Cluster(1, cluster_visits, {});
   cluster1.raw_label = u"rawlabel1";
-  auto cluster2 = history::Cluster(2, {}, {});
+  auto cluster2 = history::Cluster(2, cluster_visits, {});
   cluster2.raw_label = u"rawlabel2";
-  auto cluster3 = history::Cluster(3, {}, {});
+  auto cluster3 = history::Cluster(3, cluster_visits, {});
   cluster3.raw_label = u"rawlabel3";
 
   // Now make some clusters with repeated raw labels.
-  auto cluster4 = history::Cluster(4, {}, {});
+  auto cluster4 = history::Cluster(4, cluster_visits, {});
   cluster4.raw_label = u"rawlabel1";
-  auto cluster5 = history::Cluster(5, {}, {});
+  auto cluster5 = history::Cluster(5, cluster_visits, {});
   cluster5.raw_label = u"rawlabel2";
 
   auto result = InjectRawClustersAndAwaitPostProcessing(

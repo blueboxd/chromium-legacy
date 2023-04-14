@@ -925,13 +925,13 @@ TEST_F(OmniboxEditModelPopupTest, PopupStepSelectionWithActions) {
     matches.push_back(match);
   }
   // The second match has a normal action.
-  matches[1].action =
+  matches[1].actions.push_back(
       base::MakeRefCounted<OmniboxAction>(OmniboxAction::LabelStrings(), GURL(),
-                                          /*takes_over_match=*/false);
+                                          /*takes_over_match=*/false));
   // The fourth match has an action that takes over the match.
-  matches[3].action =
+  matches[3].actions.push_back(
       base::MakeRefCounted<OmniboxAction>(OmniboxAction::LabelStrings(), GURL(),
-                                          /*takes_over_match=*/true);
+                                          /*takes_over_match=*/true));
 
   auto* result = &model()->autocomplete_controller()->result_;
   result->AppendMatches(matches);
@@ -1304,7 +1304,7 @@ TEST_F(OmniboxEditModelTest, IPv4AddressPartsCount) {
   // Test IPv4 parts are correctly counted.
   OpenUrlFromEditBox(model(), u"http://127.0.0.1", false);
   OpenUrlFromEditBox(model(), u"http://127.1/test.html", false);
-  OpenUrlFromEditBox(model(), u"http://[::127.0.1]", false);
+  OpenUrlFromEditBox(model(), u"http://127.0.1", false);
   EXPECT_THAT(
       histogram_tester.GetAllSamples(kIPv4AddressPartsCountHistogramName),
       testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1),

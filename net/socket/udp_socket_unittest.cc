@@ -42,12 +42,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !BUILDFLAG(IS_WIN)
+#include <netinet/in.h>
+#include <sys/socket.h>
+#else
+#include <winsock2.h>
+#endif
+
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/build_info.h"
-#include "base/android/radio_utils.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "net/android/network_change_notifier_factory_android.h"
-#include "net/android/radio_activity_tracker.h"
 #include "net/base/network_change_notifier.h"
 #endif
 
@@ -450,6 +454,57 @@ TEST_F(UDPSocketTest, ConnectFail) {
 
   // Make sure that UDPSocket actually closed the socket.
   EXPECT_FALSE(socket.is_connected());
+}
+
+// Similar to ConnectFail but UDPSocket adopts an opened socket instead of
+// opening one directly.
+TEST_F(UDPSocketTest, AdoptedSocket) {
+  auto socketfd =
+      CreatePlatformSocket(ConvertAddressFamily(ADDRESS_FAMILY_IPV4),
+                           SOCK_DGRAM, AF_UNIX ? 0 : IPPROTO_UDP);
+  UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
+
+  EXPECT_THAT(socket.AdoptOpenedSocket(ADDRESS_FAMILY_IPV4, socketfd), IsOk());
+
+  // Connect to an IPv6 address should fail since the socket was created for
+  // IPv4.
+  EXPECT_THAT(socket.Connect(net::IPEndPoint(IPAddress::IPv6Localhost(), 53)),
+              Not(IsOk()));
+
+  // Make sure that UDPSocket actually closed the socket.
+  EXPECT_FALSE(socket.is_connected());
+}
+
+// Tests that UDPSocket updates the global counter correctly.
+TEST_F(UDPSocketTest, LimitAdoptSocket) {
+  ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+  {
+    // Creating a platform socket does not increase count.
+    auto socketfd =
+        CreatePlatformSocket(ConvertAddressFamily(ADDRESS_FAMILY_IPV4),
+                             SOCK_DGRAM, AF_UNIX ? 0 : IPPROTO_UDP);
+    ASSERT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+    // Simply allocating a UDPSocket does not increase count.
+    UDPSocket socket(DatagramSocket::DEFAULT_BIND, nullptr, NetLogSource());
+    EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
+
+    // Calling AdoptOpenedSocket() allocates the socket and increases the global
+    // counter.
+    EXPECT_THAT(socket.AdoptOpenedSocket(ADDRESS_FAMILY_IPV4, socketfd),
+                IsOk());
+    EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+
+    // Connect to an IPv6 address should fail since the socket was created for
+    // IPv4.
+    EXPECT_THAT(socket.Connect(net::IPEndPoint(IPAddress::IPv6Localhost(), 53)),
+                Not(IsOk()));
+
+    // That Connect() failed doesn't change the global counter.
+    EXPECT_EQ(1, GetGlobalUDPSocketCountForTesting());
+  }
+  // Finally, destroying UDPSocket decrements the global counter.
+  EXPECT_EQ(0, GetGlobalUDPSocketCountForTesting());
 }
 
 // In this test, we verify that connect() on a socket will have the effect
@@ -1473,25 +1528,6 @@ TEST_F(UDPSocketTest, Tag) {
   str = ReadSocket(&client);
   EXPECT_EQ(simple_message, str);
   EXPECT_GT(GetTaggedBytes(tag_val1), old_traffic);
-}
-
-TEST_F(UDPSocketTest, RecordRadioWakeUpTrigger) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kRecordRadioWakeupTrigger);
-
-  base::HistogramTester histograms;
-
-  // Simulates the radio state is dormant.
-  android::RadioActivityTracker::GetInstance().OverrideRadioActivityForTesting(
-      base::android::RadioDataActivity::kDormant);
-  android::RadioActivityTracker::GetInstance().OverrideRadioTypeForTesting(
-      base::android::RadioConnectionType::kCell);
-
-  ConnectTest(/*use_nonblocking_io=*/false, false);
-
-  // Check the write is recorded as a possible radio wake-up trigger.
-  histograms.ExpectTotalCount(
-      android::kUmaNamePossibleWakeupTriggerUDPWriteAnnotationId, 1);
 }
 
 TEST_F(UDPSocketTest, BindToNetwork) {

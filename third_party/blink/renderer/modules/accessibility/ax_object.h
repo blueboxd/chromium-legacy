@@ -486,12 +486,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // elements are, etc.
   bool AccessibilityIsIncludedInTree() const;
   typedef HeapVector<IgnoredReason> IgnoredReasons;
-  virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const {
-    return true;
-  }
-  bool AccessibilityIsIgnoredByDefault(IgnoredReasons* = nullptr) const;
-  virtual AXObjectInclusion DefaultObjectInclusion(
-      IgnoredReasons* = nullptr) const;
+  virtual bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const;
+  bool ShouldIgnoreForHiddenOrInert(IgnoredReasons* = nullptr) const;
   bool IsInert() const;
   bool IsAriaHidden() const;
   bool CachedIsAriaHidden() { return cached_is_aria_hidden_; }
@@ -502,7 +498,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsDescendantOfDisabledNode() const;
   bool ComputeAccessibilityIsIgnoredButIncludedInTree() const;
   const AXObject* GetAtomicTextFieldAncestor(int max_levels_to_check = 3) const;
-  const AXObject* DatetimeAncestor(int max_levels_to_check = 3) const;
+  const AXObject* DatetimeAncestor() const;
   bool ComputeIsDescendantOfDisabledNode() const;
   bool LastKnownIsIgnoredValue() const;
   bool LastKnownIsIgnoredButIncludedInTreeValue() const;
@@ -648,6 +644,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   }
 
   virtual AXObject* GetChildFigcaption() const;
+  virtual bool IsDescendantOfLandmarkDisallowedElement() const;
 
   virtual AXObjectVector RadioButtonsInGroup() const {
     return AXObjectVector();
@@ -784,6 +781,9 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Determines whether this object is a popup, and what type.
   virtual ax::mojom::blink::IsPopup IsPopup() const;
+
+  // Heuristic to get the target popover for an invoking element.
+  AXObject* GetTargetPopoverForInvoker();
 
   // Heuristic to get the listbox for an <input role="combobox">.
   AXObject* GetControlsListboxForTextfieldCombobox();
@@ -1337,7 +1337,8 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
 
   // Get the role to be used in StringAttribute::kRole, which is used in the
   // xml-roles object attribute.
-  const AtomicString& GetRoleAttributeStringForObjectAttribute();
+  const AtomicString& GetRoleAttributeStringForObjectAttribute(
+      ui::AXNodeData* node_data);
 
   // Extra checks that occur right before a node is evaluated for serialization.
   void PreSerializationConsistencyCheck();
@@ -1463,7 +1464,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   mutable bool cached_is_ignored_but_included_in_tree_ : 1;
   mutable bool cached_is_inert_ : 1;
   mutable bool cached_is_aria_hidden_ : 1;
-  mutable bool cached_is_hidden_via_style : 1;
+  mutable bool cached_is_hidden_via_style_ : 1;
   mutable bool cached_is_descendant_of_disabled_node_ : 1;
   mutable bool cached_can_set_focus_attribute_ : 1;
 

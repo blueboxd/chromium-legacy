@@ -180,10 +180,26 @@ std::ostream& CheckError::stream() {
 }
 
 CheckError::~CheckError() {
+  // TODO(crbug.com/1409729): Consider splitting out CHECK from DCHECK so that
+  // the destructor can be marked [[noreturn]] and we don't need to check
+  // severity in the destructor.
+  const bool is_fatal = log_message_->severity() == LOGGING_FATAL;
   // Note: This function ends up in crash stack traces. If its full name
   // changes, the crash server's magic signature logic needs to be updated.
   // See cl/306632920.
   delete log_message_;
+
+  // Make sure we crash even if LOG(FATAL) has been overridden.
+  // TODO(crbug.com/1409729): Include Windows and iOS here too. This is done in
+  // steps to prevent backsliding on platforms where this goes through CQ.
+  // Currently iOS is blocked by:
+  //   * ListModelTest.InvalidIndexPath
+  // Windows is blocked by:
+  //   * All/RenderProcessHostWriteableFileDeathTest.
+  //       PassUnsafeWriteableExecutableFile/2
+  if (is_fatal && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_IOS)) {
+    base::ImmediateCrash();
+  }
 }
 
 NotReachedError NotReachedError::NotReached(const char* file, int line) {
@@ -198,12 +214,30 @@ NotReachedError NotReachedError::NotReached(const char* file, int line) {
 }
 
 void NotReachedError::TriggerNotReached() {
-  // TODO(pbos): Add back NotReachedError("", -1) here asap. This was removed to
-  // disable NOTREACHED() reports temporarily for M111 and should be added
-  // back once this change has merged to M111.
+  // This triggers a NOTREACHED() error as the returned NotReachedError goes out
+  // of scope.
+  NotReached("", -1);
 }
 
 NotReachedError::~NotReachedError() = default;
+
+NotReachedNoreturnError::NotReachedNoreturnError(const char* file, int line)
+    : CheckError([file, line]() {
+        auto* const log_message = new LogMessage(file, line, LOGGING_FATAL);
+        log_message->stream() << "NOTREACHED hit. ";
+        return log_message;
+      }()) {}
+
+// Note: This function ends up in crash stack traces. If its full name changes,
+// the crash server's magic signature logic needs to be updated. See
+// cl/306632920.
+NotReachedNoreturnError::~NotReachedNoreturnError() {
+  delete log_message_;
+
+  // Make sure we die if we haven't. LOG(FATAL) is not yet [[noreturn]] as of
+  // writing this.
+  base::ImmediateCrash();
+}
 
 void RawCheck(const char* message) {
   RawLog(LOGGING_FATAL, message);

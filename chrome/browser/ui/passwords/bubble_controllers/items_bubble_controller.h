@@ -20,6 +20,7 @@ struct FaviconImageResult;
 
 namespace password_manager {
 struct PasswordForm;
+class PasswordStoreInterface;
 enum class SyncState;
 }  // namespace password_manager
 
@@ -55,9 +56,16 @@ class ItemsBubbleController : public PasswordBubbleControllerBase {
   void OnGooglePasswordManagerLinkClicked();
 
   // Returns the available credentials which match the current site.
-  const std::vector<password_manager::PasswordForm>& local_credentials() const {
-    return local_credentials_;
-  }
+  const std::vector<std::unique_ptr<password_manager::PasswordForm>>&
+  GetCredentials() const;
+
+  // Called by the view code when the user updates a stored credentials. Since
+  // the UI allows adding username to credentials without a username, both the
+  // old and new forms are required to pick the suitable API to call in case the
+  // credential immutable unique key has been updated.
+  void UpdateStoredCredential(
+      const password_manager::PasswordForm& original_form,
+      password_manager::PasswordForm updated_form);
 
  private:
   // Called when the favicon was retrieved. It invokes |favicon_ready_callback|
@@ -70,12 +78,12 @@ class ItemsBubbleController : public PasswordBubbleControllerBase {
   std::u16string GetTitle() const override;
   void ReportInteractions() override;
 
-  const std::vector<password_manager::PasswordForm> local_credentials_;
-
+  // Returns the password store in which this password form is stored.
+  scoped_refptr<password_manager::PasswordStoreInterface> PasswordStoreForForm(
+      const password_manager::PasswordForm& password_form) const;
   // Used to track a requested favicon.
   base::CancelableTaskTracker favicon_tracker_;
 
-  const std::u16string title_;
   // Dismissal reason for a password bubble.
   password_manager::metrics_util::UIDismissalReason dismissal_reason_ =
       password_manager::metrics_util::NO_DIRECT_INTERACTION;

@@ -31,6 +31,10 @@ class FakeAffiliationService : public AffiliationService {
   void TrimCacheForFacetURI(const FacetURI& facet_uri) override;
   void TrimUnusedCache(std::vector<FacetURI> facet_uris) override;
   void GetAllGroups(GroupsCallback callback) const override;
+  void GetPSLExtensions(base::OnceCallback<void(std::vector<std::string>)>
+                            callback) const override;
+  void UpdateAffiliationsAndBranding(const std::vector<FacetURI>& facets,
+                                     base::OnceClosure callback) override;
 };
 
 }  // namespace password_manager

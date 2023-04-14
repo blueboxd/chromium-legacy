@@ -303,7 +303,7 @@ void WebAppProvider::ConnectSubsystems() {
   DCHECK(!started_);
 
   sync_bridge_->SetSubsystems(database_factory_.get(), command_manager_.get(),
-                              command_scheduler_.get());
+                              command_scheduler_.get(), install_manager_.get());
   icon_manager_->SetSubsystems(registrar_.get(), install_manager_.get());
   install_finalizer_->SetSubsystems(
       install_manager_.get(), registrar_.get(), ui_manager_.get(),
@@ -314,11 +314,9 @@ void WebAppProvider::ConnectSubsystems() {
       registrar_.get(), os_integration_manager_.get(), command_manager_.get(),
       install_finalizer_.get(), icon_manager_.get(), sync_bridge_.get(),
       translation_manager_.get());
-  manifest_update_manager_->SetSubsystems(
-      install_manager_.get(), registrar_.get(), icon_manager_.get(),
-      ui_manager_.get(), install_finalizer_.get(),
-      os_integration_manager_.get(), sync_bridge_.get(),
-      command_scheduler_.get());
+  manifest_update_manager_->SetSubsystems(install_manager_.get(),
+                                          registrar_.get(), ui_manager_.get(),
+                                          command_scheduler_.get());
   externally_managed_app_manager_->SetSubsystems(
       ui_manager_.get(), install_finalizer_.get(), command_scheduler_.get());
   preinstalled_web_app_manager_->SetSubsystems(

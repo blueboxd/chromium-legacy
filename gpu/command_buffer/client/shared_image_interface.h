@@ -54,12 +54,12 @@ class GPU_EXPORT SharedImageInterface {
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
   // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
-  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
+  // RasterInterface::CopySharedImage) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.
   // the GPU channel is lost).
-  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+  virtual Mailbox CreateSharedImage(viz::SharedImageFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     GrSurfaceOrigin surface_origin,
@@ -71,13 +71,24 @@ class GPU_EXPORT SharedImageInterface {
   // which is used to populate the SharedImage.  |pixel_data| should have the
   // same format which would be passed to glTexImage2D to populate a similarly
   // specified texture.
-  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+  virtual Mailbox CreateSharedImage(viz::SharedImageFormat format,
                                     const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     GrSurfaceOrigin surface_origin,
                                     SkAlphaType alpha_type,
                                     uint32_t usage,
                                     base::span<const uint8_t> pixel_data) = 0;
+
+  // Deprecated version of the corresponding method above that takes in a
+  // ResourceFormat rather than a SharedImageFormat. TODO(crbug.com/1414192):
+  // Convert all clients to the above and eliminate this method.
+  virtual Mailbox CreateSharedImage(viz::ResourceFormat format,
+                                    const gfx::Size& size,
+                                    const gfx::ColorSpace& color_space,
+                                    GrSurfaceOrigin surface_origin,
+                                    SkAlphaType alpha_type,
+                                    uint32_t usage,
+                                    gpu::SurfaceHandle surface_handle) = 0;
 
   // Creates a shared image out an existing buffer. The buffer described by
   // `buffer_handle` must hold all planes based `format` and `size. `usage` is a
@@ -111,7 +122,7 @@ class GPU_EXPORT SharedImageInterface {
   // Returns a mailbox that can be imported into said APIs using their
   // corresponding shared image functions (e.g.
   // GLES2Interface::CreateAndTexStorage2DSharedImageCHROMIUM or
-  // RasterInterface::CopySubTexture) or (deprecated) mailbox functions (e.g.
+  // RasterInterface::CopySharedImage) or (deprecated) mailbox functions (e.g.
   // GLES2Interface::CreateAndConsumeTextureCHROMIUM).
   // The |SharedImageInterface| keeps ownership of the image until
   // |DestroySharedImage| is called or the interface itself is destroyed (e.g.

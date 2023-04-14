@@ -446,10 +446,6 @@
     "label": "//chrome/android:chrome_junit_tests",
     "type": "generated_script",
   },
-  "chrome_modern_public_bundle_smoke_test": {
-    "label": "//chrome/android:chrome_modern_public_bundle_smoke_test",
-    "type": "console_test_launcher",
-  },
   "chrome_nocompile_tests": {
     "label": "//chrome/android:chrome_nocompile_tests",
     "type": "additional_compile_target",
@@ -547,6 +543,10 @@
   },
   "wpt_tests_isolate_content_shell": {
     "label": "//:wpt_tests_isolate_content_shell",
+    "type": "generated_script",
+  },
+  "wpt_tests_ios": {
+    "label": "//ios/chrome/test/wpt:wpt_tests_ios",
     "type": "generated_script",
   },
   "chrome/browser/media/router": {
@@ -768,10 +768,6 @@
     "label": "//components/cronet/android:cronet_unittests_android",
     "type": "console_test_launcher",
   },
-  "cronet_unittests_ios": {
-    "label": "//components/cronet/ios:cronet_unittests_ios",
-    "type": "console_test_launcher",
-  },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
     "type": "console_test_launcher",
@@ -981,51 +977,12 @@
     "label": "//ios/chrome/test:all_fuzzer_tests",
     "type": "additional_compile_target",
   },
-  "ios_chrome_bookmarks_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_bookmarks_egtests",
-    "type": "generated_script",
-  },
   "ios_chrome_clusterfuzz_asan_build": {
     "label": "//ios/chrome/test/wpt:ios_chrome_clusterfuzz_asan_build",
     "type": "additional_compile_target",
   },
-  "ios_chrome_integration_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_integration_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_reading_list_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_reading_list_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_settings_egtests": {
-    "args": [
-      "--enable-features=ClearSyncedData",
-    ],
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_settings_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_signin_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_signin_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_translate_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_translate_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_smoke_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_smoke_egtests",
-    "type": "generated_script",
-  },
-  "ios_chrome_ui_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_ui_egtests",
-    "type": "generated_script",
-  },
   "ios_chrome_unittests": {
     "label": "//ios/chrome/test:ios_chrome_unittests",
-    "type": "generated_script",
-  },
-  "ios_chrome_web_egtests": {
-    "label": "//ios/chrome/test/earl_grey:ios_chrome_web_egtests",
     "type": "generated_script",
   },
   "ios_chrome_bookmarks_eg2tests_module": {
@@ -1072,10 +1029,6 @@
     "label": "//remoting/ios:ios_remoting_unittests",
     "type": "generated_script",
   },
-  "ios_showcase_egtests": {
-    "label": "//ios/showcase:ios_showcase_egtests",
-    "type": "generated_script",
-  },
   "ios_showcase_eg2tests_module": {
     "label": "//ios/showcase:ios_showcase_eg2tests_module",
     "type": "generated_script",
@@ -1094,10 +1047,6 @@
   },
   "ios_web_shell_eg2tests_module": {
     "label": "//ios/web/shell/test:ios_web_shell_eg2tests_module",
-    "type": "generated_script",
-  },
-  "ios_web_shell_egtests": {
-    "label": "//ios/web/shell/test:ios_web_shell_egtests",
     "type": "generated_script",
   },
   "ios_web_unittests": {
@@ -1240,7 +1189,7 @@
   "media_router_e2e_tests": {
     "args": [
       "--test_binary",
-      "./browser_tests",
+      "./interactive_ui_tests",
     ],
     "label": "//chrome/test/media_router:media_router_e2e_tests",
     "script": "//chrome/test/media_router/internal/media_router_tests.py",
@@ -1537,6 +1486,10 @@
     "label": "//printing:printing_unittests",
     "type": "console_test_launcher",
   },
+  "private_code_failure_test": {
+    "label": "//build/private_code_test:private_code_failure_test",
+    "type": "generated_script",
+  },
   "profile_provider_unittest": {
     "label": "//chrome/browser/metrics/perf:profile_provider_unittest",
     "type": "console_test_launcher",
@@ -1556,10 +1509,6 @@
   "remoting_unittests": {
     "label": "//remoting:remoting_unittests",
     "type": "console_test_launcher",
-  },
-  "resource_sizes_chrome_modern_public_minimal_apks": {
-    "label": "//chrome/android:resource_sizes_chrome_modern_public_minimal_apks",
-    "type": "generated_script",
   },
   "resource_sizes_chromecast": {
     "label": "//chromecast:resource_sizes_chromecast",
@@ -2011,10 +1960,6 @@
     "label": "//fuchsia_web/webengine:web_engine_integration_tests",
     "type": "console_test_launcher",
   },
-  "web_engine_integration_tests_cfv1": {
-    "label": "//fuchsia_web/webengine:web_engine_integration_tests_cfv1",
-    "type": "console_test_launcher",
-  },
   "web_engine_shell_pkg": {
     "label": "//fuchsia_web/shell:web_engine_shell_pkg",
     "type": "additional_compile_target",
@@ -2111,6 +2056,14 @@
     "script": "//android_webview/tools/run_cts.py",
     "type": "script",
   },
+  "webengine_support_instrumentation_test_apk": {
+    "label": "//weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk",
+    "type": "console_test_launcher",
+  },
+  "weblayer_junit_tests": {
+    "label": "//weblayer/browser/java:weblayer_junit_tests",
+    "type": "junit_test",
+  },
   "webview_instrumentation_test_apk": {
     "label": "//android_webview/test:webview_instrumentation_test_apk",
     "type": "console_test_launcher",
@@ -2148,6 +2101,9 @@
   "zlib_unittests": {
     "label": "//third_party/zlib:zlib_unittests",
     "type": "console_test_launcher",
+    "args": [
+      "--test-launcher-timeout=400000",
+    ],
   },
   "zucchini_unittests": {
     "label": "//components/zucchini:zucchini_unittests",

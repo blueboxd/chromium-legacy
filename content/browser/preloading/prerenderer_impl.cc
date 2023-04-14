@@ -227,42 +227,27 @@ bool PrerendererImpl::MaybePrerender(
 
   // TODO(crbug.com/1176054): Remove it after supporting cross-site
   // prerender.
-  if (blink::features::
-          IsSameSiteCrossOriginForSpeculationRulesPrerender2Enabled()) {
-    if (!prerender_navigation_utils::IsSameSite(
-            candidate->url, rfhi.GetLastCommittedOrigin())) {
-      rfhi.AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          base::StringPrintf(
-              "The SpeculationRules API does not support cross-site "
-              "prerender yet "
-              "(kSameSiteCrossOriginForSpeculationRulesPrerender2 is "
-              "enabled). (initiator origin: %s, prerender origin: %s). "
-              "https://crbug.com/1176054 tracks cross-site support.",
-              rfhi.GetLastCommittedOrigin().Serialize().c_str(),
-              url::Origin::Create(candidate->url).Serialize().c_str()));
-    }
-  } else {
-    if (!rfhi.GetLastCommittedOrigin().IsSameOriginWith(candidate->url)) {
-      rfhi.AddMessageToConsole(
-          blink::mojom::ConsoleMessageLevel::kWarning,
-          base::StringPrintf(
-              "The SpeculationRules API does not support cross-origin "
-              "prerender yet. (initiator origin: %s, prerender origin: %s). "
-              "https://crbug.com/1176054 tracks cross-origin support.",
-              rfhi.GetLastCommittedOrigin().Serialize().c_str(),
-              url::Origin::Create(candidate->url).Serialize().c_str()));
-    }
+  if (!prerender_navigation_utils::IsSameSite(candidate->url,
+                                              rfhi.GetLastCommittedOrigin())) {
+    rfhi.AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        base::StringPrintf(
+            "The SpeculationRules API does not support cross-site prerender "
+            "yet (kSameSiteCrossOriginForSpeculationRulesPrerender2 is "
+            "enabled). (initiator origin: %s, prerender origin: %s). "
+            "https://crbug.com/1176054 tracks cross-site support.",
+            rfhi.GetLastCommittedOrigin().Serialize().c_str(),
+            url::Origin::Create(candidate->url).Serialize().c_str()));
   }
 
   Referrer referrer(*(candidate->referrer));
   PrerenderAttributes attributes(
       candidate->url, PrerenderTriggerType::kSpeculationRule,
       /*embedder_histogram_suffix=*/"", referrer, rfhi.GetLastCommittedOrigin(),
-      rfhi.GetLastCommittedURL(), rfhi.GetProcess()->GetID(),
-      web_contents->GetWeakPtr(), rfhi.GetFrameToken(),
-      rfhi.GetFrameTreeNodeId(), rfhi.GetPageUkmSourceId(),
-      ui::PAGE_TRANSITION_LINK, /*url_match_predicate=*/absl::nullopt);
+      rfhi.GetProcess()->GetID(), web_contents->GetWeakPtr(),
+      rfhi.GetFrameToken(), rfhi.GetFrameTreeNodeId(),
+      rfhi.GetPageUkmSourceId(), ui::PAGE_TRANSITION_LINK,
+      /*url_match_predicate=*/absl::nullopt);
 
   // TODO(crbug.com/1354049): Handle the case where multiple speculation rules
   // have the same URL but its `target_browsing_context_name_hint` is

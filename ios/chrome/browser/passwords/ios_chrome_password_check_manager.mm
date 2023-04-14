@@ -121,6 +121,17 @@ void IOSChromePasswordCheckManager::StartPasswordCheck() {
         scoped_refptr<IOSChromePasswordCheckManager>(this));
     bulk_leak_check_service_adapter_.StartBulkLeakCheck(kPasswordCheckDataKey,
                                                         &data);
+
+    if (IsPasswordCheckupEnabled()) {
+      insecure_credentials_manager_.StartWeakCheck(base::BindOnce(
+          &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
+          weak_ptr_factory_.GetWeakPtr()));
+
+      insecure_credentials_manager_.StartReuseCheck(base::BindOnce(
+          &IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished,
+          weak_ptr_factory_.GetWeakPtr()));
+    }
+
     is_check_running_ = true;
     start_time_ = base::Time::Now();
   } else {
@@ -143,57 +154,16 @@ PasswordCheckState IOSChromePasswordCheckManager::GetPasswordCheckState()
 }
 
 base::Time IOSChromePasswordCheckManager::GetLastPasswordCheckTime() const {
-  return base::Time::FromDoubleT(browser_state_->GetPrefs()->GetDouble(
-      password_manager::prefs::kLastTimePasswordCheckCompleted));
+  base::Time last_password_check =
+      base::Time::FromDoubleT(browser_state_->GetPrefs()->GetDouble(
+          password_manager::prefs::kLastTimePasswordCheckCompleted));
+
+  return std::max(last_password_check, last_completed_weak_or_reuse_check_);
 }
 
 std::vector<CredentialUIEntry>
 IOSChromePasswordCheckManager::GetInsecureCredentials() const {
-  std::vector<CredentialUIEntry> insecure_crendentials =
-      insecure_credentials_manager_.GetInsecureCredentialEntries();
-
-  // Only filter out the muted compromised credentials if the
-  // kIOSPasswordCheckup flag is disabled and the kMuteCompromisedPasswords flag
-  // is enabled. When kIOSPasswordCheckup is enabled, we want to get all the
-  // insecure credentials, not only the compromised and unmuted ones.
-  if (!IsPasswordCheckupEnabled() &&
-      base::FeatureList::IsEnabled(
-          password_manager::features::kMuteCompromisedPasswords)) {
-    base::EraseIf(insecure_crendentials,
-                  [](const auto& credential) { return credential.IsMuted(); });
-  }
-  return insecure_crendentials;
-}
-
-WarningType IOSChromePasswordCheckManager::GetWarningOfHighestPriority() const {
-  std::vector<CredentialUIEntry> insecure_credentials =
-      insecure_credentials_manager_.GetInsecureCredentialEntries();
-
-  bool has_reused_passwords = false;
-  bool has_weak_passwords = false;
-  bool has_muted_warnings = false;
-
-  for (const auto& credential : insecure_credentials) {
-    if (credential.IsMuted()) {
-      has_muted_warnings = true;
-    } else if (credential.IsPhished() || credential.IsLeaked()) {
-      return WarningType::kCompromisedPasswordsWarning;
-    } else if (credential.IsReused()) {
-      has_reused_passwords = true;
-    } else if (credential.IsWeak()) {
-      has_weak_passwords = true;
-    }
-  }
-
-  if (has_reused_passwords) {
-    return WarningType::kReusedPasswordsWarning;
-  } else if (has_weak_passwords) {
-    return WarningType::kWeakPasswordsWarning;
-  } else if (has_muted_warnings) {
-    return WarningType::kDismissedWarningsWarning;
-  }
-
-  return WarningType::kNoInsecurePasswordsWarning;
+  return insecure_credentials_manager_.GetInsecureCredentialEntries();
 }
 
 void IOSChromePasswordCheckManager::OnSavedPasswordsChanged() {
@@ -206,7 +176,7 @@ void IOSChromePasswordCheckManager::OnSavedPasswordsChanged() {
 
 void IOSChromePasswordCheckManager::OnInsecureCredentialsChanged() {
   for (auto& observer : observers_) {
-    observer.CompromisedCredentialsChanged();
+    observer.InsecureCredentialsChanged();
   }
 }
 
@@ -246,6 +216,11 @@ void IOSChromePasswordCheckManager::OnCredentialDone(
   if (is_leaked) {
     insecure_credentials_manager_.SaveInsecureCredential(credential);
   }
+}
+
+void IOSChromePasswordCheckManager::OnWeakOrReuseCheckFinished() {
+  last_completed_weak_or_reuse_check_ = base::Time::Now();
+  NotifyPasswordCheckStatusChanged();
 }
 
 void IOSChromePasswordCheckManager::NotifyPasswordCheckStatusChanged() {

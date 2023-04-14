@@ -13,7 +13,7 @@
 AccessCodeCastDialogBrowserTest.*
 AppInfoDialogBrowserTest.*
 AskGoogleForSuggestionsDialogTest.*
-AssistantOnboardingViewBrowserTest.InvokeUi_*
+*PopupViewViewsBrowsertest*
 BookmarkBubbleViewBrowserTest.*
 BookmarkEditorViewBrowserTest.*
 BubbleFrameViewBrowserTest.*
@@ -64,6 +64,8 @@ PermissionRequestChipDialogBrowserTest.*
 *PermissionPromptBubbleViewBrowserTest.*
 PrivacySandboxDialogViewBrowserTest.*
 PrivacySandboxNoticeBubbleBrowserTest.*
+ProfilePickerUIPixelTest.*
+ProfileTypeChoiceUIPixelTest.*
 PromptForScanningModalDialogTest.*
 QRCodeGeneratorBubbleBrowserTest.*
 RelaunchRecommendedBubbleViewDialogTest.*
@@ -78,7 +80,7 @@ SyncConfirmationUIDialogPixelTest.*
 SyncConfirmationUIWindowPixelTest.*
 TabGroupEditorBubbleViewDialogBrowserTest.*
 TabHoverCardBubbleViewDialogBrowserTest.*
-*TailoredSecurityDesktopModalTest.InvokeUi_*
+*TailoredSecurityDesktopDialogManagerTest.InvokeUi_*
 TranslateBubbleVisualTest.InvokeUi_*
 UpdateRecommendedDialogTest.*
 WebAppConfirmViewBrowserTest.*

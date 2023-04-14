@@ -7,6 +7,7 @@
 #include <atomic>
 #include <cstdint>
 #include <initializer_list>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -46,6 +47,7 @@ using ::testing::Between;
 using ::testing::DoAll;
 using ::testing::Eq;
 using ::testing::Invoke;
+using ::testing::Ne;
 using ::testing::Return;
 using ::testing::Sequence;
 using ::testing::StrEq;
@@ -133,6 +135,10 @@ class StorageQueueTest
                 (int64_t /*uploader_id*/, int64_t, uint64_t),
                 (const));
     MOCK_METHOD(void,
+                HasUnencryptedCopy,
+                (int64_t /*uploader_id*/, Destination, base::StringPiece),
+                (const));
+    MOCK_METHOD(void,
                 UploadComplete,
                 (int64_t /*uploader_id*/, Status),
                 (const));
@@ -165,11 +171,13 @@ class StorageQueueTest
       mock_upload_->EncounterSeqId(uploader_id, sequencing_id);
     }
 
-    void DoUploadRecord(int64_t uploader_id,
-                        int64_t sequencing_id,
-                        int64_t generation_id,
-                        base::StringPiece data,
-                        base::OnceCallback<void(bool)> processed_cb) {
+    void DoUploadRecord(
+        int64_t uploader_id,
+        int64_t sequencing_id,
+        int64_t generation_id,
+        const Record& record,
+        const absl::optional<const Record>& possible_record_copy,
+        base::OnceCallback<void(bool)> processed_cb) {
       DoEncounterSeqId(uploader_id, sequencing_id, generation_id);
       DCHECK_CALLED_ON_VALID_SEQUENCE(scoped_checker_);
       upload_progress_.append("Record: ")
@@ -177,10 +185,19 @@ class StorageQueueTest
           .append("/")
           .append(base::NumberToString(generation_id))
           .append(" '")
-          .append(data.data(), data.size())
+          .append(record.data().data(), record.data().size())
           .append("'\n");
-      std::move(processed_cb)
-          .Run(mock_upload_->UploadRecord(uploader_id, sequencing_id, data));
+      bool success =
+          mock_upload_->UploadRecord(uploader_id, sequencing_id, record.data());
+      if (success && possible_record_copy.has_value()) {
+        const auto& record_copy = possible_record_copy.value();
+        upload_progress_.append("Has unencrypted copy: ")
+            .append(record_copy.data().data(), record_copy.data().size())
+            .append("'\n");
+        mock_upload_->HasUnencryptedCopy(uploader_id, record_copy.destination(),
+                                         record_copy.data());
+      }
+      std::move(processed_cb).Run(success);
     }
 
     void DoUploadRecordFailure(int64_t uploader_id,
@@ -324,6 +341,18 @@ class StorageQueueTest
         return *this;
       }
 
+      SetUp& HasUnencryptedCopy(int64_t sequencing_id,
+                                Destination destination,
+                                base::StringPiece value) {
+        CHECK(uploader_) << "'Complete' already called";
+        EXPECT_CALL(*uploader_->mock_upload_,
+                    HasUnencryptedCopy(Eq(uploader_id_), Eq(destination),
+                                       StrEq(std::string(value))))
+            .Times(1)
+            .InSequence(uploader_->test_upload_sequence_);
+        return *this;
+      }
+
       SetUp& Failure(int64_t sequencing_id, Status error) {
         CHECK(uploader_) << "'Complete' already called";
         EXPECT_CALL(
@@ -403,8 +432,12 @@ class StorageQueueTest
         EXPECT_FALSE(encrypted_record.has_compression_information());
       }
 
+      absl::optional<Record> possible_record_copy;
+      if (encrypted_record.has_record_copy()) {
+        possible_record_copy = encrypted_record.record_copy();
+      }
       VerifyRecord(std::move(sequence_information), std::move(wrapped_record),
-                   std::move(processed_cb));
+                   std::move(possible_record_copy), std::move(processed_cb));
     }
 
     void ProcessGap(SequenceInformation sequence_information,
@@ -481,6 +514,7 @@ class StorageQueueTest
    private:
     void VerifyRecord(SequenceInformation sequence_information,
                       WrappedRecord wrapped_record,
+                      absl::optional<const Record> possible_record_copy,
                       base::OnceCallback<void(bool)> processed_cb) {
       DCHECK_CALLED_ON_VALID_SEQUENCE(test_uploader_checker_);
       // Verify generation match.
@@ -504,6 +538,10 @@ class StorageQueueTest
         generation_id_ = sequence_information.generation_id();
         *last_upload_generation_id_ = sequence_information.generation_id();
       }
+
+      // Verify local elements are not included in Record.
+      DCHECK_EQ(wrapped_record.record().has_reserved_space(), 0);
+      DCHECK(!wrapped_record.record().needs_local_unencrypted_copy());
 
       // Verify digest and its match.
       {
@@ -550,7 +588,8 @@ class StorageQueueTest
       sequence_bound_upload_.AsyncCall(&SequenceBoundUpload::DoUploadRecord)
           .WithArgs(uploader_id_, sequence_information.sequencing_id(),
                     sequence_information.generation_id(),
-                    wrapped_record.record().data(), std::move(processed_cb));
+                    wrapped_record.record(), possible_record_copy,
+                    std::move(processed_cb));
     }
 
     SEQUENCE_CHECKER(test_uploader_checker_);
@@ -750,6 +789,23 @@ class StorageQueueTest
   void SetExpectedUploadsCount(size_t count = 1u) {
     EXPECT_THAT(expected_uploads_count_, Eq(0u));
     expected_uploads_count_ = count;
+  }
+
+  void DeleteGenerationIdFromRecordFilePaths(const QueueOptions options) {
+    // Remove the generation id from the path of all data files in the storage
+    // queue directory
+    auto file_prefix_regex =
+        base::StrCat({options.file_prefix(), FILE_PATH_LITERAL(".*")});
+    base::FileEnumerator dir_enum(
+        options.directory(),
+        /*recursive=*/false, base::FileEnumerator::FILES, file_prefix_regex);
+    for (auto file_path = dir_enum.Next(); !file_path.empty();
+         file_path = dir_enum.Next()) {
+      base::FilePath file_path_without_generation_id = base::FilePath(
+          file_path.RemoveFinalExtension().RemoveFinalExtension().AddExtension(
+              file_path.FinalExtension()));
+      ASSERT_TRUE(Move(file_path, file_path_without_generation_id));
+    }
   }
 
   std::string dm_token_;
@@ -2379,6 +2435,55 @@ TEST_P(StorageQueueTest, UploadWithInsufficientMemory) {
     SetExpectedUploadsCount();
     task_environment_.FastForwardBy(base::Seconds(1));
   }
+}
+
+TEST_P(StorageQueueTest, WriteIntoNewStorageQueueReopenWithCorruptData) {
+  CreateTestStorageQueueOrDie(BuildStorageQueueOptionsPeriodic());
+  WriteStringOrDie(kData[0]);
+  WriteStringOrDie(kData[1]);
+  WriteStringOrDie(kData[2]);
+
+  // Save copy of options.
+  const QueueOptions options = storage_queue_->options();
+
+  ResetTestStorageQueue();
+
+  DeleteGenerationIdFromRecordFilePaths(options);
+
+  // All data files should be irreparably corrupt
+  auto storage_queue_result = CreateTestStorageQueue(options);
+  EXPECT_THAT(storage_queue_result.status(), Ne(Status::StatusOK()));
+}
+
+TEST_P(StorageQueueTest, WriteWithUnencryptedCopy) {
+  static constexpr char kTestData[] = "test_data";
+
+  CreateTestStorageQueueOrDie(BuildStorageQueueOptionsOnlyManual());
+  Record record;
+  record.set_data(kTestData);
+  record.set_destination(UPLOAD_EVENTS);
+  record.set_needs_local_unencrypted_copy(true);
+  if (!dm_token_.empty()) {
+    record.set_dm_token(dm_token_);
+  }
+  const Status write_result = WriteRecord(std::move(record));
+  ASSERT_OK(write_result) << write_result;
+
+  // Set uploader expectations.
+  test::TestCallbackAutoWaiter waiter;
+  EXPECT_CALL(set_mock_uploader_expectations_,
+              Call(Eq(UploaderInterface::UploadReason::MANUAL)))
+      .WillOnce(Invoke([&waiter, this](UploaderInterface::UploadReason reason) {
+        return TestUploader::SetUp(&waiter, this)
+            .Required(0, kTestData)
+            .HasUnencryptedCopy(0, UPLOAD_EVENTS, kTestData)
+            .Complete();
+      }))
+      .RetiresOnSaturation();
+
+  // Flush manually.
+  SetExpectedUploadsCount();
+  FlushOrDie();
 }
 
 INSTANTIATE_TEST_SUITE_P(

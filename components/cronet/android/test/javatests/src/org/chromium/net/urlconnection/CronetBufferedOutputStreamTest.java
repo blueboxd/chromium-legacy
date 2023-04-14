@@ -10,8 +10,7 @@ import static org.junit.Assert.fail;
 
 import static org.chromium.net.CronetTestRule.getContext;
 
-import android.support.test.runner.AndroidJUnit4;
-
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -20,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetTestRule;
 import org.chromium.net.CronetTestRule.CompareDefaultWithCronet;
@@ -53,7 +51,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testGetOutputStreamAfterConnectionMade() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -77,7 +74,6 @@ public class CronetBufferedOutputStreamTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
     public void testWriteAfterConnect() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -101,7 +97,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testWriteAfterReadingResponse() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -123,7 +118,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -156,7 +150,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithContentLengthOneMassiveWrite() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -177,7 +170,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithContentLengthWriteOneByte() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -200,7 +192,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithZeroContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -217,7 +208,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostZeroByteWithoutContentLength() throws Exception {
         // Make sure both implementation sets the Content-Length header to 0.
@@ -245,7 +235,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithoutContentLengthSmall() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -263,7 +252,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithoutContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -294,7 +282,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithoutContentLengthOneMassiveWrite() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -313,7 +300,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testPostWithoutContentLengthWriteOneByte() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -334,7 +320,6 @@ public class CronetBufferedOutputStreamTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testWriteLessThanContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -362,7 +347,6 @@ public class CronetBufferedOutputStreamTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testWriteMoreThanContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -396,7 +380,6 @@ public class CronetBufferedOutputStreamTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @CompareDefaultWithCronet
     public void testWriteMoreThanContentLengthWriteOneByte() throws Exception {
         URL url = new URL(NativeTestServer.getEchoBodyURL());
@@ -431,7 +414,6 @@ public class CronetBufferedOutputStreamTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
     public void testRewind() throws Exception {
         URL url = new URL(NativeTestServer.getRedirectToEchoBody());
@@ -452,7 +434,6 @@ public class CronetBufferedOutputStreamTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunCronetHttpURLConnection
     public void testRewindWithoutContentLength() throws Exception {
         URL url = new URL(NativeTestServer.getRedirectToEchoBody());

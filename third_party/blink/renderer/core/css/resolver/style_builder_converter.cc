@@ -62,13 +62,12 @@
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/transform_builder.h"
-#include "third_party/blink/renderer/core/css/scoped_css_value.h"
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/style/anchor_scroll_value.h"
+#include "third_party/blink/renderer/core/style/anchor_specifier_value.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/scoped_css_name.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
@@ -1679,20 +1678,20 @@ ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
                                              custom_ident.GetTreeScope());
 }
 
-ScopedCSSName* StyleBuilderConverter::ConvertNoneOrCustomIdent(
+ScopedCSSName* StyleBuilderConverter::ConvertAnchorDefault(
     StyleResolverState& state,
-    const ScopedCSSValue& value) {
-  if (const auto* identifier_value =
-          DynamicTo<CSSIdentifierValue>(value.GetCSSValue())) {
-    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
+    const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
+  if (const auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
+    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kImplicit);
     return nullptr;
   }
-  return MakeGarbageCollected<ScopedCSSName>(
-      To<CSSCustomIdentValue>(value.GetCSSValue()).Value(),
-      value.GetTreeScope());
+  const CSSCustomIdentValue& custom_ident = To<CSSCustomIdentValue>(value);
+  return MakeGarbageCollected<ScopedCSSName>(custom_ident.Value(),
+                                             custom_ident.GetTreeScope());
 }
 
-AnchorScrollValue* StyleBuilderConverter::ConvertAnchorScroll(
+AnchorSpecifierValue* StyleBuilderConverter::ConvertAnchorScroll(
     StyleResolverState& state,
     const CSSValue& value) {
   DCHECK(value.IsScopedValue());
@@ -1700,15 +1699,17 @@ AnchorScrollValue* StyleBuilderConverter::ConvertAnchorScroll(
     switch (identifier_value->GetValueID()) {
       case CSSValueID::kNone:
         return nullptr;
+      case CSSValueID::kDefault:
+        return AnchorSpecifierValue::Default();
       case CSSValueID::kImplicit:
-        return AnchorScrollValue::Implicit();
+        return AnchorSpecifierValue::Implicit();
       default:
         NOTREACHED();
         return nullptr;
     }
   }
   const CSSCustomIdentValue& custom_ident = To<CSSCustomIdentValue>(value);
-  return MakeGarbageCollected<AnchorScrollValue>(
+  return MakeGarbageCollected<AnchorSpecifierValue>(
       *MakeGarbageCollected<ScopedCSSName>(custom_ident.Value(),
                                            custom_ident.GetTreeScope()));
 }
@@ -2191,7 +2192,7 @@ TextSizeAdjust StyleBuilderConverter::ConvertTextSizeAdjust(
 TextUnderlinePosition StyleBuilderConverter::ConvertTextUnderlinePosition(
     StyleResolverState& state,
     const CSSValue& value) {
-  TextUnderlinePosition flags = kTextUnderlinePositionAuto;
+  TextUnderlinePosition flags = TextUnderlinePosition::kAuto;
 
   auto process = [&flags](const CSSValue& identifier) {
     flags |=
@@ -2506,7 +2507,7 @@ static const CSSValue& ComputeRegisteredPropertyValue(
     const KURL& base_url = context ? context->BaseURL() : KURL();
     const WTF::TextEncoding& charset =
         context ? context->Charset() : WTF::TextEncoding();
-    return *uri_value->ValueWithURLMadeAbsolute(base_url, charset);
+    return *uri_value->ComputedCSSValue(base_url, charset);
   }
 
   return value;
@@ -2680,16 +2681,16 @@ ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(
 
 ScopedCSSNameList* StyleBuilderConverter::ConvertContainerName(
     StyleResolverState& state,
-    const ScopedCSSValue& scoped_value) {
-  const CSSValue& value = scoped_value.GetCSSValue();
+    const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
   if (auto* ident = DynamicTo<CSSIdentifierValue>(value)) {
     DCHECK_EQ(To<CSSIdentifierValue>(value).GetValueID(), CSSValueID::kNone);
     return nullptr;
   }
+  DCHECK(value.IsBaseValueList());
   HeapVector<Member<const ScopedCSSName>> names;
   for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
-    names.push_back(ConvertNoneOrCustomIdent(
-        state, ScopedCSSValue(*item, scoped_value.GetTreeScope())));
+    names.push_back(ConvertNoneOrCustomIdent(state, *item));
   }
   return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }
@@ -3045,12 +3046,12 @@ Vector<TimelineInset> StyleBuilderConverter::ConvertViewTimelineInset(
 
 ScopedCSSNameList* StyleBuilderConverter::ConvertViewTimelineName(
     StyleResolverState& state,
-    const ScopedCSSValue& value) {
+    const CSSValue& value) {
+  DCHECK(value.IsScopedValue());
+  DCHECK(value.IsBaseValueList());
   HeapVector<Member<const ScopedCSSName>> names;
-  for (const Member<const CSSValue>& item :
-       To<CSSValueList>(value.GetCSSValue())) {
-    names.push_back(ConvertNoneOrCustomIdent(
-        state, ScopedCSSValue(*item, value.GetTreeScope())));
+  for (const Member<const CSSValue>& item : To<CSSValueList>(value)) {
+    names.push_back(ConvertNoneOrCustomIdent(state, *item));
   }
   return MakeGarbageCollected<ScopedCSSNameList>(std::move(names));
 }

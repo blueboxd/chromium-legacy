@@ -95,7 +95,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   void OnAuthFailure(const AuthFailure& error) override;
   void OnAuthSuccess(const UserContext& user_context) override;
   void OnOffTheRecordAuthSuccess() override;
-  void OnPasswordChangeDetected(const UserContext& user_context) override;
+  void OnPasswordChangeDetectedLegacy(const UserContext& user_context) override;
+  void OnPasswordChangeDetected(std::unique_ptr<UserContext>) override;
   void OnOldEncryptionDetected(std::unique_ptr<UserContext>,
                                bool has_incomplete_migration) override;
 
@@ -153,9 +154,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
                                        base::OnceClosure success_callback,
                                        base::OnceClosure failure_callback) = 0;
 
-  // Set up sign-in flow for Easy Unlock.
-  virtual void SetupEasyUnlockUserFlow(const AccountId& account_id) = 0;
-
   // Run policy check for |account_id|. If something is wrong, delegate's
   // PolicyLoadFailed is called.
   virtual bool CheckPolicyForUser(const AccountId& account_id) = 0;
@@ -191,7 +189,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_LOGIN_AUTH) LoginPerformer
   void NotifyAuthFailure(const AuthFailure& error);
   void NotifyAuthSuccess(const UserContext& user_context);
   void NotifyOffTheRecordAuthSuccess();
-  void NotifyPasswordChangeDetected(const UserContext& user_context);
+  void NotifyPasswordChangeDetectedLegacy(const UserContext& user_context);
+  void NotifyPasswordChangeDetected(std::unique_ptr<UserContext> user_context);
   void NotifyOldEncryptionDetected(std::unique_ptr<UserContext> user_context,
                                    bool has_incomplete_migration);
   void NotifyAllowlistCheckFailure();

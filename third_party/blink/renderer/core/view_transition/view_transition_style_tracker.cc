@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
+#include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -90,6 +91,25 @@ absl::optional<String> ComputeInsetDifference(PhysicalRect reference_rect,
 
   return String::Format("inset(%.3fpx %.3fpx %.3fpx %.3fpx);", top_offset,
                         right_offset, bottom_offset, left_offset);
+}
+
+gfx::Transform ComputeViewportTransform(const LayoutObject& object) {
+  DCHECK(object.HasLayer());
+  auto& first_fragment = object.FirstFragment();
+  DCHECK(ToRoundedPoint(first_fragment.PaintOffset()).IsOrigin())
+      << first_fragment.PaintOffset();
+  auto paint_properties = first_fragment.LocalBorderBoxProperties();
+
+  auto& root_fragment = object.GetDocument().GetLayoutView()->FirstFragment();
+  const auto& root_properties = root_fragment.LocalBorderBoxProperties();
+
+  auto transform = GeometryMapper::SourceToDestinationProjection(
+      paint_properties.Transform(), root_properties.Transform());
+  if (!transform.HasPerspective()) {
+    transform.Round2dTranslationComponents();
+  }
+
+  return transform;
 }
 
 }  // namespace
@@ -464,6 +484,7 @@ bool ViewTransitionStyleTracker::Capture() {
   if (old_root_data_) {
     old_root_data_->snapshot_id =
         viz::ViewTransitionElementResourceId::Generate();
+    capture_resource_ids_.push_back(old_root_data_->snapshot_id);
   }
   for (const auto& root_name : AllRootTags())
     transition_names.push_front(root_name);
@@ -621,13 +642,6 @@ bool ViewTransitionStyleTracker::Start() {
 
   DCHECK_GE(document_->Lifecycle().GetState(),
             DocumentLifecycle::kPrePaintClean);
-
-  // We need to run post prepaint steps here to ensure that the style would be
-  // correct if computed by either the main frame or by getComputedStyle call.
-  // TODO(vmpstr): Rename to something like UpdatePseudoGeometry.
-  const bool continue_transition = RunPostPrePaintSteps();
-  DCHECK(continue_transition)
-      << "The transition should've been skipped by FlattenAndVerifyElements";
 
   // We need a style invalidation to generate new content pseudo elements for
   // new elements in the DOM.
@@ -831,7 +845,14 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
       return false;
     }
 
-    gfx::Transform snapshot_matrix = layout_object->LocalToAbsoluteTransform();
+    // TODO(bokan): This doesn't account for the local offset of an inline
+    // element within its container. The object-view-box inset will ensure the
+    // snapshot is rendered in the correct place but the pseudo is positioned
+    // w.r.t. to the container. This can look awkward since the opposing
+    // snapshot may have a different object-view-box. Inline positioning and
+    // scaling more generally might use some improvements.
+    // https://crbug.com/1416951.
+    auto snapshot_matrix = ComputeViewportTransform(*layout_object);
 
     if (document_->GetLayoutView()
             ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft()) {
@@ -851,17 +872,27 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
 
     snapshot_matrix.Zoom(1.0 / device_pixel_ratio_);
 
-    // ResizeObserverEntry is created to reuse the logic for parsing object size
-    // for different types of LayoutObjects.
-    auto* resize_observer_entry =
-        MakeGarbageCollected<ResizeObserverEntry>(element_data->target_element);
-    auto entry_size = resize_observer_entry->borderBoxSize()[0];
-    LayoutSize border_box_size_in_css_space =
-        layout_object->IsHorizontalWritingMode()
-            ? LayoutSize(LayoutUnit(entry_size->inlineSize()),
-                         LayoutUnit(entry_size->blockSize()))
-            : LayoutSize(LayoutUnit(entry_size->blockSize()),
-                         LayoutUnit(entry_size->inlineSize()));
+    LayoutSize border_box_size_in_css_space;
+
+    if (layout_object->IsSVGChild() || IsA<LayoutBox>(layout_object)) {
+      // ResizeObserverEntry is created to reuse the logic for parsing object
+      // size for different types of LayoutObjects. However, this works only
+      // for SVGChild and LayoutBox.
+      auto* resize_observer_entry = MakeGarbageCollected<ResizeObserverEntry>(
+          element_data->target_element);
+      auto entry_size = resize_observer_entry->borderBoxSize()[0];
+      border_box_size_in_css_space =
+          layout_object->IsHorizontalWritingMode()
+              ? LayoutSize(LayoutUnit(entry_size->inlineSize()),
+                           LayoutUnit(entry_size->blockSize()))
+              : LayoutSize(LayoutUnit(entry_size->blockSize()),
+                           LayoutUnit(entry_size->inlineSize()));
+    } else if (auto* box_model =
+                   DynamicTo<LayoutBoxModelObject>(layout_object)) {
+      border_box_size_in_css_space =
+          LayoutSize(box_model->BorderBoundingBox().size());
+    }
+
     if (float effective_zoom = layout_object->StyleRef().EffectiveZoom();
         std::abs(effective_zoom - device_pixel_ratio_) >=
         std::numeric_limits<float>::epsilon()) {
@@ -869,8 +900,9 @@ bool ViewTransitionStyleTracker::RunPostPrePaintSteps() {
     }
 
     PhysicalRect visual_overflow_rect_in_layout_space;
-    if (auto* box = DynamicTo<LayoutBox>(layout_object))
+    if (auto* box = DynamicTo<LayoutBoxModelObject>(layout_object)) {
       visual_overflow_rect_in_layout_space = ComputeVisualOverflowRect(*box);
+    }
 
     WritingMode writing_mode = layout_object->StyleRef().GetWritingMode();
 
@@ -1524,6 +1556,23 @@ bool ViewTransitionStyleTracker::SnapshotRootDidChangeSize() const {
   }
 
   return true;
+}
+
+const char* ViewTransitionStyleTracker::StateToString(State state) {
+  switch (state) {
+    case State::kIdle:
+      return "Idle";
+    case State::kCapturing:
+      return "Capturing";
+    case State::kCaptured:
+      return "Captured";
+    case State::kStarted:
+      return "Started";
+    case State::kFinished:
+      return "Finished";
+  }
+  NOTREACHED();
+  return "???";
 }
 
 }  // namespace blink

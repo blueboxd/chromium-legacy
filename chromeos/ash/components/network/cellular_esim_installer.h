@@ -74,7 +74,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimInstaller {
       const std::string& activation_code,
       const std::string& confirmation_code,
       const dbus::ObjectPath& euicc_path,
-      base::Value new_shill_properties,
+      base::Value::Dict new_shill_properties,
       InstallProfileFromActivationCodeCallback callback,
       bool is_initial_install = true,
       bool is_install_via_qr_code = false);
@@ -82,7 +82,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimInstaller {
   // Attempts to create a Shill service configuration with given
   // |new_shill_properties| for eSIM with |profile_path| and |euicc_path|.
   // |callback| is called with the newly configure service path.
-  void ConfigureESimService(const base::Value& new_shill_properties,
+  void ConfigureESimService(const base::Value::Dict& new_shill_properties,
                             const dbus::ObjectPath& euicc_path,
                             const dbus::ObjectPath& profile_path,
                             ConfigureESimServiceCallback callback);
@@ -127,7 +127,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimInstaller {
       const std::string& activation_code,
       const std::string& confirmation_code,
       const dbus::ObjectPath& euicc_path,
-      base::Value new_shill_properties,
+      base::Value::Dict new_shill_properties,
       bool is_initial_install,
       bool is_install_via_qr_code,
       InstallProfileFromActivationCodeCallback callback,
@@ -136,7 +136,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularESimInstaller {
       InstallProfileFromActivationCodeCallback callback,
       std::unique_ptr<CellularInhibitor::InhibitLock> inhibit_lock,
       const dbus::ObjectPath& euicc_path,
-      const base::Value& new_shill_properties,
+      const base::Value::Dict& new_shill_properties,
       bool is_initial_install,
       bool is_install_via_qr_code,
       HermesResponseStatus status,

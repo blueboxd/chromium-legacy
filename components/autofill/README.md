@@ -32,23 +32,23 @@ with `AutofillAgent` extracting a form from the DOM.
 │FormDataImporter ◄─────────────────────┐
 │1 per WebContents│               events│
 └─▲───────────────┘                     │
-  │                                     │                                  ┌───────────────┐
-  │ ┌────────────────────────┐        ┌─┴────────────────────┐             │Autofill server│
-  │ │AutofillExternalDelegate◄────────┤BrowserAutofillManager├───────┐     └─────────────▲─┘
-  │ │1 per RenderFrameHost   │  owns 1│1 per RenderFrameHost │  votes│               HTTP│
-  │ └──────────────────────┬─┘        └─▲──────────────────┬─┘     ┌─▼───────────────────▼─┐
-  │                  events│            │            events│       │AutofillDownloadManager│
-  │                        │            │                  │       │1 per RenderFrameHost  │
+  │                                     │
+  │ ┌────────────────────────┐        ┌─┴────────────────────┐
+  │ │AutofillExternalDelegate◄────────┤BrowserAutofillManager├───────┐     ┌───────────────┐
+  │ │1 per RenderFrameHost   │  owns 1│1 per RenderFrameHost │  votes│     │Autofill server│
+  │ └──────────────────────┬─┘        └─▲──────────────────┬─┘       │     └─────────────▲─┘
+  │                  events│            │            events│         │               HTTP│
+  │                        │            │                  │       ┌─▼───────────────────▼─┐
+  ├────────────────────────┼────────────┼──────────────────┼───────►AutofillDownloadManager│
+  │                        │            │                  │       │1 per WebContents      │
   │                        │            │                  │       └─────────────────────▲─┘
   │                        │            │                  │                             │
-  │                        │            │                  │                             │
-  │                        │            │                  └──┐ ┌──────────────┐         │
-  │                        │            │                     │ │FormStructure │         │
-  │                        │            │                     │ │1 per FormData│         │
-  │                        │            │                     │ └─▲────────────┘         │
-  │                        │            │                     │   │                      │
-  │owns 1                  │            │events               │   │sets types     queries│
-┌─┴──────────────────┐     │          ┌─┴───────────────────┐ │   │owns N          owns 1│
+  │                        │            │                  │    ┌──────────────┐         │
+  │                        │            │                  │    │FormStructure │         │
+  │                        │            │                  │    │1 per FormData│         │
+  │                        │            │                  └──┐ └─▲────────────┘         │
+  │owns 1                  │            │events               │   │sets types            │
+┌─┴──────────────────┐     │          ┌─┴───────────────────┐ │   │owns N         queries│
 │ChromeAutofillClient◄─────┼──────────┤AutofillManager      ├─┼───┴──────────────────────┘
 │1 per WebContents   │     │  weak ref│1 per RenderFrameHost│ │
 └────────────────────┘     │          └─▲─────────────────┬─┘ │
@@ -172,6 +172,7 @@ may sacrifice a little bit of correctness in favor of simplicity.
     * Responsibilities:
       * Manages life-cycle of `ContentAutofillDriver` and ensures that there is
         one Driver instance per renderer frame.
+    * Has sibling `AutofillDriverIOSFactory` for iOS
   * `AutofillManager` and `BrowserAutofillManager`
     * One instance per `RenderFrameHost` (frame), owned by
       `AutofillDriver`.
@@ -292,6 +293,76 @@ may sacrifice a little bit of correctness in favor of simplicity.
 ## Where is Autofill data persisted?
 * See
   [`../../components/autofill/core/browser/webdata/autofill_table.h`](https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/webdata/autofill_table.h)
+
+## What is a form submission?
+The following situations are considered form submissions by Autofill and end up
+at `AutofillManager::OnFormSubmitted()` with a submission source and an
+assessment whether the form submission should be considered successful (meaning
+that the website accepted the submitted values, not that the HTTP request
+succeeded):
+
+* A **regular HTTP form submission** (`FormTracker::WillSubmitForm()`).
+  * Triggers `SubmissionSource::FORM_SUBMISSION` with `known_success=false`.
+* A **main-frame navigation** was initiated in the content area but not triggered by
+  a link click (`FormTracker::DidStartNavigation()`) - only if the frame has a
+  `last_interacted_form_` or form-less element that the user interacted with.
+  * Triggers `SubmissionSource::PROBABLY_FORM_SUBMITTED` with
+    `known_success=false`.
+* After a **same document navigation**
+  (`FormTracker::DidFinishSameDocumentNavigation()`), the last interacted form
+  is/becomes unfocusable or removed. The former condition is tested via
+  `WebNode::IsFocusable()` and considers various styles (e.g. "display: none" on
+  the node or a parent, "visibility: hidden") and attributes (e.g. "inert",
+  tabindex="-1", "disabled") which prevent focusability.
+  * Triggers `SubmissionSource::SAME_DOCUMENT_NAVIGATION` with
+    `known_success=true`.
+* After a **successful AJAX/XMLHttpRequest request**
+  (`AutofillAgent::AjaxSucceeded()`), the last interacted form is/becomes
+  unfocusable or removed.
+  * Triggers `SubmissionSource::XHR_SUCCEEDED` if the form is already
+    inaccessible or removed when the XHR succeeds (`known_success=true`).
+  * Triggers `SubmissionSource::DOM_MUTATION_AFTER_XHR` if the form becomes
+    inaccessible or removed after a successful XHR and the user does not
+    interact with any other forms in between (`known_success=true`).
+* The **subframe** or non-primary main frame containing the form was
+  **detached** (`FormTracker::WillDetach()`)
+  * Triggers `SubmissionSource::FRAME_DETACHED` with `known_success=true`.
+
+## When are votes uploaded?
+Autofill votes are theoretically uploaded
+* when a **form is submitted**
+  (`BrowserAutofillManager::OnFormSubmittedImpl()`).
+
+  In this case `observed_submission=true` is passed to
+  `BrowserAutofillManager::MaybeStartVoteUploadProcess`.
+* when a the user **removes focus** from a form (this could happen because the
+  user clicks on a custom autofill dropdown rendered by the website or if the
+  user just clicks on the background).
+  (`BrowserAutofillManager::OnFocusNoLongerOnFormImpl()` ->
+  `BrowserAutofillManager::ProcessPendingFormForUpload()`).
+
+  `observed_submission=false` is passed.
+* when a the **form changes** (the structure, not the values) and we notice it
+  (`BrowserAutofillManager::UpdatePendingForm()` ->
+  `BrowserAutofillManager::ProcessPendingFormForUpload()`).
+
+  `observed_submission=false` is passed.
+
+In practice we allow only one upload per (form x submission source) every
+`kAutofillUploadThrottlingPeriodInDays` days.
+
+In case `observed_submission == true`, the votes are generated on a background
+thread and then passed to the `AutofillDownloadManager`.
+
+In case `observed_submission == false`, the votes are not directly passed to
+the `AutofillDownloadManager`. Instead they are cached until the cache is
+flushed. This enables us to override previous votes in case the user focuses
+and removes focus from a form multiple times while editing the fields' values.
+The cache is flushed on form submission.
+
+As the votes generation is asynchronous, it is not guaranteed that the results
+are available by the time the upload cache is flushed. In this case, votes are
+only uploaded on the next navigation.
 
 <!-- TODO:
 ## How are addresses compared, updated or added?

@@ -21,4 +21,5 @@
    "SecurityClass": "802_1x",
    "StaticIPConfig": {},
    "Type": "wifi",
+   "EAP.CACertPEM": [  ]
 }

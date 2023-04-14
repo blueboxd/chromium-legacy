@@ -105,14 +105,6 @@ void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
 
   BeforeLaunchOnClientThread();
 
-#if BUILDFLAG(IS_FUCHSIA)
-  mojo_channel_.emplace();
-#else   // BUILDFLAG(IS_FUCHSIA)
-  mojo_named_channel_ = CreateNamedPlatformChannelOnClientThread();
-  if (!mojo_named_channel_)
-    mojo_channel_.emplace();
-#endif  //  BUILDFLAG(IS_FUCHSIA)
-
   GetProcessLauncherTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&ChildProcessLauncherHelper::LaunchOnLauncherThread,
@@ -122,11 +114,20 @@ void ChildProcessLauncherHelper::StartLaunchOnClientThread() {
 void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
   DCHECK(CurrentlyOnProcessLauncherTaskRunner());
 
+#if BUILDFLAG(IS_FUCHSIA)
+  mojo_channel_.emplace();
+#else   // BUILDFLAG(IS_FUCHSIA)
+  mojo_named_channel_ = CreateNamedPlatformChannelOnLauncherThread();
+  if (!mojo_named_channel_) {
+    mojo_channel_.emplace();
+  }
+#endif  //  BUILDFLAG(IS_FUCHSIA)
+
   begin_launch_time_ = base::TimeTicks::Now();
   if (GetProcessType() == switches::kRendererProcess &&
       base::TimeTicks::IsConsistentAcrossProcesses()) {
     const base::TimeDelta ticks_as_delta = begin_launch_time_.since_origin();
-    command_line_->AppendSwitchASCII(
+    command_line()->AppendSwitchASCII(
         switches::kRendererProcessLaunchTimeTicks,
         base::NumberToString(ticks_as_delta.InMicroseconds()));
   }
@@ -144,8 +145,11 @@ void ChildProcessLauncherHelper::LaunchOnLauncherThread() {
 
   Process process;
   if (BeforeLaunchOnLauncherThread(*files_to_register, options_ptr)) {
+// TODO(crbug.com/1412835): iOS is single process mode for now.
+#if !BUILDFLAG(IS_IOS)
     base::FieldTrialList::PopulateLaunchOptionsWithFieldTrialState(
         command_line(), options_ptr);
+#endif
     process =
         LaunchProcessOnLauncherThread(options_ptr, std::move(files_to_register),
 #if BUILDFLAG(IS_ANDROID)

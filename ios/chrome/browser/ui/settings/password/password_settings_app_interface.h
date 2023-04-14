@@ -42,6 +42,12 @@
                    userName:(NSString*)userName
                      origin:(NSString*)origin;
 
+// Creates password form for given fields.
++ (BOOL)saveExampleNote:(NSString*)note
+               password:(NSString*)password
+               userName:(NSString*)userName
+                 origin:(NSString*)origin;
+
 // Creates password form which is leaked.
 + (BOOL)saveInsecurePassword:(NSString*)password
                     userName:(NSString*)userName
@@ -60,9 +66,6 @@
 
 // Returns YES if credential service is enabled.
 + (BOOL)isCredentialsServiceEnabled;
-
-// See password_manager::features_util::IsOptedInForAccountStorage().
-+ (BOOL)isOptedInForAccountStorage;
 
 @end
 

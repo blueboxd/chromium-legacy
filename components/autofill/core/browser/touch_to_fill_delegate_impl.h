@@ -40,13 +40,22 @@ enum class TouchToFillCreditCardTriggerOutcome {
   // There was a try to display the bottom sheet, but it failed due to unknown
   // reason.
   kFailedToDisplayBottomSheet = 6,
-  kMaxValue = kFailedToDisplayBottomSheet
+  // The sheet was not shown because the payment form was incomplete.
+  kIncompleteForm = 7,
+  // The form or field is not known to the form cache.
+  kUnknownForm = 8,
+  // The form is known to the form cache, but it doesn't contain the field.
+  kUnknownField = 9,
+  // TouchToFill is not supported for this field type. This value is not logged
+  // to UMA.
+  kUnsupportedFieldType = 9,
+  kMaxValue = kUnsupportedFieldType
 };
 
 constexpr const char kUmaTouchToFillCreditCardTriggerOutcome[] =
     "Autofill.TouchToFill.CreditCard.TriggerOutcome";
 
-class AutofillDriver;
+class AutofillManager;
 class BrowserAutofillManager;
 
 // Delegate for in-browser Touch To Fill (TTF) surface display and selection.
@@ -83,7 +92,7 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
   virtual void Reset();
 
   // TouchToFillDelegate:
-  AutofillDriver* GetDriver() override;
+  AutofillManager* GetManager() override;
   bool ShouldShowScanCreditCard() override;
   void ScanCreditCard() override;
   void OnCreditCardScanned(const CreditCard& card) override;
@@ -102,11 +111,46 @@ class TouchToFillDelegateImpl : public TouchToFillDelegate {
     kWasShown,
   };
 
+  using TriggerOutcome = TouchToFillCreditCardTriggerOutcome;
+
+  struct DryRunResult {
+    DryRunResult(TriggerOutcome outcome,
+                 std::vector<CreditCard*> cards_to_suggest);
+    DryRunResult(DryRunResult&&);
+    DryRunResult& operator=(DryRunResult&&);
+    ~DryRunResult();
+
+    TriggerOutcome outcome;
+    std::vector<CreditCard*> cards_to_suggest;
+  };
+
+  // Checks all preconditions for showing the TTF, that is, for calling
+  // AutofillClient::ShowTouchToFillCreditCard().
+  //
+  // If the DryRunResult::outcome is TriggerOutcome::kShow, the
+  // DryRun::cards_to_suggest contains the cards; otherwise it is empty.
+  DryRunResult DryRun(FormGlobalId form_id, FieldGlobalId field_id);
+
+  // Sets whether or not to suppress the on-screen keyboard in following
+  // requests that would usually display the keyboard.
+  //
+  // No-op if `suppress` if the previous call had the same value as `suppress`.
+  void SetShouldSuppressKeyboard(bool suppress);
+
   bool HasAnyAutofilledFields(const FormStructure& submitted_form) const;
+
+  // The form is considered perfectly filled if all non-empty fields are
+  // autofilled without further edits.
+  bool IsFillingPerfect(const FormStructure& submitted_form) const;
+
+  // The form is considered correctly filled if all autofilled fields were not
+  // edited by user afterwards.
+  bool IsFillingCorrect(const FormStructure& submitted_form) const;
 
   TouchToFillState ttf_credit_card_state_ = TouchToFillState::kShouldShow;
 
   const raw_ptr<BrowserAutofillManager> manager_;
+  bool keyboard_is_suppressed_ = false;
   FormData query_form_;
   FormFieldData query_field_;
   bool dismissed_by_user_;

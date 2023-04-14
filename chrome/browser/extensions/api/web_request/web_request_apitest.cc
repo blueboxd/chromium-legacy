@@ -195,10 +195,10 @@ class NavigateTabMessageHandler {
   void HandleNavigateTabMessage(const std::string& message) {
     absl::optional<base::Value> command = base::JSONReader::Read(message);
     if (command && command->is_dict()) {  // Check the message decoded from JSON
-      base::Value* data = command->FindDictKey("navigate");
-      if (data && data->is_dict()) {
-        int tab_id = *data->FindIntKey("tabId");
-        GURL url = GURL(*data->FindStringKey("url"));
+      base::Value::Dict* data = command->GetDict().FindDict("navigate");
+      if (data) {
+        int tab_id = data->FindInt("tabId").value();
+        GURL url = GURL(*data->FindString("url"));
         ASSERT_TRUE(url.is_valid());
 
         content::WebContents* contents = nullptr;
@@ -603,10 +603,11 @@ IN_PROC_BROWSER_TEST_P(ExtensionDevToolsProtocolTest,
       get_all_cookies_result->FindList("cookies");
   ASSERT_TRUE(cookies);
   ASSERT_EQ(cookies->size(), 1u);
-  auto* cookie_name = cookies->front().FindStringKey("name");
+  ASSERT_TRUE(cookies->front().is_dict());
+  auto* cookie_name = cookies->front().GetDict().FindString("name");
   ASSERT_TRUE(cookie_name);
   ASSERT_EQ(*cookie_name, "cookieName");
-  auto* cookie_value = cookies->front().FindStringKey("value");
+  auto* cookie_value = cookies->front().GetDict().FindString("value");
   ASSERT_TRUE(cookie_value);
   ASSERT_EQ(*cookie_value, "cookieValue");
 }
@@ -662,10 +663,10 @@ IN_PROC_BROWSER_TEST_P(ExtensionDevToolsProtocolTest,
   // the extension
   base::Value::List* response_headers =
       request_paused_result.FindListByDottedPath("responseHeaders");
-  auto* header_name = response_headers->back().FindStringKey("name");
+  auto* header_name = response_headers->back().GetDict().FindString("name");
   ASSERT_TRUE(header_name);
   ASSERT_EQ(*header_name, "extensionHeaderName");
-  auto* header_value = response_headers->back().FindStringKey("value");
+  auto* header_value = response_headers->back().GetDict().FindString("value");
   ASSERT_TRUE(header_value);
   ASSERT_EQ(*header_value, "extensionHeaderValue");
 
@@ -710,15 +711,21 @@ IN_PROC_BROWSER_TEST_P(ExtensionDevToolsProtocolTest,
       get_all_cookies_result->FindList("cookies");
   ASSERT_TRUE(cookies);
   ASSERT_EQ(cookies->size(), 1u);
-  auto* cookie_name = cookies->front().FindStringKey("name");
+  auto* cookie_name = cookies->front().GetDict().FindString("name");
   ASSERT_TRUE(cookie_name);
   ASSERT_EQ(*cookie_name, "cookieName");
-  auto* cookie_value = cookies->front().FindStringKey("value");
+  auto* cookie_value = cookies->front().GetDict().FindString("value");
   ASSERT_TRUE(cookie_value);
   ASSERT_EQ(*cookie_value, "cookieValue");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, WebRequestTypes) {
+// TODO(crbug.com/1177120) The test is flaky on Linux and ChromeOS bots.
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebRequestTypes DISABLED_WebRequestTypes
+#else
+#define MAYBE_WebRequestTypes WebRequestTypes
+#endif
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, MAYBE_WebRequestTypes) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("webrequest/test_types")) << message_;
 }
@@ -1027,6 +1034,34 @@ IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
   std::string config_string;
   base::JSONWriter::Write(custom_args, &config_string);
   ASSERT_TRUE(RunExtensionTest("webrequest/test_redirects_from_secure",
+                               {.custom_arg = config_string.c_str()}))
+      << message_;
+}
+
+// Tests redirects around workers. To test service workers, the HTTPS test
+// server is used.
+// TODO(crbug.com/1413434): test is flaky on linux-chromeos-rel.
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_WebRequestRedirectsWorkers DISABLED_WebRequestRedirectsWorkers
+#else
+#define MAYBE_WebRequestRedirectsWorkers WebRequestRedirectsWorkers
+#endif
+IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiTestWithContextType,
+                       MAYBE_WebRequestRedirectsWorkers) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  net::EmbeddedTestServer https_test_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_test_server.ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(https_test_server.Start());
+
+  GURL base_url =
+      https_test_server.GetURL("/webrequest/test_redirects_workers/page/");
+  base::Value::Dict custom_args;
+  custom_args.Set("base_url", base_url.spec());
+  std::string config_string;
+  base::JSONWriter::Write(custom_args, &config_string);
+
+  ASSERT_TRUE(RunExtensionTest("webrequest/test_redirects_workers",
                                {.custom_arg = config_string.c_str()}))
       << message_;
 }
@@ -4948,7 +4983,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiIdentifiabilityTest, Navigation) {
 
 // Test that identifiability study of request cancellation produces expected
 // events with WebSocket.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiIdentifiabilityTest, WebSocket) {
+// TODO(crbug.com/1414609): Re-enable this test
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiIdentifiabilityTest,
+                       DISABLED_WebSocket) {
   base::RunLoop run_loop;
   identifiability_metrics_test_helper_.PrepareForTest(&run_loop);
 

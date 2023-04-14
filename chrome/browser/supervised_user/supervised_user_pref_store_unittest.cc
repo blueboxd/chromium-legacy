@@ -11,11 +11,12 @@
 #include "base/values.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/supervised_user/supervised_user_pref_store.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/prefs/testing_pref_store.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
@@ -30,7 +31,7 @@ using ::testing::Optional;
 class SupervisedUserPrefStoreFixture : public PrefStore::Observer {
  public:
   explicit SupervisedUserPrefStoreFixture(
-      SupervisedUserSettingsService* settings_service);
+      supervised_user::SupervisedUserSettingsService* settings_service);
   ~SupervisedUserPrefStoreFixture() override;
 
   base::Value::Dict* changed_prefs() { return &changed_prefs_; }
@@ -50,7 +51,7 @@ class SupervisedUserPrefStoreFixture : public PrefStore::Observer {
 };
 
 SupervisedUserPrefStoreFixture::SupervisedUserPrefStoreFixture(
-    SupervisedUserSettingsService* settings_service)
+    supervised_user::SupervisedUserSettingsService* settings_service)
     : pref_store_(new SupervisedUserPrefStore(settings_service)),
       initialization_completed_(pref_store_->IsInitializationComplete()) {
   pref_store_->AddObserver(this);
@@ -83,7 +84,7 @@ class SupervisedUserPrefStoreTest : public ::testing::Test {
   void TearDown() override;
 
  protected:
-  SupervisedUserSettingsService service_;
+  supervised_user::SupervisedUserSettingsService service_;
   scoped_refptr<TestingPrefStore> pref_store_;
 };
 
@@ -104,13 +105,13 @@ TEST_F(SupervisedUserPrefStoreTest,
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
-      supervised_users::kAllowHistoryDeletionForChildAccounts);
+      supervised_user::kAllowHistoryDeletionForChildAccounts);
 
   pref_store_->SetInitializationCompleted();
   service_.SetActive(true);
 
   // kAllowDeletingBrowserHistory is based on the state of the feature
-  // supervised_users::kAllowHistoryDeletionForChildAccounts.
+  // supervised_user::kAllowHistoryDeletionForChildAccounts.
   // This is enabled in scope.
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
                   prefs::kAllowDeletingBrowserHistory),
@@ -124,7 +125,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
 
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
-      supervised_users::kAllowHistoryDeletionForChildAccounts);
+      supervised_user::kAllowHistoryDeletionForChildAccounts);
 
   // Prefs should not change yet when the service is ready, but not
   // activated yet.
@@ -135,7 +136,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   service_.SetActive(true);
 
   // kAllowDeletingBrowserHistory is based on the state of the feature
-  // supervised_users::kAllowHistoryDeletionForChildAccounts.
+  // supervised_user::kAllowHistoryDeletionForChildAccounts.
   // This is disabled in scope.
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
                   prefs::kAllowDeletingBrowserHistory),
@@ -185,7 +186,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   base::Value::Dict hosts;
   hosts.Set("example.com", true);
   hosts.Set("moose.org", false);
-  service_.SetLocalSetting(supervised_users::kContentPackManualBehaviorHosts,
+  service_.SetLocalSetting(supervised_user::kContentPackManualBehaviorHosts,
                            hosts.Clone());
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
 
@@ -198,7 +199,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
   // kForceGoogleSafeSearch and kForceYouTubeRestrict can be configured by the
   // custodian, overriding the hardcoded default.
   fixture.changed_prefs()->clear();
-  service_.SetLocalSetting(supervised_users::kForceSafeSearch,
+  service_.SetLocalSetting(supervised_user::kForceSafeSearch,
                            base::Value(false));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
@@ -222,7 +223,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
       "SupervisedUsers.ExtensionsMayRequestPermissions", 0);
 
   fixture.changed_prefs()->clear();
-  service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
+  service_.SetLocalSetting(supervised_user::kGeolocationDisabled,
                            base::Value(false));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(
@@ -235,7 +236,7 @@ TEST_F(SupervisedUserPrefStoreTest, ConfigureSettings) {
       "SupervisedUsers.ExtensionsMayRequestPermissions", 1);
 
   fixture.changed_prefs()->clear();
-  service_.SetLocalSetting(supervised_users::kGeolocationDisabled,
+  service_.SetLocalSetting(supervised_user::kGeolocationDisabled,
                            base::Value(true));
   EXPECT_EQ(1u, fixture.changed_prefs()->size());
   EXPECT_THAT(fixture.changed_prefs()->FindBoolByDottedPath(

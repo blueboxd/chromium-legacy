@@ -51,11 +51,7 @@ FormEventLoggerBase::FormEventLoggerBase(
       client_(*client) {}
 
 FormEventLoggerBase::~FormEventLoggerBase() {
-  // Don't record Funnel and Key metrics for the ablation group as they don't
-  // represent the true quality metrics.
-  if (ablation_group_ != AblationGroup::kAblation)
-    RecordFunnelAndKeyMetrics();
-  RecordAblationMetrics();
+  DCHECK(has_called_on_destoryed_);
 }
 
 void FormEventLoggerBase::OnDidInteractWithAutofillableForm(
@@ -199,6 +195,18 @@ void FormEventLoggerBase::OnEditedAutofilledField() {
   has_logged_edited_autofilled_field_ = true;
 }
 
+void FormEventLoggerBase::OnDestroyed() {
+  DCHECK(!has_called_on_destoryed_);
+  has_called_on_destoryed_ = true;
+  // Don't record Funnel and Key metrics for the ablation group as they don't
+  // represent the true quality metrics.
+  if (ablation_group_ != AblationGroup::kAblation) {
+    RecordFunnelMetrics();
+    RecordKeyMetrics();
+  }
+  RecordAblationMetrics();
+}
+
 void FormEventLoggerBase::
     OnAutofilledFieldWasClearedByJavaScriptShortlyAfterFill(
         const FormStructure& form) {
@@ -208,10 +216,10 @@ void FormEventLoggerBase::
   has_logged_autofilled_field_was_cleared_by_javascript_after_fill_ = true;
 }
 
-void FormEventLoggerBase::Log(FormEvent event,
-                              const FormStructure& form) const {
+void FormEventLoggerBase::Log(FormEvent event, const FormStructure& form) {
   DCHECK_LT(event, NUM_FORM_EVENTS);
   std::string name("Autofill.FormEvents." + form_type_name_);
+  form_events_set_[form.global_id()].insert(event);
   base::UmaHistogramEnumeration(name, event, NUM_FORM_EVENTS);
 
   // Log UKM metrics for only autofillable form events.
@@ -271,120 +279,136 @@ void FormEventLoggerBase::LogUkmInteractedWithForm(
       server_record_type_count_, form_signature);
 }
 
-void FormEventLoggerBase::RecordFunnelAndKeyMetrics() {
-  LogBuffer funnel_rows(IsLoggingActive(client_->GetLogManager()));
-  LogBuffer key_metrics_rows(IsLoggingActive(client_->GetLogManager()));
-
-  LOG_AF(funnel_rows) << Tr{} << "Form Type: " << form_type_name_;
-  LOG_AF(key_metrics_rows) << Tr{} << "Form Type: " << form_type_name_;
+void FormEventLoggerBase::RecordFunnelMetrics() const {
+  LogBuffer logs(IsLoggingActive(client_->GetLogManager()));
+  LOG_AF(logs) << Tr{} << "Form Type: " << form_type_name_;
   UmaHistogramBoolean("Autofill.Funnel.ParsedAsType." + form_type_name_,
                       has_parsed_form_);
-  // Log chronological funnel.
-  if (!has_parsed_form_)
+  if (!has_parsed_form_) {
     return;
+  }
   UmaHistogramBoolean(
       "Autofill.Funnel.InteractionAfterParsedAsType." + form_type_name_,
       has_logged_interacted_);
-  LOG_AF(funnel_rows) << Tr{} << "InteractionAfterParsedAsType"
-                      << has_logged_interacted_;
+  LOG_AF(logs) << Tr{} << "InteractionAfterParsedAsType"
+               << has_logged_interacted_;
   if (has_logged_interacted_) {
     UmaHistogramBoolean(
         "Autofill.Funnel.SuggestionAfterInteraction." + form_type_name_,
         has_logged_suggestions_shown_);
-    LOG_AF(funnel_rows) << Tr{} << "SuggestionAfterInteraction"
-                        << has_logged_suggestions_shown_;
+    LOG_AF(logs) << Tr{} << "SuggestionAfterInteraction"
+                 << has_logged_suggestions_shown_;
   }
   if (has_logged_interacted_ && has_logged_suggestions_shown_) {
     UmaHistogramBoolean(
         "Autofill.Funnel.FillAfterSuggestion." + form_type_name_,
         has_logged_suggestion_filled_);
-    LOG_AF(funnel_rows) << Tr{} << "FillAfterSuggestion"
-                        << has_logged_suggestion_filled_;
+    LOG_AF(logs) << Tr{} << "FillAfterSuggestion"
+                 << has_logged_suggestion_filled_;
   }
   if (has_logged_interacted_ && has_logged_suggestions_shown_ &&
       has_logged_suggestion_filled_) {
     UmaHistogramBoolean(
         "Autofill.Funnel.SubmissionAfterFill." + form_type_name_,
         has_logged_will_submit_);
-    LOG_AF(funnel_rows) << Tr{} << "SubmissionAfterFill"
-                        << has_logged_will_submit_;
-  }
-  // Log key success metrics, always preconditioned on a form submission (except
-  // for the Autofill.KeyMetrics.FormSubmission metrics which measure whether
-  // a submission happens).
-  if (has_logged_will_submit_) {
-    bool has_logged_data_to_fill_available_ =
-        (server_record_type_count_ + local_record_type_count_) > 0;
-    // Whether for a submitted form, Chrome had data stored that could be
-    // filled.
-    UmaHistogramBoolean(
-        "Autofill.KeyMetrics.FillingReadiness." + form_type_name_,
-        has_logged_data_to_fill_available_);
-    LOG_AF(key_metrics_rows)
-        << Tr{} << "FillingReadiness" << has_logged_data_to_fill_available_;
-    if (has_logged_suggestions_shown_) {
-      // Whether a user accepted a filling suggestion they saw for a form that
-      // was later submitted.
-      UmaHistogramBoolean(
-          "Autofill.KeyMetrics.FillingAcceptance." + form_type_name_,
-          has_logged_suggestion_filled_);
-      LOG_AF(key_metrics_rows)
-          << Tr{} << "FillingAcceptance" << has_logged_suggestion_filled_;
-      UmaHistogramBoolean(
-          base::StrCat({"Autofill.Autocomplete.",
-                        (has_logged_autocomplete_off_ ? "Off" : "NotOff"),
-                        ".FillingAcceptance.", form_type_name_.c_str()}),
-          has_logged_suggestion_filled_);
-    }
-    if (has_logged_suggestion_filled_) {
-      // Whether a filled form and submitted form required no fixes to filled
-      // fields.
-      UmaHistogramBoolean(
-          "Autofill.KeyMetrics.FillingCorrectness." + form_type_name_,
-          !has_logged_edited_autofilled_field_);
-      LOG_AF(key_metrics_rows) << Tr{} << "FillingCorrectness"
-                               << !has_logged_edited_autofilled_field_;
-      LogFillingCorrectnessByFillingMethod(autofill_suggestion_method_,
-                                           form_type_name_);
-    }
-    // Whether a submitted form was filled.
-    UmaHistogramBoolean(
-        "Autofill.KeyMetrics.FillingAssistance." + form_type_name_,
-        has_logged_suggestion_filled_);
-    LOG_AF(key_metrics_rows)
-        << Tr{} << "FillingAssistance" << has_logged_suggestion_filled_;
-
-    if (form_interactions_ukm_logger_) {
-      form_interactions_ukm_logger_->LogKeyMetrics(
-          submitted_form_types_, has_logged_data_to_fill_available_,
-          has_logged_suggestions_shown_, has_logged_edited_autofilled_field_,
-          has_logged_suggestion_filled_, form_interaction_counts_, flow_id_);
-    }
-  }
-  if (has_logged_typed_into_non_filled_field_ ||
-      has_logged_suggestion_filled_) {
-    // Whether a (non-)autofilled form was submitted.
-    UmaHistogramBoolean(
-        base::StrCat(
-            {"Autofill.KeyMetrics.FormSubmission.",
-             (has_logged_suggestion_filled_ ? "Autofilled." : "NotAutofilled."),
-             form_type_name_}),
-        has_logged_will_submit_);
-    LOG_AF(key_metrics_rows)
-        << Tr{} << "FormSubmission.Autofilled" << has_logged_suggestion_filled_;
-    LOG_AF(key_metrics_rows)
-        << Tr{} << "FormSubmission.Submission" << has_logged_will_submit_;
+    LOG_AF(logs) << Tr{} << "SubmissionAfterFill" << has_logged_will_submit_;
   }
 
   LOG_AF(client_->GetLogManager())
       << LoggingScope::kMetrics << LogMessage::kFunnelMetrics << Tag{"table"}
-      << std::move(funnel_rows) << CTag{"table"};
-  LOG_AF(client_->GetLogManager())
-      << LoggingScope::kMetrics << LogMessage::kKeyMetrics << Tag{"table"}
-      << std::move(key_metrics_rows) << CTag{"table"};
+      << std::move(logs) << CTag{"table"};
 }
 
-void FormEventLoggerBase::RecordAblationMetrics() {
+void FormEventLoggerBase::RecordKeyMetrics() const {
+  if (!has_parsed_form_) {
+    return;
+  }
+
+  LogBuffer logs(IsLoggingActive(client_->GetLogManager()));
+  LOG_AF(logs) << Tr{} << "Form Type: " << form_type_name_;
+
+  // Log key success metrics, always preconditioned on a form submission (except
+  // for the Autofill.KeyMetrics.FormSubmission metrics which measure whether
+  // a submission happens).
+  if (has_logged_will_submit_) {
+    RecordFillingReadiness(logs);
+    if (has_logged_suggestions_shown_) {
+      RecordFillingAcceptance(logs);
+    }
+    if (has_logged_suggestion_filled_) {
+      RecordFillingCorrectness(logs);
+    }
+    RecordFillingAssistance(logs);
+    if (form_interactions_ukm_logger_) {
+      bool has_logged_data_to_fill_available =
+          server_record_type_count_ + local_record_type_count_ > 0;
+      form_interactions_ukm_logger_->LogKeyMetrics(
+          submitted_form_types_, has_logged_data_to_fill_available,
+          has_logged_suggestions_shown_, has_logged_edited_autofilled_field_,
+          has_logged_suggestion_filled_, form_interaction_counts_, flow_id_,
+          fast_checkout_run_id_);
+    }
+  }
+  if (has_logged_typed_into_non_filled_field_ ||
+      has_logged_suggestion_filled_) {
+    RecordFormSubmission(logs);
+  }
+
+  LOG_AF(client_->GetLogManager())
+      << LoggingScope::kMetrics << LogMessage::kKeyMetrics << Tag{"table"}
+      << std::move(logs) << CTag{"table"};
+}
+
+void FormEventLoggerBase::RecordFillingReadiness(LogBuffer& logs) const {
+  bool has_logged_data_to_fill_available =
+      server_record_type_count_ + local_record_type_count_ > 0;
+  UmaHistogramBoolean("Autofill.KeyMetrics.FillingReadiness." + form_type_name_,
+                      has_logged_data_to_fill_available);
+  LOG_AF(logs) << Tr{} << "FillingReadiness"
+               << has_logged_data_to_fill_available;
+}
+
+void FormEventLoggerBase::RecordFillingAcceptance(LogBuffer& logs) const {
+  UmaHistogramBoolean(
+      "Autofill.KeyMetrics.FillingAcceptance." + form_type_name_,
+      has_logged_suggestion_filled_);
+  LOG_AF(logs) << Tr{} << "FillingAcceptance" << has_logged_suggestion_filled_;
+  UmaHistogramBoolean(
+      base::StrCat({"Autofill.Autocomplete.",
+                    (has_logged_autocomplete_off_ ? "Off" : "NotOff"),
+                    ".FillingAcceptance.", form_type_name_.c_str()}),
+      has_logged_suggestion_filled_);
+}
+
+void FormEventLoggerBase::RecordFillingCorrectness(LogBuffer& logs) const {
+  UmaHistogramBoolean(
+      "Autofill.KeyMetrics.FillingCorrectness." + form_type_name_,
+      !has_logged_edited_autofilled_field_);
+  LOG_AF(logs) << Tr{} << "FillingCorrectness"
+               << !has_logged_edited_autofilled_field_;
+}
+
+void FormEventLoggerBase::RecordFillingAssistance(LogBuffer& logs) const {
+  UmaHistogramBoolean(
+      "Autofill.KeyMetrics.FillingAssistance." + form_type_name_,
+      has_logged_suggestion_filled_);
+  LOG_AF(logs) << Tr{} << "FillingAssistance" << has_logged_suggestion_filled_;
+}
+
+void FormEventLoggerBase::RecordFormSubmission(LogBuffer& logs) const {
+  UmaHistogramBoolean(
+      base::StrCat(
+          {"Autofill.KeyMetrics.FormSubmission.",
+           (has_logged_suggestion_filled_ ? "Autofilled." : "NotAutofilled."),
+           form_type_name_}),
+      has_logged_will_submit_);
+  LOG_AF(logs) << Tr{} << "FormSubmission.Autofilled"
+               << has_logged_suggestion_filled_;
+  LOG_AF(logs) << Tr{} << "FormSubmission.Submission"
+               << has_logged_will_submit_;
+}
+
+void FormEventLoggerBase::RecordAblationMetrics() const {
   if (!has_logged_interacted_)
     return;
 
@@ -490,19 +514,9 @@ void FormEventLoggerBase::UpdateFlowId() {
   flow_id_ = client_->GetCurrentFormInteractionsFlowId();
 }
 
-void FormEventLoggerBase::LogFillingCorrectnessByFillingMethod(
-    AutofillSuggestionMethod method,
-    const std::string& form_type) {
-  if (method == AutofillSuggestionMethod::kUnknown) {
-    return;
-  }
-
-  // Log the correctness metric by autofill suggestion method (touch to fill,
-  // keyboard accessory, etc) and the form type (credit card, address, etc.)
-  const std::string method_name = GetMetricsSuffixByAutofillMethod(method);
-  base::UmaHistogramBoolean(
-      "Autofill.FillingCorrectnessByMethod." + form_type + "." + method_name,
-      !has_logged_edited_autofilled_field_);
+AutofillMetrics::FormEventSet FormEventLoggerBase::GetFormEvents(
+    FormGlobalId form_global_id) {
+  return form_events_set_[form_global_id];
 }
 
 }  // namespace autofill

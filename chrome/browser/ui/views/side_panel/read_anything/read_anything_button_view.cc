@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_button_view.h"
 
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_constants.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
 #include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -19,8 +20,6 @@ ReadAnythingButtonView::ReadAnythingButtonView(
   // Create and set a BoxLayout with insets to hold the button.
   auto button_layout_manager = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kHorizontal);
-  button_layout_manager->set_inside_border_insets(
-      gfx::Insets().set_left(kButtonPadding).set_right(kButtonPadding));
   button_layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
   button_layout_manager->set_main_axis_alignment(
@@ -45,5 +44,8 @@ void ReadAnythingButtonView::UpdateIcon(const gfx::VectorIcon& icon,
   views::SetImageFromVectorIconWithColor(button_, icon, icon_size, icon_color,
                                          icon_color);
 }
+
+BEGIN_METADATA(ReadAnythingButtonView, views::View)
+END_METADATA
 
 ReadAnythingButtonView::~ReadAnythingButtonView() = default;

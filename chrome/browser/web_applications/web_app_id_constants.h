@@ -23,8 +23,9 @@ inline constexpr char kCameraAppId[] = "njfbnohfdkmbmnjapinfcopialeghnmh";
 //     "https://canvas.apps.chrome/"))
 inline constexpr char kCanvasAppId[] = "ieailfmhaghpphfffooibmlghaeopach";
 
-// TODO(crbug.com/1334053)
-inline constexpr char kCloudGamingPartnerPlatform[] =
+// Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
+//     "https://play.geforcenow.com/mall/"))
+inline constexpr char kNvidiaGeForceNowAppId[] =
     "egmafekfmcnknbdlbfbhafbllplmjlhn";
 
 // Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
@@ -161,10 +162,6 @@ inline constexpr char kShimlessRMAAppId[] = "ijolhdommgkkhpenofmpkkhlepahelcm";
 // Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
 //     "https://www.showtime.com/"))
 inline constexpr char kShowtimeAppId[] = "eoccpgmpiempcflglfokeengliildkag";
-
-// Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
-//     "https://stadia.google.com/?lfhs=2"))
-inline constexpr char kStadiaAppId[] = "pnkcfpnngfokcnnijgkllghjlhkailce";
 
 // Generated as: web_app::GenerateAppId(/*manifest_id=*/absl::nullopt, GURL(
 //     "https://www.youtube.com/?feature=ytca"))

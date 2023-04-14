@@ -122,16 +122,16 @@ TEST_F(SiteSettingsHelperTest, ExceptionListWithEmbargoedAndBlockedOrigins) {
   ASSERT_EQ(2U, exceptions.size());
 
   // Get last added origin.
-  base::Value* is_embargoed =
-      exceptions[0].FindKey(site_settings::kIsEmbargoed);
-  ASSERT_NE(nullptr, is_embargoed);
+  absl::optional<bool> is_embargoed =
+      exceptions[0].GetDict().FindBool(site_settings::kIsEmbargoed);
+  ASSERT_TRUE(is_embargoed.has_value());
   // Last added origin is blocked, |embargo| key should be false.
-  EXPECT_FALSE(is_embargoed->GetBool());
+  EXPECT_FALSE(*is_embargoed);
 
   // Get embargoed origin.
-  is_embargoed = exceptions[1].FindKey(site_settings::kIsEmbargoed);
-  ASSERT_NE(nullptr, is_embargoed);
-  EXPECT_TRUE(is_embargoed->GetBool());
+  is_embargoed = exceptions[1].GetDict().FindBool(site_settings::kIsEmbargoed);
+  ASSERT_TRUE(is_embargoed.has_value());
+  EXPECT_TRUE(*is_embargoed);
 }
 
 TEST_F(SiteSettingsHelperTest, ExceptionListShowsIncognitoEmbargoed) {
@@ -438,40 +438,35 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
       HostContentSettingsMapFactory::GetForProfile(&profile);
 
   GURL origin("https://www.example.com/");
-  auto* extension_registry = extensions::ExtensionRegistry::Get(&profile);
   std::string source;
   std::string display_name;
   ContentSetting content_setting;
 
   // Built in Chrome default.
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDefault), source);
   EXPECT_EQ(CONTENT_SETTING_ASK, content_setting);
 
   // User-set global default.
   map->SetDefaultContentSetting(kContentType, CONTENT_SETTING_ALLOW);
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kDefault), source);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, content_setting);
 
   // User-set pattern.
   AddSetting(map, "https://*", CONTENT_SETTING_BLOCK);
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kPreference), source);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
 
   // User-set origin setting.
   map->SetContentSettingDefaultScope(origin, origin, kContentType,
                                      CONTENT_SETTING_ALLOW);
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kPreference), source);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, content_setting);
 
@@ -485,9 +480,8 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
   content_settings::TestUtils::OverrideProvider(
       map, std::move(extension_provider),
       HostContentSettingsMap::CUSTOM_EXTENSION_PROVIDER);
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kExtension), source);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
 
@@ -500,16 +494,15 @@ TEST_F(SiteSettingsHelperTest, ContentSettingSource) {
   policy_provider->set_read_only(true);
   content_settings::TestUtils::OverrideProvider(
       map, std::move(policy_provider), HostContentSettingsMap::POLICY_PROVIDER);
-  content_setting =
-      GetContentSettingForOrigin(&profile, map, origin, kContentType, &source,
-                                 extension_registry, &display_name);
+  content_setting = GetContentSettingForOrigin(
+      &profile, map, origin, kContentType, &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kPolicy), source);
   EXPECT_EQ(CONTENT_SETTING_ALLOW, content_setting);
 
   // Insecure origins.
   content_setting = GetContentSettingForOrigin(
       &profile, map, GURL("http://www.insecure_http_site.com/"), kContentType,
-      &source, extension_registry, &display_name);
+      &source, &display_name);
   EXPECT_EQ(SiteSettingSourceToString(SiteSettingSource::kInsecureOrigin),
             source);
   EXPECT_EQ(CONTENT_SETTING_BLOCK, content_setting);
@@ -630,32 +623,28 @@ void ExpectValidSiteExceptionObject(const base::Value& actual_site_object,
                                     bool incognito) {
   ASSERT_TRUE(actual_site_object.is_dict());
 
-  const base::Value* display_name_value =
-      actual_site_object.FindKeyOfType(kDisplayName, base::Value::Type::STRING);
+  const base::Value::Dict& actual_site_dict = actual_site_object.GetDict();
+  const std::string* display_name_value =
+      actual_site_dict.FindString(kDisplayName);
   ASSERT_TRUE(display_name_value);
-  EXPECT_EQ(display_name_value->GetString(), display_name);
+  EXPECT_EQ(*display_name_value, display_name);
 
-  const base::Value* origin_value =
-      actual_site_object.FindKeyOfType(kOrigin, base::Value::Type::STRING);
+  const std::string* origin_value = actual_site_dict.FindString(kOrigin);
   ASSERT_TRUE(origin_value);
-  EXPECT_EQ(origin_value->GetString(),
-            origin.DeprecatedGetOriginAsURL().spec());
+  EXPECT_EQ(*origin_value, origin.DeprecatedGetOriginAsURL().spec());
 
-  const base::Value* setting_value =
-      actual_site_object.FindKeyOfType(kSetting, base::Value::Type::STRING);
+  const std::string* setting_value = actual_site_dict.FindString(kSetting);
   ASSERT_TRUE(setting_value);
-  EXPECT_EQ(setting_value->GetString(),
+  EXPECT_EQ(*setting_value,
             content_settings::ContentSettingToString(CONTENT_SETTING_DEFAULT));
 
-  const base::Value* source_value =
-      actual_site_object.FindKeyOfType(kSource, base::Value::Type::STRING);
+  const std::string* source_value = actual_site_dict.FindString(kSource);
   ASSERT_TRUE(source_value);
-  EXPECT_EQ(source_value->GetString(), source);
+  EXPECT_EQ(*source_value, source);
 
-  const base::Value* incognito_value =
-      actual_site_object.FindKeyOfType(kIncognito, base::Value::Type::BOOLEAN);
-  ASSERT_TRUE(incognito_value);
-  EXPECT_EQ(incognito_value->GetBool(), incognito);
+  absl::optional<bool> incognito_value = actual_site_dict.FindBool(kIncognito);
+  ASSERT_TRUE(incognito_value.has_value());
+  EXPECT_EQ(*incognito_value, incognito);
 }
 
 }  // namespace
@@ -837,10 +826,10 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
                                            *ephemeral_device_info);
 
     // Add the policy granted permissions for testing.
-    auto policy_value = base::JSONReader::ReadDeprecated(kUsbPolicySetting);
+    auto policy_value = base::JSONReader::Read(kUsbPolicySetting);
     DCHECK(policy_value);
     profile()->GetPrefs()->Set(prefs::kManagedWebUsbAllowDevicesForUrls,
-                               *policy_value);
+                               std::move(*policy_value));
   }
 
   device::FakeUsbDeviceManager device_manager_;
@@ -853,7 +842,7 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
 void ExpectDisplayNameEq(const base::Value& actual_exception_object,
                          const std::string& display_name) {
   const std::string* actual_display_name =
-      actual_exception_object.FindStringKey(kDisplayName);
+      actual_exception_object.GetDict().FindString(kDisplayName);
   ASSERT_TRUE(actual_display_name);
   EXPECT_EQ(*actual_display_name, display_name);
 }
@@ -888,7 +877,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     ExpectDisplayNameEq(exception,
                         /*display_name=*/"Devices from Google Inc.");
 
-    const auto& sites_list = exception.FindKey(kSites)->GetList();
+    const auto& sites_list = *exception.GetDict().FindList(kSites);
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(
         sites_list[0],
@@ -907,7 +896,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     ExpectDisplayNameEq(exception,
                         /*display_name=*/"Devices from any vendor");
 
-    const auto& sites_list = exception.FindKey(kSites)->GetList();
+    const auto& sites_list = *exception.GetDict().FindList(kSites);
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(
         sites_list[0],
@@ -926,7 +915,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     ExpectDisplayNameEq(exception,
                         /*display_name=*/"Devices from vendor 0x18D2");
 
-    const auto& sites_list = exception.FindKey(kSites)->GetList();
+    const auto& sites_list = *exception.GetDict().FindList(kSites);
     ASSERT_EQ(sites_list.size(), 1u);
     ExpectValidSiteExceptionObject(
         sites_list[0],
@@ -949,7 +938,7 @@ TEST_F(SiteSettingsHelperChooserExceptionTest,
     const auto& exception = exceptions_list[3];
     ExpectDisplayNameEq(exception, /*display_name=*/"Gizmo");
 
-    const auto& sites_list = exception.FindKey(kSites)->GetList();
+    const auto& sites_list = *exception.GetDict().FindList(kSites);
     ASSERT_EQ(sites_list.size(), 2u);
     ExpectValidSiteExceptionObject(
         sites_list[0],

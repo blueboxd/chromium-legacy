@@ -303,6 +303,11 @@ const char kCrosRegion[] = "cros-region";
 // flow.
 const char kCryptohomeRecoveryReauthUrl[] = "cryptohome-recovery-reauth-url";
 
+// Forces cryptohome recovery process to use test environment (test keys /
+// URLs).
+const char kCryptohomeRecoveryUseTestEnvironment[] =
+    "cryptohome-recovery-use-test-env";
+
 // Controls if AuthSession API should be used when interacting with cryptohomed.
 const char kCryptohomeUseAuthSession[] = "cryptohome-use-authsession";
 
@@ -658,6 +663,10 @@ const char kInstallLogFastUploadForTests[] =
 // directory. For now, only one extension can be specified.
 const char kInstallSystemExtension[] = "install-system-extension";
 
+// Minimum time the kiosk splash screen will be shown in seconds.
+const char kKioskSplashScreenMinTimeSeconds[] =
+    "kiosk-splash-screen-min-time-seconds";
+
 // When this flag is set, the lacros-availability policy is ignored.
 const char kLacrosAvailabilityIgnore[] = "lacros-availability-ignore";
 
@@ -696,6 +705,9 @@ const char kLacrosChromePath[] = "lacros-chrome-path";
 // 1. Test launcher to run browser tests in testing environment.
 // 2. A terminal to start lacros-chrome with a debugger.
 const char kLacrosMojoSocketForTesting[] = "lacros-mojo-socket-for-testing";
+
+// When this flag is set, the lacros-selection policy is ignored.
+const char kLacrosSelectionPolicyIgnore[] = "lacros-selection-policy-ignore";
 
 // Start Chrome in RMA mode. Launches RMA app automatically.
 // kRmaNotAllowed switch takes priority over this one.
@@ -786,12 +798,16 @@ const char kOobeTimezoneOverrideForTests[] = "oobe-timezone-override-for-tests";
 const char kOobeTriggerSyncTimeoutForTests[] =
     "oobe-trigger-sync-timeout-for-tests";
 
-// Removes the condition that a network has had to existed for at least two
-// weeks and allows the user to provide the frequency at which the
-// HiddenNetworkHandler class checks for and removes wrongly hidden networks.
-// The frequency should be provided in seconds, should follow the format
-// "--force-hidden-network-migration=#", and should be >= 1.
-const char kForceHiddenNetworkMigration[] = "force-hidden-network-migration";
+// Controls how often the HiddenNetworkHandler class checks for wrongly hidden
+// networks. The interval should be provided in seconds, should follow the
+// format "--hidden-network-migration-interval=#", and should be >= 1.
+const char kHiddenNetworkMigrationInterval[] =
+    "hidden-network-migration-interval";
+
+// Sets how long a wrongly hidden network must have existed in order to be
+// considered for removal. The interval should be provided in days, should
+// follow the format "--hidden-network-migration-age=#", and should be >= 0.
+const char kHiddenNetworkMigrationAge[] = "hidden-network-migration-age";
 
 // If set to "true", the profile requires policy during restart (policy load
 // must succeed, otherwise session restart should fail).
@@ -859,6 +875,11 @@ const char kSkipForceOnlineSignInForTesting[] =
 // the nudge is considered as shown.
 const char kSkipReorderNudgeShowThresholdDurationForTest[] =
     "skip-reorder-nudge-show-threshold-duration";
+
+// Used to force software cursors on specific devices that do not have enough
+// planes to display a hardware cursor when connected to displays with higher
+// widths in pixels.
+const char kSwCursorOnWideDisplays[] = "sw-cursor-on-wide-displays";
 
 // If set, the device will be forced to stay in clamshell UI mode but screen
 // auto rotation will be supported. E.g, chromebase device Dooly.

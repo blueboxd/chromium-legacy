@@ -6,14 +6,18 @@
 
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
+#include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/views/profiles/profile_management_utils.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
+#include "chrome/browser/ui/webui/intro/intro_ui.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui.h"
 
 namespace {
 // Registers a new `Observer` that will invoke `callback_` when `manager`
@@ -31,8 +35,9 @@ class OnRefreshTokensLoadedObserver : public signin::IdentityManager::Observer {
   void OnRefreshTokensLoaded() override {
     identity_manager_observation_.Reset();
 
-    if (callback_)
+    if (callback_) {
       std::move(callback_).Run();
+    }
   }
 
  private:
@@ -72,8 +77,9 @@ class LacrosFirstRunSignedInFlowController
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile());
 
-    if (can_retry_init_observer_)
+    if (can_retry_init_observer_) {
       can_retry_init_observer_.reset();
+    }
 
     LOG(WARNING) << "Init running "
                  << (identity_manager->AreRefreshTokensLoaded() ? "with"
@@ -101,8 +107,26 @@ class LacrosFirstRunSignedInFlowController
   }
 
   void FinishAndOpenBrowser(PostHostClearedCallback callback) override {
-    if (finish_flow_callback_.value())
+    if (finish_flow_callback_.value()) {
       std::move(finish_flow_callback_.value()).Run(std::move(callback));
+    }
+  }
+
+  void SwitchToEnterpriseProfileWelcome(
+      EnterpriseProfileWelcomeUI::ScreenType type,
+      signin::SigninChoiceCallback proceed_callback) override {
+    if (!base::FeatureList::IsEnabled(kForYouFre)) {
+      ProfilePickerSignedInFlowController::SwitchToEnterpriseProfileWelcome(
+          type, std::move(proceed_callback));
+      return;
+    }
+
+    host()->ShowScreen(
+        contents(), GURL(chrome::kChromeUIIntroURL),
+        base::BindOnce(
+            &LacrosFirstRunSignedInFlowController::SwitchToIntroFinished,
+            // Unretained ok: callback is called by the owner of this instance.
+            base::Unretained(this), std::move(proceed_callback)));
   }
 
   void SwitchToSyncConfirmation() override {
@@ -112,12 +136,29 @@ class LacrosFirstRunSignedInFlowController
     ProfilePickerSignedInFlowController::SwitchToSyncConfirmation();
   }
 
- protected:
-  void PreShowScreenForDebug() override {
-    LOG(WARNING) << "Calling ShowScreen()";
+ private:
+  void SwitchToIntroFinished(signin::SigninChoiceCallback proceed_callback) {
+    base::OnceCallback signin_choice_adapter_callback =
+        base::BindOnce([](IntroChoice choice) {
+          switch (choice) {
+            case IntroChoice::kContinueWithAccount:
+              // Note: Indicates that the profile is "new" but will not result
+              // in the creation of a new profile.
+              return signin::SigninChoice::SIGNIN_CHOICE_NEW_PROFILE;
+            case IntroChoice::kQuit:
+              return signin::SigninChoice::SIGNIN_CHOICE_CANCEL;
+          }
+        });
+
+    contents()
+        ->GetWebUI()
+        ->GetController()
+        ->GetAs<IntroUI>()
+        ->SetSigninChoiceCallback(
+            IntroSigninChoiceCallback(std::move(signin_choice_adapter_callback)
+                                          .Then(std::move(proceed_callback))));
   }
 
- private:
   // Callback that gets called when the user gets to the last step of the FRE.
   base::OnceClosure sync_confirmation_seen_callback_;
 
@@ -134,7 +175,7 @@ FirstRunFlowControllerLacros::FirstRunFlowControllerLacros(
     ProfilePickerWebContentsHost* host,
     ClearHostClosure clear_host_callback,
     Profile* profile,
-    ProfilePicker::DebugFirstRunExitedCallback first_run_exited_callback)
+    ProfilePicker::FirstRunExitedCallback first_run_exited_callback)
     : ProfileManagementFlowControllerImpl(host, std::move(clear_host_callback)),
       profile_(profile),
       first_run_exited_callback_(std::move(first_run_exited_callback)) {
@@ -148,8 +189,7 @@ FirstRunFlowControllerLacros::~FirstRunFlowControllerLacros() {
     std::move(first_run_exited_callback_)
         .Run(sync_confirmation_seen_
                  ? ProfilePicker::FirstRunExitStatus::kQuitAtEnd
-                 : ProfilePicker::FirstRunExitStatus::kQuitEarly,
-             ProfilePicker::FirstRunExitSource::kControllerDestructor);
+                 : ProfilePicker::FirstRunExitStatus::kQuitEarly);
     // Since the flow is exited already, we don't have anything to close or
     // finish setting up.
   }
@@ -170,8 +210,7 @@ void FirstRunFlowControllerLacros::CancelPostSignInFlow() {
 
 bool FirstRunFlowControllerLacros::PreFinishWithBrowser() {
   std::move(first_run_exited_callback_)
-      .Run(ProfilePicker::FirstRunExitStatus::kCompleted,
-           ProfilePicker::FirstRunExitSource::kFlowFinished);
+      .Run(ProfilePicker::FirstRunExitStatus::kCompleted);
   return true;
 }
 

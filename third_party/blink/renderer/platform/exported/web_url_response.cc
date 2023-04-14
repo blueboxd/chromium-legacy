@@ -38,6 +38,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "services/network/public/cpp/trigger_attestation.h"
 #include "services/network/public/mojom/ip_address_space.mojom-shared.h"
 #include "services/network/public/mojom/load_timing_info.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -133,7 +134,6 @@ WebURLResponse WebURLResponse::Create(
   response.SetExpectedContentLength(head.content_length);
   response.SetHasMajorCertificateErrors(
       net::IsCertStatusError(head.cert_status));
-  response.SetIsLegacyTLSVersion(head.is_legacy_tls_version);
   response.SetHasRangeRequested(head.has_range_requested);
   response.SetTimingAllowPassed(head.timing_allow_passed);
   response.SetWasCached(!head.load_timing.request_start_time.is_null() &&
@@ -199,6 +199,7 @@ WebURLResponse WebURLResponse::Create(
   response.SetWasCookieInRequest(head.was_cookie_in_request);
   response.SetRecursivePrefetchToken(head.recursive_prefetch_token);
   response.SetWebBundleURL(KURL(head.web_bundle_url));
+  response.SetTriggerAttestation(head.trigger_attestation);
 
   SetSecurityStyleAndDetails(GURL(KURL(url)), head, &response,
                              report_security_info);
@@ -340,6 +341,11 @@ void WebURLResponse::SetLoadTiming(
   resource_response_->SetResourceLoadTiming(std::move(timing));
 }
 
+void WebURLResponse::SetTriggerAttestation(
+    const absl::optional<network::TriggerAttestation>& trigger_attestation) {
+  resource_response_->SetTriggerAttestation(trigger_attestation);
+}
+
 base::Time WebURLResponse::ResponseTime() const {
   return resource_response_->ResponseTime();
 }
@@ -435,10 +441,6 @@ void WebURLResponse::VisitHttpHeaderFields(
 
 void WebURLResponse::SetHasMajorCertificateErrors(bool value) {
   resource_response_->SetHasMajorCertificateErrors(value);
-}
-
-void WebURLResponse::SetIsLegacyTLSVersion(bool value) {
-  resource_response_->SetIsLegacyTLSVersion(value);
 }
 
 void WebURLResponse::SetHasRangeRequested(bool value) {

@@ -50,24 +50,35 @@ PrintJobWorkerOop::PrintJobWorkerOop(
     std::unique_ptr<PrintingContext> printing_context,
     PrintJob* print_job,
     mojom::PrintTargetType print_target_type)
-    : PrintJobWorker(std::move(printing_context_delegate),
-                     std::move(printing_context),
-                     print_job),
-      print_target_type_(print_target_type) {}
+    : PrintJobWorkerOop(std::move(printing_context_delegate),
+                        std::move(printing_context),
+                        print_job,
+                        print_target_type,
+                        /*simulate_spooling_memory_errors=*/false) {}
 
 PrintJobWorkerOop::PrintJobWorkerOop(
     std::unique_ptr<PrintingContext::Delegate> printing_context_delegate,
     std::unique_ptr<PrintingContext> printing_context,
     PrintJob* print_job,
+    mojom::PrintTargetType print_target_type,
     bool simulate_spooling_memory_errors)
     : PrintJobWorker(std::move(printing_context_delegate),
                      std::move(printing_context),
                      print_job),
-      simulate_spooling_memory_errors_(simulate_spooling_memory_errors) {}
+      simulate_spooling_memory_errors_(simulate_spooling_memory_errors),
+      print_target_type_(print_target_type) {}
 
 PrintJobWorkerOop::~PrintJobWorkerOop() {
   DCHECK(!service_manager_client_id_.has_value());
 }
+
+#if BUILDFLAG(ENABLE_OOP_BASIC_PRINT_DIALOG)
+void PrintJobWorkerOop::SetPrintDocumentClient(
+    PrintBackendServiceManager::ClientId client_id) {
+  DCHECK(!service_manager_client_id_.has_value());
+  service_manager_client_id_ = client_id;
+}
+#endif
 
 void PrintJobWorkerOop::StartPrinting(PrintedDocument* new_document) {
   if (!StartPrintingSanityCheck(new_document))
@@ -75,11 +86,8 @@ void PrintJobWorkerOop::StartPrinting(PrintedDocument* new_document) {
 
   // Do browser-side context setup.
   std::u16string document_name = GetDocumentName(new_document);
-  mojom::ResultCode result = printing_context()->NewDocument(document_name);
-  if (result != mojom::ResultCode::kSuccess) {
-    OnFailure();
-    return;
-  }
+  bool success = SetupDocument(document_name);
+  DCHECK(success);
 
   // Keep another reference to the document just for OOP.  This reference
   // ensures the document object is retained even if the job cancels out and
@@ -273,6 +281,16 @@ void PrintJobWorkerOop::OnDocumentDone() {
   // PrintBackend service.
 }
 
+void PrintJobWorkerOop::OnCancel() {
+  // Retain a reference to the PrintJob to ensure it doesn't get deleted before
+  // the `OnDidCancel()` callback occurs.
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrintJobWorkerOop::SendCancel,
+                                ui_weak_factory_.GetWeakPtr(),
+                                base::WrapRefCounted(print_job())));
+  PrintJobWorker::OnCancel();
+}
+
 void PrintJobWorkerOop::OnFailure() {
   // Retain a reference to the PrintJob to ensure it doesn't get deleted before
   // the `OnDidCancel()` callback occurs.
@@ -336,9 +354,15 @@ void PrintJobWorkerOop::NotifyFailure(mojom::ResultCode result) {
   base::UmaHistogramEnumeration(kPrintOopPrintResultHistogramName, uma_result);
 
   // Initiate rest of regular failure handling.
-  task_runner()->PostTask(FROM_HERE,
-                          base::BindOnce(&PrintJobWorkerOop::OnFailure,
-                                         worker_weak_factory_.GetWeakPtr()));
+  if (result == mojom::ResultCode::kCanceled) {
+    task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(&PrintJobWorkerOop::OnCancel,
+                                           worker_weak_factory_.GetWeakPtr()));
+  } else {
+    task_runner()->PostTask(FROM_HERE,
+                            base::BindOnce(&PrintJobWorkerOop::OnFailure,
+                                           worker_weak_factory_.GetWeakPtr()));
+  }
 }
 
 void PrintJobWorkerOop::SendStartPrinting(const std::string& device_name,
@@ -361,9 +385,12 @@ void PrintJobWorkerOop::SendStartPrinting(const std::string& device_name,
   PrintBackendServiceManager& service_mgr =
       PrintBackendServiceManager::GetInstance();
 
-  // Register this worker as a printing client.
-  service_manager_client_id_ =
-      service_mgr.RegisterPrintDocumentClient(device_name_);
+  // Register this worker as a printing client, if registration wasn't already
+  // performed earlier.
+  if (!service_manager_client_id_.has_value()) {
+    service_manager_client_id_ =
+        service_mgr.RegisterPrintDocumentClient(device_name_);
+  }
 
   service_mgr.StartPrinting(
       device_name_, document_cookie, document_name_, print_target_type_,

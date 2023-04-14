@@ -11,14 +11,14 @@ import 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-thresh
 import '../../css/wallpaper.css.js';
 import '../../css/common.css.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {IronScrollThresholdElement} from 'chrome://resources/polymer/v3_0/iron-scroll-threshold/iron-scroll-threshold.js';
 import {afterNextRender} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {GooglePhotosAlbum, WallpaperProviderInterface} from '../../personalization_app.mojom-webui.js';
+import {isGooglePhotosSharedAlbumsEnabled} from '../load_time_booleans.js';
 import {dismissErrorAction, setErrorAction} from '../personalization_actions.js';
-import {GooglePhotosAlbum, WallpaperProviderInterface} from '../personalization_app.mojom-webui.js';
 import {PersonalizationRouter} from '../personalization_router_element.js';
 import {PersonalizationStateError} from '../personalization_state.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
@@ -35,9 +35,14 @@ const PLACEHOLDER_ID = 'placeholder';
 /** Returns placeholders to show while Google Photos albums are loading. */
 function getPlaceholders(): GooglePhotosAlbum[] {
   return getLoadingPlaceholders(() => {
-    const album = new GooglePhotosAlbum();
-    album.id = PLACEHOLDER_ID;
-    return album;
+    return {
+      id: PLACEHOLDER_ID,
+      title: '',
+      photoCount: 0,
+      isShared: false,
+      preview: {url: ''},
+      timestamp: {internalValue: BigInt(0)},
+    };
   });
 }
 
@@ -88,7 +93,7 @@ export class GooglePhotosAlbums extends WithPersonalizationStore {
       isSharedAlbumsEnabled_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('isGooglePhotosSharedAlbumsEnabled');
+          return isGooglePhotosSharedAlbumsEnabled();
         },
       },
     };

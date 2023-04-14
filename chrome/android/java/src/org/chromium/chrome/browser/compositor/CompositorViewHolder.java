@@ -384,11 +384,6 @@ public class CompositorViewHolder extends FrameLayout
                     updateVirtualKeyboardMode(getWebContents().getVirtualKeyboardMode());
                 }
             }
-
-            @Override
-            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
         };
 
         addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight,
@@ -734,8 +729,6 @@ public class CompositorViewHolder extends FrameLayout
             if (o.shouldInterceptTouchEvent(e)) return true;
         }
 
-        updateIsInGesture(e);
-
         if (mLayoutManager == null) return false;
 
         mEventOffsetHandler.onInterceptTouchEvent(e);
@@ -746,7 +739,6 @@ public class CompositorViewHolder extends FrameLayout
     public boolean onTouchEvent(MotionEvent e) {
         super.onTouchEvent(e);
 
-        updateIsInGesture(e);
         boolean consumed = mLayoutManager != null && mLayoutManager.onTouchEvent(e);
         mEventOffsetHandler.onTouchEvent(e);
         return consumed;
@@ -811,6 +803,7 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
         updateLastActiveTouchEvent(e);
+        updateIsInGesture(e);
         for (TouchEventObserver o : mTouchEventObservers) o.handleTouchEvent(e);
         return super.dispatchTouchEvent(e);
     }

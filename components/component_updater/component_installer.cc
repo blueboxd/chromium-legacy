@@ -20,12 +20,11 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/ranges/algorithm.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
-#include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "build/build_config.h"
@@ -66,14 +65,14 @@ ComponentInstaller::ComponentInstaller(
     : current_version_(kNullVersion),
       installer_policy_(std::move(installer_policy)),
       action_handler_(action_handler),
-      main_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {}
+      main_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()) {}
 
 ComponentInstaller::~ComponentInstaller() = default;
 
 void ComponentInstaller::Register(ComponentUpdateService* cus,
                                   base::OnceClosure callback,
                                   base::TaskPriority task_priority) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(cus);
 
   std::vector<uint8_t> public_key_hash;
@@ -89,7 +88,7 @@ void ComponentInstaller::Register(RegisterCallback register_callback,
                                   base::OnceClosure callback,
                                   base::TaskPriority task_priority,
                                   const base::Version& registered_version) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
       {base::MayBlock(), task_priority,
@@ -119,12 +118,13 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
                                          base::Value::Dict* manifest,
                                          base::Version* version,
                                          base::FilePath* install_path) {
-  base::Value local_manifest_value = update_client::ReadManifest(unpack_path);
-  if (!local_manifest_value.is_dict())
+  absl::optional<base::Value::Dict> local_manifest =
+      update_client::ReadManifest(unpack_path);
+  if (!local_manifest) {
     return Result(InstallError::BAD_MANIFEST);
-  base::Value::Dict local_manifest(std::move(local_manifest_value).TakeDict());
+  }
 
-  const std::string* version_ascii = local_manifest.FindString("version");
+  const std::string* version_ascii = local_manifest->FindString("version");
   if (!version_ascii || !base::IsStringASCII(*version_ascii))
     return Result(InstallError::INVALID_VERSION);
 
@@ -177,16 +177,16 @@ Result ComponentInstaller::InstallHelper(const base::FilePath& unpack_path,
 #endif
 
   const Result result =
-      installer_policy_->OnCustomInstall(local_manifest, local_install_path);
+      installer_policy_->OnCustomInstall(*local_manifest, local_install_path);
   if (result.error)
     return result;
 
-  if (!installer_policy_->VerifyInstallation(local_manifest,
+  if (!installer_policy_->VerifyInstallation(*local_manifest,
                                              local_install_path)) {
     return Result(InstallError::INSTALL_VERIFICATION_FAILED);
   }
 
-  *manifest = std::move(local_manifest);
+  *manifest = std::move(local_manifest.value());
   *version = manifest_version;
   *install_path = install_path_owner.Take();
 
@@ -230,7 +230,7 @@ bool ComponentInstaller::GetInstalledFile(const std::string& file,
 }
 
 bool ComponentInstaller::Uninstall() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ComponentInstaller::UninstallOnTaskRunner, this));
@@ -246,19 +246,19 @@ bool ComponentInstaller::FindPreinstallation(
     return false;
   }
 
-  base::Value manifest_value = update_client::ReadManifest(path);
-  if (!manifest_value.is_dict()) {
+  absl::optional<base::Value::Dict> manifest =
+      update_client::ReadManifest(path);
+  if (!manifest) {
     DVLOG(1) << "Manifest does not exist: " << path.MaybeAsASCII();
     return false;
   }
-  base::Value::Dict manifest(std::move(manifest_value).TakeDict());
 
-  if (!installer_policy_->VerifyInstallation(manifest, path)) {
+  if (!installer_policy_->VerifyInstallation(*manifest, path)) {
     DVLOG(1) << "Installation verification failed: " << path.MaybeAsASCII();
     return false;
   }
 
-  std::string* version_lexical = manifest.FindString("version");
+  std::string* version_lexical = manifest->FindString("version");
   if (!version_lexical || !base::IsStringASCII(*version_lexical)) {
     DVLOG(1) << "Failed to get component version from the manifest.";
     return false;
@@ -285,23 +285,23 @@ bool ComponentInstaller::FindPreinstallation(
 // its manifest if it is.
 absl::optional<base::Value::Dict>
 ComponentInstaller::GetValidInstallationManifest(const base::FilePath& path) {
-  base::Value manifest_value = update_client::ReadManifest(path);
-  if (!manifest_value.is_dict()) {
+  absl::optional<base::Value::Dict> manifest =
+      update_client::ReadManifest(path);
+  if (!manifest) {
     PLOG(ERROR) << "Failed to read manifest for "
                 << installer_policy_->GetName() << " (" << path.MaybeAsASCII()
                 << ").";
     return absl::nullopt;
   }
-  base::Value::Dict manifest(std::move(manifest_value).TakeDict());
 
-  if (!installer_policy_->VerifyInstallation(manifest, path)) {
+  if (!installer_policy_->VerifyInstallation(*manifest, path)) {
     PLOG(ERROR) << "Failed to verify installation for "
                 << installer_policy_->GetName() << " (" << path.MaybeAsASCII()
                 << ").";
     return absl::nullopt;
   }
 
-  const base::Value::List* accept_archs = manifest.FindList("accept_arch");
+  const base::Value::List* accept_archs = manifest->FindList("accept_arch");
   if (accept_archs != nullptr &&
       base::ranges::none_of(*accept_archs, [](const base::Value& v) {
         static const char* current_arch =
@@ -498,7 +498,7 @@ void ComponentInstaller::FinishRegistration(
     RegisterCallback register_callback,
     base::OnceClosure callback) {
   VLOG(1) << __func__ << " for " << installer_policy_->GetName();
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   current_install_dir_ = registration_info->install_dir;
   current_version_ = registration_info->version;

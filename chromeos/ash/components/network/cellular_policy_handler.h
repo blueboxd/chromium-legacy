@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
   // request will wait until the previous one is completed. Each installation
   // will be retried for a fixed number of tries.
   void InstallESim(const std::string& smdp_address,
-                   const base::Value& onc_config);
+                   const base::Value::Dict& onc_config);
 
  private:
   friend class CellularPolicyHandlerTest;
@@ -74,14 +74,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
   // |onc_config| is the ONC configuration of the cellular policy.
   struct InstallPolicyESimRequest {
     InstallPolicyESimRequest(const std::string& smdp_address,
-                             const base::Value& onc_config);
+                             const base::Value::Dict& onc_config);
     InstallPolicyESimRequest(const InstallPolicyESimRequest&) = delete;
     InstallPolicyESimRequest& operator=(const InstallPolicyESimRequest&) =
         delete;
     ~InstallPolicyESimRequest();
 
     const std::string smdp_address;
-    base::Value onc_config;
+    base::Value::Dict onc_config;
     net::BackoffEntry retry_backoff;
   };
 
@@ -99,7 +99,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) CellularPolicyHandler
   void ProcessRequests();
   void AttemptInstallESim();
   void SetupESim(const dbus::ObjectPath& euicc_path);
-  base::Value GetNewShillProperties();
+  base::Value::Dict GetNewShillProperties();
   const std::string& GetCurrentSmdpAddress() const;
   std::string GetCurrentPolicyGuid() const;
   void OnRefreshProfileList(

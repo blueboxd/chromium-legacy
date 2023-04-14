@@ -56,6 +56,13 @@
     min-width: 210px;
   }
 
+  /* Tangible sync style details are found in go/tangible-sync-ui */
+  .tangible-sync-style cr-button {
+    --cr-button-height: 36px;
+    font-family: 'Google Sans', arial, sans-serif;
+    font-size: 0.75rem;
+  }
+
   #notNowButton {
     margin-top: 18px;
   }
@@ -64,6 +71,18 @@
     margin: 104px auto;
     margin-bottom: 48px;
     text-align: center;
+  }
+
+  .tangible-sync-style .title {
+    font-size: 2.25rem;
+    font-weight: 500;
+    line-height: 43px;
+    margin-bottom: 16px;
+  }
+
+  .tangible-sync-style .subtitle {
+    font-size: 1.25rem;
+    line-height: 24px;
   }
 
   @media (prefers-color-scheme: dark) {
@@ -76,9 +95,21 @@
       background-color: var(--google-grey-700);
     }
   }
+
+@media screen and ((max-width: 780px) or (max-height: 600px)) {
+  .tangible-sync-style .title {
+    font-size: 1.5rem;
+    line-height: 32px;
+  }
+
+  .tangible-sync-style .subtitle {
+    font-size: 0.94rem;
+  }
+}
 </style>
 
-<div id="leftBanner" class="banner"></div>
+<div id="leftBanner" class="banner" hidden="[[isTangibleSyncEnabled_]]"></div>
+<img id="tangible-sync-style-left-banner" hidden="[[!isTangibleSyncEnabled_]]">
 <div id="headerContainer"
     style$="--theme-frame-color:[[profileThemeInfo.themeFrameColor]];
             --theme-text-color:[[profileThemeInfo.themeFrameTextColor]];">
@@ -90,11 +121,11 @@
     <img class="avatar" alt="" src="[[profileThemeInfo.themeGenericAvatar]]">
   </div>
 </div>
-<div class="title-container">
+<div class$="title-container [[getTangibleSyncStyleClass_()]]">
   <h1 class="title">$i18n{profileTypeChoiceTitle}</h1>
   <div class="subtitle">$i18n{profileTypeChoiceSubtitle}</div>
 </div>
-<div id="actionContainer">
+<div id="actionContainer" class$="[[getTangibleSyncStyleClass_()]]">
   <cr-button id="signInButton" class="action-button" on-click="onSignInClick_"
       disabled="[[profileCreationInProgress]]">
     $i18n{signInButtonLabel}
@@ -104,7 +135,8 @@
     $i18n{notNowButtonLabel}
   </cr-button>
 </div>
-<div id="rightBanner" class="banner"></div>
+<div id="rightBanner" class="banner" hidden="[[isTangibleSyncEnabled_]]"></div>
+<img id="tangible-sync-style-right-banner" hidden="[[!isTangibleSyncEnabled_]]">
 
 <template is="dom-if" if="[[managedDeviceDisclaimer_]]">
   <div id="infoContainer">

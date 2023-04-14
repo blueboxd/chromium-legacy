@@ -23,9 +23,7 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -40,7 +38,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
+#include "components/safe_browsing/core/common/safe_browsing_settings_metrics.h"
 #include "components/signin/public/base/consent_level.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_prefs.h"
@@ -53,6 +53,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/webui/connectivity_diagnostics/url_constants.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
@@ -257,9 +258,7 @@ void ShowHistory(Browser* browser, const std::string& host_name) {
   // History UI should not be shown in Incognito mode, instead history
   // disclaimer bubble should show up. This also updates the behavior of history
   // keyboard shortcts in Incognito.
-  if (browser->profile()->IsOffTheRecord() &&
-      base::FeatureList::IsEnabled(
-          features::kUpdateHistoryEntryPointsInIncognito)) {
+  if (browser->profile()->IsOffTheRecord()) {
     browser->window()->ShowIncognitoHistoryDisclaimerDialog();
     return;
   }
@@ -435,17 +434,28 @@ void ShowClearBrowsingDataDialog(Browser* browser) {
 
 void ShowPasswordManager(Browser* browser) {
   base::RecordAction(UserMetricsAction("Options_ShowPasswordManager"));
-  ShowSettingsSubPage(browser, kPasswordManagerSubPage);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign)) {
+    ShowSingletonTabIgnorePathOverwriteNTP(browser,
+                                           GURL(kChromeUIPasswordManagerURL));
+  } else {
+    ShowSettingsSubPage(browser, kPasswordManagerSubPage);
+  }
 }
 
 void ShowPasswordCheck(Browser* browser) {
   base::RecordAction(UserMetricsAction("Options_ShowPasswordCheck"));
-  ShowSettingsSubPage(browser, kPasswordCheckSubPage);
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordManagerRedesign)) {
+    ShowSingletonTabIgnorePathOverwriteNTP(
+        browser, GURL(kChromeUIPasswordManagerCheckupURL));
+  } else {
+    ShowSettingsSubPage(browser, kPasswordCheckSubPage);
+  }
 }
 
 void ShowSafeBrowsingEnhancedProtection(Browser* browser) {
-  base::RecordAction(
-      UserMetricsAction("Options_ShowSafeBrowsingEnhancedProtection"));
+  safe_browsing::LogShowEnhancedProtectionAction();
   ShowSettingsSubPage(browser, kSafeBrowsingEnhancedProtectionSubPage);
 }
 

@@ -7,10 +7,9 @@
  * personalization SWA.
  */
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
-
-import {CurrentWallpaper, WallpaperType} from '../personalization_app.mojom-webui.js';
-import {Paths, PersonalizationRouter} from '../personalization_router_element.js';
+import {CurrentWallpaper, WallpaperType} from '../../personalization_app.mojom-webui.js';
+import {isGooglePhotosIntegrationEnabled} from '../load_time_booleans.js';
+import {Paths, PersonalizationRouter, QueryParams} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
 import {getTemplate} from './wallpaper_subpage_element.html.js';
@@ -33,12 +32,24 @@ export class WallpaperSubpage extends WithPersonalizationStore {
         value: null,
         observer: 'onCurrentSelectedChanged_',
       },
+      isGooglePhotosIntegrationEnabled_: {
+        type: Boolean,
+        value() {
+          return isGooglePhotosIntegrationEnabled();
+        },
+      },
+      isGooglePhotosAlbumShared_: {
+        type: Boolean,
+        computed: 'computeIsGooglePhotosAlbumShared_(queryParams)',
+      },
     };
   }
 
   path: string;
-  queryParams: Record<string, string>;
+  queryParams: QueryParams;
   private currentSelected_: CurrentWallpaper|null;
+  private isGooglePhotosIntegrationEnabled_: boolean;
+  private isGooglePhotosAlbumShared_: boolean;
 
   override connectedCallback(): void {
     super.connectedCallback();
@@ -52,6 +63,11 @@ export class WallpaperSubpage extends WithPersonalizationStore {
     }
   }
 
+  private computeIsGooglePhotosAlbumShared_(queryParams?: QueryParams):
+      boolean {
+    return !!queryParams && queryParams.googlePhotosAlbumIsShared === 'true';
+  }
+
   private shouldShowCollections_(path: string): boolean {
     return path === Paths.COLLECTIONS;
   }
@@ -61,19 +77,12 @@ export class WallpaperSubpage extends WithPersonalizationStore {
   }
 
   private shouldShowGooglePhotosCollection_(path: string): boolean {
-    return this.isGooglePhotosIntegrationEnabled_() &&
+    return this.isGooglePhotosIntegrationEnabled_ &&
         path === Paths.GOOGLE_PHOTOS_COLLECTION;
   }
 
   private shouldShowLocalCollection_(path: string): boolean {
     return path === Paths.LOCAL_COLLECTION;
-  }
-
-  /**
-   * Whether Google Photos integration is enabled.
-   */
-  private isGooglePhotosIntegrationEnabled_(): boolean {
-    return loadTimeData.getBoolean('isGooglePhotosIntegrationEnabled');
   }
 }
 

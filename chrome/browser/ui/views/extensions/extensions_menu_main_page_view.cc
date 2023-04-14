@@ -5,28 +5,33 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_main_page_view.h"
 
 #include <memory>
+#include <string>
 
 #include "base/functional/bind.h"
-#include "base/i18n/case_conversion.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
-#include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
+#include "chrome/browser/ui/views/extensions/extensions_dialogs_utils.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_item_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_navigation_handler.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout_view.h"
 #include "ui/views/layout/layout_types.h"
@@ -38,15 +43,6 @@
 namespace {
 
 using PermissionsManager = extensions::PermissionsManager;
-
-// Returns the current site pointed by `web_contents`. This method should only
-// be called when web contents are present.
-std::u16string GetCurrentSite(content::WebContents* web_contents) {
-  DCHECK(web_contents);
-  const GURL& url = web_contents->GetLastCommittedURL();
-  return url_formatter::FormatUrlForDisplayOmitSchemePathAndTrivialSubdomains(
-      url);
-}
 
 // Updates the `toggle_button` text based on its state.
 void UpdateSiteSettingToggleText(views::ToggleButton* toggle_button) {
@@ -134,6 +130,10 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
     : browser_(browser),
       navigation_handler_(navigation_handler),
       toolbar_model_(ToolbarActionsModel::Get(browser_->profile())) {
+  // This is set so that the extensions menu doesn't fall outside the monitor in
+  // a maximized window in 1024x768. See https://crbug.com/1096630.
+  // TODO(crbug.com/1413883): Consider making the height dynamic.
+  constexpr int kMaxExtensionButtonsHeightDp = 448;
   views::FlexSpecification stretch_specification =
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded,
@@ -168,7 +168,7 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                               .SetTextStyle(views::style::STYLE_SECONDARY),
                           views::Builder<views::Label>()
                               .CopyAddressTo(&subheader_subtitle_)
-                              .SetText(GetCurrentSite(web_contents))
+                              .SetText(GetCurrentHost(web_contents))
                               .SetHorizontalAlignment(gfx::ALIGN_LEFT)
                               .SetTextContext(views::style::CONTEXT_LABEL)
                               .SetTextStyle(views::style::STYLE_SECONDARY)
@@ -176,9 +176,26 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                               .SetMultiLine(true)
                               .SetProperty(views::kFlexBehaviorKey,
                                            stretch_specification)),
+                  // TODO(crbug.com/1390952): Move setting and toggle button
+                  // under close button. This will be done as part of adding
+                  // margins to the menu.
+                  // Setting button.
+                  views::Builder<views::ImageButton>(
+                      views::CreateVectorImageButtonWithNativeTheme(
+                          base::BindRepeating(
+                              [](Browser* browser) {
+                                chrome::ShowExtensions(browser);
+                              },
+                              browser_),
+                          vector_icons::kSettingsIcon))
+                      .SetAccessibleName(
+                          l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS))
+                      .CustomConfigure(
+                          base::BindOnce([](views::ImageButton* view) {
+                            view->SizeToPreferredSize();
+                            InstallCircleHighlightPathGenerator(view);
+                          })),
                   // Toggle site settings button.
-                  // TODO(crbug.com/1390952): Move button under close button.
-                  // This will be done as part of adding margins to the menu.
                   views::Builder<views::ToggleButton>()
                       .CopyAddressTo(&site_settings_toggle_)
                       .SetCallback(base::BindRepeating(
@@ -193,20 +210,26 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
                           base::BindRepeating(
                               &ExtensionsMenuNavigationHandler::CloseBubble,
                               base::Unretained(navigation_handler_))))),
-          // Request access section.
-          views::Builder<RequestsAccessSection>(
-              std::make_unique<RequestsAccessSection>()),
-          // TODO(crbug.com/1390952): Remove. Only for testing site permissions
-          // page behavior.
-          views::Builder<views::LabelButton>()
-              .SetText(u"Site Permissions")
-              .SetCallback(base::BindRepeating(
-                  &ExtensionsMenuNavigationHandler::OpenSitePermissionsPage,
-                  base::Unretained(navigation_handler_))),
-          // Menu items section.
-          views::Builder<views::BoxLayoutView>()
-              .CopyAddressTo(&menu_items_)
-              .SetOrientation(views::BoxLayout::Orientation::kVertical))
+          // Contents.
+          views::Builder<views::Separator>(),
+          views::Builder<views::ScrollView>()
+              .ClipHeightTo(0, kMaxExtensionButtonsHeightDp)
+              .SetDrawOverflowIndicator(false)
+              .SetHorizontalScrollBarMode(
+                  views::ScrollView::ScrollBarMode::kDisabled)
+              .SetContents(
+                  views::Builder<views::BoxLayoutView>()
+                      .SetOrientation(views::BoxLayout::Orientation::kVertical)
+                      .AddChildren(
+                          // Request access section.
+                          views::Builder<RequestsAccessSection>(
+                              std::make_unique<RequestsAccessSection>()),
+                          // Menu items section.
+                          views::Builder<views::BoxLayoutView>()
+                              .CopyAddressTo(&menu_items_)
+                              .SetOrientation(
+                                  views::BoxLayout::Orientation::kVertical))))
+
       .BuildChildren();
 
   // Update toggle button text after it's build, as it depends on its state.
@@ -215,10 +238,14 @@ ExtensionsMenuMainPageView::ExtensionsMenuMainPageView(
 
 void ExtensionsMenuMainPageView::CreateAndInsertMenuItem(
     std::unique_ptr<ExtensionActionViewController> action_controller,
+    extensions::ExtensionId extension_id,
     bool allow_pinning,
     int index) {
   auto item = std::make_unique<InstalledExtensionMenuItemView>(
-      browser_, std::move(action_controller), allow_pinning);
+      browser_, std::move(action_controller), allow_pinning,
+      base::BindRepeating(
+          &ExtensionsMenuNavigationHandler::OpenSitePermissionsPage,
+          base::Unretained(navigation_handler_), extension_id));
   menu_items_->AddChildViewAt(std::move(item), index);
 }
 
@@ -230,7 +257,7 @@ void ExtensionsMenuMainPageView::OnToggleButtonPressed() {
 void ExtensionsMenuMainPageView::Update(content::WebContents* web_contents) {
   DCHECK(web_contents);
 
-  subheader_subtitle_->SetText(GetCurrentSite(web_contents));
+  subheader_subtitle_->SetText(GetCurrentHost(web_contents));
 
   site_settings_toggle_->SetVisible(
       IsSiteSettingsToggleVisible(toolbar_model_, web_contents));

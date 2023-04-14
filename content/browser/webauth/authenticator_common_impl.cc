@@ -33,6 +33,7 @@
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_make_credential_request.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
@@ -57,7 +58,6 @@
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "device/fido/cros/authenticator.h"
-#include "device/fido/features.h"
 #endif
 
 #if BUILDFLAG(IS_WIN)
@@ -122,8 +122,7 @@ std::array<uint8_t, crypto::kSHA256Length> CreateApplicationParameter(
 device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
     const std::string& client_data_json,
     const blink::mojom::PublicKeyCredentialRequestOptionsPtr& options,
-    absl::optional<std::string> app_id,
-    bool is_off_the_record) {
+    absl::optional<std::string> app_id) {
   device::CtapGetAssertionRequest request_parameter(options->relying_party_id,
                                                     client_data_json);
 
@@ -140,14 +139,6 @@ device::CtapGetAssertionRequest CreateCtapGetAssertionRequest(
   if (!options->cable_authentication_data.empty()) {
     request_parameter.cable_extension = options->cable_authentication_data;
   }
-  if (options->large_blob_read) {
-    request_parameter.large_blob_read = true;
-    request_parameter.large_blob_key = true;
-  }
-  if (options->large_blob_write) {
-    request_parameter.large_blob_key = true;
-  }
-  request_parameter.is_off_the_record_context = is_off_the_record;
   return request_parameter;
 }
 
@@ -332,6 +323,68 @@ std::unique_ptr<device::FidoDiscoveryFactory> MakeDiscoveryFactory(
   return discovery_factory;
 }
 
+absl::optional<device::CredProtectRequest> ProtectionPolicyToCredProtect(
+    blink::mojom::ProtectionPolicy protection_policy,
+    const device::MakeCredentialOptions& make_credential_options) {
+  switch (protection_policy) {
+    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
+      // Some platform authenticators have the behaviour that uv=required
+      // demands a local reauthentication but uv=preferred can be satisfied by
+      // just clicking a button. Since the device has to be unlocked by the
+      // user, this seems to balance the demands of uv=required against the
+      // fact that quite a number of (non-mobile) devices lack biometrics and
+      // thus full UV requires entering the local password. Since password
+      // autofill doesn't demand entering the local password all the time, it
+      // would be sad if WebAuthn was much worse in that respect.
+      //
+      // Also, some sites have (or will) implement a sign-in flow where the
+      // user enters their username and then the site makes a WebAuthn
+      // request, with an allowlist, where completing that request is
+      // sufficient to sign-in. I.e. there's no additional password challenge.
+      // Since these sites are trying to replace passwords, we expect them to
+      // set uv=preferred in order to work well with the platform behaviour
+      // detailed in the first paragraph.
+      //
+      // If such sites remembered the UV flag from the registration and enforced
+      // it at assertion time, that would break situations where closing a
+      // laptop lid covers the biometric sensor and makes entering a password
+      // preferable. But without any enforcement of the UV flag, someone could
+      // pick a security key off the ground and do a uv=false request to get a
+      // sufficient assertion.
+      //
+      // Thus if rk=required and uv=preferred, credProtect level three is set
+      // to tell security keys to only create an assertion after UV for this
+      // credential. (Sites can still override this by setting a specific
+      // credProtect level.)
+      //
+      // If a site sets rk=preferred then we assume that they're doing something
+      // unusual and will only set credProtect level two.
+      //
+      // See also
+      // https://chromium.googlesource.com/chromium/src/+/main/content/browser/webauth/cred_protect.md
+      if (make_credential_options.resident_key ==
+              device::ResidentKeyRequirement::kRequired &&
+          make_credential_options.user_verification ==
+              device::UserVerificationRequirement::kPreferred &&
+          base::FeatureList::IsEnabled(device::kWebAuthnCredProtectThree)) {
+        return device::CredProtectRequest::kUVRequired;
+      }
+      if (make_credential_options.resident_key !=
+          device::ResidentKeyRequirement::kDiscouraged) {
+        // Otherwise, kUVOrCredIDRequired is made the default unless
+        // the authenticator defaults to something better.
+        return device::CredProtectRequest::kUVOrCredIDRequiredOrBetter;
+      }
+      return absl::nullopt;
+    case blink::mojom::ProtectionPolicy::NONE:
+      return device::CredProtectRequest::kUVOptional;
+    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
+      return device::CredProtectRequest::kUVOrCredIDRequired;
+    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
+      return device::CredProtectRequest::kUVRequired;
+  }
+}
+
 }  // namespace
 
 // static
@@ -484,30 +537,6 @@ bool AuthenticatorCommonImpl::IsFocused() const {
   return GetRenderFrameHost()->IsActive() &&
          GetWebAuthenticationDelegate()->IsFocused(
              WebContents::FromRenderFrameHost(GetRenderFrameHost()));
-}
-
-void AuthenticatorCommonImpl::OnLargeBlobCompressed(
-    uint64_t original_size,
-    base::expected<mojo_base::BigBuffer, std::string> result) {
-  if (result.has_value()) {
-    ctap_get_assertion_request_->large_blob_write = device::LargeBlob(
-        device::fido_parsing_utils::Materialize(*result), original_size);
-  }
-  StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
-}
-
-void AuthenticatorCommonImpl::OnLargeBlobUncompressed(
-    device::AuthenticatorGetAssertionResponse response,
-    base::expected<mojo_base::BigBuffer, std::string> result) {
-  absl::optional<mojo_base::BigBuffer> value;
-  if (result.has_value())
-    value = std::move(*result);
-
-  CompleteGetAssertionRequest(
-      blink::mojom::AuthenticatorStatus::SUCCESS,
-      CreateGetAssertionResponse(
-          std::move(response),
-          device::fido_parsing_utils::MaterializeOrNull(value)));
 }
 
 // mojom::Authenticator
@@ -697,27 +726,9 @@ void AuthenticatorCommonImpl::MakeCredential(
     return;
   }
 
-  absl::optional<device::CredProtectRequest> cred_protect_request;
-  switch (options->protection_policy) {
-    case blink::mojom::ProtectionPolicy::UNSPECIFIED:
-      if (might_create_resident_key) {
-        // If not specified, kUVOrCredIDRequired is made the default unless
-        // the authenticator defaults to something better.
-        cred_protect_request =
-            device::CredProtectRequest::kUVOrCredIDRequiredOrBetter;
-      }
-      break;
-    case blink::mojom::ProtectionPolicy::NONE:
-      cred_protect_request = device::CredProtectRequest::kUVOptional;
-      break;
-    case blink::mojom::ProtectionPolicy::UV_OR_CRED_ID_REQUIRED:
-      cred_protect_request = device::CredProtectRequest::kUVOrCredIDRequired;
-      break;
-    case blink::mojom::ProtectionPolicy::UV_REQUIRED:
-      cred_protect_request = device::CredProtectRequest::kUVRequired;
-      break;
-  }
-
+  absl::optional<device::CredProtectRequest> cred_protect_request =
+      ProtectionPolicyToCredProtect(options->protection_policy,
+                                    *make_credential_options_);
   if (cred_protect_request) {
     make_credential_options_->cred_protect_request = {
         {*cred_protect_request, options->enforce_protection_policy}};
@@ -806,19 +817,18 @@ void AuthenticatorCommonImpl::MakeCredential(
 
       case device::AttestationConveyancePreference::
           kEnterpriseApprovedByBrowser:
-        // This should never come from the renderer.
-        mojo::ReportBadMessage("invalid devicePubKey attestation value");
-        CompleteGetAssertionRequest(
-            blink::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR);
-        break;
+        // Enterprise attestation should not have been approved by this point.
+        NOTREACHED();
+        return;
     }
   }
 
   // Compute the effective attestation conveyance preference.
   device::AttestationConveyancePreference attestation = options->attestation;
   // Enterprise attestation should not have been approved by this point.
-  DCHECK(attestation !=
-         device::AttestationConveyancePreference::kEnterpriseApprovedByBrowser);
+  DCHECK_NE(
+      attestation,
+      device::AttestationConveyancePreference::kEnterpriseApprovedByBrowser);
   if (attestation == device::AttestationConveyancePreference::
                          kEnterpriseIfRPListedOnAuthenticator &&
       GetWebAuthenticationDelegate()->ShouldPermitIndividualAttestation(
@@ -1025,17 +1035,20 @@ void AuthenticatorCommonImpl::GetAssertion(
   }
 
   ctap_get_assertion_request_ =
-      CreateCtapGetAssertionRequest(client_data_json_, options, app_id_,
-                                    GetBrowserContext()->IsOffTheRecord());
+      CreateCtapGetAssertionRequest(client_data_json_, options, app_id_);
   ctap_get_assertion_options_.emplace();
+  ctap_get_assertion_options_->is_off_the_record_context =
+      GetBrowserContext()->IsOffTheRecord();
 
   if (options->prf) {
     requested_extensions_.insert(RequestExtension::kPRF);
 
     bool is_first = true;
     absl::optional<std::vector<uint8_t>> last_id;
+    // TODO(agl): should match the credential IDs from the allow list, which
+    // will also limit the size to the size of the allow list.
     for (const auto& prf_input_from_renderer : options->prf_inputs) {
-      device::CtapGetAssertionOptions::PRFInput prf_input;
+      device::PRFInput prf_input;
 
       // This statement enforces invariants that should be established by the
       // renderer.
@@ -1126,17 +1139,8 @@ void AuthenticatorCommonImpl::GetAssertion(
     ctap_get_assertion_request_->get_cred_blob = true;
   }
 
-  if (options->large_blob_write) {
-    data_decoder_.Deflate(
-        *options->large_blob_write,
-        base::BindOnce(&AuthenticatorCommonImpl::OnLargeBlobCompressed,
-                       weak_factory_.GetWeakPtr(),
-                       options->large_blob_write->size()));
-    return;
-  }
-
-  // Don't put any other extensions here: largeBlob might be decompressing
-  // something.
+  ctap_get_assertion_options_->large_blob_read = options->large_blob_read;
+  ctap_get_assertion_options_->large_blob_write = options->large_blob_write;
 
   StartGetAssertionRequest(/*allow_skipping_pin_touch=*/true);
 }
@@ -1155,8 +1159,7 @@ void AuthenticatorCommonImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
     return;
   }
 
-  // Check for a delegate override. Chrome overrides IsUVPAA() in Guest mode
-  // and, on Windows only, in Incognito.
+  // Check for a delegate override. Chrome overrides IsUVPAA() in Guest mode.
   absl::optional<bool> is_uvpaa_override =
       GetWebAuthenticationDelegate()
           ->IsUserVerifyingPlatformAuthenticatorAvailableOverride(
@@ -1180,7 +1183,8 @@ void AuthenticatorCommonImpl::IsUserVerifyingPlatformAuthenticatorAvailable(
   IsUVPlatformAuthenticatorAvailable(GetBrowserContext(),
                                      std::move(uma_decorated_callback));
 #elif BUILDFLAG(IS_WIN)
-  IsUVPlatformAuthenticatorAvailable(std::move(uma_decorated_callback));
+  IsUVPlatformAuthenticatorAvailable(GetBrowserContext()->IsOffTheRecord(),
+                                     std::move(uma_decorated_callback));
 #elif BUILDFLAG(IS_CHROMEOS)
   IsUVPlatformAuthenticatorAvailable(std::move(uma_decorated_callback));
 #else
@@ -1617,17 +1621,8 @@ void AuthenticatorCommonImpl::OnSignResponse(
 
 void AuthenticatorCommonImpl::OnAccountSelected(
     device::AuthenticatorGetAssertionResponse response) {
-  if (response.large_blob) {
-    device::LargeBlob large_blob = std::move(*response.large_blob);
-    data_decoder_.Inflate(
-        std::move(large_blob.compressed_data), large_blob.original_size,
-        base::BindOnce(&AuthenticatorCommonImpl::OnLargeBlobUncompressed,
-                       weak_factory_.GetWeakPtr(), std::move(response)));
-    return;
-  }
   CompleteGetAssertionRequest(blink::mojom::AuthenticatorStatus::SUCCESS,
                               CreateGetAssertionResponse(std::move(response)));
-  return;
 }
 
 void AuthenticatorCommonImpl::SignalFailureToRequestDelegate(
@@ -1768,7 +1763,7 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
         device::kExtensionDevicePublicKey);
   }
 
-  bool did_create_hmac_secret = false;
+  bool did_create_hmac_secret = response_data.prf_enabled;
   bool did_store_cred_blob = false;
   absl::optional<std::vector<uint8_t>> device_public_key_authenticator_output;
   const absl::optional<cbor::Value>& maybe_extensions =
@@ -1777,11 +1772,14 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
     DCHECK(maybe_extensions->is_map());
     const cbor::Value::MapValue& extensions = maybe_extensions->GetMap();
 
-    const auto hmac_secret_it =
-        extensions.find(cbor::Value(device::kExtensionHmacSecret));
-    if (hmac_secret_it != extensions.end() &&
-        hmac_secret_it->second.is_bool() && hmac_secret_it->second.GetBool()) {
-      did_create_hmac_secret = true;
+    if (!did_create_hmac_secret) {
+      const auto hmac_secret_it =
+          extensions.find(cbor::Value(device::kExtensionHmacSecret));
+      if (hmac_secret_it != extensions.end() &&
+          hmac_secret_it->second.is_bool() &&
+          hmac_secret_it->second.GetBool()) {
+        did_create_hmac_secret = true;
+      }
     }
 
     const auto cred_blob_it =
@@ -1820,7 +1818,7 @@ AuthenticatorCommonImpl::CreateMakeCredentialResponse(
       case RequestExtension::kLargeBlobEnable:
         response->echo_large_blob = true;
         response->supports_large_blob =
-            response_data.has_associated_large_blob_key;
+            response_data.large_blob_type.has_value();
         break;
       case RequestExtension::kCredBlob:
         response->echo_cred_blob = true;
@@ -1896,8 +1894,7 @@ void AuthenticatorCommonImpl::CompleteMakeCredentialRequest(
 
 blink::mojom::GetAssertionAuthenticatorResponsePtr
 AuthenticatorCommonImpl::CreateGetAssertionResponse(
-    device::AuthenticatorGetAssertionResponse response_data,
-    absl::optional<std::vector<uint8_t>> large_blob) {
+    device::AuthenticatorGetAssertionResponse response_data) {
   auto response = blink::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = blink::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json_.begin(),
@@ -1948,7 +1945,7 @@ AuthenticatorCommonImpl::CreateGetAssertionResponse(
       }
       case RequestExtension::kLargeBlobRead:
         response->echo_large_blob = true;
-        response->large_blob = large_blob;
+        response->large_blob = response_data.large_blob;
         break;
       case RequestExtension::kLargeBlobWrite:
         response->echo_large_blob = true;

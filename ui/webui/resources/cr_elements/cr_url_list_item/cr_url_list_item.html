@@ -1,4 +1,4 @@
-<style include="cr-icons">
+<style include="cr-hidden-style cr-icons">
   :host {
     align-items: center;
     box-sizing: border-box;
@@ -7,6 +7,11 @@
     height: 52px;
     padding: 6px 16px;
     width: 100%;
+  }
+
+  :host-context([chrome-refresh-2023]):host {
+    height: 48px;
+    padding: 4px 16px;
   }
 
   :host([size=compact]) {
@@ -19,16 +24,26 @@
     padding: 6px 16px;
   }
 
-  :host(.hovered),
-  :host-context(.focus-outline-visible):host(:focus-within) {
-    background: var(--google-grey-200);
+  :host-context([chrome-refresh-2023]):host([size=compact]),
+  :host-context([chrome-refresh-2023]):host([size=large]) {
+    padding: 6px 16px;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :host(.hovered),
-    :host-context(.focus-outline-visible):host(:focus-within) {
-      background: var(--google-grey-800);
-    }
+  :host-context([chrome-refresh-2023]):host([size=compact]) {
+    height: 36px;
+  }
+
+  :host-context([chrome-refresh-2023]):host([size=large]) {
+    height: 68px;
+  }
+
+  :host(.hovered) {
+    background: var(--cr-hover-background-color);
+  }
+
+  :host(.active),
+  :host-context(.focus-outline-visible):host(:focus-within) {
+    background: var(--cr-active-background-color);
   }
 
   ::slotted([slot=prefix]) {
@@ -61,10 +76,21 @@
     width: 16px;
   }
 
+  :host-context([chrome-refresh-2023]):host([size=compact]) #iconContainer {
+    height: 24px;
+    marign-inline-end: 8px;
+    width: 24px;
+  }
+
   :host([size=large]) #iconContainer {
     height: 56px;
     margin-inline-end: 16px;
     width: 56px;
+  }
+
+  :host-context([chrome-refresh-2023]):host([size=medium]) #iconContainer,
+  :host-context([chrome-refresh-2023]):host([size=large]) #iconContainer {
+    border-radius: 8px;
   }
 
   .favicon {
@@ -74,10 +100,34 @@
     width: 16px;
   }
 
+  :host([size=large]) .folder-and-count {
+    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    height: 100%;
+    justify-items: center;
+    width: 100%;
+  }
+
   .folder {
     height: 16px;
     margin: 0;
     width: 16px;
+  }
+
+  .count {
+    display: none;
+  }
+
+  :host([size=large]) .count {
+    align-items: center;
+    display: flex;
+    grid-column: 2;
+    grid-row: 2;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
   }
 
   .metadata {
@@ -93,14 +143,28 @@
     flex-direction: row;
   }
 
+  :host-context([chrome-refresh-2023]):host([size=compact]) .metadata,
+  :host-context([chrome-refresh-2023]):host([size=medium]) .metadata {
+    gap: 4px;
+  }
+
   :host([size=large]) .metadata {
     gap: 4px;
+  }
+
+  :host-context([chrome-refresh-2023]):host([size=large]) .metadata {
+    gap: 2px;
   }
 
   ::slotted([slot=title]) {
     color: var(--cr-primary-text-color);
     font-size: 13px;
     font-weight: 400;
+  }
+
+  :host-context([chrome-refresh-2023]) ::slotted([slot=title]) {
+    font-size: 12px;
+    font-weight: 500;
   }
 
   ::slotted(button[slot=title]) {
@@ -137,6 +201,11 @@
   ::slotted([slot=description]) {
     color: var(--cr-secondary-text-color);
     font-size: 13px;
+    font-weight: 400;
+  }
+
+  :host-context([chrome-refresh-2023]) ::slotted([slot=description]) {
+    font-size: 11px;
     font-weight: 400;
   }
 
@@ -184,8 +253,9 @@
   <div class="favicon" hidden$="[[!shouldShowFavicon_(url, count)]]"
       style$="background-image: [[getFavicon_(url)]];">
   </div>
-  <div class="folder cr-icon icon-folder-open"
-      hidden$="[[shouldShowFavicon_(url, count)]]">
+  <div class="folder-and-count" hidden$="[[shouldShowFavicon_(url, count)]]">
+    <div class="folder cr-icon icon-folder-open"></div>
+    <div class="count">[[getDisplayedCount_(count)]]</div>
   </div>
 </div>
 <div class="metadata">

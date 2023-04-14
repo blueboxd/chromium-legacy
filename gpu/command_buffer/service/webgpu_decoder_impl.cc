@@ -47,8 +47,6 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
-#include "ui/gl/gl_context_egl.h"
-#include "ui/gl/gl_surface_egl.h"
 
 #if BUILDFLAG(IS_WIN)
 #include <dawn/native/D3D12Backend.h>
@@ -124,12 +122,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
     return nullptr;
   }
   void Destroy(bool have_context) override;
-  bool MakeCurrent() override {
-    if (gl_context_.get()) {
-      gl_context_->MakeCurrent(gl_surface_.get());
-    }
-    return true;
-  }
+  bool MakeCurrent() override { return true; }
   gl::GLContext* GetGLContext() override { return nullptr; }
   gl::GLSurface* GetGLSurface() override {
     NOTREACHED();
@@ -253,7 +246,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           int num_entries,
                           int* entries_processed) override;
   base::StringPiece GetLogPrefix() override { return "WebGPUDecoderImpl"; }
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   void AttachImageToTextureWithDecoderBinding(uint32_t client_texture_id,
                                               uint32_t texture_target,
                                               gl::GLImage* image) override {
@@ -954,9 +947,6 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   bool has_polling_work_ = false;
   bool destroyed_ = false;
 
-  scoped_refptr<gl::GLContext> gl_context_;
-  scoped_refptr<gl::GLSurface> gl_surface_;
-
   base::WeakPtrFactory<WebGPUDecoderImpl> weak_ptr_factory_{this};
 };
 
@@ -1121,6 +1111,13 @@ WebGPUDecoderImpl::WebGPUDecoderImpl(
   tiered_adapter_limits_ =
       !base::Contains(force_disabled_toggles_, "tiered_adapter_limits");
 
+  // Enable the blocklist unless --enable-unsafe-webgpu or
+  // --disable-dawn-features=adapter_blocklist
+  bool disable_adapter_blocklist =
+      base::Contains(force_disabled_toggles_, "adapter_blocklist");
+  dawn_instance_->EnableAdapterBlocklist(
+      !(enable_unsafe_webgpu_ || disable_adapter_blocklist));
+
   DawnProcTable wire_procs = dawn::native::GetProcs();
   wire_procs.createInstance =
       [](const WGPUInstanceDescriptor*) -> WGPUInstance {
@@ -1180,16 +1177,6 @@ ContextResult WebGPUDecoderImpl::Initialize(
     use_webgpu_adapter_ = WebGPUAdapterName::kSwiftShader;
   }
 
-  if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
-    gl_surface_ = new gl::SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(),
-                                         gfx::Size(1, 1));
-    gl::GLContextAttribs attribs;
-    attribs.client_major_es_version = 3;
-    attribs.client_minor_es_version = 1;
-    gl_context_ = new gl::GLContextEGL(nullptr);
-    gl_context_->Initialize(gl_surface_.get(), attribs);
-    gl_context_->MakeCurrent(gl_surface_.get());
-  }
   DiscoverAdapters();
   return ContextResult::kSuccess;
 }
@@ -1213,6 +1200,7 @@ bool WebGPUDecoderImpl::IsFeatureExposed(WGPUFeatureName feature) const {
     case WGPUFeatureName_TextureCompressionASTC:
     case WGPUFeatureName_IndirectFirstInstance:
     case WGPUFeatureName_RG11B10UfloatRenderable:
+    case WGPUFeatureName_BGRA8UnormStorage:
       return true;
     default:
       return false;
@@ -1362,32 +1350,34 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
 
   // If a new toggle is added here, ForceDawnTogglesForWebGPU() which collects
   // info for about:gpu should be updated as well.
-  WGPUDawnTogglesDeviceDescriptor dawn_toggles = {};
-  std::vector<const char*> force_enabled_toggles;
-  std::vector<const char*> force_disabled_toggles;
+  WGPUDawnTogglesDescriptor dawn_device_toggles = {};
+  std::vector<const char*> require_device_enabled_toggles;
+  std::vector<const char*> require_device_disabled_toggles;
 
   // Disallows usage of SPIR-V by default for security (we only ensure that WGSL
   // is secure), unless --enable-unsafe-webgpu is used.
   if (!enable_unsafe_webgpu_) {
-    force_enabled_toggles.push_back("disallow_spirv");
+    require_device_enabled_toggles.push_back("disallow_spirv");
   }
   // Disable the blob cache if we don't have an isolation key.
   if (isolation_key_->empty()) {
-    force_enabled_toggles.push_back("disable_blob_cache");
+    require_device_enabled_toggles.push_back("disable_blob_cache");
   }
 
   for (const std::string& toggles : force_enabled_toggles_) {
-    force_enabled_toggles.push_back(toggles.c_str());
+    require_device_enabled_toggles.push_back(toggles.c_str());
   }
   for (const std::string& toggles : force_disabled_toggles_) {
-    force_disabled_toggles.push_back(toggles.c_str());
+    require_device_disabled_toggles.push_back(toggles.c_str());
   }
-  dawn_toggles.forceEnabledToggles = force_enabled_toggles.data();
-  dawn_toggles.forceEnabledTogglesCount = force_enabled_toggles.size();
-  dawn_toggles.forceDisabledToggles = force_disabled_toggles.data();
-  dawn_toggles.forceDisabledTogglesCount = force_disabled_toggles.size();
-  dawn_toggles.chain.sType = WGPUSType_DawnTogglesDeviceDescriptor;
-  desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&dawn_toggles);
+  dawn_device_toggles.enabledToggles = require_device_enabled_toggles.data();
+  dawn_device_toggles.enabledTogglesCount =
+      require_device_enabled_toggles.size();
+  dawn_device_toggles.disabledToggles = require_device_disabled_toggles.data();
+  dawn_device_toggles.disabledTogglesCount =
+      require_device_disabled_toggles.size();
+  dawn_device_toggles.chain.sType = WGPUSType_DawnTogglesDescriptor;
+  desc.nextInChain = reinterpret_cast<WGPUChainedStruct*>(&dawn_device_toggles);
 
   // Dawn caching isolation key information needs to be passed per device. If an
   // isolation key is empty, we do not pass this extra descriptor, and disable
@@ -1396,7 +1386,8 @@ void WebGPUDecoderImpl::RequestDeviceImpl(
   if (!isolation_key_->empty()) {
     dawn_cache.isolationKey = isolation_key_->c_str();
     dawn_cache.chain.sType = WGPUSType_DawnCacheDeviceDescriptor;
-    dawn_toggles.chain.next = reinterpret_cast<WGPUChainedStruct*>(&dawn_cache);
+    dawn_device_toggles.chain.next =
+        reinterpret_cast<WGPUChainedStruct*>(&dawn_cache);
   }
 
   bool called = false;
@@ -1519,16 +1510,6 @@ WebGPUDecoderImpl::CreateQueuedRequestDeviceCallback(
 }
 
 void WebGPUDecoderImpl::DiscoverAdapters() {
-#if BUILDFLAG(DAWN_ENABLE_BACKEND_OPENGLES)
-  if (use_webgpu_adapter_ == WebGPUAdapterName::kCompat) {
-    auto getProc = [](const char* pname) {
-      return reinterpret_cast<void*>(eglGetProcAddress(pname));
-    };
-    dawn::native::opengl::AdapterDiscoveryOptionsES optionsES;
-    optionsES.getProc = getProc;
-    dawn_instance_->DiscoverAdapters(&optionsES);
-  }
-#endif
 #if BUILDFLAG(IS_WIN)
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
@@ -1551,14 +1532,8 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
   swiftShaderOptions.forceSwiftShader = true;
   dawn_instance_->DiscoverAdapters(&swiftShaderOptions);
 #endif  // BUILDFLAG(ENABLE_VULKAN)
-#else
-  // Don't call DiscoverDefaultAdapters() in Compat mode. Some drivers (*stares
-  // at NVidia*) are not robust when an EGL context and a Vulkan device are
-  // created in the same process.
-  if (use_webgpu_adapter_ != WebGPUAdapterName::kCompat) {
-    dawn_instance_->DiscoverDefaultAdapters();
-  }
 #endif  // BUILDFLAG(IS_WIN)
+  dawn_instance_->DiscoverDefaultAdapters();
 
   std::vector<dawn::native::Adapter> adapters = dawn_instance_->GetAdapters();
   for (dawn::native::Adapter& adapter : adapters) {

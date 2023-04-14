@@ -134,7 +134,7 @@ export class ScanOptions implements CameraUI {
     this.documentCornerOverlay.attach(deviceId);
     const scanType = this.getToggledScanOption();
     (async () => {
-      await video.onExpired;
+      await video.onExpired.wait();
       this.detachPreview();
     })();
     await this.updateOption(scanType);
@@ -177,7 +177,7 @@ export class ScanOptions implements CameraUI {
     if (state.get(Mode.SCAN) && scanType === ScanType.DOCUMENT) {
       await this.documentCornerOverlay.start();
     } else {
-      await this.documentCornerOverlay.stop();
+      this.documentCornerOverlay.stop();
     }
 
     for (const listener of this.onChangeListeners) {
@@ -195,11 +195,11 @@ export class ScanOptions implements CameraUI {
   /**
    * Stops all scanner and detach from current preview.
    */
-  private async detachPreview(): Promise<void> {
+  private detachPreview(): void {
     if (this.barcodeScanner !== null) {
       this.stopBarcodeScanner();
       this.barcodeScanner = null;
     }
-    await this.documentCornerOverlay.detach();
+    this.documentCornerOverlay.detach();
   }
 }

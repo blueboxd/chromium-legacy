@@ -19,7 +19,9 @@
 namespace gpu {
 class CommandBufferStub;
 class DXGISharedHandleManager;
+class MemoryTypeTracker;
 class SharedImageBacking;
+class SharedImageManager;
 class SharedImageRepresentationFactoryRef;
 class SharedImageStub;
 class TextureBase;
@@ -76,6 +78,10 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // Retrieve the interface through which to create shared images.
   virtual gpu::SharedImageStub* GetSharedImageStub() = 0;
 
+  virtual gpu::MemoryTypeTracker* GetMemoryTypeTracker() = 0;
+
+  virtual gpu::SharedImageManager* GetSharedImageManager() = 0;
+
 #if BUILDFLAG(IS_WIN)
   virtual gpu::DXGISharedHandleManager* GetDXGISharedHandleManager() = 0;
 #endif
@@ -122,7 +128,7 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // Sets the cleared flag on level 0 of the texture.
   virtual void SetCleared(GLuint service_id) = 0;
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE)
   // Binds level 0 of the texture to an unbound image.
   //
   // BindTexImage() will be called when the texture is used.

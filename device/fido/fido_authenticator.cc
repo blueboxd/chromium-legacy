@@ -21,9 +21,10 @@ void FidoAuthenticator::ExcludeAppIdCredentialsBeforeMakeCredential(
   std::move(callback).Run(CtapDeviceResponseCode::kSuccess, absl::nullopt);
 }
 
-void FidoAuthenticator::GetCredentialInformationForRequest(
+void FidoAuthenticator::GetPlatformCredentialInfoForRequest(
     const CtapGetAssertionRequest& request,
-    GetCredentialInformationForRequestCallback callback) {
+    const CtapGetAssertionOptions& options,
+    GetPlatformCredentialInfoForRequestCallback callback) {
   NOTREACHED();
 }
 
@@ -166,21 +167,6 @@ void FidoAuthenticator::BioEnrollDelete(const pin::TokenResponse&,
   NOTREACHED();
 }
 
-void FidoAuthenticator::WriteLargeBlob(
-    LargeBlob large_blob,
-    const LargeBlobKey& large_blob_key,
-    const absl::optional<pin::TokenResponse> pin_uv_auth_token,
-    base::OnceCallback<void(CtapDeviceResponseCode)> callback) {
-  NOTREACHED();
-}
-
-void FidoAuthenticator::ReadLargeBlob(
-    const std::vector<LargeBlobKey>& large_blob_keys,
-    const absl::optional<pin::TokenResponse> pin_uv_auth_token,
-    LargeBlobReadCallback callback) {
-  NOTREACHED();
-}
-
 void FidoAuthenticator::GarbageCollectLargeBlob(
     const pin::TokenResponse& pin_uv_auth_token,
     base::OnceCallback<void(CtapDeviceResponseCode)> callback) {
@@ -210,30 +196,6 @@ std::string FidoAuthenticator::GetDisplayName() const {
 
 ProtocolVersion FidoAuthenticator::SupportedProtocol() const {
   return ProtocolVersion::kUnknown;
-}
-
-bool FidoAuthenticator::SupportsCredProtectExtension() const {
-  return Options() && Options()->supports_cred_protect;
-}
-
-bool FidoAuthenticator::SupportsHMACSecretExtension() const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsEnterpriseAttestation() const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsCredBlobOfSize(size_t num_bytes) const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsDevicePublicKey() const {
-  return false;
-}
-
-bool FidoAuthenticator::SupportsLargeBlobs() const {
-  return false;
 }
 
 }  // namespace device

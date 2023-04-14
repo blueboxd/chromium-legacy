@@ -49,7 +49,7 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_display.h"
-#include "ui/gl/gl_image.h"
+#include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/gl/scoped_binders.h"
 
@@ -103,13 +103,13 @@ V4L2SliceVideoDecodeAccelerator::OutputRecord::~OutputRecord() = default;
 struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
   BitstreamBufferRef(
       base::WeakPtr<VideoDecodeAccelerator::Client>& client,
-      scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       scoped_refptr<DecoderBuffer> buffer,
       int32_t input_id);
   ~BitstreamBufferRef();
 
   const base::WeakPtr<VideoDecodeAccelerator::Client> client;
-  const scoped_refptr<base::SingleThreadTaskRunner> client_task_runner;
+  const scoped_refptr<base::SequencedTaskRunner> client_task_runner;
   scoped_refptr<DecoderBuffer> buffer;
   off_t bytes_used;
   const int32_t input_id;
@@ -117,7 +117,7 @@ struct V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef {
 
 V4L2SliceVideoDecodeAccelerator::BitstreamBufferRef::BitstreamBufferRef(
     base::WeakPtr<VideoDecodeAccelerator::Client>& client,
-    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     scoped_refptr<DecoderBuffer> buffer,
     int32_t input_id)
     : client(client),
@@ -223,8 +223,8 @@ bool V4L2SliceVideoDecodeAccelerator::Initialize(const Config& config,
   client_ptr_factory_.reset(
       new base::WeakPtrFactory<VideoDecodeAccelerator::Client>(client));
   client_ = client_ptr_factory_->GetWeakPtr();
-  // If we haven't been set up to decode on separate thread via
-  // TryToSetupDecodeOnSeparateThread(), use the main thread/client for
+  // If we haven't been set up to decode on separate sequence via
+  // TryToSetupDecodeOnSeparateSequence(), use the main thread/client for
   // decode tasks.
   if (!decode_task_runner_) {
     decode_task_runner_ = child_task_runner_;
@@ -963,7 +963,7 @@ void V4L2SliceVideoDecodeAccelerator::Decode(
     int32_t bitstream_id) {
   DVLOGF(4) << "input_id=" << bitstream_id
             << ", size=" << (buffer ? buffer->data_size() : 0);
-  DCHECK(decode_task_runner_->BelongsToCurrentThread());
+  DCHECK(decode_task_runner_->RunsTasksInCurrentSequence());
 
   if (bitstream_id < 0) {
     LOG(ERROR) << "Invalid bitstream buffer, id: " << bitstream_id;
@@ -1444,7 +1444,7 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
     return;
   }
 
-  scoped_refptr<gl::GLImage> gl_image =
+  scoped_refptr<gl::GLImageNativePixmap> gl_image =
       gl_device->CreateGLImage(visible_size, fourcc, std::move(handle));
   if (!gl_image) {
     LOG(ERROR) << "Could not create GLImage,"
@@ -1454,14 +1454,9 @@ void V4L2SliceVideoDecodeAccelerator::CreateGLImageFor(
   }
   gl::ScopedTextureBinder bind_restore(gl_device->GetTextureTarget(),
                                        texture_id);
-  bool ret = gl_image->BindTexImage(gl_device->GetTextureTarget());
-  if (!ret) {
-    LOG(ERROR) << "Error while binding tex image";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-  ret = bind_image_cb_.Run(client_texture_id, gl_device->GetTextureTarget(),
-                           gl_image);
+  gl_image->BindTexImage(gl_device->GetTextureTarget());
+  bool ret = bind_image_cb_.Run(client_texture_id,
+                                gl_device->GetTextureTarget(), gl_image);
   if (!ret) {
     LOG(ERROR) << "Error while running bind image callback";
     NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -2151,9 +2146,9 @@ void V4L2SliceVideoDecodeAccelerator::PictureCleared() {
   SendPictureReady();
 }
 
-bool V4L2SliceVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
+bool V4L2SliceVideoDecodeAccelerator::TryToSetupDecodeOnSeparateSequence(
     const base::WeakPtr<Client>& decode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& decode_task_runner) {
   decode_client_ = decode_client;
   decode_task_runner_ = decode_task_runner;
   return true;

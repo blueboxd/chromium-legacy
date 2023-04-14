@@ -5,23 +5,38 @@
 #include "ash/wm/client_controlled_state.h"
 
 #include "ash/display/screen_orientation_controller.h"
+#include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/float/float_controller.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "chromeos/ui/base/window_state_type.h"
+#include "chromeos/ui/frame/header_view.h"
+#include "chromeos/ui/wm/constants.h"
+#include "chromeos/ui/wm/features.h"
+#include "chromeos/ui/wm/window_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
@@ -59,7 +74,8 @@ class TestClientControlledStateDelegate
     requested_bounds_ = bounds;
     if (requested_state != window_state->GetStateType()) {
       DCHECK(requested_state == WindowStateType::kPrimarySnapped ||
-             requested_state == WindowStateType::kSecondarySnapped);
+             requested_state == WindowStateType::kSecondarySnapped ||
+             requested_state == WindowStateType::kFloated);
       old_state_ = window_state->GetStateType();
       new_state_ = requested_state;
     }
@@ -105,6 +121,39 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
     SetCanResize(true);
     GetWidget()->OnSizeConstraintsChanged();
   }
+
+  void EnableFloat() {
+    SetCanResize(true);
+    GetWidget()->OnSizeConstraintsChanged();
+  }
+
+  std::unique_ptr<views::NonClientFrameView> CreateNonClientFrameView(
+      views::Widget* widget) override {
+    return std::make_unique<NonClientFrameViewAsh>(widget);
+  }
+};
+
+class TestWindowStateDelegate : public WindowStateDelegate {
+ public:
+  TestWindowStateDelegate() = default;
+  TestWindowStateDelegate(const TestWindowStateDelegate&) = delete;
+  TestWindowStateDelegate& operator=(const TestWindowStateDelegate&) = delete;
+  ~TestWindowStateDelegate() override = default;
+
+  // WindowStateDelegate:
+  std::unique_ptr<PresentationTimeRecorder> OnDragStarted(
+      int component) override {
+    drag_in_progress_ = true;
+    return nullptr;
+  }
+  void OnDragFinished(bool cancel, const gfx::PointF& location) override {
+    drag_in_progress_ = false;
+  }
+
+  bool drag_in_progress() const { return drag_in_progress_; }
+
+ private:
+  bool drag_in_progress_ = false;
 };
 
 }  // namespace
@@ -120,6 +169,10 @@ class ClientControlledStateTest : public AshTestBase {
   ~ClientControlledStateTest() override = default;
 
   void SetUp() override {
+    // We need to enable the flag before `AshTestBase::SetUp()` to make
+    // FloatController instantiated in Shell.
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::wm::features::kWindowLayoutMenu);
     AshTestBase::SetUp();
 
     widget_delegate_ = new TestWidgetDelegate();
@@ -140,6 +193,9 @@ class ClientControlledStateTest : public AshTestBase {
     auto state = std::make_unique<ClientControlledState>(std::move(delegate));
     state_ = state.get();
     window_state->SetStateObject(std::move(state));
+    auto window_state_delegate = std::make_unique<TestWindowStateDelegate>();
+    window_state_delegate_ = window_state_delegate.get();
+    window_state->SetDelegate(std::move(window_state_delegate));
     widget_->Show();
   }
 
@@ -159,13 +215,57 @@ class ClientControlledStateTest : public AshTestBase {
   ScreenPinningController* GetScreenPinningController() {
     return Shell::Get()->screen_pinning_controller();
   }
+  TestWindowStateDelegate* window_state_delegate() {
+    return window_state_delegate_;
+  }
+
+  chromeos::HeaderView* GetHeaderView() {
+    auto* const frame = NonClientFrameViewAsh::Get(window());
+    DCHECK(frame);
+    return frame->GetHeaderView();
+  }
+  void ApplyPendingRequestedBounds() {
+    state()->set_bounds_locally(true);
+    widget()->SetBounds(delegate()->requested_bounds());
+    state()->set_bounds_locally(false);
+  }
 
  private:
   ClientControlledState* state_ = nullptr;
   TestClientControlledStateDelegate* state_delegate_ = nullptr;
   TestWidgetDelegate* widget_delegate_ = nullptr;  // owned by itself.
+  TestWindowStateDelegate* window_state_delegate_ = nullptr;
   std::unique_ptr<views::Widget> widget_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+// This suite runs test cases both in clamshell mode and tablet mode.
+class ClientControlledStateTestClamshellAndTablet
+    : public ClientControlledStateTest,
+      public testing::WithParamInterface<bool> {
+ public:
+  ClientControlledStateTestClamshellAndTablet() = default;
+
+  ClientControlledStateTestClamshellAndTablet(
+      const ClientControlledStateTestClamshellAndTablet&) = delete;
+  ClientControlledStateTestClamshellAndTablet& operator=(
+      const ClientControlledStateTestClamshellAndTablet&) = delete;
+
+  ~ClientControlledStateTestClamshellAndTablet() override = default;
+
+  void SetUp() override {
+    ClientControlledStateTest::SetUp();
+    Shell::Get()->tablet_mode_controller()->SetEnabledForTest(InTabletMode());
+  }
+
+ protected:
+  bool InTabletMode() { return GetParam(); }
+};
+
+// The parameter indicates whether the tablet mode is enabled.
+INSTANTIATE_TEST_SUITE_P(All,
+                         ClientControlledStateTestClamshellAndTablet,
+                         testing::Bool());
 
 // Make sure that calling Maximize()/Minimize()/Fullscreen() result in
 // sending the state change request and won't change the state immediately.
@@ -721,6 +821,196 @@ TEST_F(ClientControlledStateTest, ResizeSnappedWindowInTabletMode) {
   const gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
   generator->DragMouseTo(resize_point);
   EXPECT_GT(initial_bounds.width(), delegate()->requested_bounds().width());
+}
+
+TEST_F(ClientControlledStateTest, FlingFloatedWindowInTabletMode) {
+  // The AppType must be set to any except `AppType::NON_APP` (default value) to
+  // make it floatable.
+  window()->SetProperty(aura::client::kAppType,
+                        static_cast<int>(AppType::ARC_APP));
+  widget_delegate()->EnableFloat();
+  ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
+
+  // Enter tablet mode
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  ASSERT_EQ(true, Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  // Float window.
+  const WMEvent float_event(WM_EVENT_FLOAT);
+  window_state()->OnWMEvent(&float_event);
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsFloated());
+  EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
+
+  // Start dragging in the center of the header and fling it to the top left.
+  const auto initial_bounds = delegate()->requested_bounds();
+  auto* const header_view = GetHeaderView();
+  auto* const event_generator = GetEventGenerator();
+  const auto start = header_view->GetBoundsInScreen().CenterPoint();
+  const gfx::Vector2d offset(-20, -20);
+
+  EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+  event_generator->GestureScrollSequenceWithCallback(
+      start, start + offset, base::Milliseconds(10), /*steps=*/2,
+      base::BindLambdaForTesting(
+          [&](ui::EventType event_type, const gfx::Vector2dF& delta) {
+            if (event_type != ui::ET_GESTURE_SCROLL_UPDATE) {
+              return;
+            }
+            EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+          }));
+  EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+
+  // In tablet mode, `FloatController` magnetize the window so the
+  // drag-to-top-left operation should result in placing the window at the top
+  // left with padding.
+  const int padding = chromeos::wm::kFloatedWindowPaddingDp;
+  EXPECT_EQ(delegate()->requested_bounds(),
+            gfx::Rect(gfx::Point(padding, padding), initial_bounds.size()));
+}
+
+TEST_P(ClientControlledStateTestClamshellAndTablet, MoveFloatedWindow) {
+  // The AppType must be set to any except `AppType::NON_APP` (default value) to
+  // make it floatable.
+  window()->SetProperty(aura::client::kAppType,
+                        static_cast<int>(AppType::ARC_APP));
+  widget_delegate()->EnableFloat();
+  ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
+
+  // Float window.
+  const WMEvent float_event(WM_EVENT_FLOAT);
+  window_state()->OnWMEvent(&float_event);
+  ApplyPendingRequestedBounds();
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsFloated());
+  EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
+
+  // Start dragging in the center of the header.
+  auto* const header_view = GetHeaderView();
+  auto* const event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      header_view->GetBoundsInScreen().CenterPoint());
+  event_generator->PressLeftButton();
+  EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+
+  gfx::Rect expected_bounds = delegate()->requested_bounds();
+  // Drag to the top left with some interval points. Verify the window is
+  // aligned with the new cursor point.
+  for (const gfx::Vector2d& diff :
+       {gfx::Vector2d(-10, -10), gfx::Vector2d(-100, -10),
+        gfx::Vector2d(-400, -400)}) {
+    event_generator->MoveMouseBy(diff.x(), diff.y());
+    expected_bounds.Offset(diff);
+
+    EXPECT_TRUE(window_state_delegate()->drag_in_progress());
+    EXPECT_EQ(delegate()->requested_bounds(), expected_bounds);
+
+    ApplyPendingRequestedBounds();
+  }
+
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(window_state_delegate()->drag_in_progress());
+
+  if (InTabletMode()) {
+    // In tablet mode, we have magnetism so the drag-to-top-left operation
+    // should result in placing the window at the top left with padding.
+    const int padding = chromeos::wm::kFloatedWindowPaddingDp;
+    expected_bounds.set_origin(gfx::Point(padding, padding));
+    EXPECT_EQ(delegate()->requested_bounds(), expected_bounds);
+  } else {
+    // In clamshell mode, we don't have magnetism so the window bounds should
+    // persist after releasing the mouse button.
+    EXPECT_EQ(delegate()->requested_bounds(), expected_bounds);
+  }
+}
+
+TEST_P(ClientControlledStateTestClamshellAndTablet, FloatWindow) {
+  // The AppType must be set to any except `AppType::NON_APP` (default value) to
+  // make it floatable.
+  window()->SetProperty(aura::client::kAppType,
+                        static_cast<int>(AppType::ARC_APP));
+
+  // Float disabled.
+  ASSERT_FALSE(chromeos::wm::CanFloatWindow(window()));
+
+  // The event should be ignored.
+  const WMEvent float_event(WM_EVENT_FLOAT);
+  window_state()->OnWMEvent(&float_event);
+  EXPECT_TRUE(delegate()->requested_bounds().IsEmpty());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->new_state());
+
+  // Float enabled.
+  widget_delegate()->EnableFloat();
+  ASSERT_TRUE(chromeos::wm::CanFloatWindow(window()));
+
+  // Test float.
+  window_state()->OnWMEvent(&float_event);
+  EXPECT_EQ(
+      InTabletMode()
+          ? FloatController::GetPreferredFloatWindowTabletBounds(window())
+          : FloatController::GetPreferredFloatWindowClamshellBounds(window()),
+      delegate()->requested_bounds());
+  EXPECT_EQ(WindowStateType::kDefault, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kFloated, delegate()->new_state());
+
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_TRUE(window_state()->IsFloated());
+  EXPECT_EQ(kShellWindowId_FloatContainer, window()->parent()->GetId());
+
+  // Test unfloat.
+  const WMEvent restore_event(WM_EVENT_RESTORE);
+  window_state()->OnWMEvent(&restore_event);
+  EXPECT_EQ(WindowStateType::kFloated, delegate()->old_state());
+  EXPECT_EQ(WindowStateType::kNormal, delegate()->new_state());
+
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsFloated());
+  EXPECT_NE(kShellWindowId_FloatContainer, window()->parent()->GetId());
+}
+
+TEST_P(ClientControlledStateTestClamshellAndTablet, DragOverviewWindowToSnap) {
+  auto* const overview_controller = Shell::Get()->overview_controller();
+  auto* const split_view_controller = SplitViewController::Get(window());
+
+  widget_delegate()->EnableSnap();
+
+  // Create a fake normal window in addition to `window()` (client-controlled
+  // window) because we need at least two windows to keep overview mode active
+  // after snapping one of them.
+  auto fake_uninterested_window = CreateAppWindow();
+
+  // Enter overview.
+  ToggleOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+  EXPECT_FALSE(split_view_controller->InSplitViewMode());
+
+  // Drag `window()`'s overview item to snap to left.
+  auto* const overview_item = GetOverviewItemForWindow(window());
+  auto* const event_generator = GetEventGenerator();
+  event_generator->set_current_screen_location(
+      gfx::ToRoundedPoint(overview_item->target_bounds().CenterPoint()));
+  event_generator->DragMouseTo(0, 0);
+
+  // Ensures the window is in a transitional snapped state.
+  EXPECT_TRUE(split_view_controller->IsWindowInTransitionalState(window()));
+  EXPECT_EQ(WindowStateType::kPrimarySnapped, delegate()->new_state());
+  EXPECT_FALSE(window_state()->IsSnapped());
+
+  // Activating window just before accepting the request shouldn't end the
+  // overview.
+  widget()->Activate();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  // Accept the snap request.
+  state()->EnterNextState(window_state(), delegate()->new_state());
+  ApplyPendingRequestedBounds();
+  EXPECT_TRUE(window_state()->IsSnapped());
+  EXPECT_TRUE(split_view_controller->InSplitViewMode());
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kPrimarySnapped);
+  EXPECT_EQ(split_view_controller->primary_window(), window());
+  EXPECT_TRUE(overview_controller->InOverviewSession());
 }
 
 }  // namespace ash

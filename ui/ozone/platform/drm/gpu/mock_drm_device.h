@@ -26,6 +26,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/page_flip_request.h"
 
 namespace ui {
 
@@ -82,7 +83,7 @@ class MockDrmDevice : public DrmDevice {
 
     uint32_t id;
 
-    std::vector<DrmDevice::Property> properties;
+    std::vector<DrmWrapper::Property> properties;
   };
 
   struct ConnectorProperties {
@@ -92,7 +93,7 @@ class MockDrmDevice : public DrmDevice {
 
     uint32_t id;
 
-    std::vector<DrmDevice::Property> properties;
+    std::vector<DrmWrapper::Property> properties;
   };
 
   struct PlaneProperties {
@@ -102,13 +103,13 @@ class MockDrmDevice : public DrmDevice {
 
     uint32_t type() const;
 
-    absl::optional<const DrmDevice::Property*> GetProp(uint32_t prop_id) const;
+    absl::optional<const DrmWrapper::Property*> GetProp(uint32_t prop_id) const;
     void SetProp(uint32_t prop_id, uint32_t value);
 
     uint32_t id;
     uint32_t crtc_mask;
 
-    std::vector<DrmDevice::Property> properties;
+    std::vector<DrmWrapper::Property> properties;
   };
 
   struct MockDrmState {
@@ -126,11 +127,15 @@ class MockDrmDevice : public DrmDevice {
     // CRTCs and connectors with 1 primary plane, 1 cursor plane (since some
     // tests expect them), and |planes_per_crtc| - 1 overlay planes for each
     // CRTC.
-    static MockDrmState CreateStateWithDefaultObjects(size_t crtc_count,
-                                                      size_t planes_per_crtc);
+    static MockDrmState CreateStateWithDefaultObjects(
+        size_t crtc_count,
+        size_t planes_per_crtc,
+        size_t movable_planes = 0u);
 
     std::pair<CrtcProperties&, ConnectorProperties&> AddCrtcAndConnector();
     PlaneProperties& AddPlane(uint32_t crtc_id, uint32_t type);
+    PlaneProperties& AddPlane(const std::vector<uint32_t>& crtc_ids,
+                              uint32_t type);
 
     std::vector<CrtcProperties> crtc_properties;
     std::vector<ConnectorProperties> connector_properties;
@@ -148,7 +153,6 @@ class MockDrmDevice : public DrmDevice {
       const std::vector<uint32_t>& supported_formats,
       const std::vector<drm_format_modifier>& supported_format_modifiers);
 
-  int get_get_crtc_call_count() const { return get_crtc_call_count_; }
   int get_set_crtc_call_count() const { return set_crtc_call_count_; }
   int get_add_framebuffer_call_count() const {
     return add_framebuffer_call_count_;
@@ -231,17 +235,18 @@ class MockDrmDevice : public DrmDevice {
   }
 
   // DrmDevice:
-  ScopedDrmResourcesPtr GetResources() override;
-  ScopedDrmPlaneResPtr GetPlaneResources() override;
-  ScopedDrmObjectPropertyPtr GetObjectProperties(uint32_t object_id,
-                                                 uint32_t object_type) override;
-  ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) override;
+  ScopedDrmResourcesPtr GetResources() const override;
+  ScopedDrmPlaneResPtr GetPlaneResources() const override;
+  ScopedDrmObjectPropertyPtr GetObjectProperties(
+      uint32_t object_id,
+      uint32_t object_type) const override;
+  ScopedDrmCrtcPtr GetCrtc(uint32_t crtc_id) const override;
   bool SetCrtc(uint32_t crtc_id,
                uint32_t framebuffer,
                std::vector<uint32_t> connectors,
                const drmModeModeInfo& mode) override;
   bool DisableCrtc(uint32_t crtc_id) override;
-  ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) override;
+  ScopedDrmConnectorPtr GetConnector(uint32_t connector_id) const override;
   bool AddFramebuffer2(uint32_t width,
                        uint32_t height,
                        uint32_t format,
@@ -252,24 +257,24 @@ class MockDrmDevice : public DrmDevice {
                        uint32_t* framebuffer,
                        uint32_t flags) override;
   bool RemoveFramebuffer(uint32_t framebuffer) override;
-  ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) override;
+  ScopedDrmFramebufferPtr GetFramebuffer(uint32_t framebuffer) const override;
   bool PageFlip(uint32_t crtc_id,
                 uint32_t framebuffer,
                 scoped_refptr<PageFlipRequest> page_flip_request) override;
-  ScopedDrmPlanePtr GetPlane(uint32_t plane_id) override;
+  ScopedDrmPlanePtr GetPlane(uint32_t plane_id) const override;
   ScopedDrmPropertyPtr GetProperty(drmModeConnector* connector,
-                                   const char* name) override;
-  ScopedDrmPropertyPtr GetProperty(uint32_t id) override;
+                                   const char* name) const override;
+  ScopedDrmPropertyPtr GetProperty(uint32_t id) const override;
   bool SetProperty(uint32_t connector_id,
                    uint32_t property_id,
                    uint64_t value) override;
   ScopedDrmPropertyBlob CreatePropertyBlob(const void* blob,
                                            size_t size) override;
   void DestroyPropertyBlob(uint32_t id) override;
-  bool GetCapability(uint64_t capability, uint64_t* value) override;
-  ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) override;
+  bool GetCapability(uint64_t capability, uint64_t* value) const override;
+  ScopedDrmPropertyBlobPtr GetPropertyBlob(uint32_t property_id) const override;
   ScopedDrmPropertyBlobPtr GetPropertyBlob(drmModeConnector* connector,
-                                           const char* name) override;
+                                           const char* name) const override;
   bool SetObjectProperty(uint32_t object_id,
                          uint32_t object_type,
                          uint32_t property_id,
@@ -311,13 +316,12 @@ class MockDrmDevice : public DrmDevice {
 
   bool UpdateProperty(uint32_t id,
                       uint64_t value,
-                      std::vector<DrmDevice::Property>* properties);
+                      std::vector<DrmWrapper::Property>* properties);
 
   bool UpdateProperty(uint32_t object_id, uint32_t property_id, uint64_t value);
 
   bool ValidatePropertyValue(uint32_t id, uint64_t value);
 
-  int get_crtc_call_count_;
   int set_crtc_call_count_;
   int add_framebuffer_call_count_;
   int remove_framebuffer_call_count_;
@@ -353,7 +357,7 @@ class MockDrmDevice : public DrmDevice {
   std::set<uint32_t> framebuffer_ids_;
   std::map<uint32_t, uint32_t> crtc_fb_;
 
-  base::queue<PageFlipCallback> callbacks_;
+  base::queue<PageFlipRequest::PageFlipCallback> callbacks_;
 
   MockDrmState drm_state_;
 

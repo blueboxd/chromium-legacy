@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Директна интернет-врска</translation>
 <translation id="1272293450992660632">PIN-вредностите не се совпаѓаат.</translation>
 <translation id="1280820357415527819">Се пребаруваат мобилни мрежи</translation>
-<translation id="1291603679744561561">SIM-картичката е заклучена</translation>
 <translation id="1293556467332435079">Датотеки</translation>
 <translation id="1297922636971898492">Google Диск не е достапен во моментов. Поставувањето автоматски ќе се рестартира штом ќе се активира Google Диск.</translation>
 <translation id="1307931752636661898">Не може да се прикажат датотеките на Linux</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">За да пуштите датотеки во Parallels Desktop, датотеката мора да се премести во датотеките на Windows.</translation>
 <translation id="1435838927755162558">Споделете папка со Parallels Desktop</translation>
 <translation id="1439919885608649279">Човек со цвеќиња</translation>
+<translation id="1458457385801829801">Отстранете <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">словачки</translation>
 <translation id="1482884275703521657">фински</translation>
 <translation id="148466539719134488">швајцарски</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Се споделува 1 папка со Bruschetta</translation>
 <translation id="2578394532502990878">фонетски тамилски</translation>
 <translation id="2579959351793446050">одија</translation>
+<translation id="2587195714949534472">Се подготвува синхронизација на <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, блокирано од администраторот, детали</translation>
 <translation id="2614589611416690597">Видео: <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Не може да се достапи до Google Диск во моментов.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">монголски</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> грешки.</translation>
 <translation id="3509680540198371098">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, детали</translation>
+<translation id="3511705761158917664">Се подготвува синхронизација на <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="3522708245912499433">португалски</translation>
 <translation id="3524311639100184459">Внимание: датотекиве се привремени и може да се бришат автоматски за да се ослободи простор на дискот.  <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Залепи</translation>
 <translation id="3952872973865944257">фонетски телугу</translation>
+<translation id="3954354850384043518">Во тек</translation>
 <translation id="3958548648197196644">Киви</translation>
 <translation id="3971140002794351170">Преземи го профилот на мобилниот уред, мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">англиски (ОК)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Сервери со приспособено име</translation>
 <translation id="4465725236958772856">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, управувана од администраторот, поврзи</translation>
 <translation id="4470564870223067757">хангул, 2-делна</translation>
+<translation id="4474142134969976028">Нема резултати што се совпаѓаат</translation>
 <translation id="4477002475007461989">романски</translation>
 <translation id="4477219268485577442">бугарска фонетска</translation>
 <translation id="4508265954913339219">Активирањето не успеа</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Користете име што содржи <ph name="MAX_LENGTH" /> знаци или помалку</translation>
 <translation id="4973970068702235170">Пакувањето не успеа, неочекувана грешка: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">јапонски</translation>
+<translation id="4987699874727873250">англиски (Индија)</translation>
 <translation id="4988205478593450158">Дали сте сигурни дека сакате да ја избришете „<ph name="FILE_NAME" />“?</translation>
 <translation id="498902553138568924">Црвена пеперутка</translation>
 <translation id="4992066212339426712">Вклучи звук</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">Нема неодамнешни слики</translation>
 <translation id="7460898608667578234">украинска</translation>
 <translation id="7469894403370665791">Автоматски поврзи се на мрежава</translation>
+<translation id="7481358317100446445">Подготвен</translation>
 <translation id="7486315294984620427">За да пуштите датотеки во Parallels Desktop, датотеката мора да се копира во датотеките на Windows.</translation>
 <translation id="749452993132003881">хирагана</translation>
 <translation id="7495372004724182530">фонетски малајалски</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Лесно пристапувајте до „Фотографии на Google“</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7663224033570512922">хинди</translation>
+<translation id="7665680517722058469">Обидете се со друго пребарување</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> ставки се преместени во корпата</translation>
 <translation id="7693909743393669729">Форматирањето на дискот ќе ги избрише сите податоци што се зачувани на него и ќе ги отстрани сите постојни партиции, вклучително и партициите што можеби не се видливи. Дејството не може да се врати.</translation>
 <translation id="7695430100978772476">Не може да се форматира <ph name="DRIVE_NAME" /></translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">транслитерација на арапски</translation>
 <translation id="8873014196523807561">За да ги вратите ставкиве, повлечете ги во нова папка. Оригиналните папки за некои од ставкиве се избришани.</translation>
 <translation id="8874184842967597500">Не е поврзано</translation>
+<translation id="8876368061475701452">Чека на ред</translation>
 <translation id="8900820606136623064">унгарски</translation>
 <translation id="8903931173357132290">Дипломец</translation>
 <translation id="8912078710089354287">Куче што мавта со опашката</translation>

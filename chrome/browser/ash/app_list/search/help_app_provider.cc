@@ -6,23 +6,23 @@
 
 #include <memory>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/webui/help_app_ui/search/search_handler.h"
 #include "ash/webui/help_app_ui/url_constants.h"
-#include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_list/search/common/icon_constants.h"
+#include "chrome/browser/ash/app_list/vector_icons/vector_icons.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -102,10 +102,11 @@ HelpAppProvider::HelpAppProvider(Profile* profile,
   Observe(&app_service_proxy_->AppRegistryCache());
   LoadIcon();
 
-  if (!base::FeatureList::IsEnabled(ash::features::kHelpAppLauncherSearch)) {
-    // Only get the help app manager if the launcher search feature is enabled.
-    return;
-  }
+  // TODO(b/261867385): We manually load the icon from the local codebase as
+  // the icon load from proxy is flaky. When the flakiness if solved, we can
+  // safely remove this.
+  icon_ = gfx::CreateVectorIcon(app_list::kHelpAppIcon, kAppIconDimension,
+                                SK_ColorTRANSPARENT);
 
   if (!search_handler_) {
     return;
@@ -198,8 +199,9 @@ void HelpAppProvider::OnAppRegistryCacheWillBeDestroyed(
 
 // If the availability of search results changed, start a new search.
 void HelpAppProvider::OnSearchResultAvailabilityChanged() {
-  if (last_query_.empty())
+  if (last_query_.empty()) {
     return;
+  }
   Start(last_query_);
 }
 

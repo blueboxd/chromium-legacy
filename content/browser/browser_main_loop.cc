@@ -229,7 +229,7 @@
 #include "content/browser/plugin_service_impl.h"
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_ANDROID)
 #include "content/browser/media/cdm_registry_impl.h"
 #endif
 
@@ -367,7 +367,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
 
   std::unique_ptr<memory_pressure::MultiSourceMemoryPressureMonitor> monitor;
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA) || \
+#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_FUCHSIA) || \
     BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   monitor =
       std::make_unique<memory_pressure::MultiSourceMemoryPressureMonitor>();
@@ -375,7 +375,7 @@ std::unique_ptr<base::MemoryPressureMonitor> CreateMemoryPressureMonitor(
   // No memory monitor on other platforms...
 
   if (monitor)
-    monitor->Start();
+    monitor->MaybeStartPlatformVoter();
 
   return monitor;
 }
@@ -786,7 +786,7 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 #endif
 
-#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_ANDROID)
   // Prior to any processing happening on the IO thread, we create the
   // CDM service as it is predominantly used from the IO thread. This must
   // be called on the main thread since it involves file path checks.
@@ -1565,6 +1565,11 @@ SmsProvider* BrowserMainLoop::GetSmsProvider() {
 void BrowserMainLoop::SetSmsProviderForTesting(
     std::unique_ptr<SmsProvider> provider) {
   sms_provider_ = std::move(provider);
+}
+
+base::PlatformThreadId BrowserMainLoop::GetIOThreadId() {
+  CHECK(io_thread_ && io_thread_->IsRunning());
+  return io_thread_->GetThreadId();
 }
 
 }  // namespace content

@@ -30,7 +30,7 @@ source_set("history") {
     "//ios/chrome/browser/ui/history/public",
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/sharing",
-    "//ios/chrome/browser/ui/sharing/activity_services",
+    "//ios/chrome/browser/ui/sharing:public",
     "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/common/ui/favicon:favicon_constants",
   ]
@@ -94,7 +94,6 @@ source_set("history_ui") {
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/table_view",
-    "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/ui/table_view:styler",
     "//ios/chrome/browser/ui/table_view:utils",
     "//ios/chrome/browser/ui/table_view/cells",

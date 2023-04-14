@@ -34,7 +34,6 @@
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/offline_login_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/ash/components/network/network_connection_handler.h"
 #include "chromeos/ash/components/network/network_handler.h"
@@ -340,7 +339,13 @@ void ErrorScreen::OnOffTheRecordAuthSuccess() {
   RestartChrome(command_line, RestartChromeReason::kGuest);
 }
 
-void ErrorScreen::OnPasswordChangeDetected(const UserContext& user_context) {
+void ErrorScreen::OnPasswordChangeDetectedLegacy(
+    const UserContext& user_context) {
+  LOG(FATAL);
+}
+
+void ErrorScreen::OnPasswordChangeDetected(
+    std::unique_ptr<UserContext> user_context) {
   LOG(FATAL);
 }
 

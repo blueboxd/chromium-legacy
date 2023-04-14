@@ -8,15 +8,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_view.h"
-#include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_base_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 class PasswordGenerationPopupController;
 
-namespace views {
-class StyledLabel;
-}
-
-class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
+class PasswordGenerationPopupViewViews : public autofill::PopupBaseView,
                                          public PasswordGenerationPopupView {
  public:
   METADATA_HEADER(PasswordGenerationPopupViewViews);
@@ -58,16 +54,11 @@ class PasswordGenerationPopupViewViews : public autofill::AutofillPopupBaseView,
   bool FullPopupVisible() const;
 
   // views:Views implementation.
-  void OnThemeChanged() override;
-  void OnPaint(gfx::Canvas* canvas) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // Sub view that displays the actual generated password.
-  raw_ptr<GeneratedPasswordBox, DanglingUntriaged> password_view_ = nullptr;
-
-  // The footer label.
-  raw_ptr<views::StyledLabel, DanglingUntriaged> help_styled_label_ = nullptr;
+  raw_ptr<GeneratedPasswordBox> password_view_ = nullptr;
 
   // Controller for this view. Weak reference.
   base::WeakPtr<PasswordGenerationPopupController> controller_;

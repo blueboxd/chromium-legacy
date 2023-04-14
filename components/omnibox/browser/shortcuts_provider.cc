@@ -34,6 +34,7 @@
 #include "components/omnibox/browser/history_cluster_provider.h"
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
+#include "components/omnibox/browser/omnibox_triggered_feature_service.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
@@ -176,12 +177,12 @@ ShortcutMatch& ShortcutsProvider::ShortcutMatch::operator=(
 ShortcutsProvider::ShortcutsProvider(AutocompleteProviderClient* client)
     : AutocompleteProvider(AutocompleteProvider::TYPE_SHORTCUTS),
       client_(client),
-      initialized_(false) {
-  scoped_refptr<ShortcutsBackend> backend = client_->GetShortcutsBackend();
-  if (backend) {
-    backend->AddObserver(this);
-    if (backend->initialized())
+      backend_(client_->GetShortcutsBackend()) {
+  if (backend_) {
+    backend_->AddObserver(this);
+    if (backend_->initialized()) {
       initialized_ = true;
+    }
   }
 }
 
@@ -204,10 +205,9 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 
   // When a user deletes a match, they probably mean for the URL to disappear
   // out of history entirely. So nuke all shortcuts that map to this URL.
-  scoped_refptr<ShortcutsBackend> backend =
-      client_->GetShortcutsBackendIfExists();
-  if (backend)  // Can be NULL in Incognito.
-    backend->DeleteShortcutsWithURL(url);
+  if (backend_) {  // Can be NULL in Incognito.
+    backend_->DeleteShortcutsWithURL(url);
+  }
 
   base::EraseIf(matches_, DestinationURLEqualsURL(url));
   // NOTE: |match| is now dead!
@@ -220,10 +220,9 @@ void ShortcutsProvider::DeleteMatch(const AutocompleteMatch& match) {
 }
 
 ShortcutsProvider::~ShortcutsProvider() {
-  scoped_refptr<ShortcutsBackend> backend =
-      client_->GetShortcutsBackendIfExists();
-  if (backend)
-    backend->RemoveObserver(this);
+  if (backend_) {
+    backend_->RemoveObserver(this);
+  }
 }
 
 void ShortcutsProvider::OnShortcutsLoaded() {
@@ -232,10 +231,9 @@ void ShortcutsProvider::OnShortcutsLoaded() {
 
 void ShortcutsProvider::GetMatches(const AutocompleteInput& input,
                                    bool populate_scoring_signals) {
-  scoped_refptr<ShortcutsBackend> backend =
-      client_->GetShortcutsBackendIfExists();
-  if (!backend)
+  if (!backend_) {
     return;
+  }
   // Get the URLs from the shortcuts database with keys that partially or
   // completely match the search term.
   std::u16string term_string(base::i18n::ToLower(input.text()));
@@ -256,8 +254,8 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input,
   // together, and create a single `ShortcutMatch`.
   std::map<GURL, std::vector<const ShortcutsDatabase::Shortcut*>>
       shortcuts_by_url;
-  for (auto it = FindFirstMatch(term_string, backend.get());
-       it != backend->shortcuts_map().end() &&
+  for (auto it = FindFirstMatch(term_string, backend_.get());
+       it != backend_->shortcuts_map().end() &&
        base::StartsWith(it->first, term_string, base::CompareCase::SENSITIVE);
        ++it) {
     const ShortcutsDatabase::Shortcut& shortcut = it->second;
@@ -296,20 +294,31 @@ void ShortcutsProvider::GetMatches(const AutocompleteInput& input,
     }
   }
 
-  static const bool boost_enabled =
-      base::FeatureList::IsEnabled(omnibox::kShortcutBoost);
-  if (!shortcut_matches.empty() && boost_enabled) {
+  if (!shortcut_matches.empty() &&
+      base::FeatureList::IsEnabled(omnibox::kShortcutBoost)) {
     // Promote the shortcut with most hits to compete for the default slot.
     // Won't necessarily be the highest scoring shortcut, as scoring also
     // depends on visit times and input length. Therefore, has to be done before
     // the partial sort before to ensure the match isn't erased. The match may
     // be not-allowed-to-be-default, in which case, it'll be competing for top
-    // slot in the URL grouped suggestions.
-    base::ranges::max_element(shortcut_matches, {},
-                              [](const auto& shortcut_match) {
-                                return shortcut_match.aggregate_number_of_hits;
-                              })
-        ->relevance = HistoryURLProvider::kScoreForBestInlineableResult + 1;
+    // slot in the URL grouped suggestions. This won't affect the scores of
+    // other shortcuts, as they're already scored less than
+    // `kShortcutsProviderDefaultMaxRelevance`.
+    const auto best_match = base::ranges::max_element(
+        shortcut_matches, {}, [](const auto& shortcut_match) {
+          return shortcut_match.aggregate_number_of_hits;
+        });
+    int boost_score = AutocompleteMatch::IsSearchType(best_match->type)
+                          ? OmniboxFieldTrial::kShortcutBoostSearchScore.Get()
+                          : OmniboxFieldTrial::kShortcutBoostUrlScore.Get();
+    if (boost_score > best_match->relevance) {
+      client_->GetOmniboxTriggeredFeatureService()->FeatureTriggered(
+          OmniboxTriggeredFeatureService::Feature::kShortcutBoost);
+      if (!OmniboxFieldTrial::kShortcutBoostCounterfactual.Get()) {
+        max_relevance = boost_score;
+        best_match->relevance = max_relevance;
+      }
+    }
   }
 
   // Find best matches.
@@ -508,17 +517,18 @@ AutocompleteMatch ShortcutsProvider::ShortcutToACMatch(
 #else
     } else {
 #endif
-      // Try rich autocompletion first. For document suggestions,
-      // `match.contents` is the title, while `description` is something like
-      // 'Google Docs' and shouldn't be autocompleted. For all other nav
-      // suggestions, `contents` is the URL and `description` is the title.
+      // Try rich autocompletion first. For document suggestions, hide the
+      // URL from `additional_text` and don't try to inline the metadata (e.g.
+      // 'Google Docs' or '1/1/2023').
       bool autocompleted =
           match.type == AutocompleteMatch::Type::DOCUMENT_SUGGESTION
-              ? match.TryRichAutocompletion(u"", match.contents, input,
-                                            shortcut.text)
-              : match.TryRichAutocompletion(match.contents, match.description,
-                                            input, shortcut.text);
-
+              ? match.TryRichAutocompletion(
+                    u"", ShortcutsBackend::GetSwappedContents(match), input,
+                    shortcut.text)
+              : match.TryRichAutocompletion(
+                    ShortcutsBackend::GetSwappedContents(match),
+                    ShortcutsBackend::GetSwappedDescription(match), input,
+                    shortcut.text);
       if (!autocompleted) {
         const size_t inline_autocomplete_offset =
             URLPrefix::GetInlineAutocompleteOffset(

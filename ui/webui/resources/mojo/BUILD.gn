@@ -10,14 +10,16 @@ tsc_folder = "$root_gen_dir/ui/webui/resources/tsc/mojo"
 ts_library("library") {
   root_dir = "$root_gen_dir/mojom-webui"
   out_dir = tsc_folder
-  tsconfig_base = "tsconfig_base.json"
   composite = true
+  allow_js = true
 
   in_files = [
     "mojo/public/mojom/base/big_buffer.mojom-webui.js",
+    "mojo/public/mojom/base/file.mojom-webui.js",
     "mojo/public/mojom/base/file_path.mojom-webui.js",
     "mojo/public/mojom/base/int128.mojom-webui.js",
     "mojo/public/mojom/base/process_id.mojom-webui.js",
+    "mojo/public/mojom/base/read_only_buffer.mojom-webui.js",
     "mojo/public/mojom/base/safe_base_name.mojom-webui.js",
     "mojo/public/mojom/base/string16.mojom-webui.js",
     "mojo/public/mojom/base/text_direction.mojom-webui.js",
@@ -46,6 +48,10 @@ ts_library("library") {
     "//url/mojom:url_mojom_gurl_js__generator",
     "//url/mojom:url_mojom_origin_js__generator",
   ]
+
+  path_mappings = [ "//resources/mojo/*|" +
+                    rebase_path("$root_gen_dir/ui/webui/resources/tsc/mojo/*",
+                                target_gen_dir) ]
 
   if (is_chromeos_ash) {
     in_files += [

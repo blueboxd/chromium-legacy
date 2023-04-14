@@ -204,15 +204,6 @@ BASE_FEATURE(kDataLeakPreventionFilesRestriction,
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// When enabled, newly installed ARC apps will not capture links clicked in the
-// browser by default. Users can still enable link capturing for apps through
-// the intent picker or settings.
-BASE_FEATURE(kDefaultLinkCapturingInBrowser,
-             "DefaultLinkCapturingInBrowser",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enables passing additional user authentication in requests to DMServer
 // (policy fetch, status report upload).
 BASE_FEATURE(kDMServerOAuthForChildUser,
@@ -230,7 +221,16 @@ BASE_FEATURE(kPreinstalledWebAppInstallation,
 BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
              "PreinstalledWebAppDuplicationFixer",
              base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
+#if BUILDFLAG(IS_CHROMEOS)
+// An experiment for making preinstalled apps open in a window by default.
+BASE_FEATURE(kPreinstalledWebAppWindowExperiment,
+             "PreinstalledWebAppWindowExperiment",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
 // Enables OS Integration sub managers to execute the
 // registration/unregistration functionality and write the new OS states to the
 // DB.
@@ -381,7 +381,7 @@ BASE_FEATURE(kEnableRestrictedWebApis,
 // Enable WebHID on extension service workers.
 BASE_FEATURE(kEnableWebHidOnExtensionServiceWorker,
              "EnableWebHidOnExtensionServiceWorker",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Enable WebUSB on extension service workers.
@@ -610,6 +610,11 @@ BASE_FEATURE(kHideWebAppOriginText,
 // Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
 BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Kill switch for crbug.com/1414633.
+BASE_FEATURE(kHttpsFirstModeForAdvancedProtectionUsers,
+             "HttpsOnlyModeForAdvancedProtectionUsers",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Enables the new implementation of HTTPS-First Mode.
 BASE_FEATURE(kHttpsFirstModeV2,
              "HttpsFirstModeV2",
@@ -625,11 +630,12 @@ BASE_FEATURE(kImmersiveFullscreen,
              "ImmersiveFullscreen",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables immerisve fullscreen mode for PWA windows. The above feature only
-// affects non-PWA windows.
+// Enables immerisve fullscreen mode for PWA windows. PWA windows will use
+// immersive fullscreen mode if and only if both this and the previous feature
+// are enabled.
 BASE_FEATURE(kImmersiveFullscreenPWAs,
              "ImmersiveFullscreenPWAs",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -659,7 +665,7 @@ BASE_FEATURE(kIncompatibleApplicationsWarning,
 // When enabled, users will see a warning when downloading from Incognito.
 BASE_FEATURE(kIncognitoDownloadsWarning,
              "IncognitoDownloadsWarning",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // When enabled, users will see updated UI in Incognito NTP
@@ -730,11 +736,6 @@ BASE_FEATURE(kKAnonymityServiceOHTTPRequests,
 BASE_FEATURE(kKAnonymityServiceStorage,
              "KAnonymityServiceStorage",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, removes any entry points to the history UI from Incognito mode.
-BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
-             "UpdateHistoryEntryPointsInIncognito",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS)
 BASE_FEATURE(kLinuxLowMemoryMonitor,
@@ -1362,20 +1363,21 @@ BASE_FEATURE(kUserActivityEventLogging,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
+// When this feature is enabled, the toolbar for Web App windows will be hosted
+// inside the BrowserView, rather than in the BrowserNonClientFrameView. This
+// makes Web App windows work more similarly to regular browser windows.
+BASE_FEATURE(kWebAppFrameToolbarInBrowserView,
+             "WebAppFrameToolbarInBrowserView",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kWebAppManifestIconUpdating,
              "WebAppManifestIconUpdating",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(
-    kWebAppManifestImmediateUpdating,
-    "WebAppManifestImmediateUpdating",
-    // TODO(https://crbug.com/1344367): Enable on Mac. Currently disabled due to
-    // WebAppIntegration test failures likely due to app shim problems.
-    // TODO(https://crbug.com/1410528): Enable on platforms after WCO
-    // integration is fixed.
-    base::FEATURE_DISABLED_BY_DEFAULT
-);
+BASE_FEATURE(kWebAppManifestImmediateUpdating,
+             "WebAppManifestImmediateUpdating",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kWebAppManifestPolicyAppIdentityUpdate,
@@ -1534,5 +1536,13 @@ BASE_FEATURE(kUseWebAppDBInsteadOfExternalPrefs,
 BASE_FEATURE(kWebAuthFlowInBrowserTab,
              "WebAuthFlowInBrowserTab",
              base::FeatureState::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<WebAuthFlowInBrowserTabMode>::Option
+    web_auth_flow_modes[] = {
+        {WebAuthFlowInBrowserTabMode::kNewTab, "new_tab"},
+        {WebAuthFlowInBrowserTabMode::kPopupWindow, "popup_window"}};
+const base::FeatureParam<WebAuthFlowInBrowserTabMode>
+    kWebAuthFlowInBrowserTabMode{&kWebAuthFlowInBrowserTab, "browser_tab_mode",
+                                 WebAuthFlowInBrowserTabMode::kNewTab,
+                                 &web_auth_flow_modes};
 
 }  // namespace features

@@ -256,11 +256,11 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
     for (size_t i = 0; i < requests.size(); ++i) {
       const base::Value& value = list_request[i];
       ASSERT_TRUE(value.is_dict());
-      absl::optional<int> rid = value.FindIntKey("rid");
-      absl::optional<int> pid = value.FindIntKey("pid");
+      const base::Value::Dict& dict = value.GetDict();
+      absl::optional<int> rid = dict.FindInt("rid");
+      absl::optional<int> pid = dict.FindInt("pid");
       ASSERT_TRUE(rid);
       ASSERT_TRUE(pid);
-      const base::Value::Dict& dict = value.GetDict();
       const std::string* origin = dict.FindString("origin");
       const std::string* audio = dict.FindString("audio");
       const std::string* video = dict.FindString("video");
@@ -462,22 +462,24 @@ class MAYBE_WebRtcInternalsBrowserTest: public ContentBrowserTest {
                                int update_number,
                                int stats_number) {
     EXPECT_NE((base::Value*)nullptr, dump);
-    ASSERT_EQ(base::Value::Type::DICTIONARY, dump->type());
+    ASSERT_EQ(base::Value::Type::DICT, dump->type());
 
     EXPECT_EQ((size_t)peer_connection_number, dump->DictSize());
     for (auto kv : dump->DictItems()) {
       const base::Value& pc_dump = kv.second;
-      ASSERT_EQ(base::Value::Type::DICTIONARY, pc_dump.type());
+      ASSERT_EQ(base::Value::Type::DICT, pc_dump.type());
 
       // Verifies the number of updates.
-      const base::Value* value = pc_dump.FindListKey("updateLog");
-      ASSERT_TRUE(value);
-      EXPECT_EQ(static_cast<size_t>(update_number), value->GetList().size());
+      const base::Value::List* updates_value =
+          pc_dump.GetDict().FindList("updateLog");
+      ASSERT_TRUE(updates_value);
+      EXPECT_EQ(static_cast<size_t>(update_number), updates_value->size());
 
       // Verifies the number of stats tables.
-      value = pc_dump.FindDictKey("stats");
-      ASSERT_TRUE(value);
-      EXPECT_EQ(static_cast<size_t>(stats_number), value->DictSize());
+      const base::Value::Dict* stats_value =
+          pc_dump.GetDict().FindDict("stats");
+      ASSERT_TRUE(stats_value);
+      EXPECT_EQ(static_cast<size_t>(stats_number), stats_value->size());
     }
   }
 
@@ -847,55 +849,6 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest, UpdateMedia) {
   ExecuteRemoveMediaForRendererJs(2);
   list.erase(list.begin());
   VerifyMediaRequest(list);
-}
-
-// Tests that the received propagation delta values are converted and drawn
-// correctly.
-IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcInternalsBrowserTest,
-                       ReceivedPropagationDelta) {
-  GURL url("chrome://webrtc-internals");
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-
-  PeerConnectionEntry pc(1, 0);
-  ExecuteAddPeerConnectionJs(pc);
-
-  StatsUnit stats = {FAKE_TIME_STAMP};
-  stats.values["googReceivedPacketGroupArrivalTimeDebug"] =
-      "[1000, 1100, 1200]";
-  stats.values["googReceivedPacketGroupPropagationDeltaDebug"] =
-      "[10, 20, 30]";
-  const string stats_type = "bwe";
-  const string stats_id = "videobwe";
-  ExecuteAndVerifyAddStats(pc, stats_type, stats_id, stats);
-
-  string graph_id = pc.getIdString() + "-" + stats_id +
-      "-googReceivedPacketGroupPropagationDeltaDebug";
-  string data_series_id =
-      stats_id + "-googReceivedPacketGroupPropagationDeltaDebug";
-  bool result = false;
-  // Verify that the graph exists.
-  ASSERT_TRUE(ExecuteScriptAndExtractBool(
-      shell(),
-      "window.domAutomationController.send("
-      "   graphViews['" + graph_id + "'] != null)",
-      &result));
-  EXPECT_TRUE(result);
-
-  // Verify that the graph contains multiple data points.
-  int count = 0;
-  ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell(),
-      "window.domAutomationController.send("
-      "   graphViews['" + graph_id + "'].getDataSeriesCount())",
-      &count));
-  EXPECT_EQ(1, count);
-  ASSERT_TRUE(ExecuteScriptAndExtractInt(
-      shell(),
-      "window.domAutomationController.send("
-      "   peerConnectionDataStore['" + pc.getIdString() + "']" +
-      "       .getDataSeries('" + data_series_id + "').getCount())",
-      &count));
-  EXPECT_EQ(3, count);
 }
 
 }  // namespace content

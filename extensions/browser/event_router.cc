@@ -351,12 +351,10 @@ void EventRouter::AddLazyListenerForServiceWorker(
   // browser context member to EventListener object. The next step is to
   // assign correct browser context and use it to create both lazy
   // listeners.
-  std::unique_ptr<EventListener> listener =
-      EventListener::ForExtensionServiceWorker(
-          event_name, extension_id, nullptr, browser_context_, worker_scope_url,
-          // Lazy listener, without worker version id and thread id.
-          blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
-          absl::nullopt);
+  std::unique_ptr<EventListener> listener = EventListener::CreateLazyListener(
+      event_name, extension_id, browser_context_,
+      /*is_for_service_worker=*/true, worker_scope_url,
+      /*filter=*/absl::nullopt);
   AddLazyEventListenerImpl(std::move(listener),
                            RegisteredEventType::kServiceWorker);
 }
@@ -458,12 +456,9 @@ void EventRouter::RemoveLazyListenerForServiceWorker(
   // browser context member to EventListener object. The next step is to
   // assign correct browser context and use it to create both lazy
   // listeners.
-  std::unique_ptr<EventListener> listener =
-      EventListener::ForExtensionServiceWorker(
-          event_name, extension_id, nullptr, browser_context_, worker_scope_url,
-          // Lazy listener, without worker version id and thread id.
-          blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
-          absl::nullopt);
+  std::unique_ptr<EventListener> listener = EventListener::CreateLazyListener(
+      event_name, extension_id, browser_context_, true, worker_scope_url,
+      absl::nullopt);
   RemoveLazyEventListenerImpl(std::move(listener),
                               RegisteredEventType::kServiceWorker);
 }
@@ -645,17 +640,16 @@ void EventRouter::RenderProcessHostDestroyed(RenderProcessHost* host) {
 
 void EventRouter::AddLazyEventListener(const std::string& event_name,
                                        const ExtensionId& extension_id) {
-  AddLazyEventListenerImpl(EventListener::ForExtension(event_name, extension_id,
-                                                       nullptr, absl::nullopt),
-                           RegisteredEventType::kLazy);
+  std::unique_ptr<EventListener> listener = EventListener::CreateLazyListener(
+      event_name, extension_id, browser_context_, false, GURL(), absl::nullopt);
+  AddLazyEventListenerImpl(std::move(listener), RegisteredEventType::kLazy);
 }
 
 void EventRouter::RemoveLazyEventListener(const std::string& event_name,
                                           const ExtensionId& extension_id) {
-  RemoveLazyEventListenerImpl(
-      EventListener::ForExtension(event_name, extension_id, nullptr,
-                                  absl::nullopt),
-      RegisteredEventType::kLazy);
+  std::unique_ptr<EventListener> listener = EventListener::CreateLazyListener(
+      event_name, extension_id, browser_context_, false, GURL(), absl::nullopt);
+  RemoveLazyEventListenerImpl(std::move(listener), RegisteredEventType::kLazy);
 }
 
 void EventRouter::AddFilteredEventListener(
@@ -681,21 +675,17 @@ void EventRouter::AddFilteredEventListener(
       // browser context as a member of EventListener object. The next step is
       // to assign correct browser context and use it to create both lazy
       // listeners.
-      lazy_listener = EventListener::ForExtensionServiceWorker(
-          event_name, param->get_extension_id(), nullptr, browser_context_,
-          sw_identifier->scope,
-          // Lazy listener, without worker version id and thread id.
-          blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
-          filter.Clone());
+      lazy_listener = EventListener::CreateLazyListener(
+          event_name, param->get_extension_id(), browser_context_, true,
+          sw_identifier->scope, filter.Clone());
     }
   } else if (param->is_extension_id()) {
     regular_listener = EventListener::ForExtension(
         event_name, param->get_extension_id(), process, filter.Clone());
     if (add_lazy_listener) {
-      lazy_listener =
-          EventListener::ForExtension(event_name, param->get_extension_id(),
-                                      nullptr,  // Lazy, without process.
-                                      filter.Clone());
+      lazy_listener = EventListener::CreateLazyListener(
+          event_name, param->get_extension_id(), browser_context_, false,
+          GURL(), filter.Clone());
     }
   } else if (param->is_listener_url() && !add_lazy_listener) {
     regular_listener = EventListener::ForURL(
@@ -1052,11 +1042,11 @@ void EventRouter::DispatchEventToProcess(
           CheckAliasStatus::ALLOWED,
           util::GetBrowserContextId(browser_context_));
   if (!availability.is_available()) {
-    // It shouldn't be possible to reach here, because access is checked on
-    // registration. However, for paranoia, check on dispatch as well.
-    NOTREACHED() << "Trying to dispatch event " << event.event_name
-                 << " which the target does not have access to: "
-                 << availability.message();
+    // TODO(crbug.com/1412151): Ideally it shouldn't be possible to reach here,
+    // because access is checked on registration. However, we don't always
+    // refresh the list of events an extension has registered when other factors
+    // which affect availability change (e.g. API allowlists changing). Those
+    // situations should be identified and addressed.
     return;
   }
 
@@ -1265,16 +1255,16 @@ void EventRouter::DispatchPendingEvent(
 void EventRouter::SetRegisteredEvents(const std::string& extension_id,
                                       const std::set<std::string>& events,
                                       RegisteredEventType type) {
-  base::Value events_value(base::Value::Type::LIST);
-  for (auto iter = events.cbegin(); iter != events.cend(); ++iter) {
-    events_value.Append(*iter);
+  base::Value::List events_list;
+  for (const auto& event : events) {
+    events_list.Append(event);
   }
   const char* pref_key = type == RegisteredEventType::kLazy
                              ? kRegisteredLazyEvents
                              : kRegisteredServiceWorkerEvents;
   extension_prefs_->UpdateExtensionPref(
       extension_id, pref_key,
-      base::Value::ToUniquePtrValue(std::move(events_value)));
+      std::make_unique<base::Value>(std::move(events_list)));
 }
 
 void EventRouter::AddFilterToEvent(const std::string& event_name,
@@ -1304,7 +1294,9 @@ void EventRouter::OnExtensionLoaded(content::BrowserContext* browser_context,
   // Add all registered lazy listeners to our cache.
   std::set<std::string> registered_events =
       GetRegisteredEvents(extension->id(), RegisteredEventType::kLazy);
-  listeners_.LoadUnfilteredLazyListeners(extension->id(), registered_events);
+  listeners_.LoadUnfilteredLazyListeners(browser_context, extension->id(),
+                                         false /* is_for_service_worker */,
+                                         registered_events);
 
   std::set<std::string> registered_worker_events =
       GetRegisteredEvents(extension->id(), RegisteredEventType::kServiceWorker);

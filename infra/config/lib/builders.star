@@ -30,6 +30,7 @@ load("./args.star", "args")
 load("./branches.star", "branches")
 load("./bootstrap.star", "register_bootstrap")
 load("./builder_config.star", "register_builder_config")
+load("./builder_health_indicators.star", "register_health_spec")
 load("./recipe_experiments.star", "register_recipe_experiments_ref")
 load("./sheriff_rotations.star", "register_sheriffed_builder")
 
@@ -183,7 +184,7 @@ xcode = struct(
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14c18"),
     # in use by ios-webkit-tot
-    x13wk = xcode_enum("13a1030dwk"),
+    x14wk = xcode_enum("14c18wk"),
 )
 
 # Free disk space in a machine reserved for build tasks.
@@ -292,7 +293,7 @@ def _code_coverage_property(
 
 _VALID_REPROXY_ENV_PREFIX_LIST = ["RBE_", "GLOG_", "GOMA_"]
 
-def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace, cache_silo, ensure_verified, bootstrap_env, scandeps_server):
+def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_service, publish_trace, cache_silo, ensure_verified, bootstrap_env, scandeps_server, disable_bq_upload):
     reclient = {}
     instance = defaults.get_value("reclient_instance", instance)
     if not instance:
@@ -334,6 +335,9 @@ def _reclient_property(*, instance, service, jobs, rewrapper_env, profiler_servi
     ensure_verified = defaults.get_value("reclient_ensure_verified", ensure_verified)
     if ensure_verified:
         reclient["ensure_verified"] = True
+    disable_bq_upload = defaults.get_value("reclient_disable_bq_upload", disable_bq_upload)
+    if disable_bq_upload:
+        reclient["disable_bq_upload"] = True
 
     return reclient
 
@@ -409,6 +413,8 @@ defaults = args.defaults(
     reclient_scandeps_server = False,
     reclient_cache_silo = None,
     reclient_ensure_verified = None,
+    reclient_disable_bq_upload = None,
+    health_spec = None,
 
     # This is to enable luci.buildbucket.omit_python2 experiment.
     # TODO(crbug.com/1362440): remove this after enabling this in all builders.
@@ -475,7 +481,9 @@ def builder(
         reclient_scandeps_server = args.DEFAULT,
         reclient_cache_silo = None,
         reclient_ensure_verified = None,
+        reclient_disable_bq_upload = None,
         omit_python2 = args.DEFAULT,
+        health_spec = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -655,6 +663,8 @@ def builder(
             remote caching. Has no effect if reclient_instance is not set.
         reclient_ensure_verified: If True, it verifies build artifacts. Has no
             effect if reclient_instance is not set.
+        reclient_disable_bq_upload: If True, rbe_metrics will not be uploaded to
+            BigQuery after each build
         omit_python2: If True, set luci.buildbucket.omit_python2 experiment.
             TODO(crbug.com/1362440): remove this after enabling this in all
             builders.
@@ -809,6 +819,7 @@ def builder(
         scandeps_server = reclient_scandeps_server,
         cache_silo = reclient_cache_silo,
         ensure_verified = reclient_ensure_verified,
+        disable_bq_upload = reclient_disable_bq_upload,
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
@@ -837,9 +848,7 @@ def builder(
 
     # TODO: remove this after this experiment is removed from
     # cr-buildbucket/settings.cfg (http://shortn/_cz2s9ql61X).
-    if defaults.get_value("omit_python2", omit_python2):
-        experiments["luci.buildbucket.omit_python2"] = 100
-    elif "luci.buildbucket.omit_python2" not in experiments:
+    if not defaults.get_value("omit_python2", omit_python2):
         experiments["luci.buildbucket.omit_python2"] = 0
 
     builder = branches.builder(
@@ -868,6 +877,9 @@ def builder(
     register_builder_config(bucket, name, builder_group, builder_spec, mirrors, try_settings)
 
     register_bootstrap(bucket, name, bootstrap, executable)
+
+    health_spec = defaults.get_value("health_spec", health_spec)
+    register_health_spec(bucket, name, health_spec)
 
     builder_name = "{}/{}".format(bucket, name)
 

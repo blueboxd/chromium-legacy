@@ -196,13 +196,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didFinishLoadNoop(GlobalRenderFrameHostId frameId, GURL url,
-                boolean isKnownValid, boolean isInPrimaryMainFrame,
-                @LifecycleState int frameLifecycleState) {
-            if (!isInPrimaryMainFrame) return;
-        }
-
-        @Override
         public void didFailLoad(boolean isInPrimaryMainFrame, int errorCode, GURL failingGurl,
                 @LifecycleState int frameLifecycleState) {
             if (isInPrimaryMainFrame) {
@@ -245,14 +238,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
-        public void didStartNavigationNoop(NavigationHandle navigation) {
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidStartNavigationNoop(mTab, navigation);
-            }
-        }
-
-        @Override
         public void didRedirectNavigation(NavigationHandle navigation) {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
@@ -274,9 +259,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
             if (!navigation.hasCommitted()) return;
 
-            if (!mTab.isDestroyed()) {
-                TabStateAttributes.from(mTab).markTabStateDirty();
-            }
             mTab.updateTitle();
             mTab.handleDidFinishNavigation(navigation.getUrl(), navigation.pageTransition());
             mTab.setIsShowingErrorPage(navigation.isErrorPage());
@@ -289,18 +271,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             // Stop swipe-to-refresh animation.
             SwipeRefreshHandler handler = SwipeRefreshHandler.get(mTab);
             if (handler != null) handler.didStopRefreshing();
-        }
-
-        @Override
-        public void didFinishNavigationNoop(NavigationHandle navigation) {
-            RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-            while (observers.hasNext()) {
-                observers.next().onDidFinishNavigationNoop(mTab, navigation);
-            }
-
-            // In case something goes wrong, we can enable NotifyJavaSpuriouslyToMeasurePerf so
-            // didFinishNavigation has the same behavior as before.
-            mLastUrl = navigation.getUrl();
         }
 
         @Override
@@ -325,13 +295,6 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         @Override
         public void navigationEntriesDeleted() {
             mTab.notifyNavigationEntriesDeleted();
-        }
-
-        @Override
-        public void navigationEntriesChanged() {
-            if (!mTab.isDestroyed()) {
-                TabStateAttributes.from(mTab).markTabStateDirty();
-            }
         }
 
         @Override

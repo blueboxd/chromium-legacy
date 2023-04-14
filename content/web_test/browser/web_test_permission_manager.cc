@@ -152,8 +152,13 @@ blink::mojom::PermissionStatus WebTestPermissionManager::GetPermissionStatus(
 
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
-  if (it == permissions_.end())
+  if (it == permissions_.end()) {
+    auto default_state = default_permission_status_.find(permission);
+    if (default_state != default_permission_status_.end()) {
+      return default_state->second;
+    }
     return blink::mojom::PermissionStatus::DENIED;
+  }
 
   // Immitates the behaviour of the NotificationPermissionContext in that
   // permission cannot be requested from cross-origin iframes, which the current
@@ -275,8 +280,14 @@ void WebTestPermissionManager::SetPermission(
     std::move(callback).Run(false);
     return;
   }
+  GURL applicable_permission_url = url;
+  if (PermissionUtil::IsDomainOverride(descriptor)) {
+    const auto overridden_origin =
+        PermissionUtil::ExtractDomainOverride(descriptor);
+    applicable_permission_url = overridden_origin.GetURL();
+  }
 
-  SetPermission(*type, status, url, embedding_url);
+  SetPermission(*type, status, applicable_permission_url, embedding_url);
   std::move(callback).Run(true);
 }
 

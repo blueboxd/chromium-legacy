@@ -38,8 +38,8 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigatio
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.features.branding.BrandingController;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.CustomTabHeightStrategy;
+import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabBottomSheetStrategy;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabDisplayManager;
-import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabHeightStrategy;
 import org.chromium.chrome.browser.customtabs.features.partialcustomtab.PartialCustomTabTabObserver;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
@@ -214,14 +214,14 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             mBrandingController.onToolbarInitialized(toolbar.getBrandingDelegate());
         }
         toolbar.setCloseButtonPosition(mIntentDataProvider.get().getCloseButtonPosition());
-        if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
+        if (mIntentDataProvider.get().isPartialCustomTab()) {
             Callback<Runnable> softInputCallback;
             if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
                 softInputCallback = ((
                         PartialCustomTabDisplayManager) mCustomTabHeightStrategy)::onShowSoftInput;
             } else {
-                softInputCallback = ((
-                        PartialCustomTabHeightStrategy) mCustomTabHeightStrategy)::onShowSoftInput;
+                softInputCallback = ((PartialCustomTabBottomSheetStrategy)
+                                mCustomTabHeightStrategy)::onShowSoftInput;
             }
 
             mTabController.get().registerTabObserver(
@@ -263,7 +263,6 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         return new IncognitoReauthCoordinatorFactory(mActivity, mTabModelSelectorSupplier.get(),
                 mModalDialogManagerSupplier.get(), new IncognitoReauthManager(),
                 new SettingsLauncherImpl(),
-                /*tabSwitcherCustomViewManagerOneshotSupplier= */ null,
                 /*incognitoReauthTopToolbarDelegate= */ null,
                 /*layoutManager=*/null,
                 /*showRegularOverviewIntent= */ showRegularOverviewIntent,
@@ -292,11 +291,15 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
 
         mCustomTabHeightStrategy = CustomTabHeightStrategy.createStrategy(mActivity,
                 intentDataProvider.getInitialActivityHeight(),
+                intentDataProvider.getInitialActivityWidth(),
+                intentDataProvider.getActivityBreakPoint(),
                 intentDataProvider.isPartialCustomTabFixedHeight(),
                 CustomTabsConnection.getInstance(), intentDataProvider.getSession(),
                 mActivityLifecycleDispatcher, mFullscreenManager,
                 DeviceFormFactor.isWindowOnTablet(mWindowAndroid),
-                intentDataProvider.canInteractWithBackground());
+                intentDataProvider.canInteractWithBackground(),
+                intentDataProvider.showSideSheetMaximizeButton(),
+                intentDataProvider.getActivitySideSheetDecorationType());
     }
 
     @Override
@@ -317,7 +320,7 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         // This is necessary if app handler cannot rely on the popup window that ensures the menu
         // will not be clipped off the screen, which can happen in partial CCT.
         // TODO(crbug.com/1382010): Add a render test to prevent regressions.
-        if (mIntentDataProvider.get().isPartialHeightCustomTab()) {
+        if (mIntentDataProvider.get().isPartialCustomTab()) {
             View coord = mActivity.findViewById(R.id.coordinator);
             int[] location = new int[2];
             coord.getLocationInWindow(location);

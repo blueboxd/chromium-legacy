@@ -11,10 +11,10 @@
 #include "base/types/pass_key.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/touch_to_fill/touch_to_fill_controller.h"
-#include "chrome/browser/touch_to_fill/touch_to_fill_webauthn_credential.h"
 #include "components/device_reauth/biometric_authenticator.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
 #include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/passkey_credential.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
@@ -33,21 +33,19 @@ using password_manager::UiCredential;
 
 // Infers whether a form should be submitted based on the feature's state and
 // the form's structure (submission_readiness).
-bool ShouldTriggerSubmission(SubmissionReadinessState submission_readiness,
-                             bool* ready_for_submission) {
+bool ShouldTriggerSubmission(SubmissionReadinessState submission_readiness) {
   switch (submission_readiness) {
     case SubmissionReadinessState::kNoInformation:
     case SubmissionReadinessState::kError:
     case SubmissionReadinessState::kNoUsernameField:
+    case SubmissionReadinessState::kNoPasswordField:
     case SubmissionReadinessState::kFieldBetweenUsernameAndPassword:
     case SubmissionReadinessState::kFieldAfterPasswordField:
-      *ready_for_submission = false;
       return false;
 
     case SubmissionReadinessState::kEmptyFields:
     case SubmissionReadinessState::kMoreThanTwoFields:
     case SubmissionReadinessState::kTwoFields:
-      *ready_for_submission = true;
       return true;
   }
 }
@@ -96,13 +94,11 @@ TouchToFillControllerAutofillDelegate::
 
 void TouchToFillControllerAutofillDelegate::OnShow(
     base::span<const password_manager::UiCredential> credentials,
-    base::span<TouchToFillWebAuthnCredential> webauthn_credentials) {
+    base::span<password_manager::PasskeyCredential> passkey_credentials) {
   DCHECK(driver_);
 
-  trigger_submission_ = ::ShouldTriggerSubmission(submission_readiness_,
-                                                  &ready_for_submission_) &&
+  trigger_submission_ = ::ShouldTriggerSubmission(submission_readiness_) &&
                         ContainsNonEmptyUsername(credentials);
-  ready_for_submission_ &= ContainsNonEmptyUsername(credentials);
 
   base::UmaHistogramEnumeration(
       "PasswordManager.TouchToFill.SubmissionReadiness", submission_readiness_);
@@ -111,7 +107,7 @@ void TouchToFillControllerAutofillDelegate::OnShow(
       .Record(ukm::UkmRecorder::Get());
 
   base::UmaHistogramCounts100("PasswordManager.TouchToFill.NumCredentialsShown",
-                              credentials.size() + webauthn_credentials.size());
+                              credentials.size() + passkey_credentials.size());
 }
 
 void TouchToFillControllerAutofillDelegate::OnCredentialSelected(
@@ -138,16 +134,16 @@ void TouchToFillControllerAutofillDelegate::OnCredentialSelected(
       /*use_last_valid_auth=*/true);
 }
 
-void TouchToFillControllerAutofillDelegate::OnWebAuthnCredentialSelected(
-    const TouchToFillWebAuthnCredential& credential,
+void TouchToFillControllerAutofillDelegate::OnPasskeyCredentialSelected(
+    const password_manager::PasskeyCredential& credential,
     base::OnceClosure action_complete) {
   if (!driver_)
     return;
 
   password_client_->GetWebAuthnCredentialsDelegateForDriver(driver_.get())
-      ->SelectWebAuthnCredential(credential.id().value());
+      ->SelectPasskey(credential.id().value());
 
-  CleanUpDriverAndReportOutcome(TouchToFillOutcome::kWebAuthnCredentialSelected,
+  CleanUpDriverAndReportOutcome(TouchToFillOutcome::kPasskeyCredentialSelected,
                                 /*show_virtual_keyboard=*/false);
   std::move(action_complete).Run();
 }
@@ -227,15 +223,14 @@ void TouchToFillControllerAutofillDelegate::FillCredential(
   driver_->FillSuggestion(credential.username(), credential.password());
 
   trigger_submission_ &= !credential.username().empty();
-  ready_for_submission_ &= !credential.username().empty();
-  if (ready_for_submission_) {
+  if (trigger_submission_) {
+    // TODO(crbug.com/1283004): As auto-submission has been launched, measuring
+    // the time between filling by TTF and submisionn is not crucial. Remove
+    // this call, the method itself and the metrics if we are not going to use
+    // all that for new launches, e.g. crbug.com/1393043.
     password_client_->StartSubmissionTrackingAfterTouchToFill(
         credential.username());
-    if (trigger_submission_)
-      driver_->TriggerFormSubmission();
-  } else {
-    DCHECK(!trigger_submission_) << "Form is not ready for submission. "
-                                    "|trigger_submission_| cannot be true";
+    driver_->TriggerFormSubmission();
   }
   driver_ = nullptr;
 

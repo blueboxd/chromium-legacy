@@ -102,12 +102,13 @@ class CONTENT_EXPORT IdentityRequestDialogController {
 
   // Shows and accounts selections for the given IDP. The |on_selected| callback
   // is called with the selected account id or empty string otherwise.
-  // |sign_in_mode| represents whether this is an auto sign in flow.
+  // |sign_in_mode| represents whether this is an auto re-authn flow.
   virtual void ShowAccountsDialog(
       WebContents* rp_web_contents,
       const std::string& rp_for_display,
       const std::vector<IdentityProviderData>& identity_provider_data,
       IdentityRequestAccount::SignInMode sign_in_mode,
+      bool show_auto_reauthn_checkbox,
       AccountSelectionCallback on_selected,
       DismissCallback dismiss_callback);
 
@@ -118,6 +119,9 @@ class CONTENT_EXPORT IdentityRequestDialogController {
                                  const std::string& rp_for_display,
                                  const std::string& idp_for_display,
                                  DismissCallback dismiss_callback);
+
+  // Show dialog notifying user that IdP sign-in failed.
+  virtual void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback);
 };
 
 }  // namespace content

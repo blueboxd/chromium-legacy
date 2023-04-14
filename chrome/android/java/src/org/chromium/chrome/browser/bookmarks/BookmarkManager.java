@@ -28,11 +28,6 @@ import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksReader;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.renderer_host.ChromeNavigationUIData;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
-import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.BasicNativePage;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -45,7 +40,6 @@ import org.chromium.components.browser_ui.widget.selectable_list.SelectableListL
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListToolbar.SearchDelegate;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 import org.chromium.components.favicon.LargeIconBridge;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.url.GURL;
 
 import java.util.List;
@@ -65,7 +59,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     private static boolean sPreventLoadingForTesting;
 
     private Context mContext;
-    private ComponentName mOpenBookmarkComponentName;
     private ViewGroup mMainView;
     private BookmarkModel mBookmarkModel;
     private BookmarkUndoController mUndoController;
@@ -99,9 +92,11 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     private boolean mIsIncognito;
     private boolean mIsDestroyed;
 
-    private BookmarkItemsAdapter mAdapter;
-    private BookmarkDragStateDelegate mDragStateDelegate;
-    private AdapterDataObserver mAdapterDataObserver;
+    private final BookmarkItemsAdapter mAdapter;
+    private final BookmarkManagerCoordinator mBookmarkManagerCoordinator;
+    private final BookmarkDragStateDelegate mDragStateDelegate;
+    private final AdapterDataObserver mAdapterDataObserver;
+    private final BookmarkOpener mBookmarkOpener;
 
     private final ObservableSupplierImpl<Boolean> mBackPressStateSupplier =
             new ObservableSupplierImpl<>();
@@ -213,7 +208,6 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     public BookmarkManager(Context context, ComponentName openBookmarkComponentName,
             boolean isDialogUi, boolean isIncognito, SnackbarManager snackbarManager) {
         mContext = context;
-        mOpenBookmarkComponentName = openBookmarkComponentName;
         mIsDialogUi = isDialogUi;
         mIsIncognito = isIncognito;
 
@@ -234,7 +228,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         mBookmarkModel = BookmarkModel.getForProfile(profile);
         mMainView = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.bookmark_main, null);
 
-        if (ShoppingFeatures.isShoppingListEnabled()) {
+        if (ShoppingFeatures.isShoppingListEligible()) {
             ShoppingServiceFactory.getForProfile(profile).scheduleSavedProductUpdate();
         }
 
@@ -246,7 +240,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         mSelectableListLayout.getHandleBackPressChangedSupplier().addObserver(
                 (x) -> onBackPressStateChanged());
 
-        mAdapter = new BookmarkItemsAdapter(mContext, snackbarManager);
+        mAdapter = new BookmarkItemsAdapter(mContext, profile);
+        mBookmarkManagerCoordinator = new BookmarkManagerCoordinator(profile, snackbarManager);
 
         mAdapterDataObserver = new AdapterDataObserver() {
             @Override
@@ -277,7 +272,10 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
         if (!sPreventLoadingForTesting) {
             Runnable modelLoadedRunnable = () -> {
                 mDragStateDelegate.onBookmarkDelegateInitialized(BookmarkManager.this);
-                mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
+                mAdapter.onBookmarkDelegateInitialized(
+                        BookmarkManager.this, mBookmarkManagerCoordinator::createView);
+                mBookmarkManagerCoordinator.onBookmarkDelegateInitialized(
+                        this, mAdapter.getPromoHeaderManager());
                 mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
                 mAdapter.addDragListener(mToolbar);
 
@@ -296,6 +294,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
                 Math.min(activityManager.getMemoryClass() / 4 * ConversionUtils.BYTES_PER_MEGABYTE,
                         FAVICON_MAX_CACHE_SIZE_BYTES);
         mLargeIconBridge.createCache(maxSize);
+
+        mBookmarkOpener = new BookmarkOpener(mBookmarkModel, mContext, openBookmarkComponentName);
 
         RecordUserAction.record("MobileBookmarkManagerOpen");
         if (!isDialogUi) {
@@ -568,10 +568,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
     @Override
     public void openBookmark(BookmarkId bookmark) {
-        if (!BookmarkUtils.openBookmark(
-                    mContext, mOpenBookmarkComponentName, mBookmarkModel, bookmark, mIsIncognito)) {
-            return;
-        }
+        if (!mBookmarkOpener.openBookmarkInCurrentTab(bookmark, mIsIncognito)) return;
 
         // Close bookmark UI. Keep the reading list page open.
         if (bookmark != null && bookmark.getType() != BookmarkType.READING_LIST) {
@@ -581,21 +578,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
 
     @Override
     public void openBookmarksInNewTabs(List<BookmarkId> bookmarks, boolean incognito) {
-        TabDelegate tabDelegate = new TabDelegate(incognito);
-        for (BookmarkId id : bookmarks) {
-            if (id == null) continue;
-            GURL url = mBookmarkModel.getBookmarkById(id).getUrl();
-            LoadUrlParams params = new LoadUrlParams(url);
-            ChromeNavigationUIData navData = new ChromeNavigationUIData();
-            navData.setBookmarkId(id.getType() == BookmarkType.NORMAL ? id.getId() : -1);
-            params.setNavigationUIDataSupplier(navData::createUnownedNativeCopy);
-            AsyncTabCreationParams asyncParams =
-                    new AsyncTabCreationParams(params, mOpenBookmarkComponentName);
-            tabDelegate.createNewTab(
-                    asyncParams, TabLaunchType.FROM_LONGPRESS_BACKGROUND, Tab.INVALID_TAB_ID);
-            if (id.getType() == BookmarkType.READING_LIST) {
-                mBookmarkModel.setReadStatusForReadingList(url, true);
-            }
+        if (mBookmarkOpener.openBookmarksInNewTabs(bookmarks, incognito)) {
+            BookmarkUtils.finishActivityOnPhone(mContext);
         }
     }
 
@@ -690,5 +674,9 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate,
     @VisibleForTesting
     public static void preventLoadingForTesting(boolean preventLoading) {
         sPreventLoadingForTesting = preventLoading;
+    }
+
+    public BookmarkOpener getBookmarkOpenerForTesting() {
+        return mBookmarkOpener;
     }
 }

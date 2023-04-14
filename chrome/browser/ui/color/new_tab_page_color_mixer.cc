@@ -129,7 +129,7 @@ void AddGeneratedThemeComprehensiveColors(ui::ColorMixer& mixer) {
                    /* 10% opacity */ 0.1 * SK_AlphaOPAQUE),
       ui::SetAlpha({gfx::kGoogleGrey900},
                    /* 10% opacity */ 0.1 * SK_AlphaOPAQUE));
-  mixer[kColorNewTabPageFocusRing] = ui::PickGoogleColorTwoBackgrounds(
+  mixer[kColorNewTabPageFocusRing] = PickGoogleColorTwoBackgrounds(
       ui::kColorFocusableBorderFocused, element_background_color,
       kColorNewTabPageBackground, color_utils::kMinimumVisibleContrastRatio);
 

@@ -102,10 +102,9 @@ suite('ReadAnythingAppTest', () => {
   test('updateTheme backgroundColor', () => {
     chrome.readAnything.setThemeForTesting(
         'f', 1, 0, /* SkColorSetRGB(0xFD, 0xE2, 0x93) = */ 4294828691, 1, 0);
-    const container = readAnythingApp.shadowRoot!.getElementById('container');
     assertEquals(
         /* #FDE293 = */ 'rgb(253, 226, 147)',
-        getComputedStyle(container!).backgroundColor);
+        getComputedStyle(document.body).backgroundColor);
   });
 
   test('updateTheme lineSpacing', () => {
@@ -625,7 +624,7 @@ suite('ReadAnythingAppTest', () => {
         },
       ],
       selection: {
-        anchor_object_id: 3,
+        anchor_object_id: 5,
         focus_object_id: 7,
         anchor_offset: 1,
         focus_offset: 2,
@@ -633,12 +632,15 @@ suite('ReadAnythingAppTest', () => {
       },
     };
     chrome.readAnything.setContentForTesting(axTree, []);
-    // The expected string contains the selected text only inside of the node
-    // that is common to the entire selection, which is the root node in this
-    // example. Since the root node's html tag is '#document' which isn't valid,
-    // we replace it with a div.
-    const expected = '<div><p>ello</p><p>World</p><p>Fr</p></div>';
+    // The expected string contains the complete text of each node in the
+    // selection.
+    const expected = '<div><p>World</p><p>Friend</p></div>';
     assertContainerInnerHTML(expected);
+    const selection = readAnythingApp.shadowRoot!.getSelection();
+    assertEquals(selection!.anchorNode!.textContent, 'World');
+    assertEquals(selection!.focusNode!.textContent, 'Friend');
+    assertEquals(selection!.anchorOffset, 1);
+    assertEquals(selection!.focusOffset, 2);
   });
 
   test('updateContent selection backwards', () => {
@@ -707,12 +709,15 @@ suite('ReadAnythingAppTest', () => {
       },
     };
     chrome.readAnything.setContentForTesting(axTree, []);
-    // The expected string contains the selected text only inside of the node
-    // that is common to the entire selection, which is the root node in this
-    // example. Since the root node's html tag is '#document' which isn't valid,
-    // we replace it with a div.
-    const expected = '<div><p>ello</p><p>World</p><p>Fr</p></div>';
+    // The expected string contains the complete text of each node in the
+    // selection.
+    const expected = '<div><p>Hello</p><p>World</p><p>Friend</p></div>';
     assertContainerInnerHTML(expected);
+    const selection = readAnythingApp.shadowRoot!.getSelection();
+    assertEquals(selection!.anchorNode!.textContent, 'Hello');
+    assertEquals(selection!.focusNode!.textContent, 'Friend');
+    assertEquals(selection!.anchorOffset, 1);
+    assertEquals(selection!.focusOffset, 2);
   });
 
   test('updateContent setSelectedText', async () => {

@@ -7,7 +7,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
-#include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
 #include "gpu/command_buffer/service/feature_info.h"
@@ -17,13 +17,27 @@
 #include "gpu/config/gpu_finch_features.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace gpu {
+namespace {
+
+constexpr uint32_t kSupportedUsage =
+    SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
+    SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
+    SHARED_IMAGE_USAGE_CPU_UPLOAD | SHARED_IMAGE_USAGE_MIPMAP;
+
+bool IsUsageSupported(uint32_t usage) {
+  return (usage & kSupportedUsage) && !(usage & ~kSupportedUsage);
+}
+
+}  // namespace
 
 WrappedSkImageBackingFactory::WrappedSkImageBackingFactory(
     scoped_refptr<SharedContextState> context_state)
-    : context_state_(std::move(context_state)),
+    : SharedImageBackingFactory(kSupportedUsage),
+      context_state_(std::move(context_state)),
       is_drdc_enabled_(
           features::IsDrDcEnabled() &&
           !context_state_->feature_info()->workarounds().disable_drdc) {}
@@ -97,18 +111,6 @@ WrappedSkImageBackingFactory::CreateSharedImage(
   return nullptr;
 }
 
-bool WrappedSkImageBackingFactory::CanUseWrappedSkImage(
-    uint32_t usage,
-    GrContextType gr_context_type) const {
-  // Ignore for mipmap usage.
-  usage &= ~SHARED_IMAGE_USAGE_MIPMAP;
-  auto kWrappedSkImageUsage =
-      SHARED_IMAGE_USAGE_DISPLAY_READ | SHARED_IMAGE_USAGE_DISPLAY_WRITE |
-      SHARED_IMAGE_USAGE_RASTER | SHARED_IMAGE_USAGE_OOP_RASTERIZATION |
-      SHARED_IMAGE_USAGE_CPU_UPLOAD;
-  return (usage & kWrappedSkImageUsage) && !(usage & ~kWrappedSkImageUsage);
-}
-
 bool WrappedSkImageBackingFactory::IsSupported(
     uint32_t usage,
     viz::SharedImageFormat format,
@@ -117,9 +119,18 @@ bool WrappedSkImageBackingFactory::IsSupported(
     gfx::GpuMemoryBufferType gmb_type,
     GrContextType gr_context_type,
     base::span<const uint8_t> pixel_data) {
-  if (format.is_multi_plane()) {
+  if (format.is_multi_plane() && !pixel_data.empty()) {
     return false;
   }
+
+  if (gmb_type != gfx::EMPTY_BUFFER) {
+    return false;
+  }
+
+  if (!IsUsageSupported(usage)) {
+    return false;
+  }
+
   // Note that this backing support thread safety only for vulkan mode because
   // the underlying vulkan resources like vulkan images can be shared across
   // multiple vulkan queues. Also note that this backing currently only supports
@@ -133,18 +144,41 @@ bool WrappedSkImageBackingFactory::IsSupported(
     return false;
   }
 
-  // Currently, WrappedSkImage does not support LUMINANCE_8 format and this
-  // format is used for single channel planes. See https://crbug.com/1252502 for
-  // more details.
   if (format == viz::SinglePlaneFormat::kLUMINANCE_8) {
+    // WrappedSkImage does not support LUMINANCE_8. See
+    // https://crbug.com/1252502 for details.
     return false;
+  } else if (format == viz::SinglePlaneFormat::kBGRX_8888 ||
+             format == viz::SinglePlaneFormat::kBGR_565) {
+    // For BGRX_8888/BGR_565 there is no equivalent SkColorType. Skia will use
+    // the RGBX_8888/RGB_565 color type on upload so R/B channels are reversed.
+    if (usage & SHARED_IMAGE_USAGE_CPU_UPLOAD || !pixel_data.empty()) {
+      return false;
+    }
   }
 
-  if (!CanUseWrappedSkImage(usage, gr_context_type)) {
-    return false;
+  if (format.IsCompressed()) {
+    if (pixel_data.empty()) {
+      // ETC1 is only supported with initial pixel upload.
+      return false;
+    }
+    auto backend_format = context_state_->gr_context()->compressedBackendFormat(
+        SkImage::kETC1_CompressionType);
+    if (!backend_format.isValid()) {
+      return false;
+    }
+    return true;
   }
-  if (gmb_type != gfx::EMPTY_BUFFER) {
-    return false;
+
+  // Check that skia can create the required backend textures.
+  for (int plane = 0; plane < format.NumberOfPlanes(); ++plane) {
+    SkColorType color_type =
+        viz::ToClosestSkColorType(/*gpu_compositing=*/true, format, plane);
+    auto backend_format = context_state_->gr_context()->defaultBackendFormat(
+        color_type, GrRenderable::kYes);
+    if (!backend_format.isValid()) {
+      return false;
+    }
   }
 
   return true;

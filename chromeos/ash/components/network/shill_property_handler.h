@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "base/functional/callback_helpers.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
@@ -49,11 +50,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
                                    const base::Value& entries) = 0;
 
     // Called when the properties for a managed state have changed.
-    // |properties| is expected to be of type DICTIONARY.
     virtual void UpdateManagedStateProperties(
         ManagedState::ManagedType type,
         const std::string& path,
-        const base::Value& properties) = 0;
+        const base::Value::Dict& properties) = 0;
 
     // Called when the list of profiles changes.
     virtual void ProfileListChanged(const base::Value& profile_list) = 0;
@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
     virtual void UpdateIPConfigProperties(ManagedState::ManagedType type,
                                           const std::string& path,
                                           const std::string& ip_config_path,
-                                          base::Value properties) = 0;
+                                          base::Value::Dict properties) = 0;
 
     // Called when the list of devices with portal check enabled changes.
     virtual void CheckPortalListChanged(
@@ -122,9 +122,11 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
 
   // Asynchronously sets the enabled state for |technology|.
   // Note: Modifies Manager state. Calls |error_callback| on failure.
-  void SetTechnologyEnabled(const std::string& technology,
-                            bool enabled,
-                            network_handler::ErrorCallback error_callback);
+  void SetTechnologyEnabled(
+      const std::string& technology,
+      bool enabled,
+      network_handler::ErrorCallback error_callback,
+      base::OnceClosure success_callback = base::DoNothing());
 
   // Asynchronously sets the prohibited state for every network technology
   // listed in |technologies|. Note: Modifies Manager state.
@@ -180,7 +182,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
       TypeRequestMap;
 
   // Callback for dbus method fetching properties.
-  void ManagerPropertiesCallback(absl::optional<base::Value> properties);
+  void ManagerPropertiesCallback(absl::optional<base::Value::Dict> properties);
 
   // Notifies the listener when a ManagedStateList has changed and all pending
   // updates have been received. |key| can either identify the list that
@@ -204,10 +206,16 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void UpdateUninitializedTechnologies(const base::Value& technologies);
   void UpdateProhibitedTechnologies(const std::string& technologies);
 
+  void EnableTechnologySuccess(const std::string& technology,
+                               base::OnceClosure success_callback);
+
   void EnableTechnologyFailed(const std::string& technology,
                               network_handler::ErrorCallback error_callback,
                               const std::string& dbus_error_name,
                               const std::string& dbus_error_message);
+
+  void DisableTechnologySuccess(const std::string& technology,
+                                base::OnceClosure success_callback);
 
   void DisableTechnologyFailed(const std::string& technology,
                                network_handler::ErrorCallback error_callback,
@@ -217,7 +225,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   // Called when Shill returns the properties for a service or device.
   void GetPropertiesCallback(ManagedState::ManagedType type,
                              const std::string& path,
-                             absl::optional<base::Value> properties);
+                             absl::optional<base::Value::Dict> properties);
 
   // Callback invoked when a watched property changes. Calls appropriate
   // handlers and signals observers.
@@ -247,7 +255,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ShillPropertyHandler
   void GetIPConfigCallback(ManagedState::ManagedType type,
                            const std::string& path,
                            const std::string& ip_config_path,
-                           absl::optional<base::Value> properties);
+                           absl::optional<base::Value::Dict> properties);
 
   void SetProhibitedTechnologiesEnforced(bool enforced);
 

@@ -9,7 +9,7 @@ import {AmbientObserver, AmbientPreviewLarge, Paths, PersonalizationRouter, Topi
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {assertDeepEquals, assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
+import {TestMock} from 'chrome://webui-test/test_mock.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
 import {TestAmbientProvider} from './test_ambient_interface_provider.js';
@@ -21,7 +21,7 @@ suite('AmbientPreviewLargeTest', function() {
   let ambientProvider: TestAmbientProvider;
   let personalizationStore: TestPersonalizationStore;
   const routerOriginal = PersonalizationRouter.instance;
-  const routerMock = TestBrowserProxy.fromClass(PersonalizationRouter);
+  const routerMock = TestMock.fromClass(PersonalizationRouter);
 
   setup(() => {
     const mocks = baseSetup();
@@ -40,6 +40,8 @@ suite('AmbientPreviewLargeTest', function() {
 
   test(
       'displays zero state message when ambient mode is disabled', async () => {
+        loadTimeData.overrideValues(
+            {isPersonalizationJellyEnabled: true, isAmbientModeAllowed: true});
         personalizationStore.data.ambient.albums = ambientProvider.albums;
         personalizationStore.data.ambient.topicSource = TopicSource.kArtGallery;
         personalizationStore.data.ambient.ambientModeEnabled = false;
@@ -135,8 +137,8 @@ suite('AmbientPreviewLargeTest', function() {
   });
 
   test('click ambient collage goes to ambient albums subpage', async () => {
-    // Disables `isAmbientSubpageUiChangeEnabled` to show the previous UI.
-    loadTimeData.overrideValues({isAmbientSubpageUiChangeEnabled: false});
+    // Disables `isPersonalizationJellyEnabled` to show the previous UI.
+    loadTimeData.overrideValues({isPersonalizationJellyEnabled: false});
 
     personalizationStore.data.ambient = {
       ...personalizationStore.data.ambient,
@@ -189,7 +191,7 @@ suite('AmbientPreviewLargeTest', function() {
   });
 
   test('click ambient thumbnail goes to ambient albums subpage', async () => {
-    loadTimeData.overrideValues({isAmbientSubpageUiChangeEnabled: true});
+    loadTimeData.overrideValues({isPersonalizationJellyEnabled: true});
 
     personalizationStore.data.ambient = {
       ...personalizationStore.data.ambient,
@@ -242,8 +244,8 @@ suite('AmbientPreviewLargeTest', function() {
   });
 
   test('displays zero state message before UI change', async () => {
-    // Disables `isAmbientSubpageUiChangeEnabled` to show the previous UI.
-    loadTimeData.overrideValues({isAmbientSubpageUiChangeEnabled: false});
+    // Disables `isPersonalizationJellyEnabled` to show the previous UI.
+    loadTimeData.overrideValues({isPersonalizationJellyEnabled: false});
 
     personalizationStore.data.ambient.albums = ambientProvider.albums;
     personalizationStore.data.ambient.topicSource = TopicSource.kArtGallery;
@@ -266,34 +268,32 @@ suite('AmbientPreviewLargeTest', function() {
         textSpan.innerText.trim());
   });
 
-  test(
-      'displays not available message for enterprise controlled user',
-      async () => {
-        // Enable `isAmbientModeManaged` to mock an enterprise controlled user.
-        loadTimeData.overrideValues({
-          isAmbientSubpageUiChangeEnabled: true,
-          isAmbientModeManaged: true,
-        });
+  test('displays not available message for non-allowed user', async () => {
+    // Disable `isAmbientModeAllowed` to mock an enterprise controlled user.
+    loadTimeData.overrideValues({
+      isPersonalizationJellyEnabled: true,
+      isAmbientModeAllowed: false,
+    });
 
-        personalizationStore.data.ambient.albums = ambientProvider.albums;
-        personalizationStore.data.ambient.topicSource = TopicSource.kArtGallery;
-        personalizationStore.data.ambient.ambientModeEnabled = false;
-        personalizationStore.data.ambient.googlePhotosAlbumsPreviews =
-            ambientProvider.googlePhotosAlbumsPreviews;
-        ambientPreviewLargeElement = initElement(AmbientPreviewLarge);
-        personalizationStore.notifyObservers();
-        await waitAfterNextRender(ambientPreviewLargeElement);
+    personalizationStore.data.ambient.albums = ambientProvider.albums;
+    personalizationStore.data.ambient.topicSource = TopicSource.kArtGallery;
+    personalizationStore.data.ambient.ambientModeEnabled = false;
+    personalizationStore.data.ambient.googlePhotosAlbumsPreviews =
+        ambientProvider.googlePhotosAlbumsPreviews;
+    ambientPreviewLargeElement = initElement(AmbientPreviewLarge);
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(ambientPreviewLargeElement);
 
-        const messageContainer =
-            ambientPreviewLargeElement.shadowRoot!.getElementById(
-                'messageContainer');
-        assertTrue(!!messageContainer);
-        const textSpan = messageContainer.querySelector<HTMLSpanElement>(
-            '#turnOnDescription');
-        assertTrue(!!textSpan);
-        assertEquals(
-            ambientPreviewLargeElement.i18n(
-                'ambientModeMainPageEnterpriseUserMessage'),
-            textSpan.innerText.trim());
-      });
+    const messageContainer =
+        ambientPreviewLargeElement.shadowRoot!.getElementById(
+            'messageContainer');
+    assertTrue(!!messageContainer);
+    const textSpan =
+        messageContainer.querySelector<HTMLSpanElement>('#turnOnDescription');
+    assertTrue(!!textSpan);
+    assertEquals(
+        ambientPreviewLargeElement.i18n(
+            'ambientModeMainPageEnterpriseUserMessage'),
+        textSpan.innerText.trim());
+  });
 });

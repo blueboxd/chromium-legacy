@@ -5,6 +5,7 @@
 #include "components/autofill/core/browser/form_structure.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include <algorithm>
 #include <deque>
@@ -358,6 +359,22 @@ void FormStructure::DetermineHeuristicTypes(
   }
   rationalizer.RationalizeFieldTypePredictions(log_manager);
 
+  // Log the field type predicted by rationalization.
+  // The sections are mapped to consecutive natural numbers starting at 1.
+  std::map<Section, size_t> section_id_map;
+  for (const auto& field : fields_) {
+    if (!base::Contains(section_id_map, field->section)) {
+      size_t next_section_id = section_id_map.size() + 1;
+      section_id_map[field->section] = next_section_id;
+    }
+    field->AppendLogEventIfNotRepeated(RationalizationFieldLogEvent{
+        .field_type = field->Type().GetStorableType(),
+        .section_id = section_id_map[field->section],
+        .type_changed = field->Type().GetStorableType() !=
+                        field->ComputedType().GetStorableType(),
+    });
+  }
+
   LogDetermineHeuristicTypesMetrics();
 }
 
@@ -663,6 +680,22 @@ void FormStructure::ProcessQueryResponse(
     // since generally only this sectioning result is used.
     LogSectioningMetrics(form->form_signature(), form->fields_,
                          form_interactions_ukm_logger);
+
+    // Log the field type predicted by rationalization.
+    // The sections are mapped to consecutive natural numbers starting at 1.
+    std::map<Section, size_t> section_id_map;
+    for (const auto& field : form->fields_) {
+      if (!base::Contains(section_id_map, field->section)) {
+        size_t next_section_id = section_id_map.size() + 1;
+        section_id_map[field->section] = next_section_id;
+      }
+      field->AppendLogEventIfNotRepeated(RationalizationFieldLogEvent{
+          .field_type = field->Type().GetStorableType(),
+          .section_id = section_id_map[field->section],
+          .type_changed = field->Type().GetStorableType() !=
+                          field->ComputedType().GetStorableType(),
+      });
+    }
   }
 
   AutofillMetrics::ServerQueryMetric metric;
@@ -933,6 +966,10 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         field->is_autofilled = cached_field->is_autofilled;
     }
 
+    if (cached_field->autofill_source_profile_guid()) {
+      field->set_autofill_source_profile_guid(
+          *cached_field->autofill_source_profile_guid());
+    }
     field->set_previously_autofilled(cached_field->previously_autofilled());
     field->set_was_context_menu_shown(cached_field->was_context_menu_shown());
     if (cached_field->value_not_autofilled_over_existing_value_hash()) {
@@ -993,8 +1030,7 @@ void FormStructure::LogQualityMetrics(
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
     bool did_show_suggestions,
     bool observed_submission,
-    const FormInteractionCounts& form_interaction_counts,
-    AutofillSuggestionMethod autofill_suggestion_method) const {
+    const FormInteractionCounts& form_interaction_counts) const {
   // Use the same timestamp on UKM Metrics generated within this method's scope.
   AutofillMetrics::UkmTimestampPin timestamp_pin(form_interactions_ukm_logger);
 
@@ -1294,11 +1330,6 @@ void FormStructure::LogQualityMetrics(
         AutofillMetrics::LogAutofillPerfectFilling(/*is_address=*/false,
                                                    perfect_filling);
       }
-      if (autofill_suggestion_method ==
-          AutofillSuggestionMethod::KTouchToFillCreditCard) {
-        AutofillMetrics::LogTouchToFillCreditCardPerfectFilling(
-            perfect_filling);
-      }
     }
 
     // Log the field filling statistics if autofill was used.
@@ -1445,17 +1476,26 @@ const AutofillField* FormStructure::field(size_t index) const {
     NOTREACHED();
     return nullptr;
   }
-
   return fields_[index].get();
 }
 
 AutofillField* FormStructure::field(size_t index) {
-  return const_cast<AutofillField*>(
-      static_cast<const FormStructure*>(this)->field(index));
+  return const_cast<AutofillField*>(std::as_const(*this).field(index));
 }
 
 size_t FormStructure::field_count() const {
   return fields_.size();
+}
+
+const AutofillField* FormStructure::GetFieldById(FieldGlobalId field_id) const {
+  auto it = base::ranges::find(
+      fields_, field_id, [](const auto& field) { return field->global_id(); });
+  return it != fields_.end() ? it->get() : nullptr;
+}
+
+AutofillField* FormStructure::GetFieldById(FieldGlobalId field_id) {
+  return const_cast<AutofillField*>(
+      std::as_const(*this).GetFieldById(field_id));
 }
 
 size_t FormStructure::active_field_count() const {

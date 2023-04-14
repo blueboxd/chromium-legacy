@@ -16,11 +16,14 @@
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
-namespace network {
+namespace net {
 class NetworkAnonymizationKey;
+}
+
+namespace network {
 class SharedURLLoaderFactory;
 struct ResourceRequest;
-}
+}  // namespace network
 
 namespace blink {
 class URLLoaderThrottle;
@@ -30,7 +33,6 @@ namespace content {
 
 class PrefetchedSignedExchangeCacheEntry;
 class SignedExchangeLoader;
-class SignedExchangePrefetchMetricRecorder;
 
 // Attached to each PrefetchURLLoader if the prefetch is for a signed exchange.
 class SignedExchangePrefetchHandler final
@@ -55,7 +57,6 @@ class SignedExchangePrefetchHandler final
       URLLoaderThrottlesGetter loader_throttles_getter,
       network::mojom::URLLoaderClient* forwarding_client,
       const net::NetworkAnonymizationKey& network_anonymization_key,
-      scoped_refptr<SignedExchangePrefetchMetricRecorder> metric_recorder,
       const std::string& accept_langs,
       bool keep_entry_for_prefetch_cache);
 

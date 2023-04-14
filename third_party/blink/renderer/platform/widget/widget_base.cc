@@ -476,7 +476,7 @@ void WidgetBase::WasShown(bool was_evicted,
   SetHidden(false);
 
   if (record_tab_switch_time_request) {
-    LayerTreeHost()->RequestPresentationTimeForNextFrame(
+    LayerTreeHost()->RequestSuccessfulPresentationTimeForNextFrame(
         tab_switch_time_recorder_.TabWasShown(
             false /* has_saved_frames */,
             record_tab_switch_time_request->event_start_time,
@@ -488,7 +488,7 @@ void WidgetBase::WasShown(bool was_evicted,
   client_->WasShown(was_evicted);
 }
 
-void WidgetBase::RequestPresentationTimeForNextFrame(
+void WidgetBase::RequestSuccessfulPresentationTimeForNextFrame(
     mojom::blink::RecordContentToVisibleTimeRequestPtr visible_time_request) {
   DCHECK(visible_time_request);
   if (is_hidden_)
@@ -496,7 +496,7 @@ void WidgetBase::RequestPresentationTimeForNextFrame(
 
   // Tab was shown while widget was already painting, eg. due to being
   // captured.
-  LayerTreeHost()->RequestPresentationTimeForNextFrame(
+  LayerTreeHost()->RequestSuccessfulPresentationTimeForNextFrame(
       tab_switch_time_recorder_.TabWasShown(
           false /* has_saved_frames */, visible_time_request->event_start_time,
           visible_time_request->destination_is_loaded,
@@ -504,7 +504,7 @@ void WidgetBase::RequestPresentationTimeForNextFrame(
           visible_time_request->show_reason_bfcache_restore));
 }
 
-void WidgetBase::CancelPresentationTimeRequest() {
+void WidgetBase::CancelSuccessfulPresentationTimeRequest() {
   if (is_hidden_)
     return;
 
@@ -917,7 +917,7 @@ void WidgetBase::AddPresentationCallback(
   layer_tree_view_->AddPresentationCallback(frame_token, std::move(callback));
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 void WidgetBase::AddCoreAnimationErrorCodeCallback(
     uint32_t frame_token,
     base::OnceCallback<void(gfx::CALayerResult)> callback) {
@@ -1399,13 +1399,17 @@ void WidgetBase::QueueSyntheticEvent(
     std::unique_ptr<WebCoalescedInputEvent> event) {
   client_->WillQueueSyntheticEvent(*event);
 
+  // Popups, which don't have a threaded input handler, are allowed to queue up
+  // main thread gesture scroll events.
+  bool uses_input_handler = client_->FrameWidget();
+
   // TODO(acomminos): If/when we add support for gesture event attribution on
   //                  the impl thread, have the caller provide attribution.
   WebInputEventAttribution attribution;
   widget_input_handler_manager_->input_event_queue()->HandleEvent(
       std::move(event), MainThreadEventQueue::DispatchType::kNonBlocking,
       mojom::blink::InputEventResultState::kNotConsumed, attribution, nullptr,
-      HandledEventCallback());
+      HandledEventCallback(), !uses_input_handler);
 }
 
 bool WidgetBase::IsForProvisionalFrame() {

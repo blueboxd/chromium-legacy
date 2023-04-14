@@ -5,7 +5,7 @@
 import("//build/config/chromeos/ui_mode.gni")
 import("//printing/buildflags/buildflags.gni")
 
-import("//chrome/browser/resources/tools/build_webui.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 
 assert(enable_print_preview, "enable_print_preview check failed")
 
@@ -121,7 +121,8 @@ build_webui("build") {
   ts_deps = [
     "//chrome/browser/resources/pdf:build_ts",
     "//third_party/polymer/v3_0:library",
-    "//ui/webui/resources:library",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
 
   ts_path_mappings = [ "chrome://print/pdf/*|" + rebase_path(
@@ -132,11 +133,6 @@ build_webui("build") {
   if (optimize) {
     optimize_webui_host = "print"
     optimize_webui_in_files = [ "print_preview.js" ]
-    optimize_webui_excludes = [
-      "chrome://resources/js/cr.js",
-      "pdf/pdf_scripting_api.js",
-    ]
-    optimize_webui_resource_paths_rewrites =
-        [ "print_preview.rollup.js|print_preview.js" ]
+    optimize_webui_excludes = [ "pdf/pdf_scripting_api.js" ]
   }
 }

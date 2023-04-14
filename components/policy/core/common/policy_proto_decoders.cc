@@ -9,13 +9,13 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/policy_logger.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "components/policy/proto/cloud_policy.pb.h"
@@ -67,7 +67,8 @@ base::Value DecodeIntegerProto(const em::IntegerPolicyProto& proto,
 
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
-    LOG(WARNING) << "Integer value " << value << " out of numeric limits";
+    LOG_POLICY(WARNING, POLICY_PROCESSING)
+        << "Integer value " << value << " out of numeric limits";
     *error = "Number out of range - invalid int32";
     return base::Value(base::NumberToString(value));
   }
@@ -90,7 +91,7 @@ base::Value DecodeStringListProto(const em::StringListPolicyProto& proto) {
 }
 
 // Convert a StringPolicyProto to a base::Value of any type (for example,
-// Type::DICTIONARY or Type::LIST) by parsing it as JSON.
+// Type::DICT or Type::LIST) by parsing it as JSON.
 base::Value DecodeJsonProto(const em::StringPolicyProto& proto,
                             std::string* error) {
   const std::string& json = proto.value();
@@ -100,7 +101,7 @@ base::Value DecodeJsonProto(const em::StringPolicyProto& proto,
   if (!value_with_error.has_value()) {
     // Can't parse as JSON so return it as a string, and leave it to the handler
     // to validate.
-    LOG(WARNING) << "Invalid JSON: " << json;
+    LOG_POLICY(WARNING, POLICY_PROCESSING) << "Invalid JSON: " << json;
     *error = value_with_error.error().message;
     return base::Value(json);
   }
@@ -236,7 +237,7 @@ bool ParseComponentPolicy(base::Value json,
   // Each description is an object that contains the policy value under the
   // "Value" key. The optional "Level" key is either "Mandatory" (default) or
   // "Recommended".
-  for (auto it : json.DictItems()) {
+  for (auto it : json.GetDict()) {
     const std::string& policy_name = it.first;
     base::Value description = std::move(it.second);
     if (!description.is_dict()) {
@@ -244,7 +245,8 @@ bool ParseComponentPolicy(base::Value json,
       return false;
     }
 
-    absl::optional<base::Value> value = description.ExtractKey(kValue);
+    base::Value::Dict& description_dict = description.GetDict();
+    absl::optional<base::Value> value = description_dict.Extract(kValue);
     if (!value.has_value()) {
       *error = base::StrCat(
           {"The JSON blob dictionary value doesn't contain the required ",
@@ -253,7 +255,7 @@ bool ParseComponentPolicy(base::Value json,
     }
 
     PolicyLevel level = POLICY_LEVEL_MANDATORY;
-    const std::string* level_string = description.FindStringKey(kLevel);
+    const std::string* level_string = description_dict.FindString(kLevel);
     if (level_string && *level_string == kRecommended)
       level = POLICY_LEVEL_RECOMMENDED;
 

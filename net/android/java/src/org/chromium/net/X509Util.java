@@ -28,6 +28,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateFactory;
@@ -35,6 +36,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,7 +47,7 @@ import javax.net.ssl.X509TrustManager;
 import javax.security.auth.x500.X500Principal;
 
 /**
- * Utility functions for verifying X.509 certificates.
+ * Utility functions for interacting with Android's X.509 certificates.
  */
 @JNINamespace("net")
 @MainDex
@@ -177,7 +179,7 @@ public class X509Util {
 
     /**
      * Ensures that the trust managers and certificate factory are initialized. Must be called with
-     * |sLock| held.
+     * |sLock| held. Does not initialize test infrastructure.
      */
     // FindBugs' static field initialization warnings do not handle methods that are expected to be
     // called locked.
@@ -210,17 +212,6 @@ public class X509Util {
         if (sSystemTrustAnchorCache == null) {
             sSystemTrustAnchorCache = new HashSet<Pair<X500Principal, PublicKey>>();
         }
-        if (sTestKeyStore == null) {
-            sTestKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-            try {
-                sTestKeyStore.load(null);
-            } catch (IOException e) {
-                // No IO operation is attempted.
-            }
-        }
-        if (sTestTrustManager == null) {
-            sTestTrustManager = X509Util.createTrustManager(sTestKeyStore);
-        }
         if (sTrustStorageListener == null) {
             sTrustStorageListener = new TrustStorageListener();
             IntentFilter filter = new IntentFilter();
@@ -235,6 +226,26 @@ public class X509Util {
             }
             ContextUtils.registerProtectedBroadcastReceiver(
                     ContextUtils.getApplicationContext(), sTrustStorageListener, filter);
+        }
+    }
+
+    /**
+     * Ensures that test  trust managers and certificate factory are initialized. Must be called
+     * with |sLock| held.
+     */
+    private static void ensureTestInitializedLocked()
+            throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
+        assert Thread.holdsLock(sLock);
+        if (sTestKeyStore == null) {
+            sTestKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+            try {
+                sTestKeyStore.load(null);
+            } catch (IOException e) {
+                // No IO operation is attempted.
+            }
+        }
+        if (sTestTrustManager == null) {
+            sTestTrustManager = X509Util.createTrustManager(sTestKeyStore);
         }
     }
 
@@ -277,9 +288,10 @@ public class X509Util {
     /**
      * After each modification of test key store, trust manager has to be generated again.
      */
-    private static void reloadTestTrustManager() throws KeyStoreException,
-            NoSuchAlgorithmException {
+    private static void reloadTestTrustManager()
+            throws KeyStoreException, NoSuchAlgorithmException, CertificateException {
         assert Thread.holdsLock(sLock);
+        ensureTestInitializedLocked();
 
         sTestTrustManager = X509Util.createTrustManager(sTestKeyStore);
     }
@@ -307,21 +319,21 @@ public class X509Util {
                 new ByteArrayInputStream(derBytes));
     }
 
-    public static void addTestRootCertificate(byte[] rootCertBytes) throws CertificateException,
-            KeyStoreException, NoSuchAlgorithmException {
-        ensureInitialized();
+    public static void addTestRootCertificate(byte[] rootCertBytes)
+            throws CertificateException, KeyStoreException, NoSuchAlgorithmException {
         X509Certificate rootCert = createCertificateFromBytes(rootCertBytes);
         synchronized (sLock) {
+            ensureTestInitializedLocked();
             sTestKeyStore.setCertificateEntry(
                     "root_cert_" + Integer.toString(sTestKeyStore.size()), rootCert);
             reloadTestTrustManager();
         }
     }
 
-    public static void clearTestRootCertificates() throws NoSuchAlgorithmException,
-            CertificateException, KeyStoreException {
-        ensureInitialized();
+    public static void clearTestRootCertificates()
+            throws NoSuchAlgorithmException, CertificateException, KeyStoreException {
         synchronized (sLock) {
+            ensureTestInitializedLocked();
             try {
                 sTestKeyStore.load(null);
                 reloadTestTrustManager();
@@ -437,6 +449,65 @@ public class X509Util {
         return false;
     }
 
+    /**
+     * Get the list of user-added roots.
+     *
+     * @return DER-encoded list of user-added roots.
+     */
+    public static byte[][] getUserAddedRoots() {
+        List<byte[]> userRootBytes = new ArrayList<byte[]>();
+        synchronized (sLock) {
+            try {
+                ensureInitialized();
+            } catch (NoSuchAlgorithmException | KeyStoreException | CertificateException e) {
+                return new byte[0][];
+            }
+
+            if (sSystemKeyStore == null) {
+                return new byte[0][];
+            }
+
+            try {
+                for (Enumeration<String> aliases = sSystemKeyStore.aliases();
+                        aliases.hasMoreElements();) {
+                    String alias = aliases.nextElement();
+                    // We check if its a user added root by looking at the alias; user roots should
+                    // start with 'user:'. Another way of checking this would be to fetch the
+                    // certificate and call X509TrustManagerExtensions.isUserAddedCertificate(), but
+                    // that is imperfect as well because Keystore and X509TrustManagerExtensions
+                    // are actually implemented by two separate systems, and mixing them probably
+                    // works but might not in all cases.
+                    //
+                    // Also, to call X509TrustManagerExtensions.isUserAddedCertificate() we'd need
+                    // to call Keystore.getCertificate on all of the roots, even the system ones.
+                    //
+                    // Since there's no perfect way of doing this we go with the simpler and more
+                    // performant one.
+                    if (alias.startsWith("user:")) {
+                        try {
+                            Certificate anchor = sSystemKeyStore.getCertificate(alias);
+                            if (!(anchor instanceof X509Certificate)) {
+                                Log.w(TAG, "alias: " + alias + " is not a X509 Cert, skipping");
+                                continue;
+                            }
+                            X509Certificate anchorX509 = (X509Certificate) anchor;
+                            userRootBytes.add(anchorX509.getEncoded());
+                        } catch (KeyStoreException e) {
+                            Log.e(TAG, "Error reading cert with alias %s, error: %s", alias, e);
+                        } catch (CertificateEncodingException e) {
+                            Log.e(TAG, "Error encoding cert with alias %s, error: %s", alias, e);
+                        }
+                    }
+                }
+            } catch (KeyStoreException e) {
+                Log.e(TAG, "Error reading cert aliases: %s", e);
+                return new byte[0][];
+            }
+        }
+
+        return userRootBytes.toArray(new byte[0][]);
+    }
+
     public static AndroidCertVerifyResult verifyServerCertificates(byte[][] certChain,
                                                                    String authType,
                                                                    String host)
@@ -493,15 +564,21 @@ public class X509Util {
                 return new AndroidCertVerifyResult(CertVerifyStatusAndroid.FAILED);
             }
 
-            List<X509Certificate> verifiedChain;
+            List<X509Certificate> verifiedChain = null;
             try {
                 verifiedChain = checkServerTrustedIgnoringRuntimeException(
                         sDefaultTrustManager, serverCertificates, authType, host);
             } catch (CertificateException eDefaultManager) {
-                try {
-                    verifiedChain = checkServerTrustedIgnoringRuntimeException(
-                            sTestTrustManager, serverCertificates, authType, host);
-                } catch (CertificateException eTestManager) {
+                if (sTestTrustManager != null) {
+                    try {
+                        verifiedChain = checkServerTrustedIgnoringRuntimeException(
+                                sTestTrustManager, serverCertificates, authType, host);
+                    } catch (CertificateException eTestManager) {
+                        // See following if block.
+                    }
+                }
+
+                if (verifiedChain == null) {
                     // Neither of the trust managers confirms the validity of the certificate chain,
                     // log the error message returned by the system trust manager.
                     Log.i(TAG, "Failed to validate the certificate chain, error: "

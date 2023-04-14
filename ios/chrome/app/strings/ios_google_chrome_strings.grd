@@ -219,6 +219,15 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE" desc="Dialog title to invite the user to sign-in on the web.">
         Sign In to Chrome
       </message>
+      <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_INITIAL_SUBTITLE" desc="Subtitle text of the inital step view of Credential Provider Exention promo. [iOS only]">
+        To easily get your saved passwords in your other apps, use Chrome for AutoFill
+      </message>
+      <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_LEARN_MORE_SUBTITLE" desc="Title text of the 'Learn More' step Credential Provider Exention promo. [iOS only]">
+        From your iPhone's Settings, open "Password Options" and select "Chrome"
+      </message>
+      <message name="IDS_IOS_CREDENTIAL_PROVIDER_PROMO_LEARN_MORE_TITLE" desc="Title text of the 'Learn More' step Credential Provider Exention promo. [iOS only]">
+        Choose Chrome for AutoFill
+      </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_TITLE_CTA_EXPERIMENT_SWITCH" desc="Title of the default browser promotion modal. [iOS only]">
         Switch to Chrome
       </message>
@@ -323,17 +332,14 @@ Things to consider:
       <message name="IDS_IOS_FIRST_RUN_UMA_DIALOG_TITLE" desc="In Title Case: Title of the dialog where users can change their Chrome metrics sharing settings, like usage data. The title communicates that allowing Chrome to see this data can improve Chrome; this happens because we can better invent/improve features based on usage. This appears when they open the Chrome app for the first time on their phone. [iOS only]">
         Make Chrome Better
         </message>
-      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_TITLE_ENTERPRISE" desc="The title of the welcome screen presented to the user on First Run when the browser is managed [iOS only]">
-        Get More Done with Chrome
-      </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_SUBTITLE" desc="The subtitle of the welcome screen presented to the user on First Run [iOS only]">
         Get more done with a simple, secure, and faster-than-ever Google Chrome.
       </message>
-      <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_SUBTITLE_ENTERPRISE" desc="The subtitle of the welcome screen presented to the user on First Run when the browser is managed [iOS only]">
-        Google Chrome is simple, secure and faster-than-ever
-      </message>
       <message name="IDS_IOS_FIRST_RUN_WELCOME_SCREEN_METRIC_REPORTING" desc="The text is displayed in a footer on the very first screen of Chrome. Make sure 'usage' and 'crash' are translated consistently with the “Usage statistics and crash reports” section of the Chrome Privacy Policy (google.com/chrome/privacy). The ‘Manage’ link opens a dialog to change the corresponding setting. [iOS only]">
         To help improve the app, Chrome sends usage and crash data to Google. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Manage<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_SEARCH_SUGGESTIONS_DETAIL" desc="Feature detail text in the settings for the user to enable/disable, to send omnibox input to the user's default search engine to get additional suggestions. Text related to 'Improve search suggestions' [iOS only]">
+        When you type in the address bar or search box, Chrome sends what you type to your default search engine to get better suggestions. This is off in Incognito.
       </message>
       <message name="IDS_IOS_GOOGLE_SERVICES_SETTINGS_IMPROVE_CHROME_TEXT" desc="Feature title in the settings for the user enable or disable. Related with 'Automatically sends usage statistics and crash reports to Google'. [iOS only]">
         Help Improve Chrome's Features and Performance
@@ -382,6 +388,12 @@ Things to consider:
       </message>
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
         Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_MESSAGE" desc="The description that argues why push notification permission is necessary for price tracking.">
+          Chrome notifications are turned off in your device settings. You'll need to allow notifications first.
+      </message>
+      <message name="IDS_IOS_PRICE_NOTIFICATIONS_PRICE_TRACK_PERMISSION_REDIRECT_ALERT_TITLE" desc="The title for the UIAlert that redirects the user to iOS' application settings for Chrome.">
+          To Turn on `Track Price` Allow Chrome Notifications in Device Settings
       </message>
       <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
         Google Chrome
@@ -542,6 +554,9 @@ Things to consider:
       <message name="IDS_IOS_PASSWORD_CHECK_ERROR" desc="Description of the password check cell, explaining that Password Check failed. [iOS only]" meaning="Password Check failed due to some error.">
         Chrome can't check your passwords
       </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR" desc="Description of the password check cell, explaining that Password Check failed. [iOS only]" meaning="Password Check failed due to some error.">
+        Google Password Manager can't check your passwords.
+      </message>
       <message name="IDS_IOS_PASSWORD_CHECK_ERROR_NO_PASSWORDS" desc="Description text for when password check cannot be run because the user has no saved passwords">
         No saved passwords. Chrome can check your passwords when you save them.
       </message>
@@ -559,6 +574,24 @@ Things to consider:
       </message>
       <message name="IDS_IOS_PASSWORD_CHECK_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
         Chrome couldn't check all passwords. Try again later.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_NO_PASSWORDS" desc="Description text for when password check cannot be run because the user has no saved passwords">
+        No saved passwords. Google Password Manager can check your passwords when you save them.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_OFFLINE" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has no internet connection and can't check passwords.">
+        Google Password Manager couldn't check your passwords. Try checking your internet connection.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_SIGNED_OUT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user is not signed in and can't check passwords.">
+        Google Password Manager can check your passwords when you sign in with your Google Account.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check.">
+        Google Password Manager couldn't check all passwords. Try again tomorrow.
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_QUOTA_LIMIT_VISIT_GOOGLE" desc="Text with link inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="The user has more passwords than allowed for check but he can check in Google Account.">
+        Google Password Manager couldn't check all passwords. Try again tomorrow or <ph name="BEGIN_LINK">BEGIN_LINK</ph>check passwords in your Google Account.<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PASSWORD_CHECKUP_ERROR_OTHER" desc="Text inside popover which is shown when the user wants to see detailed information about the error. [iOS only]" meaning="Password check failed due to specific reason (out of memory).">
+        Google Password Manager couldn't check all passwords. Try again later.
       </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD_DESCRIPTION_BRANDED" desc="Text inside Password Details screen shown when password was compromised. [iOS only]" meaning="Text which explains the user that current password is compromised and it should be changed.">
           Your password was exposed in a data breach. Google Password Manager recommends changing it now.

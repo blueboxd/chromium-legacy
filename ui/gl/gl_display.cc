@@ -575,7 +575,7 @@ void GLDisplayEGL::Shutdown() {
   egl_context_priority_supported_ = false;
   egl_android_native_fence_sync_supported_ = false;
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   CleanupMetalSharedEvent();
 #endif
 }
@@ -697,8 +697,9 @@ bool GLDisplayEGL::InitializeDisplay(bool supports_angle,
         display_type, native_display, enabled_angle_features,
         disabled_angle_features, disable_all_angle_features, system_device_id_);
     if (display == EGL_NO_DISPLAY) {
-      LOG(ERROR) << "EGL display query failed with error "
-                 << GetLastEGLErrorString();
+      // Assume this is not an error, so don't verbosely report it;
+      // simply try the next display type.
+      continue;
     }
 
     // Init ANGLE platform now that we have the global display.
@@ -747,6 +748,8 @@ bool GLDisplayEGL::InitializeDisplay(bool supports_angle,
     ext->InitializeExtensionSettings(display);
     return true;
   }
+
+  LOG(ERROR) << "Initialization of all EGL display types failed.";
 
   return false;
 }

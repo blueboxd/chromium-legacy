@@ -14,10 +14,15 @@
 #include "base/types/expected.h"
 #include "base/values.h"
 #include "components/attribution_reporting/source_registration_error.mojom-forward.h"
+#include "components/attribution_reporting/source_type.mojom-forward.h"
 #include "components/attribution_reporting/trigger_registration_error.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace attribution_reporting {
+
+class Filters;
+
+struct FilterPair;
 
 using FilterValues = base::flat_map<std::string, std::vector<std::string>>;
 
@@ -46,8 +51,14 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) FilterData {
 
   base::Value::Dict ToJson() const;
 
+  bool Matches(mojom::SourceType, const FilterPair&) const;
+
+  bool MatchesForTesting(mojom::SourceType, const Filters&, bool negated) const;
+
  private:
   explicit FilterData(FilterValues);
+
+  bool Matches(mojom::SourceType, const Filters&, bool negated) const;
 
   FilterValues filter_values_;
 };
@@ -55,14 +66,14 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) FilterData {
 // Set on triggers.
 class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) Filters {
  public:
-  static constexpr char kFilters[] = "filters";
-  static constexpr char kNotFilters[] = "not_filters";
-
   // Filters are allowed to contain a `source_type` filter.
   static absl::optional<Filters> Create(FilterValues);
 
   static base::expected<Filters, mojom::TriggerRegistrationError> FromJSON(
       base::Value*);
+
+  // Returns filters that match only the given source type.
+  static Filters ForSourceTypeForTesting(mojom::SourceType);
 
   Filters();
 
@@ -84,6 +95,18 @@ class COMPONENT_EXPORT(ATTRIBUTION_REPORTING) Filters {
   explicit Filters(FilterValues);
 
   FilterValues filter_values_;
+};
+
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING) FilterPair {
+  Filters positive;
+  Filters negative;
+
+  // Destructively parses the `filters` and `not_filters` fields from the given
+  // dict, if present.
+  static base::expected<FilterPair, mojom::TriggerRegistrationError> FromJSON(
+      base::Value::Dict&);
+
+  void SerializeIfNotEmpty(base::Value::Dict&) const;
 };
 
 }  // namespace attribution_reporting

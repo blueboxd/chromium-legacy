@@ -449,9 +449,20 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalDataWithLayout(
   StorageType storage_type = STORAGE_UNOWNED_MEMORY;
 
   if (!IsValidConfig(layout.format(), storage_type, layout.coded_size(),
-                     visible_rect, natural_size) ||
-      !layout.FitsInContiguousBufferOfSize(data_size)) {
-    DLOG(ERROR) << "Invalid config: "
+                     visible_rect, natural_size)) {
+    DLOG(ERROR) << __func__ << " Invalid config."
+                << ConfigToString(layout.format(), storage_type,
+                                  layout.coded_size(), visible_rect,
+                                  natural_size);
+    return nullptr;
+  }
+
+  const auto& last_plane = layout.planes()[layout.planes().size() - 1];
+  const size_t required_size = last_plane.offset + last_plane.size;
+  if (data_size < required_size) {
+    DLOG(ERROR) << __func__ << " Provided data size is too small. Provided "
+                << data_size << " bytes, but " << required_size
+                << " bytes are required."
                 << ConfigToString(layout.format(), storage_type,
                                   layout.coded_size(), visible_rect,
                                   natural_size);
@@ -1234,10 +1245,16 @@ gfx::ColorSpace VideoFrame::ColorSpace() const {
 }
 
 bool VideoFrame::RequiresExternalSampler() const {
+  // With SharedImageFormats NumTextures() is always 1. Use
+  // SharedImageFormatType to check for NumTextures for legacy formats and
+  // kSharedImageFormatExternalSampler for SharedImageFormats
   const bool result =
       (format() == PIXEL_FORMAT_NV12 || format() == PIXEL_FORMAT_YV12 ||
        format() == PIXEL_FORMAT_P016LE) &&
-      NumTextures() == 1;
+      ((NumTextures() == 1 &&
+        shared_image_format_type() == SharedImageFormatType::kLegacy) ||
+       shared_image_format_type() ==
+           SharedImageFormatType::kSharedImageFormatExternalSampler);
   // The texture target can be 0 for Fuchsia.
   DCHECK(!result ||
          (mailbox_holder(0).texture_target == GL_TEXTURE_EXTERNAL_OES ||

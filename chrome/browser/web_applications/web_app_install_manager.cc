@@ -181,15 +181,16 @@ void WebAppInstallManager::MaybeStartQueuedTask() {
 
 void WebAppInstallManager::TakeTaskErrorLog(WebAppInstallTask* task) {
   if (error_log_) {
-    base::Value task_error_dict = task->TakeErrorDict();
-    if (!task_error_dict.DictEmpty())
+    base::Value::Dict task_error_dict = task->TakeErrorDict();
+    if (!task_error_dict.empty()) {
       LogErrorObject(std::move(task_error_dict));
+    }
   }
 }
 
 void WebAppInstallManager::TakeCommandErrorLog(
     base::PassKey<WebAppCommandManager>,
-    base::Value log) {
+    base::Value::Dict log) {
   if (error_log_)
     LogErrorObject(std::move(log));
 }
@@ -260,14 +261,13 @@ void WebAppInstallManager::LogUrlLoaderError(const char* stage,
   if (!error_log_)
     return;
 
-  base::Value url_loader_error(base::Value::Type::DICTIONARY);
-
-  url_loader_error.SetStringKey("WebAppUrlLoader::Result",
-                                ConvertUrlLoaderResultToString(result));
+  base::Value::Dict url_loader_error;
+  url_loader_error.Set("WebAppUrlLoader::Result",
+                       ConvertUrlLoaderResultToString(result));
 
   if (pending_task.task->app_id_to_expect().has_value()) {
-    url_loader_error.SetStringKey(
-        "task.app_id_to_expect", pending_task.task->app_id_to_expect().value());
+    url_loader_error.Set("task.app_id_to_expect",
+                         pending_task.task->app_id_to_expect().value());
   }
 
   LogErrorObjectAtStage(stage, std::move(url_loader_error));
@@ -308,7 +308,7 @@ void WebAppInstallManager::OnReadErrorLog(Result result,
   }
 }
 
-void WebAppInstallManager::LogErrorObject(base::Value object) {
+void WebAppInstallManager::LogErrorObject(base::Value::Dict object) {
   if (!error_log_)
     return;
 
@@ -318,11 +318,11 @@ void WebAppInstallManager::LogErrorObject(base::Value object) {
 }
 
 void WebAppInstallManager::LogErrorObjectAtStage(const char* stage,
-                                                 base::Value object) {
+                                                 base::Value::Dict object) {
   if (!error_log_)
     return;
 
-  object.SetStringKey("!stage", stage);
+  object.Set("!stage", stage);
   LogErrorObject(std::move(object));
 }
 

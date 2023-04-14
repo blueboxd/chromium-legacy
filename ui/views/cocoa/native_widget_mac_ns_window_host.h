@@ -339,7 +339,7 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void SetRemoteAccessibilityTokens(
       const std::vector<uint8_t>& window_token,
       const std::vector<uint8_t>& view_token) override;
-  bool GetRootViewAccessibilityToken(base::ProcessId* pid,
+  bool GetRootViewAccessibilityToken(int64_t* pid,
                                      std::vector<uint8_t>* token) override;
   bool ValidateUserInterfaceItem(
       int32_t command,
@@ -356,6 +356,8 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   bool HandleAccelerator(const ui::Accelerator& accelerator,
                          bool require_priority_handler,
                          bool* was_handled) override;
+  bool BubbleAnchorViewContainedInWidget(uint64_t widget_id,
+                                         bool* contained) override;
 
   // remote_cocoa::mojom::NativeWidgetNSWindowHost, synchronous callbacks:
   void GetSheetOffsetY(GetSheetOffsetYCallback callback) override;
@@ -403,6 +405,9 @@ class VIEWS_EXPORT NativeWidgetMacNSWindowHost
   void HandleAccelerator(const ui::Accelerator& accelerator,
                          bool require_priority_handler,
                          HandleAcceleratorCallback callback) override;
+  void BubbleAnchorViewContainedInWidget(
+      uint64_t widget_id,
+      BubbleAnchorViewContainedInWidgetCallback callback) override;
 
   // DialogObserver:
   void OnDialogChanged() override;

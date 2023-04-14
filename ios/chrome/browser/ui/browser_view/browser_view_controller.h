@@ -23,19 +23,22 @@
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 
+@protocol ApplicationCommands;
 class Browser;
 @class BookmarksCoordinator;
 @class BrowserContainerViewController;
+@protocol BrowserCoordinatorCommands;
 @class BubblePresenter;
-@class CommandDispatcher;
 @protocol CRWResponderInputView;
 @class DefaultBrowserPromoNonModalScheduler;
 @protocol DefaultPromoNonModalPresentationDelegate;
+@protocol FindInPageCommands;
 class FullscreenController;
 @protocol HelpCommands;
 @class KeyCommandsProvider;
 @class NewTabPageCoordinator;
 @class LensCoordinator;
+@protocol OmniboxCommands;
 @protocol PopupMenuCommands;
 @class PopupMenuCoordinator;
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
@@ -49,7 +52,9 @@ class PrerenderService;
 @class TabStripLegacyCoordinator;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
+@protocol ToolbarCommands;
 @protocol IncognitoReauthCommands;
+@protocol LoadQueryCommands;
 
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
 typedef struct {
@@ -70,6 +75,12 @@ typedef struct {
   id<HelpCommands> helpHandler;
   id<PopupMenuCommands> popupMenuCommandsHandler;
   id<SnackbarCommands> snackbarCommandsHandler;
+  id<ApplicationCommands> applicationCommandsHandler;
+  id<BrowserCoordinatorCommands> browserCoordinatorCommandsHandler;
+  id<FindInPageCommands> findInPageCommandsHandler;
+  id<ToolbarCommands> toolbarCommandsHandler;
+  id<LoadQueryCommands> loadQueryCommandsHandler;
+  id<OmniboxCommands> omniboxCommandsHandler;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -88,13 +99,11 @@ typedef struct {
 // `browser` is the browser whose tabs this BVC will display.
 // `browserContainerViewController` is the container object this BVC will exist
 // inside.
-// `dispatcher` is the dispatcher instance this BVC will use.
 // TODO(crbug.com/992582): Remove references to model objects -- including
-//   `browser` and `dispatcher` -- from this class.
+//   `browser` -- from this class.
 - (instancetype)initWithBrowser:(Browser*)browser
     browserContainerViewController:
         (BrowserContainerViewController*)browserContainerViewController
-                        dispatcher:(CommandDispatcher*)dispatcher
                keyCommandsProvider:(KeyCommandsProvider*)keyCommandsProvider
                       dependencies:
                           (BrowserViewControllerDependencies)dependencies
@@ -104,9 +113,6 @@ typedef struct {
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-
-// Command dispatcher.
-@property(nonatomic, weak) CommandDispatcher* commandDispatcher;
 
 // Handler for reauth commands.
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;

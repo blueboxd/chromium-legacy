@@ -69,7 +69,7 @@ class KeyPermissionsManagerImpl : public KeyPermissionsManager,
 
    private:
     void UpdateWithAllKeys(
-        std::vector<std::string> public_key_spki_der_list,
+        std::vector<std::vector<uint8_t>> public_key_spki_der_list,
         chromeos::platform_keys::Status keys_retrieval_status);
     void UpdateNextKey();
     void OnUpdateFinished();
@@ -187,7 +187,7 @@ class KeyPermissionsManagerImpl : public KeyPermissionsManager,
   void IsKeyAllowedForUsageWithPermissions(
       IsKeyAllowedForUsageCallback callback,
       KeyUsage usage,
-      const absl::optional<std::string>& serialized_key_permissions,
+      absl::optional<std::vector<uint8_t>> serialized_key_permissions,
       chromeos::platform_keys::Status key_attribute_retrieval_status);
 
   // Called when the token is ready and the one-time migration is done.

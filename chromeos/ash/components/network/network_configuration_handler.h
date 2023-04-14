@@ -75,7 +75,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // given properties will be merged with the existing settings, and it won't
   // clear any existing properties.
   void SetShillProperties(const std::string& service_path,
-                          const base::Value& shill_properties,
+                          const base::Value::Dict& shill_properties,
                           base::OnceClosure callback,
                           network_handler::ErrorCallback error_callback);
 
@@ -99,7 +99,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // Manager.ConfigureServiceForProfile. NOTE: Normally
   // ManagedNetworkConfigurationHandler should be used to call
   // CreateConfiguration. This will set GUID if not provided.
-  void CreateShillConfiguration(const base::Value& shill_properties,
+  void CreateShillConfiguration(const base::Value::Dict& shill_properties,
                                 network_handler::ServiceResultCallback callback,
                                 network_handler::ErrorCallback error_callback);
 
@@ -158,7 +158,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // (NetworkStateHandler) to update before triggering the callback.
   void ConfigurationCompleted(const std::string& profile_path,
                               const std::string& guid,
-                              base::Value configure_properties,
+                              base::Value::Dict configure_properties,
                               network_handler::ServiceResultCallback callback,
                               const dbus::ObjectPath& service_path);
 
@@ -190,12 +190,12 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkConfigurationHandler
   // Set the Name and GUID properties correctly and Invoke |callback|.
   void GetPropertiesCallback(network_handler::ResultCallback callback,
                              const std::string& service_path,
-                             absl::optional<base::Value> properties);
+                             absl::optional<base::Value::Dict> properties);
 
   // Invoke |callback| and inform NetworkStateHandler to request an update
   // for the service after setting properties.
   void SetPropertiesSuccessCallback(const std::string& service_path,
-                                    base::Value set_properties,
+                                    base::Value::Dict set_properties,
                                     base::OnceClosure callback);
   void SetPropertiesErrorCallback(const std::string& service_path,
                                   network_handler::ErrorCallback error_callback,

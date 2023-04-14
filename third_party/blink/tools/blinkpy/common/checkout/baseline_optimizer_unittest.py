@@ -81,6 +81,10 @@ class BaselineOptimizerTest(unittest.TestCase):
                     },
                 },
             },
+            'Fake Test Mac13.0': {
+                'port_name': 'mac-mac13',
+                'specifiers': ['Mac13', 'Release'],
+            },
             'Fake Test Mac12.0': {
                 'port_name': 'mac-mac12',
                 'specifiers': ['Mac12', 'Release'],
@@ -107,7 +111,8 @@ class BaselineOptimizerTest(unittest.TestCase):
         # tests need to be adjusted accordingly.
         self.assertEqual(sorted(self.host.port_factory.all_port_names()), [
             'linux-trusty', 'mac-mac10.13', 'mac-mac10.14', 'mac-mac10.15',
-            'mac-mac11', 'mac-mac12', 'win-win10.20h2', 'win-win11'
+            'mac-mac11', 'mac-mac12', 'mac-mac13', 'win-win10.20h2',
+            'win-win11'
         ])
 
     def _assert_optimization(self,
@@ -130,7 +135,7 @@ class BaselineOptimizerTest(unittest.TestCase):
         )
         self.fs.write_text_file(
             self.fs.join(web_tests_dir, 'NeverFixTests'),
-            '# tags: [ Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac12 Win Win10.20h2 Win11 ]\n'
+            '# tags: [ Linux Mac Mac10.13 Mac10.14 Mac10.15 Mac11 Mac12 Mac13 Win Win10.20h2 Win11 ]\n'
             '# results: [ Skip Pass ]\n'
             '[ Win10.20h2 ] virtual/gpu/fast/canvas/mock-test.html [ Skip ] \n'
         )
@@ -377,6 +382,23 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'platform/linux/fast/canvas': '2',
                 'platform/mac/fast/canvas': '3',
                 'platform/linux/virtual/gpu/fast/canvas': None
+            },
+            baseline_dirname='virtual/gpu/fast/canvas')
+
+    @unittest.skip('linux/virtual is not removed because it is not unpatched; '
+                   'reenable after patching is removed (crbug.com/1375568).')
+    def test_virtual_test_redundant_with_nonvirtual_successor(self):
+        self._assert_optimization(
+            {
+                'platform/win/fast/canvas': '1',
+                'platform/linux/fast/canvas': '2',
+                'platform/mac/fast/canvas': '3',
+                'platform/linux/virtual/gpu/fast/canvas': '2',
+            }, {
+                'platform/win/fast/canvas': '1',
+                'platform/linux/fast/canvas': '2',
+                'platform/mac/fast/canvas': '3',
+                'platform/linux/virtual/gpu/fast/canvas': None,
             },
             baseline_dirname='virtual/gpu/fast/canvas')
 

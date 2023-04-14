@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/functional/bind.h"
@@ -15,10 +16,11 @@
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
-#include "chrome/browser/supervised_user/supervised_user_denylist.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/common/url_constants.h"
+#include "components/supervised_user/core/browser/kids_chrome_management_client.h"
+#include "components/supervised_user/core/browser/kids_management_url_checker_client.h"
+#include "components/supervised_user/core/common/supervised_user_denylist.h"
 #include "components/url_matcher/url_util.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/web_contents.h"
@@ -26,10 +28,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "extensions/common/extension_urls.h"
-#endif
 
 using net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES;
 using net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES;
@@ -122,43 +120,6 @@ bool IsPlayStoreTermsOfServiceUrl(const GURL& effective_url) {
           base::StringPiece::npos);
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-bool IsCrxWebstoreOrDownloadUrl(const GURL& effective_url) {
-  static const char* const kCrxDownloadUrls[] = {
-      "https://clients2.googleusercontent.com/crx/blobs/",
-      "https://chrome.google.com/webstore/download/"};
-
-  // Chrome Webstore.
-  if (extension_urls::IsWebstoreDomain(
-          url_matcher::util::Normalize(effective_url))) {
-    return true;
-  }
-
-  // Allow webstore crx downloads. This applies to both extension installation
-  // and updates.
-  if (extension_urls::GetWebstoreUpdateUrl() ==
-      url_matcher::util::Normalize(effective_url)) {
-    return true;
-  }
-
-  // The actual CRX files are downloaded from other URLs. Allow them too.
-  // These URLs have https scheme.
-  if (!effective_url.SchemeIs(url::kHttpsScheme))
-    return false;
-
-  for (const char* crx_download_url_str : kCrxDownloadUrls) {
-    GURL crx_download_url(crx_download_url_str);
-    if (crx_download_url.host_piece() == effective_url.host_piece() &&
-        base::StartsWith(effective_url.path_piece(),
-                         crx_download_url.path_piece(),
-                         base::CompareCase::SENSITIVE)) {
-      return true;
-    }
-  }
-  return false;
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-
 }  // namespace
 
 namespace {
@@ -190,12 +151,14 @@ constexpr char kBlockedSitesCountHistogramName[] =
     "FamilyUser.ManagedSiteListCount.Blocked";
 }  // namespace
 
-SupervisedUserURLFilter::SupervisedUserURLFilter()
+SupervisedUserURLFilter::SupervisedUserURLFilter(
+    ValidateURLSupportCallback check_webstore_url_callback)
     : default_behavior_(ALLOW),
       denylist_(nullptr),
       blocking_task_runner_(base::ThreadPool::CreateTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
+      check_webstore_url_callback_(std::move(check_webstore_url_callback)) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -327,44 +290,41 @@ std::string SupervisedUserURLFilter::WebFilterTypeToDisplayString(
 }
 
 SupervisedUserURLFilter::FilteringBehavior
-SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
-  supervised_user_error_page::FilteringBehaviorReason reason;
+SupervisedUserURLFilter::GetFilteringBehaviorForURL(const GURL& url) {
+  supervised_user::FilteringBehaviorReason reason;
   return GetFilteringBehaviorForURL(url, false, &reason);
 }
 
 bool SupervisedUserURLFilter::IsExemptedFromGuardianApproval(
-    const GURL& effective_url) const {
-  bool exempted_from_guardian_approval =
-      IsNonStandardUrlScheme(effective_url) ||
-      IsAlwaysAllowedHost(effective_url) ||
-      IsAlwaysAllowedUrlPrefix(effective_url) ||
-      IsPlayStoreTermsOfServiceUrl(effective_url);
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  exempted_from_guardian_approval |= IsCrxWebstoreOrDownloadUrl(effective_url);
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return exempted_from_guardian_approval;
+    const GURL& effective_url) {
+  DCHECK(!check_webstore_url_callback_.is_null());
+  return IsNonStandardUrlScheme(effective_url) ||
+         IsAlwaysAllowedHost(effective_url) ||
+         IsAlwaysAllowedUrlPrefix(effective_url) ||
+         IsPlayStoreTermsOfServiceUrl(effective_url) ||
+         check_webstore_url_callback_.Run(effective_url);
 }
 
 bool SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
-    const GURL& url, FilteringBehavior* behavior) const {
-  supervised_user_error_page::FilteringBehaviorReason reason;
+    const GURL& url,
+    FilteringBehavior* behavior) {
+  supervised_user::FilteringBehaviorReason reason;
   *behavior = GetFilteringBehaviorForURL(url, true, &reason);
-  return reason == supervised_user_error_page::MANUAL;
+  return reason == supervised_user::FilteringBehaviorReason::MANUAL;
 }
 
 SupervisedUserURLFilter::FilteringBehavior
 SupervisedUserURLFilter::GetFilteringBehaviorForURL(
     const GURL& url,
     bool manual_only,
-    supervised_user_error_page::FilteringBehaviorReason* reason) const {
+    supervised_user::FilteringBehaviorReason* reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   GURL effective_url = url_matcher::util::GetEmbeddedURL(url);
   if (!effective_url.is_valid())
     effective_url = url;
 
-  *reason = supervised_user_error_page::MANUAL;
+  *reason = supervised_user::FilteringBehaviorReason::MANUAL;
 
   if (IsExemptedFromGuardianApproval(effective_url))
     return ALLOW;
@@ -378,12 +338,12 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   // Check the static denylist, unless the default is to block anyway.
   if (!manual_only && default_behavior_ != BLOCK && denylist_ &&
       denylist_->HasURL(effective_url)) {
-    *reason = supervised_user_error_page::DENYLIST;
+    *reason = supervised_user::FilteringBehaviorReason::DENYLIST;
     return BLOCK;
   }
 
   // Fall back to the default behavior.
-  *reason = supervised_user_error_page::DEFAULT;
+  *reason = supervised_user::FilteringBehaviorReason::DEFAULT;
   return default_behavior_;
 }
 
@@ -393,8 +353,7 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
 // before returning an ALLOW. If there are no applicable manual overrides,
 // return INVALID.
 SupervisedUserURLFilter::FilteringBehavior
-SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
-    const GURL& url) const {
+SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(const GURL& url) {
   FilteringBehavior result = INVALID;
   bool conflict = false;
 
@@ -431,12 +390,13 @@ SupervisedUserURLFilter::GetManualFilteringBehaviorForURL(
 bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
     const GURL& url,
     FilteringBehaviorCallback callback,
-    bool skip_manual_parent_filter) const {
-  supervised_user_error_page::FilteringBehaviorReason reason =
-      supervised_user_error_page::DEFAULT;
+    bool skip_manual_parent_filter) {
+  supervised_user::FilteringBehaviorReason reason =
+      supervised_user::FilteringBehaviorReason::DEFAULT;
   FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
 
-  if (behavior == ALLOW && reason != supervised_user_error_page::DEFAULT) {
+  if (behavior == ALLOW &&
+      reason != supervised_user::FilteringBehaviorReason::DEFAULT) {
     std::move(callback).Run(behavior, reason, false);
     for (Observer& observer : observers_)
       observer.OnURLChecked(url, behavior, reason, false);
@@ -446,8 +406,8 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
   if (!skip_manual_parent_filter) {
     // Any non-default reason trumps the async checker.
     // Also, if we're blocking anyway, then there's no need to check it.
-    if (reason != supervised_user_error_page::DEFAULT || behavior == BLOCK ||
-        !async_url_checker_) {
+    if (reason != supervised_user::FilteringBehaviorReason::DEFAULT ||
+        behavior == BLOCK || !async_url_checker_) {
       std::move(callback).Run(behavior, reason, false);
       for (Observer& observer : observers_)
         observer.OnURLChecked(url, behavior, reason, false);
@@ -462,13 +422,13 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
 bool SupervisedUserURLFilter::GetFilteringBehaviorForSubFrameURLWithAsyncChecks(
     const GURL& url,
     const GURL& main_frame_url,
-    FilteringBehaviorCallback callback) const {
-  supervised_user_error_page::FilteringBehaviorReason reason =
-      supervised_user_error_page::DEFAULT;
+    FilteringBehaviorCallback callback) {
+  supervised_user::FilteringBehaviorReason reason =
+      supervised_user::FilteringBehaviorReason::DEFAULT;
   FilteringBehavior behavior = GetFilteringBehaviorForURL(url, false, &reason);
 
   // If the reason is not default, then it is manually allowed or blocked.
-  if (reason != supervised_user_error_page::DEFAULT) {
+  if (reason != supervised_user::FilteringBehaviorReason::DEFAULT) {
     std::move(callback).Run(behavior, reason, false);
     for (Observer& observer : observers_)
       observer.OnURLChecked(url, behavior, reason, false);
@@ -502,7 +462,7 @@ SupervisedUserURLFilter::GetDefaultFilteringBehavior() const {
 }
 
 void SupervisedUserURLFilter::SetDenylist(
-    const SupervisedUserDenylist* denylist) {
+    const supervised_user::SupervisedUserDenylist* denylist) {
   denylist_ = denylist;
 }
 
@@ -521,7 +481,8 @@ void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
   url_map_ = std::move(url_map);
 }
 
-void SupervisedUserURLFilter::InitAsyncURLChecker() {
+void SupervisedUserURLFilter::InitAsyncURLChecker(
+    KidsChromeManagementClient* kids_chrome_management_client) {
   std::string country;
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
@@ -532,7 +493,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker() {
   }
 
   std::unique_ptr<safe_search_api::URLCheckerClient> url_checker_client =
-      std::make_unique<KidsManagementURLCheckerClient>(country);
+      std::make_unique<KidsManagementURLCheckerClient>(
+          kids_chrome_management_client, country);
   async_url_checker_ = std::make_unique<safe_search_api::URLChecker>(
       std::move(url_checker_client));
 }
@@ -644,7 +606,8 @@ bool SupervisedUserURLFilter::RunAsyncChecker(
   // |async_url_checker_| will not be created.
   if (!async_url_checker_) {
     std::move(callback).Run(FilteringBehavior::ALLOW,
-                            supervised_user_error_page::DEFAULT, false);
+                            supervised_user::FilteringBehaviorReason::DEFAULT,
+                            false);
     return true;
   }
 
@@ -661,10 +624,12 @@ void SupervisedUserURLFilter::CheckCallback(
     bool uncertain) const {
   FilteringBehavior behavior =
       GetBehaviorFromSafeSearchClassification(classification);
-  std::move(callback).Run(behavior, supervised_user_error_page::ASYNC_CHECKER,
-                          uncertain);
+  std::move(callback).Run(
+      behavior, supervised_user::FilteringBehaviorReason::ASYNC_CHECKER,
+      uncertain);
   for (Observer& observer : observers_) {
-    observer.OnURLChecked(url, behavior,
-                          supervised_user_error_page::ASYNC_CHECKER, uncertain);
+    observer.OnURLChecked(
+        url, behavior, supervised_user::FilteringBehaviorReason::ASYNC_CHECKER,
+        uncertain);
   }
 }

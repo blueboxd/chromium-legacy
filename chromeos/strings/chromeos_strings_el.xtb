@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Το παράθυρο Ενημέρωσης υλικολογισμικού για εξωτερικές συσκευές είναι ανοικτό. <ph name="NUM_UPDATES" /> διαθέσιμες ενημερώσεις.</translation>
 <translation id="1145516343487477149">Βρείτε άρθρα βοήθειας και απαντήσεις σε συνήθεις ερωτήσεις του Chromebook</translation>
+<translation id="1167755866710282443">Ανοίξτε το μενού για να προσαρμόσετε τα πλήκτρα. Σύρετε το μενού για μετακίνηση.</translation>
 <translation id="1175697296044146566">Η διαχείριση της συσκευής <ph name="DEVICE_TYPE" /> γίνεται από <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Μέτριο (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Επιλογή λευκώματος <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Οθόνη αφής USB</translation>
 <translation id="4117637339509843559">Λειτουργία χαμηλού φωτισμού</translation>
+<translation id="4130035430755296270">Κρατήστε τον δείκτη πάνω από το στοιχείο για περισσότερες επιλογές διάταξης</translation>
 <translation id="4131410914670010031">Ασπρόμαυρο</translation>
 <translation id="4145784616224233563">Τείχος προστασίας HTTP</translation>
 <translation id="4147897805161313378">Φωτογραφίες Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Επίλυση DNS</translation>
 <translation id="4848429997038228357">ΕΚΤΕΛΕΙΤΑΙ</translation>
 <translation id="4854586501323951986">Ενσωματωμένη οθόνη αφής</translation>
+<translation id="4855250849489639581">Σύρετε προς τα κάτω για περισσότερες επιλογές διάταξης</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Απομένει {0} προσπάθεια}other{<ph name="ERROR_MESSAGE" /> Απομένουν {0} προσπάθειες}}</translation>
 <translation id="4873827928179867585">Αλγόριθμος ελέγχου ταυτότητας</translation>
 <translation id="4880328057631981605">Όνομα σημείου πρόσβασης</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Αύξηση φωτεινότητας οθόνης</translation>
 <translation id="57838592816432529">Σίγαση</translation>
 <translation id="5784136236926853061">Υψηλός λανθάνων χρόνος HTTP</translation>
+<translation id="5826644637650799838">Σχετικά με το έργο τέχνης</translation>
 <translation id="5832805196449965646">Προσθήκη ατόμου</translation>
 <translation id="583281660410589416">Άγνωστο</translation>
 <translation id="5843706793424741864">Βαθμοί Φαρενάιτ</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 εικόνα</translation>
 <translation id="7177485034254901881">Η διαχείριση της συσκευής <ph name="DEVICE_TYPE" /> γίνεται από τον τομέα <ph name="MANAGER" />. Οι διαχειριστές μπορούν να διαμορφώσουν τη συσκευή απομακρυσμένα.</translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
+<translation id="7180865173735832675">Προσαρμογή</translation>
 <translation id="7212734716605298123">Ενημερώσεις υλικολογισμικού για εξωτερικές συσκευές</translation>
 <translation id="7216409898977639127">Πάροχος δικτύου κινητής τηλεφωνίας</translation>
 <translation id="725133483556299729">Επιλογή διεύθυνσης ηλεκτρονικού ταχυδρομείου</translation>

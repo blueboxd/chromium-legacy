@@ -124,15 +124,9 @@ PluginVmManagerImpl::PluginVmManagerImpl(Profile* profile)
     : profile_(profile),
       owner_id_(ash::ProfileHelper::GetUserIdHashFromProfile(profile)) {
   ash::VmPluginDispatcherClient::Get()->AddObserver(this);
-  availability_subscription_ =
-      std::make_unique<PluginVmAvailabilitySubscription>(
-          profile_,
-          base::BindRepeating(&PluginVmManagerImpl::OnAvailabilityChanged,
-                              weak_ptr_factory_.GetWeakPtr()));
-
-  if (PluginVmFeatures::Get()->IsEnabled(profile_)) {
-    OnAvailabilityChanged(true, true);
-  }
+  plugin_vm_subscription_ = std::make_unique<PluginVmPolicySubscription>(
+      profile_, base::BindRepeating(&PluginVmManagerImpl::OnPluginVmChanged,
+                                    weak_ptr_factory_.GetWeakPtr()));
 }
 
 PluginVmManagerImpl::~PluginVmManagerImpl() {
@@ -799,12 +793,10 @@ void PluginVmManagerImpl::UninstallFailed(
   uninstaller_notification_.reset();
 }
 
-void PluginVmManagerImpl::OnAvailabilityChanged(bool is_allowed,
-                                                bool is_configured) {
-  bool is_enabled = is_allowed && is_configured;
+void PluginVmManagerImpl::OnPluginVmChanged(bool is_allowed) {
   auto* share_path = guest_os::GuestOsSharePath::GetForProfile(profile_);
   guest_os::GuestId id{guest_os::VmType::PLUGIN_VM, kPluginVmName, ""};
-  if (is_enabled) {
+  if (is_allowed) {
     share_path->RegisterGuest(id);
   } else {
     share_path->UnregisterGuest(id);

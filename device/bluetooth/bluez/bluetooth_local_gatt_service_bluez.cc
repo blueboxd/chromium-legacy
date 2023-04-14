@@ -11,26 +11,21 @@
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluez/bluetooth_adapter_bluez.h"
 
-namespace device {
+namespace bluez {
 
 // static
-base::WeakPtr<BluetoothLocalGattService> BluetoothLocalGattService::Create(
-    BluetoothAdapter* adapter,
-    const BluetoothUUID& uuid,
+base::WeakPtr<BluetoothLocalGattServiceBlueZ>
+BluetoothLocalGattServiceBlueZ::Create(
+    BluetoothAdapterBlueZ* adapter,
+    const device::BluetoothUUID& uuid,
     bool is_primary,
-    BluetoothLocalGattService* included_service,
-    BluetoothLocalGattService::Delegate* delegate) {
-  bluez::BluetoothAdapterBlueZ* adapter_bluez =
-      static_cast<bluez::BluetoothAdapterBlueZ*>(adapter);
-  bluez::BluetoothLocalGattServiceBlueZ* service =
-      new bluez::BluetoothLocalGattServiceBlueZ(adapter_bluez, uuid, is_primary,
-                                                delegate);
-  return service->weak_ptr_factory_.GetWeakPtr();
+    device::BluetoothLocalGattService::Delegate* delegate) {
+  auto* service =
+      new BluetoothLocalGattServiceBlueZ(adapter, uuid, is_primary, delegate);
+  auto weak_ptr = service->weak_ptr_factory_.GetWeakPtr();
+  adapter->AddLocalGattService(base::WrapUnique(service));
+  return weak_ptr;
 }
-
-}  // namespace device
-
-namespace bluez {
 
 BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
     BluetoothAdapterBlueZ* adapter,
@@ -46,7 +41,6 @@ BluetoothLocalGattServiceBlueZ::BluetoothLocalGattServiceBlueZ(
       delegate_(delegate) {
   DVLOG(1) << "Creating local GATT service with identifier: "
            << GetIdentifier();
-  adapter->AddLocalGattService(base::WrapUnique(this));
 }
 
 BluetoothLocalGattServiceBlueZ::~BluetoothLocalGattServiceBlueZ() = default;

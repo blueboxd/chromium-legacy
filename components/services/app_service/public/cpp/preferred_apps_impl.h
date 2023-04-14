@@ -19,6 +19,7 @@
 #include "components/services/app_service/public/cpp/intent_filter.h"
 #include "components/services/app_service/public/cpp/preferred_app.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list.h"
+#include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
 
 namespace apps {
 
@@ -35,26 +36,23 @@ class PreferredAppsImpl {
     Host& operator=(const Host&) = delete;
     ~Host() = default;
 
-    virtual void InitializePreferredAppsForAllSubscribers() = 0;
+    // Called when the PreferredAppsList has been loaded from disk, and can
+    // be used to initialize subscribers.
+    // Only implemented in Ash, to support initializing the Lacros copy of the
+    // PreferredAppsList.
+    virtual void InitializePreferredAppsForAllSubscribers() {}
 
-    virtual void OnPreferredAppsChanged(PreferredAppChangesPtr changes) = 0;
+    // Called when changes have been made to the PreferredAppsList which should
+    // be propagated to subscribers.
+    // Only implemented in Ash, to support updating the Lacros copy of the
+    // PreferredAppsList.
+    virtual void OnPreferredAppsChanged(PreferredAppChangesPtr changes) {}
 
-    virtual void OnPreferredAppSet(
-        const std::string& app_id,
-        IntentFilterPtr intent_filter,
-        IntentPtr intent,
-        ReplacedAppPreferences replaced_app_preferences) = 0;
-
+    // Notifies the host that the supported links preference for a particular
+    // `app_id` was enabled/disabled. Used by the host to notify the app
+    // publisher (if any) of the change.
     virtual void OnSupportedLinksPreferenceChanged(const std::string& app_id,
                                                    bool open_in_app) = 0;
-
-    virtual void OnSupportedLinksPreferenceChanged(AppType app_type,
-                                                   const std::string& app_id,
-                                                   bool open_in_app) = 0;
-
-    // Returns true if there is a publisher for `app_type`. Otherwise, returns
-    // false.
-    virtual bool HasPublisher(AppType app_type) = 0;
   };
 
   PreferredAppsImpl(
@@ -68,19 +66,12 @@ class PreferredAppsImpl {
 
   ~PreferredAppsImpl();
 
-  void AddPreferredApp(AppType app_type,
-                       const std::string& app_id,
-                       IntentFilterPtr intent_filter,
-                       IntentPtr intent,
-                       bool from_publisher);
   void RemovePreferredApp(const std::string& app_id);
-  void SetSupportedLinksPreference(AppType app_type,
-                                   const std::string& app_id,
+  void SetSupportedLinksPreference(const std::string& app_id,
                                    IntentFilters all_link_filters);
-  void RemoveSupportedLinksPreference(AppType app_type,
-                                      const std::string& app_id);
+  void RemoveSupportedLinksPreference(const std::string& app_id);
 
-  const PreferredAppsList& preferred_apps_list() const {
+  PreferredAppsListHandle& preferred_apps_list() {
     return preferred_apps_list_;
   }
 
@@ -105,17 +96,10 @@ class PreferredAppsImpl {
   // be run immediately if preferred apps are already initialized.
   void RunAfterPreferredAppsReady(base::OnceClosure task);
 
-  void AddPreferredAppImpl(AppType app_type,
-                           const std::string& app_id,
-                           IntentFilterPtr intent_filter,
-                           IntentPtr intent,
-                           bool from_publisher);
   void RemovePreferredAppImpl(const std::string& app_id);
-  void SetSupportedLinksPreferenceImpl(AppType app_type,
-                                       const std::string& app_id,
+  void SetSupportedLinksPreferenceImpl(const std::string& app_id,
                                        IntentFilters all_link_filters);
-  void RemoveSupportedLinksPreferenceImpl(AppType app_type,
-                                          const std::string& app_id);
+  void RemoveSupportedLinksPreferenceImpl(const std::string& app_id);
 
   // `host_` owns `this`.
   raw_ptr<Host> host_;

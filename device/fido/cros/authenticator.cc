@@ -46,9 +46,10 @@ std::string ChromeOSAuthenticator::GetId() const {
 
 namespace {
 
-AuthenticatorSupportedOptions ChromeOSAuthenticatorOptions() {
+AuthenticatorSupportedOptions ChromeOSAuthenticatorOptions(bool u2f_enabled) {
   AuthenticatorSupportedOptions options;
-  options.is_platform_device = true;
+  options.is_platform_device =
+      AuthenticatorSupportedOptions::PlatformDevice::kYes;
   // TODO(yichengli): change supports_resident_key to true once it's supported.
   options.supports_resident_key = false;
   // Even if the user has no fingerprints enrolled, we will have password
@@ -56,15 +57,17 @@ AuthenticatorSupportedOptions ChromeOSAuthenticatorOptions() {
   options.user_verification_availability = AuthenticatorSupportedOptions::
       UserVerificationAvailability::kSupportedAndConfigured;
   options.supports_user_presence = true;
+  // Enterprise attestation is enabled in the authenticator if its U2F/G2F mode
+  // is enabled.
+  options.enterprise_attestation = u2f_enabled;
   return options;
 }
 
 }  // namespace
 
-const absl::optional<AuthenticatorSupportedOptions>&
-ChromeOSAuthenticator::Options() const {
-  static const absl::optional<AuthenticatorSupportedOptions> options =
-      ChromeOSAuthenticatorOptions();
+const AuthenticatorSupportedOptions& ChromeOSAuthenticator::Options() const {
+  static const AuthenticatorSupportedOptions options =
+      ChromeOSAuthenticatorOptions(u2f_enabled_);
   return options;
 }
 
@@ -273,9 +276,10 @@ void ChromeOSAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                           std::move(callback)));
 }
 
-void ChromeOSAuthenticator::GetCredentialInformationForRequest(
+void ChromeOSAuthenticator::GetPlatformCredentialInfoForRequest(
     const CtapGetAssertionRequest& request,
-    GetCredentialInformationForRequestCallback callback) {
+    const CtapGetAssertionOptions& options,
+    GetPlatformCredentialInfoForRequestCallback callback) {
   u2f::HasCredentialsRequest req;
   req.set_rp_id(request.rp_id);
   if (request.app_id) {
@@ -294,15 +298,18 @@ void ChromeOSAuthenticator::GetCredentialInformationForRequest(
 }
 
 void ChromeOSAuthenticator::OnHasCredentialInformationForRequest(
-    GetCredentialInformationForRequestCallback callback,
+    GetPlatformCredentialInfoForRequestCallback callback,
     absl::optional<u2f::HasCredentialsResponse> response) {
   std::move(callback).Run(
       /*credentials=*/{},
-      /*has_credential=*/
       response &&
-          response->status() ==
-              u2f::HasCredentialsResponse_HasCredentialsStatus_SUCCESS &&
-          response->credential_id().size() > 0);
+              response->status() ==
+                  u2f::HasCredentialsResponse_HasCredentialsStatus_SUCCESS &&
+              response->credential_id().size() > 0
+          ? FidoRequestHandlerBase::RecognizedCredential::
+                kHasRecognizedCredential
+          : FidoRequestHandlerBase::RecognizedCredential::
+                kNoRecognizedCredential);
 }
 
 void ChromeOSAuthenticator::OnGetAssertionResponse(
@@ -445,12 +452,6 @@ void ChromeOSAuthenticator::IsLacrosSupported(
             std::move(callback).Run(response && response->support_lacros());
           },
           std::move(callback)));
-}
-
-bool ChromeOSAuthenticator::SupportsEnterpriseAttestation() const {
-  // Enterprise attestation is enabled in the authenticator if its U2F/G2F mode
-  // is enabled.
-  return u2f_enabled_;
 }
 
 base::WeakPtr<FidoAuthenticator> ChromeOSAuthenticator::GetWeakPtr() {

@@ -331,7 +331,7 @@ GURL GetQueryUrl(const std::u16string& text_query,
 base::Value CreateDeletion(const std::string& min_time,
                            const std::string& max_time,
                            const GURL& url) {
-  base::Value deletion(base::Value::Type::DICTIONARY);
+  base::Value deletion(base::Value::Type::DICT);
   deletion.SetStringKey("type", "CHROME_HISTORY");
   if (url.is_valid())
     deletion.SetStringKey("url", url.spec());
@@ -406,8 +406,8 @@ void WebHistoryService::ExpireHistory(
     const std::vector<ExpireHistoryArgs>& expire_list,
     ExpireWebHistoryCallback callback,
     const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
-  base::Value delete_request(base::Value::Type::DICTIONARY);
-  base::Value deletions(base::Value::Type::LIST);
+  base::Value::Dict delete_request;
+  base::Value::List deletions;
   base::Time now = base::Time::Now();
 
   for (const auto& expire : expire_list) {
@@ -425,7 +425,7 @@ void WebHistoryService::ExpireHistory(
     if (expire.urls.empty())
       deletions.Append(CreateDeletion(min_timestamp, max_timestamp, GURL()));
   }
-  delete_request.SetKey("del", std::move(deletions));
+  delete_request.Set("del", std::move(deletions));
   std::string post_data;
   base::JSONWriter::Write(delete_request, &post_data);
 
@@ -492,7 +492,7 @@ void WebHistoryService::SetAudioHistoryEnabled(
   std::unique_ptr<Request> request(CreateRequest(
       url, std::move(completion_callback), partial_traffic_annotation));
 
-  base::Value enable_audio_history(base::Value::Type::DICTIONARY);
+  base::Value enable_audio_history(base::Value::Type::DICT);
   enable_audio_history.SetBoolKey("enable_history_recording",
                                   new_enabled_value);
   enable_audio_history.SetStringKey("client", "audio");
@@ -610,8 +610,9 @@ void WebHistoryService::AudioHistoryCompletionCallback(
     response_value = ReadResponse(request);
     if (response_value) {
       if (absl::optional<bool> enabled =
-              response_value->FindBoolKey("history_recording_enabled"))
+              response_value->GetDict().FindBool("history_recording_enabled")) {
         enabled_value = *enabled;
+      }
     }
   }
 
@@ -636,8 +637,9 @@ void WebHistoryService::QueryWebAndAppActivityCompletionCallback(
     response_value = ReadResponse(request);
     if (response_value) {
       if (absl::optional<bool> enabled =
-              response_value->FindBoolKey("history_recording_enabled"))
+              response_value->GetDict().FindBool("history_recording_enabled")) {
         web_and_app_activity_enabled = *enabled;
+      }
     }
   }
 

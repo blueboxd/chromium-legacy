@@ -333,7 +333,8 @@ class ClipboardHistoryBrowserTest : public ash::LoginManagerTest {
     {
       ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
       scw.WriteText(base::UTF8ToUTF16(text));
-      scw.WriteHTML(base::UTF8ToUTF16(html), /*source_url=*/"");
+      scw.WriteHTML(base::UTF8ToUTF16(html), /*source_url=*/"",
+                    ui::ClipboardContentType::kSanitized);
     }
 
     // ClipboardHistory will post a task to process clipboard data in order to
@@ -1512,7 +1513,7 @@ class FakeDataTransferPolicyController
                       content::RenderFrameHost* rfh,
                       base::OnceCallback<void(bool)> callback) override {}
 
-  void DropIfAllowed(const ui::DataTransferEndpoint* data_src,
+  void DropIfAllowed(const ui::OSExchangeData* drag_data,
                      const ui::DataTransferEndpoint* data_dst,
                      base::OnceClosure drop_cb) override {}
 

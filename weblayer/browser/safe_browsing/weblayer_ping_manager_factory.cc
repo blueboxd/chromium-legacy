@@ -57,16 +57,18 @@ KeyedService* WebLayerPingManagerFactory::BuildServiceInstanceFor(
           base::Unretained(this), context),
       safe_browsing::WebUIInfoSingleton::GetInstance(),
       content::GetUIThreadTaskRunner({}),
-      base::BindRepeating(&GetUserPopulationForBrowserContext, context));
+      base::BindRepeating(&GetUserPopulationForBrowserContext, context),
+      base::FeatureList::IsEnabled(
+          safe_browsing::kAddPageLoadTokenToClientSafeBrowsingReport)
+          ? base::BindRepeating(&GetPageLoadTokenForURL, context)
+          : base::NullCallback());
 }
 
 bool WebLayerPingManagerFactory::ShouldFetchAccessTokenForReport(
     content::BrowserContext* context) const {
   PrefService* pref_service =
       static_cast<BrowserContextImpl*>(context)->pref_service();
-  return base::FeatureList::IsEnabled(
-             safe_browsing::kSafeBrowsingCsbrrWithToken) &&
-         safe_browsing::IsEnhancedProtectionEnabled(*pref_service) &&
+  return safe_browsing::IsEnhancedProtectionEnabled(*pref_service) &&
          // TODO(crbug.com/1171215): Change this to production mechanism for
          // enabling Gaia-keyed client reports once that mechanism is
          // determined.

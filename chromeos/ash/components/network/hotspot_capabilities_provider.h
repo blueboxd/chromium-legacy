@@ -84,6 +84,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotCapabilitiesProvider
   // necessary. |callback| is called with check readiness result.
   void CheckTetheringReadiness(CheckTetheringReadinessCallback callback);
 
+  void SetPolicyAllowed(bool allowed);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool HasObserver(Observer* observer) const;
@@ -98,7 +100,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotCapabilitiesProvider
   void OnShuttingDown() override;
 
   // Callback to handle the manager properties with hotspot related properties.
-  void OnManagerProperties(absl::optional<base::Value> properties);
+  void OnManagerProperties(absl::optional<base::Value::Dict> properties);
 
   // Notify observer that hotspot capabilities was changed.
   void NotifyHotspotCapabilitiesChanged();
@@ -122,6 +124,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) HotspotCapabilitiesProvider
   HotspotCapabilities hotspot_capabilities_{
       hotspot_config::mojom::HotspotAllowStatus::kDisallowedNoCellularUpstream};
 
+  bool policy_allow_hotspot_ = true;
   NetworkStateHandler* network_state_handler_ = nullptr;
   base::ScopedObservation<NetworkStateHandler, NetworkStateHandlerObserver>
       network_state_handler_observer_{this};

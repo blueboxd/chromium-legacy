@@ -4,6 +4,7 @@
 
 module drivefs.mojom;
 
+import "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
@@ -132,6 +133,10 @@ interface DriveFs {
   // Get the metadata for the supplied `stable_id`.
   GetMetadataByStableId(int64 stable_id) => (
       FileError error, FileMetadata? metadata);
+
+  // Attempts to cancel an in progress upload. `path` must be made absolute
+  // from the drive mount point.
+  CancelUploadByPath(mojo_base.mojom.FilePath path);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -174,13 +179,6 @@ interface DriveFsDelegate {
 
   // Invoked from time to time to indicate that drivefs is operational.
   OnHeartbeat();
-
-  [Extensible]
-  enum ExtensionConnectionStatus {
-    kSuccess,
-    kExtensionNotFound,
-    kFeatureNotEnabled,
-  };
 
   // Initiates connection to the extension specified.
   ConnectToExtension(ExtensionConnectionParams params,
@@ -353,7 +351,7 @@ struct DialogReason {
   mojo_base.mojom.FilePath path;
 };
 
-// Next MinVersion: 6
+// Next MinVersion: 8
 struct FileMetadata {
   [Extensible] enum Type {
     // A regular file.
@@ -417,6 +415,30 @@ struct FileMetadata {
   // methods which require the server side file id, such as
   // DriveAPIService::UpdateResource.
   [MinVersion=5] string? item_id;
+
+  // Present if file is part of a shared drive that has a quota limit.
+  [MinVersion=6] SharedDriveQuota? shared_drive_quota;
+
+  // Populated if the item is a shortcut and contains information about the
+  // target of the shortcut.
+  [MinVersion=7] ShortcutDetails? shortcut_details;
+};
+
+// Details relating to the target item that a shortcut refers to.
+struct ShortcutDetails {
+  int64 target_stable_id = 0;
+
+  [Extensible]
+  enum LookupStatus {
+    [Default] kUnknown,
+    kOk,
+    kNotFound,
+    kPermissionDenied,
+  };
+
+  // In the case the target the shortcut points to can't be found or doesn't
+  // have permission, relay that information back.
+  LookupStatus target_lookup_status;
 };
 
 struct ImageMetadata {
@@ -454,6 +476,14 @@ struct FolderFeature {
 struct QuickAccess {
   // A [0, 1] score with the probability that a user wants this document next.
   double score;
+};
+
+struct SharedDriveQuota {
+  // The number of quota bytes used for the shared drive that this file is in.
+  int64 quota_bytes_used_in_drive;
+
+  // The admin-configured quota limit for the individual shared drive.
+  int64 individual_quota_bytes_total;
 };
 
 // Reason why this event occurred.
@@ -610,30 +640,6 @@ struct FetchChangeLogOptions {
   // ID of the Team Drive to fetch the changelog for. Set to an empty string to
   // fetch the My Drive changelog instead.
   string team_drive_id;
-};
-
-// Implemented in the browser and used from DriveFS.
-// Roughly corresponds to a native messaging port to the extension and allows
-// sending messages from the DriveFS process to the extension.
-interface NativeMessagingPort {
-  // Send a native |message| to the extension. |message| is an
-  // opaque string in an extension-specific format.
-  PostMessageToExtension(string message);
-};
-
-// Implemented in DriveFS and used from the browser.
-// Roughly corresponds to a native messaging host instance and allows
-// processing of requests from the extension by the DriveFS process.
-// It's up to the extension and the host to agree to message ordering.
-interface NativeMessagingHost {
-  // Process |message| from the extension. |message| is an
-  // opaque string in an extension-specific format.
-  HandleMessageFromExtension(string message);
-};
-
-// Configuration of the connection between extension and DriveFS.
-struct ExtensionConnectionParams {
-  string extension_id;
 };
 
 // A single file path resolution result.

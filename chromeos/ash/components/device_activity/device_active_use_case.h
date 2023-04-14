@@ -180,7 +180,18 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   absl::optional<private_membership::rlwe::RlwePlaintextId>
   GeneratePsmIdentifier(absl::optional<std::string> window_id) const;
 
+  // Once the client has initiated churn_active_status object, then pass
+  // the reference to the churn use cases to get the churn active status.
+  void SetChurnActiveStatus(ChurnActiveStatus* churn_active_status);
+
+  // Uses the churn_active_status to get the device churn active status
+  // metadata.
+  ChurnActiveStatus* GetChurnActiveStatus();
+
  protected:
+  // Retrieve the timestamp when the device came active.
+  base::Time GetActiveTs() const;
+
   // Retrieve full hardware class from MachineStatistics.
   // |DeviceActivityController| waits for object to finish loading, to avoid
   // callback logic in this class.
@@ -194,14 +205,6 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
 
   // Retrieve the ChromeOS device market segment.
   MarketSegment GetMarketSegment() const;
-
-  // Once the client has initiated churn_active_status object, then pass
-  // the reference to the churn use cases to get the churn active status.
-  void SetChurnActiveStatus(ChurnActiveStatus* churn_active_status);
-
-  // Uses the churn_active_status to get the device churn active status
-  // metadata.
-  ChurnActiveStatus* GetChurnActiveStatus();
 
   // Retrieve |psm_device_active_secret_|.
   const std::string& GetPsmDeviceActiveSecret() const;
@@ -228,6 +231,11 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_DEVICE_ACTIVITY)
   std::vector<FresnelImportData> new_import_data_;
 
  private:
+  // Stores the timestamp passed to |SetWindowIdentifier| method.
+  // In production, this represents the timestamp when the device
+  // first because active.
+  base::Time active_ts_;
+
   // The ChromeOS platform code will provide a derived PSM device active secret
   // via callback.
   //

@@ -98,7 +98,7 @@ class MetadataWriter {
     const proto::CustomInput::FillPolicy fill_policy{
         proto::CustomInput_FillPolicy_UNKNOWN_FILL_POLICY};
     const size_t default_values_size{0};
-    const float* const default_values = nullptr;
+    const raw_ptr<const float> default_values = nullptr;
     const char* name{nullptr};
   };
 
@@ -159,6 +159,12 @@ class MetadataWriter {
   void AddOutputConfigForBinnedClassifier(
       const std::vector<std::pair<float, std::string>>& bins,
       std::string underflow_label);
+
+  // Adds a `PredictedResultTTL` in `OutputConfig`.
+  void AddPredictedResultTTLInOutputConfig(
+      std::vector<std::pair<std::string, std::int64_t>> top_label_to_ttl_list,
+      int64_t default_ttl,
+      proto::TimeUnit time_unit);
 
   // Append a delay trigger for training data collection.
   void AddDelayTrigger(uint64_t delay_sec);

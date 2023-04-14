@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -172,7 +173,7 @@ void BrowserDataBackMigrator::OnPreMigrationCleanUp(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "PreMigrationCleanup() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
@@ -312,7 +313,7 @@ void BrowserDataBackMigrator::OnMergeSplitItems(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "MergeSplitItems() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
@@ -368,56 +369,61 @@ BrowserDataBackMigrator::TaskResult BrowserDataBackMigrator::DeleteAshItems(
 void BrowserDataBackMigrator::OnDeleteAshItems(TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "DeleteAshItems() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
-  SetProgress(MigrationStep::kMoveLacrosItemsToTmpDir);
+  SetProgress(MigrationStep::kMoveLacrosItemsToAshDir);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&BrowserDataBackMigrator::MoveLacrosItemsToTmpDir,
+      base::BindOnce(&BrowserDataBackMigrator::MoveLacrosItemsToAshDir,
                      ash_profile_dir_),
-      base::BindOnce(&BrowserDataBackMigrator::OnMoveLacrosItemsToTmpDir,
+      base::BindOnce(&BrowserDataBackMigrator::OnMoveLacrosItemsToAshDir,
                      weak_factory_.GetWeakPtr()));
 }
 
 // static
 BrowserDataBackMigrator::TaskResult
-BrowserDataBackMigrator::MoveLacrosItemsToTmpDir(
+BrowserDataBackMigrator::MoveLacrosItemsToAshDir(
     const base::FilePath& ash_profile_dir) {
-  LOG(WARNING) << "Running MoveLacrosItemsToTmpDir()";
+  LOG(WARNING) << "Running MoveLacrosItemsToAshDir()";
 
   const base::FilePath lacros_profile_dir =
       ash_profile_dir.Append(browser_data_migrator_util::kLacrosDir)
           .Append(browser_data_migrator_util::kLacrosProfilePath);
-
-  const base::FilePath tmp_profile_dir =
-      ash_profile_dir.Append(browser_data_back_migrator::kTmpDir);
 
   browser_data_migrator_util::TargetItems lacros_items =
       browser_data_migrator_util::GetTargetItems(
           lacros_profile_dir, browser_data_migrator_util::ItemType::kLacros);
 
   for (const auto& item : lacros_items.items) {
-    // The corresponding items in Ash will be deleted in `DeleteAshItems` before
-    // they are overwritten by the Lacros items from the tmp directory.
-    if (!base::Move(item.path, tmp_profile_dir.Append(item.path.BaseName()))) {
+    // The corresponding items in Ash are deleted in `DeleteAshItems` before
+    // they are overwritten by the Lacros items here.
+    const base::FilePath destination_path =
+        ash_profile_dir.Append(item.path.BaseName());
+
+    if (base::PathExists(destination_path)) {
+      PLOG(ERROR) << "Path " << destination_path << " already exists.";
+      return {TaskStatus::kMoveLacrosItemsToAshDirFailed, errno};
+    }
+
+    if (!base::Move(item.path, destination_path)) {
       PLOG(ERROR) << "Failed to move item " << item.path.value() << " to "
-                  << tmp_profile_dir.Append(item.path.BaseName()) << ": ";
-      return {TaskStatus::kMoveLacrosItemsToTmpDirMoveFailed, errno};
+                  << destination_path << ": ";
+      return {TaskStatus::kMoveLacrosItemsToAshDirFailed, errno};
     }
   }
 
   return {TaskStatus::kSucceeded};
 }
 
-void BrowserDataBackMigrator::OnMoveLacrosItemsToTmpDir(
+void BrowserDataBackMigrator::OnMoveLacrosItemsToAshDir(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
-    LOG(ERROR) << "MoveLacrosItemsToTmpDir() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    LOG(ERROR) << "MoveLacrosItemsToAshDir() failed.";
+    InvokeCallback(result);
     return;
   }
 
@@ -516,7 +522,7 @@ void BrowserDataBackMigrator::OnMoveMergedItemsBackToAsh(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "MoveMergedItemsBackToAsh() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
@@ -553,7 +559,7 @@ void BrowserDataBackMigrator::OnDeleteLacrosDir(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "DeleteLacrosDir() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
@@ -588,7 +594,7 @@ void BrowserDataBackMigrator::OnDeleteTmpDir(
     BrowserDataBackMigrator::TaskResult result) {
   if (result.status != TaskStatus::kSucceeded) {
     LOG(ERROR) << "DeleteTmpDir() failed.";
-    std::move(finished_callback_).Run(ToResult(result));
+    InvokeCallback(result);
     return;
   }
 
@@ -615,7 +621,7 @@ BrowserDataBackMigrator::MarkMigrationComplete() {
 void BrowserDataBackMigrator::OnMarkMigrationComplete() {
   LOG(WARNING) << "Backward migration completed successfully.";
   SetProgress(MigrationStep::kDone);
-  std::move(finished_callback_).Run(ToResult({TaskStatus::kSucceeded}));
+  InvokeCallback({TaskStatus::kSucceeded});
 }
 
 // static
@@ -1020,16 +1026,14 @@ bool BrowserDataBackMigrator::MergeSyncDataLevelDB(
         ash_db->NewIterator(leveldb::ReadOptions()));
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
       const std::string key = it->key().ToString();
-      std::string value;
-      status = ash_db->Get(leveldb::ReadOptions(), key, &value);
-      if (!status.ok()) {
-        PLOG(ERROR) << "Failure while reading from Ash Sync Data LevelDB: "
-                    << ash_db_path;
-        return false;
-      }
-
+      const std::string value = it->value().ToString();
       if (browser_data_migrator_util::IsAshOnlySyncDataType(key))
         ash_write_batch.Put(key, value);
+    }
+    if (!it->status().ok()) {
+      PLOG(ERROR) << "Failure while reading from Ash Sync Data LevelDB: "
+                  << ash_db_path;
+      return false;
     }
   }
 
@@ -1040,17 +1044,14 @@ bool BrowserDataBackMigrator::MergeSyncDataLevelDB(
         lacros_db->NewIterator(leveldb::ReadOptions()));
     for (it->SeekToFirst(); it->Valid(); it->Next()) {
       const std::string key = it->key().ToString();
-      std::string value;
-
-      status = lacros_db->Get(leveldb::ReadOptions(), key, &value);
-      if (!status.ok()) {
-        PLOG(ERROR) << "Failure while reading from Lacros Sync Data LevelDB: "
-                    << lacros_db_path;
-        return false;
-      }
-
+      const std::string value = it->value().ToString();
       if (!browser_data_migrator_util::IsAshOnlySyncDataType(key))
         lacros_write_batch.Put(key, value);
+    }
+    if (!it->status().ok()) {
+      PLOG(ERROR) << "Failure while reading from Lacros Sync Data LevelDB: "
+                  << lacros_db_path;
+      return false;
     }
   }
 
@@ -1074,33 +1075,6 @@ bool BrowserDataBackMigrator::MergeSyncDataLevelDB(
   }
 
   return true;
-}
-
-// static
-BrowserDataBackMigrator::Result BrowserDataBackMigrator::ToResult(
-    TaskResult result) {
-  switch (result.status) {
-    case TaskStatus::kSucceeded:
-      return Result::kSucceeded;
-    case TaskStatus::kPreMigrationCleanUpDeleteTmpDirFailed:
-    case TaskStatus::kMergeSplitItemsCreateTmpDirFailed:
-    case TaskStatus::kMergeSplitItemsCopyExtensionsFailed:
-    case TaskStatus::kMergeSplitItemsCopyExtensionStorageFailed:
-    case TaskStatus::kMergeSplitItemsCreateDirFailed:
-    case TaskStatus::kMergeSplitItemsMergeIndexedDBFailed:
-    case TaskStatus::kMergeSplitItemsMergePrefsFailed:
-    case TaskStatus::kMergeSplitItemsMergeLocalStorageLevelDBFailed:
-    case TaskStatus::kMergeSplitItemsMergeStateStoreLevelDBFailed:
-    case TaskStatus::kMergeSplitItemsMergeSyncDataFailed:
-    case TaskStatus::kDeleteAshItemsDeleteExtensionsFailed:
-    case TaskStatus::kDeleteAshItemsDeleteLacrosItemFailed:
-    case TaskStatus::kDeleteLacrosDirDeleteFailed:
-    case TaskStatus::kDeleteTmpDirDeleteFailed:
-    case TaskStatus::kMoveLacrosItemsToTmpDirMoveFailed:
-    case TaskStatus::kMoveMergedItemsBackToAshCopyDirectoryFailed:
-    case TaskStatus::kMoveMergedItemsBackToAshMoveFileFailed:
-      return Result::kFailed;
-  }
 }
 
 // static
@@ -1260,6 +1234,89 @@ bool BrowserDataBackMigrator::MaybeRestartToMigrateBack(
   }
 
   return RestartToMigrateBack(account_id);
+}
+
+// static
+BrowserDataBackMigrator::Result BrowserDataBackMigrator::ToResult(
+    TaskResult result) {
+  switch (result.status) {
+    case TaskStatus::kSucceeded:
+      return Result::kSucceeded;
+    case TaskStatus::kPreMigrationCleanUpDeleteTmpDirFailed:
+    case TaskStatus::kMergeSplitItemsCreateTmpDirFailed:
+    case TaskStatus::kMergeSplitItemsCopyExtensionsFailed:
+    case TaskStatus::kMergeSplitItemsCopyExtensionStorageFailed:
+    case TaskStatus::kMergeSplitItemsCreateDirFailed:
+    case TaskStatus::kMergeSplitItemsMergeIndexedDBFailed:
+    case TaskStatus::kMergeSplitItemsMergePrefsFailed:
+    case TaskStatus::kMergeSplitItemsMergeLocalStorageLevelDBFailed:
+    case TaskStatus::kMergeSplitItemsMergeStateStoreLevelDBFailed:
+    case TaskStatus::kMergeSplitItemsMergeSyncDataFailed:
+    case TaskStatus::kDeleteAshItemsDeleteExtensionsFailed:
+    case TaskStatus::kDeleteAshItemsDeleteLacrosItemFailed:
+    case TaskStatus::kDeleteLacrosDirDeleteFailed:
+    case TaskStatus::kDeleteTmpDirDeleteFailed:
+    case TaskStatus::kMoveLacrosItemsToAshDirFailed:
+    case TaskStatus::kMoveMergedItemsBackToAshCopyDirectoryFailed:
+    case TaskStatus::kMoveMergedItemsBackToAshMoveFileFailed:
+      return Result::kFailed;
+  }
+}
+
+void BrowserDataBackMigrator::InvokeCallback(TaskResult result) {
+  RecordFinalStatus(result);
+  RecordPosixErrnoIfAvailable(result);
+  std::move(finished_callback_).Run(ToResult(result));
+}
+
+// static
+void BrowserDataBackMigrator::RecordFinalStatus(TaskResult result) {
+  base::UmaHistogramEnumeration(kFinalStatusUMA, result.status);
+}
+
+// static
+void BrowserDataBackMigrator::RecordPosixErrnoIfAvailable(TaskResult result) {
+  if (result.status == TaskStatus::kSucceeded ||
+      !result.posix_errno.has_value()) {
+    return;
+  }
+
+  const int posix_errno = result.posix_errno.value();
+  if (posix_errno == 0) {
+    return;
+  }
+
+  std::string uma_name = kPosixErrnoUMA + TaskStatusToString(result.status);
+  base::UmaHistogramSparse(uma_name, posix_errno);
+}
+
+// static
+std::string BrowserDataBackMigrator::TaskStatusToString(
+    TaskStatus task_status) {
+  switch (task_status) {
+#define MAPPING(name)       \
+  case TaskStatus::k##name: \
+    return #name
+    MAPPING(Succeeded);
+    MAPPING(PreMigrationCleanUpDeleteTmpDirFailed);
+    MAPPING(MergeSplitItemsCreateTmpDirFailed);
+    MAPPING(MergeSplitItemsCopyExtensionsFailed);
+    MAPPING(MergeSplitItemsCopyExtensionStorageFailed);
+    MAPPING(MergeSplitItemsCreateDirFailed);
+    MAPPING(MergeSplitItemsMergeIndexedDBFailed);
+    MAPPING(MergeSplitItemsMergePrefsFailed);
+    MAPPING(MergeSplitItemsMergeLocalStorageLevelDBFailed);
+    MAPPING(MergeSplitItemsMergeStateStoreLevelDBFailed);
+    MAPPING(MergeSplitItemsMergeSyncDataFailed);
+    MAPPING(DeleteAshItemsDeleteExtensionsFailed);
+    MAPPING(DeleteAshItemsDeleteLacrosItemFailed);
+    MAPPING(DeleteLacrosDirDeleteFailed);
+    MAPPING(DeleteTmpDirDeleteFailed);
+    MAPPING(MoveLacrosItemsToAshDirFailed);
+    MAPPING(MoveMergedItemsBackToAshCopyDirectoryFailed);
+    MAPPING(MoveMergedItemsBackToAshMoveFileFailed);
+#undef MAPPING
+  }
 }
 
 }  // namespace ash

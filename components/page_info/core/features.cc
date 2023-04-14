@@ -14,7 +14,7 @@ namespace page_info {
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kPageInfoStoreInfo,
              "PageInfoStoreInfo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kPageInfoAboutThisSiteImprovedBottomSheet,
              "PageInfoAboutThisSiteImprovedBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -28,11 +28,18 @@ extern bool IsAboutThisSiteFeatureEnabled(const std::string& locale) {
   }
 }
 
+BASE_FEATURE(kPageInfoAboutThisSiteNewIcon,
+             "PageInfoAboutThisSiteNewIcon",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPageInfoAboutThisSiteEn,
              "PageInfoAboutThisSiteEn",
              base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kPageInfoAboutThisSiteNonEn,
              "PageInfoAboutThisSiteNonEn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kPageInfoAboutThisSiteNonMsbb,
+             "PageInfoAboutThisSiteNonMsbb",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<bool> kShowSampleContent{&kPageInfoAboutThisSiteEn,

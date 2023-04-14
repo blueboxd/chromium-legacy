@@ -746,11 +746,6 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
                     POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
                     base::Value(container.report_boot_mode()), nullptr);
     }
-    if (container.has_report_location()) {
-      policies->Set(key::kReportDeviceLocation, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    base::Value(container.report_location()), nullptr);
-    }
     if (container.has_report_network_configuration()) {
       policies->Set(key::kReportDeviceNetworkConfiguration,
                     POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
@@ -904,6 +899,17 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
           key::kReportDeviceSignalStrengthEventDrivenTelemetry,
           POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
           base::Value(std::move(signal_strength_telemetry_list)), nullptr);
+    }
+    if (container.has_device_activity_heartbeat_enabled()) {
+      policies->Set(
+          key::kDeviceActivityHeartbeatEnabled, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          base::Value(container.device_activity_heartbeat_enabled()), nullptr);
+    }
+    if (container.has_device_activity_heartbeat_collection_rate_ms()) {
+      DecodeIntegerReportingPolicy(
+          policies, key::kDeviceActivityHeartbeatCollectionRateMs,
+          container.device_activity_heartbeat_collection_rate_ms());
     }
   }
 

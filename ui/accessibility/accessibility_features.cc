@@ -184,6 +184,15 @@ bool IsAccessibilitySelectToSpeakPageMigrationEnabled() {
       ::features::kAccessibilitySelectToSpeakPageMigration);
 }
 
+BASE_FEATURE(kAccessibilityChromeVoxPageMigration,
+             "AccessibilityChromeVoxPageMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityChromeVoxPageMigrationEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityChromeVoxPageMigration);
+}
+
 BASE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration,
              "AccessibilitySelectToSpeakPrefsMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -264,6 +273,15 @@ bool IsComputeAXModeEnabled() {
   return base::FeatureList::IsEnabled(::features::kComputeAXMode);
 }
 
+BASE_FEATURE(kAccessibilityFormControlsMode,
+             "AccessibilityFormControlsAXMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityFormControlsAXModeEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityFormControlsMode);
+}
+
 BASE_FEATURE(kOptimizeAccessibilityUiThreadWork,
              "OptimizeAccessibilityUiThreadWork",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -324,15 +342,6 @@ BASE_FEATURE(kAccessibilityService,
 
 bool IsAccessibilityServiceEnabled() {
   return base::FeatureList::IsEnabled(::features::kAccessibilityService);
-}
-
-BASE_FEATURE(kChromeVoxQ1FastTrackFeatures,
-             "ChromeVoxQ1FastTrackFeatures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsChromeVoxQ1FastTrackFeaturesEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kChromeVoxQ1FastTrackFeatures);
 }
 
 #endif  // !BUILDFLAG(IS_ANDROID)

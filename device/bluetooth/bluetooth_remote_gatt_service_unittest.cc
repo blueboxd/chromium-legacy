@@ -26,9 +26,27 @@
 
 namespace device {
 
-class BluetoothRemoteGattServiceTest : public BluetoothTest {};
+class BluetoothRemoteGattServiceTest :
 #if BUILDFLAG(IS_WIN)
-class BluetoothRemoteGattServiceTestWinrt : public BluetoothTestWinrt {};
+    public BluetoothTestWinrt {
+#else
+    public BluetoothTest {
+#endif
+ public:
+  void SetUp() override {
+#if BUILDFLAG(IS_WIN)
+    BluetoothTestWinrt::SetUp();
+#else
+    BluetoothTest::SetUp();
+#endif
+    if (!PlatformSupportsLowEnergy()) {
+      GTEST_SKIP() << "Bluetooth Low Energy unavailable.";
+    }
+  }
+};
+
+#if BUILDFLAG(IS_WIN)
+using BluetoothRemoteGattServiceTestWinrt = BluetoothRemoteGattServiceTest;
 #endif
 
 // Android is excluded because it fires a single discovery event per device.
@@ -42,10 +60,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, IsDiscoveryComplete) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_IsDiscoveryComplete) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(1);
@@ -71,10 +85,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, GetIdentifier) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetIdentifier) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   // 2 devices to verify unique IDs across them.
@@ -122,10 +132,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, GetUUID) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -157,10 +163,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, GetCharacteristics_FindNone) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetCharacteristics_FindNone) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -192,10 +194,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt,
 TEST_F(BluetoothRemoteGattServiceTest,
        MAYBE_GetCharacteristics_and_GetCharacteristic) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -253,10 +251,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, GetCharacteristicsByUUID) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetCharacteristicsByUUID) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -312,7 +306,7 @@ TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetCharacteristicsByUUID) {
           .empty());
 }
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_MAC)
 #define MAYBE_GattCharacteristics_ObserversCalls \
   GattCharacteristics_ObserversCalls
 #else
@@ -322,10 +316,6 @@ TEST_F(BluetoothRemoteGattServiceTest, MAYBE_GetCharacteristicsByUUID) {
 // The GattServicesRemoved event is not implemented for WinRT.
 TEST_F(BluetoothRemoteGattServiceTest,
        MAYBE_GattCharacteristics_ObserversCalls) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -388,10 +378,6 @@ TEST_P(BluetoothRemoteGattServiceTestWinrt, SimulateGattServiceRemove) {
 #else
 TEST_F(BluetoothRemoteGattServiceTest, MAYBE_SimulateGattServiceRemove) {
 #endif
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -415,12 +401,7 @@ TEST_F(BluetoothRemoteGattServiceTest, MAYBE_SimulateGattServiceRemove) {
   std::string removed_service = service1->GetIdentifier();
   SimulateGattServiceRemoved(device->GetGattService(removed_service));
   base::RunLoop().RunUntilIdle();
-#if BUILDFLAG(IS_WIN)
-  if (!UsesNewBleImplementation()) {
-    // The GattServicesRemoved event is not implemented for WinRT.
-    EXPECT_EQ(1, observer.gatt_service_removed_count());
-  }
-#endif  // BUILDFLAG(IS_WIN)
+
   EXPECT_EQ(1u, device->GetGattServices().size());
   EXPECT_FALSE(device->GetGattService(removed_service));
   EXPECT_EQ(device->GetGattServices()[0], service2);
@@ -435,10 +416,6 @@ TEST_F(BluetoothRemoteGattServiceTest, MAYBE_SimulateGattServiceRemove) {
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothRemoteGattServiceTest,
        SimulateDeviceModificationWhileDiscoveringCharacteristics) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -501,10 +478,6 @@ TEST_F(BluetoothRemoteGattServiceTest,
 // Android: This test doesn't apply to Android because there is no services
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverServicesCall) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -552,10 +525,6 @@ TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverServicesCall) {
 // Android: This test doesn't apply to Android because there is no services
 // changed event that could arrive during a discovery procedure.
 TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverCharacteristicsCall) {
-  if (!PlatformSupportsLowEnergy()) {
-    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
-    return;
-  }
   InitWithFakeAdapter();
   StartLowEnergyDiscoverySession();
   BluetoothDevice* device = SimulateLowEnergyDevice(3);
@@ -600,7 +569,7 @@ TEST_F(BluetoothRemoteGattServiceTest, ExtraDidDiscoverCharacteristicsCall) {
 #if BUILDFLAG(IS_WIN)
 INSTANTIATE_TEST_SUITE_P(All,
                          BluetoothRemoteGattServiceTestWinrt,
-                         ::testing::ValuesIn(kBluetoothTestWinrtParamAll));
+                         ::testing::ValuesIn(kBluetoothTestWinrtParam));
 #endif  // BUILDFLAG(IS_WIN)
 
 }  // namespace device

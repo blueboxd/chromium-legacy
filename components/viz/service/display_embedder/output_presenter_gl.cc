@@ -104,7 +104,7 @@ gl::OverlayImage PresenterImageGL::GetOverlayImage(
   }
 #if BUILDFLAG(IS_OZONE)
   return scoped_overlay_read_access_->GetNativePixmap();
-#elif BUILDFLAG(IS_MAC)
+#elif BUILDFLAG(IS_APPLE)
   return scoped_overlay_read_access_->GetIOSurface();
 #elif BUILDFLAG(IS_ANDROID)
   return scoped_overlay_read_access_->GetAHardwareBufferFenceSync();
@@ -249,7 +249,7 @@ void OutputPresenterGL::PostSubBuffer(
     SwapCompletionCallback completion_callback,
     BufferPresentedCallback presentation_callback,
     gfx::FrameData data) {
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
   presenter_->SetCALayerErrorCode(ca_layer_error_code_);
 #endif
 
@@ -312,8 +312,8 @@ void OutputPresenterGL::ScheduleOverlayPlane(
     ScopedOverlayAccess* access,
     std::unique_ptr<gfx::GpuFence> acquire_fence) {
   // Note that |overlay_plane_candidate| has different types on different
-  // platforms. On Android and Ozone it is an OverlayCandidate, on Windows it is
-  // a DCLayerOverlayCandidate, and on macOS it is a CALayeroverlay.
+  // platforms. On Android, Ozone, and Windows, it is an OverlayCandidate and on
+  // macOS it is a CALayeroverlay.
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_OZONE)
 #if BUILDFLAG(IS_OZONE)
   // TODO(crbug.com/1366808): Add ScopedOverlayAccess::GetOverlayImage() that
@@ -404,7 +404,7 @@ void OutputPresenterGL::SetVSyncDisplayID(int64_t display_id) {
   presenter_->SetVSyncDisplayID(display_id);
 }
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_APPLE)
 void OutputPresenterGL::SetCALayerErrorCode(
     gfx::CALayerResult ca_layer_error_code) {
   ca_layer_error_code_ = ca_layer_error_code;

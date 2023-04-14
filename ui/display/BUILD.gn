@@ -78,8 +78,6 @@ component("display") {
       "win/screen_win.h",
       "win/screen_win_display.cc",
       "win/screen_win_display.h",
-      "win/topmost_window_finder_win.cc",
-      "win/topmost_window_finder_win.h",
       "win/uwp_text_scale_factor.cc",
       "win/uwp_text_scale_factor.h",
     ]
@@ -112,6 +110,8 @@ component("display") {
     # Don't conflict with Windows' "display.dll".
     output_name = "ui_display"
     deps += [ "//ui/gfx/mojom:dxgi_info" ]
+    libs = [ "shcore.lib" ]
+    ldflags = [ "/DELAYLOAD:shcore.dll" ]
   }
 
   if (use_aura) {
@@ -264,6 +264,7 @@ test("display_unittests") {
       "fake/fake_display_snapshot_unittest.cc",
       "manager/apply_content_protection_task_unittest.cc",
       "manager/configure_displays_task_unittest.cc",
+      "manager/content_protection_key_manager_unittest.cc",
       "manager/content_protection_manager_unittest.cc",
       "manager/display_change_observer_unittest.cc",
       "manager/display_configurator_unittest.cc",

@@ -44,6 +44,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -226,7 +227,7 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
   quad->SetNew(shared_quad_state, quad_rect, quad_rect, SkColors::kTransparent,
                false);
   ValidateQuadResources(quad);
-  current_quad_ = quad;
+  placeholder_quad_ = quad;
 }
 
 void HeadsUpDisplayLayerImpl::UpdateHudTexture(
@@ -235,8 +236,15 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     viz::ClientResourceProvider* resource_provider,
     bool gpu_raster,
     const viz::CompositorRenderPassList& list) {
-  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
+  viz::DrawQuad* hud_quad = placeholder_quad_;
+  // The `placeholder_quad_` is only valid for the currently drawing RenderPass,
+  // and we need to get a new pointer for the next frame. It would become
+  // dangling after drawing completes.
+  placeholder_quad_ = nullptr;
+
+  if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     return;
+  }
 
   // Update state that will be drawn.
   UpdateHudContents();
@@ -280,8 +288,9 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
                            ? raster_context_provider->ContextCapabilities()
                            : context_provider->ContextCapabilities();
     viz::ResourceFormat format =
-        gpu_raster ? viz::PlatformColor::BestSupportedRenderBufferFormat(caps)
-                   : viz::PlatformColor::BestSupportedTextureFormat(caps);
+        gpu_raster
+            ? viz::PlatformColor::BestSupportedRenderBufferResourceFormat(caps)
+            : viz::PlatformColor::BestSupportedTextureResourceFormat(caps);
     pool_resource = pool_->AcquireResource(internal_content_bounds_, format,
                                            gfx::ColorSpace());
 
@@ -306,9 +315,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       if (backing->overlay_candidate)
         flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
       backing->mailbox = sii->CreateSharedImage(
-          pool_resource.format(), pool_resource.size(),
-          pool_resource.color_space(), kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, flags, gpu::kNullSurfaceHandle);
+          viz::SharedImageFormat::SinglePlane(pool_resource.format()),
+          pool_resource.size(), pool_resource.color_space(),
+          kTopLeft_GrSurfaceOrigin, kPremul_SkAlphaType, flags,
+          gpu::kNullSurfaceHandle);
       if (gpu_raster) {
         auto* ri = raster_context_provider->RasterInterface();
         ri->WaitSyncTokenCHROMIUM(sii->GenUnverifiedSyncToken().GetConstData());
@@ -463,11 +473,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
   auto& render_pass = list.back();
   for (auto it = render_pass->quad_list.begin();
        it != render_pass->quad_list.end(); ++it) {
-    if (*it == current_quad_) {
-      const viz::SharedQuadState* sqs = current_quad_->shared_quad_state;
-      gfx::Rect quad_rect = current_quad_->rect;
-      gfx::Rect visible_rect = current_quad_->visible_rect;
-      current_quad_ = nullptr;
+    if (*it == hud_quad) {
+      const viz::SharedQuadState* sqs = hud_quad->shared_quad_state;
+      gfx::Rect quad_rect = hud_quad->rect;
+      gfx::Rect visible_rect = hud_quad->visible_rect;
 
       auto* quad =
           render_pass->quad_list.ReplaceExistingElement<viz::TextureDrawQuad>(
@@ -498,10 +507,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
       break;
     }
   }
-  // If this fails, we didn't find |current_quad_| in the root RenderPass, so we
-  // didn't append it for the frame (why are we here then?), or it landed in
-  // some other RenderPass, both of which are unexpected.
-  DCHECK(!current_quad_);
 }
 
 void HeadsUpDisplayLayerImpl::ReleaseResources() {

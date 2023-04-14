@@ -16,7 +16,7 @@ import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -60,6 +60,12 @@ class SettingsStorageElement extends SettingsStorageElementBase {
         value: false,
       },
 
+      showDriveOfflineStorage_: {
+        type: Boolean,
+        value: loadTimeData.getBoolean('enableDriveFsBulkPinning'),
+        readonly: true,
+      },
+
       showCrostini: Boolean,
 
       isGuest_: {
@@ -90,6 +96,7 @@ class SettingsStorageElement extends SettingsStorageElementBase {
   private isGuest_: boolean;
   private route_: Route;
   private showCrostiniStorage_: boolean;
+  private showDriveOfflineStorage_: boolean;
   private showOtherUsers_: boolean;
   private sizeStat_: StorageSizeStat;
   private updateTimerId_: number;
@@ -123,6 +130,9 @@ class SettingsStorageElement extends SettingsStorageElementBase {
     this.addWebUiListener(
         'storage-apps-size-changed',
         (size: string) => this.handleAppsSizeChanged_(size));
+    this.addWebUiListener(
+        'storage-drive-offline-size-changed',
+        (size: string) => this.handleDriveOfflineSizeChanged_(size));
     this.addWebUiListener(
         'storage-crostini-size-changed',
         (size: string) => this.handleCrostiniSizeChanged_(size));
@@ -189,6 +199,14 @@ class SettingsStorageElement extends SettingsStorageElementBase {
   }
 
   /**
+   * Handler for tapping the "Offline files" item.
+   */
+  private onDriveOfflineTap_(): void {
+    // TODO(b/266631636): Offline files row should redirect users to Files
+    // settings > Drive settings.
+  }
+
+  /**
    * Handler for tapping the "Linux storage" item.
    */
   private onCrostiniTap_(): void {
@@ -244,6 +262,15 @@ class SettingsStorageElement extends SettingsStorageElementBase {
   }
 
   /**
+   * @param size Formatted string representing the size of pinned files in
+   *     Google Drive.
+   */
+  private handleDriveOfflineSizeChanged_(size: string): void {
+    this.shadowRoot!.querySelector<CrLinkRowElement>(
+                        '#driveOfflineSize')!.subLabel = size;
+  }
+
+  /**
    * @param size Formatted string representing the size of Crostini storage.
    */
   private handleCrostiniSizeChanged_(size: string): void {
@@ -290,7 +317,7 @@ class SettingsStorageElement extends SettingsStorageElementBase {
     // We update the storage usage every 5 seconds.
     if (this.updateTimerId_ === -1) {
       this.updateTimerId_ = window.setInterval(() => {
-        if (Router.getInstance().getCurrentRoute() !== routes.STORAGE) {
+        if (Router.getInstance().currentRoute !== routes.STORAGE) {
           this.stopPeriodicUpdate_();
           return;
         }

@@ -20,7 +20,6 @@
 #include "url/gurl.h"
 
 namespace network {
-class SimpleURLLoader;
 namespace mojom {
 class CookieManager;
 }  // namespace mojom
@@ -34,7 +33,6 @@ class PrefetchNetworkContext;
 class PrefetchService;
 class PrefetchServingPageMetricsContainer;
 class PrefetchStreamingURLLoader;
-class PrefetchedMainframeResponseContainer;
 class PreloadingAttempt;
 class ProxyLookupClientImpl;
 
@@ -136,11 +134,6 @@ class CONTENT_EXPORT PrefetchContainer {
       PrefetchService* prefetch_service);
   PrefetchNetworkContext* GetNetworkContext() { return network_context_.get(); }
 
-  // The URL loader used to make the network requests for this prefetch.
-  void TakeURLLoader(std::unique_ptr<network::SimpleURLLoader> loader);
-  network::SimpleURLLoader* GetLoader() { return loader_.get(); }
-  void ResetURLLoader();
-
   // The streaming URL loader used to make the network requests for this
   // prefetch, and then serve the results. Only used if
   // |PrefetchUseStreamingURLLoader| is true.
@@ -185,16 +178,6 @@ class CONTENT_EXPORT PrefetchContainer {
   // non-null result.
   void OnPrefetchedResponseHeadReceived();
 
-  // |this| takes ownership of the given |prefetched_response|.
-  void TakePrefetchedResponse(
-      std::unique_ptr<PrefetchedMainframeResponseContainer>
-          prefetched_response);
-
-  // Releases ownership of |prefetched_response_| from |this| and gives it to
-  // the caller.
-  std::unique_ptr<PrefetchedMainframeResponseContainer>
-  ReleasePrefetchedResponse();
-
   // Returns the head of the prefetched response. If there is no valid response,
   // then returns null.
   const network::mojom::URLResponseHead* GetHead();
@@ -232,6 +215,7 @@ class CONTENT_EXPORT PrefetchContainer {
   }
 
   bool HasPreloadingAttempt() { return !!attempt_; }
+  base::WeakPtr<PreloadingAttempt> preloading_attempt() { return attempt_; }
 
   // Simulates a prefetch container that reaches the interceptor. It sets the
   // `attempt_` to the correct state: `PreloadingEligibility::kEligible`,
@@ -293,15 +277,9 @@ class CONTENT_EXPORT PrefetchContainer {
   // The network context used to prefetch |url_|.
   std::unique_ptr<PrefetchNetworkContext> network_context_;
 
-  // The URL loader used to prefetch |url_|.
-  std::unique_ptr<network::SimpleURLLoader> loader_;
-
   // The streaming URL loader used to prefetch and serve |url_|. Only used if
   // |PrefetchUseStreamingURLLoader| is true.
   std::unique_ptr<PrefetchStreamingURLLoader> streaming_loader_;
-
-  // The prefetched response for |url_|.
-  std::unique_ptr<PrefetchedMainframeResponseContainer> prefetched_response_;
 
   // The time at which |prefetched_response_| was received. This is used to
   // determine whether or not |prefetched_response_| is stale.

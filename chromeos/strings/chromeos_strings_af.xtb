@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">"Dateer fermware op vir eksterne toestelle"-venster is oop. <ph name="NUM_UPDATES" /> opdaterings beskikbaar.</translation>
 <translation id="1145516343487477149">Soek hulpartkels en antwoorde op algemene Chromebook-vrae</translation>
+<translation id="1167755866710282443">Maak kieslys oop om sleutels te pasmaak. Sleep kieslys om te skuif.</translation>
 <translation id="1175697296044146566">Hierdie <ph name="DEVICE_TYPE" /> word bestuur deur <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Gemiddeld (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Verwyder</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Kies album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-raakpaneel</translation>
 <translation id="4117637339509843559">Donkermodus</translation>
+<translation id="4130035430755296270">Hou oor kieslys vir nog uitlegopsies</translation>
 <translation id="4131410914670010031">Swart en wit</translation>
 <translation id="4145784616224233563">HTTP-brandmuur</translation>
 <translation id="4147897805161313378">Google Foto's</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS-resolusie</translation>
 <translation id="4848429997038228357">LOOP TANS</translation>
 <translation id="4854586501323951986">Ingeboude raakskerm</translation>
+<translation id="4855250849489639581">Swiep af vir meer uitlegopsies</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} poging oor}other{<ph name="ERROR_MESSAGE" /> {0} pogings oor}}</translation>
 <translation id="4873827928179867585">Stawingalgoritme</translation>
 <translation id="4880328057631981605">Toegangspuntnaam</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Verhoog skermhelderheid</translation>
 <translation id="57838592816432529">Demp</translation>
 <translation id="5784136236926853061">Hoë HTTP-traagheid</translation>
+<translation id="5826644637650799838">Meer oor die kuns</translation>
 <translation id="5832805196449965646">Voeg persoon by</translation>
 <translation id="583281660410589416">Onbekend</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 prent</translation>
 <translation id="7177485034254901881">Hierdie <ph name="DEVICE_TYPE" /> word bestuur deur <ph name="MANAGER" />. Administrateurs kan die toestel oor 'n afstand opstel.</translation>
 <translation id="7180611975245234373">Herlaai</translation>
+<translation id="7180865173735832675">Pasmaak</translation>
 <translation id="7212734716605298123">Fermware-opdaterings vir eksterne toestelle</translation>
 <translation id="7216409898977639127">Sellulêre diensverskaffer</translation>
 <translation id="725133483556299729">Kies e-posadres</translation>

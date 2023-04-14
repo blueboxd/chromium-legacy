@@ -166,6 +166,12 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
   return true;
 }
 
+Browser::ValueSpecified GetOriginSpecified(const NavigateParams& params) {
+  return params.window_features.has_x && params.window_features.has_y
+             ? Browser::ValueSpecified::kSpecified
+             : Browser::ValueSpecified::kUnspecified;
+}
+
 // Returns a Browser and tab index. The browser can host the navigation or
 // tab addition specified in |params|.  This might just return the same
 // Browser specified in |params|, or some other if that Browser is deemed
@@ -207,10 +213,13 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser* browser = nullptr;
         if (Browser::GetCreationStatusForProfile(profile) ==
             Browser::CreationStatus::kOk) {
-          browser = Browser::Create(Browser::CreateParams::CreateForApp(
-              app_name,
-              true,  // trusted_source. Installed PWAs are considered trusted.
-              params.window_bounds, profile, params.user_gesture));
+          // Installed PWAs are considered trusted.
+          Browser::CreateParams browser_params =
+              Browser::CreateParams::CreateForApp(
+                  app_name, /*trusted_source=*/true,
+                  params.window_features.bounds, profile, params.user_gesture);
+          browser_params.initial_origin_specified = GetOriginSpecified(params);
+          browser = Browser::Create(browser_params);
         }
         return {browser, -1};
       }
@@ -272,23 +281,31 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser::CreateParams browser_params(Browser::TYPE_PICTURE_IN_PICTURE,
                                              profile, params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
-        if (params.contents_to_insert) {
-          auto pip_options =
-              params.contents_to_insert->GetPictureInPictureOptions();
-          if (!pip_options.has_value()) {
-            return {nullptr, -1};
-          }
-          browser_params.initial_bounds = PictureInPictureWindowManager::
-              CalculateInitialPictureInPictureWindowBounds(
-                  *pip_options,
-                  display::Screen::GetScreen()->GetDisplayForNewWindows());
-          browser_params.initial_aspect_ratio =
-              pip_options->initial_aspect_ratio > 0.0
-                  ? pip_options->initial_aspect_ratio
-                  : 1.0;
-          browser_params.lock_aspect_ratio = pip_options->lock_aspect_ratio;
-          browser_params.omit_from_session_restore = true;
+        DCHECK(params.contents_to_insert);
+        auto pip_options =
+            params.contents_to_insert->GetPictureInPictureOptions();
+        if (!pip_options.has_value()) {
+          return {nullptr, -1};
         }
+
+        const BrowserWindow* const browser_window = params.browser->window();
+        const gfx::NativeWindow native_window =
+            browser_window ? browser_window->GetNativeWindow()
+                           : gfx::kNullNativeWindow;
+        const display::Screen* const screen = display::Screen::GetScreen();
+        const display::Display display =
+            browser_window ? screen->GetDisplayNearestWindow(native_window)
+                           : screen->GetDisplayForNewWindows();
+
+        browser_params.initial_bounds = PictureInPictureWindowManager::
+            CalculateInitialPictureInPictureWindowBounds(*pip_options, display);
+
+        browser_params.initial_aspect_ratio =
+            pip_options->initial_aspect_ratio > 0.0
+                ? pip_options->initial_aspect_ratio
+                : 1.0;
+        browser_params.lock_aspect_ratio = pip_options->lock_aspect_ratio;
+        browser_params.omit_from_session_restore = true;
 
         return {Browser::Create(browser_params), -1};
       }
@@ -315,13 +332,16 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
         Browser::CreateParams browser_params(Browser::TYPE_POPUP, profile,
                                              params.user_gesture);
         browser_params.trusted_source = params.trusted_source;
-        browser_params.initial_bounds = params.window_bounds;
+        browser_params.initial_bounds = params.window_features.bounds;
+        browser_params.initial_origin_specified = GetOriginSpecified(params);
         return {Browser::Create(browser_params), -1};
       }
-      return {Browser::Create(Browser::CreateParams::CreateForAppPopup(
-                  app_name, params.trusted_source, params.window_bounds,
-                  profile, params.user_gesture)),
-              -1};
+      Browser::CreateParams browser_params =
+          Browser::CreateParams::CreateForAppPopup(
+              app_name, params.trusted_source, params.window_features.bounds,
+              profile, params.user_gesture);
+      browser_params.initial_origin_specified = GetOriginSpecified(params);
+      return {Browser::Create(browser_params), -1};
     }
     case WindowOpenDisposition::NEW_WINDOW: {
       // Make a new normal browser window.

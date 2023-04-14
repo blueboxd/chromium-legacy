@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">La finestra d'actualització de microprogramari per a dispositius externs està oberta. <ph name="NUM_UPDATES" /> actualitzacions disponibles.</translation>
 <translation id="1145516343487477149">Troba articles d'ajuda i respostes a preguntes habituals sobre Chromebook</translation>
+<translation id="1167755866710282443">Obre el menú per personalitzar les claus. Arrossega el menú per moure'l.</translation>
 <translation id="1175697296044146566">Aquest dispositiu <ph name="DEVICE_TYPE" /> està gestionat per <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Normal (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Selecciona l'àlbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Ratolí tàctil USB</translation>
 <translation id="4117637339509843559">Mode fosc</translation>
+<translation id="4130035430755296270">Mantén el cursor a sobre per veure més opcions de disseny</translation>
 <translation id="4131410914670010031">Blanc i negre</translation>
 <translation id="4145784616224233563">Tallafoc HTTP</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Resolució de DNS</translation>
 <translation id="4848429997038228357">EN EXECUCIÓ</translation>
 <translation id="4854586501323951986">Pantalla tàctil integrada</translation>
+<translation id="4855250849489639581">Llisca cap avall per veure més opcions de disseny</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Queda {0} intent.}other{<ph name="ERROR_MESSAGE" /> Queden {0} intents.}}</translation>
 <translation id="4873827928179867585">Algoritme d'autenticació</translation>
 <translation id="4880328057631981605">Nom del punt d'accés</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 imatge</translation>
 <translation id="7177485034254901881">Aquest dispositiu <ph name="DEVICE_TYPE" /> està gestionat per <ph name="MANAGER" />. És possible que els administradors el configurin de manera remota.</translation>
 <translation id="7180611975245234373">Actualitza</translation>
+<translation id="7180865173735832675">Personalitza</translation>
 <translation id="7212734716605298123">Actualitzacions de microprogramari per a dispositius externs</translation>
 <translation id="7216409898977639127">Proveïdor de dades mòbils</translation>
 <translation id="725133483556299729">Selecciona una adreça electrònica</translation>

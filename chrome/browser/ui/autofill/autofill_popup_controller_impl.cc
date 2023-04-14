@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/accessibility_state_utils.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
@@ -38,7 +39,6 @@
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/views/accessibility/view_accessibility.h"
 
@@ -51,6 +51,17 @@ using FillingSource = ManualFillingController::FillingSource;
 using base::WeakPtr;
 
 namespace autofill {
+
+namespace {
+
+// Returns true if the given id refers to an element that can be accepted.
+bool CanAccept(int id) {
+  return id != POPUP_ITEM_ID_SEPARATOR &&
+         id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
+         id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE && id != POPUP_ITEM_ID_TITLE;
+}
+
+}  // namespace
 
 #if !BUILDFLAG(IS_MAC)
 // static
@@ -96,18 +107,16 @@ AutofillPopupControllerImpl::AutofillPopupControllerImpl(
 AutofillPopupControllerImpl::~AutofillPopupControllerImpl() = default;
 
 void AutofillPopupControllerImpl::Show(
-    const std::vector<Suggestion>& suggestions,
+    std::vector<Suggestion> suggestions,
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
-  SetValues(suggestions);
+  SetSuggestions(std::move(suggestions));
 
   if (view_) {
-    if (selected_line_ && *selected_line_ >= GetLineCount())
-      selected_line_.reset();
     OnSuggestionsChanged();
   } else {
     view_ = AutofillPopupView::Create(GetWeakPtr());
@@ -123,17 +132,17 @@ void AutofillPopupControllerImpl::Show(
 #if BUILDFLAG(IS_ANDROID)
     ManualFillingController::GetOrCreate(web_contents_)
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
-                                   !suggestions.empty());
+                                   !suggestions_.empty());
 #endif
-    if (!view_.Call(&AutofillPopupView::Show))
+    if (!view_.Call(&AutofillPopupView::Show, autoselect_first_suggestion)) {
       return;
+    }
+
+    time_view_shown_ = base::TimeTicks::Now();
 
     // We only fire the event when a new popup shows. We do not fire the
     // event when suggestions changed.
     FireControlsChangedEvent(true);
-
-    if (autoselect_first_suggestion)
-      SetSelectedLine(0);
   }
 
   absl::visit(
@@ -155,7 +164,6 @@ void AutofillPopupControllerImpl::Show(
 void AutofillPopupControllerImpl::UpdateDataListValues(
     const std::vector<std::u16string>& values,
     const std::vector<std::u16string>& labels) {
-  selected_line_.reset();
   // Remove all the old data list values, which should always be at the top of
   // the list if they are present.
   while (!suggestions_.empty() &&
@@ -203,11 +211,6 @@ void AutofillPopupControllerImpl::PinView() {
   is_view_pinned_ = true;
 }
 
-base::span<const Suggestion>
-AutofillPopupControllerImpl::GetUnelidedSuggestions() const {
-  return base::span<const Suggestion>(suggestions_);
-}
-
 void AutofillPopupControllerImpl::Hide(PopupHidingReason reason) {
   // If the reason for hiding is only stale data or a user interacting with
   // native Chrome UI (kFocusChanged/kEndEditing), the popup might be kept open.
@@ -240,48 +243,16 @@ void AutofillPopupControllerImpl::ViewDestroyed() {
 
 bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
-  bool has_shift_modifier =
-      (event.GetModifiers() & blink::WebInputEvent::kShiftKey);
-  bool has_non_shift_key_modifier =
-      (event.GetModifiers() & blink::WebInputEvent::kKeyModifiers &
-       ~blink::WebInputEvent::kShiftKey);
+  // If there is a view, give it the opportunity to handle key press events
+  // first.
+  if (view_.Call(&AutofillPopupView::HandleKeyPressEvent, event)
+          .value_or(false)) {
+    return true;
+  }
   switch (event.windows_key_code) {
-    case ui::VKEY_UP:
-      SelectPreviousLine();
-      return true;
-    case ui::VKEY_DOWN:
-      SelectNextLine();
-      return true;
-    case ui::VKEY_PRIOR:  // Page up.
-      // Set no line and then select the next line in case the first line is not
-      // selectable.
-      SetSelectedLine(absl::nullopt);
-      SelectNextLine();
-      return true;
-    case ui::VKEY_NEXT:  // Page down.
-      SetSelectedLine(GetLineCount() - 1);
-      return true;
     case ui::VKEY_ESCAPE:
       Hide(PopupHidingReason::kUserAborted);
       return true;
-    case ui::VKEY_DELETE:
-      return has_shift_modifier && RemoveSelectedLine();
-    case ui::VKEY_TAB:
-      // We want TAB or Shift+TAB press to cause the selected line to be
-      // accepted, but still return false so the tab key press propagates and
-      // change the cursor location.
-      // We don't want to handle Mod+TAB for other modifiers because this may
-      // have other purposes (e.g., change the tab).
-      // Also want tab to only trigger selecting the line for events that fill
-      // a text field.
-      if (!has_non_shift_key_modifier && selected_line_ &&
-          CanAcceptForTabKeyPressEvent(
-              suggestions_[*selected_line_].frontend_id)) {
-        AcceptSelectedLine();
-      }
-      return false;
-    case ui::VKEY_RETURN:
-      return AcceptSelectedLine();
     default:
       return false;
   }
@@ -300,11 +271,9 @@ void AutofillPopupControllerImpl::OnSuggestionsChanged() {
   std::ignore = view_.Call(&AutofillPopupView::OnSuggestionsChanged);
 }
 
-void AutofillPopupControllerImpl::SelectionCleared() {
-  SetSelectedLine(absl::nullopt);
-}
-
-void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
+void AutofillPopupControllerImpl::AcceptSuggestion(
+    int index,
+    base::TimeDelta show_threshold) {
   if (static_cast<size_t>(index) >= suggestions_.size()) {
     // Prevents crashes from crbug.com/521133. It seems that in rare cases or
     // races the suggestions_ and the user-selected index may be out of sync.
@@ -312,12 +281,23 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
     // ignoring the selection and wait for another signal from the user.
     return;
   }
+
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
-  const Suggestion& suggestion = suggestions_[index];
+  // Ignore clicks immediately after the popup was shown. This is to prevent
+  // users accidentally accepting suggestions (crbug.com/1279268).
+  DCHECK(!time_view_shown_.is_null());
+  if ((base::TimeTicks::Now() - time_view_shown_ < show_threshold)) {
+    return;
+  }
+
+  // Use a copy instead of a reference here. Under certain circumstances,
+  // `DidAcceptSuggestion()` can call `SetSuggestions()` and invalidate the
+  // reference.
+  Suggestion suggestion = suggestions_[index];
 #if BUILDFLAG(IS_ANDROID)
   auto mf_controller = ManualFillingController::GetOrCreate(web_contents_);
   // Accepting a suggestion should hide all suggestions. To prevent them from
@@ -419,8 +399,6 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   // Remove the deleted element.
   suggestions_.erase(suggestions_.begin() + list_index);
 
-  selected_line_.reset();
-
   if (HasSuggestions()) {
     delegate_->ClearPreviewedForm();
     OnSuggestionsChanged();
@@ -431,44 +409,22 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   return true;
 }
 
-absl::optional<int> AutofillPopupControllerImpl::selected_line() const {
-  return selected_line_;
-}
-
-PopupType AutofillPopupControllerImpl::GetPopupType() const {
-  return delegate_->GetPopupType();
-}
-
-void AutofillPopupControllerImpl::SetSelectedLine(
-    absl::optional<int> selected_line) {
+void AutofillPopupControllerImpl::SelectSuggestion(
+    absl::optional<size_t> index) {
   if (IsMouseLocked()) {
     Hide(PopupHidingReason::kMouseLocked);
     return;
   }
 
-  if (selected_line_ == selected_line)
-    return;
-
-  // Prevent the race condition, when the view is supposed to be hidden but the
-  // line is selected via the popup and thus there is a call to
-  // `SetSelectedLine`. See crbug.com/1358647 for details on how this can
-  // happen.
-  if (!view_)
-    return;
-
-  if (selected_line) {
-    DCHECK_LT(*selected_line, GetLineCount());
-    if (!CanAccept(suggestions_[*selected_line].frontend_id))
-      selected_line = absl::nullopt;
+  if (index) {
+    DCHECK_LT(*index, suggestions_.size());
+    if (!CanAccept(GetSuggestionAt(*index).frontend_id)) {
+      index = absl::nullopt;
+    }
   }
 
-  absl::optional<int> previous_selected_line = selected_line_;
-  selected_line_ = selected_line;
-  std::ignore = view_.Call(&AutofillPopupView::OnSelectedRowChanged,
-                           previous_selected_line, selected_line_);
-
-  if (selected_line_) {
-    const Suggestion& suggestion = suggestions_[*selected_line_];
+  if (index) {
+    const Suggestion& suggestion = GetSuggestionAt(*index);
     delegate_->DidSelectSuggestion(
         suggestion.main_text.value, suggestion.frontend_id,
         suggestion.GetPayload<Suggestion::BackendId>());
@@ -477,97 +433,38 @@ void AutofillPopupControllerImpl::SetSelectedLine(
   }
 }
 
-void AutofillPopupControllerImpl::SelectNextLine() {
-  int new_selected_line = selected_line_ ? *selected_line_ + 1 : 0;
-
-  // Skip over any lines that can't be selected.
-  while (new_selected_line < GetLineCount() &&
-         !CanAccept(suggestions_[new_selected_line].frontend_id)) {
-    ++new_selected_line;
-  }
-
-  if (new_selected_line >= GetLineCount())
-    new_selected_line = 0;
-
-  SetSelectedLine(new_selected_line);
+PopupType AutofillPopupControllerImpl::GetPopupType() const {
+  return delegate_->GetPopupType();
 }
 
-void AutofillPopupControllerImpl::SelectPreviousLine() {
-  int new_selected_line = selected_line_.value_or(0) - 1;
-
-  // Skip over any lines that can't be selected.
-  while (new_selected_line >= 0 &&
-         !CanAccept(GetSuggestionAt(new_selected_line).frontend_id)) {
-    --new_selected_line;
-  }
-
-  if (new_selected_line < 0)
-    new_selected_line = GetLineCount() - 1;
-
-  SetSelectedLine(new_selected_line);
-}
-
-bool AutofillPopupControllerImpl::RemoveSelectedLine() {
-  if (!selected_line_)
+bool AutofillPopupControllerImpl::HasSuggestions() const {
+  if (suggestions_.empty()) {
     return false;
-
-  DCHECK_LT(*selected_line_, GetLineCount());
-  return RemoveSuggestion(*selected_line_);
-}
-
-bool AutofillPopupControllerImpl::CanAccept(int id) {
-  return id != POPUP_ITEM_ID_SEPARATOR &&
-         id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
-         id != POPUP_ITEM_ID_MIXED_FORM_MESSAGE && id != POPUP_ITEM_ID_TITLE;
-}
-
-bool AutofillPopupControllerImpl::CanAcceptForTabKeyPressEvent(int id) {
-  // Only items that fill a field when selected are eligible for acceptance
-  // via the tab key.
-  return id > 0 || base::Contains(kItemsTriggeringFieldFilling, id);
-}
-
-bool AutofillPopupControllerImpl::HasSuggestions() {
-  if (suggestions_.empty())
-    return false;
+  }
   int id = suggestions_[0].frontend_id;
   return id > 0 || base::Contains(kItemsTriggeringFieldFilling, id) ||
          id == POPUP_ITEM_ID_SCAN_CREDIT_CARD;
 }
 
-void AutofillPopupControllerImpl::SetValues(
-    const std::vector<Suggestion>& suggestions) {
-  suggestions_ = suggestions;
+void AutofillPopupControllerImpl::SetSuggestions(
+    std::vector<Suggestion> suggestions) {
+  suggestions_ = std::move(suggestions);
 }
 
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool AutofillPopupControllerImpl::AcceptSelectedLine() {
-  if (!selected_line_)
-    return false;
-
-  DCHECK_LT(*selected_line_, GetLineCount());
-
-  if (!CanAccept(suggestions_[*selected_line_].frontend_id))
-    return false;
-
-  AcceptSuggestion(*selected_line_);
-  return true;
-}
-
 void AutofillPopupControllerImpl::ClearState() {
-  // Don't clear view_, because otherwise the popup will have to get regenerated
-  // and this will cause flickering.
+  // Don't clear view_, because otherwise the popup will have to get
+  // regenerated and this will cause flickering.
   suggestions_.clear();
-
-  selected_line_.reset();
 }
 
 void AutofillPopupControllerImpl::HideViewAndDie() {
   // Invalidates in particular ChromeAutofillClient's WeakPtr to |this|, which
-  // prevents recursive calls triggered by `view_->Hide()` (crbug.com/1267047).
+  // prevents recursive calls triggered by `view_->Hide()`
+  // (crbug.com/1267047).
   weak_ptr_factory_.InvalidateWeakPtrs();
 
 #if BUILDFLAG(IS_ANDROID)
@@ -625,6 +522,11 @@ AutofillPopupControllerImpl::GetDriver() {
     return static_cast<ContentPasswordManagerDriver*>(
         absl::get<PasswordManagerDriver*>(driver));
   }
+}
+
+void AutofillPopupControllerImpl::SetViewForTesting(AutofillPopupView* view) {
+  view_ = view;
+  time_view_shown_ = base::TimeTicks::Now();
 }
 
 void AutofillPopupControllerImpl::FireControlsChangedEvent(bool is_show) {

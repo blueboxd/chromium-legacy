@@ -37,8 +37,13 @@ Document* DOMParser::parseFromString(const String& str,
                       .WithExecutionContext(window_)
                       .WithAgent(*window_->GetAgent())
                       .CreateDocument();
-  doc->setAllowDeclarativeShadowRoots(options->hasIncludeShadowRoots() &&
-                                      options->includeShadowRoots());
+  bool include_shadow_roots =
+      options->hasIncludeShadowRoots() && options->includeShadowRoots();
+  doc->setAllowDeclarativeShadowRoots(include_shadow_roots);
+  doc->CountUse(mojom::blink::WebFeature::kParseFromString);
+  if (include_shadow_roots) {
+    doc->CountUse(mojom::blink::WebFeature::kParseFromStringIncludeShadows);
+  }
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   return doc;

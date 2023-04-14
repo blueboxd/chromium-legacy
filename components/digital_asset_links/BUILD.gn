@@ -4,12 +4,12 @@
 
 source_set("digital_asset_links") {
   sources = [
-    "browser_url_loader_throttle.cc",
-    "browser_url_loader_throttle.h",
     "digital_asset_links_constants.cc",
     "digital_asset_links_constants.h",
     "digital_asset_links_handler.cc",
     "digital_asset_links_handler.h",
+    "response_header_verifier.cc",
+    "response_header_verifier.h",
   ]
 
   deps = [
@@ -23,6 +23,8 @@ source_set("digital_asset_links") {
   ]
   if (is_android) {
     sources += [
+      "browser_url_loader_throttle.cc",
+      "browser_url_loader_throttle.h",
       "origin_verifier.cc",
       "origin_verifier.h",
     ]
@@ -33,7 +35,10 @@ source_set("digital_asset_links") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = [ "digital_asset_links_handler_unittest.cc" ]
+  sources = [
+    "digital_asset_links_handler_unittest.cc",
+    "response_header_verifier_unittest.cc",
+  ]
 
   deps = [
     ":digital_asset_links",

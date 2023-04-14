@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
@@ -140,7 +141,6 @@ class ChromeUserManagerImpl
   void SetUserAffiliation(
       const AccountId& account_id,
       const AffiliationIDSet& user_affiliation_ids) override;
-  bool ShouldReportUser(const std::string& user_id) const override;
   bool IsFullManagementDisclosureNeeded(
       policy::DeviceLocalAccountPolicyBroker* broker) const override;
   void CacheRemovedUser(const std::string& user_email,
@@ -226,18 +226,21 @@ class ChromeUserManagerImpl
   // depending on user preferences.
   void UpdateUserTimeZoneRefresher(Profile* profile);
 
-  // Adds user to the list of the users who should be reported.
-  void AddReportingUser(const AccountId& account_id);
-
-  // Removes user from the list of the users who should be reported.
-  void RemoveReportingUser(const AccountId& account_id);
-
   // Creates a user for the given device local account.
   std::unique_ptr<user_manager::User> CreateUserFromDeviceLocalAccount(
       const AccountId& account_id,
       const policy::DeviceLocalAccount::Type type) const;
 
   void UpdateOwnerId();
+
+  // Remove non cryptohome data associated with the given `account_id` after
+  // having removed all external data (such as wallpapers and avatars)
+  // associated with that `account_id`, this function is guarded by a latch
+  // `remove_non_cryptohome_data_latch_` that ensures that all external data is
+  // removed prior to clearing prefs for `account_id`, as the removal of certain
+  // external data depends on prefs.
+  void RemoveNonCryptohomeDataPostExternalDataRemoval(
+      const AccountId& account_id);
 
   // Interface to the signed settings store.
   CrosSettings* cros_settings_;
@@ -287,6 +290,8 @@ class ChromeUserManagerImpl
       profile_manager_observation_{this};
 
   bool user_added_removed_reporter_intialized_ = false;
+
+  base::RepeatingClosure remove_non_cryptohome_data_barrier_;
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 };

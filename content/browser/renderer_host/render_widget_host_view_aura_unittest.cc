@@ -3231,9 +3231,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFrames) {
   // Make sure |parent_view_| is evicted to avoid interfering with the code
   // below.
   parent_view_->Hide();
-  auto* dfh = parent_view_->delegated_frame_host_.get();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(
+      parent_view_->delegated_frame_host_.get())
+      ->EvictDelegatedFrame();
 
   size_t max_renderer_frames =
       FrameEvictionManager::GetInstance()->GetMaxNumberOfSavedFrames();
@@ -3348,9 +3348,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DiscardDelegatedFramesWithMemoryPressure) {
   // Make sure |parent_view_| is evicted to avoid interfering with the code
   // below.
   parent_view_->Hide();
-  auto* dfh = parent_view_->delegated_frame_host_.get();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(
+      parent_view_->delegated_frame_host_.get())
+      ->EvictDelegatedFrame();
 
   // The test logic below relies on having max_renderer_frames > 2.  By default,
   // this value is calculated from total physical memory and causes the test to
@@ -5693,9 +5693,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AllocateLocalSurfaceIdOnEviction) {
   view_->Show();
   viz::LocalSurfaceId id1 = view_->GetLocalSurfaceId();
   view_->Hide();
-  auto* dfh = view_->delegated_frame_host_.get();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(view_->delegated_frame_host_.get())
+      ->EvictDelegatedFrame();
   view_->Show();
   viz::LocalSurfaceId id2 = view_->GetLocalSurfaceId();
   EXPECT_NE(id1, id2);
@@ -6174,7 +6173,7 @@ TEST_F(InputMethodResultAuraTest, ClearCompositionText) {
 }
 
 // This test is for ui::TextInputClient::InsertText with empty text.
-TEST_F(InputMethodResultAuraTest, FinishComposingText) {
+TEST_F(InputMethodResultAuraTest, InsertEmptyText) {
   base::RepeatingClosure ime_call = base::BindRepeating(
       &ui::TextInputClient::InsertText, base::Unretained(text_input_client()),
       std::u16string(),
@@ -6184,7 +6183,7 @@ TEST_F(InputMethodResultAuraTest, FinishComposingText) {
     SetHasCompositionTextToTrue();
     ime_call.Run();
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ("SetComposition FinishComposingText",
+    EXPECT_EQ("SetComposition CommitText",
               GetMessageNames(widget_hosts_[index]
                                   ->input_handler()
                                   ->GetAndResetDispatchedMessages()));

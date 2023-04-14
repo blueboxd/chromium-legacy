@@ -14,6 +14,7 @@ source_set("headless") {
 
   deps = [
     "//base",
+    "//chrome/common:non_code_constants",
     "//ui/gfx",
   ]
 
@@ -86,7 +87,11 @@ if (!is_android) {
         "//chrome/browser/profiles",
         "//chrome/browser/ui",
         "//components/devtools/simple_devtools_protocol_client",
+        "//components/headless/clipboard",
         "//content/public/browser",
+        "//ui/display",
+        "//ui/gfx",
+        "//ui/views",
       ]
     }
 

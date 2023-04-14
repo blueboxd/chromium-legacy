@@ -21,6 +21,7 @@
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/reading_list/core/reading_list_model.h"
 #import "components/reading_list/ios/reading_list_model_bridge_observer.h"
+#import "components/search_engines/search_terms_data.h"
 #import "components/search_engines/template_url.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -77,6 +78,7 @@
 namespace {
 
 using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
+using RequestSource = SearchTermsData::RequestSource;
 
 // Maximum number of most visited tiles fetched.
 const NSInteger kMaxNumMostVisitedTiles = 4;
@@ -205,6 +207,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   registry->RegisterInt64Pref(prefs::kIosDiscoverFeedLastRefreshTime, 0);
+  registry->RegisterInt64Pref(prefs::kIosDiscoverFeedLastUnseenRefreshTime, 0);
 }
 
 - (void)disconnect {
@@ -226,10 +229,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     [self.consumer
         showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
   }
-  if ([self.mostVisitedItems count]) {
+  if ([self.mostVisitedItems count] && !ShouldHideMostVisited()) {
     [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
   }
-  if (!ShouldHideShortcutsForTrendingQueries()) {
+  if (!ShouldHideShortcutsForTrendingQueries() && !ShouldHideShortcuts()) {
     [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
   }
   if (IsTrendingQueriesModuleEnabled()) {
@@ -476,6 +479,10 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (void)onMostVisitedURLsAvailable:
     (const ntp_tiles::NTPTilesVector&)mostVisited {
+  if (ShouldHideMostVisited()) {
+    return;
+  }
+
   // This is used by the content widget.
   content_suggestions_tile_saver::SaveMostVisitedToDisk(
       mostVisited, self.faviconMediator.mostVisitedAttributesProvider,
@@ -522,9 +529,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
+  if (ShouldHideMostVisited()) {
+    return;
+  }
   self.mostVisitedItems = self.freshMostVisitedItems;
   [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
-
   [self.feedDelegate contentSuggestionsWasUpdated];
 }
 
@@ -604,7 +613,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   // Fetch Trending Queries
   TemplateURLRef::SearchTermsArgs args;
-  args.request_source = TemplateURLRef::NON_SEARCHBOX_NTP;
+  args.request_source = RequestSource::NTP_MODULE;
   _startSuggestService->FetchSuggestions(
       args,
       base::BindOnce(&StartSuggestServiceResponseBridge::OnSuggestionsReceived,

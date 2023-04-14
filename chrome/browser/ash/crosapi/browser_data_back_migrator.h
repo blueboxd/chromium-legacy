@@ -23,6 +23,9 @@ namespace browser_data_back_migrator {
 constexpr char kTmpDir[] = "back_migrator_tmp";
 }  // namespace browser_data_back_migrator
 
+constexpr char kFinalStatusUMA[] = "Ash.BrowserDataBackMigrator.FinalStatus";
+constexpr char kPosixErrnoUMA[] = "Ash.BrowserDataBackMigrator.PosixErrno.";
+
 // Injects the restart function called from
 // `BrowserDataBackMigrator::AttemptRestart()` in RAII manner.
 class ScopedBackMigratorRestartAttemptForTesting {
@@ -89,12 +92,31 @@ class BrowserDataBackMigrator {
                            MergeCommonExtensionsDataFiles);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
                            MergeCommonIndexedDB);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
+                           MergeLocalStorageLevelDB);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
+                           MergeStateStoreLevelDB);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
+                           DeletesLacrosItemsFromAshDirCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorFilesSetupTest,
+                           MovesLacrosItemsToAshDirCorrectly);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest, RecordFinalStatus);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest,
+                           RecordPosixErrnoIfAvailable);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataBackMigratorUMATest, TaskStatusToString);
 
   // A list of all the possible results of migration, including success and all
   // failure types in each step of the migration.
   //
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
+  //
+  // When adding new cases to this enum, also update the following:
+  // - `BrowserDataBackMigrator::ToResult()`
+  // - `BrowserDataBackMigrator::TaskStatusToString()`
+  // - `BrowserDataBackMigratorUMATest.TaskStatusToString`
+  // - `Ash.BrowserDataBackMigrator.PosixErrno.{TaskStatus}` histogram
+  // - `BrowserDataBackMigratorFinalStatus` histogram enum
   enum class TaskStatus {
     kSucceeded = 0,
     kPreMigrationCleanUpDeleteTmpDirFailed = 1,
@@ -111,7 +133,7 @@ class BrowserDataBackMigrator {
     kDeleteAshItemsDeleteLacrosItemFailed = 12,
     kDeleteTmpDirDeleteFailed = 13,
     kDeleteLacrosDirDeleteFailed = 14,
-    kMoveLacrosItemsToTmpDirMoveFailed = 15,
+    kMoveLacrosItemsToAshDirFailed = 15,
     kMoveMergedItemsBackToAshMoveFileFailed = 16,
     kMoveMergedItemsBackToAshCopyDirectoryFailed = 17,
     kMaxValue = kMoveMergedItemsBackToAshCopyDirectoryFailed,
@@ -121,8 +143,8 @@ class BrowserDataBackMigrator {
     kStart = 0,
     kPreMigrationCleanUp = 1,
     kMergeSplitItems = 2,
-    kMoveLacrosItemsToTmpDir = 3,
-    kDeleteAshItems = 4,
+    kDeleteAshItems = 3,
+    kMoveLacrosItemsToAshDir = 4,
     kMoveMergedItemsBackToAsh = 5,
     kDeleteLacrosDir = 6,
     kDeleteTmpDir = 7,
@@ -163,18 +185,18 @@ class BrowserDataBackMigrator {
 
   // Deletes Ash items that will be overwritten by either Lacros items or items
   // merged in `MergeSplitItems()`. This prevents conflicts during the calls to
-  // `MoveLacrosItemsToTmpDir()` and `MoveMergedItemsBackToAsh()`.
+  // `MoveLacrosItemsToAshDir()` and `MoveMergedItemsBackToAsh()`.
   static TaskResult DeleteAshItems(const base::FilePath& ash_profile_dir);
 
   // Called as a reply to `DeleteAshItems()`.
   void OnDeleteAshItems(TaskResult result);
 
-  // Moves Lacros-only items back into the temporary directory.
-  static TaskResult MoveLacrosItemsToTmpDir(
+  // Moves Lacros-only items back into the Ash profile directory.
+  static TaskResult MoveLacrosItemsToAshDir(
       const base::FilePath& ash_profile_dir);
 
-  // Called as a reply to `MoveLacrosItemsToTmpDir()`.
-  void OnMoveLacrosItemsToTmpDir(TaskResult result);
+  // Called as a reply to `MoveLacrosItemsToAshDir()`.
+  void OnMoveLacrosItemsToAshDir(TaskResult result);
 
   // Moves the temporary directory into the Ash profile directory.
   static TaskResult MoveMergedItemsBackToAsh(
@@ -261,9 +283,6 @@ class BrowserDataBackMigrator {
                                       const base::FilePath& dest_dir,
                                       unsigned int recursion_depth);
 
-  // Transforms `TaskResult` to `Result`, which is then returned to the caller.
-  static Result ToResult(TaskResult result);
-
   // IsBackMigrationForceEnabled checks if backward migration has been force
   // enabled using the kLacrosProfileBackwardMigration flag.
   static bool IsBackMigrationForceEnabled();
@@ -279,6 +298,23 @@ class BrowserDataBackMigrator {
   // RestartToMigrateBack triggers a Chrome restart to start backward migration.
   // Called by MaybeRestartToMigrateBack.
   static bool RestartToMigrateBack(const AccountId& account_id);
+
+  // Transforms `TaskResult` to `Result`, which is then returned to the caller.
+  static Result ToResult(TaskResult result);
+
+  // Records UMA metrics and calls `finished_callback_`. This function gets
+  // called once regardless of whether the migration succeeded or not.
+  void InvokeCallback(TaskResult);
+
+  // Records the final status of the migration in `kFinalStatusUMA`.
+  static void RecordFinalStatus(TaskResult result);
+
+  // Record Ash.BrowserDataBackMigrator.PosixErrno.{result.status} UMA with the
+  // value of `result.posix_errno` if the migration failed.
+  static void RecordPosixErrnoIfAvailable(TaskResult result);
+
+  // Convert `TaskStatus` to string.
+  static std::string TaskStatusToString(TaskStatus task_status);
 
   // Path to the ash profile directory.
   const base::FilePath ash_profile_dir_;

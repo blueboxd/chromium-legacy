@@ -98,6 +98,12 @@
 // Lays out content above feed and adjusts content suggestions.
 - (void)updateNTPLayout;
 
+// Signal to the ViewController that the height about the feed needs to be
+// recalculated and thus also likely needs to be scrolled up to accommodate for
+// the new height. Nothing may happen if the ViewController determines that the
+// current scroll state should not change.
+- (void)updateHeightAboveFeedAndScrollToTopIfNeeded;
+
 // Returns whether the NTP is scrolled to the top or not.
 - (BOOL)isNTPScrolledToTop;
 
@@ -119,6 +125,9 @@
 
 // Updates the scroll position to account for the feed promo being removed.
 - (void)updateScrollPositionForFeedTopSectionClosed;
+
+// Signals that the feed has completed its updates (i.e. loading cards).
+- (void)feedLayoutDidEndUpdates;
 
 // Forces the elements that stick to the top when scrolling (eg. omnibox, feed
 // header) to update for the current scroll position.

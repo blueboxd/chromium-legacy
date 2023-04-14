@@ -42,16 +42,12 @@ source_set("omnibox_suggestion_icon_util") {
     "resources:answer_calculator",
     "resources:answer_conversion",
     "resources:answer_dictionary",
-    "resources:answer_local_time",
     "resources:answer_stock",
     "resources:answer_sunrise",
     "resources:answer_translation",
     "resources:answer_when_is",
     "resources:background_solid",
     "resources:favicon_fallback",
-    "resources:omnibox_completion_bookmark",
-    "resources:omnibox_completion_default_favicon",
-    "resources:omnibox_completion_history",
     "resources:omnibox_popup_recent_query",
     "resources:pedal_clear_browsing_data",
     "resources:pedal_default_browser",
@@ -64,6 +60,8 @@ source_set("omnibox_suggestion_icon_util") {
     "resources:pedal_settings",
     "resources:search",
     "//base",
+    "//ios/chrome/browser/ui/icons:buildflags",
+    "//ios/chrome/browser/ui/icons:symbols",
   ]
 }
 
@@ -80,10 +78,6 @@ source_set("omnibox_util") {
   ]
   deps = [
     ":omnibox_suggestion_icon_util",
-    "resources:omnibox_completion_bookmark",
-    "resources:omnibox_completion_default_favicon",
-    "resources:omnibox_completion_history",
-    "resources:search",
     "//base",
     "//components/omnibox/browser",
     "//components/security_state/core",
@@ -218,6 +212,7 @@ source_set("omnibox_internal") {
     "MobileCoreServices.framework",
     "QuartzCore.framework",
     "UIKit.framework",
+    "UniformTypeIdentifiers.framework",
   ]
 }
 

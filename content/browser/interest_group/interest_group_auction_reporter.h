@@ -15,19 +15,21 @@
 #include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/browser/fenced_frame/fenced_frame_url_mapping.h"
+#include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/interest_group_storage.h"
 #include "content/browser/interest_group/subresource_url_authorizations.h"
 #include "content/common/content_export.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
-#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom-forward.h"
+#include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
-#include "third_party/blink/public/mojom/fenced_frame/fenced_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -38,7 +40,10 @@ struct AuctionConfig;
 
 namespace content {
 
+class AttributionDataHostManager;
 class AuctionWorkletManager;
+class InterestGroupManagerImpl;
+class PrivateAggregationManager;
 
 // Handles the reporting phase of FLEDGE auctions with a winner. Loads the
 // bidder, seller, and (if present) component seller worklets and invokes
@@ -46,16 +51,51 @@ class AuctionWorkletManager;
 // them, as needed.
 class CONTENT_EXPORT InterestGroupAuctionReporter {
  public:
+  // State of the InterestGroupAuctionReporter. Used to record UMA histograms
+  // the status of a reporter when it's destroyed, to get data on when reports
+  // are dropped. Since these values are reported to a metrics server, the
+  // numeric value for each state must be preserved.
+  //
+  // Public for tests.
+  enum class ReporterState {
+    // The winning ad was never navigated to, so there was nothing to report.
+    // While reporting worklets will start running in this case, this state
+    // takes precedence in histograms over the others.
+    kAdNotUsed = 0,
+    // The top-level seller's reportResult() method is being invoked (or the
+    // reporter is waiting on a process in which to do so).
+    kSellerReportResult = 1,
+    // The component seller's reportResult() method is being invoked (or the
+    // reporter is waiting on a process in which to do so).
+    kComponentSellerReportResult = 2,
+    // The buyer's reportWin() method is being invoked (or the reporter is
+    // waiting on a process in which to do so).
+    kBuyerReportWin = 3,
+    // All needed worklet reporting methods were invoked.
+    kAllWorkletsCompleted = 4,
+    kMaxValue = kAllWorkletsCompleted
+  };
+
   using PrivateAggregationRequests =
       std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>;
+
+  // Invoked before sending private aggregation requests. Logs that requests
+  // were made.
+  using LogPrivateAggregationRequestsCallback = base::RepeatingCallback<void(
+      const std::map<
+          url::Origin,
+          std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>&
+          private_aggregation_requests)>;
 
   // Seller-specific information about the winning bid. The top-level seller and
   // (if present) component seller associated with the winning bid have separate
   // SellerWinningBidInfos.
-  struct SellerWinningBidInfo {
+  struct CONTENT_EXPORT SellerWinningBidInfo {
     SellerWinningBidInfo();
     SellerWinningBidInfo(SellerWinningBidInfo&&);
     ~SellerWinningBidInfo();
+
+    SellerWinningBidInfo& operator=(SellerWinningBidInfo&&);
 
     // AuctionConfig associated with the seller. For a component auction, this
     // is the nested AuctionConfig.
@@ -89,7 +129,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   };
 
   // Information about the winning bit that is not specific to a seller.
-  struct WinningBidInfo {
+  struct CONTENT_EXPORT WinningBidInfo {
     WinningBidInfo();
     WinningBidInfo(WinningBidInfo&&);
     ~WinningBidInfo();
@@ -106,18 +146,64 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
     base::TimeDelta bid_duration;
 
     absl::optional<uint32_t> bidding_signals_data_version;
+
+    // The metadata associated with the winning ad, to be made available to the
+    // interest group in future auctions in the `prevWins` field.
+    std::string ad_metadata;
   };
 
   // All passed in raw pointers, including those in *BidInfo fields must outlive
   // the created InterestGroupAuctionReporter.
+  //
+  // `attribution_data_host_manager` is needed to create `FencedFrameReporter`
+  // and could be null in Incognito mode or in test.
+  //
+  // `log_private_aggregation_requests_callback` will be passed all private
+  //  aggregation requests for logging purposes.
+  //
+  // `frame_origin` is the origin of the frame that ran the auction.
+  //
+  // `client_security_state` is the ClientSecurityState of the frame.
+  //
+  // `url_loader_factory` is used to send reports.
+  //
+  // `interest_groups_that_bid`, `debug_win_report_urls`,
+  // `debug_loss_report_urls`, and `k_anon_keys_to_join`,  are reported to the
+  // InterestGroupManager when/if the URL of the winning ad is navigated to in a
+  // fenced frame, which is indicated by invoking the callback returned by
+  // OnNavigateToWinningAdCallback().
+  //
+  // `private_aggregation_requests_reserved` Requests made to the Private
+  //  Aggregation API, either sendHistogram(), or reportContributionForEvent()
+  //  with reserved event type. Keyed by reporting origin of the associated
+  //  requests.
+  //
+  // `private_aggregation_requests_non_reserved` Requests made to the Private
+  //  Aggregation API reportContributionForEvent() with non-reserved event type
+  //  like "click". Keyed by event type of the associated requests.
   InterestGroupAuctionReporter(
+      InterestGroupManagerImpl* interest_group_manager,
       AuctionWorkletManager* auction_worklet_manager,
+      AttributionDataHostManager* attribution_data_host_manager,
+      PrivateAggregationManager* private_aggregation_manager,
+      LogPrivateAggregationRequestsCallback
+          log_private_aggregation_requests_callback,
       std::unique_ptr<blink::AuctionConfig> auction_config,
+      const url::Origin& main_frame_origin,
+      const url::Origin& frame_origin,
+      network::mojom::ClientSecurityStatePtr client_security_state,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       WinningBidInfo winning_bid_info,
       SellerWinningBidInfo top_level_seller_winning_bid_info,
       absl::optional<SellerWinningBidInfo> component_seller_winning_bid_info,
+      blink::InterestGroupSet interest_groups_that_bid,
+      std::vector<GURL> debug_win_report_urls,
+      std::vector<GURL> debug_loss_report_urls,
+      base::flat_set<std::string> k_anon_keys_to_join,
       std::map<url::Origin, PrivateAggregationRequests>
-          private_aggregation_requests);
+          private_aggregation_requests_reserved,
+      std::map<std::string, PrivateAggregationRequests>
+          private_aggregation_requests_non_reserved);
 
   ~InterestGroupAuctionReporter();
 
@@ -125,10 +211,16 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   InterestGroupAuctionReporter& operator=(const InterestGroupAuctionReporter&) =
       delete;
 
-  // Starts running reporting scripts. `callback` will be invoked once all
-  // reporting scripts have completed, and the callback returned by
-  // OnNavigateToWinningAdCallback() has been invoked, at which point reports
+  // Starts running reporting scripts.
+  //
+  // `callback` will be invoked once all reporting scripts have completed, and
+  // the callback returned by OnNavigateToWinningAdCallback() has been invoked,
+  // at which point reports not managed by the InterestGroupAuctionReporter
   // should be sent, and the reporter can be destroyed.
+  //
+  // TODO(https://crbug.com/1394777): Make InterestGroupAuctionReporter send all
+  // reports itself, and decouple its lifetime from the frame, so that it can
+  // continue running scripts after a frame is navigated away from.
   void Start(base::OnceClosure callback);
 
   // Returns a callback that should be invoked once a fenced frame has been
@@ -137,25 +229,46 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // until the callback this method returns has been invoked at least once.
   base::RepeatingClosure OnNavigateToWinningAdCallback();
 
-  // Accessors so the owner can pass along the results of the auction.
-  //
-  // TODO(mmenke): Remove these, and make the reporter use them itself (or maybe
-  // pass them along via a callback that can outlive the InterestGroupAuction
-  // that created it).
   const std::vector<std::string>& errors() const { return errors_; }
-  std::map<url::Origin, PrivateAggregationRequests>
-  TakePrivateAggregationRequests() {
-    return std::move(private_aggregation_requests_);
+
+  // TODO(mmenke): Remove this method, and report these directly.
+  std::map<std::string, PrivateAggregationRequests>
+  TakeNonReservedPrivateAggregationRequests() {
+    return std::move(private_aggregation_requests_non_reserved_);
   }
 
-  // Retrieves the ad beacon map. May only be called once, since it takes
-  // ownership of the stored ad beacon map.
-  ReportingMetadata TakeAdBeaconMap() { return std::move(ad_beacon_map_); }
+  // The FencedFrameReporter that `this` will pass event-level ad beacon
+  // information received from reporting worklets to, as they're received.
+  // Created by `this`. The consumer is responsible for wiring this up to a
+  // fenced frame URN mapping, so that any fenced frame the winning ad is loaded
+  // into can find it to send reports.
+  //
+  // This is refcounted, so both the InterestGroupAuctionReporter and fenced
+  // frame URN mapping can continue to access it if the other is destroyed
+  // first.
+  scoped_refptr<FencedFrameReporter> fenced_frame_reporter() {
+    return fenced_frame_reporter_.get();
+  }
 
-  // Retrieves any reporting URLs returned by ReportWin() and ReportResult()
-  // methods. May only be called after the reporter has completed. May only be
-  // called once, since it takes ownership of stored reporting URLs.
-  std::vector<GURL> TakeReportUrls() { return std::move(report_urls_); }
+  // Sends requests for the Private Aggregation API to
+  // private_aggregation_manager. The map should be keyed by reporting origin of
+  // the corresponding requests. Does nothing if `private_aggregation_requests`
+  // is empty.
+  //
+  // Only invokes `log_private_aggregation_requests_callback` if
+  // `private_aggregation_manager` is nullptr.
+  //
+  // Static so that this can be invoked when there's no winner, and a reporter
+  // isn't needed.
+  static void OnFledgePrivateAggregationRequests(
+      PrivateAggregationManager* private_aggregation_manager,
+      LogPrivateAggregationRequestsCallback
+          log_private_aggregation_requests_callback,
+      const url::Origin& main_frame_origin,
+      std::map<
+          url::Origin,
+          std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>>
+          private_aggregation_requests);
 
  private:
   // Starts request for a seller worklet. Invokes OnSellerWorkletReceived() on
@@ -227,16 +340,40 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // component auction, and for the top level auction, otherwise.
   const SellerWinningBidInfo& GetBidderAuction();
 
+  // Called each time a report script completes and has a valid report URL.
+  // Updates `pending_report_urls_` and calls SendPendingReportsIfNavigated();
+  void AddPendingReportUrl(const GURL& report_url);
+
+  // Sends all reports in `pending_report_urls_` and clears it, if
+  // OnNavigateToWinningAd() has been invoked. Called each time reports are
+  // added, and on first invocation of OnNavigateToWinningAd().
+  // Does not send reports that are populated only on construction - those are
+  // handled in OnNavigateToWinningAd(), since they never need to be sent when a
+  // reporting script completes.
+  void SendPendingReportsIfNavigated();
+
+  const raw_ptr<InterestGroupManagerImpl> interest_group_manager_;
   const raw_ptr<AuctionWorkletManager> auction_worklet_manager_;
+  const raw_ptr<PrivateAggregationManager> private_aggregation_manager_;
+
+  const LogPrivateAggregationRequestsCallback
+      log_private_aggregation_requests_callback_;
 
   // Top-level AuctionConfig. It owns the `auction_config` objects pointed at by
   // the the top-level SellerWinningBidInfo. If there's a component auction
   // SellerWinningBidInfo, it points to an AuctionConfig contained within it.
   const std::unique_ptr<blink::AuctionConfig> auction_config_;
 
+  const url::Origin main_frame_origin_;
+  const url::Origin frame_origin_;
+  const network::mojom::ClientSecurityStatePtr client_security_state_;
+  const scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
   const WinningBidInfo winning_bid_info_;
   const SellerWinningBidInfo top_level_seller_winning_bid_info_;
   const absl::optional<SellerWinningBidInfo> component_seller_winning_bid_info_;
+
+  blink::InterestGroupSet interest_groups_that_bid_;
 
   base::OnceClosure callback_;
 
@@ -251,22 +388,36 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // All errors reported by worklets thus far.
   std::vector<std::string> errors_;
 
+  // Win/loss report URLs from generateBid() and scoreAd() calls.
+  std::vector<GURL> debug_win_report_urls_;
+  std::vector<GURL> debug_loss_report_urls_;
+
+  base::flat_set<std::string> k_anon_keys_to_join_;
+
   // Stores all pending Private Aggregation API report requests until they have
   // been flushed. Keyed by the origin of the script that issued the request
   // (i.e. the reporting origin).
   std::map<url::Origin, PrivateAggregationRequests>
-      private_aggregation_requests_;
+      private_aggregation_requests_reserved_;
+  std::map<std::string, PrivateAggregationRequests>
+      private_aggregation_requests_non_reserved_;
 
-  // Ad Beacon URL mapping generated from reportResult() or reportWin() from
-  // this auction and its components. Destination is relative to this auction.
-  // Returned to `callback_` to deal with, so the Auction itself can be
-  // deleted at the end of the auction.
-  ReportingMetadata ad_beacon_map_;
+  std::vector<GURL> pending_report_urls_;
 
-  std::vector<GURL> report_urls_;
+  const scoped_refptr<FencedFrameReporter> fenced_frame_reporter_;
 
   bool reporting_complete_ = false;
   bool navigated_to_winning_ad_ = false;
+
+  // The current reporter phase of worklet invocation. This is never kAdNotUsed,
+  // but rather one of the others, depending on worklet progress. On
+  // destruction, if `navigated_to_winning_ad_` is true, this is the logged to
+  // UMA. Otherwise, kAdNotUsed is.
+  //
+  // The initial value should never be logged, as it's overwritten on Start(),
+  // which should always be invoked, and `navigated_to_winning_ad_` starts off
+  // as false, which means kAdNotUsed will take precedence, anyways.
+  ReporterState reporter_worklet_state_ = ReporterState::kAllWorkletsCompleted;
 
   base::WeakPtrFactory<InterestGroupAuctionReporter> weak_ptr_factory_{this};
 };

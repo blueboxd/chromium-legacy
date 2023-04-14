@@ -172,6 +172,7 @@ source_set("feed_core_v2") {
     ":ios_shared",
     "//base",
     "//components/feed/core/common:feed_core_common",
+    "//components/feed/core/proto:proto_ios_shared_v2",
     "//components/feed/core/proto:proto_v2",
   ]
 }
@@ -179,12 +180,15 @@ source_set("feed_core_v2") {
 # This smaller source set is used by Chrome for iOS.
 source_set("ios_shared") {
   sources = [
+    "ios_shared_experiments_translator.cc",
+    "ios_shared_experiments_translator.h",
     "ios_shared_prefs.cc",
     "ios_shared_prefs.h",
   ]
   deps = [
     "//base",
     "//components/feed/core/common:feed_core_common",
+    "//components/feed/core/proto:proto_ios_shared_v2",
     "//components/prefs",
   ]
 }
@@ -207,6 +211,7 @@ source_set("core_unit_tests") {
     "algorithm_unittest.cc",
     "api_test/feed_api_notice_card_unittest.cc",
     "api_test/feed_api_reliability_logging_unittest.cc",
+    "api_test/feed_api_single_web_feed_unittest.cc",
     "api_test/feed_api_stream_unittest.cc",
     "api_test/feed_api_subscriptions_unittest.cc",
     "api_test/feed_api_test.cc",
@@ -215,10 +220,11 @@ source_set("core_unit_tests") {
     "feed_store_unittest.cc",
     "feedstore_util_unittest.cc",
     "image_fetcher_unittest.cc",
+    "ios_shared_experiments_translator_unittest.cc",
+    "ios_shared_prefs_unittest.cc",
     "metrics_reporter_unittest.cc",
     "operation_token_unittest.cc",
     "persistent_key_value_store_impl_unittest.cc",
-    "prefs_unittest.cc",
     "proto_util_unittest.cc",
     "protocol_translator_unittest.cc",
     "public/feed_service_unittest.cc",

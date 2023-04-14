@@ -41,11 +41,6 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
                 mInterceptNavigationDelegate.onNavigationFinishedInPrimaryMainFrame(
                         navigationHandle);
             }
-
-            @Override
-            public void didFinishNavigationNoop(NavigationHandle navigation) {
-                mInterceptNavigationDelegate.onNavigationFinishedNoop(navigation);
-            }
         };
     }
 
@@ -99,11 +94,6 @@ public class InterceptNavigationDelegateClientImpl implements InterceptNavigatio
     @Override
     public boolean isIncognito() {
         return mTab.getProfile().isIncognito();
-    }
-
-    @Override
-    public boolean isHidden() {
-        return !mTab.isVisible();
     }
 
     @Override

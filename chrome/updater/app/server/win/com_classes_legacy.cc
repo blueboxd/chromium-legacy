@@ -14,15 +14,11 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
-#include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
-#include "base/process/launch.h"
 #include "base/process/process.h"
-#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -33,14 +29,10 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "base/win/registry.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/scoped_process_information.h"
-#include "base/win/win_util.h"
 #include "chrome/updater/app/server/win/server.h"
 #include "chrome/updater/constants.h"
-#include "chrome/updater/external_constants.h"
 #include "chrome/updater/persisted_data.h"
 #include "chrome/updater/policy/manager.h"
 #include "chrome/updater/policy/service.h"
@@ -53,7 +45,6 @@
 #include "chrome/updater/win/app_command_runner.h"
 #include "chrome/updater/win/scoped_handle.h"
 #include "chrome/updater/win/setup/setup_util.h"
-#include "chrome/updater/win/win_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
@@ -107,6 +98,43 @@ std::string GetStringFromValue(const std::vector<std::string>& value) {
 }  // namespace
 
 namespace updater {
+
+// Implements `IAppVersionWeb`.
+class AppVersionWebImpl : public IDispatchImpl<IAppVersionWeb> {
+ public:
+  AppVersionWebImpl() = default;
+  AppVersionWebImpl(const AppVersionWebImpl&) = delete;
+  AppVersionWebImpl& operator=(const AppVersionWebImpl&) = delete;
+
+  HRESULT RuntimeClassInitialize(const std::wstring& version) {
+    version_ = version;
+
+    return S_OK;
+  }
+
+  // Overrides for IAppVersionWeb.
+  IFACEMETHODIMP get_version(BSTR* version) override {
+    DCHECK(version);
+
+    *version = base::win::ScopedBstr(version_).Release();
+    return S_OK;
+  }
+
+  IFACEMETHODIMP get_packageCount(long* count) override {
+    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
+    return E_NOTIMPL;
+  }
+
+  IFACEMETHODIMP get_packageWeb(long index, IDispatch** package) override {
+    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
+    return E_NOTIMPL;
+  }
+
+ private:
+  ~AppVersionWebImpl() override = default;
+
+  std::wstring version_;
+};
 
 // Implements `ICurrentState`. Initialized with a snapshot of the current state
 // of the install.
@@ -322,16 +350,18 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
 
   // Invokes the in-process update service on the main sequence. Forwards the
   // callbacks to a sequenced task runner. |obj| is bound to this object.
-  HRESULT CheckForUpdate() {
+  HRESULT Update(bool do_update_check_only) {
     using AppWebImplPtr = Microsoft::WRL::ComPtr<AppWebImpl>;
     scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
     com_server->main_task_runner()->PostTask(
         FROM_HERE,
         base::BindOnce(
-            [](scoped_refptr<UpdateService> update_service, AppWebImplPtr obj) {
+            [](scoped_refptr<UpdateService> update_service, AppWebImplPtr obj,
+               bool do_update_check_only) {
               update_service->Update(
                   obj->app_id_, "", UpdateService::Priority::kForeground,
                   UpdateService::PolicySameVersionUpdate::kNotAllowed,
+                  do_update_check_only,
                   base::BindRepeating(
                       [](AppWebImplPtr obj,
                          const UpdateService::UpdateState& state_update) {
@@ -350,24 +380,74 @@ class AppWebImpl : public IDispatchImpl<IAppWeb> {
                       },
                       obj));
             },
-            com_server->update_service(), AppWebImplPtr(this)));
+            com_server->update_service(), AppWebImplPtr(this),
+            do_update_check_only));
     return S_OK;
   }
 
   // Overrides for IAppWeb.
   IFACEMETHODIMP get_appId(BSTR* app_id) override {
-    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
-    return E_NOTIMPL;
+    DCHECK(app_id);
+
+    *app_id = base::win::ScopedBstr(base::ASCIIToWide(app_id_)).Release();
+    return S_OK;
   }
 
   IFACEMETHODIMP get_currentVersionWeb(IDispatch** current) override {
-    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
-    return E_NOTIMPL;
+    // Holds the result of the IPC to retrieve the current version.
+    struct CurrentVersionResult
+        : public base::RefCountedThreadSafe<CurrentVersionResult> {
+      absl::optional<base::Version> current_version;
+      base::WaitableEvent completion_event;
+
+     private:
+      friend class base::RefCountedThreadSafe<CurrentVersionResult>;
+      virtual ~CurrentVersionResult() = default;
+    };
+
+    auto result = base::MakeRefCounted<CurrentVersionResult>();
+    AppServerSingletonInstance()->main_task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](const std::string app_id,
+               scoped_refptr<CurrentVersionResult> result) {
+              const base::ScopedClosureRunner signal_event(base::BindOnce(
+                  [](scoped_refptr<CurrentVersionResult> result) {
+                    result->completion_event.Signal();
+                  },
+                  result));
+
+              const base::Version current_version =
+                  base::MakeRefCounted<const PersistedData>(
+                      GetUpdaterScope(),
+                      AppServerSingletonInstance()->prefs()->GetPrefService())
+                      ->GetProductVersion(app_id);
+              if (!current_version.IsValid()) {
+                return;
+              }
+
+              result->current_version = current_version;
+            },
+            app_id_, result));
+
+    if (!result->completion_event.TimedWait(base::Seconds(60)) ||
+        !result->current_version.has_value()) {
+      return E_FAIL;
+    }
+
+    return Microsoft::WRL::MakeAndInitialize<AppVersionWebImpl>(
+        current, base::ASCIIToWide(result->current_version->GetString()));
   }
 
   IFACEMETHODIMP get_nextVersionWeb(IDispatch** next) override {
-    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
-    return E_NOTIMPL;
+    base::AutoLock lock{lock_};
+
+    if (!state_update_ || !state_update_->next_version.IsValid()) {
+      return E_FAIL;
+    }
+
+    return Microsoft::WRL::MakeAndInitialize<AppVersionWebImpl>(
+        next, base::ASCIIToWide(state_update_->next_version.GetString()));
   }
 
   IFACEMETHODIMP get_command(BSTR command_id, IDispatch** command) override {
@@ -545,8 +625,9 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
   IFACEMETHODIMP createInstalledApp(BSTR app_id) override {
     base::AutoLock lock{lock_};
 
-    if (app_web_)
+    if (app_web_) {
       return E_UNEXPECTED;
+    }
 
     return Microsoft::WRL::MakeAndInitialize<AppWebImpl>(&app_web_, app_id);
   }
@@ -573,8 +654,9 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
   IFACEMETHODIMP get_appWeb(int index, IDispatch** app_web) override {
     base::AutoLock lock{lock_};
 
-    if (index != 0 || !app_web_)
+    if (index != 0 || !app_web_) {
       return E_UNEXPECTED;
+    }
 
     return app_web_.CopyTo(app_web);
   }
@@ -585,18 +667,27 @@ class AppBundleWebImpl : public IDispatchImpl<IAppBundleWeb> {
   IFACEMETHODIMP checkForUpdate() override {
     base::AutoLock lock{lock_};
 
-    if (!app_web_)
+    if (!app_web_) {
       return E_UNEXPECTED;
+    }
 
-    return app_web_->CheckForUpdate();
+    return app_web_->Update(/*do_update_check_only=*/true);
   }
 
   IFACEMETHODIMP download() override {
-    LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
-    return E_NOTIMPL;
+    VLOG(1) << "`install()` implements the download: " << __func__;
+    return S_OK;
   }
 
-  IFACEMETHODIMP install() override { return S_OK; }
+  IFACEMETHODIMP install() override {
+    base::AutoLock lock{lock_};
+
+    if (!app_web_) {
+      return E_UNEXPECTED;
+    }
+
+    return app_web_->Update(/*do_update_check_only=*/false);
+  }
 
   IFACEMETHODIMP pause() override {
     LOG(ERROR) << "Reached unimplemented COM method: " << __func__;
@@ -765,8 +856,9 @@ STDMETHODIMP LegacyAppCommandWebImpl::execute(VARIANT substitution1,
         substitution9}) {
     const absl::optional<std::wstring> substitution_string =
         StringFromVariant(substitution);
-    if (!substitution_string)
+    if (!substitution_string) {
       break;
+    }
 
     VLOG(2) << __func__
             << " substitution_string: " << substitution_string.value();
@@ -790,8 +882,9 @@ STDMETHODIMP PolicyStatusImpl::get_lastCheckPeriodMinutes(DWORD* minutes) {
   DCHECK(minutes);
 
   PolicyStatus<base::TimeDelta> period = policy_service_->GetLastCheckPeriod();
-  if (!period)
+  if (!period) {
     return E_FAIL;
+  }
 
   *minutes = period.policy().InMinutes();
   return S_OK;
@@ -1007,8 +1100,9 @@ STDMETHODIMP PolicyStatusImpl::get_lastCheckedTime(DATE* last_checked) {
                     GetUpdaterScope(),
                     AppServerSingletonInstance()->prefs()->GetPrefService())
                     ->GetLastChecked();
-            if (last_checked_time.is_null())
+            if (last_checked_time.is_null()) {
               return;
+            }
 
             const FILETIME last_checked_filetime =
                 last_checked_time.ToFileTime();
@@ -1067,12 +1161,14 @@ STDMETHODIMP PolicyStatusImpl::get_updatesSuppressedTimes(
   auto policy_status =
       PolicyStatusResult<UpdatesSuppressedTimes>::Get(base::BindRepeating(
           &PolicyService::GetUpdatesSuppressedTimes, policy_service_));
-  if (!policy_status.has_value())
+  if (!policy_status.has_value()) {
     return E_FAIL;
+  }
   const UpdatesSuppressedTimes updates_suppressed_times =
       policy_status->effective_policy()->policy;
-  if (!updates_suppressed_times.valid())
+  if (!updates_suppressed_times.valid()) {
     return E_FAIL;
+  }
   base::Time::Exploded now;
   base::Time::Now().LocalExplode(&now);
   *are_updates_suppressed =

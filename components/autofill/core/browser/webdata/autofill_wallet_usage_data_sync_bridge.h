@@ -14,6 +14,7 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/model/mutable_data_batch.h"
 
 namespace autofill {
 
@@ -62,6 +63,7 @@ class AutofillWalletUsageDataSyncBridge : public base::SupportsUserData::Data,
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
   void ApplyStopSyncChanges(std::unique_ptr<syncer::MetadataChangeList>
                                 delete_metadata_change_list) override;
+  bool IsEntityDataValid(const syncer::EntityData& entity_data) const override;
 
  private:
   // Returns the table associated with the |web_data_backend_|.
@@ -70,6 +72,12 @@ class AutofillWalletUsageDataSyncBridge : public base::SupportsUserData::Data,
   // Synchronously load sync metadata from the autofill table and pass it to the
   // processor so that it can start tracking changes.
   void LoadMetadata();
+
+  // Gets all local data and performs a filter on the usage_data_id if
+  // available. If filter(usage_data_id) returns true, the associated
+  // AutofillWalletUsageData will be returned in the batch.
+  std::unique_ptr<syncer::MutableDataBatch> GetDataAndFilter(
+      base::RepeatingCallback<bool(const std::string&)> filter);
 
   // AutofillWalletUsageSyncBridge is owned by |web_data_backend_| through
   // SupportsUserData, so it's guaranteed to outlive |this|.

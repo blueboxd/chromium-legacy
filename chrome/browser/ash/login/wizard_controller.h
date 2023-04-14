@@ -19,7 +19,6 @@
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen.h"
-#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/screen_manager.h"
@@ -35,10 +34,10 @@
 #include "chrome/browser/ash/login/screens/edu_coexistence_login_screen.h"
 #include "chrome/browser/ash/login/screens/enable_adb_sideloading_screen.h"
 #include "chrome/browser/ash/login/screens/enable_debugging_screen.h"
-#include "chrome/browser/ash/login/screens/eula_screen.h"
 #include "chrome/browser/ash/login/screens/family_link_notice_screen.h"
 #include "chrome/browser/ash/login/screens/fingerprint_setup_screen.h"
 #include "chrome/browser/ash/login/screens/gaia_password_changed_screen.h"
+#include "chrome/browser/ash/login/screens/gaia_password_changed_screen_legacy.h"
 #include "chrome/browser/ash/login/screens/gaia_screen.h"
 #include "chrome/browser/ash/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/ash/login/screens/guest_tos_screen.h"
@@ -68,6 +67,7 @@
 #include "chrome/browser/ash/login/screens/update_screen.h"
 #include "chrome/browser/ash/login/screens/user_creation_screen.h"
 #include "chrome/browser/ash/login/screens/welcome_screen.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/policy/enrollment/enrollment_config.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
 #include "components/account_id/account_id.h"
@@ -164,11 +164,10 @@ class WizardController : public OobeUI::Observer {
 
   // Starts Demo Mode setup flow. The flow starts from network screen and reuses
   // some of regular OOBE screens. It consists of the following screens:
-  //    ash::DemoPreferencesScreenView::kScreenId
   //    ash::NetworkScreenView::kScreenId
-  //    ash::EulaView::kScreenId
-  //    ash::ArcTermsOfServiceScreenView::kScreenId
+  //    ash::DemoPreferencesScreenView::kScreenId
   //    ash::UpdateView::kScreenId
+  //    ash::ConsolidatedConsentScreenView::kScreenId
   //    ash::DemoSetupScreenView::kScreenId
   void StartDemoModeSetup();
 
@@ -227,8 +226,8 @@ class WizardController : public OobeUI::Observer {
       scoped_refptr<network::SharedURLLoaderFactory> factory);
 
   // Configure and show GAIA password changed screen.
-  void ShowGaiaPasswordChangedScreen(const AccountId& account_id,
-                                     bool has_error);
+  void ShowGaiaPasswordChangedScreenLegacy(const AccountId& account_id,
+                                           bool has_error);
 
   // Configure and show active directory password change screen.
   void ShowActiveDirectoryPasswordChangeScreen(const std::string& username);
@@ -266,9 +265,12 @@ class WizardController : public OobeUI::Observer {
 
   // Allows tests to call `GetAutoEnrollmentController` without making those
   // tests friend classes with access to everything.
-  AutoEnrollmentController* GetAutoEnrollmentControllerForTesting() {
+  policy::AutoEnrollmentController* GetAutoEnrollmentControllerForTesting() {
     return GetAutoEnrollmentController();
   }
+
+  // Returns whether the screen id belongs to the `ErrorScreen`
+  static bool IsErrorScreen(OobeScreenId);
 
  private:
   // Create BaseScreen instances. These are owned by `screen_manager_`.
@@ -279,7 +281,6 @@ class WizardController : public OobeUI::Observer {
   void ShowWelcomeScreen();
   void ShowQuickStartScreen();
   void ShowNetworkScreen();
-  void ShowEulaScreen();
   void ShowEnrollmentScreen();
   void ShowDemoModeSetupScreen();
   void ShowDemoModePreferencesScreen();
@@ -321,6 +322,7 @@ class WizardController : public OobeUI::Observer {
   void ShowThemeSelectionScreen();
   void ShowChoobeScreen();
   void ShowTouchpadScrollScreen();
+  void ShowGaiaPasswordChangedScreen(std::unique_ptr<UserContext> user_context);
 
   // Shows images login screen.
   void ShowLoginScreen();
@@ -347,9 +349,6 @@ class WizardController : public OobeUI::Observer {
   void OnWelcomeScreenExit(WelcomeScreen::Result result);
   void OnQuickStartScreenExit(QuickStartScreen::Result result);
   void OnNetworkScreenExit(NetworkScreen::Result result);
-  bool ShowEulaOrArcTosAfterNetworkScreen();
-  void OnEulaScreenExit(EulaScreen::Result result);
-  void OnEulaAccepted(bool usage_statistics_reporting_enabled);
   void OnUpdateScreenExit(UpdateScreen::Result result);
   void OnUpdateCompleted();
   void OnAutoEnrollmentCheckScreenExit(
@@ -388,6 +387,8 @@ class WizardController : public OobeUI::Observer {
   void OnGaiaScreenExit(GaiaScreen::Result result);
   void OnSamlConfirmPasswordScreenExit(
       SamlConfirmPasswordScreen::Result result);
+  void OnPasswordChangeLegacyScreenExit(
+      GaiaPasswordChangedScreenLegacy::Result result);
   void OnPasswordChangeScreenExit(GaiaPasswordChangedScreen::Result result);
   void OnActiveDirectoryLoginScreenExit();
   void OnSignInFatalErrorScreenExit();
@@ -424,10 +425,8 @@ class WizardController : public OobeUI::Observer {
   // Retrieve filtered OOBE configuration and apply relevant values.
   void UpdateOobeConfiguration();
 
-  // Actions that should be done right after Network Screen if
-  // OobeConsolidatedConsent is enabled, and should be done right after EULA is
-  // accepted if OobeConsolidatedConsent is disabled. These actions should be
-  // done before the update check.
+  // Actions that should be done right after Network Screen and before
+  // the update check.
   void PerformPostNetworkScreenActions();
 
   // Actions that should be done right after update stage is finished.
@@ -497,15 +496,14 @@ class WizardController : public OobeUI::Observer {
 
   // Returns auto enrollment controller (lazily initializes one if it doesn't
   // exist already).
-  AutoEnrollmentController* GetAutoEnrollmentController();
+  policy::AutoEnrollmentController* GetAutoEnrollmentController();
 
-  // Requests owning TPM for branded builds with --tpm-is-dynamic switch unset
-  // when OobeConsolidatedConsent feature is enabled. When --tpm-is-dynamic
-  // switch is set, pre-enrollment TPM check relies on the TPM being un-owned
-  // until enrollment. b/187429309
+  // Requests owning TPM for branded builds with --tpm-is-dynamic switch unset.
+  // When --tpm-is-dynamic switch is set, pre-enrollment TPM check relies on
+  // the TPM being un-owned until enrollment. b/187429309
   void MaybeTakeTPMOwnership();
 
-  std::unique_ptr<AutoEnrollmentController> auto_enrollment_controller_;
+  std::unique_ptr<policy::AutoEnrollmentController> auto_enrollment_controller_;
   std::unique_ptr<ChoobeFlowController> choobe_flow_controller_;
   std::unique_ptr<ScreenManager> screen_manager_;
 
@@ -532,10 +530,6 @@ class WizardController : public OobeUI::Observer {
   // Whether the auto-enrollment check should be retried or the cached result
   // returned if present.
   bool retry_auto_enrollment_check_ = false;
-
-  // Time when the EULA was accepted. Used to measure the duration from the EULA
-  // acceptance until the Sign-In screen is displayed.
-  base::TimeTicks time_eula_accepted_;
 
   // Whether OOBE has yet been marked as completed.
   bool oobe_marked_completed_ = false;

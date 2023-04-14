@@ -49,7 +49,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using QueryReason = content_settings::CookieSettings::QueryReason;
 using ::testing::_;
 using ::testing::MockFunction;
 using ::testing::Return;
@@ -552,19 +551,19 @@ TEST_F(HostContentSettingsMapTest, HostTrimEndingDotCheck) {
 
   EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
       host_ending_with_dot, site_for_cookies, origin,
-      net::CookieSettingOverrides(), QueryReason::kSetting));
+      net::CookieSettingOverrides()));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_DEFAULT);
   EXPECT_TRUE(cookie_settings->IsFullCookieAccessAllowed(
       host_ending_with_dot, site_for_cookies, origin,
-      net::CookieSettingOverrides(), QueryReason::kSetting));
+      net::CookieSettingOverrides()));
   host_content_settings_map->SetContentSettingDefaultScope(
       host_ending_with_dot, GURL(), ContentSettingsType::COOKIES,
       CONTENT_SETTING_BLOCK);
   EXPECT_FALSE(cookie_settings->IsFullCookieAccessAllowed(
       host_ending_with_dot, site_for_cookies, origin,
-      net::CookieSettingOverrides(), QueryReason::kSetting));
+      net::CookieSettingOverrides()));
 
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
@@ -1468,8 +1467,7 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
       CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetWebsiteSettingCustomScope(
       pattern2, ContentSettingsPattern::Wildcard(),
-      ContentSettingsType::APP_BANNER,
-      base::Value(base::Value::Type::DICTIONARY));
+      ContentSettingsType::APP_BANNER, base::Value(base::Value::Type::DICT));
 
   // First, test that we clear only COOKIES (not APP_BANNER), and pattern2.
   host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
@@ -1499,14 +1497,14 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   // Add settings.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url1, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   // This setting should override the one above, as it's the same origin.
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url2, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   host_content_settings_map->SetWebsiteSettingDefaultScope(
       url3, GURL(), ContentSettingsType::SITE_ENGAGEMENT,
-      base::Value(base::Value::Type::DICTIONARY));
+      base::Value(base::Value::Type::DICT));
   // Verify we only have two.
   host_content_settings_map->GetSettingsForOneType(
       ContentSettingsType::SITE_ENGAGEMENT, &host_settings);

@@ -17,7 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/services/ime/constants.h"
@@ -225,9 +224,9 @@ bool EmojiSuggester::ShouldShowSuggestion(const std::u16string& text) {
   return false;
 }
 
-bool EmojiSuggester::TrySuggestWithSurroundingText(const std::u16string& text,
-                                                   int cursor_pos,
-                                                   int anchor_pos) {
+bool EmojiSuggester::TrySuggestWithSurroundingText(
+    const std::u16string& text,
+    const gfx::Range selection_range) {
   if (emoji_map_.empty() || !focused_context_id_.has_value())
     return false;
 
@@ -235,9 +234,10 @@ bool EmojiSuggester::TrySuggestWithSurroundingText(const std::u16string& text,
   // triggered.
   // eg. "wow |" where '|' denotes cursor position should trigger an emoji
   // suggestion.
-  int len = static_cast<int>(text.length());
-  if (!(len && cursor_pos == len     // text not empty and cursor is end of text
-        && cursor_pos == anchor_pos  // no selection
+  const uint32_t len = text.length();
+  const uint32_t cursor_pos = selection_range.start();
+  if (!(len && cursor_pos == len  // text not empty and cursor is end of text
+        && selection_range.is_empty()          // no selection
         && text[cursor_pos - 1] == kSpaceChar  // space before cursor
         )) {
     return false;

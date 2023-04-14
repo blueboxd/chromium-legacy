@@ -42,4 +42,60 @@ suite('FakeInputDeviceSettings', function() {
     return provider.getConnectedPointingStickSettings().then(
         result => assertDeepEquals(fakePointingSticks, result));
   });
+
+  test('setKeyboardSettings', () => {
+    provider.setFakeKeyboards(fakeKeyboards);
+    // Update the first keyboard settings with the second keyboard settings.
+    const updatedFirstKeyboard = {
+      ...fakeKeyboards[0],
+      settings: {...fakeKeyboards[1].settings},
+    };
+    provider.setKeyboardSettings(
+        updatedFirstKeyboard.id, updatedFirstKeyboard.settings);
+    // Verify if the first keyboard settings are updated.
+    return provider.getConnectedKeyboardSettings().then(
+        result => assertDeepEquals(updatedFirstKeyboard, result[0]));
+  });
+
+  test('setMouseSettings', () => {
+    provider.setFakeMice(fakeMice);
+    // Update the first mouse settings with the second mouse settings.
+    const updatedFirstMouse = {
+      ...fakeMice[0],
+      settings: {...fakeMice[1].settings},
+    };
+    provider.setMouseSettings(updatedFirstMouse.id, updatedFirstMouse.settings);
+    // Verify if the first mouse settings are updated.
+    return provider.getConnectedMouseSettings().then(
+        result => assertDeepEquals(updatedFirstMouse, result[0]));
+  });
+
+  test('setTouchpadSettings', () => {
+    provider.setFakeTouchpads(fakeTouchpads);
+    // Update the first touchpad settings with the second touchpad settings.
+    const updatedFirstTouchpad = {
+      ...fakeTouchpads[0],
+      settings: {...fakeTouchpads[1].settings},
+    };
+    provider.setTouchpadSettings(
+        updatedFirstTouchpad.id, updatedFirstTouchpad.settings);
+    // Verify if the first touchpad settings are updated.
+    return provider.getConnectedTouchpadSettings().then(
+        result => assertDeepEquals(updatedFirstTouchpad, result[0]));
+  });
+
+  test('setPointingStickSettings', () => {
+    provider.setFakePointingSticks(fakePointingSticks);
+    // Update the first point stick settings with the second point stick
+    // settings.
+    const updatedFirstPointingStick = {
+      ...fakePointingSticks[0],
+      settings: {...fakePointingSticks[1].settings},
+    };
+    provider.setPointingStickSettings(
+        updatedFirstPointingStick.id, updatedFirstPointingStick.settings);
+    // Verify if the first point stick settings are updated.
+    return provider.getConnectedPointingStickSettings().then(
+        result => assertDeepEquals(updatedFirstPointingStick, result[0]));
+  });
 });

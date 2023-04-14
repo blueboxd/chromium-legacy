@@ -54,8 +54,8 @@ async function doAuthFetch() {
 
   // Show a "Please sign in" dialog.
   toggleSigninModal(true /*show*/);
-  let signinButton = document.querySelector('#signin-modal button.signin');
-  signinButton.addEventListener('click', getToken);
+  const btnSignin = g_el.divSigninModal.querySelector('button.signin');
+  btnSignin.addEventListener('click', getToken);
 
   // Only hide the dialog once we have the token.
   await g_authTokenPromise;
@@ -73,16 +73,26 @@ async function fetchAccessToken() {
 
 /** @param {boolean} show */
 function toggleSigninModal(show) {
-  const modal = document.getElementById('signin-modal');
-  modal.style.display = show ? '': 'none';
+  g_el.divSigninModal.style.display = show ? '' : 'none';
 }
 
-/** @return {boolean} */
-function requiresAuthentication() {
-  // Assume everything requires auth except public trybot and one-offs.
-  const queryString = decodeURIComponent(location.search);
-  const isPublicTrybot = queryString.indexOf(
-      'chromium-binary-size-trybot-results/android-binary-size') != -1;
-  const isOneOff = queryString.indexOf('/oneoffs/') != -1;
-  return !isPublicTrybot && !isOneOff;
+/**
+ * @param {!Array<!URL>} urlsToLoad
+ * @return {boolean}
+ */
+function requiresAuthentication(urlsToLoad) {
+  for (const url of urlsToLoad) {
+    // Files from ocalhost, public trybot, and one-offs don't need auth.
+    if (url.hostname === 'localhost')
+      continue;
+    if (url.pathname.startsWith(
+            '/chromium-binary-size-trybot-results/android-binary-size/')) {
+      continue;
+    }
+    if (url.pathname.indexOf('/oneoffs/') >= 0)
+      continue;
+    // Assume everything else requires auth.
+    return true;
+  }
+  return false;
 }

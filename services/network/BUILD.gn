@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/chromeos/ui_mode.gni")
+import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//net/features.gni")
 import("//services/network/public/cpp/features.gni")
@@ -411,6 +412,7 @@ source_set("tests") {
 
   if (is_p2p_enabled) {
     sources += [
+      "p2p/socket_manager_unittest.cc",
       "p2p/socket_tcp_unittest.cc",
       "p2p/socket_test_utils.cc",
       "p2p/socket_test_utils.h",
@@ -500,7 +502,7 @@ source_set("tests") {
     deps += [ "//components/certificate_transparency" ]
   }
 
-  if (!is_ios) {
+  if (use_blink) {
     deps += [ "//services/proxy_resolver:lib" ]
   }
 }
@@ -528,6 +530,8 @@ source_set("test_support") {
     "test/test_network_context.h",
     "test/test_network_context_client.cc",
     "test/test_network_context_client.h",
+    "test/test_network_context_with_host_resolver.cc",
+    "test/test_network_context_with_host_resolver.h",
     "test/test_network_quality_tracker.cc",
     "test/test_network_quality_tracker.h",
     "test/test_resource_scheduler.h",

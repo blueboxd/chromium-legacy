@@ -404,19 +404,19 @@ struct FrameInfo {
 
 webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
     media::VideoCodecProfile profile) {
-  if (profile >= media::VP8PROFILE_MIN && profile <= media::VP8PROFILE_MAX) {
-    return webrtc::kVideoCodecVP8;
-  } else if (profile == media::VP9PROFILE_MIN) {
-    return webrtc::kVideoCodecVP9;
-  } else if (profile >= media::H264PROFILE_MIN &&
-             profile <= media::H264PROFILE_MAX) {
-    return webrtc::kVideoCodecH264;
-  } else if (profile >= media::AV1PROFILE_MIN &&
-             profile <= media::AV1PROFILE_MAX) {
-    return webrtc::kVideoCodecAV1;
+  switch (media::VideoCodecProfileToVideoCodec(profile)) {
+    case media::VideoCodec::kH264:
+      return webrtc::kVideoCodecH264;
+    case media::VideoCodec::kVP8:
+      return webrtc::kVideoCodecVP8;
+    case media::VideoCodec::kVP9:
+      return webrtc::kVideoCodecVP9;
+    case media::VideoCodec::kAV1:
+      return webrtc::kVideoCodecAV1;
+    default:
+      NOTREACHED() << "Invalid profile " << GetProfileName(profile);
+      return webrtc::kVideoCodecGeneric;
   }
-  NOTREACHED() << "Invalid profile " << GetProfileName(profile);
-  return webrtc::kVideoCodecGeneric;
 }
 
 void RecordInitEncodeUMA(int32_t init_retval,
@@ -453,14 +453,36 @@ void RecordEncoderShutdownReasonUMA(RTCVideoEncoderShutdownReason reason,
                                     reason);
   }
 }
+
+bool IsZeroCopyEnabled(webrtc::VideoContentType content_type) {
+  if (content_type == webrtc::VideoContentType::SCREENSHARE) {
+    // Zero copy screen capture.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    // The zero-copy capture is available for all sources in ChromeOS
+    // Ash-chrome.
+    return base::FeatureList::IsEnabled(features::kZeroCopyTabCapture);
+#else
+    // Currently, zero copy capture screenshare is available only for tabs.
+    // Since it is impossible to determine the content source, tab, window or
+    // monitor, we don't configure VideoEncodeAccelerator with NV12
+    // GpuMemoryBuffer instead we configure I420 SHMEM as if it is not zero
+    // copy, and we convert the NV12 GpuMemoryBuffer to I420 SHMEM in
+    // RtcVideoEncoder::Impl::Encode().
+    // TODO(b/267995715): Solve this problem by calling Initialize() in the
+    // first frame.
+    return false;
+#endif
+  }
+  // Zero copy video capture from other sources (e.g. camera).
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kDisableVideoCaptureUseGpuMemoryBuffer) &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kVideoCaptureUseGpuMemoryBuffer);
+}
+
 }  // namespace
 
 namespace features {
-// Make RTCVideoEncoder::Encode() asynchronous.
-BASE_FEATURE(kWebRtcEncoderAsyncEncode,
-             "WebRtcEncoderAsyncEncode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Fallback from hardware encoder (if available) to software, for WebRTC
 // screensharing that uses temporal scalability.
 BASE_FEATURE(kWebRtcScreenshareSwEncoding,
@@ -626,9 +648,10 @@ class RTCVideoEncoder::Impl : public media::VideoEncodeAccelerator::Client {
   // we don't care about ordering.
   Vector<int> input_buffers_free_;
 
-  // The number of output buffers ready to be filled with output from the
-  // encoder.
-  int output_buffers_free_count_{0};
+  // The number of output buffers that have been sent to a hardware video
+  // encoder by VideoEncodeAccelerator::UseOutputBitstreamBuffer() and the
+  // encoder holds them.
+  size_t output_buffers_in_encoder_count_{0};
 
   // Whether to send the frames to VEA as native buffer. Native buffer allows
   // VEA to pass the buffer to the encoder directly without further processing.
@@ -766,11 +789,7 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   media::VideoPixelFormat pixel_format = media::PIXEL_FORMAT_I420;
   auto storage_type =
       media::VideoEncodeAccelerator::Config::StorageType::kShmem;
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableVideoCaptureUseGpuMemoryBuffer) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kVideoCaptureUseGpuMemoryBuffer) &&
-      video_content_type_ != webrtc::VideoContentType::SCREENSHARE) {
+  if (IsZeroCopyEnabled(video_content_type_)) {
     // Use import mode for camera when GpuMemoryBuffer-based video capture is
     // enabled.
     pixel_format = media::PIXEL_FORMAT_NV12;
@@ -854,7 +873,7 @@ void RTCVideoEncoder::Impl::Enqueue(FrameChunk frame_chunk,
   // continue. If this is a key frame, WebRTC will request a key frame again.
   // Besides, webrtc will drop a frame if Encode() blocks too long.
   if (!use_native_input_ && input_buffers_free_.empty() &&
-      output_buffers_free_count_ == 0) {
+      output_buffers_in_encoder_count_ == 0u) {
     DVLOG(2) << "Run out of input and output buffers. Drop the frame.";
     encode_event.Set(WEBRTC_VIDEO_CODEC_ERROR);
     encode_event.Signal();
@@ -889,7 +908,7 @@ void RTCVideoEncoder::Impl::UseOutputBitstreamBufferId(
         bitstream_buffer_id,
         output_buffers_[bitstream_buffer_id].first.Duplicate(),
         output_buffers_[bitstream_buffer_id].first.GetSize()));
-    output_buffers_free_count_++;
+    output_buffers_in_encoder_count_++;
   }
 }
 
@@ -1004,7 +1023,7 @@ void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
     video_encoder_->UseOutputBitstreamBuffer(
         media::BitstreamBuffer(i, output_buffers_[i].first.Duplicate(),
                                output_buffers_[i].first.GetSize()));
-    output_buffers_free_count_++;
+    output_buffers_in_encoder_count_++;
   }
   DCHECK_EQ(status_, WEBRTC_VIDEO_CODEC_UNINITIALIZED);
   status_ = WEBRTC_VIDEO_CODEC_OK;
@@ -1036,7 +1055,8 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
                       media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
-  output_buffers_free_count_--;
+  DCHECK_NE(output_buffers_in_encoder_count_, 0u);
+  output_buffers_in_encoder_count_--;
 
   // Find RTP and capture timestamps by going through |pending_timestamps_|.
   // Derive it from current time otherwise.
@@ -1326,8 +1346,10 @@ void RTCVideoEncoder::Impl::EncodeOneFrame(FrameChunk frame_chunk) {
         storage == media::VideoFrame::STORAGE_SHMEM;
     const bool is_gmb_frame =
         storage == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER;
-    requires_copy_or_scale =
-        RequiresSizeChange(*frame) || !(is_memory_based_frame || is_gmb_frame);
+    const bool is_right_format = frame->format() == media::PIXEL_FORMAT_I420 ||
+                                 frame->format() == media::PIXEL_FORMAT_NV12;
+    requires_copy_or_scale = !is_right_format || RequiresSizeChange(*frame) ||
+                             !(is_memory_based_frame || is_gmb_frame);
   }
 
   if (requires_copy_or_scale) {

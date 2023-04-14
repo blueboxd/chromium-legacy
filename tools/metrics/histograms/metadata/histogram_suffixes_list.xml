@@ -1222,6 +1222,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram_suffixes name="Cras_ClientType" separator=".">
   <suffix name="ARC" label="A client created by ARC++."/>
+  <suffix name="ARCVM" label="A client created by ARCVM."/>
   <suffix name="Chrome" label="A client created by Chrome."/>
   <suffix name="CrOSVM" label="A client created by ChromeOS VM."/>
   <suffix name="InvalidType" label="Invalid client."/>
@@ -1234,6 +1235,8 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Cras.FetchDelayMilliSeconds"/>
   <affected-histogram name="Cras.StreamCallbackThreshold.Input"/>
   <affected-histogram name="Cras.StreamCallbackThreshold.Output"/>
+  <affected-histogram name="Cras.StreamChannelCount.Input"/>
+  <affected-histogram name="Cras.StreamChannelCount.Output"/>
   <affected-histogram name="Cras.StreamEffects.Input"/>
   <affected-histogram name="Cras.StreamEffects.Output"/>
   <affected-histogram name="Cras.StreamFlags.Input"/>
@@ -1284,6 +1287,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="Input" label="Capture"/>
   <suffix name="Output" label="Playback"/>
   <affected-histogram name="Cras.StreamCallbackThreshold"/>
+  <affected-histogram name="Cras.StreamChannelCount"/>
   <affected-histogram name="Cras.StreamEffects"/>
   <affected-histogram name="Cras.StreamFlags"/>
   <affected-histogram name="Cras.StreamRuntime"/>
@@ -1295,14 +1299,17 @@ chromium-metrics-reviews@google.com.
   <suffix name="Default" label="Default"/>
   <suffix name="VoiceCommunication" label="WebRTC"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.ARC"/>
+  <affected-histogram name="Cras.FetchDelayMilliSeconds.ARCVM"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.Chrome"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.CrOSVM"/>
   <affected-histogram name="Cras.FetchDelayMilliSeconds.LaCrOS"/>
   <affected-histogram name="Cras.StreamRuntime.Input.ARC"/>
+  <affected-histogram name="Cras.StreamRuntime.Input.ARCVM"/>
   <affected-histogram name="Cras.StreamRuntime.Input.Chrome"/>
   <affected-histogram name="Cras.StreamRuntime.Input.CrOSVM"/>
   <affected-histogram name="Cras.StreamRuntime.Input.LaCrOS"/>
   <affected-histogram name="Cras.StreamRuntime.Output.ARC"/>
+  <affected-histogram name="Cras.StreamRuntime.Output.ARCVM"/>
   <affected-histogram name="Cras.StreamRuntime.Output.Chrome"/>
   <affected-histogram name="Cras.StreamRuntime.Output.CrOSVM"/>
   <affected-histogram name="Cras.StreamRuntime.Output.LaCrOS"/>
@@ -2470,146 +2477,6 @@ chromium-metrics-reviews@google.com.
       label="Restricted to ServiceWorker LevelDB environments"/>
   <affected-histogram name="LevelDBEnv.IOError"/>
   <affected-histogram name="LevelDBEnv.MissingFiles"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LiveTabCountMetrics" separator=".">
-  <suffix name="ByLiveTabCount.0Tab"
-      label="Recorded with 0 live tabs open in the browser.">
-    <obsolete>
-      These suffixes is used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.1Tab"
-      label="Recorded with 1 live tab open in the browser.">
-    <obsolete/>
-  </suffix>
-  <suffix name="ByLiveTabCount.2Tabs"
-      label="Recorded with 2 live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The difference are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.3To4Tabs"
-      label="Recorded with between 3 and 4 live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.5To7Tabs"
-      label="Recorded with between 5 and 7 live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.8To19Tabs"
-      label="Recorded with between 8 and 19 live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.20To39Tabs"
-      label="Recorded with between 20 and 39 live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <suffix name="ByLiveTabCount.40OrMoreTabs"
-      label="Recorded with 40 or more live tabs open in the browser.">
-    <obsolete>
-      These suffixes are used to record metrics with live tab count information.
-      As part of crbug.com/1317494, these suffixes are replaced by
-      ByLiveTabCount2.*. The differences are 1. *.ByLiveTabCount2.* include
-      samples from prerendered pages and 2.
-      PageLoad.PaintTiming.NavigationToFirstContentfulPaint.ByLiveTabCount2.*
-      record duration from activation start to first contentful paint for
-      prerendered pages.
-    </obsolete>
-  </suffix>
-  <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
-  <affected-histogram
-      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="LiveTabCountMetrics2" separator=".">
-  <suffix name="ByLiveTabCount2.0Tabs"
-      label="Recorded with 0 live tabs open in the browser, including
-             prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.1Tab"
-      label="Recorded with 1 live tab open in the browser, including
-             prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.2Tabs"
-      label="Recorded with 2 live tabs open in the browser, including
-             prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.3To4Tabs"
-      label="Recorded with between 3 and 4 live tabs open in the browser,
-             including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.5To7Tabs"
-      label="Recorded with between 5 and 7 live tabs open in the browser,
-             including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.8To19Tabs"
-      label="Recorded with between 8 and 19 live tabs open in the browser,
-             including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.20To39Tabs"
-      label="Recorded with between 20 and 39 live tabs open in the browser,
-             including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <suffix name="ByLiveTabCount2.40OrMoreTabs"
-      label="Recorded with 40 or more live tabs open in the browser,
-             including prerendered samples. The recorded value of
-             NavigationToFirstContentfulPaint is prerendered version:
-             duration from activation start to first contentful paint"/>
-  <affected-histogram name="PageLoad.InteractiveTiming.FirstInputDelay4"/>
-  <affected-histogram
-      name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LoadingPredictorHintOrigin" separator=".">
@@ -4386,6 +4253,16 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="ProcessMemoryAllocator2" separator=".">
+  <suffix name="AndroidOtherPrivateDirty"
+      label="Other private dirty memory, including GPU memory, as reported by
+             Android platform APIs. Only reported on Android, if the value
+             hasn't been collected in the last 5 minutes (otherwise Android
+             produces a stale value, which is not emitted in Chrome)."/>
+  <suffix name="AndroidOtherPss"
+      label="Other PSS, including GPU memory, as reported by Android platform
+             APIs. Only reported on Android, if the value hasn't been
+             collected in the last 5 minutes (otherwise Android produces a
+             stale value, which is not emitted in Chrome)."/>
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
@@ -5432,34 +5309,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Renderer4.ScrollingThread"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="ScrollUpdateHandledThread" separator="_">
-  <suffix name="Impl" label="ScrollUpdate handled on impl thread"/>
-  <suffix name="Main" label="ScrollUpdate handled on main thread"/>
-  <affected-histogram
-      name="Event.Latency.ScrollBegin.Scrollbar.HandledToRendererSwap2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollBegin.Scrollbar.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollBegin.Touch.HandledToRendererSwap2"/>
-  <affected-histogram name="Event.Latency.ScrollBegin.Touch.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollBegin.Wheel.HandledToRendererSwap2"/>
-  <affected-histogram name="Event.Latency.ScrollBegin.Wheel.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollInertial.Touch.HandledToRendererSwap2"/>
-  <affected-histogram name="Event.Latency.ScrollInertial.Touch.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollUpdate.Scrollbar.HandledToRendererSwap2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollUpdate.Scrollbar.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollUpdate.Touch.HandledToRendererSwap2"/>
-  <affected-histogram name="Event.Latency.ScrollUpdate.Touch.TimeToHandled2"/>
-  <affected-histogram
-      name="Event.Latency.ScrollUpdate.Wheel.HandledToRendererSwap2"/>
-  <affected-histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToHandled2"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="SearchEnginePromoDeviceType" separator=".">
   <suffix name="ExistingDevice" label=""/>
   <suffix name="NewDevice" label=""/>
@@ -5818,12 +5667,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Network.Shill.WiFi.RememberedUserNetworkCount"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SideloadWipeout" separator="_">
-  <suffix name="Disabled" label="Control group."/>
-  <suffix name="Enabled" label="Sideload Wipeout Active."/>
-  <affected-histogram name="Extensions.InstallSource"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="Signin_Actions" separator=".">
   <suffix name="AllAccessPointActions" label=""/>
   <suffix name="AndroidAccountConsistencyFirstRunActions"
@@ -5942,12 +5785,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Graphics.Smoothness.Jank.Main"/>
   <affected-histogram name="Graphics.Smoothness.MaxStale"/>
   <affected-histogram
-      name="Graphics.Smoothness.PercentDroppedFrames.CompositorThread"/>
-  <affected-histogram
-      name="Graphics.Smoothness.PercentDroppedFrames.MainThread"/>
-  <affected-histogram
-      name="Graphics.Smoothness.PercentDroppedFrames.ScrollingThread"/>
-  <affected-histogram
       name="Graphics.Smoothness.PercentMissedDeadlineFrames.CompositorThread"/>
   <affected-histogram
       name="Graphics.Smoothness.PercentMissedDeadlineFrames.MainThread"/>
@@ -5962,7 +5799,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="MainThread" label="The throughput of the main thread"/>
   <suffix name="ScrollingThread"
       label="The throughput of the thread responsible for handling the thread"/>
-  <affected-histogram name="Graphics.Smoothness.PercentDroppedFrames"/>
   <affected-histogram name="Graphics.Smoothness.PercentMissedDeadlineFrames"/>
 </histogram_suffixes>
 

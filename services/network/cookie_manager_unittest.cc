@@ -66,7 +66,6 @@
 namespace network {
 namespace {
 using base::StrCat;
-using QueryReason = CookieSettings::QueryReason;
 using testing::IsEmpty;
 using testing::UnorderedElementsAre;
 
@@ -338,6 +337,7 @@ class CookieManagerTest : public testing::Test {
     }
     // Reset |cookie_service_remote_| to allow re-initialize with params
     // for FlushableCookieManagerTest and SessionCleanupCookieManagerTest.
+    service_wrapper_.reset();
     cookie_service_remote_.reset();
 
     connection_error_seen_ = false;
@@ -2675,28 +2675,32 @@ TEST_F(CookieManagerTest, CloningAndClientDestructVisible) {
   cookie_service_client()->CloneInterface(
       new_remote.BindNewPipeAndPassReceiver());
 
-  SynchronousCookieManager new_wrapper(new_remote.get());
+  {
+    // Can't outlive `new_remote`.
+    SynchronousCookieManager new_wrapper(new_remote.get());
 
-  // Set a cookie on the new interface and make sure it's visible on the
-  // old one.
-  EXPECT_TRUE(new_wrapper.SetCanonicalCookie(
-      *net::CanonicalCookie::CreateUnsafeCookieForTesting(
-          "X", "Y", "www.other.host", "/", base::Time(), base::Time(),
-          base::Time(), base::Time(), /*secure=*/false,
-          /*httponly=*/false, net::CookieSameSite::LAX_MODE,
-          net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false),
-      "https", true));
+    // Set a cookie on the new interface and make sure it's visible on the
+    // old one.
+    EXPECT_TRUE(new_wrapper.SetCanonicalCookie(
+        *net::CanonicalCookie::CreateUnsafeCookieForTesting(
+            "X", "Y", "www.other.host", "/", base::Time(), base::Time(),
+            base::Time(), base::Time(), /*secure=*/false,
+            /*httponly=*/false, net::CookieSameSite::LAX_MODE,
+            net::COOKIE_PRIORITY_MEDIUM, /*same_party=*/false),
+        "https", true));
 
-  std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
-      GURL("http://www.other.host/"), net::CookieOptions::MakeAllInclusive(),
-      net::CookiePartitionKeyCollection());
-  ASSERT_EQ(1u, cookies.size());
-  EXPECT_EQ("X", cookies[0].Name());
-  EXPECT_EQ("Y", cookies[0].Value());
+    std::vector<net::CanonicalCookie> cookies =
+        service_wrapper()->GetCookieList(GURL("http://www.other.host/"),
+                                         net::CookieOptions::MakeAllInclusive(),
+                                         net::CookiePartitionKeyCollection());
+    ASSERT_EQ(1u, cookies.size());
+    EXPECT_EQ("X", cookies[0].Name());
+    EXPECT_EQ("Y", cookies[0].Value());
 
-  // After a synchronous round trip through the new client pointer, it
-  // should be reflected in the bindings seen on the server.
-  EXPECT_EQ(2u, service()->GetClientsBoundForTesting());
+    // After a synchronous round trip through the new client pointer, it
+    // should be reflected in the bindings seen on the server.
+    EXPECT_EQ(2u, service()->GetClientsBoundForTesting());
+  }
 
   new_remote.reset();
   base::RunLoop().RunUntilIdle();
@@ -2712,19 +2716,19 @@ TEST_F(CookieManagerTest, BlockThirdPartyCookies) {
   const net::SiteForCookies kThatSiteForCookies =
       net::SiteForCookies::FromUrl(kThatURL);
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
-      QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin,
+      net::CookieSettingOverrides()));
 
   // Set block third party cookies to true, cookie should now be blocked.
   cookie_service_client()->BlockThirdPartyCookies(true);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
-      QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin,
+      net::CookieSettingOverrides()));
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThisSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
-      QueryReason::kCookies));
+      kThisURL, kThisSiteForCookies, kThisOrigin,
+      net::CookieSettingOverrides()));
 
   // Set block third party cookies back to false, cookie should no longer be
   // blocked.
@@ -2732,8 +2736,8 @@ TEST_F(CookieManagerTest, BlockThirdPartyCookies) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(service()->cookie_settings().IsFullCookieAccessAllowed(
-      kThisURL, kThatSiteForCookies, kThisOrigin, net::CookieSettingOverrides(),
-      QueryReason::kCookies));
+      kThisURL, kThatSiteForCookies, kThisOrigin,
+      net::CookieSettingOverrides()));
 }
 
 // A test class having cookie store with a persistent backing store.

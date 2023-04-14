@@ -17,9 +17,7 @@
 #include "base/syslog_logging.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
-#include "chrome/browser/ash/policy/uploading/upload_job_impl.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/http/http_request_headers.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -50,9 +48,6 @@ const char* const kFileTypeHeaderName = "File-Type";
 // String constant signalling that the data segment contains screenshots.
 const char* const kFileTypeScreenshotFile = "screenshot_file";
 
-// String constant identifying the upload url field in the command payload.
-const char* const kUploadUrlFieldName = "fileUploadUrl";
-
 // Helper method to hide the |screen_index| and `std::make_pair` from the
 // |DeviceCommandScreenshotJob::Delegate|.
 void CallCollectAndUpload(
@@ -64,8 +59,9 @@ void CallCollectAndUpload(
 
 std::string CreatePayload(ResultCode result_code) {
   base::Value::Dict root_dict;
-  if (result_code != ResultCode::SUCCESS)
+  if (result_code != ResultCode::SUCCESS) {
     root_dict.Set(kResultFieldName, result_code);
+  }
 
   std::string payload;
   base::JSONWriter::Write(root_dict, &payload);
@@ -73,6 +69,10 @@ std::string CreatePayload(ResultCode result_code) {
 }
 
 }  // namespace
+
+// String constant identifying the upload url field in the command payload.
+constexpr char DeviceCommandScreenshotJob::kUploadUrlFieldName[] =
+    "fileUploadUrl";
 
 DeviceCommandScreenshotJob::DeviceCommandScreenshotJob(
     std::unique_ptr<Delegate> screenshot_delegate)
@@ -114,12 +114,14 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
 bool DeviceCommandScreenshotJob::ParseCommandPayload(
     const std::string& command_payload) {
   absl::optional<base::Value> root(base::JSONReader::Read(command_payload));
-  if (!root || !root->is_dict())
+  if (!root || !root->is_dict()) {
     return false;
+  }
   const std::string* upload_url =
       root->GetDict().FindString(kUploadUrlFieldName);
-  if (!upload_url)
+  if (!upload_url) {
     return false;
+  }
   upload_url_ = GURL(*upload_url);
   return true;
 }

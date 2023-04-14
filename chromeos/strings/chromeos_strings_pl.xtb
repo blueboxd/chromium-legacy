@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Okno aktualizowania oprogramowania układowego urządzeń zewnętrznych jest otwarte. Dostępne są aktualizacje (<ph name="NUM_UPDATES" />).</translation>
 <translation id="1145516343487477149">Znajdź artykuły pomocy i odpowiedzi na najczęstsze pytania dotyczące Chromebooka</translation>
+<translation id="1167755866710282443">Otwórz menu, aby dostosować klawisze. Menu możesz przeciągnąć w inne miejsce.</translation>
 <translation id="1175697296044146566">Tym urządzeniem <ph name="DEVICE_TYPE" /> zarządza <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Przeciętna (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Usuń</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Wybierz album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Tryb ciemny</translation>
+<translation id="4130035430755296270">Najedź kursorem, aby zobaczyć więcej opcji układu</translation>
 <translation id="4131410914670010031">Czarno-biały</translation>
 <translation id="4145784616224233563">Zapora sieciowa HTTP</translation>
 <translation id="4147897805161313378">Zdjęcia Google</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Rozpoznawanie nazw DNS</translation>
 <translation id="4848429997038228357">W TOKU</translation>
 <translation id="4854586501323951986">Wbudowany ekran dotykowy</translation>
+<translation id="4855250849489639581">Aby zobaczyć więcej opcji układu, przesuń w dół</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Pozostała {0} próba.}few{<ph name="ERROR_MESSAGE" /> Pozostały {0} próby.}many{<ph name="ERROR_MESSAGE" /> Pozostało {0} prób.}other{<ph name="ERROR_MESSAGE" /> Pozostało {0} próby.}}</translation>
 <translation id="4873827928179867585">Algorytm uwierzytelniania</translation>
 <translation id="4880328057631981605">Nazwa punktu dostępu</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Zwiększ jasność wyświetlacza</translation>
 <translation id="57838592816432529">Wycisz</translation>
 <translation id="5784136236926853061">Duże opóźnienie HTTP</translation>
+<translation id="5826644637650799838">Informacje o grafice</translation>
 <translation id="5832805196449965646">Dodaj osobę</translation>
 <translation id="583281660410589416">Nieznany</translation>
 <translation id="5843706793424741864">Stopnie Fahrenheita</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 obraz</translation>
 <translation id="7177485034254901881">Tym urządzeniem <ph name="DEVICE_TYPE" /> zarządza <ph name="MANAGER" />. Administratorzy mogą je zdalnie konfigurować.</translation>
 <translation id="7180611975245234373">Odśwież</translation>
+<translation id="7180865173735832675">Dostosuj</translation>
 <translation id="7212734716605298123">Aktualizacje oprogramowania urządzeń zewnętrznych</translation>
 <translation id="7216409898977639127">Operator komórkowy</translation>
 <translation id="725133483556299729">Wybierz adres e-mail</translation>
@@ -817,7 +822,7 @@
 <translation id="8675354002693747642">Klucz wstępny</translation>
 <translation id="8677859815076891398">Brak albumów. Utwórz album w <ph name="LINK_BEGIN" />Zdjęciach Google<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Aby zarządzać tą funkcją, naciskaj klawisze strzałek w lewo lub w prawo.</translation>
-<translation id="8712637175834984815">OK</translation>
+<translation id="8712637175834984815">Rozumiem</translation>
 <translation id="871560550817059752">Niepowodzenie – brak tuszu</translation>
 <translation id="8723108084122415655">Sieć inna niż domyślna przekroczyła próg opóźnienia</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>

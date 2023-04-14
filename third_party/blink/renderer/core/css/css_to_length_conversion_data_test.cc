@@ -50,7 +50,7 @@ class CSSToLengthConversionDataTest : public PageTestBase {
     UpdateAllLifecyclePhasesForTest();
 
     return CSSToLengthConversionData(
-        div->GetComputedStyle(), GetDocument().body()->GetComputedStyle(),
+        div->ComputedStyleRef(), GetDocument().body()->GetComputedStyle(),
         GetDocument().documentElement()->GetComputedStyle(),
         GetDocument().GetLayoutView(),
         CSSToLengthConversionData::ContainerSizes(),
@@ -84,7 +84,7 @@ class CSSToLengthConversionDataTest : public PageTestBase {
 
   void SetLineHeightSize(Element& element, CSSToLengthConversionData& data) {
     data.SetLineHeightSize(CSSToLengthConversionData::LineHeightSize(
-        element.ComputedStyleRef(),
+        element.ComputedStyleRef().GetFontSizeStyle(),
         element.GetDocument().documentElement()->GetComputedStyle()));
   }
 

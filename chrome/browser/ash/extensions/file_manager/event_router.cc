@@ -48,6 +48,8 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_features.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/extensions/api/file_system/chrome_file_system_delegate_ash.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -367,6 +369,22 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
     return url;
   }
 
+  std::vector<GURL> ConvertPathsToFileSystemUrls(
+      const std::vector<base::FilePath>& paths,
+      const GURL& listener_url) override {
+    std::vector<GURL> urls;
+    for (const auto& path : paths) {
+      GURL url;
+      bool did_convert =
+          file_manager::util::ConvertAbsoluteFilePathToFileSystemUrl(
+              profile_, path, listener_url, &url);
+      LOG_IF(ERROR, !did_convert)
+          << "Failed to convert file path to file system URL";
+      urls.emplace_back(std::move(url));
+    }
+    return urls;
+  }
+
   std::string GetDriveFileSystemName() override {
     return DriveIntegrationServiceFactory::FindForProfile(profile_)
         ->GetMountPointPath()
@@ -395,84 +413,9 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
     extensions::EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   }
 
-  void PathsToEntries(const std::vector<base::FilePath>& paths,
-                      const GURL& source_url,
-                      IndividualFileTransferEntriesCallback callback) override {
-    auto origin = url::Origin::Create(source_url);
-
-    auto* file_system_context =
-        util::GetFileSystemContextForSourceURL(profile_, source_url);
-    if (file_system_context == nullptr) {
-      LOG(ERROR) << "Could not find file system context";
-      std::move(callback).Run(IndividualFileTransferEntries());
-      return;
-    }
-
-    auto* drive_integration_service =
-        DriveIntegrationServiceFactory::FindForProfile(profile_);
-    if (!drive_integration_service) {
-      LOG(ERROR) << "Could not find drive integration service";
-      std::move(callback).Run(IndividualFileTransferEntries());
-      return;
-    }
-    auto mount_path = drive_integration_service->GetMountPointPath();
-
-    file_manager::util::FileDefinitionList file_definition_list;
-    for (const auto& path : paths) {
-      auto absolute_path = mount_path;
-      base::FilePath("/").AppendRelativePath(path, &absolute_path);
-      file_manager::util::FileDefinition file_definition;
-      if (!file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-              profile_, source_url, absolute_path,
-              &file_definition.virtual_path)) {
-        LOG(ERROR)
-            << "Could not convert absolute path to relative file system path.";
-      }
-      file_definition_list.push_back(std::move(file_definition));
-    }
-
-    file_manager::util::ConvertFileDefinitionListToEntryDefinitionList(
-        file_system_context, origin, std::move(file_definition_list),
-        base::BindOnce(&DriveFsEventRouterImpl::
-                           OnConvertFileDefinitionListToEntryDefinitionList_,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  }
-
-  void OnConvertFileDefinitionListToEntryDefinitionList_(
-      IndividualFileTransferEntriesCallback callback,
-      std::unique_ptr<file_manager::util::EntryDefinitionList>
-          entry_definition_list) {
-    if (entry_definition_list == nullptr) {
-      LOG(WARNING)
-          << "Failed to convert file definition list to entry definition list";
-      std::move(callback).Run(IndividualFileTransferEntries());
-      return;
-    }
-
-    IndividualFileTransferEntries entries;
-    for (const auto& def : *entry_definition_list) {
-      if (def.error != base::File::FILE_OK) {
-        LOG(WARNING) << "File entry ignored: " << static_cast<int>(def.error);
-        entries.emplace_back();
-        continue;
-      }
-      IndividualFileTransferEntry entry;
-      entry.additional_properties.Set("fileSystemName", def.file_system_name);
-      entry.additional_properties.Set("fileSystemRoot",
-                                      def.file_system_root_url);
-      entry.additional_properties.Set(
-          "fileFullPath", base::FilePath("/").Append(def.full_path).value());
-      entry.additional_properties.Set("fileIsDirectory", def.is_directory);
-      entries.push_back(std::move(entry));
-    }
-    std::move(callback).Run(std::move(entries));
-  }
-
   Profile* const profile_;
   const std::map<base::FilePath, std::unique_ptr<FileWatcher>>* const
       file_watchers_;
-
-  base::WeakPtrFactory<DriveFsEventRouterImpl> weak_ptr_factory_{this};
 };
 
 // Observes App Service and notifies Files app when there are any changes in the
@@ -480,15 +423,16 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
 // an app is installed or uninstalled.
 class RecalculateTasksObserver : public apps::AppRegistryCache::Observer {
  public:
-  explicit RecalculateTasksObserver(Profile* profile) : profile_(profile) {}
+  explicit RecalculateTasksObserver(base::WeakPtr<EventRouter> event_router)
+      : event_router_(event_router) {}
 
   // Tell Files app frontend that file tasks might have changed.
   void OnAppUpdate(const apps::AppUpdate& update) override {
     // TODO(petermarshall): Filter update more carefully.
-    BroadcastEvent(profile_,
-                   extensions::events::FILE_MANAGER_PRIVATE_ON_APPS_UPDATED,
-                   file_manager_private::OnAppsUpdated::kEventName,
-                   file_manager_private::OnAppsUpdated::Create());
+    if (!event_router_) {
+      return;
+    }
+    event_router_->BroadcastOnAppsUpdatedEvent();
   }
 
   void OnAppRegistryCacheWillBeDestroyed(
@@ -497,7 +441,7 @@ class RecalculateTasksObserver : public apps::AppRegistryCache::Observer {
   }
 
  private:
-  Profile* profile_;
+  base::WeakPtr<EventRouter> event_router_;
 };
 
 // Records mounted File System Provider type if known otherwise UNKNOWN.
@@ -583,14 +527,14 @@ EventRouter::EventRouter(Profile* profile)
           std::make_unique<DriveFsEventRouterImpl>(notification_manager_.get(),
                                                    profile,
                                                    &file_watchers_)),
-      recalculate_tasks_observer_(
-          std::make_unique<RecalculateTasksObserver>(profile)),
       dispatch_directory_change_event_impl_(
           base::BindRepeating(&EventRouter::DispatchDirectoryChangeEventImpl,
                               base::Unretained(this))) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notification manager can call into Drive FS for dialog handling.
   notification_manager_->SetDriveFSEventRouter(drivefs_event_router_.get());
+  recalculate_tasks_observer_ =
+      std::make_unique<RecalculateTasksObserver>(weak_factory_.GetWeakPtr());
   ObserveEvents();
 }
 
@@ -712,18 +656,36 @@ void EventRouter::ObserveEvents() {
   extensions::ExtensionRegistry::Get(profile_)->AddObserver(this);
 
   pref_change_registrar_->Init(profile_->GetPrefs());
-  auto callback = base::BindRepeating(&EventRouter::OnFileManagerPrefsChanged,
-                                      weak_factory_.GetWeakPtr());
+
+  auto file_manager_prefs_callback = base::BindRepeating(
+      &EventRouter::OnFileManagerPrefsChanged, weak_factory_.GetWeakPtr());
   pref_change_registrar_->Add(drive::prefs::kDisableDriveOverCellular,
-                              callback);
-  pref_change_registrar_->Add(drive::prefs::kDisableDrive, callback);
-  pref_change_registrar_->Add(ash::prefs::kFilesAppTrashEnabled, callback);
-  pref_change_registrar_->Add(prefs::kSearchSuggestEnabled, callback);
-  pref_change_registrar_->Add(prefs::kUse24HourClock, callback);
-  pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(drive::prefs::kDisableDrive,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(ash::prefs::kFilesAppTrashEnabled,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(prefs::kSearchSuggestEnabled,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(prefs::kUse24HourClock,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(arc::prefs::kArcEnabled,
+                              file_manager_prefs_callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
-                              callback);
-  pref_change_registrar_->Add(ash::prefs::kFilesAppFolderShortcuts, callback);
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(ash::prefs::kFilesAppFolderShortcuts,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(prefs::kOfficeFileMovedToOneDrive,
+                              file_manager_prefs_callback);
+  pref_change_registrar_->Add(prefs::kOfficeFileMovedToGoogleDrive,
+                              file_manager_prefs_callback);
+
+  auto on_apps_update_callback = base::BindRepeating(
+      &EventRouter::BroadcastOnAppsUpdatedEvent, weak_factory_.GetWeakPtr());
+  pref_change_registrar_->Add(prefs::kDefaultTasksByMimeType,
+                              on_apps_update_callback);
+  pref_change_registrar_->Add(prefs::kDefaultTasksBySuffix,
+                              on_apps_update_callback);
 
   ash::system::TimezoneSettings::GetInstance()->AddObserver(this);
 
@@ -1294,6 +1256,20 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
   event_status.bytes_transferred = status.bytes_transferred;
   event_status.total_bytes = status.total_bytes;
 
+  // CopyOrMoveIOTask can enter PAUSED state when it needs the user to resolve
+  // a file name conflict. Add PauseParams for the file name conflict, to send
+  // to the files app UI conflict dialog.
+  if (GetIOTaskState(status.state) ==
+      file_manager_private::IO_TASK_STATE_PAUSED) {
+    file_manager_private::PauseParams pause_params;
+    pause_params.conflict_name = status.pause_params.conflict_name;
+    pause_params.conflict_multiple = status.pause_params.conflict_multiple;
+    pause_params.conflict_is_directory =
+        status.pause_params.conflict_is_directory;
+    pause_params.conflict_target_url = status.pause_params.conflict_target_url;
+    event_status.pause_params = std::move(pause_params);
+  }
+
   // The TrashIOTask is the only IOTask that uses the output Entry's, so don't
   // try to resolve the outputs for all other IOTasks.
   if (GetIOTaskType(status.type) != file_manager_private::IO_TASK_TYPE_TRASH ||
@@ -1376,6 +1352,16 @@ void EventRouter::OnRegistered(guest_os::GuestOsMountProviderRegistry::Id id,
 void EventRouter::OnUnregistered(
     guest_os::GuestOsMountProviderRegistry::Id id) {
   OnMountableGuestsChanged();
+}
+
+void EventRouter::BroadcastOnAppsUpdatedEvent() {
+  DCHECK(profile_);
+  DCHECK(extensions::EventRouter::Get(profile_));
+
+  BroadcastEvent(profile_,
+                 extensions::events::FILE_MANAGER_PRIVATE_ON_APPS_UPDATED,
+                 file_manager_private::OnAppsUpdated::kEventName,
+                 file_manager_private::OnAppsUpdated::Create());
 }
 
 void EventRouter::OnMountableGuestsChanged() {

@@ -269,6 +269,8 @@ component("capture_lib") {
       "video/linux/v4l2_capture_device_impl.h",
       "video/linux/video_capture_device_factory_linux.cc",
       "video/linux/video_capture_device_factory_linux.h",
+      "video/linux/video_capture_device_factory_v4l2.cc",
+      "video/linux/video_capture_device_factory_v4l2.h",
       "video/linux/video_capture_device_linux.cc",
       "video/linux/video_capture_device_linux.h",
     ]
@@ -356,7 +358,7 @@ component("capture_lib") {
     ]
     deps += [
       "//media/fuchsia/common",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3:fuchsia.camera3_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
       "//third_party/libyuv",
     ]
@@ -457,7 +459,7 @@ test("capture_unittests") {
   if (is_linux || is_chromeos_lacros) {
     sources += [
       "video/linux/v4l2_capture_delegate_unittest.cc",
-      "video/linux/video_capture_device_factory_linux_unittest.cc",
+      "video/linux/video_capture_device_factory_v4l2_unittest.cc",
     ]
   }
 
@@ -471,8 +473,8 @@ test("capture_unittests") {
   if (is_fuchsia) {
     deps += [
       "//media/fuchsia/camera:test_support",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3",
-      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.camera3:fuchsia.camera3_hlcpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem:fuchsia.sysmem_hlcpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
     sources += [

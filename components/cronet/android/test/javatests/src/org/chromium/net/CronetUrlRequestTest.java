@@ -18,8 +18,8 @@ import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.Process;
 import android.os.StrictMode;
-import android.support.test.runner.AndroidJUnit4;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -29,8 +29,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Log;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestRule.CronetTestFramework;
 import org.chromium.net.CronetTestRule.OnlyRunNativeCronet;
 import org.chromium.net.CronetTestRule.RequiresMinAndroidApi;
@@ -129,7 +129,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testBuilderChecks() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         try {
@@ -160,7 +159,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testSimpleGet() throws Exception {
         String url = NativeTestServer.getEchoMethodURL();
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
@@ -189,7 +187,8 @@ public class CronetUrlRequestTest {
 
     void runConnectionMigrationTest(boolean disableConnectionMigration) {
         // URLRequest load flags at net/base/load_flags_list.h.
-        int connectionMigrationLoadFlag = nativeGetConnectionMigrationDisableLoadFlag();
+        int connectionMigrationLoadFlag =
+                CronetUrlRequestTestJni.get().getConnectionMigrationDisableLoadFlag();
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
         // Create builder, start a request, and check if default load_flags are set correctly.
@@ -218,7 +217,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testLoadFlagsWithConnectionMigration() throws Exception {
         runConnectionMigrationTest(/*disableConnectionMigration=*/false);
@@ -232,7 +230,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testRedirectAsync() throws Exception {
         // Start the request and wait to see the redirect.
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -318,7 +315,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testRedirectWithNullLocationHeader() throws Exception {
         String url = NativeTestServer.getFileURL("/redirect_broken_header.html");
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -342,7 +338,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testOnRedirectReceivedAfterCancel() throws Exception {
         final AtomicBoolean failedExpectation = new AtomicBoolean();
         TestUrlRequestCallback callback = new TestUrlRequestCallback() {
@@ -404,7 +399,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testNotFound() throws Exception {
         String url = NativeTestServer.getFileURL("/notfound.html");
         TestUrlRequestCallback callback = startAndWaitForComplete(url);
@@ -421,7 +415,6 @@ public class CronetUrlRequestTest {
     // See http://crbug.com/468803.
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // No canonical exception to assert on
     public void testContentLengthMismatchFailsOnce() throws Exception {
         String url = NativeTestServer.getFileURL(
@@ -444,7 +437,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testSetHttpMethod() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String methodName = "HEAD";
@@ -467,7 +459,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testBadMethod() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -484,7 +475,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testBadHeaderName() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -501,7 +491,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testAcceptEncodingIgnored() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -515,7 +504,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testBadHeaderValue() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -532,7 +520,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testAddHeader() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String headerName = "header-name";
@@ -549,7 +536,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testMultiRequestHeaders() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String headerName = "header-name";
@@ -575,7 +561,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testCustomReferer_verbatim() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String refererName = "Referer";
@@ -591,7 +576,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testCustomReferer_changeToCanonical() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -608,7 +592,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testCustomReferer_discardInvalid() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -625,7 +608,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testCustomUserAgent() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String userAgentName = "User-Agent";
@@ -641,7 +623,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testDefaultUserAgent() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         String headerName = "User-Agent";
@@ -658,7 +639,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testMockSuccess() throws Exception {
         TestUrlRequestCallback callback = startAndWaitForComplete(NativeTestServer.getSuccessURL());
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -675,7 +655,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testResponseHeadersList() throws Exception {
         TestUrlRequestCallback callback = startAndWaitForComplete(NativeTestServer.getSuccessURL());
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
@@ -696,7 +675,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testMockMultiRedirect() throws Exception {
         TestUrlRequestCallback callback =
                 startAndWaitForComplete(NativeTestServer.getMultiRedirectURL());
@@ -728,7 +706,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testMockNotFound() throws Exception {
         TestUrlRequestCallback callback =
                 startAndWaitForComplete(NativeTestServer.getNotFoundURL());
@@ -743,7 +720,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     public void testMockStartAsyncError() throws Exception {
         final int arbitraryNetError = -3;
@@ -761,7 +737,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     public void testMockReadDataSyncError() throws Exception {
         final int arbitraryNetError = -4;
@@ -780,7 +755,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     @DisabledTest(message = "crbug.com/1315367")
     public void testMockReadDataAsyncError() throws Exception {
@@ -803,7 +777,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testMockClientCertificateRequested() throws Exception {
         TestUrlRequestCallback callback = startAndWaitForComplete(
@@ -821,7 +794,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     public void testMockSSLCertificateError() throws Exception {
         TestUrlRequestCallback callback = startAndWaitForComplete(
@@ -841,7 +813,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     public void testSSLCertificateError() throws Exception {
         EmbeddedTestServer sslServer = EmbeddedTestServer.createAndStartHTTPSServer(
@@ -876,7 +847,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testSimpleGetBufferUpdates() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
@@ -961,7 +931,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testBadBuffers() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
@@ -1003,7 +972,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testNoIoInCancel() throws Exception {
         final TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
@@ -1034,7 +1002,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUnexpectedReads() throws Exception {
         final TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
@@ -1111,7 +1078,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUnexpectedFollowRedirects() throws Exception {
         final TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAutoAdvance(false);
@@ -1186,7 +1152,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadSetDataProvider() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1211,7 +1176,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadEmptyBodySync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1235,7 +1199,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1260,7 +1223,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadMultiplePiecesSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1289,7 +1251,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadMultiplePiecesAsync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1318,7 +1279,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadChangesDefaultMethod() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1339,7 +1299,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadWithSetMethod() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1363,7 +1322,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadRedirectSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1388,7 +1346,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadRedirectAsync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1413,7 +1370,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadWithBadLength() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1447,7 +1403,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadWithBadLengthBufferAligned() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1480,7 +1435,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadReadFailSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1508,7 +1462,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadLengthFailSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1536,7 +1489,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadReadFailAsync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1565,7 +1517,6 @@ public class CronetUrlRequestTest {
     /** This test uses a direct executor for upload, and non direct for callbacks */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testDirectExecutorUploadProhibitedByDefault() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         Executor myExecutor = new Executor() {
@@ -1600,7 +1551,6 @@ public class CronetUrlRequestTest {
     /** This test uses a direct executor for callbacks, and non direct for upload */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testDirectExecutorProhibitedByDefault() throws Exception {
         System.out.println("testing with " + mTestFramework.mCronetEngine);
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -1637,7 +1587,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testDirectExecutorAllowed() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         callback.setAllowDirectExecutor(true);
@@ -1667,7 +1616,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadReadFailThrown() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1695,7 +1643,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadRewindFailSync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1721,7 +1668,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadRewindFailAsync() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1747,7 +1693,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadRewindFailThrown() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1773,7 +1718,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadChunked() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1799,7 +1743,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadChunkedLastReadZeroLengthBody() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -1830,7 +1773,6 @@ public class CronetUrlRequestTest {
     // UploadDataStream, because it can't connect to the server.
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadFailsWithoutInitializingStream() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         // The port for PTP will always refuse a TCP connection
@@ -1894,7 +1836,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testFailures() throws Exception {
         throwOrCancel(FailureType.CANCEL_SYNC, ResponseStep.ON_RECEIVED_REDIRECT,
                 false, false);
@@ -1926,7 +1867,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testThrowOrCancelInOnSucceeded() {
         FailureType[] testTypes = new FailureType[] {
                 FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
@@ -1952,7 +1892,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testThrowOrCancelInOnFailed() {
         FailureType[] testTypes = new FailureType[] {
                 FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
@@ -1980,7 +1919,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testThrowOrCancelInOnCanceled() {
         FailureType[] testTypes = new FailureType[] {
                 FailureType.THROW_SYNC, FailureType.CANCEL_SYNC, FailureType.CANCEL_ASYNC};
@@ -2010,7 +1948,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // No destroyed callback for tests
     public void testExecutorShutdown() {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
@@ -2046,7 +1983,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testUploadExecutorShutdown() throws Exception {
         class HangingUploadDataProvider extends UploadDataProvider {
             UploadDataSink mUploadDataSink;
@@ -2111,7 +2047,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // No adapter to destroy in pure java
     // Regression test for crbug.com/564946.
     public void testDestroyUploadDataStreamAdapterOnSucceededCallback() throws Exception {
@@ -2145,7 +2080,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet // Java impl doesn't support MockUrlRequestJobFactory
     public void testErrorCodes() throws Exception {
         checkSpecificErrorCode(
@@ -2173,7 +2107,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testCookiesArentSavedOrSent() throws Exception {
         // Make a request to a url that sets the cookie
         String url = NativeTestServer.getFileURL("/set_cookie.html");
@@ -2191,7 +2124,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testQuicErrorCode() throws Exception {
         TestUrlRequestCallback callback =
@@ -2209,7 +2141,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testQuicErrorCodeForNetworkChanged() throws Exception {
         TestUrlRequestCallback callback =
@@ -2233,7 +2164,6 @@ public class CronetUrlRequestTest {
      */
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     public void testLegacyOnFailedCallback() throws Exception {
         final int netError = -123;
@@ -2331,7 +2261,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @OnlyRunNativeCronet
     @RequiresMinAndroidApi(Build.VERSION_CODES.N)
     // Used for Android's NetworkSecurityPolicy added in Nougat
@@ -2351,7 +2280,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     /**
      * Open many connections and cancel them right away. This test verifies all internal
      * sockets and other Closeables are properly closed. See crbug.com/726193.
@@ -2387,7 +2315,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @RequiresMinApi(8) // JavaUrlRequest fixed in API level 8: crrev.com/499303
     /** Do a HEAD request and get back a 404. */
     public void test404Head() throws Exception {
@@ -2400,7 +2327,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     @RequiresMinApi(9) // Tagging support added in API level 9: crrev.com/c/chromium/src/+/930086
     @RequiresMinAndroidApi(Build.VERSION_CODES.M) // crbug/1301957
     public void testTagging() throws Exception {
@@ -2456,7 +2382,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     /**
      * Initiate many requests concurrently to make sure neither Cronet implementation crashes.
      * Regression test for https://crbug.com/844031.
@@ -2491,7 +2416,6 @@ public class CronetUrlRequestTest {
 
     @Test
     @SmallTest
-    @Feature({"Cronet"})
     public void testSetIdempotency() throws Exception {
         TestUrlRequestCallback callback = new TestUrlRequestCallback();
         ExperimentalUrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
@@ -2511,6 +2435,9 @@ public class CronetUrlRequestTest {
         assertEquals("POST", callback.mResponseAsString);
     }
 
-    // Return connection migration disable load flag value.
-    private static native int nativeGetConnectionMigrationDisableLoadFlag();
+    @NativeMethods
+    interface Natives {
+        // Return connection migration disable load flag value.
+        int getConnectionMigrationDisableLoadFlag();
+    }
 }

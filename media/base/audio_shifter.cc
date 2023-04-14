@@ -93,7 +93,7 @@ AudioShifter::AudioShifter(base::TimeDelta max_buffer_size,
       running_(false),
       resampler_(channels,
                  1.0,
-                 96,
+                 128,
                  base::BindRepeating(&AudioShifter::ResamplerCallback,
                                      base::Unretained(this))) {}
 
@@ -125,8 +125,8 @@ void AudioShifter::Pull(AudioBus* output,
                (playout_time - base::TimeTicks()).InMillisecondsF());
   // Add the kernel size since we incur some internal delay in resampling. All
   // resamplers incur some delay, and for the SincResampler (used by
-  // MultiChannelResampler), this is (currently) kKernelSize / 2 frames.
-  playout_time += base::Seconds(SincResampler::kKernelSize / 2 / rate_);
+  // MultiChannelResampler), this is (currently) KernelSize() / 2 frames.
+  playout_time += base::Seconds(resampler_.KernelSize() / 2 / rate_);
   playout_time = output_clock_smoother_->Smooth(
       playout_time, base::Seconds(previous_requested_samples_ / rate_));
   previous_requested_samples_ = output->frames();

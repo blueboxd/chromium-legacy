@@ -8,7 +8,6 @@
 #include "cc/trees/property_tree.h"
 #include "cc/trees/scroll_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
@@ -413,10 +413,7 @@ class NonCompositedMainThreadScrollingReasonsTest
     EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
         scrollable_area2->GetNonCompositedMainThreadScrollingReasons());
 
-    LocalFrameView* frame_view = GetFrame()->View();
-    ASSERT_TRUE(frame_view);
-    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
-        frame_view->GetMainThreadScrollingReasons());
+    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(GetViewMainThreadScrollingReasons());
 
     // Remove class from the scroller 1 would lead to scroll on impl.
 
@@ -425,8 +422,7 @@ class NonCompositedMainThreadScrollingReasonsTest
 
     EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
         scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
-        frame_view->GetMainThreadScrollingReasons());
+    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(GetViewMainThreadScrollingReasons());
 
     // Add target attribute would again lead to scroll on main thread
     container->classList().Add(style_class);
@@ -434,8 +430,7 @@ class NonCompositedMainThreadScrollingReasonsTest
 
     EXPECT_MAIN_THREAD_SCROLLING_REASON(
         reason, scrollable_area->GetNonCompositedMainThreadScrollingReasons());
-    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
-        frame_view->GetMainThreadScrollingReasons());
+    EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(GetViewMainThreadScrollingReasons());
 
     if ((reason & kLCDTextRelatedReasons) &&
         !(reason & ~kLCDTextRelatedReasons)) {
@@ -444,7 +439,7 @@ class NonCompositedMainThreadScrollingReasonsTest
       EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
           scrollable_area->GetNonCompositedMainThreadScrollingReasons());
       EXPECT_NO_MAIN_THREAD_SCROLLING_REASON(
-          frame_view->GetMainThreadScrollingReasons());
+          GetViewMainThreadScrollingReasons());
     }
   }
 };

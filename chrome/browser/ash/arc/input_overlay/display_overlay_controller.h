@@ -37,6 +37,7 @@ class ActionEditMenu;
 class EditFinishView;
 class MessageView;
 class EducationalView;
+class NudgeView;
 
 // DisplayOverlayController manages the input mapping view, view and edit mode,
 // menu, and educational dialog. It also handles the visibility of the
@@ -83,6 +84,9 @@ class DisplayOverlayController : public ui::EventHandler,
   // Remove the action view when removing |action|.
   void OnActionRemoved(Action* action);
   void OnActionTrashButtonPressed(Action* action);
+
+  // For menu entry hover state:
+  void SetMenuEntryHoverState(bool curr_hover_state);
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
@@ -179,7 +183,10 @@ class DisplayOverlayController : public ui::EventHandler,
   raw_ptr<EditFinishView> edit_finish_view_ = nullptr;
   raw_ptr<MessageView> message_ = nullptr;
   raw_ptr<EducationalView> educational_view_ = nullptr;
-  raw_ptr<ash::PillButton> nudge_view_ = nullptr;
+  // TODO(b/260937747): Update or remove when removing flags
+  // |kArcInputOverlayAlphaV2| or |kArcInputOverlayBeta|.
+  raw_ptr<ash::PillButton> nudge_view_alpha_ = nullptr;
+  raw_ptr<NudgeView> nudge_view_ = nullptr;
   // TODO(b/250900717): Below are temporary UIs for editor feature.
   raw_ptr<ash::PillButton> add_action_tap_ = nullptr;
   raw_ptr<ash::PillButton> add_action_move_ = nullptr;

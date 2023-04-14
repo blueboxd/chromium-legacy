@@ -145,18 +145,18 @@ std::string TrustTokenRequestHandler::GetKeyCommitmentRecord() const {
   std::string ret;
   JSONStringValueSerializer serializer(&ret);
 
-  base::Value value(base::Value::Type::DICTIONARY);
-  value.SetStringPath("TrustTokenV3PMB.protocol_version",
-                      rep_->protocol_version);
-  value.SetIntPath("TrustTokenV3PMB.id", rep_->id);
-  value.SetIntPath("TrustTokenV3PMB.batchsize", rep_->batch_size);
+  base::Value::Dict dict;
+  dict.SetByDottedPath("TrustTokenV3PMB.protocol_version",
+                       rep_->protocol_version);
+  dict.SetByDottedPath("TrustTokenV3PMB.id", rep_->id);
+  dict.SetByDottedPath("TrustTokenV3PMB.batchsize", rep_->batch_size);
 
   for (size_t i = 0; i < rep_->issuance_keys.size(); ++i) {
-    value.SetStringPath(
+    dict.SetByDottedPath(
         "TrustTokenV3PMB.keys." + base::NumberToString(i) + ".Y",
         base::Base64Encode(
             base::make_span(rep_->issuance_keys[i].verification)));
-    value.SetStringPath(
+    dict.SetByDottedPath(
         "TrustTokenV3PMB.keys." + base::NumberToString(i) + ".expiry",
         base::NumberToString(
             (rep_->issuance_keys[i].expiry - base::Time::UnixEpoch())
@@ -166,7 +166,7 @@ std::string TrustTokenRequestHandler::GetKeyCommitmentRecord() const {
   // It's OK to be a bit crashy in exceptional failure cases because it
   // indicates a serious coding error in this test-only code; we'd like to find
   // this out sooner rather than later.
-  CHECK(serializer.Serialize(value));
+  CHECK(serializer.Serialize(dict));
   return ret;
 }
 
@@ -234,7 +234,7 @@ absl::optional<std::string> TrustTokenRequestHandler::Redeem(
   ScopedBoringsslBytes redeemed_client_data;
   uint32_t received_public_metadata;
   uint8_t received_private_metadata;
-  if (!TRUST_TOKEN_ISSUER_redeem_raw(
+  if (!TRUST_TOKEN_ISSUER_redeem(
           issuer_ctx.get(), &received_public_metadata,
           &received_private_metadata, &redeemed_token,
           redeemed_client_data.mutable_ptr(),

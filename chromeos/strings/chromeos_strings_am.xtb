@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">ለውጫዊ መሣሪያዎች መስኮት ፊርምዌርን ማዘመን ክፍት ነው። <ph name="NUM_UPDATES" /> ዝማኔዎች ይገኛሉ።</translation>
 <translation id="1145516343487477149">ለተለመዱ የChromebook ጥያቄዎች የእገዛ ጽሑፎችን እና መልሶችን ያግኙ</translation>
+<translation id="1167755866710282443">ቁልፎችን ብጁ ለማድረግ ምናሌን ይክፈቱ። ለማንቀሳቀስ ምናሌን ይጎትቱ።</translation>
 <translation id="1175697296044146566">ይህ <ph name="DEVICE_TYPE" /> በ<ph name="MANAGER" /> የሚተዳደር ነው።</translation>
 <translation id="1175951029573070619">መካከለኛ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">አስወግድ</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" />ን አልበም ይምረጡ</translation>
 <translation id="4111761024568264522">የዩኤስቢ መዳሰሻ ሰሌዳ</translation>
 <translation id="4117637339509843559">የጨለማ ሁነታ</translation>
+<translation id="4130035430755296270">ለተጨማሪ የአቀማመጥ አማራጮች ማንዣበብዎን ይቀጥሉ</translation>
 <translation id="4131410914670010031">ጥቁር እና ነጭ</translation>
 <translation id="4145784616224233563">የHTTP ኬላ</translation>
 <translation id="4147897805161313378">Google ፎቶዎች</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) የዲኤንኤስ መፍትሔ</translation>
 <translation id="4848429997038228357">በማሄድ ላይ</translation>
 <translation id="4854586501323951986">አብሮገነብ ተነኪ ማያ</translation>
+<translation id="4855250849489639581">ለተጨማሪ የአቀማመጥ አማራጮች ወደ ታች ያንሸራትቱ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ሙከራ ቀርቷል}one{<ph name="ERROR_MESSAGE" /> {0} ሙከራዎች ቀርተዋል}other{<ph name="ERROR_MESSAGE" /> {0} ሙከራዎች ቀርተዋል}}</translation>
 <translation id="4873827928179867585">የማረጋገጥ ስልተ-ቀመር</translation>
 <translation id="4880328057631981605">የመዳረሻ ነጥብ ስም</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 ምስል</translation>
 <translation id="7177485034254901881">ይህ <ph name="DEVICE_TYPE" /> በ<ph name="MANAGER" /> የሚተዳደር ነው። አስተዳዳሪዎች መሣሪያውን ከርቀት ማዋቀር ይችላሉ።</translation>
 <translation id="7180611975245234373">አድስ</translation>
+<translation id="7180865173735832675">አብጅ</translation>
 <translation id="7212734716605298123">ለውጫዊ መሳሪያዎች የፊርምዌር ዝማኔዎች</translation>
 <translation id="7216409898977639127">የተንቀሳቃሽ ስልክ አገልግሎት አቅራቢ</translation>
 <translation id="725133483556299729">ኢሜይል ይምረጡ</translation>

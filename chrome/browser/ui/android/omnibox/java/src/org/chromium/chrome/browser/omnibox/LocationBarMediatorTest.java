@@ -58,9 +58,10 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowLooper;
 
 import org.chromium.base.supplier.ObservableSupplierImpl;
-import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.JniMocker;
@@ -204,8 +205,6 @@ public class LocationBarMediatorTest {
     @Mock
     private TextView mView;
     @Mock
-    private OneshotSupplier<TemplateUrlService> mTemplateUrlServiceSupplier;
-    @Mock
     private KeyEvent mKeyEvent;
     @Mock
     private KeyEvent.DispatcherState mKeyDispatcherState;
@@ -252,7 +251,6 @@ public class LocationBarMediatorTest {
                 ApplicationProvider.getApplicationContext(), R.style.Theme_BrowserUI_DayNight);
         mUrlBarData = UrlBarData.create(null, "text", 0, 0, "text");
         doReturn(mUrlBarData).when(mLocationBarDataProvider).getUrlBarData();
-        doReturn(mTemplateUrlService).when(mTemplateUrlServiceSupplier).get();
         doReturn(mRootView).when(mLocationBarLayout).getRootView();
         doReturn(mRootView).when(mLocationBarTablet).getRootView();
         doReturn(new WeakReference<Activity>(null)).when(mWindowAndroid).getActivity();
@@ -264,9 +262,12 @@ public class LocationBarMediatorTest {
         doReturn(mIdentityManager).when(mIdentityServicesProvider).getIdentityManager(mProfile);
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
         Runnable noAction = () -> {}; // launchAssistanceSettingsAction
+        OneshotSupplierImpl<TemplateUrlService> templateUrlServiceSupplier =
+                new OneshotSupplierImpl<>();
+        templateUrlServiceSupplier.set(mTemplateUrlService);
         mMediator = new LocationBarMediator(mContext, mLocationBarLayout, mLocationBarDataProvider,
                 mProfileSupplier, mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate,
-                mLocaleManager, mTemplateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate,
+                mLocaleManager, templateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate,
                 mWindowAndroid,
                 /*isTablet=*/false, mSearchEngineLogoUtils, mLensController, noAction,
                 tab -> true, mOmniboxUma, () -> mIsToolbarMicEnabled);
@@ -276,7 +277,7 @@ public class LocationBarMediatorTest {
 
         mTabletMediator = new LocationBarMediator(mContext, mLocationBarTablet,
                 mLocationBarDataProvider, mProfileSupplier, mPrivacyPreferencesManager,
-                mOverrideUrlLoadingDelegate, mLocaleManager, mTemplateUrlServiceSupplier,
+                mOverrideUrlLoadingDelegate, mLocaleManager, templateUrlServiceSupplier,
                 mOverrideBackKeyBehaviorDelegate, mWindowAndroid,
                 /*isTablet=*/true, mSearchEngineLogoUtils, mLensController, noAction,
                 tab -> true, (tab, transition, isNtp) -> {}, () -> mIsToolbarMicEnabled);
@@ -287,14 +288,18 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testVoiceSearchService_initializedWithNative() {
+        ShadowLooper looper = ShadowLooper.shadowMainLooper();
         mMediator.onFinishNativeInitialization();
+        looper.idle();
         assertNotNull(mMediator.getAssistantVoiceSearchServiceSupplierForTesting().get());
     }
 
     @Test
     @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_ASSISTANT_VOICE_SEARCH)
     public void testVoiceSearchService_initializedWithNative_featureDisabled() {
+        ShadowLooper looper = ShadowLooper.shadowMainLooper();
         mMediator.onFinishNativeInitialization();
+        looper.idle();
         assertNotNull(mMediator.getAssistantVoiceSearchServiceSupplierForTesting().get());
     }
 
@@ -840,6 +845,16 @@ public class LocationBarMediatorTest {
 
     @Test
     public void testOnUrlFocusChange_geolocationPreNative() {
+        ShadowLooper looper = ShadowLooper.shadowMainLooper();
+        OneshotSupplierImpl<TemplateUrlService> templateUrlServiceSupplier =
+                new OneshotSupplierImpl<>();
+        mMediator = new LocationBarMediator(mContext, mLocationBarLayout, mLocationBarDataProvider,
+                mProfileSupplier, mPrivacyPreferencesManager, mOverrideUrlLoadingDelegate,
+                mLocaleManager, templateUrlServiceSupplier, mOverrideBackKeyBehaviorDelegate,
+                mWindowAndroid,
+                /*isTablet=*/false, mSearchEngineLogoUtils, mLensController,
+                () -> {}, tab -> true, mOmniboxUma, () -> mIsToolbarMicEnabled);
+        mMediator.setCoordinators(mUrlCoordinator, mAutocompleteCoordinator, mStatusCoordinator);
         int primeCount = sGeoHeaderPrimeCount;
         mMediator.addUrlFocusChangeListener(mUrlCoordinator);
         UrlBarData urlBarData = mock(UrlBarData.class);
@@ -857,7 +872,8 @@ public class LocationBarMediatorTest {
         mMediator.onUrlFocusChange(true);
 
         assertEquals(primeCount, sGeoHeaderPrimeCount);
-        mMediator.onFinishNativeInitialization();
+        templateUrlServiceSupplier.set(mTemplateUrlService);
+        looper.idle();
         assertEquals(primeCount + 1, sGeoHeaderPrimeCount);
     }
 

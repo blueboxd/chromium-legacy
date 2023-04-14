@@ -9,13 +9,14 @@
 #include "components/grit/components_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/supervised_user/core/common/features.h"
+#include "components/supervised_user/core/common/supervised_user_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace supervised_user_error_page {
+namespace supervised_user {
 
 struct BlockMessageIDTestParameter {
   FilteringBehaviorReason reason;
@@ -30,18 +31,24 @@ TEST_P(SupervisedUserErrorPageTest_GetBlockMessageID, GetBlockMessageID) {
   BlockMessageIDTestParameter param = GetParam();
   EXPECT_EQ(param.expected_result,
             GetBlockMessageID(param.reason, param.single_parent))
-      << "reason = " << param.reason
+      << "reason = " << FilteringBehaviorReasonToString(param.reason)
       << " single parent = " << param.single_parent;
 }
 
 BlockMessageIDTestParameter block_message_id_test_params[] = {
-    {DEFAULT, true, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT},
-    {DEFAULT, false, IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT},
+    {FilteringBehaviorReason::DEFAULT, true,
+     IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT},
+    {FilteringBehaviorReason::DEFAULT, false,
+     IDS_CHILD_BLOCK_MESSAGE_DEFAULT_MULTI_PARENT},
     // SafeSites is not enabled for supervised users.
-    {ASYNC_CHECKER, true, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
-    {ASYNC_CHECKER, false, IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
-    {MANUAL, true, IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT},
-    {MANUAL, false, IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT},
+    {FilteringBehaviorReason::ASYNC_CHECKER, true,
+     IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
+    {FilteringBehaviorReason::ASYNC_CHECKER, false,
+     IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES},
+    {FilteringBehaviorReason::MANUAL, true,
+     IDS_CHILD_BLOCK_MESSAGE_MANUAL_SINGLE_PARENT},
+    {FilteringBehaviorReason::MANUAL, false,
+     IDS_CHILD_BLOCK_MESSAGE_MANUAL_MULTI_PARENT},
 };
 
 INSTANTIATE_TEST_SUITE_P(GetBlockMessageIDParameterized,
@@ -69,22 +76,21 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
   base::test::ScopedFeatureList scoped_feature_list_;
   if (param.is_web_filter_interstitial_refresh_enabled) {
     scoped_feature_list_.InitWithFeatures(
-        /* enabled_features */ {supervised_users::kWebFilterInterstitialRefresh,
-                                supervised_users::kLocalWebApprovals},
+        /* enabled_features */ {supervised_user::kWebFilterInterstitialRefresh,
+                                supervised_user::kLocalWebApprovals},
         /* disabled_features */ {});
   } else {
     scoped_feature_list_.InitWithFeatures(
         /* enabled_features */ {},
-        /* disabled_features */ {
-            supervised_users::kWebFilterInterstitialRefresh,
-            supervised_users::kLocalWebApprovals});
+        /* disabled_features */ {supervised_user::kWebFilterInterstitialRefresh,
+                                 supervised_user::kLocalWebApprovals});
   }
-  std::string result =
-      BuildHtml(param.allow_access_requests, param.profile_image_url,
-                param.profile_image_url2, param.custodian,
-                param.custodian_email, param.second_custodian,
-                param.second_custodian_email, param.reason, /*app_locale=*/"",
-                /*already_sent_request=*/false, /*is_main_frame=*/true);
+  std::string result = BuildErrorPageHtml(
+      param.allow_access_requests, param.profile_image_url,
+      param.profile_image_url2, param.custodian, param.custodian_email,
+      param.second_custodian, param.second_custodian_email, param.reason,
+      /*app_locale=*/"",
+      /*already_sent_request=*/false, /*is_main_frame=*/true);
   // The result should contain the original HTML (with $i18n{} replacements)
   // plus scripts that plug values into it. The test can't easily check that the
   // scripts are correct, but can check that the output contains the expected
@@ -97,7 +103,8 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
     EXPECT_THAT(result, testing::HasSubstr(param.second_custodian));
     EXPECT_THAT(result, testing::HasSubstr(param.second_custodian_email));
   }
-  if (param.reason == ASYNC_CHECKER || param.reason == DENYLIST) {
+  if (param.reason == FilteringBehaviorReason::ASYNC_CHECKER ||
+      param.reason == FilteringBehaviorReason::DENYLIST) {
     EXPECT_THAT(result, testing::HasSubstr("\"showFeedbackLink\":true"));
   } else {
     EXPECT_THAT(result, testing::HasSubstr("\"showFeedbackLink\":false"));
@@ -116,7 +123,7 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
       // blocked. DEFAULT indicates that the parent(s) required the child
       // request permission for all sites, and MANUAL indicates that the
       // parent(s) specifically blocked this site.
-      if (param.reason == DEFAULT) {
+      if (param.reason == FilteringBehaviorReason::DEFAULT) {
         if (param.has_two_parents) {
           EXPECT_THAT(result,
                       testing::HasSubstr(l10n_util::GetStringUTF8(
@@ -127,7 +134,7 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
                           IDS_CHILD_BLOCK_MESSAGE_DEFAULT_SINGLE_PARENT)));
         }
       }
-      if (param.reason == MANUAL) {
+      if (param.reason == FilteringBehaviorReason::MANUAL) {
         if (param.has_two_parents) {
           EXPECT_THAT(result,
                       testing::HasSubstr(l10n_util::GetStringUTF8(
@@ -225,36 +232,36 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
 }
 
 BuildHtmlTestParameter build_html_test_parameter[] = {
-    {true, "url1", "url2", "custodian", "custodian_email", "", "", DEFAULT,
-     false, false},
+    {true, "url1", "url2", "custodian", "custodian_email", "", "",
+     FilteringBehaviorReason::DEFAULT, false, false},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, false},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, false},
     {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, false},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, false},
     {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, false},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, false},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, false},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, false},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", ASYNC_CHECKER, true, false},
+     "custodian2_email", FilteringBehaviorReason::ASYNC_CHECKER, true, false},
 
     // Test cases with local web approvals feature enabled
-    {true, "url1", "url2", "custodian", "custodian_email", "", "", DEFAULT,
-     false, true},
+    {true, "url1", "url2", "custodian", "custodian_email", "", "",
+     FilteringBehaviorReason::DEFAULT, false, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, true},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, true},
     {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, true},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, true},
     {false, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, true},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", DEFAULT, true, true},
+     "custodian2_email", FilteringBehaviorReason::DEFAULT, true, true},
     {true, "url1", "url2", "custodian", "custodian_email", "custodian2",
-     "custodian2_email", ASYNC_CHECKER, true, true},
+     "custodian2_email", FilteringBehaviorReason::ASYNC_CHECKER, true, true},
 };
 
 INSTANTIATE_TEST_SUITE_P(GetBlockMessageIDParameterized,
                          SupervisedUserErrorPageTest_BuildHtml,
                          ::testing::ValuesIn(build_html_test_parameter));
 
-}  //  namespace supervised_user_error_page
+}  // namespace supervised_user

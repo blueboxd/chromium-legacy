@@ -43,6 +43,11 @@ def coverage_builder(**kwargs):
     return ci.builder(
         schedule = "triggered",
         triggered_by = ["code-coverage-gitiles-trigger"],
+        # This should allow one to be pending should code coverage
+        # builds take longer.
+        triggering_policy = scheduler.greedy_batching(
+            max_concurrent_invocations = 2,
+        ),
         **kwargs
     )
 
@@ -244,6 +249,7 @@ coverage_builder(
             short_name = "js",
         ),
     ],
+    export_coverage_to_zoss = True,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
     use_javascript_coverage = True,
 )

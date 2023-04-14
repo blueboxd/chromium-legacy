@@ -17,6 +17,7 @@
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
+#include "chromeos/ash/components/mojo_service_manager/fake_mojo_service_manager.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/fake_cros_healthd.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
@@ -107,16 +108,16 @@ mojom::PowerRoutineResultPtr ConstructPowerRoutineResult(
 // the discharge field will be used.
 std::string ConstructPowerRoutineResultJson(double charge_percent,
                                             bool charge) {
-  base::Value result_dict(base::Value::Type::DICTIONARY);
+  base::Value::Dict result_dict;
   if (charge) {
-    result_dict.SetKey(kChargePercentKey, base::Value(charge_percent));
+    result_dict.Set(kChargePercentKey, charge_percent);
 
   } else {
-    result_dict.SetKey(kDischargePercentKey, base::Value(charge_percent));
+    result_dict.Set(kDischargePercentKey, charge_percent);
   }
 
-  base::Value output_dict(base::Value::Type::DICTIONARY);
-  output_dict.SetKey(kResultDetailsKey, std::move(result_dict));
+  base::Value::Dict output_dict;
+  output_dict.Set(kResultDetailsKey, std::move(result_dict));
 
   std::string json;
   const bool serialize_success = base::JSONWriter::Write(output_dict, &json);
@@ -209,6 +210,7 @@ class SystemRoutineControllerTest : public testing::Test {
 
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  ::ash::mojo_service_manager::FakeMojoServiceManager fake_service_manager_;
   std::unique_ptr<SystemRoutineController> system_routine_controller_;
 
  private:

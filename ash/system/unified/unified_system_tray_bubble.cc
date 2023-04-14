@@ -63,8 +63,7 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
 
   if (features::IsQsRevampEnabled()) {
     auto quick_settings_view = controller_->CreateQuickSettingsView(max_height);
-    bubble_view_->SetMaxHeight(
-        std::min(max_height, kRevampedTrayMenuMaxHeight));
+    bubble_view_->SetMaxHeight(max_height);
     quick_settings_view_ =
         bubble_view_->AddChildView(std::move(quick_settings_view));
     time_to_click_recorder_ = std::make_unique<TimeToClickRecorder>(
@@ -190,6 +189,16 @@ void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   DCHECK(unified_view_ || quick_settings_view_);
   DCHECK(controller_);
   controller_->ShowAudioDetailedView();
+}
+
+void UnifiedSystemTrayBubble::ShowDisplayDetailedView() {
+  if (!bubble_widget_) {
+    return;
+  }
+
+  DCHECK(unified_view_ || quick_settings_view_);
+  DCHECK(controller_);
+  controller_->ShowDisplayDetailedView();
 }
 
 void UnifiedSystemTrayBubble::ShowCalendarView(
@@ -386,6 +395,10 @@ void UnifiedSystemTrayBubble::NotifyAccessibilityEvent(ax::mojom::Event event,
 
 bool UnifiedSystemTrayBubble::ShowingAudioDetailedView() const {
   return bubble_widget_ && controller_->showing_audio_detailed_view();
+}
+
+bool UnifiedSystemTrayBubble::ShowingDisplayDetailedView() const {
+  return bubble_widget_ && controller_->showing_display_detailed_view();
 }
 
 bool UnifiedSystemTrayBubble::ShowingCalendarView() const {

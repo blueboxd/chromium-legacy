@@ -76,8 +76,11 @@
   <message name="IDS_MULTIDEVICE_SETUP_DIALOG_ACCESSIBILITY_TITLE" desc="Accessibility title for the multidevice setup dialog with a '- Dialog' appended to inform screen reader users they are in a dialog. This is a work around to deal with the fact that we cannot annotate the window's role as a dialog another way.">
     Connect to your phone - Dialog
   </message>
-  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for welcome page.">
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_HEADER" desc="Header for multidevice setup page.">
     Connect to your phone
+  </message>
+  <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_AFTER_QUICK_START_HEADER" desc="Header for multidevice setup page for users who have already connected their phone earlier with Quick Start.">
+    Stay connected with your phone
   </message>
   <message name="IDS_MULTIDEVICE_SETUP_START_SETUP_PAGE_MESSAGE" desc="Summary to tell user that they can share their Android's capabilities with their ChromeOS device; includes details on specific features that can be used and a link to an information page">
     You can text from your computer, share your internet connection, reply to conversation notifications and unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone.<ph name="FOOTNOTE_POINTER">$2<ex>*</ex></ph> <ph name="LINK_BEGIN">&lt;a href="$3<ex>https://support.google.com/chromebook/?p=multidevice</ex>" target="_blank"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -1383,8 +1386,33 @@
   <message name="IDS_LOGIN_PASSWORD_CHANGED_CONTINUE_WITHOUT_LOCAL_DATA_BUTTON" desc="Button to confirm continue without local data on the recover local data dialog.">
     Continue without local data
   </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVERY_TITLE" desc="Screen title shown on the opt-in page to the user data recovery feature.">
+    Turn on local data recovery to protect your data?
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVERY_SUBTITLE" desc="Screen subtitle shown on the opt-in page to the user data recovery feature.">
+    Next time your Google Account password changes, your local data will be recovered automatically after you sign in to your Google Account
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVERY_NO_BUTTON" desc="Text button shown on the opt-in page to the user data recovery feature. The button skips the recovery opt-in.">
+    No thanks
+  </message>
+  <message name="IDS_LOGIN_PASSWORD_CHANGED_RECOVERY_ENABLE_BUTTON" desc="Text button shown on the opt-in page to the user data recovery feature. The button enables the recovery.">
+    Turn on
+  </message>
+
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SUCCESS_TITLE" desc="The title message when Cryptohome recovery succeeded.">
     Your password has been updated
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_ERROR_TITLE" desc="The title message when Cryptohome recovery setup failed.">
+    Failed to enable local data recovery
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_ERROR_SUBTITLE" desc="The subtitle message when Cryptohome recovery setup failed.">
+    You can skip for now and we will retry automatically after you finish the setup
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_RETRY_BUTTON" desc="Label for the button to retry when Cryptohome recovery setup failed.">
+    Retry
+  </message>
+  <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_SETUP_SKIP_BUTTON" desc="Label for the skip button to skip the Cryptohome recovery setup flow.">
+    Skip
   </message>
   <message name="IDS_LOGIN_CRYPTOHOME_RECOVERY_ERROR_TITLE" desc="The title message when Cryptohome recovery failed.">
     Failed to recover local data
@@ -4984,6 +5012,24 @@
   <message name="IDS_BRUSCHETTA_INSTALLER_STARTING_VM_MESSAGE" desc="Message while the installer is launching the Virtual Machine (VM).">
     This process may take a few minutes. Starting the virtual machine.
   </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_TITLE" desc="Title of the Bruschetta (codename) uninstaller, a dialog for uninstalling Bruschetta, the associated VM and files.">
+    Remove Bruschetta
+  </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_BODY" desc="Description for the Bruschetta (codename) uninstaller, a dialog for uninstalling Bruschetta, the associated VM and files.">
+    Remove Bruschetta from your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>?
+  </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Bruschetta uninstaller dialog to uninstall the VM.">
+    Remove
+  </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_UNINSTALLING_MESSAGE" desc="Text shown in the Bruschetta installer dialog when uninstallation is in progress.">
+    Removing...
+  </message>
+  <message name="IDS_BRUSCHETTA_UNINSTALLER_ERROR" desc="Text shown in the Bruschetta (codename) uninstaller dialog when uninstallation fails.">
+    Error removing Bruschetta. Please try again.
+  </message>
+  <message name="IDS_BRUSCHETTA_INSTALLER_RETRY_BUTTON" desc="Button for Bruschetta (Codename) installer to retry after failing.">
+    Retry
+  </message>
 
   <!-- Time limit notification -->
   <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
@@ -5469,8 +5515,11 @@
   <message name="IDS_VM_STATUS_PAGE_USER_NOT_ALLOW_EXPLANATION" desc="The message explaining that the enterprise policy does not allow the current user to run the VM (virtual machine)">
     User is not allowed
   </message>
-  <message name="IDS_VM_STATUS_PAGE_LICENSE_NOT_SET_UP_EXPLANATION" desc="The message explaining that the the license for running the VM (virtual machine) is not set up">
+  <message name="IDS_VM_STATUS_PAGE_LICENSE_NOT_SET_UP_EXPLANATION" desc="The message explaining that the license for running the VM (virtual machine) is not set up">
     License is not set up
+  </message>
+  <message name="IDS_VM_STATUS_PAGE_VMS_NOT_ALLOWED_EXPLANATION" desc="The message explaining that virtual machines are not allowed">
+    No Virtual Machines are allowed on this device
   </message>
   <message name="IDS_VM_STATUS_PAGE_DEFAULT_VM_EXISTS_REQUIREMENT" desc="The message for the requirement that a VM (virtual machine) with the default name should exist">
     VM "<ph name="DEFAULT_VM_NAME">$1<ex>PvmDefault</ex></ph>" exists
@@ -6040,6 +6089,18 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_PARENT_ACCESS_WEBVIEW_LOADING_MESSAGE" desc="Message shown while the parent access screen is loading.">
     Please wait...
   </message>
+  <message name="IDS_PARENT_ACCESS_ASK_IN_PERSON_BUTTON" desc="Button shown on the parent access dialog to ask a parent for approval in person.">
+    Ask in person
+  </message>
+  <message name="IDS_PARENT_ACCESS_OK_BUTTON" desc="OK button text on the parent access dialog.">
+    OK
+  </message>
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_TITLE" desc="Title for the extension approvals disabled page indicating that an extension cannot be installed.">
+    Can't add extension
+  </message>
+  <message name="IDS_PARENT_ACCESS_EXTENSION_APPROVALS_DISABLED_SUBTITLE" desc="Text telling the user that an extension cannot be installed because a parent has disallowed it.">
+    Your parent has turned off "Permissions for sites, apps, and extensions" for Chrome. Adding this extension is not allowed.
+  </message>
 
   <!-- Strings shared among supervised user experiences -->
   <message name="IDS_SUPERVISED_USER_ERROR_TITLE" desc="Title for the UI shown to supervised users when an error has occurred.">
@@ -6054,10 +6115,6 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SUPERVISED_USER_OFFLINE_DESCRIPTION" desc="Description shown in the UI shown to supervised users when the network is not available.">
     Check your internet connection
   </message>
-  <message name="IDS_PARENT_ACCESS_ASK_IN_PERSON_BUTTON" desc="Button shown on the parent access dialog to ask a parent for approval in person.">
-    Ask in person
-  </message>
-
   <!-- Strings for gnubby U2FD authentication UI -->
   <message name="IDS_GNUBBY_NOTIFICATION_TITLE" desc="Title for notification informing user to press power button for gnubby U2FD.">
     A security key is being requested

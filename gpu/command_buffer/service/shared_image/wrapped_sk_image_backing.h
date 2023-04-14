@@ -6,14 +6,22 @@
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_WRAPPED_SK_IMAGE_BACKING_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/span.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/types/pass_key.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
+#include "third_party/skia/include/core/SkAlphaType.h"
 #include "third_party/skia/include/core/SkColorType.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkSurfaceProps.h"
+#include "third_party/skia/include/gpu/GrTypes.h"
+
+class SkSurface;
+class SkPixmap;
 
 namespace gpu {
 
@@ -64,18 +72,27 @@ class WrappedSkImageBacking : public ClearTrackingSharedImageBacking {
  private:
   class SkiaImageRepresentationImpl;
 
-  SkColorType GetSkColorType();
-  sk_sp<SkSurface> GetSkSurface(
+  struct TextureHolder {
+    TextureHolder();
+    TextureHolder(TextureHolder&& other);
+    TextureHolder& operator=(TextureHolder&& other);
+    ~TextureHolder();
+
+    GrBackendTexture backend_texture;
+    sk_sp<SkPromiseImageTexture> promise_texture;
+  };
+
+  SkColorType GetSkColorType(int plane_index);
+  std::vector<sk_sp<SkSurface>> GetSkSurfaces(
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
       scoped_refptr<SharedContextState> context_state);
-  bool SkSurfaceUnique(scoped_refptr<SharedContextState> context_state);
-  sk_sp<SkPromiseImageTexture> GetPromiseTexture();
+  bool SkSurfacesAreUnique(scoped_refptr<SharedContextState> context_state);
+  std::vector<sk_sp<SkPromiseImageTexture>> GetPromiseTextures();
 
   scoped_refptr<SharedContextState> context_state_;
 
-  GrBackendTexture backend_texture_;
-  sk_sp<SkPromiseImageTexture> promise_texture_;
+  std::vector<TextureHolder> textures_;
   int surface_msaa_count_ = 0;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

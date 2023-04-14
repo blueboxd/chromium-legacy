@@ -46,7 +46,13 @@ public class CustomTabsFeatureUsage {
             CustomTabsFeature.EXTRA_ADDITIONAL_TRUSTED_ORIGINS,
             CustomTabsFeature.EXTRA_ENABLE_URLBAR_HIDING,
             CustomTabsFeature.EXTRA_AUTO_TRANSLATE_LANGUAGE,
-            CustomTabsFeature.EXTRA_INTENT_FEATURE_OVERRIDES, CustomTabsFeature.COUNT})
+            CustomTabsFeature.EXTRA_INTENT_FEATURE_OVERRIDES,
+            CustomTabsFeature.CTF_PARTIAL_SIDE_SHEET,
+            CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP,
+            CustomTabsFeature.EXTRA_INITIAL_ACTIVITY_WIDTH_PX,
+            CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION,
+            CustomTabsFeature.EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION,
+            CustomTabsFeature.EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE, CustomTabsFeature.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CustomTabsFeature {
         /** Special enum for the start of a session. */
@@ -94,9 +100,15 @@ public class CustomTabsFeatureUsage {
         int EXTRA_ENABLE_URLBAR_HIDING = 41;
         int EXTRA_AUTO_TRANSLATE_LANGUAGE = 42;
         int EXTRA_INTENT_FEATURE_OVERRIDES = 43;
+        int CTF_PARTIAL_SIDE_SHEET = 44;
+        int EXTRA_ACTIVITY_SIDE_SHEET_BREAKPOINT_DP = 45;
+        int EXTRA_INITIAL_ACTIVITY_WIDTH_PX = 46;
+        int EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION = 47;
+        int EXTRA_SECONDARY_TOOLBAR_SWIPE_UP_ACTION = 48;
+        int EXTRA_ACTIVITY_SIDE_SHEET_DECORATION_TYPE = 49;
 
         /** Total count of entries. */
-        int COUNT = 44;
+        int COUNT = 50;
     }
 
     // Whether flag-enabled or not.

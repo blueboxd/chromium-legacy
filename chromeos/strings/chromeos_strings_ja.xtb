@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">外部デバイスのファームウェアを更新するためのウィンドウが開いています。<ph name="NUM_UPDATES" /> 件のアップデートがあります。</translation>
 <translation id="1145516343487477149">ヘルプ記事と Chromebook に関するよくある質問の回答を確認できます</translation>
+<translation id="1167755866710282443">メニューを開いてキーをカスタマイズします。メニューをドラッグして移動します。</translation>
 <translation id="1175697296044146566">この <ph name="DEVICE_TYPE" /> は <ph name="MANAGER" /> によって管理されています。</translation>
 <translation id="1175951029573070619">普通（<ph name="SIGNAL_STRENGTH" />）</translation>
 <translation id="1181037720776840403">削除</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">アルバム「<ph name="TITLE" />」の <ph name="DESC" />を選択</translation>
 <translation id="4111761024568264522">USB タッチパッド</translation>
 <translation id="4117637339509843559">ダークモード</translation>
+<translation id="4130035430755296270">カーソルを合わせると他のレイアウト オプションが表示されます</translation>
 <translation id="4131410914670010031">白黒</translation>
 <translation id="4145784616224233563">HTTP ファイアウォール</translation>
 <translation id="4147897805161313378">Google フォト</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">（Android）DNS の解決</translation>
 <translation id="4848429997038228357">実行中</translation>
 <translation id="4854586501323951986">デバイス内蔵タッチスクリーン</translation>
+<translation id="4855250849489639581">下にスワイプすると、他のレイアウト オプションが表示されます</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />あと {0} 回試行できます}other{<ph name="ERROR_MESSAGE" />あと {0} 回試行できます}}</translation>
 <translation id="4873827928179867585">認証アルゴリズム</translation>
 <translation id="4880328057631981605">アクセス ポイント名</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 件の画像</translation>
 <translation id="7177485034254901881">この <ph name="DEVICE_TYPE" /> は <ph name="MANAGER" /> によって管理されています。管理者がこのデバイスをリモートで設定している可能性があります。</translation>
 <translation id="7180611975245234373">更新</translation>
+<translation id="7180865173735832675">カスタマイズ</translation>
 <translation id="7212734716605298123">外部デバイスのファームウェア アップデート</translation>
 <translation id="7216409898977639127">モバイル プロバイダ</translation>
 <translation id="725133483556299729">メールアドレスを選択</translation>

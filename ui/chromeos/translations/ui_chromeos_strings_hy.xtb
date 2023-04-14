@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Համացանցի անմիջական կապակցում</translation>
 <translation id="1272293450992660632">PIN-ի արժեքները չեն համընկնում:</translation>
 <translation id="1280820357415527819">Բջջային ցանցերի որոնում</translation>
-<translation id="1291603679744561561">SIM քարտը կողպված է</translation>
 <translation id="1293556467332435079">Ֆայլեր</translation>
 <translation id="1297922636971898492">Այս պահին Google Drive-ը մատչելի չէ: Վերբեռնումը ավտոմատ կվերագործարկվի, երբ Google Drive-ը մատչելի լինի:</translation>
 <translation id="1307931752636661898">Չհաջողվեց ցուցադրել Լինուքսի ֆայլերը</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Ֆայլերը Parallels Desktop քաշելու և թողնելու համար նախ տեղափոխեք դրանք «Windows-ի ֆայլեր» պանակ։</translation>
 <translation id="1435838927755162558">Կիսվեք պանակով Parallels Desktop-ի հետ</translation>
 <translation id="1439919885608649279">Ծաղիկներով մարդ</translation>
+<translation id="1458457385801829801">Անջատել <ph name="TARGET_NAME" /> ֆայլային համակարգը</translation>
 <translation id="1471718551822868769">սլովակերեն</translation>
 <translation id="1482884275703521657">ֆիններեն</translation>
 <translation id="148466539719134488">Շվեյցարական</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 պանակ հասանելի դարձվեց Bruschetta-ին</translation>
 <translation id="2578394532502990878">թամիլերեն (հնչյունային)</translation>
 <translation id="2579959351793446050">օրիյա</translation>
+<translation id="2587195714949534472">Պատրաստվում ենք համաժամացնել <ph name="FILE_NAME" /> ֆայլը…</translation>
 <translation id="2602810353103180630">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, արգելափակված է ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="2614589611416690597">Տեսանյութ (<ph name="VIDEO_TYPE" />)</translation>
 <translation id="2620090360073999360">Google Drive-ը մատչելի չէ այս պահին:</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">մոնղոլերեն</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> սխալ:</translation>
 <translation id="3509680540198371098">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, մանրամասներ</translation>
+<translation id="3511705761158917664">Պատրաստվում ենք համաժամացնել <ph name="NUMBER_OF_ITEMS" /> տարր…</translation>
 <translation id="3522708245912499433">պորտուգալերեն</translation>
 <translation id="3524311639100184459">Ուշադրություն. այս ֆայլերը ժամանակավոր են և կարող են ավտոմատ ջնջվել՝ սկավառակի վրա տարածք ազատելու համար։  <ph name="BEGIN_LINK" />Իմանալ ավելին<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Պանակ</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Տեղադրել</translation>
 <translation id="3952872973865944257">տելուգու (հնչյունային)</translation>
+<translation id="3954354850384043518">Ընթացքում</translation>
 <translation id="3958548648197196644">Կիվի</translation>
 <translation id="3971140002794351170">Ներբեռնել բջջային պրոֆիլը, ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">անգլերեն (ՄԹ)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Անունների այլ սերվերներ</translation>
 <translation id="4465725236958772856">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, կառավարվում է ձեր ադմինիստրատորի կողմից, կապակցում</translation>
 <translation id="4470564870223067757">Հանգուլ 2 Set</translation>
+<translation id="4474142134969976028">Արդյունքներ չեն գտնվել</translation>
 <translation id="4477002475007461989">ռումիներեն</translation>
 <translation id="4477219268485577442">Բուլղարական հնչյունային</translation>
 <translation id="4508265954913339219">Ակտիվացումը չհաջողվեց</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Նշեք անուն՝ առավելագույնը <ph name="MAX_LENGTH" /> նիշից</translation>
 <translation id="4973970068702235170">Չհաջողվեց արխիվացնել: Անսպասելի սխալ առաջացավ՝ <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">ճապոներեն</translation>
+<translation id="4987699874727873250">անգլերեն (Հնդկաստան)</translation>
 <translation id="4988205478593450158">Ջնջե՞լ «<ph name="FILE_NAME" />» ֆայլը։</translation>
 <translation id="498902553138568924">Կարմիր թիթեռ</translation>
 <translation id="4992066212339426712">Միացնել ձայնը</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">Վերջերս դիտված պատկերներ չկան</translation>
 <translation id="7460898608667578234">Ուկրաինական</translation>
 <translation id="7469894403370665791">Ավտոմատ միանալ այս ցանցին</translation>
+<translation id="7481358317100446445">Պատրաստ է</translation>
 <translation id="7486315294984620427">Ֆայլերը Parallels Desktop քաշելու և թողնելու համար նախ պատճենեք դրանք «Windows-ի ֆայլեր» պանակում։</translation>
 <translation id="749452993132003881">հիրագանա</translation>
 <translation id="7495372004724182530">մալայալամ (հնչյունային)</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Հեշտությամբ մտեք Google Լուսանկարներ</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="7663224033570512922">հինդի</translation>
+<translation id="7665680517722058469">Փորձեք այլ հարցում</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> տարր տեղափոխվեց աղբարկղ</translation>
 <translation id="7693909743393669729">Եթե կրիչը ֆորմատավորեք, դրա վրա պահված բոլոր տվյալներն ու բաժինները (այդ թվում՝ անտեսանելի) կջնջվեն։ Գործողությունը հնարավոր չէ հետարկել։</translation>
 <translation id="7695430100978772476">Չհաջողվեց ձևաչափել «<ph name="DRIVE_NAME" />» կրիչը</translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">արաբերեն (տառադարձություն)</translation>
 <translation id="8873014196523807561">Այս տարրերը վերականգնելու համար քաշեք դրանք նոր պանակ։ Որոշ տարրերի սկզբնական պանակները ջնջվել են։</translation>
 <translation id="8874184842967597500">Կապ չկա</translation>
+<translation id="8876368061475701452">Հերթացանկում է</translation>
 <translation id="8900820606136623064">Հունգարական</translation>
 <translation id="8903931173357132290">Շրջանավարտ</translation>
 <translation id="8912078710089354287">Պոչը թափահարող շուն</translation>

@@ -241,6 +241,11 @@ void BrowserServiceLacros::REMOVED_2(crosapi::mojom::BrowserInitParamsPtr) {
   NOTIMPLEMENTED();
 }
 
+void BrowserServiceLacros::REMOVED_7(bool should_trigger_session_restore,
+                                     NewTabCallback callback) {
+  NOTIMPLEMENTED();
+}
+
 void BrowserServiceLacros::REMOVED_16(
     base::flat_map<policy::PolicyNamespace, std::vector<uint8_t>> policy) {
   NOTIMPLEMENTED();
@@ -302,8 +307,7 @@ void BrowserServiceLacros::NewWindowForDetachingTab(
                                       browser->profile());
 }
 
-void BrowserServiceLacros::NewTab(bool should_trigger_session_restore,
-                                  NewTabCallback callback) {
+void BrowserServiceLacros::NewTab(NewTabCallback callback) {
   if (ShowProfilePickerIfNeeded(false)) {
     std::move(callback).Run();
     return;
@@ -311,14 +315,10 @@ void BrowserServiceLacros::NewTab(bool should_trigger_session_restore,
   LoadMainProfile(
       base::BindOnce(&BrowserServiceLacros::LaunchOrNewTabWithProfile,
                      weak_ptr_factory_.GetWeakPtr(),
-                     should_trigger_session_restore, -1, std::move(callback),
+                     /*should_trigger_session_restore=*/false, -1,
+                     std::move(callback),
                      /*is_new_tab=*/true),
       /*can_trigger_fre=*/true);
-}
-
-void BrowserServiceLacros::NewTabWithoutParameter(
-    NewTabWithoutParameterCallback callback) {
-  return NewTab(false, std::move(callback));
 }
 
 void BrowserServiceLacros::Launch(int64_t target_display_id,
@@ -351,8 +351,10 @@ void BrowserServiceLacros::RestoreTab(RestoreTabCallback callback) {
       /*can_trigger_fre=*/true);
 }
 
-void BrowserServiceLacros::HandleTabScrubbing(float x_offset) {
-  TabScrubberChromeOS::GetInstance()->SynthesizedScrollEvent(x_offset);
+void BrowserServiceLacros::HandleTabScrubbing(float x_offset,
+                                              bool is_fling_scroll_event) {
+  TabScrubberChromeOS::GetInstance()->SynthesizedScrollEvent(
+      x_offset, is_fling_scroll_event);
 }
 
 void BrowserServiceLacros::GetFeedbackData(GetFeedbackDataCallback callback) {
@@ -439,7 +441,7 @@ void BrowserServiceLacros::OnSystemInformationReady(
   }
 
   DCHECK(!callback.is_null());
-  std::move(callback).Run(base::Value(std::move(system_log_entries)));
+  std::move(callback).Run(std::move(system_log_entries));
 }
 
 void BrowserServiceLacros::OnGetCompressedHistograms(

@@ -13,7 +13,9 @@
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 #include "base/allocator/partition_alloc_features.h"
 #include "base/allocator/partition_allocator/shim/allocator_shim_default_dispatch_to_partition_alloc.h"
+
 #if BUILDFLAG(USE_STARSCAN)
+#include "base/allocator/partition_allocator/starscan/metadata_allocator.h"
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
 #endif
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -71,9 +73,10 @@ void NonScannableAllocatorImpl<Quarantinable>::NotifyPCScanEnabled() {
       partition_alloc::PartitionOptions::BackupRefPtrZapping::kDisabled,
       partition_alloc::PartitionOptions::UseConfigurablePool::kNo,
   });
-  if (Quarantinable)
+  if (Quarantinable) {
     partition_alloc::internal::PCScan::RegisterNonScannableRoot(
         allocator_->root());
+  }
   pcscan_enabled_.store(true, std::memory_order_release);
 #endif  // BUILDFLAG(USE_STARSCAN)
 }

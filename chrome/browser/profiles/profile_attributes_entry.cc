@@ -28,6 +28,7 @@
 #include "components/profile_metrics/state.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/account_info.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -429,7 +430,7 @@ bool ProfileAttributesEntry::IsSupervised() const {
 
 bool ProfileAttributesEntry::IsChild() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  return GetSupervisedUserId() == supervised_users::kChildAccountSUID;
+  return GetSupervisedUserId() == supervised_user::kChildAccountSUID;
 #else
   return false;
 #endif
@@ -567,9 +568,9 @@ base::flat_set<std::string> ProfileAttributesEntry::GetGaiaIds() const {
 
 void ProfileAttributesEntry::SetGaiaIds(
     const base::flat_set<std::string>& gaia_ids) {
-  base::Value accounts(base::Value::Type::DICTIONARY);
+  base::Value accounts(base::Value::Type::DICT);
   for (const auto& gaia_id : gaia_ids) {
-    base::Value dict(base::Value::Type::DICTIONARY);
+    base::Value dict(base::Value::Type::DICT);
     // The dictionary is empty for now, but can hold account-specific info in
     // the future.
     accounts.SetKey(gaia_id, std::move(dict));

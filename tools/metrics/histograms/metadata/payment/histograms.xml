@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="PaymentRequest.CheckoutFunnel"
-    enum="PaymentRequestCheckoutFunnelSteps" expires_after="2023-05-27">
+    enum="PaymentRequestCheckoutFunnelSteps" expires_after="2023-07-30">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
@@ -122,6 +122,37 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PaymentRequest.ManifestVerifierCacheHitPaymentMethod"
+    enum="Boolean" expires_after="M120">
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <summary>
+    Records whether the payment ManifestVerifier found the payment method
+    manifest in the browser cache.
+  </summary>
+</histogram>
+
+<histogram
+    name="PaymentRequest.ManifestVerifierCheckCachePaymentMethodDuration"
+    units="ms" expires_after="M120">
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <summary>
+    Records how long it takes to check the browser cache for the payment method
+    manifest.
+  </summary>
+</histogram>
+
+<histogram
+    name="PaymentRequest.ManifestVerifierDownloadAndParseMethodManifestDuration"
+    units="ms" expires_after="M120">
+  <owner>pkotwicz@chromium.org</owner>
+  <owner>web-payments-team@google.com</owner>
+  <summary>
+    Records how long it takes to download the payment method manifest.
+  </summary>
+</histogram>
+
 <histogram name="PaymentRequest.NumberOfSuggestionsShown" units="units"
     expires_after="2022-11-22">
   <owner>rouslan@chromium.org</owner>
@@ -176,7 +207,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PaymentRequest.SecurePaymentConfirmation.Funnel.AuthenticationDialogResult"
     enum="SecurePaymentConfirmationAuthenticationDialogResult"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
@@ -191,7 +222,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PaymentRequest.SecurePaymentConfirmation.Funnel.EnrollSystemPromptResult"
     enum="SecurePaymentConfirmationEnrollSystemPromptResult"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
@@ -206,7 +237,7 @@ chromium-metrics-reviews@google.com.
 <histogram
     name="PaymentRequest.SecurePaymentConfirmation.Funnel.SystemPromptResult"
     enum="SecurePaymentConfirmationSystemPromptResult"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
@@ -236,7 +267,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PaymentRequest.TransactionAmount.Completed"
-    enum="PaymentRequestTransactionSize" expires_after="2023-05-27">
+    enum="PaymentRequestTransactionSize" expires_after="2023-07-30">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>
@@ -246,7 +277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PaymentRequest.TransactionAmount.Triggered"
-    enum="PaymentRequestTransactionSize" expires_after="2023-05-27">
+    enum="PaymentRequestTransactionSize" expires_after="2023-07-30">
   <owner>rouslan@chromium.org</owner>
   <owner>web-payments-team@google.com</owner>
   <summary>

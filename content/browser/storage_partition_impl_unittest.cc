@@ -64,6 +64,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
 #include "content/public/common/content_features.h"
@@ -628,8 +629,8 @@ void ClearQuotaDataForOrigin(content::StoragePartition* partition,
                              base::RunLoop* loop_to_quit) {
   partition->ClearData(
       kAllQuotaRemoveMask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
-      blink::StorageKey(url::Origin::Create(remove_origin)), delete_begin,
-      base::Time::Max(), loop_to_quit->QuitClosure());
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(remove_origin)),
+      delete_begin, base::Time::Max(), loop_to_quit->QuitClosure());
 }
 
 void ClearQuotaDataForTemporary(content::StoragePartition* partition,
@@ -688,6 +689,15 @@ void ClearData(content::StoragePartition* partition, base::RunLoop* run_loop) {
                        StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL,
                        blink::StorageKey(), time, time,
                        run_loop->QuitClosure());
+}
+
+void ClearDataForOrigin(uint32_t remove_mask,
+                        content::StoragePartition* partition,
+                        const GURL& origin,
+                        base::RunLoop* run_loop) {
+  partition->ClearDataForOrigin(
+      remove_mask, StoragePartition::QUOTA_MANAGED_STORAGE_MASK_ALL, origin,
+      run_loop->QuitClosure());
 }
 
 void ClearCodeCache(content::StoragePartition* partition,
@@ -1500,6 +1510,37 @@ TEST_F(StoragePartitionImplTest, RemoveLocalStorageForOrigins) {
   EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
 }
 
+TEST_F(StoragePartitionImplTest, RemoveLocalStorageForOneOrigin) {
+  const GURL kUrl1 = GURL("http://host1:1/");
+  const url::Origin kOrigin1 = url::Origin::Create(kUrl1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("http://host2:1/"));
+  const url::Origin kOrigin3 = url::Origin::Create(GURL("http://host3:1/"));
+
+  RemoveLocalStorageTester tester(task_environment(), browser_context());
+
+  tester.AddDOMStorageTestData(kOrigin1, kOrigin2, kOrigin3);
+
+  StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
+      browser_context()->GetDefaultStoragePartition());
+
+  base::RunLoop run_loop;
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ClearDataForOrigin,
+                     StoragePartitionImpl::REMOVE_DATA_MASK_LOCAL_STORAGE,
+                     partition, kUrl1, &run_loop));
+  run_loop.Run();
+  // ClearData only guarantees that tasks to delete data are scheduled when its
+  // callback is invoked. It doesn't guarantee data has actually been cleared.
+  // So run all scheduled tasks to make sure data is cleared.
+  base::RunLoop().RunUntilIdle();
+
+  // kOrigin1 should be cleared.
+  EXPECT_FALSE(tester.DOMStorageExistsForOrigin(kOrigin1));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin2));
+  EXPECT_TRUE(tester.DOMStorageExistsForOrigin(kOrigin3));
+}
+
 TEST_F(StoragePartitionImplTest, ClearCodeCache) {
   const GURL kResourceURL("http://host4/script.js");
 
@@ -1782,14 +1823,16 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForOrigin) {
 
   base::Time now = base::Time::Now();
   auto source = SourceBuilder(now).SetExpiry(base::Days(2)).Build();
-  attribution_manager->HandleSource(source);
-  attribution_manager->HandleTrigger(DefaultTrigger());
+  attribution_manager->HandleSource(source, GlobalRenderFrameHostId());
+  attribution_manager->HandleTrigger(DefaultTrigger(),
+                                     GlobalRenderFrameHostId());
 
   base::RunLoop run_loop;
   partition->ClearData(
       StoragePartition::REMOVE_DATA_MASK_ATTRIBUTION_REPORTING_SITE_CREATED, 0,
-      blink::StorageKey(source.common_info().reporting_origin()), now, now,
-      run_loop.QuitClosure());
+      blink::StorageKey::CreateFirstParty(
+          source.common_info().reporting_origin()),
+      now, now, run_loop.QuitClosure());
   run_loop.Run();
 
   EXPECT_TRUE(GetAttributionReportsForTesting(attribution_manager).empty());
@@ -1803,16 +1846,18 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataWrongMask) {
 
   base::Time now = base::Time::Now();
   auto source = SourceBuilder(now).SetExpiry(base::Days(2)).Build();
-  attribution_manager->HandleSource(source);
-  attribution_manager->HandleTrigger(DefaultTrigger());
+  attribution_manager->HandleSource(source, GlobalRenderFrameHostId());
+  attribution_manager->HandleTrigger(DefaultTrigger(),
+                                     GlobalRenderFrameHostId());
 
   EXPECT_FALSE(GetAttributionReportsForTesting(attribution_manager).empty());
 
   // Arbitrary non-conversions mask.
   base::RunLoop run_loop;
-  partition->ClearData(StoragePartition::REMOVE_DATA_MASK_COOKIES, 0,
-                       blink::StorageKey(source.common_info().source_origin()),
-                       now, now, run_loop.QuitClosure());
+  partition->ClearData(
+      StoragePartition::REMOVE_DATA_MASK_COOKIES, 0,
+      blink::StorageKey::CreateFirstParty(source.common_info().source_origin()),
+      now, now, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(GetAttributionReportsForTesting(attribution_manager).empty());
 }
@@ -1833,7 +1878,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearAllData) {
                       .SetReportingOrigin(origin)
                       .SetDestinationOrigin(origin)
                       .Build();
-    attribution_manager->HandleSource(source);
+    attribution_manager->HandleSource(source, GlobalRenderFrameHostId());
   }
   base::RunLoop run_loop;
   partition->ClearData(
@@ -1863,11 +1908,13 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
                                           .SetReportingOrigin(reporter)
                                           .SetDestinationOrigin(conv)
                                           .SetExpiry(base::Days(2))
-                                          .Build());
+                                          .Build(),
+                                      GlobalRenderFrameHostId());
     attribution_manager->HandleTrigger(TriggerBuilder()
                                            .SetDestinationOrigin(conv)
                                            .SetReportingOrigin(reporter)
-                                           .Build());
+                                           .Build(),
+                                       GlobalRenderFrameHostId());
   }
 
   EXPECT_EQ(5u, GetAttributionReportsForTesting(attribution_manager).size());
@@ -1904,8 +1951,8 @@ TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
   const auto kEndTime = base::Time() + base::Hours(2);
   const auto storage_key_callback_valid =
       [&](content::StoragePartition::StorageKeyMatcherFunction callback) {
-        return callback.Run(
-            blink::StorageKey(url::Origin::Create(kTestOrigin)));
+        return callback.Run(blink::StorageKey::CreateFirstParty(
+            url::Origin::Create(kTestOrigin)));
       };
 
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
@@ -1928,9 +1975,10 @@ TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
               OnStorageKeyDataCleared(
                   kTestClearMask, testing::Truly(storage_key_callback_valid),
                   kBeginTime, kEndTime));
-  partition->ClearData(kTestClearMask, kTestQuotaClearMask,
-                       blink::StorageKey(url::Origin::Create(kTestOrigin)),
-                       kBeginTime, kEndTime, base::DoNothing());
+  partition->ClearData(
+      kTestClearMask, kTestQuotaClearMask,
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestOrigin)),
+      kBeginTime, kEndTime, base::DoNothing());
   testing::Mock::VerifyAndClearExpectations(&observer);
 
   EXPECT_CALL(observer,
@@ -1942,8 +1990,8 @@ TEST_F(StoragePartitionImplTest, DataRemovalObserver) {
       /*filter_builder=*/nullptr,
       base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                      storage::SpecialStoragePolicy* policy) {
-        return storage_key ==
-               blink::StorageKey(url::Origin::Create(kTestOrigin));
+        return storage_key == blink::StorageKey::CreateFirstParty(
+                                  url::Origin::Create(kTestOrigin));
       }),
       /*cookie_deletion_filter=*/nullptr, /*perform_storage_cleanup=*/false,
       kBeginTime, kEndTime, base::DoNothing());
@@ -1973,12 +2021,14 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
   const auto is_test_origin_valid =
       [&kTestOrigin](
           content::StoragePartition::StorageKeyMatcherFunction filter) {
-        return filter.Run(blink::StorageKey(url::Origin::Create(kTestOrigin)));
+        return filter.Run(blink::StorageKey::CreateFirstParty(
+            url::Origin::Create(kTestOrigin)));
       };
   const auto is_other_origin_valid =
       [&kOtherOrigin](
           content::StoragePartition::StorageKeyMatcherFunction filter) {
-        return filter.Run(blink::StorageKey(url::Origin::Create(kOtherOrigin)));
+        return filter.Run(blink::StorageKey::CreateFirstParty(
+            url::Origin::Create(kOtherOrigin)));
       };
   const auto is_filter_null =
       [&](content::StoragePartition::StorageKeyMatcherFunction filter) {
@@ -2013,9 +2063,10 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
       .WillOnce(testing::Invoke(invoke_callback));
   {
     base::RunLoop run_loop;
-    partition->ClearData(kTestClearMask, kTestQuotaClearMask,
-                         blink::StorageKey(url::Origin::Create(kTestOrigin)),
-                         kBeginTime, kEndTime, run_loop.QuitClosure());
+    partition->ClearData(
+        kTestClearMask, kTestQuotaClearMask,
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestOrigin)),
+        kBeginTime, kEndTime, run_loop.QuitClosure());
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(aggregation_service_ptr);
   }
@@ -2035,8 +2086,8 @@ TEST_F(StoragePartitionImplTest, RemoveAggregationServiceData) {
         /*filter_builder=*/nullptr,
         base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                        storage::SpecialStoragePolicy* policy) {
-          return storage_key ==
-                 blink::StorageKey(url::Origin::Create(kTestOrigin));
+          return storage_key == blink::StorageKey::CreateFirstParty(
+                                    url::Origin::Create(kTestOrigin));
         }),
         /*cookie_deletion_filter=*/nullptr,
         /*perform_storage_cleanup=*/false, kBeginTime, kEndTime,
@@ -2106,12 +2157,14 @@ TEST_F(StoragePartitionImplTest, RemovePrivateAggregationData) {
   const auto is_test_origin_valid =
       [&kTestOrigin](
           content::StoragePartition::StorageKeyMatcherFunction filter) {
-        return filter.Run(blink::StorageKey(url::Origin::Create(kTestOrigin)));
+        return filter.Run(blink::StorageKey::CreateFirstParty(
+            url::Origin::Create(kTestOrigin)));
       };
   const auto is_other_origin_valid =
       [&kOtherOrigin](
           content::StoragePartition::StorageKeyMatcherFunction filter) {
-        return filter.Run(blink::StorageKey(url::Origin::Create(kOtherOrigin)));
+        return filter.Run(blink::StorageKey::CreateFirstParty(
+            url::Origin::Create(kOtherOrigin)));
       };
   const auto is_filter_null =
       [&](content::StoragePartition::StorageKeyMatcherFunction filter) {
@@ -2146,9 +2199,10 @@ TEST_F(StoragePartitionImplTest, RemovePrivateAggregationData) {
       .WillOnce(testing::Invoke(invoke_callback));
   {
     base::RunLoop run_loop;
-    partition->ClearData(kTestClearMask, kTestQuotaClearMask,
-                         blink::StorageKey(url::Origin::Create(kTestOrigin)),
-                         kBeginTime, kEndTime, run_loop.QuitClosure());
+    partition->ClearData(
+        kTestClearMask, kTestQuotaClearMask,
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(kTestOrigin)),
+        kBeginTime, kEndTime, run_loop.QuitClosure());
     run_loop.Run();
     testing::Mock::VerifyAndClearExpectations(private_aggregation_manager_ptr);
   }
@@ -2168,8 +2222,8 @@ TEST_F(StoragePartitionImplTest, RemovePrivateAggregationData) {
         /*filter_builder=*/nullptr,
         base::BindLambdaForTesting([&](const blink::StorageKey& storage_key,
                                        storage::SpecialStoragePolicy* policy) {
-          return storage_key ==
-                 blink::StorageKey(url::Origin::Create(kTestOrigin));
+          return storage_key == blink::StorageKey::CreateFirstParty(
+                                    url::Origin::Create(kTestOrigin));
         }),
         /*cookie_deletion_filter=*/nullptr,
         /*perform_storage_cleanup=*/false, kBeginTime, kEndTime,

@@ -14,7 +14,6 @@
 #import "base/time/time.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_form.h"
-#import "components/password_manager/core/browser/password_manager_features_util.h"
 #import "components/password_manager/core/browser/password_store_consumer.h"
 #import "components/password_manager/core/browser/password_store_interface.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
@@ -218,6 +217,20 @@ static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
   return SaveToPasswordStore(example);
 }
 
++ (BOOL)saveExampleNote:(NSString*)note
+               password:(NSString*)password
+               userName:(NSString*)userName
+                 origin:(NSString*)origin {
+  PasswordForm example;
+  example.username_value = base::SysNSStringToUTF16(userName);
+  example.password_value = base::SysNSStringToUTF16(password);
+  example.url = GURL(base::SysNSStringToUTF16(origin));
+  example.signon_realm = example.url.spec();
+  example.notes = {password_manager::PasswordNote(
+      base::SysNSStringToUTF16(note), base::Time::Now())};
+  return SaveToPasswordStore(example);
+}
+
 + (BOOL)saveInsecurePassword:(NSString*)password
                     userName:(NSString*)userName
                       origin:(NSString*)origin {
@@ -268,15 +281,6 @@ static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
       chrome_test_util::GetOriginalBrowserState();
   return browserState->GetPrefs()->GetBoolean(
       password_manager::prefs::kCredentialsEnableService);
-}
-
-+ (BOOL)isOptedInForAccountStorage {
-  ChromeBrowserState* browserState =
-      chrome_test_util::GetOriginalBrowserState();
-  syncer::SyncService* syncService =
-      SyncServiceFactory::GetForBrowserState(browserState);
-  return password_manager::features_util::IsOptedInForAccountStorage(
-      browserState->GetPrefs(), syncService);
 }
 
 @end

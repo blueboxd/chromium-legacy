@@ -10,8 +10,9 @@
 @protocol OmniboxConsumer<NSObject>
 
 // Notifies the consumer to update the autocomplete icon for the currently
-// highlighted autocomplete result.
-- (void)updateAutocompleteIcon:(UIImage*)icon;
+// highlighted autocomplete result with given accessibility identifier.
+- (void)updateAutocompleteIcon:(UIImage*)icon
+    withAccessibilityIdentifier:(NSString*)accessibilityIdentifier;
 
 // Notifies the consumer to update after the search-by-image support status
 // changes. (This is usually when the default search engine changes).

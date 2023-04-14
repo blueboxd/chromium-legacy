@@ -27,6 +27,7 @@
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/ime/test_ime_controller_client.h"
 #include "ash/media/media_controller_impl.h"
+#include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/public/cpp/ime_info.h"
 #include "ash/public/cpp/test/shell_test_api.h"
@@ -57,6 +58,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/system/sys_info.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -1427,19 +1429,32 @@ TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleQuickSettings) {
 
 TEST_F(AcceleratorControllerTest, ToggleMultitaskMenu) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::wm::features::kFloatWindow);
-  std::unique_ptr<aura::Window> window = CreateAppWindow();
+  // Accelerators behind a flag should also be accompanied by the
+  // `kShortcutCustomization` to support dynamic accelerator registration.
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::wm::features::kWindowLayoutMenu,
+       ::features::kShortcutCustomization},
+      {});
+  // Enabling `kShortcutCustomization` will start letting
+  // `AcceleratorControllerImpl` to observe changes to the accelerator list.
+  // This includes accelerators added by enabling flags.
+  test_api_->ObserveAcceleratorUpdates();
 
+  // Typically updating flags will restart chrome and re-initialize accelerator
+  // targeting.
+  Shell::Get()->ash_accelerator_configuration()->Initialize();
+
+  std::unique_ptr<aura::Window> window = CreateAppWindow();
+  ui::Accelerator accelerator(ui::VKEY_Z, ui::EF_COMMAND_DOWN);
   // Pressing accelerator once should show the multitask menu.
-  controller_->PerformActionIfEnabled(TOGGLE_MULTITASK_MENU, {});
+  EXPECT_TRUE(ProcessInController(accelerator));
   auto* frame_view = NonClientFrameViewAsh::Get(window.get());
   auto* size_button = static_cast<chromeos::FrameSizeButton*>(
       frame_view->GetHeaderView()->caption_button_container()->size_button());
   ASSERT_TRUE(size_button->IsMultitaskMenuShown());
 
   // Pressing accelerator a second time should close the menu.
-  controller_->PerformActionIfEnabled(TOGGLE_MULTITASK_MENU, {});
+  EXPECT_TRUE(ProcessInController(accelerator));
   ASSERT_FALSE(size_button->IsMultitaskMenuShown());
 }
 
@@ -3201,6 +3216,54 @@ TEST_P(MediaSessionAcceleratorTest,
     EXPECT_EQ(2, client()->handle_media_next_track_count());
     EXPECT_EQ(0, controller()->next_track_count());
   }
+}
+
+class AcceleratorControllerGameDashboardTests
+    : public AcceleratorControllerTest {
+ public:
+  AcceleratorControllerGameDashboardTests() = default;
+  ~AcceleratorControllerGameDashboardTests() override = default;
+
+  void SetUp() override {
+    EXPECT_FALSE(features::IsGameDashboardEnabled());
+    base::SysInfo::SetChromeOSVersionInfoForTest(
+        "CHROMEOS_RELEASE_TRACK=testimage-channel",
+        base::SysInfo::GetLsbReleaseTime());
+    scoped_feature_list_.InitAndEnableFeature(features::kGameDashboard);
+    AcceleratorControllerTest::SetUp();
+    EXPECT_TRUE(features::IsGameDashboardEnabled());
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(AcceleratorControllerGameDashboardTests,
+       ToggleGameDashboardAccelerator) {
+  const ui::Accelerator accelerator(ui::VKEY_G, ui::EF_COMMAND_DOWN);
+
+  // No active window.
+  EXPECT_FALSE(ProcessInController(accelerator));
+
+  // Create a new window.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  wm::ActivateWindow(window.get());
+
+  // Verify cannot toggle for unsupported app types.
+  const AppType unsupported_window_types[] = {
+      AppType::NON_APP,      AppType::BROWSER,    AppType::CHROME_APP,
+      AppType::CROSTINI_APP, AppType::SYSTEM_APP, AppType::LACROS};
+  for (AppType unsupported_window_type : unsupported_window_types) {
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(unsupported_window_type));
+    EXPECT_FALSE(ProcessInController(accelerator));
+  }
+
+  // Set the window's app type to ARC.
+  window->SetProperty(aura::client::kAppType,
+                      static_cast<int>(AppType::ARC_APP));
+  EXPECT_TRUE(ProcessInController(accelerator));
 }
 
 }  // namespace ash

@@ -8,8 +8,8 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
-import("//ui/file_manager/base/gn/files_webui_bundle/files_webui_bundle.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
+import("//ui/webui/resources/tools/optimize_webui.gni")
 
 assert(is_chromeos_ash)
 
@@ -118,28 +118,22 @@ if (!optimize_webui) {
   ts_library("labs_build_ts") {
     root_dir = target_gen_dir
     out_dir = "$target_gen_dir/tsc"
-    tsconfig_base = "labs/tsconfig_base.json"
+    enable_source_maps = true
     extra_deps = [ ":copy_labs" ]
 
     in_files = ts_files
 
-    deps = [ "//ui/webui/resources:library" ]
+    deps = [ "//ui/webui/resources/js:build_ts" ]
   }
 }
 
-files_webui_bundle("build") {
+optimize_webui("build") {
   host = "file-manager"
   input = rebase_path(preprocess_folder, root_build_dir)
 
   js_module_in_files = [
     "main.js",
     "runtime_loaded_test_util_swa.js",
-  ]
-
-  js_out_files = [
-    "main.rollup.js",
-    "runtime_loaded_test_util_swa.rollup.js",
-    "shared.rollup.js",
   ]
 
   excludes = [

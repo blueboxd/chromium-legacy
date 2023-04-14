@@ -37,7 +37,7 @@
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/strike_database.h"
+#include "components/autofill/core/browser/strike_databases/strike_database.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -276,23 +276,6 @@ void CreditCardSaveManager::AttemptToOfferCardUploadSave(
   // offer-to-save prompt for this card.
   show_save_prompt_ = !GetCreditCardSaveStrikeDatabase()->ShouldBlockFeature(
       base::UTF16ToUTF8(upload_request_.card.LastFourDigits()));
-
-#if !BUILDFLAG(IS_IOS) && !BUILDFLAG(IS_ANDROID)
-
-  int save_card_ui_experiment_arm =
-      features::kAutofillSaveCardUiExperimentSelectorInNumber.Get();
-
-  // Adding the Save Card UI Experiment to the active experiments in upload
-  // request if the experiment is active. If 3rd save card ui experiment, aka
-  // Current with Avatar and Email, is selected then we would not add
-  // AutofillSaveCardUiExperiment to the active experiments list, as we want the
-  // current footer to be displayed.
-  if (base::FeatureList::IsEnabled(features::kAutofillSaveCardUiExperiment) &&
-      (save_card_ui_experiment_arm == 1 || save_card_ui_experiment_arm == 2)) {
-    upload_request_.active_experiments.push_back(
-        "AutofillSaveCardUiExperiment");
-  }
-#endif
 
   payments_client_->GetUploadDetails(
       country_only_profiles, upload_request_.detected_values,

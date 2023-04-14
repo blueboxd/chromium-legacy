@@ -33,6 +33,7 @@ include_rules = [
     "+media/base/eme_constants.h",
     "+media/base/media_content_type.h",
     "+media/base/media_log.h",
+    "+media/base/output_device_info.h",
     "+media/base/stream_parser.h",
     "+media/base/video_frame.h",
     "+media/base/video_frame_metadata.h",
@@ -51,6 +52,7 @@ include_rules = [
     "+services/network/public/cpp/cors/preflight_result.h",
     "+services/network/public/cpp/resource_request_body.h",
     "+services/network/public/cpp/shared_url_loader_factory.h",
+    "+services/network/public/cpp/trigger_attestation.h",
 
     # Enforce to use mojom-shared.h in blink/public so that it can compile
     # inside and outside Blink.

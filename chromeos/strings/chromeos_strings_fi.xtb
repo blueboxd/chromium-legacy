@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Ulkoisten laitteiden laiteohjelmistojen päivityksiä koskeva ikkuna on auki. <ph name="NUM_UPDATES" /> päivitystä saatavilla.</translation>
 <translation id="1145516343487477149">Etsi ohjeartikkeleita ja vastauksia yleisiin Chromebook-kysymyksiin</translation>
+<translation id="1167755866710282443">Avaa valikko muokataksesi avaimia. Siirrä vetämällä valikkoa.</translation>
 <translation id="1175697296044146566">Laitetta (<ph name="DEVICE_TYPE" />) ylläpitää <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Keskitasoa (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Poista</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Valitse albumi <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-kosketuslevy</translation>
 <translation id="4117637339509843559">Tumma tila</translation>
+<translation id="4130035430755296270">Pidä osoitin paikallaan, niin näet lisää asetteluvaihtoehtoja</translation>
 <translation id="4131410914670010031">Mustavalkoinen</translation>
 <translation id="4145784616224233563">HTTP-palomuuri</translation>
 <translation id="4147897805161313378">Google Kuvat</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS-selvitys</translation>
 <translation id="4848429997038228357">KÄYNNISSÄ</translation>
 <translation id="4854586501323951986">Sisäänrakennettu kosketusnäyttö</translation>
+<translation id="4855250849489639581">Pyyhkäise alas nähdäksesi lisää asetteluvaihtoehtoja</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} yritys jäljellä}other{<ph name="ERROR_MESSAGE" /> {0} yritystä jäljellä}}</translation>
 <translation id="4873827928179867585">Todennusalgoritmi</translation>
 <translation id="4880328057631981605">Tukiaseman nimi</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 kuva</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> ylläpitää tätä: <ph name="DEVICE_TYPE" />. Järjestelmänvalvojat voivat määrittää laitteen etänä.</translation>
 <translation id="7180611975245234373">Päivitä</translation>
+<translation id="7180865173735832675">Muokkaa</translation>
 <translation id="7212734716605298123">Ulkoisten laitteiden ohjelmapäivitykset</translation>
 <translation id="7216409898977639127">Mobiilioperaattori</translation>
 <translation id="725133483556299729">Valitse sähköpostiosoite</translation>

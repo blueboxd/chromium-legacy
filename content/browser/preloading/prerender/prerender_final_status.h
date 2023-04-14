@@ -93,7 +93,11 @@ enum class PrerenderFinalStatus {
   kPrimaryMainFrameRendererProcessCrashed = 56,
   kPrimaryMainFrameRendererProcessKilled = 57,
   kActivationFramePolicyNotCompatible = 58,
-  kMaxValue = kActivationFramePolicyNotCompatible,
+  kPreloadingDisabled = 59,
+  kBatterySaverEnabled = 60,
+  kActivatedDuringMainFrameNavigation = 61,
+  kPreloadingUnsupportedByWebContents = 62,
+  kMaxValue = kPreloadingUnsupportedByWebContents,
 };
 
 // Helper method to convert PrerenderFinalStatus to PreloadingFailureReason.

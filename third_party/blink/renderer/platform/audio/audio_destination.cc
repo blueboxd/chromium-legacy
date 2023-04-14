@@ -268,7 +268,7 @@ int AudioDestination::FramesPerBuffer() const {
 }
 
 uint32_t AudioDestination::MaxChannelCount() {
-  return Platform::Current()->AudioHardwareOutputChannels();
+  return web_audio_device_->MaxChannelCount();
 }
 
 void AudioDestination::SetDetectSilence(bool detect_silence) {
@@ -488,6 +488,10 @@ void AudioDestination::SendLogMessage(const String& message) const {
                                   message.Utf8().c_str(),
                                   DeviceStateToString(device_state_))
                        .Utf8());
+}
+
+media::OutputDeviceStatus AudioDestination::CreateSinkAndGetDeviceStatus() {
+  return web_audio_device_->CreateSinkAndGetDeviceStatus();
 }
 
 }  // namespace blink

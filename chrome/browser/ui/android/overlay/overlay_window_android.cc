@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/memory/ptr_util.h"
-#include "cc/layers/surface_layer.h"
+#include "cc/slim/surface_layer.h"
 #include "chrome/android/chrome_jni_headers/PictureInPictureActivity_jni.h"
 #include "chrome/browser/android/tab_android.h"
 #include "components/thin_webview/compositor_view.h"
@@ -27,7 +27,7 @@ OverlayWindowAndroid::OverlayWindowAndroid(
     content::VideoPictureInPictureWindowController* controller)
     : window_android_(nullptr),
       compositor_view_(nullptr),
-      surface_layer_(cc::SurfaceLayer::Create()),
+      surface_layer_(cc::slim::SurfaceLayer::Create()),
       bounds_(gfx::Rect(0, 0)),
       update_action_timer_(std::make_unique<base::OneShotTimer>()),
       controller_(controller) {
@@ -38,27 +38,48 @@ OverlayWindowAndroid::OverlayWindowAndroid(
 
   auto* web_contents = controller_->GetWebContents();
 
+  // Compute the screen position of the video, and see if it fits inside the
+  // WebContents or if it's clipped / off-screen.  If it's onscreen, then T and
+  // later, Android can do a nicer animated transition to PiP with a screen
+  // capture of the video.  However, if the video is clipped / offscreen, then
+  // it'll look nicer to use the default light grey transition.
+
+  // We provide a small buffer for what "clipped" means, rather than enforcing
+  // it strictly.  It'll still look fine while allowing small positioning errors
+  // that sites sometimes make.  See https://crbug.com/1411517 for an example.
+
+  // The java side will ignore any source bounds that are not on the screen for
+  // the source rect hint. It will use the aspect ratio only in that case.  We
+  // set the x position to be <0 to ensure this, to skip the transition.
+
+  // Get the size of the video, and inset it to provide some slack.
   gfx::Rect source_bounds = controller_->GetSourceBounds();
+  gfx::Rect smaller_source_bounds = source_bounds;
+  constexpr int inset_size = 4;  // pixels on each side
+  smaller_source_bounds.Inset(inset_size);
+
+  // Get the size of the WebContents, and convert to pixels.
   gfx::Rect unscaled_content_bounds = web_contents->GetContainerBounds();
   auto* native_view = web_contents->GetNativeView();
-  // The java side will ignore any source bounds that are not on the screen for
-  // the source rect hint. It will use the aspect ratio only in that case.  If
-  // it's not entirely on-screen, then skip it.
   const float dip_scale = native_view->GetDipScale();
   gfx::Rect content_bounds(unscaled_content_bounds.x() * dip_scale,
                            unscaled_content_bounds.y() * dip_scale,
                            unscaled_content_bounds.width() * dip_scale,
                            unscaled_content_bounds.height() * dip_scale);
-  const bool out_of_bounds = !content_bounds.Contains(source_bounds);
+  const bool out_of_bounds = !content_bounds.Contains(smaller_source_bounds);
 
   if (!out_of_bounds) {
-    // Convert to screen space.
+    // Use the newer transition, if available.
+    // Convert to screen space.  Since the comparison was with the inset source
+    // bounds, clamp the real source bounds to the container.
+    source_bounds.Intersect(content_bounds);
     gfx::PointF offset = native_view->GetLocationOnScreen(0, 0);
     source_bounds.Offset(
         static_cast<int>(offset.x()),
         static_cast<int>(offset.y()) +
             native_view->content_offset() * native_view->GetDipScale());
   } else {
+    // Use the old transition.
     // Slide this offscreen, while keeping the aspect ratio the same.
     source_bounds.set_x(-1);
   }

@@ -12,10 +12,13 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/credential_provider_promo/features.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/promos_manager/promo_config.h"
+#import "ios/chrome/browser/promos_manager/promos_manager.h"
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
 #import "ios/chrome/browser/ui/app_store_rating/features.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
@@ -144,6 +147,10 @@
 }
 
 - (void)displayPromo:(promos_manager::Promo)promo {
+  if (tests_hook::DisablePromoManagerFullScreenPromos()) {
+    return;
+  }
+
   auto handler_it = _displayHandlerPromos.find(promo);
   auto provider_it = _viewProviderPromos.find(promo);
   auto bannered_provider_it = _banneredViewProviderPromos.find(promo);
@@ -165,7 +172,7 @@
 
     [handler handleDisplay];
 
-    [self.mediator recordImpression:handler.identifier];
+    [self.mediator recordImpression:handler.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo.Type",
@@ -191,7 +198,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:provider.identifier];
+    [self.mediator recordImpression:provider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(
@@ -218,7 +225,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:banneredProvider.identifier];
+    [self.mediator recordImpression:banneredProvider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(
@@ -284,7 +291,7 @@
                                           animated:YES
                                         completion:nil];
 
-    [self.mediator recordImpression:alertProvider.identifier];
+    [self.mediator recordImpression:alertProvider.config.identifier];
 
     base::UmaHistogramEnumeration("IOS.PromosManager.Promo", promo);
     base::UmaHistogramEnumeration(
@@ -485,26 +492,20 @@
   }
 }
 
-- (base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>)
-    promoImpressionLimits {
-  base::small_map<std::map<promos_manager::Promo, NSArray<ImpressionLimit*>*>>
-      result;
+- (PromoConfigsSet)promoImpressionLimits {
+  PromoConfigsSet result;
 
   for (auto const& [promo, handler] : _displayHandlerPromos)
-    if ([handler respondsToSelector:@selector(impressionLimits)])
-      result[promo] = handler.impressionLimits;
+    result.emplace(handler.config);
 
   for (auto const& [promo, provider] : _viewProviderPromos)
-    if ([provider respondsToSelector:@selector(impressionLimits)])
-      result[promo] = provider.impressionLimits;
+    result.emplace(provider.config);
 
   for (auto const& [promo, banneredProvider] : _banneredViewProviderPromos)
-    if ([banneredProvider respondsToSelector:@selector(impressionLimits)])
-      result[promo] = banneredProvider.impressionLimits;
+    result.emplace(banneredProvider.config);
 
   for (auto const& [promo, alertProvider] : _alertProviderPromos)
-    if ([alertProvider respondsToSelector:@selector(impressionLimits)])
-      result[promo] = alertProvider.impressionLimits;
+    result.emplace(alertProvider.config);
 
   return result;
 }

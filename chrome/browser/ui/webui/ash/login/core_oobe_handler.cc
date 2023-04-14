@@ -32,9 +32,7 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/ash/login/demo_setup_screen_handler.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/ash/login/signin_screen_handler.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
@@ -128,7 +126,8 @@ void CoreOobeHandler::GetAdditionalParameters(base::Value::Dict* dict) {
   dict->Set("isInTabletMode", TabletMode::Get()->InTabletMode());
   dict->Set("isDemoModeEnabled", DemoSetupController::IsDemoModeAllowed());
   if (policy::EnrollmentRequisitionManager::IsMeetDevice()) {
-    dict->Set("flowType", "meet");
+    // The value is used to show a different UI for this type of the devices.
+    dict->Set("deviceFlowType", "meet");
   }
 }
 
@@ -167,17 +166,11 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
     const std::string& screen_name) {
   const OobeScreenId screen(screen_name);
   GetOobeUI()->CurrentScreenChanged(screen);
-  EventRewriterController::Get()->SetArrowToTabRewritingEnabled(
-      screen == EulaView::kScreenId);
 }
 
 void CoreOobeHandler::HandleEnableShelfButtons(bool enable) {
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->SetShelfButtonsEnabled(enable);
-}
-
-void CoreOobeHandler::ShowOobeUI(bool show) {
-  CallJS("cr.ui.Oobe.showOobeUI", show);
 }
 
 void CoreOobeHandler::ForwardCancel() {

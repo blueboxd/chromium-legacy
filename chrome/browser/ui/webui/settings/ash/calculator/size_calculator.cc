@@ -4,19 +4,26 @@
 
 #include "chrome/browser/ui/webui/settings/ash/calculator/size_calculator.h"
 
+#include <cstdint>
 #include <numeric>
 
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "ash/components/arc/storage_manager/arc_storage_manager.h"
+#include "ash/constants/ash_features.h"
 #include "base/containers/contains.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/system/sys_info.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
+#include "chrome/browser/ash/borealis/borealis_features.h"
+#include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/crostini/crostini_features.h"
+#include "chrome/browser/ash/crostini/crostini_pref_names.h"
+#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_file_system_util.h"
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -27,6 +34,7 @@
 #include "components/browsing_data/content/conditional_cache_counting_helper.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/local_storage_helper.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/storage_partition.h"
 
@@ -37,15 +45,17 @@ namespace {
 void GetTotalDiskSpaceBlocking(const base::FilePath& mount_path,
                                int64_t* total_bytes) {
   int64_t size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
-  if (size >= 0)
+  if (size >= 0) {
     *total_bytes = size;
+  }
 }
 
 void GetFreeDiskSpaceBlocking(const base::FilePath& mount_path,
                               int64_t* available_bytes) {
   int64_t size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
-  if (size >= 0)
+  if (size >= 0) {
     *available_bytes = size;
+  }
 }
 
 // Computes the size of My Files and Play files.
@@ -77,8 +87,9 @@ SizeCalculator::SizeCalculator(const CalculationType& calculation_type)
 SizeCalculator::~SizeCalculator() {}
 
 void SizeCalculator::StartCalculation() {
-  if (calculating_)
+  if (calculating_) {
     return;
+  }
   calculating_ = true;
   PerformCalculation();
 }
@@ -170,6 +181,32 @@ void FreeDiskSpaceCalculator::OnGetFreeDiskSpace(int64_t* available_bytes) {
   NotifySizeCalculated(*available_bytes);
 }
 
+DriveOfflineSizeCalculator::DriveOfflineSizeCalculator(Profile* profile)
+    : SizeCalculator(CalculationType::kDriveOfflineFiles), profile_(profile) {}
+
+DriveOfflineSizeCalculator::~DriveOfflineSizeCalculator() = default;
+
+void DriveOfflineSizeCalculator::PerformCalculation() {
+  if (!base::FeatureList::IsEnabled(ash::features::kDriveFsBulkPinning)) {
+    return;
+  }
+
+  drive::DriveIntegrationService* integration_service =
+      drive::DriveIntegrationServiceFactory::FindForProfile(profile_);
+
+  if (!integration_service) {
+    return;
+  }
+
+  integration_service->GetTotalPinnedSize(
+      base::BindOnce(&DriveOfflineSizeCalculator::OnGetOfflineItemsSize,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveOfflineSizeCalculator::OnGetOfflineItemsSize(int64_t offline_bytes) {
+  NotifySizeCalculated(offline_bytes);
+}
+
 MyFilesSizeCalculator::MyFilesSizeCalculator(Profile* profile)
     : SizeCalculator(CalculationType::kMyFiles), profile_(profile) {}
 
@@ -216,8 +253,8 @@ void BrowsingDataSizeCalculator::PerformCalculation() {
         storage_partition->GetPath(),
         new browsing_data::CookieHelper(storage_partition,
                                         base::NullCallback()),
-        new browsing_data::LocalStorageHelper(profile_),
-        BrowsingDataQuotaHelper::Create(profile_));
+        new browsing_data::LocalStorageHelper(storage_partition),
+        BrowsingDataQuotaHelper::Create(storage_partition));
   }
   site_data_size_collector_->Fetch(
       base::BindOnce(&BrowsingDataSizeCalculator::OnGetBrowsingDataSize,
@@ -298,9 +335,18 @@ void AppsSizeCalculator::PerformCalculation() {
   has_apps_extensions_size_ = false;
   android_apps_size_ = 0;
   has_android_apps_size_ = false;
+  borealis_apps_size_ = 0;
+  has_borealis_apps_size_ = false;
 
   UpdateAppsSize();
   UpdateAndroidAppsSize();
+  if (borealis::BorealisService::GetForProfile(profile_)
+          ->Features()
+          .IsEnabled()) {
+    UpdateBorealisAppsSize();
+  } else {
+    has_borealis_apps_size_ = true;
+  }
 }
 
 void AppsSizeCalculator::UpdateAppsSize() {
@@ -354,10 +400,52 @@ void AppsSizeCalculator::OnGetAndroidAppsSize(
   UpdateAppsAndExtensionsSize();
 }
 
+void AppsSizeCalculator::UpdateBorealisAppsSize() {
+  vm_tools::concierge::ListVmDisksRequest request;
+  request.set_cryptohome_id(
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_));
+  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+  request.set_vm_name("borealis");
+  ash::ConciergeClient::Get()->ListVmDisks(
+      std::move(request),
+      base::BindOnce(&AppsSizeCalculator::OnGetBorealisAppsSize,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void AppsSizeCalculator::OnGetBorealisAppsSize(
+    absl::optional<vm_tools::concierge::ListVmDisksResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to get response from concierge";
+    has_borealis_apps_size_ = true;
+    UpdateAppsAndExtensionsSize();
+    return;
+  }
+  if (!response->success()) {
+    LOG(ERROR) << "concierge failed to list vm disks, returned error: " +
+                      response->failure_reason();
+    has_borealis_apps_size_ = true;
+    UpdateAppsAndExtensionsSize();
+    return;
+  }
+  auto image = base::ranges::find(response->images(), "borealis",
+                                  &vm_tools::concierge::VmDiskInfo::name);
+  if (image == response->images().end()) {
+    LOG(ERROR) << "Couldn't find Borealis VM";
+    has_borealis_apps_size_ = true;
+    UpdateAppsAndExtensionsSize();
+    return;
+  }
+  borealis_apps_size_ = image->size();
+  has_borealis_apps_size_ = true;
+  UpdateAppsAndExtensionsSize();
+}
+
 void AppsSizeCalculator::UpdateAppsAndExtensionsSize() {
-  if (has_apps_extensions_size_ && has_android_apps_size_) {
+  if (has_apps_extensions_size_ && has_android_apps_size_ &&
+      has_borealis_apps_size_) {
     calculating_ = false;
-    NotifySizeCalculated(apps_extensions_size_ + android_apps_size_);
+    NotifySizeCalculated(apps_extensions_size_ + android_apps_size_ +
+                         borealis_apps_size_);
   }
 }
 
@@ -368,17 +456,57 @@ CrostiniSizeCalculator::~CrostiniSizeCalculator() = default;
 
 void CrostiniSizeCalculator::PerformCalculation() {
   if (!crostini::CrostiniFeatures::Get()->IsEnabled(profile_)) {
-    NotifySizeCalculated(0);
+    UpdateSize(
+        profile_->GetPrefs()->GetInt64(crostini::prefs::kCrostiniLastDiskSize));
     return;
   }
 
-  crostini::CrostiniManager::GetForProfile(profile_)->ListVmDisks(
+  vm_tools::concierge::ListVmDisksRequest request;
+  request.set_cryptohome_id(
+      ash::ProfileHelper::GetUserIdHashFromProfile(profile_));
+  request.set_storage_location(vm_tools::concierge::STORAGE_CRYPTOHOME_ROOT);
+  ash::ConciergeClient::Get()->ListVmDisks(
+      std::move(request),
       base::BindOnce(&CrostiniSizeCalculator::OnGetCrostiniSize,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void CrostiniSizeCalculator::OnGetCrostiniSize(crostini::CrostiniResult result,
-                                               int64_t total_bytes) {
+void CrostiniSizeCalculator::OnGetCrostiniSize(
+    absl::optional<vm_tools::concierge::ListVmDisksResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to get list of VM disks. Empty response.";
+    UpdateSize(
+        profile_->GetPrefs()->GetInt64(crostini::prefs::kCrostiniLastDiskSize));
+    return;
+  }
+
+  if (!response->success()) {
+    LOG(ERROR) << "Failed to list VM disks: " << response->failure_reason();
+    UpdateSize(
+        profile_->GetPrefs()->GetInt64(crostini::prefs::kCrostiniLastDiskSize));
+    return;
+  }
+  int64_t vm_disk_usage = response->total_size();
+
+  // If Borealis is installed then we need to subtract its size from Crostini
+  // in order for it to not be double counted.
+  if (borealis::BorealisService::GetForProfile(profile_)
+          ->Features()
+          .IsEnabled()) {
+    auto image = base::ranges::find(response->images(), "borealis",
+                                    &vm_tools::concierge::VmDiskInfo::name);
+    if (image == response->images().end()) {
+      LOG(ERROR) << "Couldn't find Borealis VM";
+    } else {
+      vm_disk_usage -= image->size();
+    }
+  }
+  profile_->GetPrefs()->SetInt64(crostini::prefs::kCrostiniLastDiskSize,
+                                 vm_disk_usage);
+  UpdateSize(vm_disk_usage);
+}
+
+void CrostiniSizeCalculator::UpdateSize(int64_t total_bytes) {
   calculating_ = false;
   NotifySizeCalculated(total_bytes);
 }
@@ -394,8 +522,9 @@ void OtherUsersSizeCalculator::PerformCalculation() {
   const user_manager::UserList& users =
       user_manager::UserManager::Get()->GetUsers();
   for (auto* user : users) {
-    if (user->is_active())
+    if (user->is_active()) {
       continue;
+    }
     other_users_.push_back(user);
     user_data_auth::GetAccountDiskUsageRequest request;
     *request.mutable_identifier() =
@@ -414,8 +543,9 @@ void OtherUsersSizeCalculator::OnGetOtherUserSize(
     absl::optional<user_data_auth::GetAccountDiskUsageReply> reply) {
   user_sizes_.push_back(
       user_data_auth::AccountDiskUsageReplyToUsageSize(reply));
-  if (user_sizes_.size() != other_users_.size())
+  if (user_sizes_.size() != other_users_.size()) {
     return;
+  }
   int64_t other_users_total_bytes;
   // If all the requests succeed, shows the total bytes in the UI.
   other_users_total_bytes =

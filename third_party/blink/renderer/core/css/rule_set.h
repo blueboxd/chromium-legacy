@@ -116,7 +116,16 @@ class CORE_EXPORT RuleData {
   const CSSSelector& Selector() const {
     return rule_->SelectorAt(selector_index_);
   }
+  CSSSelector& MutableSelector() {
+    return rule_->MutableSelectorAt(selector_index_);
+  }
   unsigned SelectorIndex() const { return selector_index_; }
+  bool IsEntirelyCoveredByBucketing() const {
+    return is_entirely_covered_by_bucketing_;
+  }
+  void ComputeEntirelyCoveredByBucketing();
+  void ResetEntirelyCoveredByBucketing();
+  bool SelectorIsEasy() const { return is_easy_; }
 
   bool ContainsUncommonAttributeSelector() const {
     return contains_uncommon_attribute_selector_;
@@ -182,7 +191,9 @@ class CORE_EXPORT RuleData {
   unsigned link_match_type_ : 2;
   unsigned has_document_security_origin_ : 1;
   unsigned valid_property_filter_ : 3;
-  // 30 bits above
+  unsigned is_entirely_covered_by_bucketing_ : 1;
+  unsigned is_easy_ : 1;  // See EasySelectorChecker.
+  // 32 bits above
   union {
     // Used by RuleMap before compaction, to hold what bucket this RuleData
     // is to be sorted into. (If the RuleData lives in a RuleMap, the hashes
@@ -397,6 +408,9 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   base::span<const RuleData> SpatialNavigationInterestPseudoClassRules() const {
     return spatial_navigation_interest_class_rules_;
   }
+  base::span<const RuleData> RootElementRules() const {
+    return root_element_rules_;
+  }
   base::span<const RuleData> UniversalRules() const { return universal_rules_; }
   base::span<const RuleData> ShadowHostRules() const {
     return shadow_host_rules_;
@@ -505,6 +519,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
 
 #ifndef NDEBUG
   void Show() const;
+  const HeapVector<RuleData>& AllRulesForTest() const { return all_rules_; }
 #endif
 
   void Trace(Visitor*) const;
@@ -536,7 +551,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
                      const ContainerQuery*,
                      CascadeLayer*,
                      const StyleScope*);
-  bool FindBestRuleSetAndAdd(const CSSSelector&, const RuleData&);
+  void FindBestRuleSetAndAdd(CSSSelector&, const RuleData&);
   void AddRule(StyleRule*,
                unsigned selector_index,
                AddRuleFlags,
@@ -607,6 +622,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   HeapVector<RuleData> slotted_pseudo_element_rules_;
   HeapVector<RuleData> visited_dependent_rules_;
   HeapVector<RuleData> selector_fragment_anchor_rules_;
+  HeapVector<RuleData> root_element_rules_;
   RuleFeatureSet features_;
   HeapVector<Member<StyleRulePage>> page_rules_;
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;

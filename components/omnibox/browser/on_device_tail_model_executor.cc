@@ -11,6 +11,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/optimization_guide/core/tflite_op_resolver.h"
 #include "third_party/tflite/src/tensorflow/lite/c/c_api_types.h"
 #include "third_party/tflite/src/tensorflow/lite/kernels/register.h"
@@ -118,10 +119,11 @@ OnDeviceTailModelExecutor::~OnDeviceTailModelExecutor() = default;
 
 bool OnDeviceTailModelExecutor::Init(const base::FilePath& model_filepath,
                                      const base::FilePath& vocab_filepath,
-                                     size_t state_size,
-                                     size_t num_layer,
-                                     size_t embedding_dimension) {
+                                     const ModelMetadata& metadata) {
   Reset();
+  if (model_filepath.empty() || vocab_filepath.empty()) {
+    return false;
+  }
 
   auto tokenizer = std::make_unique<OnDeviceTailTokenizer>();
   tokenizer->Init(vocab_filepath);
@@ -137,9 +139,9 @@ bool OnDeviceTailModelExecutor::Init(const base::FilePath& model_filepath,
     return false;
   }
 
-  state_size_ = state_size;
-  num_layer_ = num_layer;
-  embedding_dimension_ = embedding_dimension;
+  state_size_ = metadata.lstm_model_params().state_size();
+  num_layer_ = metadata.lstm_model_params().num_layer();
+  embedding_dimension_ = metadata.lstm_model_params().embedding_dimension();
   vocab_size_ = tokenizer_->vocab_size();
 
   return true;
@@ -417,7 +419,6 @@ void OnDeviceTailModelExecutor::CreateNewBeams(
   return;
 }
 
-// static
 void OnDeviceTailModelExecutor::InsertBeamNodeToCandidateQueue(
     const TokenIdAndProb& token_id_and_prob,
     const RnnCellStates& states,
@@ -435,6 +436,13 @@ void OnDeviceTailModelExecutor::InsertBeamNodeToCandidateQueue(
   }
 
   const OnDeviceTailTokenizer::TokenId& new_token_id = token_id_and_prob.first;
+  // Drop the candidate if the given token cannot be properly displayed to
+  // users, unless it is the end query token.
+  if (!(tokenizer_->IsEndQueryTokenId(new_token_id) ||
+        tokenizer_->IsTokenPrintable(new_token_id))) {
+    return;
+  }
+
   // Check if there are enough candidates in the queue and drop the lowest
   // probability candidate from the queue if needed.
   if (queue->size() >= max_num_suggestions) {
@@ -570,8 +578,23 @@ OnDeviceTailModelExecutor::GenerateSuggestionsForPrefix(
     }
 
     std::string suggestion;
-    for (size_t i = 1; i < beam.token_ids.size() - 1; ++i) {
-      suggestion += tokenizer_->IdToToken(beam.token_ids[i]);
+    // Skip the first leading space (i.e. the second token) if it is explicitly
+    // added during encoding. Note the first token is always the begin query
+    // token.
+    size_t index;
+    if (OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest()) {
+      index = 2;
+    } else {
+      index = 1;
+    }
+
+    for (; index < beam.token_ids.size() - 1; ++index) {
+      suggestion += tokenizer_->IdToToken(beam.token_ids[index]);
+    }
+
+    // Remove echo suggestion.
+    if (suggestion == prefix) {
+      continue;
     }
 
     Prediction prediction;

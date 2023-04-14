@@ -85,6 +85,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/stop_source.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -116,7 +117,7 @@
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/accessibility/live_caption_controller_factory.h"
+#include "chrome/browser/accessibility/live_caption/live_caption_controller_factory.h"
 #include "chrome/browser/lifetime/application_lifetime_desktop.h"
 #include "chrome/browser/profiles/nuke_profile_directory_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -126,7 +127,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "ash/components/arc/arc_features.h"
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/session/arc_management_transition.h"
 #include "ash/constants/ash_switches.h"
@@ -163,6 +163,10 @@
 #include "chrome/browser/chromeos/extensions/contact_center_insights/contact_center_insights_extension_manager.h"
 #include "chrome/browser/chromeos/extensions/desk_api/desk_api_extension_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
 using content::BrowserThread;
 
@@ -325,7 +329,7 @@ void UpdateSupervisedUserPref(Profile* profile, bool is_child) {
   DCHECK(profile);
   if (is_child) {
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
-                                   supervised_users::kChildAccountSUID);
+                                   supervised_user::kChildAccountSUID);
   } else {
     profile->GetPrefs()->ClearPref(prefs::kSupervisedUserId);
   }
@@ -1371,12 +1375,6 @@ void ProfileManager::DoFinalInit(ProfileInfo* profile_info,
   for (auto& observer : observers_)
     observer.OnProfileAdded(profile);
 
-  // At this point, the user policy service and the child account service
-  // had enough time to initialize and should have updated the user signout
-  // flag attached to the profile.
-  signin_util::UserSignoutSetting::GetForProfile(profile)
-      ->InitializeUserSignoutSettingIfNeeded();
-
   if (PrimaryAccountPolicyManager* primary_account_policy_manager =
           PrimaryAccountPolicyManagerFactory::GetForProfile(profile)) {
     primary_account_policy_manager->Initialize();
@@ -1464,6 +1462,10 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
   IdentityManagerFactory::GetForProfile(profile)->OnNetworkInitialized();
   AccountReconcilorFactory::GetForProfile(profile);
+
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  BoundSessionCookieRefreshServiceFactory::GetForProfile(profile);
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 
   // Initialization needs to happen after the browser context is available
   // because SyncService needs the URL context getter.

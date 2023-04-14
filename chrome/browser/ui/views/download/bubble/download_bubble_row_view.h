@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/download/download_item_mode.h"
 #include "chrome/browser/ui/views/controls/hover_button.h"
@@ -60,8 +61,8 @@ class DownloadBubbleRowView : public views::View,
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
   gfx::Size CalculatePreferredSize() const override;
-  void AddLayerBeneathView(ui::Layer* layer) override;
-  void RemoveLayerBeneathView(ui::Layer* layer) override;
+  void AddLayerToRegion(ui::Layer* layer, views::LayerRegion region) override;
+  void RemoveLayerFromRegions(ui::Layer* layer) override;
 
   // Overrides views::FocusChangeListener
   void OnWillChangeFocus(views::View* before, views::View* now) override;
@@ -84,6 +85,8 @@ class DownloadBubbleRowView : public views::View,
   // Overrides ui::AcceleratorTarget
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
+
+  const std::u16string& GetSecondaryLabelTextForTesting();
 
   DownloadUIModel* model() { return model_.get(); }
 
@@ -116,6 +119,7 @@ class DownloadBubbleRowView : public views::View,
   // Update the DownloadBubbleRowView's members.
   void UpdateRow(bool initial_setup);
 
+  void UpdateStatusText();
   void UpdateButtons();
   void UpdateProgressBar();
   void UpdateLabels();
@@ -231,6 +235,9 @@ class DownloadBubbleRowView : public views::View,
 
   // A timer for accessible alerts of progress updates
   base::RepeatingTimer accessible_alert_in_progress_timer_;
+
+  // A timer for updating the status text string.
+  base::RepeatingTimer update_status_text_timer_;
 
   base::WeakPtrFactory<DownloadBubbleRowView> weak_factory_{this};
 };

@@ -42,6 +42,7 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/policy/core/common/policy_service_impl.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -369,6 +370,8 @@ content::BrowserContext* ExtensionServiceTestBase::browser_context() {
 }
 
 Profile* ExtensionServiceTestBase::profile() {
+// TODO(crbug.com/1414225): Refactor this convenience upstream to test callers.
+// Possibly just BuiltInAppTest.BuildGuestMode.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (profile_->IsGuestSession())
     return profile_->GetPrimaryOTRProfile(/*create_if_needed=*/true);

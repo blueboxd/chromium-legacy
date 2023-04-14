@@ -72,9 +72,6 @@ void SetGroupPolicies(const base::Value::Dict& values);
 // Copies the logs to a location where they can be retrieved by ResultDB.
 void CopyLog(const base::FilePath& src_dir);
 
-// Returns the path to the updater data dir.
-absl::optional<base::FilePath> GetDataDirPath(UpdaterScope scope);
-
 // Expects that the updater is installed on the system.
 void ExpectInstalled(UpdaterScope scope);
 
@@ -106,7 +103,8 @@ void RunWakeActive(UpdaterScope scope, int exit_code);
 // Invokes the active instance's UpdateService::Update (via RPC) for an app.
 void Update(UpdaterScope scope,
             const std::string& app_id,
-            const std::string& install_data_index);
+            const std::string& install_data_index,
+            bool do_update_check_only);
 
 // Invokes the active instance's UpdateService::UpdateAll (via RPC).
 void UpdateAll(UpdaterScope scope);
@@ -121,12 +119,6 @@ void Run(UpdaterScope scope, base::CommandLine command_line, int* exit_code);
 
 // Returns the path of the Updater executable.
 absl::optional<base::FilePath> GetInstalledExecutablePath(UpdaterScope scope);
-
-// Returns the folder path under which the executable for the fake updater
-// should reside.
-absl::optional<base::FilePath> GetFakeUpdaterInstallFolderPath(
-    UpdaterScope scope,
-    const base::Version& version);
 
 // Creates Prefs with the fake updater version set as active.
 void SetupFakeUpdaterPrefs(UpdaterScope scope, const base::Version& version);
@@ -216,6 +208,13 @@ int CountDirectoryFiles(const base::FilePath& dir);
                                        const std::string& request_body);
 
 void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
+
+void ExpectUpdateCheckSequence(UpdaterScope scope,
+                               ScopedServer* test_server,
+                               const std::string& app_id,
+                               const std::string& install_data_index,
+                               const base::Version& from_version,
+                               const base::Version& to_version);
 
 void ExpectUpdateSequence(UpdaterScope scope,
                           ScopedServer* test_server,

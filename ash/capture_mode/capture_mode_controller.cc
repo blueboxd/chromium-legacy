@@ -11,6 +11,7 @@
 #include "ash/capture_mode/capture_mode_metrics.h"
 #include "ash/capture_mode/capture_mode_notification_view.h"
 #include "ash/capture_mode/capture_mode_session.h"
+#include "ash/capture_mode/capture_mode_types.h"
 #include "ash/capture_mode/capture_mode_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
@@ -123,6 +124,30 @@ enum ScreenshotNotificationButtonIndex {
 enum VideoNotificationButtonIndex {
   BUTTON_DELETE_VIDEO = 0,
 };
+
+// Returns the file extension for the given `recording_type`.
+std::string GetVideoExtension(RecordingType recording_type) {
+  switch (recording_type) {
+    case RecordingType::kGif:
+      return "gif";
+    case RecordingType::kWebM:
+      return "webm";
+  }
+}
+
+// Returns true if the given `recording_type` supports audio recording.
+bool SupportsAudioRecording(RecordingType recording_type) {
+  return recording_type == RecordingType::kWebM;
+}
+
+bool IsVideoFileExtensionSupported(const base::FilePath& video_file_path) {
+  for (const auto* const extension : {".webm", ".gif"}) {
+    if (video_file_path.MatchesExtension(extension)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 // Returns the date extracted from |timestamp| as a string to be part of
 // captured file names. Note that naturally formatted dates includes slashes
@@ -377,9 +402,8 @@ CaptureModeController::CaptureModeController(
           std::make_unique<CaptureModeCameraController>(delegate_.get())),
       blocking_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
           // A task priority of BEST_EFFORT is good enough for this runner,
-          // since it's used for blocking file IO such as saving the screenshots
-          // or the successive webm video chunks received from the recording
-          // service.
+          // since it's used for blocking file IO such as saving the
+          // screenshots.
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       num_consecutive_screenshots_scheduler_(
@@ -833,7 +857,9 @@ void CaptureModeController::MaybeRestoreCachedCaptureConfigurations() {
 
   type_ = cached_normal_session_configs_->type;
   source_ = cached_normal_session_configs_->source;
+  recording_type_ = cached_normal_session_configs_->recording_type;
   enable_audio_recording_ = cached_normal_session_configs_->audio_on;
+  enable_demo_tools_ = cached_normal_session_configs_->demo_tools_enabled;
   cached_normal_session_configs_.reset();
 }
 
@@ -1006,7 +1032,7 @@ void CaptureModeController::LaunchRecordingServiceAndStartRecording(
   // is ok since the |audio_stream_factory| parameter in the recording service
   // APIs is optional, and can be not bound.
   mojo::PendingRemote<media::mojom::AudioStreamFactory> audio_stream_factory;
-  if (GetAudioRecordingEnabled()) {
+  if (SupportsAudioRecording(recording_type_) && GetAudioRecordingEnabled()) {
     delegate_->BindAudioStreamFactory(
         audio_stream_factory.InitWithNewPipeAndPassReceiver());
     capture_mode_util::MaybeUpdateMicrophonePrivacyIndicator(/*mic_on=*/true);
@@ -1278,6 +1304,7 @@ void CaptureModeController::ShowPreviewNotification(
   optional_fields.buttons.push_back(delete_button);
 
   optional_fields.image = preview_image;
+  optional_fields.image_path = screen_capture_path;
 
   ShowNotification(
       capture_mode_util::GetScreenCaptureNotificationIdForPath(
@@ -1343,7 +1370,7 @@ base::FilePath CaptureModeController::BuildImagePath() const {
 
 base::FilePath CaptureModeController::BuildVideoPath() const {
   return BuildPathNoExtension(kVideoFileNameFmtStr, base::Time::Now())
-      .AddExtension("webm");
+      .AddExtension(GetVideoExtension(recording_type_));
 }
 
 base::FilePath CaptureModeController::BuildImagePathForDisplay(
@@ -1437,6 +1464,8 @@ void CaptureModeController::OnProjectorContainerFolderCreated(
     return;
   }
 
+  // Note that the extension `webm` is used here directly, since projector
+  // doesn't work with any other format.
   BeginVideoRecording(capture_params, /*for_projector=*/true,
                       file_path_no_extension.AddExtension("webm"));
 }
@@ -1447,7 +1476,7 @@ void CaptureModeController::BeginVideoRecording(
     const base::FilePath& video_file_path) {
   DCHECK_EQ(capture_mode_session_->is_in_projector_mode(), for_projector);
   DCHECK(!video_file_path.empty());
-  DCHECK(video_file_path.MatchesExtension(".webm"));
+  DCHECK(IsVideoFileExtensionSupported(video_file_path));
 
   if (!IsActive()) {
     // This function gets called asynchronously, and until it gets called, the
@@ -1496,6 +1525,11 @@ void CaptureModeController::BeginVideoRecording(
   LaunchRecordingServiceAndStartRecording(capture_params,
                                           std::move(cursor_overlay_receiver));
 
+  // Intentionally record the metrics before
+  // `MaybeRestoreCachedCaptureConfigurations` as `enable_demo_tools_` may be
+  // overwritten otherwise.
+  RecordRecordingStartsWithDemoTools(enable_demo_tools_, for_projector);
+
   // Restore the capture mode configurations that include the `type_`, `source_`
   // and `enable_audio_recording_` after projector-inititated recording starts
   // if any of them was overridden in projector-initiated capture mode session.
@@ -1508,8 +1542,6 @@ void CaptureModeController::BeginVideoRecording(
       capture_params.window, capture_params.bounds,
       base::BindOnce(&CaptureModeController::InterruptVideoRecording,
                      weak_ptr_factory_.GetWeakPtr()));
-
-  RecordRecordingStartsWithDemoTools(enable_demo_tools_, for_projector);
 }
 
 void CaptureModeController::InterruptVideoRecording() {
@@ -1686,11 +1718,14 @@ void CaptureModeController::OnDlpRestrictionCheckedAtSessionInit(
     // Cache the normal capture mode configurations that will be used for
     // restoration when switching to the normal capture mode session if needed.
     cached_normal_session_configs_ =
-        CaptureSessionConfigs{type_, source_, enable_audio_recording_};
+        CaptureSessionConfigs{type_, source_, recording_type_,
+                              enable_audio_recording_, enable_demo_tools_};
 
     enable_audio_recording_ = true;
+    enable_demo_tools_ = true;
     SetType(CaptureModeType::kVideo);
     SetSource(CaptureModeSource::kFullscreen);
+    SetRecordingType(RecordingType::kWebM);
   }
 
   RecordCaptureModeEntryType(entry_type);

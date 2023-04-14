@@ -21,6 +21,8 @@ void EnableUIControls() {
 }
 
 // An interface to provide Aura implementation of UI control.
+
+// static
 bool SendKeyPress(gfx::NativeWindow window,
                   ui::KeyboardCode key,
                   bool control,
@@ -28,8 +30,9 @@ bool SendKeyPress(gfx::NativeWindow window,
                   bool alt,
                   bool command) {
   CHECK(g_ui_controls_enabled);
-  return instance_->SendKeyPress(
-      window, key, control, shift, alt, command);
+  return instance_->SendKeyEvents(
+      window, key, kKeyPress | kKeyRelease,
+      GenerateAcceleratorState(control, shift, alt, command));
 }
 
 // static
@@ -41,37 +44,71 @@ bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
                                 bool command,
                                 base::OnceClosure task) {
   CHECK(g_ui_controls_enabled);
-  return instance_->SendKeyPressNotifyWhenDone(window, key, control, shift, alt,
-                                               command, std::move(task));
+  return instance_->SendKeyEventsNotifyWhenDone(
+      window, key, kKeyPress | kKeyRelease, std::move(task),
+      GenerateAcceleratorState(control, shift, alt, command));
 }
 
 // static
-bool SendMouseMove(int x, int y, gfx::NativeWindow window_hint) {
+bool SendKeyEvents(gfx::NativeWindow window,
+                   ui::KeyboardCode key,
+                   int key_event_types,
+                   int accelerator_state) {
+  CHECK(g_ui_controls_enabled);
+
+  // Make sure `key_event_types` abd `accelerator_state` is valid.
+  // `key_event_types` must include at least one key event type.
+  DCHECK(key_event_types > 0 && key_event_types <= (kKeyPress | kKeyRelease));
+  DCHECK(accelerator_state >= 0 &&
+         accelerator_state <= (kShift | kControl | kAlt | kCommand));
+
+  return instance_->SendKeyEvents(window, key, key_event_types,
+                                  accelerator_state);
+}
+
+// static
+bool SendKeyEventsNotifyWhenDone(gfx::NativeWindow window,
+                                 ui::KeyboardCode key,
+                                 int key_event_types,
+                                 base::OnceClosure task,
+                                 int accelerator_state) {
+  CHECK(g_ui_controls_enabled);
+
+  // Make sure `key_event_types` abd `accelerator_state` is valid.
+  // `key_event_types` must include at least one key event type.
+  DCHECK(key_event_types > 0 && key_event_types <= (kKeyPress | kKeyRelease));
+  DCHECK(accelerator_state >= 0 &&
+         accelerator_state <= (kShift | kControl | kAlt | kCommand));
+
+  return instance_->SendKeyEventsNotifyWhenDone(
+      window, key, key_event_types, std::move(task), accelerator_state);
+}
+
+// static
+bool SendMouseMove(int x, int y, gfx::NativeWindow) {
   // TODO(crbug.com/1396661): Maybe use the window hint on other platforms.
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseMove(x, y, window_hint);
+  return instance_->SendMouseMove(x, y);
 }
 
 // static
 bool SendMouseMoveNotifyWhenDone(int x,
                                  int y,
                                  base::OnceClosure task,
-                                 gfx::NativeWindow window_hint) {
+                                 gfx::NativeWindow) {
   // TODO(crbug.com/1396661): Maybe use the window hint on other platforms.
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseMoveNotifyWhenDone(x, y, std::move(task),
-                                                window_hint);
+  return instance_->SendMouseMoveNotifyWhenDone(x, y, std::move(task));
 }
 
 // static
 bool SendMouseEvents(MouseButton type,
                      int button_state,
                      int accelerator_state,
-                     gfx::NativeWindow window_hint) {
+                     gfx::NativeWindow) {
   // TODO(crbug.com/1396661): Maybe use the window hint on other platforms.
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseEvents(type, button_state, accelerator_state,
-                                    window_hint);
+  return instance_->SendMouseEvents(type, button_state, accelerator_state);
 }
 
 // static
@@ -79,18 +116,18 @@ bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                    int button_state,
                                    base::OnceClosure task,
                                    int accelerator_state,
-                                   gfx::NativeWindow window_hint) {
+                                   gfx::NativeWindow) {
   // TODO(crbug.com/1396661): Maybe use the window hint on other platforms.
   CHECK(g_ui_controls_enabled);
   return instance_->SendMouseEventsNotifyWhenDone(
-      type, button_state, std::move(task), accelerator_state, window_hint);
+      type, button_state, std::move(task), accelerator_state);
 }
 
 // static
-bool SendMouseClick(MouseButton type, gfx::NativeWindow window_hint) {
+bool SendMouseClick(MouseButton type, gfx::NativeWindow) {
   // TODO(crbug.com/1396661): Do any Aura platforms need to use the hint?
   CHECK(g_ui_controls_enabled);
-  return instance_->SendMouseClick(type, window_hint);
+  return instance_->SendMouseClick(type);
 }
 
 #if BUILDFLAG(IS_WIN)

@@ -533,6 +533,7 @@ CastActivity* CastActivityManager::AddMirroringActivity(
                             route, app_id, message_handler_, session_tracker_,
                             frame_tree_node_id, cast_data, std::move(on_stop));
   activity->CreateMojoBindings(media_router_);
+  activity->CreateMirroringServiceHost();
   auto* const activity_ptr = activity.get();
   activities_.emplace(route.media_route_id(), std::move(activity));
   return activity_ptr;
@@ -1020,9 +1021,7 @@ void CastActivityManager::SendFailedToCastIssue(
     const MediaRoute::Id& route_id) {
   std::string issue_title =
       l10n_util::GetStringUTF8(IDS_MEDIA_ROUTER_ISSUE_FAILED_TO_CAST);
-  IssueInfo info(issue_title, IssueInfo::Severity::WARNING);
-
-  info.sink_id = sink_id;
+  IssueInfo info(issue_title, IssueInfo::Severity::WARNING, sink_id);
   info.route_id = route_id;
   media_router_->OnIssue(info);
 }
@@ -1034,8 +1033,7 @@ void CastActivityManager::SendPendingUserAuthNotification(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_USER_PENDING_AUTHORIZATION,
       base::UTF8ToUTF16(sink_name));
 
-  IssueInfo info(issue_title, IssueInfo::Severity::NOTIFICATION);
-  info.sink_id = sink_id;
+  IssueInfo info(issue_title, IssueInfo::Severity::NOTIFICATION, sink_id);
   media_router_->OnIssue(info);
 }
 

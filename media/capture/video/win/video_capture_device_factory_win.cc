@@ -347,6 +347,9 @@ VideoCaptureDeviceFactoryWin::~VideoCaptureDeviceFactoryWin() {
 VideoCaptureErrorOrDevice VideoCaptureDeviceFactoryWin::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  UMA_HISTOGRAM_ENUMERATION("Media.VideoCapture.Win.DeviceFactory.CaptureApi",
+                            device_descriptor.capture_api);
+
   switch (device_descriptor.capture_api) {
     case VideoCaptureApi::WIN_MEDIA_FOUNDATION:
       [[fallthrough]];
@@ -560,7 +563,7 @@ void VideoCaptureDeviceFactoryWin::GetDevicesInfo(
     devices_info = GetDevicesInfoMediaFoundation();
     AugmentDevicesListWithDirectShowOnlyDevices(&devices_info);
   } else {
-    devices_info = GetDevicesInfoDirectShow();
+    devices_info = GetDevicesInfoDirectShow(devices_info);
   }
 
   if (IsEnclosureLocationSupported()) {
@@ -712,9 +715,10 @@ void VideoCaptureDeviceFactoryWin::FoundAllDevicesUWP(
   FindAndSetDefaultVideoCamera(&devices_info);
 
   origin_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&VideoCaptureDeviceFactoryWin::DeviceInfoReady,
-                                base::Unretained(this), std::move(devices_info),
-                                std::move(result_callback)));
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureDeviceFactoryWin::DeviceInfoReady,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(devices_info),
+                     std::move(result_callback)));
 
   auto it = async_ops_.find(operation);
   DCHECK(it != async_ops_.end());
@@ -819,7 +823,8 @@ void VideoCaptureDeviceFactoryWin::AugmentDevicesListWithDirectShowOnlyDevices(
   // DirectShow virtual cameras are not supported by MediaFoundation.
   // To overcome this, based on device name and model, we append
   // missing DirectShow device descriptor to full devices list.
-  DevicesInfo direct_show_devices_info = GetDevicesInfoDirectShow();
+  DevicesInfo direct_show_devices_info =
+      GetDevicesInfoDirectShow(*devices_info);
   for (const auto& direct_show_device_info : direct_show_devices_info) {
     // DirectShow can produce two descriptors with same name and model.
     // If those descriptors are missing from MediaFoundation, we want them both
@@ -835,20 +840,25 @@ void VideoCaptureDeviceFactoryWin::AugmentDevicesListWithDirectShowOnlyDevices(
     // Devices like the Pinnacle Dazzle, appear both in DirectShow and
     // MediaFoundation. In MediaFoundation, they will have no supported video
     // format while in DirectShow they will have at least one video format.
-    // Therefore, we must prioritize the MediaFoundation descriptor if it has at
-    // least one supported format
+    // We should delete MediaFoundation descriptor with no supported formats
+    // and use the DirectShow instead.
     if (matching_non_direct_show_device != devices_info->end()) {
-      if (matching_non_direct_show_device->supported_formats.size() > 0)
+      if (direct_show_device_info.supported_formats.size() == 0) {
+        // Skip this DirectShow device if it has no supported formats,
+        // because the MediaFoundation one should be used instead.
         continue;
-      if (direct_show_device_info.supported_formats.size() == 0)
-        continue;
+      }
+      // Devices, already known from MediaFoundation, shouldn't be queried with
+      // DirectShow.
+      DCHECK(matching_non_direct_show_device->supported_formats.size() == 0);
       devices_info->erase(matching_non_direct_show_device);
     }
     devices_info->emplace_back(direct_show_device_info);
   }
 }
 
-DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoDirectShow() {
+DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoDirectShow(
+    const DevicesInfo& known_devices) {
   DVLOG(1) << __func__;
 
   ComPtr<IEnumMoniker> enum_moniker;
@@ -890,6 +900,22 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoDirectShow() {
 
     const std::string model_id = GetDeviceModelId(id);
 
+    auto device_descriptor = VideoCaptureDeviceDescriptor(
+        device_name, id, model_id, VideoCaptureApi::WIN_DIRECT_SHOW,
+        VideoCaptureControlSupport());
+
+    DevicesInfo::const_iterator matching_non_direct_show_device =
+        FindNonDirectShowDeviceInfoByNameAndModel(
+            known_devices, device_descriptor.GetNameAndModel());
+
+    // Skip the DirectShow device, if the same device is already known from
+    // MediaFoundation and has some supported formats, since the MediaFoundation
+    // descriptor would be used in the end.
+    if (matching_non_direct_show_device != known_devices.end() &&
+        matching_non_direct_show_device->supported_formats.size() > 0) {
+      continue;
+    }
+
     VideoCaptureControlSupport control_support;
     VideoCaptureFormats supported_formats;
     ComPtr<IBaseFilter> capture_filter;
@@ -899,10 +925,8 @@ DevicesInfo VideoCaptureDeviceFactoryWin::GetDevicesInfoDirectShow() {
       supported_formats =
           GetSupportedFormatsDirectShow(capture_filter, device_name);
     }
-
-    devices_info.emplace_back(VideoCaptureDeviceDescriptor(
-        device_name, id, model_id, VideoCaptureApi::WIN_DIRECT_SHOW,
-        control_support));
+    device_descriptor.set_control_support(control_support);
+    devices_info.emplace_back(device_descriptor);
     devices_info.back().supported_formats = std::move(supported_formats);
   }
 

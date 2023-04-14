@@ -51,6 +51,14 @@ BASE_FEATURE(kDefaultBrowserIntentsShowSettings,
              "DefaultBrowserIntentsShowSettings",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kIOSCustomBrowserEditMenu,
+             "IOSCustomBrowserEditMenu",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kIOSEditMenuPartialTranslate,
+             "IOSEditMenuPartialTranslate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kIOSNewOmniboxImplementation,
              "kIOSNewOmniboxImplementation",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -61,10 +69,6 @@ BASE_FEATURE(kRemoveCrashInfobar,
 
 BASE_FEATURE(kIOSLocationBarUseNativeContextMenu,
              "IOSLocationBarUseNativeContextMenu",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kUpdateHistoryEntryPointsInIncognito,
-             "UpdateHistoryEntryPointsInIncognito",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseLensToSearchForImage,
@@ -113,18 +117,12 @@ BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableEmails, "EnableEmails", base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnablePhoneNumbers,
-             "EnablePhoneNumbers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 const char kExperienceKitMapsVariationName[] = "ExperienceKitMapsVariant";
 extern const char kEnableExperienceKitMapsVariationSrp[] = "with SRP";
 
 BASE_FEATURE(kMapsExperienceKit,
              "MapsExperienceKit",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableMiniMap,
              "EnableMiniMap",
@@ -134,18 +132,10 @@ BASE_FEATURE(kTabGridRecencySort,
              "TabGridRecencySort",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kMultilineFadeTruncatingLabel,
-             "MultilineFadeTruncatingLabel",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kEnableAccessibilityIdentifierToOmniboxLeadingImage,
-             "EnableAccessibilityIdentifierToOmniboxLeadingImage",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabStripContextMenu,
-             "TabStripContextMenu",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 bool IsTabGridSortedByRecency() {
   return base::FeatureList::IsEnabled(kTabGridRecencySort);
 }
+
+BASE_FEATURE(kMultilineFadeTruncatingLabel,
+             "MultilineFadeTruncatingLabel",
+             base::FEATURE_DISABLED_BY_DEFAULT);

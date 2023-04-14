@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from 'chrome://resources/ash/common/assert.js';
 import {NativeEventTarget as EventTarget} from 'chrome://resources/ash/common/event_target.js';
 
 import {getDriveQuotaMetadata, getSizeStats} from '../../common/js/api.js';
@@ -22,10 +23,13 @@ import {getStore} from '../../state/store.js';
 import {constants} from './constants.js';
 import {DirectoryModel} from './directory_model.js';
 import {TAG_NAME as DlpRestrictedBannerName} from './ui/banners/dlp_restricted_banner.js';
+import {TAG_NAME as DriveBulkPinningBannerTagName} from './ui/banners/drive_bulk_pinning_banner.js';
 import {TAG_NAME as DriveLowIndividualSpaceBanner} from './ui/banners/drive_low_individual_space_banner.js';
+import {TAG_NAME as DriveLowSharedDriveSpaceBanner} from './ui/banners/drive_low_shared_drive_space_banner.js';
 import {TAG_NAME as DriveOfflinePinningBannerTagName} from './ui/banners/drive_offline_pinning_banner.js';
 import {TAG_NAME as DriveOutOfIndividualSpaceBanner} from './ui/banners/drive_out_of_individual_space_banner.js';
 import {TAG_NAME as DriveOutOfOrganizationSpaceBanner} from './ui/banners/drive_out_of_organization_space_banner.js';
+import {TAG_NAME as DriveOutOfSharedDriveSpaceBanner} from './ui/banners/drive_out_of_shared_drive_space_banner.js';
 import {TAG_NAME as DriveWelcomeBannerTagName} from './ui/banners/drive_welcome_banner.js';
 import {TAG_NAME as GoogleOneOfferBannerTagName} from './ui/banners/google_one_offer_banner.js';
 import {TAG_NAME as HoldingSpaceWelcomeBannerTagName} from './ui/banners/holding_space_welcome_banner.js';
@@ -140,6 +144,13 @@ export class BannerController extends EventTarget {
      * @private {?VolumeManagerCommon.RootType}
      */
     this.currentRootType_ = null;
+
+    /**
+     * Maintains the currently navigated shared drive if any. This is updated
+     * when a reconcile event is called.
+     * @private {string}
+     */
+    this.currentSharedDrive_ = '';
 
     /**
      * Maintains the currently navigated directory entry. This is updated when
@@ -287,8 +298,16 @@ export class BannerController extends EventTarget {
     }
   }
 
-  /** @param {!State} state latest state from the store. */
+  /**
+   * Checks if the DlpRestrictedBanner should be shown/hidden based on the
+   * latest state and reconciles banners if necessary.
+   * @param {!State} state latest state from the store.
+   */
   onStateChanged(state) {
+    if (this.dialogType_ !== DialogType.SELECT_OPEN_FILE &&
+        this.dialogType_ !== DialogType.SELECT_OPEN_MULTI_FILE) {
+      return;
+    }
     const changedHasDlpDisabledFiles =
         !!state.currentDirectory?.hasDlpDisabledFiles;
     if (this.hasDlpDisabledFiles_ !== changedHasDlpDisabledFiles) {
@@ -309,14 +328,19 @@ export class BannerController extends EventTarget {
       this.setWarningBannersInOrder([
         LocalDiskLowSpaceBannerTagName,
         DriveOutOfOrganizationSpaceBanner,
+        DriveOutOfSharedDriveSpaceBanner,
         DriveOutOfIndividualSpaceBanner,
         DriveLowIndividualSpaceBanner,
+        DriveLowSharedDriveSpaceBanner,
       ]);
 
       const educationalBanners =
           util.isGoogleOneOfferFilesBannerEligibleAndEnabled() ?
           [GoogleOneOfferBannerTagName] :
           [DriveWelcomeBannerTagName];
+      if (util.isDriveFsBulkPinningEnabled()) {
+        educationalBanners.push(DriveBulkPinningBannerTagName);
+      }
       educationalBanners.push(
           HoldingSpaceWelcomeBannerTagName, DriveOfflinePinningBannerTagName,
           PhotosWelcomeBannerTagName);
@@ -356,19 +380,21 @@ export class BannerController extends EventTarget {
       // the Drive banner only if the volume stats are available. The general
       // volume available handler will run before this ensuring the minimum
       // ratio has been met.
+      const notOutOfSpace = () => this.driveQuotaMetadata_ &&
+          this.driveQuotaMetadata_.usedBytes <
+              this.driveQuotaMetadata_.totalBytes &&
+          this.driveQuotaMetadata_.totalBytes >= 0;  // not unlimited
+      const outOfSpace = () => this.driveQuotaMetadata_ &&
+          this.driveQuotaMetadata_.usedBytes >=
+              this.driveQuotaMetadata_.totalBytes &&
+          this.driveQuotaMetadata_.totalBytes >= 0;  // not unlimited
       this.registerCustomBannerFilter_(DriveLowIndividualSpaceBanner, {
-        shouldShow: () => this.driveQuotaMetadata_ &&
-            this.driveQuotaMetadata_.usedUserBytes <
-                this.driveQuotaMetadata_.totalUserBytes &&
-            this.driveQuotaMetadata_.totalUserBytes >= 0,  // not unlimited
+        shouldShow: notOutOfSpace,
         context: () => this.driveQuotaMetadata_,
       });
 
       this.registerCustomBannerFilter_(DriveOutOfIndividualSpaceBanner, {
-        shouldShow: () => this.driveQuotaMetadata_ &&
-            this.driveQuotaMetadata_.usedUserBytes >=
-                this.driveQuotaMetadata_.totalUserBytes &&
-            this.driveQuotaMetadata_.totalUserBytes >= 0,  // not unlimited
+        shouldShow: outOfSpace,
         context: () => ({}),
       });
 
@@ -376,6 +402,16 @@ export class BannerController extends EventTarget {
         shouldShow: () => this.driveQuotaMetadata_ &&
             this.driveQuotaMetadata_.organizationLimitExceeded,
         context: () => this.driveQuotaMetadata_,
+      });
+
+      this.registerCustomBannerFilter_(DriveLowSharedDriveSpaceBanner, {
+        shouldShow: notOutOfSpace,
+        context: () => this.driveQuotaMetadata_,
+      });
+
+      this.registerCustomBannerFilter_(DriveOutOfSharedDriveSpaceBanner, {
+        shouldShow: outOfSpace,
+        context: () => ({}),
       });
 
       // Register a custom filter that checks if the removable device has an
@@ -440,15 +476,21 @@ export class BannerController extends EventTarget {
    */
   async reconcile() {
     const previousVolume = this.currentVolume_;
+    const previousSharedDrive = this.currentSharedDrive_;
     this.currentEntry_ = this.directoryModel_.getCurrentDirEntry();
+    if (this.currentEntry_) {
+      this.currentSharedDrive_ = util.getTeamDriveName(this.currentEntry_);
+    }
     this.currentRootType_ = this.directoryModel_.getCurrentRootType();
     this.currentVolume_ = this.directoryModel_.getCurrentVolumeInfo();
 
     // When navigating to a different volume, refresh the volume size stats
     // when first navigating. A listener will keep this in sync.
-    if (this.currentVolume_ &&
+    const volumeChanged = this.currentVolume_ &&
         previousVolume?.volumeId !== this.currentVolume_.volumeId &&
-        this.volumeSizeObservers_[this.currentVolume_.volumeType]) {
+        this.volumeSizeObservers_[this.currentVolume_.volumeType];
+    const sharedDriveChanged = this.currentSharedDrive_ !== previousSharedDrive;
+    if (volumeChanged || sharedDriveChanged) {
       this.pendingVolumeSizeUpdates_.add(this.currentVolume_);
       this.updateVolumeSizeStatsDebounced_.runImmediately();
 
@@ -903,12 +945,13 @@ export class BannerController extends EventTarget {
     for (const {volumeType, volumeId} of this.pendingVolumeSizeUpdates_) {
       if (volumeType === VolumeManagerCommon.VolumeType.DRIVE) {
         try {
-          this.driveQuotaMetadata_ = await getDriveQuotaMetadata();
+          this.driveQuotaMetadata_ =
+              await getDriveQuotaMetadata(assert(this.currentEntry_));
           if (this.driveQuotaMetadata_) {
             this.volumeSizeStats_[volumeId] = {
-              totalSize: this.driveQuotaMetadata_.totalUserBytes,
-              remainingSize: this.driveQuotaMetadata_.totalUserBytes -
-                  this.driveQuotaMetadata_.usedUserBytes,
+              totalSize: this.driveQuotaMetadata_.totalBytes,
+              remainingSize: this.driveQuotaMetadata_.totalBytes -
+                  this.driveQuotaMetadata_.usedBytes,
             };
           }
         } catch (e) {

@@ -30,14 +30,6 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
 
-namespace features {
-
-BASE_FEATURE(kNotifyJavaSpuriouslyToMeasurePerf,
-             "NotifyJavaSpuriouslyToMeasurePerf",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-}  // namespace features
-
 namespace content {
 
 // TODO(dcheng): File a bug. This class incorrectly passes just a frame ID,
@@ -149,17 +141,8 @@ void WebContentsObserverProxy::PrimaryMainDocumentElementAvailable() {
 
 void WebContentsObserverProxy::DidStartNavigation(
     NavigationHandle* navigation_handle) {
-  // TODO(crbug.com/1351884) Remove when NotifyJavaSpuriouslyToMeasurePerf
-  // experiment is finished.
-  TRACE_EVENT0("browser", "Java_WebContentsObserverProxy_didStartNavigation");
-
   if (navigation_handle->IsInPrimaryMainFrame()) {
     Java_WebContentsObserverProxy_didStartNavigationInPrimaryMainFrame(
-        AttachCurrentThread(), java_observer_,
-        navigation_handle->GetJavaNavigationHandle());
-  } else if (base::FeatureList::IsEnabled(
-                 features::kNotifyJavaSpuriouslyToMeasurePerf)) {
-    Java_WebContentsObserverProxy_didStartNavigationNoop(
         AttachCurrentThread(), java_observer_,
         navigation_handle->GetJavaNavigationHandle());
   }
@@ -181,20 +164,11 @@ void WebContentsObserverProxy::DidFinishNavigation(
     Java_WebContentsObserverProxy_didFinishNavigationInPrimaryMainFrame(
         AttachCurrentThread(), java_observer_,
         navigation_handle->GetJavaNavigationHandle());
-  } else if (base::FeatureList::IsEnabled(
-                 features::kNotifyJavaSpuriouslyToMeasurePerf)) {
-    Java_WebContentsObserverProxy_didFinishNavigationNoop(
-        AttachCurrentThread(), java_observer_,
-        navigation_handle->GetJavaNavigationHandle());
   }
 }
 
 void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
                                              const GURL& validated_url) {
-  // TODO(crbug.com/1351884) Remove when NotifyJavaSupriouslyToMeasurePerf
-  // experiment is finished.
-  TRACE_EVENT0("browser", "Java_WebContentsObserverProxy_DidFinishLoad");
-
   JNIEnv* env = AttachCurrentThread();
 
   GURL url = validated_url;
@@ -206,35 +180,16 @@ void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
         render_frame_host->GetRoutingID(),
         url::GURLAndroid::FromNativeGURL(env, url), assume_valid,
         static_cast<jint>(render_frame_host->GetLifecycleState()));
-  } else if (base::FeatureList::IsEnabled(
-                 features::kNotifyJavaSpuriouslyToMeasurePerf)) {
-    Java_WebContentsObserverProxy_didFinishLoadNoop(
-        env, java_observer_, render_frame_host->GetProcess()->GetID(),
-        render_frame_host->GetRoutingID(),
-        url::GURLAndroid::FromNativeGURL(env, url), assume_valid,
-        render_frame_host->IsInPrimaryMainFrame(),
-        static_cast<jint>(render_frame_host->GetLifecycleState()));
   }
 }
 
 void WebContentsObserverProxy::DOMContentLoaded(
     RenderFrameHost* render_frame_host) {
-  // TODO(crbug.com/1351884) Remove when NotifyJavaSpuriouslyToMeasurePerf
-  // experiment is finished.
-  TRACE_EVENT0("browser", "Java_WebContentsObserverProxy_DOMContentLoaded");
-
   if (render_frame_host->IsInPrimaryMainFrame()) {
     Java_WebContentsObserverProxy_documentLoadedInPrimaryMainFrame(
         AttachCurrentThread(), java_observer_,
         render_frame_host->GetProcess()->GetID(),
         render_frame_host->GetRoutingID(),
-        static_cast<jint>(render_frame_host->GetLifecycleState()));
-  } else if (base::FeatureList::IsEnabled(
-                 features::kNotifyJavaSpuriouslyToMeasurePerf)) {
-    Java_WebContentsObserverProxy_documentLoadedInFrameNoop(
-        AttachCurrentThread(), java_observer_,
-        render_frame_host->GetProcess()->GetID(),
-        render_frame_host->GetRoutingID(), false,
         static_cast<jint>(render_frame_host->GetLifecycleState()));
   }
 }

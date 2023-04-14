@@ -38,7 +38,10 @@ namespace ash {
 namespace {
 
 constexpr float kHighlightLayerFinalOpacity = 0.f;
-constexpr float kHighlightLayerInitialScale = 0.1f;
+
+// Make the initial value as small as possible so that the dot is not visible in
+// the center of the ripple.
+constexpr float kHighlightLayerInitialScale = 0.0001f;
 constexpr float kHighlightLayerFinalScale = 1.0f;
 constexpr float kTouchHighlightLayerTouchDownScale = 56.f / 72;
 constexpr base::TimeDelta kMouseScaleUpDuration = base::Milliseconds(1500);
@@ -74,6 +77,8 @@ constexpr ui::KeyboardCode kNotNeedingModifierKeys[] = {
     ui::VKEY_RWIN,
     ui::VKEY_ESCAPE,
     ui::VKEY_TAB,
+    ui::VKEY_RETURN,
+    ui::VKEY_BACK,
     ui::VKEY_BROWSER_BACK,
     ui::VKEY_BROWSER_FORWARD,
     ui::VKEY_BROWSER_REFRESH,
@@ -87,7 +92,9 @@ constexpr ui::KeyboardCode kNotNeedingModifierKeys[] = {
     ui::VKEY_UP,
     ui::VKEY_DOWN,
     ui::VKEY_LEFT,
-    ui::VKEY_RIGHT};
+    ui::VKEY_RIGHT,
+    ui::VKEY_ASSISTANT,
+    ui::VKEY_SETTINGS};
 
 // Returns true if `key_code` is a non-modifier key for which a `KeyComboViewer`
 // can be shown even if there are no modifier keys are currently pressed.
@@ -353,7 +360,14 @@ void CaptureModeDemoToolsController::OnTouchUp(
     const ui::PointerId& pointer_id,
     const gfx::PointF& event_location_in_window) {
   auto iter = touch_pointer_id_to_highlight_layer_map_.find(pointer_id);
-  DCHECK(iter != touch_pointer_id_to_highlight_layer_map_.end());
+
+  // Touch up may happen without been registered to
+  // `touch_pointer_id_to_highlight_layer_map_` for example a touch down may
+  // happen before video recording starts and touch up happens after video
+  // recording starts.
+  if (iter == touch_pointer_id_to_highlight_layer_map_.end()) {
+    return;
+  }
 
   std::unique_ptr<PointerHighlightLayer> touch_highlight_layer =
       std::move(iter->second);
@@ -383,8 +397,12 @@ void CaptureModeDemoToolsController::OnTouchUp(
 void CaptureModeDemoToolsController::OnTouchDragged(
     const ui::PointerId& pointer_id,
     const gfx::PointF& event_location_in_window) {
-  auto* highlight_layer =
-      touch_pointer_id_to_highlight_layer_map_[pointer_id].get();
+  auto iter = touch_pointer_id_to_highlight_layer_map_.find(pointer_id);
+  if (iter == touch_pointer_id_to_highlight_layer_map_.end()) {
+    return;
+  }
+
+  auto* highlight_layer = iter->second.get();
   DCHECK(highlight_layer);
   highlight_layer->CenterAroundPoint(event_location_in_window);
 }

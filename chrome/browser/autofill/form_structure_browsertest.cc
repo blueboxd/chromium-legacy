@@ -175,17 +175,13 @@ class FormStructureBrowserTest
   class TestAutofillManager : public BrowserAutofillManager {
    public:
     TestAutofillManager(ContentAutofillDriver* driver, AutofillClient* client)
-        : BrowserAutofillManager(driver,
-                                 client,
-                                 "en-US",
-                                 EnableDownloadManager(false)) {}
+        : BrowserAutofillManager(driver, client, "en-US") {}
 
     TestAutofillManagerWaiter& waiter() { return waiter_; }
 
    private:
-    TestAutofillManagerWaiter waiter_{
-        *this,
-        {&AutofillManager::Observer::OnAfterFormsSeen}};
+    TestAutofillManagerWaiter waiter_{*this,
+                                      {AutofillManagerEvent::kFormsSeen}};
   };
 
   std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request);
@@ -196,8 +192,7 @@ class FormStructureBrowserTest
   // embedded test server to generate the response.
   std::string html_content_;
 
-  std::unique_ptr<TestAutofillManagerInjector<TestAutofillManager>>
-      autofill_manager_injector_;
+  TestAutofillManagerInjector<TestAutofillManager> autofill_manager_injector_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -247,11 +242,6 @@ void FormStructureBrowserTest::SetUpCommandLine(
 
 void FormStructureBrowserTest::SetUpOnMainThread() {
   InProcessBrowserTest::SetUpOnMainThread();
-
-  autofill_manager_injector_ =
-      std::make_unique<TestAutofillManagerInjector<TestAutofillManager>>(
-          web_contents());
-
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &FormStructureBrowserTest::HandleRequest, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -277,7 +267,7 @@ void FormStructureBrowserTest::GenerateResults(const std::string& input,
 
   // Dump the form fields (and their inferred field types).
   TestAutofillManager* autofill_manager =
-      autofill_manager_injector_->GetForPrimaryMainFrame();
+      autofill_manager_injector_[web_contents()];
   ASSERT_TRUE(autofill_manager->waiter().Wait(1));
   *output = FormStructuresToString(autofill_manager->form_structures());
 }

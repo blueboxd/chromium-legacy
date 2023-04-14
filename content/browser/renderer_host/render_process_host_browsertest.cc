@@ -13,6 +13,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/string_split.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/bind.h"
 #include "base/test/test_timeouts.h"
@@ -42,6 +43,7 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_frame_navigation_observer.h"
@@ -50,11 +52,8 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_browser_main_parts.h"
-#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/storage_partition_test_helpers.h"
-#include "content/test/test_content_browser_client.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "media/mojo/buildflags.h"
@@ -241,7 +240,8 @@ class RenderProcessHostTest : public ContentBrowserTest,
 
 // A mock ContentBrowserClient that only considers a spare renderer to be a
 // suitable host.
-class SpareRendererContentBrowserClient : public TestContentBrowserClient {
+class SpareRendererContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
  public:
   bool IsSuitableHost(RenderProcessHost* process_host,
                       const GURL& site_url) override {
@@ -255,7 +255,8 @@ class SpareRendererContentBrowserClient : public TestContentBrowserClient {
 
 // A mock ContentBrowserClient that only considers a non-spare renderer to be a
 // suitable host, but otherwise tries to reuse processes.
-class NonSpareRendererContentBrowserClient : public TestContentBrowserClient {
+class NonSpareRendererContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
  public:
   NonSpareRendererContentBrowserClient() = default;
 
@@ -395,8 +396,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   SpareRendererContentBrowserClient browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&browser_client);
 
   RenderProcessHost::SetMaxRendererProcessCount(1);
 
@@ -432,7 +431,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
   // Revert to the default process limit and original ContentBrowserClient.
   RenderProcessHost::SetMaxRendererProcessCount(0);
-  SetBrowserClientForTesting(old_client);
 }
 
 // Check that the spare renderer is dropped if an existing process is reused.
@@ -440,8 +438,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererOnProcessReuse) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   NonSpareRendererContentBrowserClient browser_client;
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&browser_client);
 
   RenderProcessHost::WarmupSpareRenderProcessHost(
       ShellContentBrowserClient::Get()->browser_context());
@@ -473,8 +469,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, SpareRendererOnProcessReuse) {
       base::BindOnce([](base::WaitableEvent* done) { done->Signal(); },
                      base::Unretained(&launcher_thread_done)));
   ASSERT_TRUE(launcher_thread_done.TimedWait(TestTimeouts::action_timeout()));
-
-  SetBrowserClientForTesting(old_client);
 }
 
 // Verifies that the spare renderer maintained by SpareRenderProcessHostManager
@@ -508,9 +502,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
   // Provide custom storage partition for test sites.
   GURL test_url = embedded_test_server()->GetURL("a.com", "/simple_page.html");
-  CustomStoragePartitionForSomeSites modified_client(GURL("http://a.com/"));
-  ContentBrowserClient* old_client =
-      SetBrowserClientForTesting(&modified_client);
+  CustomStoragePartitionBrowserClient modified_client(GURL("http://a.com/"));
 
   BrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
@@ -547,9 +539,6 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_EQ(custom_storage, new_process->GetStoragePartition());
   // And consequently, the spare shouldn't have been used.
   EXPECT_NE(spare_renderer, new_process);
-
-  // Restore the original ContentBrowserClient.
-  SetBrowserClientForTesting(old_client);
 }
 
 class RenderProcessHostObserverCounter : public RenderProcessHostObserver {
@@ -884,7 +873,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
     GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
+        FROM_HERE, base::BindPostTaskToCurrentDefault(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -982,7 +971,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
     GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
+        FROM_HERE, base::BindPostTaskToCurrentDefault(run_loop.QuitClosure()));
     run_loop.Run();
   }
 
@@ -1047,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
     // to audio stream owners and they get a chance to notify of stream closure.
     base::RunLoop run_loop;
     GetIOThreadTaskRunner({})->PostTask(
-        FROM_HERE, media::BindToCurrentLoop(run_loop.QuitClosure()));
+        FROM_HERE, base::BindPostTaskToCurrentDefault(run_loop.QuitClosure()));
     run_loop.Run();
   }
 

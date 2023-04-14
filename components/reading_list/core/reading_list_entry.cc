@@ -8,6 +8,7 @@
 
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
@@ -118,23 +119,6 @@ ReadingListEntry::ReadingListEntry(
   DCHECK(url.is_valid());
 }
 
-ReadingListEntry::ReadingListEntry(ReadingListEntry&& entry)
-    : url_(std::move(entry.url_)),
-      title_(std::move(entry.title_)),
-      estimated_read_time_(std::move(entry.estimated_read_time_)),
-      state_(std::move(entry.state_)),
-      distilled_path_(std::move(entry.distilled_path_)),
-      distilled_url_(std::move(entry.distilled_url_)),
-      distilled_state_(std::move(entry.distilled_state_)),
-      backoff_(std::move(entry.backoff_)),
-      failed_download_counter_(std::move(entry.failed_download_counter_)),
-      creation_time_us_(std::move(entry.creation_time_us_)),
-      first_read_time_us_(std::move(entry.first_read_time_us_)),
-      update_time_us_(std::move(entry.update_time_us_)),
-      update_title_time_us_(std::move(entry.update_title_time_us_)),
-      distillation_time_us_(std::move(entry.distillation_time_us_)),
-      distillation_size_(std::move(entry.distillation_size_)) {}
-
 ReadingListEntry::~ReadingListEntry() {}
 
 const GURL& ReadingListEntry::URL() const {
@@ -177,23 +161,25 @@ int ReadingListEntry::FailedDownloadCounter() const {
   return failed_download_counter_;
 }
 
-ReadingListEntry& ReadingListEntry::operator=(ReadingListEntry&& other) {
-  url_ = std::move(other.url_);
-  title_ = std::move(other.title_);
-  estimated_read_time_ = std::move(other.estimated_read_time_);
-  distilled_path_ = std::move(other.distilled_path_);
-  distilled_url_ = std::move(other.distilled_url_);
-  distilled_state_ = std::move(other.distilled_state_);
-  backoff_ = std::move(other.backoff_);
-  state_ = std::move(other.state_);
-  failed_download_counter_ = std::move(other.failed_download_counter_);
-  creation_time_us_ = std::move(other.creation_time_us_);
-  first_read_time_us_ = std::move(other.first_read_time_us_);
-  update_time_us_ = std::move(other.update_time_us_);
-  update_title_time_us_ = std::move(other.update_title_time_us_);
-  distillation_time_us_ = std::move(other.distillation_time_us_);
-  distillation_size_ = std::move(other.distillation_size_);
-  return *this;
+scoped_refptr<ReadingListEntry> ReadingListEntry::Clone() const {
+  const base::Time now = base::Time::Now();
+  scoped_refptr<ReadingListEntry> entry_copy =
+      FromReadingListLocal(*AsReadingListLocal(now), now);
+  DCHECK(entry_copy->url_ == url_);
+  DCHECK(entry_copy->title_ == title_);
+  DCHECK(entry_copy->estimated_read_time_ == estimated_read_time_);
+  DCHECK(entry_copy->state_ == state_);
+  DCHECK(entry_copy->creation_time_us_ == creation_time_us_);
+  DCHECK(entry_copy->first_read_time_us_ == first_read_time_us_);
+  DCHECK(entry_copy->update_time_us_ == update_time_us_);
+  DCHECK(entry_copy->update_title_time_us_ == update_title_time_us_);
+  DCHECK(entry_copy->distilled_state_ == distilled_state_);
+  DCHECK(entry_copy->distilled_path_ == distilled_path_);
+  DCHECK(entry_copy->distilled_url_ == distilled_url_);
+  DCHECK(entry_copy->distillation_time_us_ == distillation_time_us_);
+  DCHECK(entry_copy->distillation_size_ == distillation_size_);
+  DCHECK(entry_copy->failed_download_counter_ == failed_download_counter_);
+  return entry_copy;
 }
 
 bool ReadingListEntry::operator==(const ReadingListEntry& other) const {
@@ -296,7 +282,7 @@ void ReadingListEntry::MarkEntryUpdated(const base::Time& now) {
 }
 
 // static
-std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
+scoped_refptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     const reading_list::ReadingListLocal& pb_entry,
     const base::Time& now) {
   if (!pb_entry.has_url()) {
@@ -416,7 +402,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     }
   }
 
-  return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
+  // MakeRefCounted cannot be used because this constructor is private.
+  return base::WrapRefCounted<ReadingListEntry>(new ReadingListEntry(
       url, title, estimated_read_time, state, creation_time_us,
       first_read_time_us, update_time_us, update_title_time_us,
       distillation_state, distilled_path, distilled_url, distillation_time_us,
@@ -424,7 +411,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
 }
 
 // static
-std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
+scoped_refptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     const sync_pb::ReadingListSpecifics& pb_entry,
     const base::Time& now) {
   if (!pb_entry.has_url()) {
@@ -483,7 +470,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     }
   }
 
-  return base::WrapUnique<ReadingListEntry>(new ReadingListEntry(
+  return base::WrapRefCounted<ReadingListEntry>(new ReadingListEntry(
       url, title, estimated_read_time, state, creation_time_us,
       first_read_time_us, update_time_us, update_title_time_us, WAITING,
       base::FilePath(), GURL(), 0, 0, 0, nullptr));

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/constants/ash_features.h"
+#include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
@@ -40,8 +41,8 @@ void LogErrorMessageAndInvokeCallback(base::OnceClosure callback,
   std::move(callback).Run();
 }
 
-const base::Value* GetByGUID(
-    const base::flat_map<std::string, base::Value>& policies,
+const base::Value::Dict* GetByGUID(
+    const base::flat_map<std::string, base::Value::Dict>& policies,
     const std::string& guid) {
   auto it = policies.find(guid);
   if (it == policies.end())
@@ -49,9 +50,9 @@ const base::Value* GetByGUID(
   return &(it->second);
 }
 
-const base::Value* FindMatchingPolicy(
-    const base::flat_map<std::string, base::Value>& policies,
-    const base::Value& actual_network) {
+const base::Value::Dict* FindMatchingPolicy(
+    const base::flat_map<std::string, base::Value::Dict>& policies,
+    const base::Value::Dict& actual_network) {
   for (auto& policy : policies) {
     if (policy_util::IsPolicyMatching(policy.second, actual_network))
       return &(policy.second);
@@ -61,36 +62,37 @@ const base::Value* FindMatchingPolicy(
 
 // Returns the GUID property from |onc_part|, or an empty string if no GUID was
 // present.
-std::string GetGUIDFromONCPart(const base::Value& onc_part) {
-  const base::Value* guid_value = onc_part.FindKeyOfType(
-      ::onc::network_config::kGUID, base::Value::Type::STRING);
-  if (!guid_value)
-    return std::string();
-  return guid_value->GetString();
+std::string GetGUIDFromONCPart(const base::Value::Dict& onc_part) {
+  const std::string* guid_value =
+      onc_part.FindString(::onc::network_config::kGUID);
+
+  return guid_value ? *guid_value : std::string();
 }
 
-void CopyStringKey(const base::Value& old_shill_properties,
-                   base::Value* new_shill_properties,
+void CopyStringKey(const base::Value::Dict& old_shill_properties,
+                   base::Value::Dict* new_shill_properties,
                    const std::string& property_key_name) {
   const std::string* value_in_old_entry =
-      old_shill_properties.FindStringKey(property_key_name);
+      old_shill_properties.FindString(property_key_name);
   const std::string* value_in_new_entry =
-      new_shill_properties->FindStringKey(property_key_name);
+      new_shill_properties->FindString(property_key_name);
   if (value_in_old_entry &&
       (!value_in_new_entry || value_in_new_entry->empty())) {
     NET_LOG(EVENT) << "Copying " << property_key_name
                    << " over to the new Shill entry, value: "
                    << *value_in_old_entry;
-    new_shill_properties->SetStringKey(property_key_name, *value_in_old_entry);
+    new_shill_properties->Set(property_key_name, *value_in_old_entry);
   }
 }
 
-void CopyRequiredCellularProperies(const base::Value& old_shill_properties,
-                                   base::Value* new_shill_properties) {
+void CopyRequiredCellularProperties(
+    const base::Value::Dict& old_shill_properties,
+    base::Value::Dict* new_shill_properties) {
   const std::string* type =
-      old_shill_properties.FindStringKey(shill::kTypeProperty);
-  if (!type || *type != shill::kTypeCellular)
+      old_shill_properties.FindString(shill::kTypeProperty);
+  if (!type || *type != shill::kTypeCellular) {
     return;
+  }
 
   CopyStringKey(old_shill_properties, new_shill_properties,
                 shill::kIccidProperty);
@@ -102,7 +104,7 @@ void CopyRequiredCellularProperies(const base::Value& old_shill_properties,
 
 PolicyApplicator::PolicyApplicator(
     const NetworkProfile& profile,
-    base::flat_map<std::string, base::Value> all_policies,
+    base::flat_map<std::string, base::Value::Dict> all_policies,
     base::Value global_network_config,
     ConfigurationHandler* handler,
     ManagedCellularPrefHandler* managed_cellular_pref_handler,
@@ -129,11 +131,11 @@ void PolicyApplicator::Run() {
 }
 
 void PolicyApplicator::GetProfilePropertiesCallback(
-    base::Value profile_properties) {
+    base::Value::Dict profile_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "Received properties for profile " << profile_.ToDebugString();
-  const base::Value* entries =
-      profile_properties.FindListKey(shill::kEntriesProperty);
+  const base::Value::List* entries =
+      profile_properties.FindList(shill::kEntriesProperty);
   if (!entries) {
     LOG(ERROR) << "Profile " << profile_.ToDebugString()
                << " doesn't contain the property " << shill::kEntriesProperty;
@@ -141,9 +143,10 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     return;
   }
 
-  for (const auto& it : entries->GetList()) {
-    if (!it.is_string())
+  for (const auto& it : *entries) {
+    if (!it.is_string()) {
       continue;
+    }
 
     std::string entry_identifier = it.GetString();
 
@@ -155,8 +158,9 @@ void PolicyApplicator::GetProfilePropertiesCallback(
         base::BindOnce(&PolicyApplicator::GetEntryError,
                        weak_ptr_factory_.GetWeakPtr(), entry_identifier));
   }
-  if (pending_get_entry_calls_.empty())
+  if (pending_get_entry_calls_.empty()) {
     ApplyRemainingPolicies();
+  }
 }
 
 void PolicyApplicator::GetProfilePropertiesError(
@@ -169,12 +173,12 @@ void PolicyApplicator::GetProfilePropertiesError(
 }
 
 void PolicyApplicator::GetEntryCallback(const std::string& entry_identifier,
-                                        base::Value entry_properties) {
+                                        base::Value::Dict entry_properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(2) << "Received properties for entry " << entry_identifier
           << " of profile " << profile_.ToDebugString();
 
-  base::Value onc_part = onc::TranslateShillServiceToONCPart(
+  base::Value::Dict onc_part = onc::TranslateShillServiceToONCPart(
       entry_properties, ::onc::ONC_SOURCE_UNKNOWN,
       &chromeos::onc::kNetworkWithStateSignature, nullptr /* network_state */);
 
@@ -194,7 +198,7 @@ void PolicyApplicator::GetEntryCallback(const std::string& entry_identifier,
       ui_data && (ui_data->onc_source() == ::onc::ONC_SOURCE_DEVICE_POLICY ||
                   ui_data->onc_source() == ::onc::ONC_SOURCE_USER_POLICY);
 
-  const base::Value* new_policy = nullptr;
+  const base::Value::Dict* new_policy = nullptr;
   if (was_managed) {
     // If we have a GUID that might match a current policy, do a lookup using
     // that GUID at first. In particular this is necessary, as some networks
@@ -264,11 +268,11 @@ void PolicyApplicator::GetEntryError(const std::string& entry_identifier,
 }
 
 void PolicyApplicator::ApplyNewPolicy(const std::string& entry_identifier,
-                                      const base::Value& entry_properties,
+                                      const base::Value::Dict& entry_properties,
                                       std::unique_ptr<NetworkUIData> ui_data,
                                       const std::string& old_guid,
                                       const std::string& new_guid,
-                                      const base::Value& new_policy,
+                                      const base::Value::Dict& new_policy,
                                       base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (old_guid == new_guid &&
@@ -280,18 +284,17 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry_identifier,
   }
   remaining_policy_guids_.erase(new_guid);
 
-  DCHECK(new_policy.is_dict());
-  DCHECK(entry_properties.is_dict());
-
   const base::Value* user_settings =
       ui_data ? ui_data->GetUserSettingsDictionary() : nullptr;
-  base::Value new_shill_properties = policy_util::CreateShillConfiguration(
-      profile_, new_guid, &global_network_config_, &new_policy, user_settings);
+  base::Value::Dict new_shill_properties =
+      policy_util::CreateShillConfiguration(profile_, new_guid,
+                                            &global_network_config_,
+                                            &new_policy, user_settings);
 
   // Copy over the value of ICCID and EID property from old entry to new shill
   // properties since Shill requires ICCID and EID to create or update the
   // existing service.
-  CopyRequiredCellularProperies(entry_properties, &new_shill_properties);
+  CopyRequiredCellularProperties(entry_properties, &new_shill_properties);
 
   // A new policy has to be applied to this profile entry. In order to keep
   // implicit state of Shill like "connected successfully before", keep the
@@ -331,15 +334,16 @@ void PolicyApplicator::ApplyNewPolicy(const std::string& entry_identifier,
 
 void PolicyApplicator::ApplyGlobalPolicyOnUnmanagedEntry(
     const std::string& entry_identifier,
-    const base::Value& entry_properties,
+    const base::Value::Dict& entry_properties,
     base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // The entry wasn't managed and doesn't match any current policy. Global
   // network settings have to be applied.
-  base::Value shill_properties_to_update(base::Value::Type::DICTIONARY);
+  base::Value::Dict shill_properties_to_update;
   policy_util::SetShillPropertiesForGlobalPolicy(
-      entry_properties, global_network_config_, &shill_properties_to_update);
-  if (shill_properties_to_update.DictEmpty()) {
+      entry_properties, global_network_config_.GetDict(),
+      &shill_properties_to_update);
+  if (shill_properties_to_update.empty()) {
     VLOG(2) << "Ignore unmanaged entry.";
     // Calling a SetProperties of Shill with an empty dictionary is a no op.
     std::move(callback).Run();
@@ -348,7 +352,8 @@ void PolicyApplicator::ApplyGlobalPolicyOnUnmanagedEntry(
   NET_LOG(EVENT) << "Apply global network config to unmanaged entry "
                  << entry_identifier << ".";
   handler_->UpdateExistingConfigurationWithPropertiesFromPolicy(
-      entry_properties, shill_properties_to_update, std::move(callback));
+      entry_properties, std::move(shill_properties_to_update),
+      std::move(callback));
 }
 
 void PolicyApplicator::DeleteEntry(const std::string& entry_identifier,
@@ -362,20 +367,21 @@ void PolicyApplicator::DeleteEntry(const std::string& entry_identifier,
                      std::move(split_callback.second), FROM_HERE));
 }
 
-void PolicyApplicator::WriteNewShillConfiguration(base::Value shill_dictionary,
-                                                  base::Value policy,
-                                                  base::OnceClosure callback) {
+void PolicyApplicator::WriteNewShillConfiguration(
+    base::Value::Dict shill_dictionary,
+    base::Value::Dict policy,
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Ethernet (non EAP) settings, like GUID or UIData, cannot be stored per
   // user. Abort in that case.
-  const std::string* type = policy.FindStringKey(::onc::network_config::kType);
+  const std::string* type = policy.FindString(::onc::network_config::kType);
   if (type && *type == ::onc::network_type::kEthernet &&
       profile_.type() == NetworkProfile::TYPE_USER) {
-    const base::Value* ethernet = policy.FindKeyOfType(
-        ::onc::network_config::kEthernet, base::Value::Type::DICTIONARY);
+    const base::Value::Dict* ethernet =
+        policy.FindDict(::onc::network_config::kEthernet);
     if (ethernet) {
       const std::string* auth =
-          ethernet->FindStringKey(::onc::ethernet::kAuthentication);
+          ethernet->FindString(::onc::ethernet::kAuthentication);
       if (auth && *auth == ::onc::ethernet::kAuthenticationNone) {
         std::move(callback).Run();
         return;
@@ -411,7 +417,7 @@ void PolicyApplicator::ApplyRemainingPolicies() {
            remaining_policy_guids_.begin();
        it != remaining_policy_guids_.end();) {
     const std::string& guid = *it;
-    const base::Value* network_policy = GetByGUID(all_policies_, guid);
+    const base::Value::Dict* network_policy = GetByGUID(all_policies_, guid);
     DCHECK(network_policy);
     if (policy_util::IsCellularPolicy(*network_policy)) {
       new_cellular_policy_guids_.insert(guid);
@@ -430,13 +436,13 @@ void PolicyApplicator::ApplyRemainingPolicies() {
   // contains all modified policies that didn't match any entry. For these
   // remaining policies, new configurations have to be created.
   for (const std::string& guid : remaining_policy_guids_) {
-    const base::Value* network_policy = GetByGUID(all_policies_, guid);
+    const base::Value::Dict* network_policy = GetByGUID(all_policies_, guid);
     DCHECK(network_policy);
 
     NET_LOG(EVENT) << "Creating new configuration managed by policy " << guid
                    << " in profile " << profile_.ToDebugString() << ".";
 
-    base::Value shill_dictionary = policy_util::CreateShillConfiguration(
+    base::Value::Dict shill_dictionary = policy_util::CreateShillConfiguration(
         profile_, guid, &global_network_config_, network_policy,
         nullptr /* no user settings */);
 

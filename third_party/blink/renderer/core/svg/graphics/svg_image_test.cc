@@ -8,12 +8,14 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op.h"
 #include "cc/paint/paint_op_buffer_iterator.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/scheme_registry.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -293,7 +295,15 @@ TEST_F(SVGImageTest, NestedSVGWithSmilAnimationIsAnimated) {
   EXPECT_TRUE(GetImage().MaybeAnimated());
 }
 
-class SVGImageSimTest : public SimTest, private ScopedMockOverlayScrollbars {};
+class SVGImageSimTest : public SimTest, private ScopedMockOverlayScrollbars {
+ public:
+  static void WaitForTimer(TimerBase& timer) {
+    if (!timer.IsActive()) {
+      return;
+    }
+    test::RunDelayedTasks(base::Milliseconds(1) + timer.NextFireInterval());
+  }
+};
 
 TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   SimRequest main_resource("https://example.com/", "text/html");
@@ -322,7 +332,7 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
 
   // Wait for the next animation frame to be triggered, and then trigger a new
   // frame. The image animation timeline should be running.
-  test::RunDelayedTasks(base::Milliseconds(1) + timer.NextFireInterval());
+  WaitForTimer(timer);
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
@@ -344,6 +354,85 @@ TEST_F(SVGImageSimTest, PageVisibilityHiddenToVisible) {
   Compositor().BeginFrame();
 
   EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
+}
+
+const char kSmilAnimatedDocument[] = R"SVG(
+<svg xmlns='http://www.w3.org/2000/svg' fill='red' width='10' height='10'>
+  <circle cx='5' cy='5'>
+    <animate attributeName='r' values='0; 10; 0' dur='10s'
+             repeatCount='indefinite'/>
+  </circle>
+</svg>
+)SVG";
+
+TEST_F(SVGImageSimTest, AnimationsPausedWhenImageScrolledOutOfView) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kThrottleOffscreenAnimatingSvgImages);
+
+  SimRequest main_resource("https://example.com/", "text/html");
+  SimSubresourceRequest image_resource("https://example.com/image.svg",
+                                       "image/svg+xml");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <img src="image.svg" width="20" id="image">
+    <div style="height: 10000px"></div>
+  )HTML");
+  image_resource.Complete(kSmilAnimatedDocument);
+
+  Compositor().BeginFrame();
+  test::RunPendingTasks();
+
+  Element* element = GetDocument().getElementById("image");
+  ASSERT_TRUE(IsA<HTMLImageElement>(element));
+
+  ImageResourceContent* image_content =
+      To<HTMLImageElement>(*element).CachedImage();
+  ASSERT_TRUE(image_content);
+  ASSERT_TRUE(image_content->IsLoaded());
+  ASSERT_TRUE(image_content->HasImage());
+  Image* image = image_content->GetImage();
+  ASSERT_TRUE(IsA<SVGImage>(image));
+  SVGImage& svg_image = To<SVGImage>(*image);
+  ASSERT_TRUE(svg_image.MaybeAnimated());
+  auto& svg_image_chrome_client = svg_image.ChromeClientForTesting();
+  TimerBase& timer = svg_image_chrome_client.GetTimerForTesting();
+
+  // Wait for the next animation frame to be triggered, and then trigger a new
+  // frame. The image animation timeline should be running.
+  WaitForTimer(timer);
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
+  EXPECT_TRUE(timer.IsActive());
+
+  // Scroll down to the bottom of the document to move the image out of the
+  // viewport, and then wait for the animation timer to fire. This triggers an
+  // "image changed" notification, which (re)sets the delay-invalidation
+  // flag. The following begin-frame then observes that the image is not
+  // visible.
+  GetDocument().domWindow()->scrollBy(0, 10000);
+  test::RunDelayedTasks(base::Milliseconds(1) + timer.NextFireInterval());
+  Compositor().BeginFrame();
+  EXPECT_TRUE(timer.IsActive());
+
+  // Trigger another animation frame. This makes the WillRenderImage() query
+  // return false (because delay-invalidation is set), which in turn suspends
+  // the image animation. (Suspend the image's animation timeline.)
+  test::RunDelayedTasks(base::Milliseconds(1) + timer.NextFireInterval());
+
+  EXPECT_TRUE(svg_image_chrome_client.IsSuspended());
+  EXPECT_FALSE(timer.IsActive());
+
+  // Scroll back up to make the image visible. The following paint observes
+  // that the image is now visible, and triggers a paint that resume the image
+  // animation.
+  GetDocument().domWindow()->scrollBy(0, -10000);
+  Compositor().BeginFrame();
+
+  EXPECT_FALSE(svg_image_chrome_client.IsSuspended());
+  EXPECT_TRUE(timer.IsActive());
 }
 
 TEST_F(SVGImageSimTest, TwoImagesSameSVGImageDifferentSize) {
@@ -407,14 +496,14 @@ id ID #REQUIRED>
 
 namespace {
 
-size_t CountDrawOval(const cc::PaintRecord& record) {
+size_t CountPaintOpType(const cc::PaintRecord& record, cc::PaintOpType type) {
   size_t count = 0;
   for (const cc::PaintOp& op : record) {
-    if (op.GetType() == cc::PaintOpType::DrawOval) {
+    if (op.GetType() == type) {
       ++count;
     } else if (op.GetType() == cc::PaintOpType::DrawRecord) {
       const auto& record_op = static_cast<const cc::DrawRecordOp&>(op);
-      count += CountDrawOval(record_op.record);
+      count += CountPaintOpType(record_op.record, type);
     }
   }
   return count;
@@ -451,7 +540,7 @@ TEST_F(SVGImageSimTest, SpriteSheetCulling) {
 
   // Initially, only the green circle should be recorded.
   PaintRecord record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(1U, CountDrawOval(record));
+  EXPECT_EQ(1U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the height so one green circle and three blue circles are visible,
   // and ensure four circles are recorded.
@@ -459,7 +548,7 @@ TEST_F(SVGImageSimTest, SpriteSheetCulling) {
   div->setAttribute(html_names::kStyleAttr, "height: 200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(4U, CountDrawOval(record));
+  EXPECT_EQ(4U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the background position so only the three blue circles are visible,
   // and ensure three circles are recorded.
@@ -467,7 +556,7 @@ TEST_F(SVGImageSimTest, SpriteSheetCulling) {
                     "height: 200px; background-position-y: -200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(3U, CountDrawOval(record));
+  EXPECT_EQ(3U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 }
 
 // Similar to `SpriteSheetCulling` but using a full-sized sprite sheet <img>
@@ -509,7 +598,7 @@ TEST_F(SVGImageSimTest, ClippedAbsoluteImageSpriteSheetCulling) {
 
   // Initially, only the green circle should be recorded.
   PaintRecord record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(1U, CountDrawOval(record));
+  EXPECT_EQ(1U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the div's height so one green circle and three blue circles are
   // visible, and ensure four circles are recorded.
@@ -517,7 +606,7 @@ TEST_F(SVGImageSimTest, ClippedAbsoluteImageSpriteSheetCulling) {
   div_element->setAttribute(html_names::kStyleAttr, "height: 200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(4U, CountDrawOval(record));
+  EXPECT_EQ(4U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the image's position so only the three blue circles are visible,
   // and ensure three circles are recorded.
@@ -525,7 +614,7 @@ TEST_F(SVGImageSimTest, ClippedAbsoluteImageSpriteSheetCulling) {
   image_element->setAttribute(html_names::kStyleAttr, "top: -200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(3U, CountDrawOval(record));
+  EXPECT_EQ(3U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 }
 
 // Similar to `SpriteSheetCulling` but using a full-sized sprite sheet <img>
@@ -566,7 +655,7 @@ TEST_F(SVGImageSimTest, ClippedStaticImageSpriteSheetCulling) {
 
   // Initially, only the green circle should be recorded.
   PaintRecord record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(1U, CountDrawOval(record));
+  EXPECT_EQ(1U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the div's height so one green circle and three blue circles are
   // visible, and ensure four circles are recorded.
@@ -574,7 +663,7 @@ TEST_F(SVGImageSimTest, ClippedStaticImageSpriteSheetCulling) {
   div_element->setAttribute(html_names::kStyleAttr, "height: 200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(4U, CountDrawOval(record));
+  EXPECT_EQ(4U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the image's position so only the three blue circles are visible,
   // and ensure three circles are recorded.
@@ -582,7 +671,7 @@ TEST_F(SVGImageSimTest, ClippedStaticImageSpriteSheetCulling) {
   image_element->setAttribute(html_names::kStyleAttr, "margin-top: -200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(3U, CountDrawOval(record));
+  EXPECT_EQ(3U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 }
 
 // Similar to `SpriteSheetCulling` but using a regular scrolling interest rect
@@ -626,7 +715,7 @@ TEST_F(SVGImageSimTest, InterestRectDoesNotCullImageSpriteSheet) {
   // apply because the scrolling interest rect is not for a specific sprite
   // within the image, and all circles should be recorded.
   PaintRecord record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(4U, CountDrawOval(record));
+  EXPECT_EQ(4U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the div's width and height so that it creates a cull rect that clips
   // to just a single circle, and ensure just one circle is recorded.
@@ -635,7 +724,7 @@ TEST_F(SVGImageSimTest, InterestRectDoesNotCullImageSpriteSheet) {
                             "width: 100px; height: 200px;");
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(1U, CountDrawOval(record));
+  EXPECT_EQ(1U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
 
   // Adjust the div's width and height so that it no longer creates a cull rect
   // that clips to a sprite within the image, so the optimization in
@@ -644,7 +733,44 @@ TEST_F(SVGImageSimTest, InterestRectDoesNotCullImageSpriteSheet) {
   div_element->removeAttribute(html_names::kStyleAttr);
   Compositor().BeginFrame();
   record = GetDocument().View()->GetPaintRecord();
-  EXPECT_EQ(4U, CountDrawOval(record));
+  EXPECT_EQ(4U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
+}
+
+// Tests the culling of non-drawing items from a larger sprite sheet.
+TEST_F(SVGImageSimTest, SpriteSheetNonDrawingCulling) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(
+      "<style>"
+      "  body { zoom: 2.5; }"
+      "  #div {"
+      "    width: 100px;"
+      "    height: 100px;"
+      "    background-image: url(\"data:image/svg+xml,"
+      "      <svg xmlns='http://www.w3.org/2000/svg' width='100' height='300'>"
+      "        <g transform='translate(50, 50)'>"
+      "          <circle cx='0' cy='0' r='10' fill='red'/>"
+      "        </g>"
+      "        <circle cx='50' cy='150' r='10' fill='green'/>"
+      "        <g transform='translate(50, 250)'>"
+      "          <circle cx='0' cy='0' r='10' fill='red'/>"
+      "        </g>"
+      "      </svg>\");"
+      "    background-position-y: -100px;"
+      "    background-repeat: no-repeat;"
+      "  }"
+      "</style>"
+      "<div id='div'></div>");
+
+  Compositor().BeginFrame();
+
+  // Only the green circle should be recorded and there should not be any
+  // translation paint ops from the <g> elements used to position the red
+  // circles.
+  PaintRecord record = GetDocument().View()->GetPaintRecord();
+  EXPECT_EQ(1U, CountPaintOpType(record, cc::PaintOpType::DrawOval));
+  EXPECT_EQ(0U, CountPaintOpType(record, cc::PaintOpType::Translate));
 }
 
 }  // namespace blink

@@ -71,6 +71,9 @@ chromium-metrics-reviews@google.com.
 <variants name="OptimizationType">
   <variant name="AboutThisSite"
       summary="Provides 'About this site' data about the site being visited"/>
+  <variant name="AutofillSamplingRate"
+      summary="This optimization provides information about a sampling rate
+               of Autofill UKM metrics per origin based on origin popularity."/>
   <variant name="BloomFilterValidation"
       summary="Validates bloom filer allowlist/blocklist based hints"/>
   <variant name="CompressPublicImages" summary="Compresses public images"/>
@@ -110,6 +113,8 @@ chromium-metrics-reviews@google.com.
       summary="Provides aggregated performance information about the page"/>
   <variant name="PriceTracking"
       summary="Returns price related data for shopping websites"/>
+  <variant name="SalientImage"
+      summary="Provides information about images for a URL."/>
   <variant name="ShoppingPagePredictor"
       summary="Determines if a page is shopping related or not"/>
   <variant name="ThankCreatorEligible"
@@ -121,6 +126,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ModelAnnotations" summary="Model Annotations"/>
   <variant name="RelatedSearches" summary="Related Searches"/>
   <variant name="RemoteMetadata" summary="Remote Metadata"/>
+  <variant name="SalientImageMetadata" summary="Salient Image Metadata"/>
   <variant name="SearchMetadata" summary="Search Metadata"/>
   <variant name="Unknown" summary="Unknown"/>
 </variants>
@@ -137,6 +143,8 @@ chromium-metrics-reviews@google.com.
       summary="Batch update of hints for result links off the Google SRP"/>
   <variant name="BatchUpdateModels" summary="Batch update of models"/>
   <variant name="Bookmarks" summary="Batch update of hints for bookmarks"/>
+  <variant name="Journeys" summary="Journeys surface"/>
+  <variant name="NewTabPage" summary="New tab page"/>
   <variant name="PageNavigation" summary="Page navigation"/>
 </variants>
 
@@ -190,7 +198,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.EntityAnnotatorNativeLibrary.InitiatedSuccessfully"
-    enum="BooleanSuccess" expires_after="2023-06-04">
+    enum="BooleanSuccess" expires_after="2023-08-08">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -222,7 +230,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.HintCacheLevelDBStore.Status"
     enum="OptimizationGuideHintCacheLevelDBStoreStatus"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -302,7 +310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-06-04">
+    enum="NetErrorCodes" expires_after="2023-08-08">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -312,7 +320,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
-    enum="HttpResponseCode" expires_after="2023-06-04">
+    enum="HttpResponseCode" expires_after="2023-08-08">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -793,7 +801,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-06-04">
+    units="ms" expires_after="2023-08-08">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -805,7 +813,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelThreadExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-06-04">
+    units="ms" expires_after="2023-08-08">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -835,7 +843,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.RelatedSearchesExtracted"
-    enum="BooleanAnnotated" expires_after="2023-06-04">
+    enum="BooleanAnnotated" expires_after="2023-08-08">
   <owner>mahmadi@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -986,7 +994,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PageTopicsOverrideList.UsedOverride"
-    enum="Boolean" expires_after="2023-06-11">
+    enum="Boolean" expires_after="2023-08-13">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -996,7 +1004,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionManager.DownloadServiceAvailabilityBlockedFetch"
-    enum="BooleanBlocked" expires_after="2023-05-27">
+    enum="BooleanBlocked" expires_after="2023-07-30">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -1401,7 +1409,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PushNotifications.PushNotificationHandledSuccessfully"
-    enum="BooleanSuccess" expires_after="2023-02-19">
+    enum="BooleanSuccess" expires_after="M117">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1422,7 +1430,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.PushNotifications.ReceivedNotificationType"
-    enum="OptimizationType" expires_after="2023-06-04">
+    enum="OptimizationType" expires_after="M117">
   <owner>robertogden@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -1433,7 +1441,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.RemoteFetchingEnabled" enum="BooleanEnabled"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>

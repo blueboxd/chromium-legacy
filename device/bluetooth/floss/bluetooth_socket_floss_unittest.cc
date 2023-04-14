@@ -21,8 +21,9 @@
 #include "device/bluetooth/floss/fake_floss_adapter_client.h"
 #include "device/bluetooth/floss/fake_floss_advertiser_client.h"
 #include "device/bluetooth/floss/fake_floss_battery_manager_client.h"
-#include "device/bluetooth/floss/fake_floss_gatt_client.h"
+#include "device/bluetooth/floss/fake_floss_gatt_manager_client.h"
 #include "device/bluetooth/floss/fake_floss_lescan_client.h"
+#include "device/bluetooth/floss/fake_floss_logging_client.h"
 #include "device/bluetooth/floss/fake_floss_manager_client.h"
 #include "device/bluetooth/floss/fake_floss_socket_manager.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
@@ -71,13 +72,16 @@ class BluetoothSocketFlossTest : public testing::Test {
     dbus_setter->SetFlossManagerClient(std::move(fake_floss_manager_client));
     dbus_setter->SetFlossAdapterClient(
         std::make_unique<FakeFlossAdapterClient>());
-    dbus_setter->SetFlossGattClient(std::make_unique<FakeFlossGattClient>());
+    dbus_setter->SetFlossGattManagerClient(
+        std::make_unique<FakeFlossGattManagerClient>());
     dbus_setter->SetFlossSocketManager(std::move(fake_floss_socket_manager));
     dbus_setter->SetFlossLEScanClient(std::move(fake_floss_lescan_client));
     dbus_setter->SetFlossAdvertiserClient(
         std::move(fake_floss_advertiser_client));
     dbus_setter->SetFlossBatteryManagerClient(
         std::move(fake_floss_battery_manager_client));
+    dbus_setter->SetFlossLoggingClient(
+        std::make_unique<FakeFlossLoggingClient>());
 #if BUILDFLAG(IS_CHROMEOS)
     dbus_setter->SetFlossAdminClient(std::make_unique<FakeFlossAdminClient>());
 #endif  // BUILDFLAG(IS_CHROMEOS)
@@ -247,8 +251,8 @@ TEST_F(BluetoothSocketFlossTest, Connect) {
   socket = nullptr;
 }
 
-// TODO (b/243420879) - Fix flakiness to re-enable
-TEST_F(BluetoothSocketFlossTest, Listen) {
+// TODO (crbug.com/1412530) Test is failing on ASan bots
+TEST_F(BluetoothSocketFlossTest, DISABLED_Listen) {
   // Get socket id for next returned socket.
   FlossSocketManager::SocketId id = fake_floss_socket_manager_->GetNextId();
 

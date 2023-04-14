@@ -27,11 +27,9 @@ namespace gfx {
 class Image;
 }
 
-namespace network {
-namespace mojom {
+namespace network::mojom {
 class URLLoaderFactory;
-}
-}  // namespace network
+}  // namespace network::mojom
 
 namespace ash {
 
@@ -89,10 +87,6 @@ class KioskAppData : public KioskAppDataBase,
       const AccountId& account_id,
       const GURL& update_url,
       const std::string& required_platform_version);
-
-  // Tests do not always fake app data download.
-  // This allows to ignore download errors.
-  static void SetIgnoreKioskAppDataLoadFailuresForTesting(bool value);
 
  private:
   class CrxLoader;

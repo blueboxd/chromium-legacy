@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1209796539517632982">Máy chủ có tên tự động</translation>
 <translation id="1210831758834677569">Tiếng Lào</translation>
+<translation id="1221555006497674479">Sắp hết bộ nhớ, <ph name="TOTAL_SPACE" /> bộ nhớ dùng chung còn <ph name="REMAINING_PERCENTAGE" />%.</translation>
 <translation id="1243314992276662751">Tải lên</translation>
 <translation id="1249250836236328755">Thể loại</translation>
 <translation id="1254593899333212300">Kết nối Internet trực tiếp</translation>
 <translation id="1272293450992660632">Giá trị mã PIN không khớp.</translation>
 <translation id="1280820357415527819">Đang tìm kiếm mạng di động</translation>
-<translation id="1291603679744561561">Đã khóa SIM</translation>
 <translation id="1293556467332435079">Tệp</translation>
 <translation id="1297922636971898492">Google Drive hiện không khả dụng. Quá trình tải lên sẽ tự động khởi động lại khi Google Drive hoạt động trở lại.</translation>
 <translation id="1307931752636661898">Không thể xem tệp Linux</translation>
@@ -51,6 +51,7 @@
 <translation id="1433628812591023318">Để thả tệp vào Parallels Desktop, bạn phải chuyển tệp đó vào thư mục tệp Windows.</translation>
 <translation id="1435838927755162558">Chia sẻ thư mục với ứng dụng Parallels Desktop</translation>
 <translation id="1439919885608649279">Người với hoa</translation>
+<translation id="1458457385801829801">Ngắt kết nối <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Tiếng Slovak</translation>
 <translation id="1482884275703521657">Tiếng Phần Lan</translation>
 <translation id="148466539719134488">Tiếng Thụy Sĩ</translation>
@@ -73,6 +74,7 @@
 <translation id="1641780993263690097">Tiếng Trung (bính âm)</translation>
 <translation id="1646019627374511909">Đang chọn chế độ xem được khi không có mạng cho <ph name="NUMBER_OF_ITEMS" /> tệp</translation>
 <translation id="164969095109328410">Thiết bị Chrome</translation>
+<translation id="1661207570040737402">Bạn đã dùng hết bộ nhớ dùng chung trên Google Workspace.</translation>
 <translation id="1661867754829461514">Thiếu PIN</translation>
 <translation id="166439687370499867">Không cho phép thay đổi cấu hình mạng dùng chung</translation>
 <translation id="1665611772925418501">Không thể sửa đổi tệp.</translation>
@@ -191,6 +193,7 @@
 <translation id="2574327434504608656">Đã chia sẻ 1 thư mục với Bruschetta</translation>
 <translation id="2578394532502990878">Tiếng Tamil (phiên âm)</translation>
 <translation id="2579959351793446050">Tiếng Odia</translation>
+<translation id="2587195714949534472">Đang chuẩn bị đồng bộ hoá <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">Mạng <ph name="NETWORK_INDEX" /> trong tổng số <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Quản trị viên của bạn đã chặn, Thông tin chi tiết</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Không thể kết nối với Google Drive tại thời điểm này.</translation>
@@ -292,6 +295,7 @@
 <translation id="3486821258960016770">Tiếng Mông Cổ</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> lỗi.</translation>
 <translation id="3509680540198371098">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Cường độ tín hiệu <ph name="SIGNAL_STRENGTH" />%, Thông tin chi tiết</translation>
+<translation id="3511705761158917664">Đang chuẩn bị đồng bộ hoá <ph name="NUMBER_OF_ITEMS" /> mục...</translation>
 <translation id="3522708245912499433">Tiếng Bồ Đào Nha</translation>
 <translation id="3524311639100184459">Lưu ý: Các tệp này chỉ được lưu trữ tạm thời và có thể tự động bị xóa để giải phóng dung lượng ổ đĩa.  <ph name="BEGIN_LINK" />Tìm hiểu thêm<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Thư mục</translation>
@@ -347,6 +351,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Dán</translation>
 <translation id="3952872973865944257">Tiếng Telugu (phiên âm)</translation>
+<translation id="3954354850384043518">Đang diễn ra</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Tải hồ sơ mạng di động xuống, Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Tiếng Anh (Anh)</translation>
@@ -406,6 +411,7 @@
 <translation id="4462159676511157176">Máy chủ có tên tùy chỉnh</translation>
 <translation id="4465725236958772856">Mạng <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Do quản trị viên của bạn quản lý, Kết nối</translation>
 <translation id="4470564870223067757">Hangul 2 bộ</translation>
+<translation id="4474142134969976028">Không có kết quả nào phù hợp</translation>
 <translation id="4477002475007461989">Tiếng Rumani</translation>
 <translation id="4477219268485577442">Ngữ âm tiếng Bungary</translation>
 <translation id="4508265954913339219">Kích hoạt không thành công</translation>
@@ -477,6 +483,7 @@
 <translation id="4973523518332075481">Hãy sử dụng tên có tối đa <ph name="MAX_LENGTH" /> ký tự</translation>
 <translation id="4973970068702235170">Không nén được, lỗi ngoài mong đợi: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Tiếng Nhật</translation>
+<translation id="4987699874727873250">Tiếng Anh (Ấn Độ)</translation>
 <translation id="4988205478593450158">Bạn có chắc chắn muốn xóa "<ph name="FILE_NAME" />" không?</translation>
 <translation id="498902553138568924">Bướm màu đỏ</translation>
 <translation id="4992066212339426712">Bật âm thanh</translation>
@@ -786,6 +793,7 @@
 <translation id="7458955835361612701">Không có hình ảnh nào gần đây</translation>
 <translation id="7460898608667578234">Tiếng Ukraina</translation>
 <translation id="7469894403370665791">Tự động kết nối vào mạng này</translation>
+<translation id="7481358317100446445">Sẵn sàng</translation>
 <translation id="7486315294984620427">Để thả tệp vào Parallels Desktop, bạn phải sao chép tệp đó vào thư mục tệp Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Tiếng Malayalam (phiên âm)</translation>
@@ -811,6 +819,7 @@
 <translation id="7655441028674523381">Dễ dàng truy cập vào Google Photos</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="7663224033570512922">Tiếng Hindi</translation>
+<translation id="7665680517722058469">Thử nhập cụm từ tìm kiếm khác</translation>
 <translation id="7689532716264131859">Đã chuyển <ph name="NUMBER_OF_ITEMS" /> mục vào thùng rác</translation>
 <translation id="7693909743393669729">Thao tác định dạng ổ đĩa sẽ xóa toàn bộ dữ liệu lưu trữ trên ổ đĩa đó, đồng thời xóa tất cả phân vùng hiện có, bao gồm cả những phân vùng có thể không hiển thị. Bạn không thể hủy thao tác này sau khi thực hiện.</translation>
 <translation id="7695430100978772476">Không định dạng được <ph name="DRIVE_NAME" /></translation>
@@ -948,7 +957,7 @@
 <translation id="8688591111840995413">Mật khẩu không chính xác</translation>
 <translation id="8698464937041809063">Bản vẽ Google</translation>
 <translation id="8698877009525468705">Tệp này được bảo mật và phải tuân thủ các hạn chế theo chính sách dành cho quản trị viên.</translation>
-<translation id="8712637175834984815">Tôi hiểu</translation>
+<translation id="8712637175834984815">Bỏ qua</translation>
 <translation id="8713112442029511308">Tiếng Malta</translation>
 <translation id="8714406895390098252">Xe đạp</translation>
 <translation id="8719721339511222681">Đã chọn <ph name="ENTRY_NAME" />.</translation>
@@ -967,6 +976,7 @@
 <translation id="8866284467018526531">Tiếng Ả Rập (chuyển tự)</translation>
 <translation id="8873014196523807561">Để khôi phục, hãy kéo các mục này vào một thư mục mới. Các thư mục gốc của một vài mục trong số này đã bị xoá.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>
+<translation id="8876368061475701452">Đã xếp vào hàng đợi</translation>
 <translation id="8900820606136623064">Tiếng Hungary</translation>
 <translation id="8903931173357132290">Người tốt nghiệp</translation>
 <translation id="8912078710089354287">Chó vẫy đuôi</translation>

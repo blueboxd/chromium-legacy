@@ -4,7 +4,6 @@
 
 module remote_cocoa.mojom;
 
-import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/base/accelerators/mojom/accelerator.mojom";
 import "ui/base/mojom/ui_base_types.mojom";
@@ -221,7 +220,7 @@ interface NativeWidgetNSWindowHost {
   // view and in |host_pid| the pid for the host process.
   [Sync]
   GetRootViewAccessibilityToken() =>
-      (mojo_base.mojom.ProcessId host_pid, array<uint8> element_token);
+      (int64 host_pid, array<uint8> element_token);
 
   // Return the result for -[NSUserInterfaceValidations
   // validateUserInterfaceItem] for a given command, along with any state for
@@ -256,4 +255,10 @@ interface NativeWidgetNSWindowHost {
   HandleAccelerator(ui.mojom.Accelerator accelerator,
                     bool require_priority_handler) =>
       (bool was_handled);
+
+  // Check if the receiving widget's bubble anchor view is contained within the
+  // target widget represented by |widget_id|. If the receiving widget is not a
+  // bubble or if an anchor view is not set, false will be returned.
+  [Sync]
+  BubbleAnchorViewContainedInWidget(uint64 widget_id) => (bool contained);
 };

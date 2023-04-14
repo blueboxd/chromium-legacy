@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/cxx17_backports.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -147,7 +148,8 @@ WebContentsFrameTracker::~WebContentsFrameTracker() {
 }
 
 void WebContentsFrameTracker::WillStartCapturingWebContents(
-    const gfx::Size& capture_size) {
+    const gfx::Size& capture_size,
+    bool is_high_dpi_enabled) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!is_capturing_);
   if (!web_contents()) {
@@ -155,6 +157,7 @@ void WebContentsFrameTracker::WillStartCapturingWebContents(
   }
 
   capture_size_ = capture_size;
+  is_high_dpi_enabled_ = is_high_dpi_enabled;
   context_->IncrementCapturerCount(CalculatePreferredSize(capture_size));
   is_capturing_ = true;
 }
@@ -187,7 +190,8 @@ void WebContentsFrameTracker::SetCapturedContentSize(
   TRACE_EVENT_INSTANT1(
       "gpu.capture", "WebContentsFrameTracker::SetCapturedContentSize",
       TRACE_EVENT_SCOPE_THREAD, "content_size", content_size.ToString());
-  if (base::FeatureList::IsEnabled(media::kWebContentsCaptureHiDpi)) {
+  if (base::FeatureList::IsEnabled(media::kWebContentsCaptureHiDpi) &&
+      is_high_dpi_enabled_) {
     // Now that we have a new content size, reset some related values.
     content_size_ = content_size;
     max_capture_scale_override_ = kMaxCaptureScaleOverride;
@@ -266,6 +270,7 @@ float WebContentsFrameTracker::CalculatePreferredScaleFactor(
     const gfx::Size& current_content_size,
     const gfx::Size& unscaled_current_content_size) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(is_high_dpi_enabled_);
 
   // The content size does not include letterboxing, meaning that there may
   // be an aspect ratio difference between the content size and the final

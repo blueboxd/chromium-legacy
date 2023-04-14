@@ -24,6 +24,7 @@
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -126,6 +127,18 @@ absl::optional<VideoFrameLayout> AsMultiPlanarLayout(
   return VideoFrameLayout::CreateMultiPlanar(
       layout.format(), layout.coded_size(), layout.planes());
 }
+
+scoped_refptr<base::SequencedTaskRunner> CreateEncoderTaskRunner() {
+  if (base::FeatureList::IsEnabled(kUSeSequencedTaskRunnerForVEA)) {
+    return base::ThreadPool::CreateSequencedTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()});
+  } else {
+    return base::ThreadPool::CreateSingleThreadTaskRunner(
+        {base::WithBaseSyncPrimitives(), base::MayBlock()},
+        base::SingleThreadTaskRunnerThreadMode::DEDICATED);
+  }
+}
 }  // namespace
 
 struct V4L2VideoEncodeAccelerator::BitstreamBufferRef {
@@ -169,7 +182,7 @@ base::AtomicRefCount V4L2VideoEncodeAccelerator::num_instances_(0);
 V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
     scoped_refptr<V4L2Device> device)
     : can_use_encoder_(num_instances_.Increment() < kMaxNumOfInstances),
-      child_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()),
+      child_task_runner_(base::SequencedTaskRunner::GetCurrentDefault()),
       native_input_mode_(false),
       output_buffer_byte_size_(0),
       output_format_fourcc_(0),
@@ -178,13 +191,9 @@ V4L2VideoEncodeAccelerator::V4L2VideoEncodeAccelerator(
       device_(std::move(device)),
       input_memory_type_(V4L2_MEMORY_USERPTR),
       is_flush_supported_(false),
-      // TODO(akahuang): Change to use SequencedTaskRunner to see if the
-      // performance is affected.
       // TODO(akahuang): Remove WithBaseSyncPrimitives() after replacing poll
       // thread by V4L2DevicePoller.
-      encoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
-          {base::WithBaseSyncPrimitives(), base::MayBlock()},
-          base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
+      encoder_task_runner_(CreateEncoderTaskRunner()),
       device_poll_thread_("V4L2EncoderDevicePollThread") {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DETACH_FROM_SEQUENCE(encoder_sequence_checker_);
@@ -1534,7 +1543,7 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
   VLOGF(1) << "error=" << error;
   DCHECK(child_task_runner_);
 
-  if (child_task_runner_->BelongsToCurrentThread()) {
+  if (child_task_runner_->RunsTasksInCurrentSequence()) {
     if (client_) {
       client_->NotifyError(error);
       client_ptr_factory_.reset();
@@ -1550,7 +1559,7 @@ void V4L2VideoEncodeAccelerator::NotifyError(Error error) {
 void V4L2VideoEncodeAccelerator::SetErrorState(Error error) {
   // We can touch encoder_state_ only if this is the encoder thread or the
   // encoder thread isn't running.
-  if (!encoder_task_runner_->BelongsToCurrentThread()) {
+  if (!encoder_task_runner_->RunsTasksInCurrentSequence()) {
     encoder_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&V4L2VideoEncodeAccelerator::SetErrorState,
                                   weak_this_, error));
@@ -1584,13 +1593,9 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   if (current_bitrate_ != bitrate) {
     switch (bitrate.mode()) {
       case Bitrate::Mode::kVariable:
-        if (!device_->SetExtCtrls(V4L2_CTRL_CLASS_MPEG,
-                                  {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE_PEAK,
-                                               bitrate.peak_bps())})) {
-          VLOGF(1) << "Failed to change peak bitrate";
-          NOTIFY_ERROR(kPlatformFailureError);
-          return;
-        }
+        device_->SetExtCtrls(V4L2_CTRL_CLASS_MPEG,
+                             {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE_PEAK,
+                                          bitrate.peak_bps())});
 
         // Both the average and peak bitrate are to be set in VBR.
         // Only the average bitrate are to be set in CBR.

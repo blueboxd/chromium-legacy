@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Kanpoko gailuen firmwarea eguneratzeko leihoa irekita dago. <ph name="NUM_UPDATES" /> eguneratze daude.</translation>
 <translation id="1145516343487477149">Bilatu laguntza-artikuluak eta Chromebook-ei buruz egin ohi diren galderen erantzunak</translation>
+<translation id="1167755866710282443">Teklak pertsonalizatzeko, ireki menua. Mugitzeko, arrastatu menua.</translation>
 <translation id="1175697296044146566"><ph name="MANAGER" /> domeinuak kudeatzen du <ph name="DEVICE_TYPE" /> gailua.</translation>
 <translation id="1175951029573070619">Normala (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Kendu</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Hautatu <ph name="TITLE" /> (<ph name="DESC" />) albuma</translation>
 <translation id="4111761024568264522">USB bidezko ukipen-panela</translation>
 <translation id="4117637339509843559">Modu iluna</translation>
+<translation id="4130035430755296270">Diseinu-aukera gehiago ikusteko, jarraitu gainetik pasatzen</translation>
 <translation id="4131410914670010031">Zuri-beltzez</translation>
 <translation id="4145784616224233563">HTTP protokolorako suebakia</translation>
 <translation id="4147897805161313378">Google Argazkiak</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">DNS bidezko ebazpena (Android)</translation>
 <translation id="4848429997038228357">ABIAN</translation>
 <translation id="4854586501323951986">Ukipen-pantaila integratua</translation>
+<translation id="4855250849489639581">Diseinu-aukera gehiago ikusteko, pasatu hatza behera</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} saiaketa gelditzen da}other{<ph name="ERROR_MESSAGE" /> {0} saiakera gelditzen dira}}</translation>
 <translation id="4873827928179867585">Autentifikazio-algoritmoa</translation>
 <translation id="4880328057631981605">Sarbide-puntuaren izena</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 irudi</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> domeinuak kudeatzen du <ph name="DEVICE_TYPE" /> gailua. Baliteke administratzaileek urrunetik konfiguratzea gailua.</translation>
 <translation id="7180611975245234373">Freskatu</translation>
+<translation id="7180865173735832675">Pertsonalizatu</translation>
 <translation id="7212734716605298123">Kanpoko gailuen firmware-eguneratzeak</translation>
 <translation id="7216409898977639127">Zerbitzu mugikorraren hornitzailea</translation>
 <translation id="725133483556299729">Hautatu helbide elektroniko bat</translation>

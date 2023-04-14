@@ -32,8 +32,8 @@ using ::attribution_reporting::mojom::TriggerRegistrationError;
 
 constexpr char kAggregationCoordinatorIdentifier[] =
     "aggregation_coordinator_identifier";
-constexpr char kAggregatableDeduplicationKey[] =
-    "aggregatable_deduplication_key";
+constexpr char kAggregatableDeduplicationKeys[] =
+    "aggregatable_deduplication_keys";
 constexpr char kAggregatableTriggerData[] = "aggregatable_trigger_data";
 constexpr char kAggregatableValues[] = "aggregatable_values";
 constexpr char kEventTriggerData[] = "event_trigger_data";
@@ -96,15 +96,21 @@ void SerializeListIfNotEmpty(base::Value::Dict& dict,
 // static
 base::expected<TriggerRegistration, TriggerRegistrationError>
 TriggerRegistration::Parse(base::Value::Dict registration) {
-  auto filters = Filters::FromJSON(registration.Find(Filters::kFilters));
+  auto filters = FilterPair::FromJSON(registration);
   if (!filters.has_value())
     return base::unexpected(filters.error());
 
-  auto not_filters = Filters::FromJSON(registration.Find(Filters::kNotFilters));
-  if (!not_filters.has_value())
-    return base::unexpected(not_filters.error());
+  auto aggregatable_dedup_keys =
+      AggregatableDedupKeyList::Build<TriggerRegistrationError>(
+          registration.Find(kAggregatableDeduplicationKeys),
+          TriggerRegistrationError::kAggregatableDedupKeyListWrongType,
+          TriggerRegistrationError::kAggregatableDedupKeyListTooLong,
+          &AggregatableDedupKey::FromJSON);
+  if (!aggregatable_dedup_keys.has_value()) {
+    return base::unexpected(aggregatable_dedup_keys.error());
+  }
 
-  auto event_triggers = EventTriggerDataList::Build(
+  auto event_triggers = EventTriggerDataList::Build<TriggerRegistrationError>(
       registration.Find(kEventTriggerData),
       TriggerRegistrationError::kEventTriggerDataListWrongType,
       TriggerRegistrationError::kEventTriggerDataListTooLong,
@@ -112,11 +118,12 @@ TriggerRegistration::Parse(base::Value::Dict registration) {
   if (!event_triggers.has_value())
     return base::unexpected(event_triggers.error());
 
-  auto aggregatable_trigger_data = AggregatableTriggerDataList::Build(
-      registration.Find(kAggregatableTriggerData),
-      TriggerRegistrationError::kAggregatableTriggerDataListWrongType,
-      TriggerRegistrationError::kAggregatableTriggerDataListTooLong,
-      &AggregatableTriggerData::FromJSON);
+  auto aggregatable_trigger_data =
+      AggregatableTriggerDataList::Build<TriggerRegistrationError>(
+          registration.Find(kAggregatableTriggerData),
+          TriggerRegistrationError::kAggregatableTriggerDataListWrongType,
+          TriggerRegistrationError::kAggregatableTriggerDataListTooLong,
+          &AggregatableTriggerData::FromJSON);
   if (!aggregatable_trigger_data.has_value())
     return base::unexpected(aggregatable_trigger_data.error());
 
@@ -134,15 +141,13 @@ TriggerRegistration::Parse(base::Value::Dict registration) {
     return base::unexpected(aggregation_coordinator.error());
 
   absl::optional<uint64_t> debug_key = ParseDebugKey(registration);
-  absl::optional<uint64_t> aggregatable_dedup_key =
-      ParseUint64(registration, kAggregatableDeduplicationKey);
   bool debug_reporting = ParseDebugReporting(registration);
 
   return TriggerRegistration(
-      std::move(*filters), std::move(*not_filters), debug_key,
-      aggregatable_dedup_key, std::move(*event_triggers),
-      std::move(*aggregatable_trigger_data), std::move(*aggregatable_values),
-      debug_reporting, *aggregation_coordinator);
+      std::move(*filters), debug_key, std::move(*aggregatable_dedup_keys),
+      std::move(*event_triggers), std::move(*aggregatable_trigger_data),
+      std::move(*aggregatable_values), debug_reporting,
+      *aggregation_coordinator);
 }
 
 // static
@@ -163,7 +168,7 @@ TriggerRegistration::Parse(base::StringPiece json) {
   }
 
   if (!trigger.has_value()) {
-    base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError",
+    base::UmaHistogramEnumeration("Conversions.TriggerRegistrationError2",
                                   trigger.error());
   }
 
@@ -173,19 +178,17 @@ TriggerRegistration::Parse(base::StringPiece json) {
 TriggerRegistration::TriggerRegistration() = default;
 
 TriggerRegistration::TriggerRegistration(
-    Filters filters,
-    Filters not_filters,
+    FilterPair filters,
     absl::optional<uint64_t> debug_key,
-    absl::optional<uint64_t> aggregatable_dedup_key,
+    AggregatableDedupKeyList aggregatable_dedup_keys,
     EventTriggerDataList event_triggers,
     AggregatableTriggerDataList aggregatable_trigger_data,
     AggregatableValues aggregatable_values,
     bool debug_reporting,
     aggregation_service::mojom::AggregationCoordinator aggregation_coordinator)
     : filters(std::move(filters)),
-      not_filters(std::move(not_filters)),
       debug_key(debug_key),
-      aggregatable_dedup_key(aggregatable_dedup_key),
+      aggregatable_dedup_keys(std::move(aggregatable_dedup_keys)),
       event_triggers(std::move(event_triggers)),
       aggregatable_trigger_data(aggregatable_trigger_data),
       aggregatable_values(std::move(aggregatable_values)),
@@ -207,9 +210,10 @@ TriggerRegistration& TriggerRegistration::operator=(TriggerRegistration&&) =
 base::Value::Dict TriggerRegistration::ToJson() const {
   base::Value::Dict dict;
 
-  filters.SerializeIfNotEmpty(dict, Filters::kFilters);
-  not_filters.SerializeIfNotEmpty(dict, Filters::kNotFilters);
+  filters.SerializeIfNotEmpty(dict);
 
+  SerializeListIfNotEmpty(dict, kAggregatableDeduplicationKeys,
+                          aggregatable_dedup_keys.vec());
   SerializeListIfNotEmpty(dict, kEventTriggerData, event_triggers.vec());
   SerializeListIfNotEmpty(dict, kAggregatableTriggerData,
                           aggregatable_trigger_data.vec());
@@ -219,11 +223,6 @@ base::Value::Dict TriggerRegistration::ToJson() const {
   }
 
   SerializeDebugKey(dict, debug_key);
-
-  if (aggregatable_dedup_key) {
-    SerializeUint64(dict, kAggregatableDeduplicationKey,
-                    *aggregatable_dedup_key);
-  }
 
   SerializeDebugReporting(dict, debug_reporting);
 

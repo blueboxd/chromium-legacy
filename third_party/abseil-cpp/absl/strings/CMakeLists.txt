@@ -604,6 +604,7 @@ absl_cc_library(
     absl::base_internal
     absl::compressed_tuple
     absl::config
+    absl::container_memory
     absl::core_headers
     absl::crc_cord_state
     absl::endian
@@ -744,6 +745,7 @@ absl_cc_library(
     absl::raw_logging_internal
     absl::stacktrace
     absl::synchronization
+    absl::time
 )
 
 absl_cc_test(

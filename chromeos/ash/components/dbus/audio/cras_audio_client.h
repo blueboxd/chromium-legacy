@@ -53,6 +53,9 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
     // Called when output node's volume changed.
     virtual void OutputNodeVolumeChanged(uint64_t node_id, int volume);
 
+    // Called when input node's gain changed.
+    virtual void InputNodeGainChanged(uint64_t node_id, int volume);
+
     // Called when hotword is triggered.
     virtual void HotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
 
@@ -82,7 +85,15 @@ class COMPONENT_EXPORT(DBUS_AUDIO) CrasAudioClient {
   // Creates and initializes the global instance. |bus| must not be null.
   static void Initialize(dbus::Bus* bus);
 
-  // Creates and initializes a fake global instance if not already created.
+  // Creates and initializes a fake global instance.
+  //
+  // Note:
+  // `InitializeFake` does not shutdown `CrasAudioClient` automatically and it
+  // can cause an unexpected side effect for other tests in automated tests.
+  //
+  // e.g.
+  // A test leaves a client without shutdown. A following test expect that a
+  // client does not exist.
   static void InitializeFake();
 
   // Destroys the global instance which must have been initialized.

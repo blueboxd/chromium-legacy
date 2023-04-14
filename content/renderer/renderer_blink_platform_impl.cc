@@ -98,7 +98,6 @@
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_loader_factory.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_v8_value_converter.h"
 #include "third_party/blink/public/platform/web_vector.h"
@@ -233,30 +232,6 @@ std::string RendererBlinkPlatformImpl::GetNameForHistogram(const char* name) {
   return render_thread_impl ? render_thread_impl->histogram_customizer()
                                   ->ConvertToCustomHistogramName(name)
                             : std::string{name};
-}
-
-std::unique_ptr<blink::WebURLLoaderFactory>
-RendererBlinkPlatformImpl::WrapURLLoaderFactory(
-    blink::CrossVariantMojoRemote<network::mojom::URLLoaderFactoryInterfaceBase>
-        url_loader_factory) {
-  // Check that there is always a main thread. It used to be possible to run
-  // this code with a fuzzer without having a main thread, which is no longer
-  // possible now.
-  CHECK(RenderThreadImpl::current());
-  std::vector<std::string> cors_exempt_header_list =
-      RenderThreadImpl::current()->cors_exempt_header_list();
-  blink::WebVector<blink::WebString> web_cors_exempt_header_list(
-      cors_exempt_header_list.size());
-  std::transform(cors_exempt_header_list.begin(), cors_exempt_header_list.end(),
-                 web_cors_exempt_header_list.begin(), [](const std::string& h) {
-                   return blink::WebString::FromLatin1(h);
-                 });
-  return std::make_unique<blink::WebURLLoaderFactory>(
-      base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
-          mojo::PendingRemote<network::mojom::URLLoaderFactory>(
-              std::move(url_loader_factory))),
-      web_cors_exempt_header_list,
-      /*terminate_sync_load_event=*/nullptr);
 }
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

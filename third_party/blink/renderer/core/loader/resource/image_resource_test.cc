@@ -38,7 +38,6 @@
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -75,6 +74,7 @@
 #include "third_party/blink/renderer/platform/testing/scoped_mocked_url.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 
@@ -237,7 +237,7 @@ TEST_F(ImageResourceTest, MultipartImage) {
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
 
   // Emulate starting a real load, but don't expect any "real"
-  // WebURLLoaderClient callbacks.
+  // URLLoaderClient callbacks.
   ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   fetcher->StartLoad(image_resource);
 
@@ -461,9 +461,7 @@ TEST_F(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
   image_resource->ResponseReceived(resource_response);
   image_resource->AppendData(reinterpret_cast<const char*>(kJpegImage),
                              sizeof(kJpegImage));
-  EXPECT_NE(0u, image_resource->EncodedSizeMemoryUsageForTesting());
   image_resource->FinishForTest();
-  EXPECT_EQ(0u, image_resource->EncodedSizeMemoryUsageForTesting());
   EXPECT_FALSE(image_resource->ErrorOccurred());
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());

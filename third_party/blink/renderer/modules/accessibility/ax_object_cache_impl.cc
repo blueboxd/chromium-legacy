@@ -887,10 +887,12 @@ AXObject* AXObjectCacheImpl::Get(const LayoutObject* layout_object) {
   if (result->IsMissingParent()) {
     AXObject* computed_parent =
         AXObject::ComputeNonARIAParent(*this, layout_object->GetNode());
-    NOTREACHED() << "Had AXObject but was missing parent: " << layout_object
-                 << " " << result->ToString(true, true) << "\nComputed parent: "
-                 << (computed_parent ? computed_parent->ToString(true, true)
-                                     : "null");
+    // TODO(https://crbug.com/1413932) resolve and restore to NOTREACHED().
+    DCHECK(false) << "Had AXObject but was missing parent: " << layout_object
+                  << " " << result->ToString(true, true)
+                  << "\nComputed parent: "
+                  << (computed_parent ? computed_parent->ToString(true, true)
+                                      : "null");
   }
 #endif
 
@@ -2135,13 +2137,6 @@ void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
 void AXObjectCacheImpl::ChildrenChangedOnAncestorOf(AXObject* obj) {
   DCHECK(obj);
   DCHECK(!obj->IsDetached());
-  DCHECK(!IsFrozen())
-      << "Attempting to change children on an ancestor is dangerous during "
-         "serialization, because the ancestor may have already been "
-         "visited. Reaching this line indicates that AXObjectCacheImpl did "
-         "not handle a signal and call ChilldrenChanged() earlier."
-      << "\nChild: " << obj->ToString(true)
-      << "\nParent: " << obj->CachedParentObject()->ToString(true);
 
   // If |obj| is not included, and it has no included descendants, then there is
   // nothing in any ancestor's cached children that needs clearing. This rule
@@ -2159,7 +2154,19 @@ void AXObjectCacheImpl::ChildrenChangedOnAncestorOf(AXObject* obj) {
   // cached an ancestor's list of children:
   // Any ancestor up to the first included ancestor can contain the now-detached
   // child in it's cached children, and therefore must update children.
-  ChildrenChanged(obj->CachedParentObject());
+  AXObject* ax_ancestor = ChildrenChanged(obj->CachedParentObject());
+  if (!ax_ancestor) {
+    return;
+  }
+
+  DCHECK(!IsFrozen())
+      << "Attempting to change children on an ancestor is dangerous during "
+         "serialization, because the ancestor may have already been "
+         "visited. Reaching this line indicates that AXObjectCacheImpl did "
+         "not handle a signal and call ChildrenChanged() earlier."
+      << "\nChild: " << obj->ToString(true)
+      << "\nParent: " << obj->CachedParentObject()->ToString(true)
+      << "\nAncestor: " << ax_ancestor->ToString(true);
 }
 
 void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(AXObject* obj) {
@@ -2169,11 +2176,13 @@ void AXObjectCacheImpl::ChildrenChangedWithCleanLayout(AXObject* obj) {
   }
 }
 
-void AXObjectCacheImpl::ChildrenChanged(AXObject* obj) {
+AXObject* AXObjectCacheImpl::ChildrenChanged(AXObject* obj) {
   if (AXObject* ax_ancestor_for_notification = InvalidateChildren(obj)) {
     DeferTreeUpdate(&AXObjectCacheImpl::ChildrenChangedWithCleanLayout,
                     ax_ancestor_for_notification);
+    return ax_ancestor_for_notification;
   }
+  return nullptr;
 }
 
 AXObject* AXObjectCacheImpl::InvalidateChildren(AXObject* obj) {
@@ -3164,7 +3173,17 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
              IsA<HTMLLabelElement>(*element)) {
     LabelChangedWithCleanLayout(element);
   } else if (attr_name == html_names::kIdAttr) {
-    MaybeNewRelationTarget(*element, Get(element));
+    if (AXObject* obj = Get(element)) {
+      // The id attribute has changed, which can change an object's ignored
+      // state, because an object backed with an element having an id attribute
+      // is always unignored, since it could be the end point of a relation.
+      // Call UpdateCachedAttributeValuesIfNeeded() to force the ignored state
+      // and included states to be recomputed, and if it tree inclusion changes,
+      // this call will also recompute the tree structure.
+      obj->UpdateCachedAttributeValuesIfNeeded();
+      // When the id attribute changes, the relations its in may also change.
+      MaybeNewRelationTarget(*element, obj);
+    }
   } else if (attr_name == html_names::kTabindexAttr) {
     FocusableChangedWithCleanLayout(element);
   } else if (attr_name == html_names::kDisabledAttr ||
@@ -3535,7 +3554,7 @@ void AXObjectCacheImpl::PostPlatformNotification(
 }
 
 void AXObjectCacheImpl::EnsureMarkDirtyWithCleanLayout(Node* node) {
-  MarkAXObjectDirty(GetOrCreate(node));
+  MarkAXObjectDirtyWithCleanLayout(GetOrCreate(node));
 }
 
 void AXObjectCacheImpl::MarkAXObjectDirtyWithCleanLayoutHelper(

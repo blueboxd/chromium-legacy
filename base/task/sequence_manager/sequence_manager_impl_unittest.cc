@@ -94,6 +94,21 @@ enum class WakeUpType {
   kAlign,
 };
 
+enum class TestQueuePriority : TaskQueue::QueuePriority {
+  kControlPriority = 0,
+  kHighestPriority = 1,
+  kVeryHighPriority = 2,
+  kHighPriority = 3,
+
+  kNormalPriority = 4,
+  kDefaultPriority = kNormalPriority,
+
+  kLowPriority = 5,
+  kBestEffortPriority = 6,
+  kQueuePriorityCount = 7,
+  kFirstQueuePriority = kControlPriority,
+};
+
 std::string ToString(RunnerType type) {
   switch (type) {
     case RunnerType::kMockTaskRunner:
@@ -187,6 +202,9 @@ class FixtureWithMockTaskRunner final : public Fixture {
                 .SetMessagePumpType(MessagePumpType::DEFAULT)
                 .SetRandomisedSamplingEnabled(false)
                 .SetTickClock(mock_tick_clock())
+                .SetPrioritySettings(SequenceManager::PrioritySettings(
+                    TestQueuePriority::kQueuePriorityCount,
+                    TestQueuePriority::kDefaultPriority))
                 .Build())) {
     // A null clock triggers some assertions.
     AdvanceMockTickClock(Milliseconds(1));
@@ -270,6 +288,9 @@ class FixtureWithMockMessagePump : public Fixture {
                         .SetMessagePumpType(MessagePumpType::DEFAULT)
                         .SetRandomisedSamplingEnabled(false)
                         .SetTickClock(mock_tick_clock())
+                        .SetPrioritySettings(SequenceManager::PrioritySettings(
+                            TestQueuePriority::kQueuePriorityCount,
+                            TestQueuePriority::kDefaultPriority))
                         .Build();
     auto thread_controller =
         std::make_unique<ThreadControllerWithMessagePumpImpl>(std::move(pump),
@@ -405,6 +426,8 @@ class SequenceManagerTest
     }
   }
 
+  debug::CrashKeyString* dummy_key() { return &dummy_key_; }
+
   void AdvanceMockTickClock(TimeDelta delta) override {
     fixture_->AdvanceMockTickClock(delta);
   }
@@ -445,6 +468,7 @@ class SequenceManagerTest
   }
 
  private:
+  debug::CrashKeyString dummy_key_{"dummy", debug::CrashKeySize::Size64};
   std::unique_ptr<Fixture> fixture_;
 };
 
@@ -2415,6 +2439,7 @@ TEST_P(SequenceManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -2438,6 +2463,7 @@ TEST_P(SequenceManagerTest, TimeDomainDoesNotCauseWakeUp) {
   LazyNow lazy_now2(domain.get());
   EXPECT_EQ(WakeUp{}, sequence_manager()->GetPendingWakeUp(&lazy_now2));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -2470,6 +2496,7 @@ TEST_P(SequenceManagerTest,
   FastForwardBy(Milliseconds(400));
   EXPECT_THAT(run_order, ElementsAre(4u, 3u, 2u, 1u));
 
+  sequence_manager()->ResetTimeDomain();
   queue->ShutdownTaskQueue();
 }
 
@@ -3598,10 +3625,10 @@ TEST_P(SequenceManagerTest, DelayedTasksNotSelectedWithImmediateTask) {
 TEST_P(SequenceManagerTest,
        DelayedTasksNotSelectedWithImmediateTaskWithPriority) {
   auto queues = CreateTaskQueues(4u);
-  queues[0]->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
-  queues[1]->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
-  queues[2]->SetQueuePriority(TaskQueue::QueuePriority::kHighPriority);
-  queues[3]->SetQueuePriority(TaskQueue::QueuePriority::kVeryHighPriority);
+  queues[0]->SetQueuePriority(TestQueuePriority::kLowPriority);
+  queues[1]->SetQueuePriority(TestQueuePriority::kNormalPriority);
+  queues[2]->SetQueuePriority(TestQueuePriority::kHighPriority);
+  queues[3]->SetQueuePriority(TestQueuePriority::kVeryHighPriority);
 
   // Post immediate tasks.
   queues[0]->task_runner()->PostTask(FROM_HERE, BindOnce(&NopTask));
@@ -4566,7 +4593,7 @@ TEST_P(SequenceManagerTest, HasPendingHighResolutionTasks) {
 
 TEST_P(SequenceManagerTest, HasPendingHighResolutionTasksLowPriority) {
   auto queue = CreateTaskQueue();
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
   bool supports_high_res = false;
 #if BUILDFLAG(IS_WIN)
   supports_high_res = true;
@@ -4584,10 +4611,10 @@ TEST_P(SequenceManagerTest, HasPendingHighResolutionTasksLowPriority) {
   EXPECT_FALSE(sequence_manager()->HasPendingHighResolutionTasks());
 
   // Increasing queue priority should enable high resolution timer.
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->SetQueuePriority(TestQueuePriority::kNormalPriority);
   EXPECT_EQ(sequence_manager()->HasPendingHighResolutionTasks(),
             supports_high_res);
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
   EXPECT_FALSE(sequence_manager()->HasPendingHighResolutionTasks());
 
   // Running immediate tasks doesn't affect pending high resolution tasks.
@@ -4608,9 +4635,9 @@ TEST_P(SequenceManagerTest, HasPendingHighResolutionTasksLowPriority) {
 TEST_P(SequenceManagerTest,
        HasPendingHighResolutionTasksLowAndNormalPriorityQueues) {
   auto queueLow = CreateTaskQueue();
-  queueLow->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queueLow->SetQueuePriority(TestQueuePriority::kLowPriority);
   auto queueNormal = CreateTaskQueue();
-  queueNormal->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queueNormal->SetQueuePriority(TestQueuePriority::kNormalPriority);
   bool supports_high_res = false;
 #if BUILDFLAG(IS_WIN)
   supports_high_res = true;
@@ -4626,7 +4653,7 @@ TEST_P(SequenceManagerTest,
   EXPECT_FALSE(sequence_manager()->HasPendingHighResolutionTasks());
 
   // Increasing queue priority should enable high resolution timer.
-  queueLow->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queueLow->SetQueuePriority(TestQueuePriority::kNormalPriority);
   EXPECT_EQ(sequence_manager()->HasPendingHighResolutionTasks(),
             supports_high_res);
 }
@@ -4972,11 +4999,13 @@ TEST_P(SequenceManagerTest, DescribeAllPendingTasks) {
 }
 
 TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
-  auto queues = CreateTaskQueues(TaskQueue::QueuePriority::kQueuePriorityCount);
+  auto queues = CreateTaskQueues(
+      static_cast<size_t>(TestQueuePriority::kQueuePriorityCount));
 
   for (uint8_t priority = 0;
-       priority < TaskQueue::QueuePriority::kQueuePriorityCount; priority++) {
-    if (priority != TaskQueue::QueuePriority::kNormalPriority) {
+       priority < static_cast<uint8_t>(TestQueuePriority::kQueuePriorityCount);
+       priority++) {
+    if (priority != static_cast<uint8_t>(TestQueuePriority::kNormalPriority)) {
       queues[priority]->SetQueuePriority(
           static_cast<TaskQueue::QueuePriority>(priority));
     }
@@ -4985,7 +5014,9 @@ TEST_P(SequenceManagerTest, TaskPriortyInterleaving) {
   std::string order;
   for (int i = 0; i < 60; i++) {
     for (uint8_t priority = 0;
-         priority < TaskQueue::QueuePriority::kQueuePriorityCount; priority++) {
+         priority <
+         static_cast<uint8_t>(TestQueuePriority::kQueuePriorityCount);
+         priority++) {
       queues[priority]->task_runner()->PostTask(
           FROM_HERE,
           base::BindOnce([](std::string* str, char c) { str->push_back(c); },
@@ -5102,14 +5133,13 @@ TEST_P(SequenceManagerTest, CrashKeys) {
 
   MockCrashKeyImplementation* mock_impl = crash_key_impl.get();
   debug::SetCrashKeyImplementation(std::move(crash_key_impl));
-  debug::CrashKeyString dummy_key("dummy", debug::CrashKeySize::Size64);
 
   // Parent task.
   auto parent_location = FROM_HERE;
   auto expected_stack1 = StringPrintf(
       "0x%zX 0x0",
       reinterpret_cast<uintptr_t>(parent_location.program_counter()));
-  EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(&dummy_key));
+  EXPECT_CALL(*mock_impl, Allocate(_, _)).WillRepeatedly(Return(dummy_key()));
   EXPECT_CALL(*mock_impl, Set(_, testing::Eq(expected_stack1)));
 
   // Child task.
@@ -5324,8 +5354,8 @@ TEST_P(SequenceManagerTest,
   sequence_manager()->AddTaskObserver(&observer);
 
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kNormalPriority);
 
   EXPECT_CALL(observer,
               WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
@@ -5341,9 +5371,9 @@ TEST_P(SequenceManagerTest,
   testing::StrictMock<MockTaskObserver> observer;
   sequence_manager()->AddTaskObserver(&observer);
 
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->SetQueuePriority(TestQueuePriority::kNormalPriority);
 
   EXPECT_CALL(observer,
               WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
@@ -5360,7 +5390,7 @@ TEST_P(SequenceManagerTest,
   sequence_manager()->AddTaskObserver(&observer);
 
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
 
   EXPECT_CALL(observer,
               WillProcessTask(_, /*was_blocked_or_low_priority=*/true));
@@ -5376,14 +5406,14 @@ TEST_P(SequenceManagerTest,
   testing::StrictMock<MockTaskObserver> observer;
   sequence_manager()->AddTaskObserver(&observer);
 
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->GetTaskQueueImpl()->InsertFence(
       TaskQueue::InsertFencePosition::kBeginningOfTime);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->GetTaskQueueImpl()->RemoveFence();
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->SetQueuePriority(TestQueuePriority::kNormalPriority);
   // Post a task while the queue is kNormalPriority and unblocked, but has a
   // backlog of tasks that were blocked.
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
@@ -5405,7 +5435,7 @@ TEST_P(SequenceManagerTest, TaskObserverBlockedOrLowPriority_Mix) {
   testing::StrictMock<MockTaskObserver> observer;
   sequence_manager()->AddTaskObserver(&observer);
 
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kLowPriority);
+  queue->SetQueuePriority(TestQueuePriority::kLowPriority);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   queue->GetTaskQueueImpl()->InsertFence(
       TaskQueue::InsertFencePosition::kBeginningOfTime);
@@ -5420,7 +5450,7 @@ TEST_P(SequenceManagerTest, TaskObserverBlockedOrLowPriority_Mix) {
   RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClear(&observer);
 
-  queue->SetQueuePriority(TaskQueue::QueuePriority::kNormalPriority);
+  queue->SetQueuePriority(TestQueuePriority::kNormalPriority);
   queue->task_runner()->PostTask(FROM_HERE, DoNothing());
   EXPECT_CALL(observer,
               WillProcessTask(_, /*was_blocked_or_low_priority=*/false));

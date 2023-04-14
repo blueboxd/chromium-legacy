@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -49,6 +50,7 @@
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/offer_notification_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/autofill/payments/save_iban_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_enroll_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/virtual_card_manual_fallback_bubble_controller_impl.h"
 #include "chrome/browser/ui/autofill/save_update_address_profile_bubble_controller_impl.h"
@@ -628,7 +630,8 @@ void ReloadBypassingCache(Browser* browser, WindowOpenDisposition disposition) {
 }
 
 bool CanReload(const Browser* browser) {
-  return browser && !browser->is_type_devtools();
+  return browser && !browser->is_type_devtools() &&
+         !browser->is_type_picture_in_picture();
 }
 
 void Home(Browser* browser, WindowOpenDisposition disposition) {
@@ -1233,7 +1236,7 @@ bool MarkCurrentTabAsReadInReadLater(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   if (!model || !GetTabURLAndTitleToSave(web_contents, &url, &title))
     return false;
-  const ReadingListEntry* entry = model->GetEntryByURL(url);
+  scoped_refptr<const ReadingListEntry> entry = model->GetEntryByURL(url);
   // Mark current tab as read.
   if (entry && !entry->IsRead())
     model->SetReadStatusIfExists(url, true);
@@ -1248,7 +1251,7 @@ bool IsCurrentTabUnreadInReadLater(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   if (!model || !GetTabURLAndTitleToSave(web_contents, &url, &title))
     return false;
-  const ReadingListEntry* entry = model->GetEntryByURL(url);
+  scoped_refptr<const ReadingListEntry> entry = model->GetEntryByURL(url);
   return entry && !entry->IsRead();
 }
 
@@ -1267,6 +1270,14 @@ void SaveCreditCard(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents();
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+  controller->ReshowBubble();
+}
+
+void SaveIBAN(Browser* browser) {
+  WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  autofill::SaveIbanBubbleControllerImpl* controller =
+      autofill::SaveIbanBubbleControllerImpl::FromWebContents(web_contents);
   controller->ReshowBubble();
 }
 
@@ -1849,7 +1860,7 @@ void PromptToNameWindow(Browser* browser) {
 
 #if BUILDFLAG(IS_CHROMEOS)
 void ToggleMultitaskMenu(Browser* browser) {
-  DCHECK(chromeos::wm::features::IsFloatWindowEnabled());
+  DCHECK(chromeos::wm::features::IsWindowLayoutMenuEnabled());
   browser->window()->ToggleMultitaskMenu();
 }
 #endif
@@ -1882,9 +1893,7 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
                  .Resolve(chrome::kClearBrowserDataSubPage);
 
   bool show_history_disclaimer_dialog =
-      url == GURL(chrome::kChromeUIHistoryURL) &&
-      base::FeatureList::IsEnabled(
-          features::kUpdateHistoryEntryPointsInIncognito);
+      url == GURL(chrome::kChromeUIHistoryURL);
 
   return show_clear_browsing_data_dialog || show_history_disclaimer_dialog;
 }
@@ -1895,8 +1904,6 @@ void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                  .Resolve(chrome::kClearBrowserDataSubPage)) {
     ShowIncognitoClearBrowsingDataDialog(browser);
   } else if (url == GURL(chrome::kChromeUIHistoryURL)) {
-    DCHECK(base::FeatureList::IsEnabled(
-        features::kUpdateHistoryEntryPointsInIncognito));
     ShowIncognitoHistoryDisclaimerDialog(browser);
   } else {
     NOTREACHED();

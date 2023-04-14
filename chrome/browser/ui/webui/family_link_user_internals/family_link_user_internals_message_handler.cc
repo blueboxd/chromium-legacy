@@ -16,13 +16,14 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/common/channel_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/tribool.h"
 #include "components/supervised_user/core/browser/supervised_user_error_page.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
+#include "components/supervised_user/core/common/supervised_user_utils.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -91,26 +92,6 @@ std::string FilteringBehaviorToString(
   if (uncertain)
     result += " (Uncertain)";
   return result;
-}
-
-std::string FilteringBehaviorReasonToString(
-    supervised_user_error_page::FilteringBehaviorReason reason) {
-  switch (reason) {
-    case supervised_user_error_page::DEFAULT:
-      return "Default";
-    case supervised_user_error_page::ASYNC_CHECKER:
-      return "AsyncChecker";
-    case supervised_user_error_page::DENYLIST:
-      return "Denylist";
-    case supervised_user_error_page::MANUAL:
-      return "Manual";
-    case supervised_user_error_page::ALLOWLIST:
-      return "Allowlist";
-    case supervised_user_error_page::NOT_SIGNED_IN:
-      // Should never happen, only used for requests from WebView
-      NOTREACHED();
-  }
-  return "Unknown/invalid";
 }
 
 }  // namespace
@@ -252,7 +233,7 @@ void FamilyLinkUserInternalsMessageHandler::SendBasicInfo() {
   FireWebUIListener("basic-info-received", result);
 
   // Trigger retrieval of the user settings
-  SupervisedUserSettingsService* settings_service =
+  supervised_user::SupervisedUserSettingsService* settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   user_settings_subscription_ =
       settings_service->SubscribeForSettingsChange(base::BindRepeating(
@@ -268,12 +249,13 @@ void FamilyLinkUserInternalsMessageHandler::SendFamilyLinkUserSettings(
 void FamilyLinkUserInternalsMessageHandler::OnTryURLResult(
     const std::string& callback_id,
     SupervisedUserURLFilter::FilteringBehavior behavior,
-    supervised_user_error_page::FilteringBehaviorReason reason,
+    supervised_user::FilteringBehaviorReason reason,
     bool uncertain) {
   base::Value::Dict result;
   result.Set("allowResult", FilteringBehaviorToString(behavior, uncertain));
-  result.Set("manual", reason == supervised_user_error_page::MANUAL &&
-                           behavior == SupervisedUserURLFilter::ALLOW);
+  result.Set("manual",
+             reason == supervised_user::FilteringBehaviorReason::MANUAL &&
+                 behavior == SupervisedUserURLFilter::ALLOW);
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
@@ -282,7 +264,7 @@ void FamilyLinkUserInternalsMessageHandler::OnSiteListUpdated() {}
 void FamilyLinkUserInternalsMessageHandler::OnURLChecked(
     const GURL& url,
     SupervisedUserURLFilter::FilteringBehavior behavior,
-    supervised_user_error_page::FilteringBehaviorReason reason,
+    supervised_user::FilteringBehaviorReason reason,
     bool uncertain) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::Value::Dict result;

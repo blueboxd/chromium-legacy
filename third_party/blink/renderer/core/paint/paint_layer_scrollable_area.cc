@@ -513,8 +513,13 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
     anchor->DidScroll(scroll_type);
 
   if (IsExplicitScrollType(scroll_type)) {
-    if (scroll_type != mojom::blink::ScrollType::kCompositor)
+    // We don't need to show scrollbars for kCompositor scrolls unless the
+    // scrollbar is non-composited (!NeedsCompositorScrolling). See
+    // PaintLayerScrollableArea::ShouldDirectlyCompositeScrollbar.
+    if (scroll_type != mojom::blink::ScrollType::kCompositor ||
+        !NeedsCompositedScrolling()) {
       ShowNonMacOverlayScrollbars();
+    }
     GetScrollAnchor()->Clear();
   }
   if (ContentCaptureManager* manager = frame_view->GetFrame()
@@ -1097,6 +1102,11 @@ void PaintLayerScrollableArea::UpdateAfterLayout() {
     UpdateScrollbarProportions();
   }
 
+  hypothetical_horizontal_scrollbar_thickness_ =
+      ComputeHypotheticalScrollbarThickness(kHorizontalScrollbar, true);
+  hypothetical_vertical_scrollbar_thickness_ =
+      ComputeHypotheticalScrollbarThickness(kVerticalScrollbar, true);
+
   DelayableClampScrollOffsetAfterOverflowChange();
 
   if (!is_horizontal_scrollbar_frozen || !is_vertical_scrollbar_frozen)
@@ -1116,10 +1126,6 @@ void PaintLayerScrollableArea::DelayableClampScrollOffsetAfterOverflowChange() {
 }
 
 void PaintLayerScrollableArea::ClampScrollOffsetAfterOverflowChange() {
-  if (!RuntimeEnabledFeatures::LayoutNGDelayScrollOffsetClampingEnabled()) {
-    DelayableClampScrollOffsetAfterOverflowChange();
-    return;
-  }
   ClampScrollOffsetAfterOverflowChangeInternal();
 }
 
@@ -1450,6 +1456,21 @@ static inline const LayoutObject& ScrollbarStyleSource(
 }
 
 int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
+    ScrollbarOrientation orientation,
+    bool should_include_overlay_thickness) const {
+  // The cached values are updated after layout, use them if we're layout clean.
+  if (should_include_overlay_thickness &&
+      GetLayoutBox()->GetDocument().Lifecycle().GetState() >=
+          DocumentLifecycle::kLayoutClean) {
+    return orientation == kHorizontalScrollbar
+               ? hypothetical_horizontal_scrollbar_thickness_
+               : hypothetical_vertical_scrollbar_thickness_;
+  }
+  return ComputeHypotheticalScrollbarThickness(
+      orientation, should_include_overlay_thickness);
+}
+
+int PaintLayerScrollableArea::ComputeHypotheticalScrollbarThickness(
     ScrollbarOrientation orientation,
     bool should_include_overlay_thickness) const {
   Scrollbar* scrollbar = orientation == kHorizontalScrollbar
@@ -1887,11 +1908,13 @@ bool PaintLayerScrollableArea::ShouldOverflowControlsPaintAsOverlay() const {
   if (HasOverlayOverflowControls())
     return true;
 
-  // The global root scrollbars and corner also paint as overlay so that they
-  // appear on top of all content within the viewport. This is important since
-  // these scrollbar's transform state is
+  // Frame and global root scroller (which can be a non-frame) scrollbars and
+  // corner also paint as overlay so that they appear on top of all content
+  // within their viewport. This is important for global root scrollers since
+  // these scrollbars' transform state is
   // VisualViewport::TransformNodeForViewportScrollbars().
-  return GetLayoutBox() && GetLayoutBox()->IsGlobalRootScroller();
+  return layer_->IsRootLayer() ||
+         (GetLayoutBox() && GetLayoutBox()->IsGlobalRootScroller());
 }
 
 void PaintLayerScrollableArea::PositionOverflowControls() {
@@ -1939,7 +1962,7 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
     return;
   }
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
-  scoped_refptr<ComputedStyle> corner =
+  scoped_refptr<const ComputedStyle> corner =
       GetLayoutBox()->IsScrollContainer()
           ? style_source.GetUncachedPseudoElementStyle(
                 StyleRequest(kPseudoIdScrollbarCorner, style_source.Style()))
@@ -2078,7 +2101,7 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
 
   // Update custom resizer style.
   const LayoutObject& style_source = ScrollbarStyleSource(*GetLayoutBox());
-  scoped_refptr<ComputedStyle> resizer =
+  scoped_refptr<const ComputedStyle> resizer =
       GetLayoutBox()->IsScrollContainer()
           ? style_source.GetUncachedPseudoElementStyle(
                 StyleRequest(kPseudoIdResizer, style_source.Style()))
@@ -2401,15 +2424,6 @@ bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
   if (HasBeenDisposed())
     return true;
 
-  // TODO(crbug.com/985127, crbug.com/1015833): We should just use the main
-  // thread scrolling reasons on the scroll node which should have all required
-  // reasons. If it was not, we would have inconsistent results here and
-  // ScrollNode::GetMainThreadScrollingReasons().
-  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-    if (frame->View()->GetMainThreadScrollingReasons())
-      return true;
-  }
-
   // Property tree state is not available until the PrePaint lifecycle stage.
   // PaintPropertyTreeBuilder needs to get the old status during PrePaint.
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
@@ -2472,16 +2486,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     return false;
 
   const auto* box = GetLayoutBox();
-
-  // Although trivial 3D transforms are not always a direct compositing reason
-  // (see CompositingReasonFinder::RequiresCompositingFor3DTransform), we treat
-  // them as one for composited scrolling. This is because of the amount of
-  // content that depends on this optimization, and because of the long-term
-  // desire to use composited scrolling whenever possible.
-  if (box->HasTransformRelatedProperty() &&
-      box->StyleRef().Has3DTransformOperation()) {
-    return true;
-  }
 
   if (!force_prefer_compositing_to_lcd_text &&
       (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled() ||

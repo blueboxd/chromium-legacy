@@ -5,8 +5,11 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_STORABLE_SOURCE_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_STORABLE_SOURCE_H_
 
+#include <string>
+
 #include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/store_source_result.mojom.h"
 #include "content/common/content_export.h"
 
 namespace attribution_reporting {
@@ -24,20 +27,7 @@ namespace content {
 // Contains attributes specific to a source that hasn't been stored yet.
 class CONTENT_EXPORT StorableSource {
  public:
-  // Represents the potential outcomes from attempting to register a source.
-  //
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-  enum class Result {
-    kSuccess = 0,
-    kInternalError = 1,
-    kInsufficientSourceCapacity = 2,
-    kInsufficientUniqueDestinationCapacity = 3,
-    kExcessiveReportingOrigins = 4,
-    kProhibitedByBrowserPolicy = 5,
-    kSuccessNoised = 6,
-    kMaxValue = kSuccessNoised,
-  };
+  using Result = ::attribution_reporting::mojom::StoreSourceResult;
 
   // TODO(apaseltiner): Make this constructor test-only.
   StorableSource(CommonSourceInfo common_info,
@@ -67,7 +57,21 @@ class CONTENT_EXPORT StorableSource {
 
   bool debug_reporting() const { return debug_reporting_; }
 
+  const std::string& registration_json() const { return registration_json_; }
+
  private:
+  // Contains serialized JSON corresponding to the
+  // `attribution_reporting::SourceRegistration` that was used to create this
+  // `StorableSource` for display in the internals UI. May be empty in tests.
+  //
+  // We use a string instead of a `base::Value` to allow `StorableSource` to be
+  // copied, which `base::Value` cannot.
+  //
+  // TODO(apaseltiner): Remove this field along with `common_info_` and
+  // `debug_reporting_` and instead embed a field of type
+  // `attribution_reporting::SourceRegistration`.
+  std::string registration_json_;
+
   CommonSourceInfo common_info_;
 
   // Whether the source is registered within a fenced frame tree.

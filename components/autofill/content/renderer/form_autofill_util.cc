@@ -1358,6 +1358,36 @@ FormFieldData* SearchForFormControlByName(
   return it != end ? it->first : nullptr;
 }
 
+void EmitDevtoolsIssueForLabelWithoutControl(
+    WebLabelElement label,
+    bool label_for_matches_names_attribute) {
+  static base::NoDestructor<WebString> kFor("for");
+  if (!label.HasAttribute(*kFor)) {
+    // Label has neither for attribute nor a control element was found.
+    label.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::
+            kFormLabelHasNeitherForNorNestedInput,
+        label.GetDevToolsNodeId());
+  } else if (!label_for_matches_names_attribute) {
+    // Label has for attribute but no labellable element whose id OR name
+    // matches it.
+    // This issue is not emitted in case an element has a name that matches it,
+    // instead we emit kFormLabelForNameError to educate developers that labels
+    // should be linked to element ids.
+    label.GetDocument().GetFrame()->AddGenericIssue(
+        GenericIssueErrorType::kFormLabelForMatchesNonExistingIdError,
+        label.GetDevToolsNodeId());
+  } else {
+    // Add a DevTools issue informing the developer that the `label`'s for-
+    // attribute is pointing to the name of a field, even though the ID should
+    // be used.
+    // TODO(crbug.com/1339277): Use `root` once the feature is launched.
+    label.GetDocument().GetFrame()->AddGenericIssue(
+        GenericIssueErrorType::kFormLabelForNameError,
+        label.GetDevToolsNodeId());
+  }
+}
+
 // Considers all <label> descendents of `root`, looks at their corresponding
 // control and matches them to the fields in `field_set`. The corresponding
 // control is either a descendent of the label or an input specified by id in
@@ -1388,6 +1418,11 @@ void MatchLabelsAndFields(
       // field element's name rather than its id, so we compensate here.
       field_data = SearchForFormControlByName(label.GetAttribute(*kFor).Utf16(),
                                               field_set, label_source);
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillEnableDevtoolsIssues)) {
+        EmitDevtoolsIssueForLabelWithoutControl(
+            label, label_source == AssignedLabelSource::kName);
+      }
     } else if (control.IsFormControlElement()) {
       WebFormControlElement form_control = control.To<WebFormControlElement>();
       if (form_control.FormControlTypeForAutofill() == *kHidden)
@@ -1434,17 +1469,6 @@ void MatchLabelsAndFields(
     field_data->label += label_text;
     field_data->label_source = FormFieldData::LabelSource::kFor;
     base::UmaHistogramEnumeration(kAssignedLabelSourceHistogram, label_source);
-
-    if (label_source == AssignedLabelSource::kName &&
-        base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
-      // Add a DevTools issue informing the developer that the `label`'s for-
-      // attribute is pointing to the name of a field, even though the ID should
-      // be used.
-      // TODO(crbug.com/1339277): Use `root` once the feature is launched.
-      label.GetDocument().GetFrame()->AddGenericIssue(
-          GenericIssueErrorType::kFormLabelForNameError,
-          label.GetDevToolsNodeId());
-    }
   }
 }
 
@@ -1505,6 +1529,46 @@ void MaybeEmitInputWithEmptyIdAndNameIssue(
     element.GetDocument().GetFrame()->AddGenericIssue(
         GenericIssueErrorType::kFormEmptyIdAndNameAttributesForInputError,
         element.GetDevToolsNodeId());
+  }
+}
+
+bool HasAutocompleteAttribute(const WebElement& element) {
+  static base::NoDestructor<WebString> kAutocomplete("autocomplete");
+  return element.HasAttribute(*kAutocomplete);
+}
+
+void MaybeEmitInputAssignedAutocompleteValueToIdOrNameAttributesIssue(
+    const WebFormControlElement& element,
+    uint64_t max_length) {
+  if (HasAutocompleteAttribute(element)) {
+    return;
+  }
+
+  auto ParsedHtmlAttributeValueToAutocompleteHasFieldType =
+      [&max_length](const std::string& attribute_value) {
+        absl::optional<AutocompleteParsingResult>
+            parsed_attribute_to_autocomplete =
+                ParseAutocompleteAttribute(attribute_value, max_length);
+        if (!parsed_attribute_to_autocomplete) {
+          return false;
+        }
+
+        return parsed_attribute_to_autocomplete->field_type !=
+                   HtmlFieldType::kUnspecified &&
+               parsed_attribute_to_autocomplete->field_type !=
+                   HtmlFieldType::kUnrecognized;
+      };
+
+  static base::NoDestructor<WebString> kName("name");
+  if (ParsedHtmlAttributeValueToAutocompleteHasFieldType(
+          element.GetAttribute(*kName).Utf8()) ||
+      ParsedHtmlAttributeValueToAutocompleteHasFieldType(
+          element.GetIdAttribute().Utf8())) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        GenericIssueErrorType::
+            kFormInputAssignedAutocompleteValueToIdOrNameAttributeError,
+        element.GetDevToolsNodeId());
+    return;
   }
 }
 
@@ -1580,6 +1644,8 @@ bool FormOrFieldsetsToFormData(
 
     if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
       MaybeEmitInputWithEmptyIdAndNameIssue(control_element);
+      MaybeEmitInputAssignedAutocompleteValueToIdOrNameAttributesIssue(
+          control_element, form->fields.back().max_length);
     }
 
     if (base::FeatureList::IsEnabled(features::kAutofillAcrossIframes)) {
@@ -1774,11 +1840,6 @@ std::string GetAutocompleteAttribute(const WebElement& element) {
     return "x-max-data-length-exceeded";
   }
   return autocomplete_attribute;
-}
-
-bool HasAutocompleteAttribute(const WebElement& element) {
-  static base::NoDestructor<WebString> kAutocomplete("autocomplete");
-  return element.HasAttribute(*kAutocomplete);
 }
 
 void ValidateAutocompleteAttributeForElement(const WebElement& element) {
@@ -2692,6 +2753,19 @@ std::vector<WebFormControlElement> FindFormControlElementsByUniqueRendererId(
 
 namespace {
 
+std::vector<WebElement> GetWebElementsFromIdList(const WebDocument& document,
+                                                 const WebString& id_list) {
+  std::vector<WebElement> web_elements;
+  std::u16string id_list_utf16 = id_list.Utf16();
+  for (const auto& id : base::SplitStringPiece(
+           id_list_utf16, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
+           base::SPLIT_WANT_NONEMPTY)) {
+    web_elements.push_back(
+        document.GetElementById(WebString(id.data(), id.length())));
+  }
+  return web_elements;
+}
+
 // Returns the coalesced child of the elements who's ids are found in
 // |id_list|.
 //
@@ -2715,11 +2789,7 @@ std::u16string CoalesceTextByIdList(const WebDocument& document,
   const std::u16string kSpace = u" ";
 
   std::u16string text;
-  std::u16string id_list_utf16 = id_list.Utf16();
-  for (const auto& id : base::SplitStringPiece(
-           id_list_utf16, base::kWhitespaceUTF16, base::KEEP_WHITESPACE,
-           base::SPLIT_WANT_NONEMPTY)) {
-    auto node = document.GetElementById(WebString(id.data(), id.length()));
+  for (const auto& node : GetWebElementsFromIdList(document, id_list)) {
     if (!node.IsNull()) {
       std::u16string child_text = FindChildText(node);
       if (!child_text.empty()) {
@@ -2733,14 +2803,29 @@ std::u16string CoalesceTextByIdList(const WebDocument& document,
   return text;
 }
 
+void MaybeEmitAriaLabelledByDevtoolsIssue(const WebElement& element,
+                                          const WebString& id_list) {
+  if (base::ranges::any_of(
+          GetWebElementsFromIdList(element.GetDocument(), id_list),
+          [](const WebElement& node) { return node.IsNull(); })) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::kFormAriaLabelledByToNonExistingId,
+        element.GetDevToolsNodeId());
+  }
+}
+
 }  // namespace
 
 std::u16string GetAriaLabel(const blink::WebDocument& document,
                             const WebElement& element) {
   static const base::NoDestructor<WebString> kAriaLabelledBy("aria-labelledby");
   if (element.HasAttribute(*kAriaLabelledBy)) {
-    std::u16string text =
-        CoalesceTextByIdList(document, element.GetAttribute(*kAriaLabelledBy));
+    blink::WebString arial_label_attribute =
+        element.GetAttribute(*kAriaLabelledBy);
+    if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
+      MaybeEmitAriaLabelledByDevtoolsIssue(element, arial_label_attribute);
+    }
+    std::u16string text = CoalesceTextByIdList(document, arial_label_attribute);
     if (!text.empty())
       return text;
   }

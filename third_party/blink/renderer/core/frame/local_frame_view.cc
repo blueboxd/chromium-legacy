@@ -107,8 +107,6 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observation.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_controller.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/geometry/writing_mode_converter.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -196,8 +194,8 @@
 // function.
 #define CHECK_FOR_DIRTY_LAYOUT(arg) \
   do {                              \
+    DCHECK(arg);                    \
     if (!(arg)) {                   \
-      NOTREACHED();                 \
       return false;                 \
     }                               \
   } while (false)
@@ -210,9 +208,15 @@ namespace {
 // reduced.
 void LogCursorSizeCounter(LocalFrame* frame, const ui::Cursor& cursor) {
   DCHECK(frame);
-  SkBitmap bitmap = cursor.custom_bitmap();
-  if (cursor.type() != ui::mojom::blink::CursorType::kCustom || bitmap.isNull())
+  if (cursor.type() != ui::mojom::blink::CursorType::kCustom) {
     return;
+  }
+
+  const SkBitmap& bitmap = cursor.custom_bitmap();
+  if (bitmap.isNull()) {
+    return;
+  }
+
   // Should not overflow, this calculation is done elsewhere when determining
   // whether the cursor exceeds its maximum size (see event_handler.cc).
   auto scaled_size =
@@ -847,21 +851,7 @@ void LocalFrameView::PerformLayout() {
       if (HasOrthogonalWritingModeRoots())
         LayoutOrthogonalWritingModeRoots();
 
-      DeferredShapingController& ds_controller =
-          GetLayoutView()->GetDeferredShapingController();
-      bool default_allow_deferred_shaping =
-          ds_controller.DefaultAllowDeferredShaping() &&
-          RuntimeEnabledFeatures::DeferredShapingEnabled() &&
-          !frame_->PagePopupOwner() && !auto_size_info_ &&
-          !GetScrollableArea()->HasPendingHistoryRestoreScrollOffset();
-      if (!default_allow_deferred_shaping)
-        ds_controller.DisallowDeferredShaping();
-      using PassKey = base::PassKey<LocalFrameView>;
-      ds_controller.SetAllowDeferredShaping(
-          PassKey(), default_allow_deferred_shaping && !document->Printing());
-      DeferredShapingViewportScope viewport_scope(*GetLayoutView());
       GetLayoutView()->UpdateLayout();
-      ds_controller.SetAllowDeferredShaping(PassKey(), false);
     }
   }
 
@@ -1221,19 +1211,13 @@ void LocalFrameView::AdjustMediaTypeForPrinting(bool printing) {
 void LocalFrameView::AddBackgroundAttachmentFixedObject(LayoutObject* object) {
   DCHECK(!background_attachment_fixed_objects_.Contains(object));
   background_attachment_fixed_objects_.insert(object);
-
-  // Ensure main thread scrolling reasons of the ancestor scroll nodes are
-  // recomputed. The object's own scroll properties are not affected.
-  object->ForceAllAncestorsNeedPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
     LayoutObject* object) {
   background_attachment_fixed_objects_.erase(object);
-
-  // Ensure main thread scrolling reasons of the ancestor scroll nodes are
-  // recomputed. The object's own scroll properties are not affected.
-  object->ForceAllAncestorsNeedPaintPropertyUpdate();
+  SetNeedsPaintPropertyUpdate();
 }
 
 bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
@@ -1390,10 +1374,6 @@ void LocalFrameView::ProcessUrlFragment(const KURL& url,
     // part of the lifecycle.
     if (same_document_navigation)
       ScheduleAnimation();
-    if (const auto* layout_view = GetLayoutView()) {
-      layout_view->GetDeferredShapingController().ReshapeAllDeferred(
-          ReshapeReason::kFragmentAnchor);
-    }
   }
 }
 
@@ -1558,7 +1538,8 @@ bool LocalFrameView::RunPostLayoutIntersectionObserverSteps() {
         // If the lifecycle state changed as a result of the notifications, we
         // should run the lifecycle again.
         needs_more_lifecycle_steps |= frame_view.Lifecycle().GetState() <
-                                      DocumentLifecycle::kPrePaintClean;
+                                          DocumentLifecycle::kPrePaintClean ||
+                                      frame_view.NeedsLayout();
       });
 
   return needs_more_lifecycle_steps;
@@ -1889,8 +1870,6 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   ScheduleUpdatePluginsIfNecessary();
   if (visual_viewport_size_changed && !document->Printing())
     frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
-
-  GetLayoutView()->GetDeferredShapingController().PerformPostLayoutTask();
 }
 
 float LocalFrameView::InputEventsScaleFactor() const {
@@ -2584,7 +2563,8 @@ bool LocalFrameView::RunViewTransitionSteps(
           transition->RunViewTransitionStepsOutsideMainFrame();
 
         re_run_lifecycle |= document->Lifecycle().GetState() <
-                            DocumentLifecycle::kPrePaintClean;
+                                DocumentLifecycle::kPrePaintClean ||
+                            frame_view.NeedsLayout();
       });
 
   return re_run_lifecycle;
@@ -3839,8 +3819,6 @@ void LocalFrameView::SetLayoutSizeInternal(const gfx::Size& size) {
   document->LayoutViewportWasResized();
   if (frame_->IsMainFrame())
     TextAutosizer::UpdatePageInfoInAllFrames(frame_);
-  if (auto* ds_controller = DeferredShapingController::From(*document))
-    ds_controller->OnResizeFrame();
 }
 
 void LocalFrameView::DidChangeScrollOffset() {
@@ -4631,54 +4609,6 @@ bool LocalFrameView::WillDoPaintHoldingForFCP() const {
          GetFrame().IsOutermostMainFrame();
 }
 
-MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
-    const {
-  MainThreadScrollingReasons reasons =
-      static_cast<MainThreadScrollingReasons>(0);
-
-  if (ShouldThrottleRendering())
-    return reasons;
-
-  if (RequiresMainThreadScrollingForBackgroundAttachmentFixed()) {
-    reasons |=
-        cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-  }
-  return reasons;
-}
-
-MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
-    const {
-  MainThreadScrollingReasons reasons =
-      static_cast<MainThreadScrollingReasons>(0);
-
-  if (!GetPage()->GetSettings().GetThreadedScrollingEnabled())
-    reasons |= cc::MainThreadScrollingReason::kThreadedScrollingDisabled;
-
-  if (!GetPage()->MainFrame()->IsLocalFrame())
-    return reasons;
-
-  // TODO(alexmos,kenrb): For OOPIF, local roots that are different from
-  // the main frame can't be used in the calculation, since they use
-  // different compositors with unrelated state, which breaks some of the
-  // calculations below.
-  if (&frame_->LocalFrameRoot() != GetPage()->MainFrame())
-    return reasons;
-
-  // Walk the tree to the root. Use the gathered reasons to determine
-  // whether the target frame should be scrolled on main thread regardless
-  // other subframes on the same page.
-  for (Frame* frame = frame_; frame; frame = frame->Tree().Parent()) {
-    auto* local_frame = DynamicTo<LocalFrame>(frame);
-    if (!local_frame)
-      continue;
-    reasons |= local_frame->View()->MainThreadScrollingReasonsPerFrame();
-  }
-
-  DCHECK(
-      !cc::MainThreadScrollingReason::HasNonCompositedScrollReasons(reasons));
-  return reasons;
-}
-
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
   MainThreadScrollingReasons reasons = 0;
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
@@ -5024,13 +4954,17 @@ bool LocalFrameView::UpdateAllPendingTransforms() {
   DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
   bool updated = false;
   ForAllNonThrottledLocalFrameViews([&updated](LocalFrameView& frame_view) {
+    HeapHashSet<Member<LayoutObject>> blocked_updates;
     if (frame_view.pending_transform_updates_) {
-      for (const LayoutObject* object :
-           *frame_view.pending_transform_updates_) {
-        PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(*object);
-        updated = true;
+      for (LayoutObject* object : *frame_view.pending_transform_updates_) {
+        if (!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object)) {
+          PaintPropertyTreeBuilder::DirectlyUpdateTransformMatrix(*object);
+          updated = true;
+        } else {
+          blocked_updates.insert(object);
+        }
       }
-      frame_view.pending_transform_updates_->clear();
+      frame_view.pending_transform_updates_->swap(blocked_updates);
     }
   });
   return updated;
@@ -5058,12 +4992,17 @@ bool LocalFrameView::UpdateAllPendingOpacityUpdates() {
   DCHECK(GetFrame().IsLocalRoot() || !IsAttached());
   bool updated = false;
   ForAllNonThrottledLocalFrameViews([&updated](LocalFrameView& frame_view) {
+    HeapHashSet<Member<LayoutObject>> blocked_updates;
     if (frame_view.pending_opacity_updates_) {
-      for (const LayoutObject* object : *frame_view.pending_opacity_updates_) {
-        PaintPropertyTreeBuilder::DirectlyUpdateOpacityValue(*object);
-        updated = true;
+      for (LayoutObject* object : *frame_view.pending_opacity_updates_) {
+        if (!DisplayLockUtilities::LockedAncestorPreventingPrePaint(*object)) {
+          PaintPropertyTreeBuilder::DirectlyUpdateOpacityValue(*object);
+          updated = true;
+        } else {
+          blocked_updates.insert(object);
+        }
       }
-      frame_view.pending_opacity_updates_->clear();
+      frame_view.pending_opacity_updates_->swap(blocked_updates);
     }
   });
   return updated;

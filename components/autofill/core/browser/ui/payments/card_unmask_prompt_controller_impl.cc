@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/ui/payments/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/grit/components_scaled_resources.h"
@@ -28,18 +29,11 @@ namespace autofill {
 
 namespace {
 
-std::u16string GetSideOfCardTranslationString(CvcPosition cvc_position) {
-  switch (cvc_position) {
-    case CvcPosition::kFrontOfCard:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_FRONT_OF_CARD);
-    case CvcPosition::kBackOfCard:
-      return l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_BACK_OF_CARD);
-    default:
-      NOTREACHED();
-      return u"";
-  }
+std::u16string GetSideOfCardTranslationString(bool is_cvc_in_front) {
+  return l10n_util::GetStringUTF16(
+      is_cvc_in_front
+          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_FRONT_OF_CARD
+          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_SECURITY_CODE_POSITION_BACK_OF_CARD);
 }
 
 }  // namespace
@@ -90,8 +84,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
       if (IsVirtualCard()) {
         error_message = l10n_util::GetStringFUTF16(
             IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_SECURITY_CODE,
-            GetSideOfCardTranslationString(
-                card_unmask_prompt_options_.challenge_option->cvc_position));
+            GetSideOfCardTranslationString(IsCvcInFront()));
       } else {
         error_message = l10n_util::GetStringUTF16(
             IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC);
@@ -206,17 +199,44 @@ std::u16string CardUnmaskPromptControllerImpl::GetWindowTitle() const {
 
   // For VCN unmask flow, display unique CVC title.
   if (IsChallengeOptionPresent()) {
+#if BUILDFLAG(IS_ANDROID)
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillTouchToFillForCreditCardsAndroid)) {
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE_VIRTUAL_CARD);
+    }
+#endif
     return l10n_util::GetStringFUTF16(
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE_SECURITY_CODE,
         card_.CardIdentifierStringForAutofillDisplay());
   }
 
-  return l10n_util::GetStringFUTF16(
-      ShouldRequestExpirationDate()
-          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE
-          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
-      card_.CardIdentifierStringForAutofillDisplay());
+  // Title for expired cards.
+  if (ShouldRequestExpirationDate()) {
+#if BUILDFLAG(IS_ANDROID)
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillTouchToFillForCreditCardsAndroid)) {
+      return l10n_util::GetStringUTF16(
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE_EXPIRED_CARD);
+    }
 #endif
+    return l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE,
+        card_.CardIdentifierStringForAutofillDisplay());
+  }
+
+  // Default title.
+#if BUILDFLAG(IS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillTouchToFillForCreditCardsAndroid)) {
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE_DEFAULT);
+  }
+#endif
+  return l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
+      card_.CardIdentifierStringForAutofillDisplay());
+#endif  // BUILDFLAG(IS_IOS)
 }
 
 std::u16string CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
@@ -243,11 +263,20 @@ std::u16string CardUnmaskPromptControllerImpl::GetInstructionsMessage() const {
         IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_VIRTUAL_CARD,
         base::NumberToString16(card_unmask_prompt_options_.challenge_option
                                    ->challenge_input_length),
-        GetSideOfCardTranslationString(
-            card_unmask_prompt_options_.challenge_option->cvc_position));
+        GetSideOfCardTranslationString(IsCvcInFront()));
   }
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS);
+
+  // Instruction message for expired cards.
+  if (ShouldRequestExpirationDate()) {
+    return l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_EXPIRED_CARD,
+        GetSideOfCardTranslationString(IsCvcInFront()));
+  }
+
+  // Default instruction message.
+  return l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_CARD_UNMASK_PROMPT_INSTRUCTIONS_DEFAULT,
+      GetSideOfCardTranslationString(IsCvcInFront()));
 #endif
 }
 
@@ -256,20 +285,8 @@ std::u16string CardUnmaskPromptControllerImpl::GetOkButtonLabel() const {
 }
 
 int CardUnmaskPromptControllerImpl::GetCvcImageRid() const {
-  // If a challenge option is present, this is the virtual card unmask CVC
-  // case. Rely on the challenge option to inform us whether the
-  // CVC is on the front or back of the card.
-  if (IsChallengeOptionPresent()) {
-    return card_unmask_prompt_options_.challenge_option->cvc_position ==
-                   CvcPosition::kFrontOfCard
-               ? IDR_CREDIT_CARD_CVC_HINT_AMEX
-               : IDR_CREDIT_CARD_CVC_HINT;
-  }
-
-  // For normal CVC unmask case, depend on the network to inform where the CVC
-  // is on the card.
-  return card_.network() == kAmericanExpressCard ? IDR_CREDIT_CARD_CVC_HINT_AMEX
-                                                 : IDR_CREDIT_CARD_CVC_HINT;
+  return IsCvcInFront() ? IDR_CREDIT_CARD_CVC_HINT_FRONT_AMEX
+                        : IDR_CREDIT_CARD_CVC_HINT_BACK;
 }
 
 bool CardUnmaskPromptControllerImpl::ShouldRequestExpirationDate() const {
@@ -297,6 +314,10 @@ std::u16string CardUnmaskPromptControllerImpl::GetCardLastFourDigits() const {
 
 std::u16string CardUnmaskPromptControllerImpl::GetCardExpiration() const {
   return card_.ExpirationDateForDisplay();
+}
+
+const GURL& CardUnmaskPromptControllerImpl::GetCardArtUrl() const {
+  return card_.card_art_url();
 }
 
 int CardUnmaskPromptControllerImpl::GetGooglePayImageRid() const {
@@ -415,7 +436,7 @@ bool CardUnmaskPromptControllerImpl::AllowsRetry(
   return true;
 }
 
-bool CardUnmaskPromptControllerImpl::IsCvcInFront() {
+bool CardUnmaskPromptControllerImpl::IsCvcInFront() const {
   // Rely on the challenge option to inform us whether the CVC to be entered is
   // on the front or back of the card.
   if (IsChallengeOptionPresent()) {

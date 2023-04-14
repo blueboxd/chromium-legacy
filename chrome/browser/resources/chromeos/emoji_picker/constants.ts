@@ -49,7 +49,48 @@ export const EMOJI_PICKER_TOTAL_EMOJI_WIDTH_PX =
     `${EMOJI_PICKER_TOTAL_EMOJI_WIDTH}px`;
 export const TAB_BUTTON_MARGIN_PX = `${TAB_BUTTON_MARGIN}px`;
 export const TEXT_GROUP_BUTTON_PADDING_PX = `${TEXT_GROUP_BUTTON_PADDING}px`;
-export const TRENDING = '#trending';
+export const TRENDING = 'Trending';
+export const RECENTLY_USED = 'Recently used';
+// If more groups are added to emoji, symbol or emoticon this number will change
+export const TRENDING_GROUP_ID = '30';  // TODO(b/266024083): Make this dynamic
+export const NO_INTERNET_VIEW_ERROR_MSG =
+    'Connect to the internet to view GIFs';
+export const NO_INTERNET_SEARCH_ERROR_MSG =
+    'Connect to the internet to search for GIFs';
+export const SOMETHING_WENT_WRONG_ERROR_MSG = 'Something went wrong';
 // 24 hours is equivalent to 86400000 milliseconds.
 export const TWENTY_FOUR_HOURS = 86400000;
 export const GIF_VALIDATION_DATE = 'gifValidationDate';
+
+export const V2_5_EMOJI_CATEGORY_SIZE = 36;
+export const V2_5_EMOJI_PICKER_SIDE_PADDING = 18;
+export const V2_5_EMOJI_PICKER_SEARCH_SIDE_PADDING = 16;
+export const V2_5_GROUP_ICON_SIZE =
+    (EMOJI_PICKER_WIDTH - 2 * V2_5_EMOJI_PICKER_SIDE_PADDING) / EMOJI_PER_ROW;
+export const V2_5_VISUAL_CONTENT_WIDTH =
+    (EMOJI_PICKER_WIDTH - 2 * V2_5_EMOJI_PICKER_SIDE_PADDING) / 2 -
+    VISUAL_CONTENT_PADDING / 2;
+
+export const V2_5_EMOJI_SPACING =
+    (EMOJI_PICKER_WIDTH - 2 * V2_5_EMOJI_PICKER_SIDE_PADDING -
+     EMOJI_PER_ROW * EMOJI_ICON_SIZE) /
+    (EMOJI_PER_ROW - 1);
+export const V2_5_EMOJI_SPACING_PX = `${V2_5_EMOJI_SPACING}px`;
+export const V2_5_EMOJI_GROUP_SIZE_PX = `${V2_5_GROUP_ICON_SIZE}px`;
+export const V2_5_EMOJI_CATEGORY_SIZE_PX = `${V2_5_EMOJI_CATEGORY_SIZE}px`;
+export const V2_5_EMOJI_PICKER_SEARCH_SIDE_PADDING_PX =
+    `${V2_5_EMOJI_PICKER_SEARCH_SIDE_PADDING}px`;
+export const V2_5_EMOJI_PICKER_SIDE_PADDING_PX =
+    `${V2_5_EMOJI_PICKER_SIDE_PADDING}px`;
+export const V2_5_VISUAL_CONTENT_WIDTH_PX = `${V2_5_VISUAL_CONTENT_WIDTH}px`;
+
+export const V2_5_EMOJI_GROUP_SPACING =
+    (EMOJI_PICKER_WIDTH - 2 * V2_5_EMOJI_PICKER_SIDE_PADDING -
+     GROUP_PER_ROW * EMOJI_ICON_SIZE) /
+    (GROUP_PER_ROW - 1);
+export const V2_5_EMOJI_PICKER_TOTAL_EMOJI_WIDTH =
+    EMOJI_ICON_SIZE + V2_5_EMOJI_GROUP_SPACING;
+
+export const V2_5_EMOJI_GROUP_SPACING_PX = `${V2_5_EMOJI_GROUP_SPACING}px`;
+export const V2_5_EMOJI_PICKER_TOTAL_EMOJI_WIDTH_PX =
+    `${V2_5_EMOJI_PICKER_TOTAL_EMOJI_WIDTH}px`;

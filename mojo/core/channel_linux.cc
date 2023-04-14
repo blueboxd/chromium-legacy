@@ -607,7 +607,7 @@ class ChannelLinux::SharedBuffer {
 
   SharedBuffer(uint8_t* ptr, size_t len) : base_ptr_(ptr), len_(len) {}
 
-  raw_ptr<uint8_t> base_ptr_ = nullptr;
+  raw_ptr<uint8_t, AllowPtrArithmetic> base_ptr_ = nullptr;
   size_t len_ = 0;
 };
 
@@ -808,7 +808,7 @@ void ChannelLinux::SharedMemReadReady() {
         DispatchResult result = TryDispatchMessage(
             base::make_span(
                 reinterpret_cast<char*>(read_buf_.data() + data_offset),
-                bytes_read - data_offset),
+                static_cast<size_t>(bytes_read - data_offset)),
             &read_size_hint);
 
         // We cannot have a message parse failure, we KNOW that we wrote a

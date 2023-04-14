@@ -230,8 +230,11 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
   DCHECK(type == SERVER_PROFILE);
 }
 
+AutofillProfile::AutofillProfile(Source source)
+    : AutofillProfile(base::GenerateGUID(), std::string(), source) {}
+
 AutofillProfile::AutofillProfile()
-    : AutofillProfile(base::GenerateGUID(), std::string()) {}
+    : AutofillProfile(Source::kLocalOrSyncable) {}
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
     : AutofillDataModel(std::string(), std::string()),
@@ -1151,6 +1154,19 @@ bool AutofillProfile::HasStructuredData() {
   return base::ranges::any_of(kStructuredDataTypes, [this](auto type) {
     return !this->GetRawInfo(type).empty();
   });
+}
+
+AutofillProfile AutofillProfile::ConvertToAccountProfile() const {
+  DCHECK_EQ(source(), Source::kLocalOrSyncable);
+  AutofillProfile account_profile = *this;
+  // Since GUIDs are assumed to be unique across all profile sources, a new GUID
+  // is assigned.
+  account_profile.set_guid(base::GenerateGUID());
+  account_profile.source_ = Source::kAccount;
+  // Initial creator and last modifier are unused for kLocalOrSyncable profiles.
+  account_profile.initial_creator_id_ = kInitialCreatorOrModifierChrome;
+  account_profile.last_modifier_id_ = kInitialCreatorOrModifierChrome;
+  return account_profile;
 }
 
 ServerFieldTypeSet AutofillProfile::FindInaccessibleProfileValues() const {

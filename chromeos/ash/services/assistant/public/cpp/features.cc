@@ -23,10 +23,6 @@ BASE_FEATURE(kAssistantDebugging,
              "AssistantDebugging",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAssistantRoutines,
-             "AssistantRoutines",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAssistantWaitScheduling,
              "AssistantWaitScheduling",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -52,13 +48,9 @@ BASE_FEATURE(kDisableVoiceMatch,
              "DisableVoiceMatch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEnableLibAssistantSandbox,
-             "LibAssistantSandbox",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kEnableLibAssistantV2,
              "LibAssistantV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLibAssistantDlc,
              "LibAssistantDlc",
@@ -89,10 +81,6 @@ bool IsLibAssistantBetaBackendEnabled() {
   return base::FeatureList::IsEnabled(kEnableLibAssistantBetaBackend);
 }
 
-bool IsRoutinesEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantRoutines);
-}
-
 bool IsStereoAudioInputEnabled() {
   return base::FeatureList::IsEnabled(kEnableStereoAudioInput) ||
          // Audio eraser requires 2 channel input.
@@ -108,13 +96,8 @@ bool IsWaitSchedulingEnabled() {
 }
 
 bool IsLibAssistantSandboxEnabled() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          sandbox::policy::switches::kNoSandbox)) {
-    return false;
-  }
-
-  return IsLibAssistantV2Enabled() ||
-         base::FeatureList::IsEnabled(kEnableLibAssistantSandbox);
+  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
+      sandbox::policy::switches::kNoSandbox);
 }
 
 bool IsLibAssistantV2Enabled() {

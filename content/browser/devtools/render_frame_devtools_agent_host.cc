@@ -25,6 +25,7 @@
 #include "content/browser/devtools/protocol/audits_handler.h"
 #include "content/browser/devtools/protocol/background_service_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
+#include "content/browser/devtools/protocol/device_access_handler.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
 #include "content/browser/devtools/protocol/fetch_handler.h"
@@ -63,6 +64,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
@@ -310,6 +312,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session,
   auto* browser_handler =
       session->CreateAndAddHandler<protocol::BrowserHandler>(
           session->GetClient()->MayWriteLocalFiles());
+  session->CreateAndAddHandler<protocol::DeviceAccessHandler>();
   session->CreateAndAddHandler<protocol::DOMHandler>(
       session->GetClient()->MayReadLocalFiles());
   auto* emulation_handler =

@@ -8,6 +8,7 @@
 #import <algorithm>
 
 #import "base/notreached.h"
+#import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/attributed_string_util.h"
 
@@ -183,7 +184,7 @@ NSArray<NSValue*>* StringRangeInLines(NSAttributedString* attributed_string,
     return [super textRectForBounds:bounds
              limitedToNumberOfLines:numberOfLines];
   }
-
+  NSInteger maxNumberOfLines = numberOfLines ? numberOfLines : INT_MAX;
   // Force NSLineBreakByWordWrapping to be able to draw multiple lines.
   NSAttributedString* wrappingString =
       [self attributedString:self.attributedText
@@ -199,7 +200,7 @@ NSArray<NSValue*>* StringRangeInLines(NSAttributedString* attributed_string,
   const NSInteger wrappingStringNumberOfLines =
       round(wrappingStringSize.height / singleLineStringSize.height);
   const NSInteger numberOfLinesToDraw =
-      MIN(numberOfLines, wrappingStringNumberOfLines);
+      MIN(maxNumberOfLines, wrappingStringNumberOfLines);
 
   const CGFloat boundingWidth =
       MIN(ceil(singleLineStringSize.width), bounds.size.width);
@@ -267,8 +268,12 @@ NSArray<NSValue*>* StringRangeInLines(NSAttributedString* attributed_string,
   if (!lineHeight) {
     return;
   }
-  const NSInteger lineCount = MIN(round(requestedRect.size.height / lineHeight),
-                                  stringRangeForLines.count);
+
+  // Like UILabel, always draw a minimum of one line even if there is not enough
+  // vertical space.
+  NSInteger lineCount = MAX(floor(requestedRect.size.height / lineHeight), 1);
+  lineCount =
+      MIN(lineCount, base::checked_cast<NSInteger>(stringRangeForLines.count));
   if (lineCount <= 0) {
     return;
   }

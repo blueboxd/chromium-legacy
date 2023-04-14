@@ -8,10 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/component_export.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "components/history/core/browser/history_types.h"
+#include "components/image_service/mojom/image_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/sync/driver/sync_service.h"
@@ -21,7 +20,7 @@ namespace image_service {
 
 // Used to get the image URL associated with a cluster. It doesn't actually
 // fetch the image, that's up to the UI to do.
-class COMPONENT_EXPORT(IMAGE_SERVICE) ImageService : public KeyedService {
+class ImageService : public KeyedService {
  public:
   using ResultCallback = base::OnceCallback<void(const GURL& image_url)>;
 
@@ -37,23 +36,22 @@ class COMPONENT_EXPORT(IMAGE_SERVICE) ImageService : public KeyedService {
   // object whose lifetime might exceed the service.
   base::WeakPtr<ImageService> GetWeakPtr();
 
-  // Populates entity images into the `image_url` of any eligible visits within
-  // every cluster in `clusters`. `clusters` should be moved into the parameter.
-  // `callback` is called when we're done, and it can be called synchronously
-  // if there's nothing to do.
-  void PopulateEntityImagesFor(
-      std::vector<history::Cluster> clusters,
-      base::OnceCallback<void(std::vector<history::Cluster>)> callback);
-
-  // Fetches an image appropriate for `search_query` and `entity_id`, returning
-  // the result asynchronously to `callback`. Returns false if we can't do it
-  // for configuration or privacy reasons.
-  bool FetchImageFor(const std::u16string& search_query,
-                     const std::string& entity_id,
+  // Fetches an image appropriate for `page_url`, returning the result
+  // asynchronously to `callback`. The callback is always invoked. If there are
+  // no images available, it is invoked with an empty GURL result.
+  void FetchImageFor(mojom::ClientId client_id,
+                     const GURL& page_url,
+                     const mojom::Options& options,
                      ResultCallback callback);
 
  private:
   class SuggestEntityImageURLFetcher;
+
+  // Fetches an image appropriate for `search_query` and `entity_id`, returning
+  // the result asynchronously to `callback`.
+  void FetchImageFor(const std::u16string& search_query,
+                     const std::string& entity_id,
+                     ResultCallback callback);
 
   // Callback for `FetchImageFor`.
   void OnImageFetched(std::unique_ptr<SuggestEntityImageURLFetcher> fetcher,

@@ -64,22 +64,25 @@ void InitializeScoreBuckets(const VariationParams& params,
   auto it = params.find(relevance_cap_param);
   if (it != params.end()) {
     int relevance_cap;
-    if (base::StringToInt(it->second, &relevance_cap))
+    if (base::StringToInt(it->second, &relevance_cap)) {
       score_buckets->set_relevance_cap(relevance_cap);
+    }
   }
 
   it = params.find(use_decay_factor_param);
   if (it != params.end()) {
     int use_decay_factor;
-    if (base::StringToInt(it->second, &use_decay_factor))
+    if (base::StringToInt(it->second, &use_decay_factor)) {
       score_buckets->set_use_decay_factor(use_decay_factor != 0);
+    }
   }
 
   it = params.find(half_life_param);
   if (it != params.end()) {
     int half_life_days;
-    if (base::StringToInt(it->second, &half_life_days))
+    if (base::StringToInt(it->second, &half_life_days)) {
       score_buckets->set_half_life_days(half_life_days);
+    }
   }
 
   it = params.find(score_buckets_param);
@@ -127,8 +130,9 @@ std::string GetValueForRuleInContextFromVariationParams(
     const std::map<std::string, std::string>& params,
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
-  if (params.empty())
+  if (params.empty()) {
     return std::string();
+  }
 
   const std::string page_classification_str =
       base::NumberToString(static_cast<int>(page_classification));
@@ -137,19 +141,27 @@ std::string GetValueForRuleInContextFromVariationParams(
   // Look up rule in this exact context.
   VariationParams::const_iterator it = params.find(
       rule + ":" + page_classification_str + ":" + instant_extended);
-  if (it != params.end())
+  if (it != params.end()) {
     return it->second;
+  }
   // Fall back to the global page classification context.
   it = params.find(rule + ":*:" + instant_extended);
-  if (it != params.end())
+  if (it != params.end()) {
     return it->second;
+  }
   // Fall back to the global instant extended context.
   it = params.find(rule + ":" + page_classification_str + ":*");
-  if (it != params.end())
+  if (it != params.end()) {
     return it->second;
+  }
   // Look up rule in the global context.
   it = params.find(rule + ":*:*");
   return (it != params.end()) ? it->second : std::string();
+}
+
+OmniboxFieldTrial::MLConfig& GetMLConfigInternal() {
+  static OmniboxFieldTrial::MLConfig s_config;
+  return s_config;
 }
 
 }  // namespace
@@ -170,8 +182,9 @@ double HUPScoringParams::ScoreBuckets::HalfLifeTimeDecay(
     const base::TimeDelta& elapsed_time) const {
   double time_ms;
   if ((half_life_days_ <= 0) ||
-      ((time_ms = elapsed_time.InMillisecondsF()) <= 0))
+      ((time_ms = elapsed_time.InMillisecondsF()) <= 0)) {
     return 1.0;
+  }
 
   const double half_life_intervals =
       time_ms / base::Days(half_life_days_).InMillisecondsF();
@@ -236,8 +249,9 @@ void OmniboxFieldTrial::GetDemotionsByType(
     // queries when the input has been detected as URL-seeking.
 #if BUILDFLAG(IS_ANDROID)
     if (current_page_classification ==
-        OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT)
+        OmniboxEventProto::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT) {
       demotion_rule = "1:61,2:61,3:61,4:61,16:61,24:61";
+    }
 #endif
     if (current_page_classification ==
             OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS ||
@@ -290,10 +304,11 @@ size_t OmniboxFieldTrial::GetProviderMaxMatches(
       size_t v;
       base::StringToSizeT(kv_pair.second, &v);
 
-      if (kv_pair.first == "*")
+      if (kv_pair.first == "*") {
         default_max_matches_per_provider = v;
-      else if (k == provider)
+      } else if (k == provider) {
         return v;
+      }
     }
   }
 
@@ -344,8 +359,9 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
     HUPScoringParams* scoring_params) {
   VariationParams params;
   if (!variations::GetVariationParams(kBundledExperimentFieldTrialName,
-                                      &params))
+                                      &params)) {
     return;
+  }
 
   InitializeScoreBuckets(params, kHUPNewScoringTypedCountRelevanceCapParam,
                          kHUPNewScoringTypedCountHalfLifeTimeParam,
@@ -362,8 +378,9 @@ void OmniboxFieldTrial::GetExperimentalHUPScoringParams(
 float OmniboxFieldTrial::HQPBookmarkValue() {
   std::string bookmark_value_str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, kHQPBookmarkValueRule);
-  if (bookmark_value_str.empty())
+  if (bookmark_value_str.empty()) {
     return 10;
+  }
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
@@ -411,8 +428,9 @@ float OmniboxFieldTrial::HQPExperimentalTopicalityThreshold() {
 
   double topicality_threshold;
   if (topicality_threshold_str.empty() ||
-      !base::StringToDouble(topicality_threshold_str, &topicality_threshold))
+      !base::StringToDouble(topicality_threshold_str, &topicality_threshold)) {
     return 0.5f;
+  }
 
   return static_cast<float>(topicality_threshold);
 }
@@ -445,8 +463,9 @@ size_t OmniboxFieldTrial::HQPMaxVisitsToScore() {
   static_assert(
       URLIndexPrivateData::kMaxVisitsToStoreInCache >= kDefaultMaxVisitsToScore,
       "HQP should store at least as many visits as it expects to score");
-  if (max_visits_str.empty())
+  if (max_visits_str.empty()) {
     return kDefaultMaxVisitsToScore;
+  }
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
@@ -458,8 +477,9 @@ size_t OmniboxFieldTrial::HQPMaxVisitsToScore() {
 float OmniboxFieldTrial::HQPTypedValue() {
   std::string typed_value_str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, kHQPTypedValueRule);
-  if (typed_value_str.empty())
+  if (typed_value_str.empty()) {
     return 1.5;
+  }
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
@@ -472,16 +492,18 @@ OmniboxFieldTrial::NumMatchesScores OmniboxFieldTrial::HQPNumMatchesScores() {
   std::string str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName, kHQPNumMatchesScoresRule);
   static constexpr char kDefaultNumMatchesScores[] = "1:3,2:2.5,3:2,4:1.5";
-  if (str.empty())
+  if (str.empty()) {
     str = kDefaultNumMatchesScores;
+  }
   // The parameter is a comma-separated list of (number, value) pairs such as
   // listed above.
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need to handle
   // errors smartly.
   base::StringPairs kv_pairs;
-  if (!base::SplitStringIntoKeyValuePairs(str, ':', ',', &kv_pairs))
+  if (!base::SplitStringIntoKeyValuePairs(str, ':', ',', &kv_pairs)) {
     return NumMatchesScores{};
+  }
   NumMatchesScores num_matches_scores(kv_pairs.size());
   for (size_t i = 0; i < kv_pairs.size(); ++i) {
     base::StringToSizeT(kv_pairs[i].first, &num_matches_scores[i].first);
@@ -500,8 +522,9 @@ size_t OmniboxFieldTrial::HQPNumTitleWordsToAllow() {
   if (!base::StringToSizeT(
           variations::GetVariationParamValue(kBundledExperimentFieldTrialName,
                                              kHQPNumTitleWordsRule),
-          &num_title_words))
+          &num_title_words)) {
     return 20;
+  }
   return num_title_words;
 }
 
@@ -521,8 +544,9 @@ int OmniboxFieldTrial::KeywordScoreForSufficientlyCompleteMatch() {
   std::string value_str = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
       kKeywordScoreForSufficientlyCompleteMatchRule);
-  if (value_str.empty())
+  if (value_str.empty()) {
     return -1;
+  }
   // This is a best-effort conversion; we trust the hand-crafted parameters
   // downloaded from the server to be perfect.  There's no need for handle
   // errors smartly.
@@ -625,6 +649,12 @@ bool OmniboxFieldTrial::IsOnDeviceTailSuggestEnabled() {
          IsOnDeviceHeadSuggestEnabledForAnyMode();
 }
 
+bool OmniboxFieldTrial::ShouldEncodeLeadingSpaceForOnDeviceTailSuggest() {
+  return base::GetFieldTrialParamByFeatureAsBool(omnibox::kOnDeviceTailModel,
+                                                 "ShouldEncodeLeadingSpace",
+                                                 /*default_value=*/false);
+}
+
 std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
     bool is_incognito) {
   const base::Feature* feature =
@@ -633,8 +663,9 @@ std::string OmniboxFieldTrial::OnDeviceHeadModelLocaleConstraint(
   std::string constraint = base::GetFieldTrialParamValueByFeature(
       *feature, kOnDeviceHeadModelLocaleConstraint);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-  if (constraint.empty())
+  if (constraint.empty()) {
     constraint = "500000";
+  }
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
   return constraint;
 }
@@ -744,17 +775,17 @@ const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultExcludeKeywordInputs(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultExcludeKeywordInputs",
-        false);
+        true);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultAfterTransfer(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultAfterTransfer",
-        false);
+        true);
 const base::FeatureParam<int>
     kAutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreserveDefaultForSyncUpdatesMinInputLength",
-        -1);
+        3);
 const base::FeatureParam<bool>
     kAutocompleteStabilityPreserveDefaultForAsyncUpdates(
         &omnibox::kPreserveDefault,
@@ -764,15 +795,7 @@ const base::FeatureParam<bool>
     kAutocompleteStabilityPreventDefaultPreviousMatches(
         &omnibox::kPreserveDefault,
         "AutocompleteStabilityPreventDefaultPreviousMatches",
-        false);
-const base::FeatureParam<bool> kAutocompleteStabilityDontCopyDoneProviders(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityDontCopyDoneProviders",
-    true);
-const base::FeatureParam<bool> kAutocompleteStabilityAsyncProvidersFirst(
-    &omnibox::kAutocompleteStability,
-    "AutocompleteStabilityAsyncProvidersFirst",
-    true);
+        true);
 const base::FeatureParam<bool>
     kAutocompleteStabilityUpdateResultDebounceFromLastRun(
         &omnibox::kUpdateResultDebounce,
@@ -847,10 +870,11 @@ size_t ShortBookmarkSuggestionsByTotalInputLengthThreshold() {
         kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
       return std::min(kRichAutocompletionAutocompleteTitlesMinChar.Get(),
                       kRichAutocompletionAutocompleteNonPrefixMinChar.Get());
-    } else if (kRichAutocompletionAutocompleteTitles.Get())
+    } else if (kRichAutocompletionAutocompleteTitles.Get()) {
       return kRichAutocompletionAutocompleteTitlesMinChar.Get();
-    else if (kRichAutocompletionAutocompleteNonPrefixAll.Get())
+    } else if (kRichAutocompletionAutocompleteNonPrefixAll.Get()) {
       return kRichAutocompletionAutocompleteNonPrefixMinChar.Get();
+    }
   }
 
   return kShortBookmarkSuggestionsByTotalInputLengthThreshold.Get();
@@ -880,6 +904,20 @@ const base::FeatureParam<std::string> kBookmarkPathsCounterfactual(
 bool IsShortcutExpandingEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kShortcutExpanding);
 }
+
+// Shortcut boost
+const base::FeatureParam<int> kShortcutBoostSearchScore(
+    &omnibox::kShortcutBoost,
+    "ShortcutBoostSearchScore",
+    0);
+const base::FeatureParam<int> kShortcutBoostUrlScore(&omnibox::kShortcutBoost,
+                                                     "ShortcutBoostUrlScore",
+                                                     0);
+
+const base::FeatureParam<bool> kShortcutBoostCounterfactual(
+    &omnibox::kShortcutBoost,
+    "ShortcutBoostCounterfactual",
+    false);
 
 // Rich autocompletion.
 
@@ -1018,25 +1056,53 @@ const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring(
     "DomainSuggestionsAlternativeScoring",
     false);
 
-bool IsLogUrlScoringSignalsEnabled() {
-  static bool enabled =
+// ---------------------------------------------------------
+// ML Relevance Scoring ->
+
+MLConfig::MLConfig() {
+  log_url_scoring_signals =
       base::FeatureList::IsEnabled(omnibox::kLogUrlScoringSignals);
-  return enabled;
+  enable_scoring_signals_annotators = base::GetFieldTrialParamByFeatureAsBool(
+      omnibox::kLogUrlScoringSignals, "enable_scoring_signals_annotators",
+      /*default_value=*/false);
+  ml_relevance_scoring =
+      base::FeatureList::IsEnabled(omnibox::kMlRelevanceScoring);
+  url_scoring_model = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
+}
+
+ScopedMLConfigForTesting::ScopedMLConfigForTesting()
+    : original_config_(std::make_unique<MLConfig>(GetMLConfig())) {}
+
+ScopedMLConfigForTesting::~ScopedMLConfigForTesting() {
+  GetMLConfigInternal() = *original_config_;
+}
+
+MLConfig& ScopedMLConfigForTesting::GetMLConfig() {
+  return GetMLConfigInternal();
+}
+
+const MLConfig& GetMLConfig() {
+  return GetMLConfigInternal();
+}
+
+bool IsLogUrlScoringSignalsEnabled() {
+  return GetMLConfig().log_url_scoring_signals;
+}
+
+bool AreScoringSignalsAnnotatorsEnabled() {
+  return GetMLConfig().enable_scoring_signals_annotators;
 }
 
 bool IsMlRelevanceScoringEnabled() {
-  // Check both `omnibox::kMlRelevanceScoring` and
-  // `omnibox::kUrlScoringModel` feature flags.
-  static bool enabled =
-      base::FeatureList::IsEnabled(omnibox::kMlRelevanceScoring) &&
-      IsUrlScoringModelEnabled();
-  return enabled;
+  return GetMLConfig().ml_relevance_scoring && IsUrlScoringModelEnabled();
 }
 
 bool IsUrlScoringModelEnabled() {
-  static bool enabled = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
-  return enabled;
+  return GetMLConfig().url_scoring_model;
 }
+
+// <- ML Relevance Scoring
+// ---------------------------------------------------------
 
 }  // namespace OmniboxFieldTrial
 
@@ -1044,8 +1110,9 @@ std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {
   VariationParams params;
-  if (!base::GetFieldTrialParams(kBundledExperimentFieldTrialName, &params))
+  if (!base::GetFieldTrialParams(kBundledExperimentFieldTrialName, &params)) {
     return std::string();
+  }
 
   return GetValueForRuleInContextFromVariationParams(params, rule,
                                                      page_classification);
@@ -1056,8 +1123,9 @@ std::string OmniboxFieldTrial::internal::GetValueForRuleInContextByFeature(
     const std::string& rule,
     metrics::OmniboxEventProto::PageClassification page_classification) {
   VariationParams params;
-  if (!base::GetFieldTrialParamsByFeature(feature, &params))
+  if (!base::GetFieldTrialParamsByFeature(feature, &params)) {
     return std::string();
+  }
 
   return GetValueForRuleInContextFromVariationParams(params, rule,
                                                      page_classification);

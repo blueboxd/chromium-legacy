@@ -5,7 +5,28 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_CONSTANTS_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_CONSTANTS_H_
 
+#include <stddef.h>
+
 namespace arc::input_overlay {
+
+// System version for AlphaV2.
+constexpr char kSystemVersionAlphaV2[] = "0.2";
+
+// The coordinates number, including Axis x and y.
+constexpr int kAxisSize = 2;
+
+// Total key size for ActionMoveKey.
+constexpr size_t kActionMoveKeysSize = 4;
+
+// Directions from up, left, down, right.
+constexpr int kDirection[kActionMoveKeysSize][kAxisSize] = {{0, -1},
+                                                            {-1, 0},
+                                                            {0, 1},
+                                                            {1, 0}};
+
+// From ActionTap AlphaV2 design. There is the label offset to touch point in
+// the edit mode.
+constexpr int kOffsetToTouchPoint = -1;  // 2 - 3(kDotOutsideStrokeThickness)
 
 // Display mode for display overlay.
 enum class DisplayMode {
@@ -65,6 +86,20 @@ enum class PositionType {
   kDefault = 0,
   // Dependent position type which x or y value depend on the other one.
   kDependent = 1,
+};
+
+// The label position related to touch center for ActionTap.
+enum class TapLabelPosition {
+  // Top-left of touch point. Starts to use in AlphaV2.
+  kTopLeft = 0,
+  // Top-right of touch point. Starts to use in AlphaV2.
+  kTopRight = 1,
+  // Bottom-left of touch point. Starts to use in Alpha.
+  kBottomLeft = 2,
+  // Bottom-right of touch point. Starts to use in Alpha.
+  kBottomRight = 3,
+  // Undefined label position. Starts to use in AlphaV2.
+  kNone = 4,
 };
 
 }  // namespace arc::input_overlay

@@ -47,6 +47,9 @@ enum class InstallErrors {
 
   // An install executable was signaled or timed out.
   kExecutableWaitForExitFailed = -9,
+
+  // Pipes for stdout/stderr could not be created.
+  kExecutablePipeFailed = -10,
 };
 
 // Choose which type of archive to install from. Possible types of archives are
@@ -60,6 +63,7 @@ int InstallFromArchive(
     const base::Version& pv,
     const std::string& arguments,
     const absl::optional<base::FilePath>& installer_data_file,
+    bool usage_stats_enabled,
     const base::TimeDelta& timeout);
 
 }  // namespace updater

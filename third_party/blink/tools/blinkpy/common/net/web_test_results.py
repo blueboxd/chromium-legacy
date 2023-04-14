@@ -87,14 +87,15 @@ class WebTestResult:
     def is_missing_audio(self):
         return self._result_dict.get('is_missing_audio', False)
 
+    @memoized
     def actual_results(self):
-        return self._result_dict['actual']
+        return self._result_dict['actual'].split()
 
     def expected_results(self):
         return self._result_dict['expected']
 
     def last_retry_result(self):
-        return self.actual_results().split()[-1]
+        return self.actual_results()[-1]
 
     def has_non_reftest_mismatch(self):
         """Returns true if a test without reference failed due to mismatch.
@@ -102,7 +103,7 @@ class WebTestResult:
         This happens when the actual output of a non-reftest does not match the
         baseline, including an implicit all-PASS testharness baseline (i.e. a
         previously all-PASS testharness test starts to fail)."""
-        actual_results = self.actual_results().split(' ')
+        actual_results = self.actual_results()
         artifact_names = self._result_dict.get('artifacts', {}).keys()
         return ('FAIL' in actual_results and any(
             artifact_name.startswith('actual')
@@ -113,6 +114,10 @@ class WebTestResult:
     def is_missing_baseline(self):
         return (self.is_missing_image() or self.is_missing_text()
                 or self.is_missing_audio())
+
+    @property
+    def attempts(self) -> int:
+        return len(self.actual_results())
 
 
 def _flatten_test_results_trie(trie, sep: str = '/'):
@@ -155,10 +160,13 @@ class WebTestResults:
         return cls(results, **kwargs)
 
     @classmethod
-    def from_rdb_responses(cls, test_results_by_name, artifacts_by_name,
+    def from_rdb_responses(cls,
+                           test_results_by_name,
+                           artifacts_by_name=None,
                            **kwargs):
         """Creates a WebTestResults object from raw ResultDB RPC response data.
         """
+        artifacts_by_name = artifacts_by_name or collections.defaultdict(list)
         results = []
         for test_name, raw_results in test_results_by_name.items():
             actual = ' '.join(
@@ -200,6 +208,9 @@ class WebTestResults:
         self.interrupted = interrupted
         self.builder_name = builder_name
 
+    def __iter__(self):
+        yield from self._results_by_name.values()
+
     def step_name(self):
         return self._step_name
 
@@ -214,10 +225,6 @@ class WebTestResults:
 
     def result_for_test(self, test):
         return self._results_by_name.get(test)
-
-    def for_each_test(self, handler):
-        for result in self._results_by_name.values():
-            handler(result)
 
     def didnt_run_as_expected_results(self):
         return [

@@ -73,31 +73,29 @@ void ContextImpl::SetCastStreamingEnabled() {
 #endif
 
 void ContextImpl::CreateFrame(
-    fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
+    fidl::InterfaceRequest<fuchsia::web::Frame> frame_request) {
   TRACE_EVENT(kWebEngineFidlCategory, "fuchsia.web/Context.CreateFrame",
               perfetto::Flow::FromPointer(this));
 
-  CreateFrameWithParams(fuchsia::web::CreateFrameParams(), std::move(frame));
+  CreateFrameWithParams(fuchsia::web::CreateFrameParams(),
+                        std::move(frame_request));
 }
 
 void ContextImpl::CreateFrameWithParams(
     fuchsia::web::CreateFrameParams params,
-    fidl::InterfaceRequest<fuchsia::web::Frame> frame) {
+    fidl::InterfaceRequest<fuchsia::web::Frame> frame_request) {
   if (!params.IsEmpty()) {
     TRACE_EVENT(kWebEngineFidlCategory,
                 "fuchsia.web/Context.CreateFrameWithParams",
                 perfetto::Flow::FromPointer(this));
   }
 
-  // FrameImpl clones the params used to create it when creating popup Frames.
-  // Ensure the params can be cloned to avoid problems when handling popups.
-  // TODO(fxbug.dev/65750): Consider removing this restriction if clients
-  // become responsible for providing parameters for [each] popup.
+  // Ensure the params can be cloned as required by CreateFrameForWebContents().
   fuchsia::web::CreateFrameParams cloned_params;
   zx_status_t status = params.Clone(&cloned_params);
   if (status != ZX_OK) {
     ZX_LOG(ERROR, status) << "CreateFrameParams Clone() failed";
-    frame.Close(ZX_ERR_INVALID_ARGS);
+    frame_request.Close(ZX_ERR_INVALID_ARGS);
     return;
   }
 
@@ -108,7 +106,7 @@ void ContextImpl::CreateFrameWithParams(
   auto web_contents = content::WebContents::Create(create_params);
 
   CreateFrameForWebContents(std::move(web_contents), std::move(params),
-                            std::move(frame));
+                            std::move(frame_request));
 }
 
 FrameImpl* ContextImpl::CreateFrameForWebContents(
@@ -128,8 +126,7 @@ FrameImpl* ContextImpl::CreateFrameForWebContents(
     return nullptr;
   }
 
-  // |params.debug_name| is not currently supported.
-  // TODO(crbug.com/1051533): Determine whether it is still needed.
+  // |params.debug_name| is handled by FrameImpl.
 
   // Verify the explicit sites filter error page content. If the parameter is
   // present, it will be provided to the FrameImpl after it is created below.
@@ -141,18 +138,6 @@ FrameImpl* ContextImpl::CreateFrameForWebContents(
       frame_request.Close(ZX_ERR_INVALID_ARGS);
       return nullptr;
     }
-  }
-
-  // FrameImpl clones the params used to create it when creating popup Frames.
-  // Ensure the params can be cloned to avoid problems when creating popups.
-  // TODO(http://fxbug.dev/65750): Remove this limitation once a soft migration
-  // to a new solution has been completed.
-  fuchsia::web::CreateFrameParams cloned_params;
-  zx_status_t status = params.Clone(&cloned_params);
-  if (status != ZX_OK) {
-    ZX_LOG(ERROR, status) << "CreateFrameParams clone failed";
-    frame_request.Close(ZX_ERR_INVALID_ARGS);
-    return nullptr;
   }
 
   // Wrap the WebContents into a FrameImpl owned by |this|.

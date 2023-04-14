@@ -146,13 +146,6 @@ void WebAppRegistrar::NotifyWebAppsWillBeUpdatedFromSync(
     observer.OnWebAppsWillBeUpdatedFromSync(new_apps_state);
 }
 
-void WebAppRegistrar::NotifyWebAppLocallyInstalledStateChanged(
-    const AppId& app_id,
-    bool is_locally_installed) {
-  for (AppRegistrarObserver& observer : observers_)
-    observer.OnWebAppLocallyInstalledStateChanged(app_id, is_locally_installed);
-}
-
 void WebAppRegistrar::NotifyWebAppDisabledStateChanged(const AppId& app_id,
                                                        bool is_disabled) {
   for (AppRegistrarObserver& observer : observers_)
@@ -697,8 +690,7 @@ bool WebAppRegistrar::IsActivelyInstalled(const AppId& app_id) const {
 
 bool WebAppRegistrar::IsIsolated(const AppId& app_id) const {
   auto* web_app = GetAppById(app_id);
-  return web_app && (web_app->IsStorageIsolated() ||
-                     web_app->isolation_data().has_value());
+  return web_app && web_app->isolation_data().has_value();
 }
 
 bool WebAppRegistrar::IsInstalledByDefaultManagement(

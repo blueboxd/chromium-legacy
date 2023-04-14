@@ -43,6 +43,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/query_parser/snippet.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/protocol/sync_enums.pb.h"
 #include "components/sync_device_info/device_info.h"
@@ -248,7 +249,7 @@ base::Value::Dict HistoryEntryToValue(
         SupervisedUserServiceFactory::GetForProfile(profile);
   }
   if (supervised_user_service) {
-    const SupervisedUserURLFilter* url_filter =
+    SupervisedUserURLFilter* url_filter =
         supervised_user_service->GetURLFilter();
     int filtering_behavior =
         url_filter->GetFilteringBehaviorForURL(entry.url.GetWithEmptyPath());

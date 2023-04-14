@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/strings/string_piece.h"
-#include "chrome/browser/supervised_user/kids_chrome_management/kidschromemanagement_messages.pb.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
 #include "components/supervised_user/core/common/pref_names.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -71,7 +71,7 @@ TEST_F(KidsProfileManagerTest, SetChildAccountStatusOnUnsupervisedProfile) {
 
   EXPECT_TRUE(under_test.IsChildAccountStatusKnown());
   EXPECT_EQ(pref_service()->GetString(prefs::kSupervisedUserId),
-            supervised_users::kChildAccountSUID);
+            supervised_user::kChildAccountSUID);
 }
 
 // For a supervised profile, checks if unsetting it as child account clears

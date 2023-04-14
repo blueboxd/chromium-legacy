@@ -270,6 +270,8 @@ source_set("weblayer_lib_base") {
     "browser/password_manager_driver_factory.h",
     "browser/permissions/geolocation_permission_context_delegate.cc",
     "browser/permissions/geolocation_permission_context_delegate.h",
+    "browser/permissions/origin_keyed_permission_action_service_factory.cc",
+    "browser/permissions/origin_keyed_permission_action_service_factory.h",
     "browser/permissions/permission_decision_auto_blocker_factory.cc",
     "browser/permissions/permission_decision_auto_blocker_factory.h",
     "browser/permissions/permission_manager_factory.cc",
@@ -396,7 +398,6 @@ source_set("weblayer_lib_base") {
     "//base:base_static",
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
-    "//cc",
     "//components/autofill/content/browser",
     "//components/autofill/content/renderer",
     "//components/autofill/core/browser",
@@ -420,6 +421,7 @@ source_set("weblayer_lib_base") {
     "//components/crash/content/browser",
     "//components/crash/core/app",
     "//components/crash/core/common",
+    "//components/digital_asset_links",
     "//components/download/content/factory",
     "//components/download/content/public",
     "//components/download/public/background_service:public",
@@ -707,6 +709,7 @@ source_set("weblayer_lib_base") {
       "common/crash_reporter/crash_reporter_client.h",
     ]
     deps += [
+      "//cc/slim",
       "//components/android_autofill/browser",
       "//components/android_autofill/browser:android",
       "//components/android_system_error_page",

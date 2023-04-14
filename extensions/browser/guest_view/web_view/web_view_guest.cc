@@ -53,6 +53,7 @@
 #include "extensions/browser/extension_util.h"
 #include "extensions/browser/extension_web_contents_observer.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/guest_view/guest_view_feature_util.h"
 #include "extensions/browser/guest_view/web_view/web_view_constants.h"
 #include "extensions/browser/guest_view/web_view/web_view_content_script_manager.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
@@ -307,8 +308,10 @@ int WebViewGuest::GetOrGenerateRulesRegistryID(int embedder_process_id,
 void WebViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
                                      const base::Value::Dict& create_params,
                                      WebContentsCreatedCallback callback) {
+  RenderFrameHost* owner_render_frame_host =
+      owner_web_contents()->GetPrimaryMainFrame();
   RenderProcessHost* owner_render_process_host =
-      owner_web_contents()->GetPrimaryMainFrame()->GetProcess();
+      owner_render_frame_host->GetProcess();
   DCHECK_EQ(browser_context(), owner_render_process_host->GetBrowserContext());
 
   std::string storage_partition_id;
@@ -324,28 +327,11 @@ void WebViewGuest::CreateWebContents(std::unique_ptr<GuestViewBase> owned_this,
     std::move(callback).Run(std::move(owned_this), nullptr);
     return;
   }
-  std::string partition_domain = GetOwnerSiteURL().host();
-  auto partition_config = content::StoragePartitionConfig::Create(
-      browser_context(), partition_domain, storage_partition_id,
-      !persist_storage /* in_memory */);
 
-  if (GetOwnerSiteURL().SchemeIs(extensions::kExtensionScheme)) {
-    auto owner_config =
-        extensions::util::GetStoragePartitionConfigForExtensionId(
-            GetOwnerSiteURL().host(), browser_context());
-    if (browser_context()->IsOffTheRecord()) {
-      DCHECK(owner_config.in_memory());
-    }
-    if (!owner_config.is_default()) {
-      partition_config.set_fallback_to_partition_domain_for_blob_urls(
-          owner_config.in_memory()
-              ? content::StoragePartitionConfig::FallbackMode::
-                    kFallbackPartitionInMemory
-              : content::StoragePartitionConfig::FallbackMode::
-                    kFallbackPartitionOnDisk);
-      DCHECK(owner_config == partition_config.GetFallbackForBlobUrls().value());
-    }
-  }
+  content::StoragePartitionConfig partition_config =
+      ExtensionsBrowserClient::Get()->GetWebViewStoragePartitionConfig(
+          browser_context(), owner_render_frame_host->GetSiteInstance(),
+          storage_partition_id, /*in_memory=*/!persist_storage);
 
   // If we already have a webview tag in the same app using the same storage
   // partition, we should use the same SiteInstance so the existing tag and
@@ -404,8 +390,7 @@ void WebViewGuest::DidInitialize(const base::Value::Dict& create_params) {
 
 void WebViewGuest::MaybeRecreateGuestContents(
     content::WebContents* embedder_web_contents) {
-  if (!base::FeatureList::IsEnabled(
-          extensions_features::kWebviewTagMPArchBehavior)) {
+  if (!AreWebviewMPArchBehaviorsEnabled(browser_context())) {
     return;
   }
 
@@ -416,13 +401,15 @@ void WebViewGuest::MaybeRecreateGuestContents(
   new_web_contents_create_params.renderer_initiated_creation = false;
 
   if (!new_web_contents_create_params.opener_suppressed) {
-    // TODO(crbug.com/1261928): Add further information to this message,
-    // including temporary opt-outs.
     owner_web_contents()->GetPrimaryMainFrame()->AddMessageToConsole(
         blink::mojom::ConsoleMessageLevel::kWarning,
         "A <webview> is being attached to a window other than the window of "
         "its opener <webview>. The window reference the opener <webview> "
-        "obtained from window.open will be invalidated.");
+        "obtained from window.open will be invalidated. To debug whether this "
+        "is causing breakage, see "
+        "chrome://flags/#enable-webview-tag-mparch-behavior. The "
+        "ChromeAppsWebViewPermissiveBehaviorAllowed enterprise policy may be "
+        "used to temporarily revert this behavior.");
   }
 
   ClearOwnedGuestContents();
@@ -1107,8 +1094,7 @@ void WebViewGuest::WillAttachToEmbedder() {
 }
 
 bool WebViewGuest::RequiresSslInterstitials() const {
-  return !base::FeatureList::IsEnabled(
-      extensions_features::kWebviewTagMPArchBehavior);
+  return !AreWebviewMPArchBehaviorsEnabled(browser_context());
 }
 
 content::JavaScriptDialogManager* WebViewGuest::GetJavaScriptDialogManager(

@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/login/helper.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,7 +33,7 @@ CertificateManagerDialog::CertificateManagerDialog(Profile* profile,
                      std::u16string(),
                      GURL(chrome::kChromeUICertificateManagerDialogURL)) {}
 
-CertificateManagerDialog::~CertificateManagerDialog() {}
+CertificateManagerDialog::~CertificateManagerDialog() = default;
 
 std::u16string CertificateManagerDialog::GetDialogTitle() const {
   return l10n_util::GetStringUTF16(IDS_CERTIFICATE_MANAGER_TITLE);

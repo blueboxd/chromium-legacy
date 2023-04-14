@@ -385,8 +385,8 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(
       }
     }
 
-    NOTREACHED() << "|index| should be less than the unignored child count.";
-    return nullptr;
+    NOTREACHED_NORETURN()
+        << "|index| should be less than the unignored child count.";
   }
 
   // Our widget might have child widgets. If this is a root view, include those
@@ -424,11 +424,9 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::ChildAtIndex(
     }
   }
 
-  if (index < child_widgets_result.child_widgets.size())
-    return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
-
-  NOTREACHED() << "|index| should be less than the unignored child count.";
-  return nullptr;
+  CHECK_LT(index, child_widgets_result.child_widgets.size())
+      << "|index| should be less than the unignored child count.";
+  return child_widgets[index]->GetRootView()->GetNativeViewAccessible();
 }
 
 bool ViewAXPlatformNodeDelegate::HasModalDialog() const {
@@ -716,13 +714,6 @@ const ui::AXUniqueId& ViewAXPlatformNodeDelegate::GetUniqueId() const {
   return ViewAccessibility::GetUniqueId();
 }
 
-absl::optional<bool>
-ViewAXPlatformNodeDelegate::GetTableHasColumnOrRowHeaderNode() const {
-  if (!GetAncestorTableView())
-    return false;
-  return !GetAncestorTableView()->visible_columns().empty();
-}
-
 std::vector<int32_t> ViewAXPlatformNodeDelegate::GetColHeaderNodeIds() const {
   std::vector<int32_t> col_header_ids;
   if (!virtual_children().empty()) {
@@ -848,6 +839,14 @@ void ViewAXPlatformNodeDelegate::GetViewsInGroupForSet(
             return view_accessibility.IsIgnored();
           }),
       views_in_group->end());
+}
+
+bool ViewAXPlatformNodeDelegate::TableHasColumnOrRowHeaderNodeForTesting()
+    const {
+  if (!GetAncestorTableView()) {
+    return false;
+  }
+  return !GetAncestorTableView()->visible_columns().empty();
 }
 
 ViewAXPlatformNodeDelegate::ChildWidgetsResult

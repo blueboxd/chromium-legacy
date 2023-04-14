@@ -16,7 +16,6 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut.h"
 #include "chrome/browser/web_applications/proto/web_app_os_integration_state.pb.h"
@@ -27,6 +26,10 @@
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/time.h"
 #include "ui/gfx/image/image_skia_rep_default.h"
+
+#if BUILDFLAG(IS_MAC)
+#include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#endif
 
 namespace web_app {
 namespace {
@@ -246,7 +249,23 @@ void ShortcutSubManager::Execute(
   }
 #endif
 
-  // TODO: Add file handler change detection.
+#if BUILDFLAG(IS_MAC)
+  // Protocol handler update detection. Shortcuts need to be updated in this
+  // case on Mac because the shortcut itself includes the protocol
+  // handling metadata.
+  if (desired_state.has_file_handling() != current_state.has_file_handling()) {
+    std::move(do_update).Run();
+    return;
+  }
+  if (desired_state.has_file_handling() && current_state.has_file_handling()) {
+    desired = desired_state.file_handling().SerializeAsString();
+    current = current_state.file_handling().SerializeAsString();
+    if (desired != current) {
+      std::move(do_update).Run();
+      return;
+    }
+  }
+#endif
 
   // Fifth, no update is required.
   std::move(callback_for_no_update).Run();

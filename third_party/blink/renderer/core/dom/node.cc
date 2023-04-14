@@ -166,9 +166,11 @@ ScrollCustomizationCallbacks& GetScrollCustomizationCallbacks() {
 using ReattachHookScope = LayoutShiftTracker::ReattachHookScope;
 
 struct SameSizeAsNode : EventTarget {
-  uint32_t node_flags_;
-  Member<void*> willbe_member_[4];
+  subtle::UncompressedMember<int> first_uncompressed;
+  subtle::UncompressedMember<int> second_uncompressed;
+  Member<void*> willbe_member_[2];
   Member<NodeData> member_;
+  uint32_t node_flags_;
   // Increasing size of Member increases size of Node.
   static_assert(kBlinkMemberGCHasDebugChecks ||
                     sizeof(Member<NodeData>) <= sizeof(void*),
@@ -315,12 +317,12 @@ void Node::DumpStatistics() {
 #endif
 
 Node::Node(TreeScope* tree_scope, ConstructionType type)
-    : node_flags_(type),
-      parent_or_shadow_host_node_(nullptr),
+    : parent_or_shadow_host_node_(nullptr),
       tree_scope_(tree_scope),
       previous_(nullptr),
       next_(nullptr),
-      data_(&NodeData::SharedEmptyData()) {
+      data_(&NodeData::SharedEmptyData()),
+      node_flags_(type) {
   DCHECK(tree_scope_ || type == kCreateDocument || type == kCreateShadowRoot);
 #if DUMP_NODE_STATISTICS
   LiveNodeSet().insert(this);
@@ -1040,11 +1042,6 @@ void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 
-  if (auto* element = DynamicTo<Element>(this)) {
-    ViewTransitionSupplement::From(GetDocument())
-        ->UpdateViewTransitionNames(*element, computed_style.get());
-  }
-
   // Already pointing to a non empty NodeData so just set the pointer
   // to the new LayoutObject.
   if (!data_->IsSharedEmptyData()) {
@@ -1372,10 +1369,12 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
 void Node::ClearNeedsStyleRecalc() {
   node_flags_ &= ~kStyleChangeMask;
   ClearFlag(kForceReattachLayoutTree);
-
-  auto* element = DynamicTo<Element>(this);
-  if (element && HasRareData())
+  if (!HasRareData()) {
+    return;
+  }
+  if (auto* element = DynamicTo<Element>(this)) {
     element->SetAnimationStyleChange(false);
+  }
 }
 
 bool Node::InActiveDocument() const {
@@ -2225,7 +2224,9 @@ Node::InsertionNotificationRequest Node::InsertedInto(
          IsContainerNode());
   if (insertion_point.isConnected()) {
     SetFlag(kIsConnectedFlag);
+#if DCHECK_IS_ON()
     insertion_point.GetDocument().IncrementNodeCount();
+#endif
   }
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
@@ -2244,7 +2245,9 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     ClearNeedsStyleInvalidation();
     ClearChildNeedsStyleInvalidation();
     ClearFlag(kIsConnectedFlag);
+#if DCHECK_IS_ON()
     insertion_point.GetDocument().DecrementNodeCount();
+#endif
   }
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);

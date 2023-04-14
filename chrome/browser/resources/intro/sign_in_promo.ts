@@ -4,9 +4,9 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
+import 'chrome://resources/cr_elements/cr_icons.css.js';
 import 'chrome://resources/cr_elements/icons.html.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import './icons.html.js';
 import './strings.m.js';
 
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
@@ -32,7 +32,7 @@ export interface SignInPromoElement {
 export interface BenefitCard {
   title: string;
   description: string;
-  iconName: string;
+  iconId: string;
 }
 
 const SignInPromoElementBase = WebUiListenerMixin(I18nMixin(PolymerElement));
@@ -48,17 +48,17 @@ export class SignInPromoElement extends SignInPromoElementBase {
       {
         title: this.i18n('devicesCardTitle'),
         description: this.i18n('devicesCardDescription'),
-        iconName: 'intro:devices',
+        iconId: 'devices',
       },
       {
         title: this.i18n('securityCardTitle'),
         description: this.i18n('securityCardDescription'),
-        iconName: 'cr:security',
+        iconId: 'security',
       },
       {
         title: this.i18n('backupCardTitle'),
         description: this.i18n('backupCardDescription'),
-        iconName: 'intro:cloud-upload',
+        iconId: 'cloud-upload',
       },
     ];
   }
@@ -85,6 +85,11 @@ export class SignInPromoElement extends SignInPromoElementBase {
         type: Boolean,
         value: loadTimeData.getBoolean('isDeviceManaged'),
       },
+
+      anyButtonClicked_: {
+        type: Boolean,
+        value: false,
+      },
     };
   }
 
@@ -94,6 +99,7 @@ export class SignInPromoElement extends SignInPromoElementBase {
   private divisionLineResizeObserver_: ResizeObserver|null = null;
   private managedDeviceDisclaimer_: string;
   private isDeviceManaged_: boolean;
+  private anyButtonClicked_: boolean;
 
   override connectedCallback() {
     super.connectedCallback();
@@ -106,6 +112,8 @@ export class SignInPromoElement extends SignInPromoElementBase {
           'managed-device-disclaimer-updated',
           this.handleManagedDeviceDisclaimerUpdate_.bind(this));
     }
+
+    this.addWebUiListener('reset-intro-buttons', this.resetButtons_.bind(this));
   }
 
   override disconnectedCallback() {
@@ -133,6 +141,10 @@ export class SignInPromoElement extends SignInPromoElementBase {
     this.divisionLineResizeObserver_.observe(safeZone);
   }
 
+  private resetButtons_() {
+    this.anyButtonClicked_ = false;
+  }
+
   private handleManagedDeviceDisclaimerUpdate_(disclaimer: string) {
     this.managedDeviceDisclaimer_ = disclaimer;
     this.$.managedDeviceDisclaimer.classList.remove('temporarily-hidden');
@@ -141,10 +153,12 @@ export class SignInPromoElement extends SignInPromoElementBase {
 
   /**
    * Disable buttons if the device is managed until the management
-   * disclaimer is loaded.
+   * disclaimer is loaded or if a button was clicked.
    */
   private areButtonsDisabled_() {
-    return this.isDeviceManaged_ && this.managedDeviceDisclaimer_.length === 0;
+    return (this.isDeviceManaged_ &&
+            this.managedDeviceDisclaimer_.length === 0) ||
+        this.anyButtonClicked_;
   }
 
   // At the start of the signInPromo animation, the product logo should be at
@@ -171,10 +185,12 @@ export class SignInPromoElement extends SignInPromoElementBase {
   }
 
   private onContinueWithAccountClick_() {
+    this.anyButtonClicked_ = true;
     this.browserProxy_.continueWithAccount();
   }
 
   private onContinueWithoutAccountClick_() {
+    this.anyButtonClicked_ = true;
     this.browserProxy_.continueWithoutAccount();
   }
 

@@ -289,7 +289,14 @@ tr {
 
 td, th {
     display: table-cell;
-    vertical-align: inherit
+    vertical-align: inherit;
+}
+
+/* When the td/th are inside a table (the normal case), the padding is taken
+   care of by HTMLTableCellElement::AdditionalPresentationAttributeStyle(). */
+td:not(table td),
+th:not(table th) {
+  padding: 1px;
 }
 
 th {
@@ -1295,12 +1302,6 @@ a:-webkit-any-link:focus-visible {
   outline-offset: 1px;
 }
 
-/* ensure that selected links are underlined.*/
-a:-webkit-any-link::target-text {
-    text-decoration:underline;
-    background-color:#E9D2FD;
-}
-
 /* HTML5 ruby elements */
 
 ruby, rt {
@@ -1407,6 +1408,7 @@ dialog:modal {
     /* https://github.com/w3c/csswg-drafts/issues/6939#issuecomment-1016679588 */
     user-select: text;
     visibility: visible;
+    top-layer: browser !important;
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the
@@ -1415,7 +1417,8 @@ dialog::backdrop {
     position: fixed;
     inset: 0;
     /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
-    background: rgba(0,0,0,0.1)
+    background: rgba(0,0,0,0.1);
+    top-layer: browser !important;
 }
 
 slot {

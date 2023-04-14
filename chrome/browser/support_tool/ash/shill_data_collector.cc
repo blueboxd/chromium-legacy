@@ -61,8 +61,8 @@ constexpr char kMaskedString[] = "*** MASKED ***";
 // contains. Returns the detected PII map.
 PIIMap DetectPII(
     base::Value::Dict shill_log,
-    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container) {
-  feedback::RedactionTool* redaction_tool = redaction_tool_container->Get();
+    scoped_refptr<redaction::RedactionToolContainer> redaction_tool_container) {
+  redaction::RedactionTool* redaction_tool = redaction_tool_container->Get();
   PIIMap detected_pii;
   // Detect PII in `shill_log` and add the detected PII to `detected_pii`.
   std::string json;
@@ -76,10 +76,10 @@ PIIMap DetectPII(
 // Converts `shill_log` into std::string and redacts PII sensitive data it
 // contains.
 std::string RedactAndKeepSelectedPII(
-    const std::set<feedback::PIIType>& pii_types_to_keep,
+    const std::set<redaction::PIIType>& pii_types_to_keep,
     const base::Value::Dict& shill_log,
-    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container) {
-  feedback::RedactionTool* redaction_tool = redaction_tool_container->Get();
+    scoped_refptr<redaction::RedactionToolContainer> redaction_tool_container) {
+  redaction::RedactionTool* redaction_tool = redaction_tool_container->Get();
   std::string property_str;
   base::JSONWriter::WriteWithOptions(
       shill_log, base::JSONWriter::OPTIONS_PRETTY_PRINT, &property_str);
@@ -103,7 +103,7 @@ bool WriteOutputFiles(std::string shill_property,
 void DetectOrScrubPIIInDictionary(
     base::Value::Dict& dict,
     bool scrub,
-    std::set<feedback::PIIType>& pii_types_to_keep,
+    std::set<redaction::PIIType>& pii_types_to_keep,
     PIIMap& pii_map) {
   for (auto entry : dict) {
     if (entry.second.is_dict()) {
@@ -156,7 +156,7 @@ const PIIMap& ShillDataCollector::GetDetectedPII() {
 void ShillDataCollector::CollectDataAndDetectPII(
     DataCollectorDoneCallback on_data_collected_callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
-    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container) {
+    scoped_refptr<redaction::RedactionToolContainer> redaction_tool_container) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   data_collector_done_callback_ = std::move(on_data_collected_callback);
   task_runner_for_redaction_tool_ = std::move(task_runner_for_redaction_tool);
@@ -167,7 +167,7 @@ void ShillDataCollector::CollectDataAndDetectPII(
 }
 
 void ShillDataCollector::OnGetManagerProperties(
-    absl::optional<base::Value> result) {
+    absl::optional<base::Value::Dict> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!result) {
     SupportToolError error = {SupportToolErrorCode::kDataCollectorError,
@@ -176,13 +176,11 @@ void ShillDataCollector::OnGetManagerProperties(
     return;
   }
 
-  base::Value::Dict& result_dict = result->GetDict();
   // Records how many entries are pending to be processed. Adds 1 to guard
   // against the case where `num_entries_left_` drops to 0 before all entries
   // are retrieved.
   num_entries_left_ = 1;
-  const base::Value::List* devices =
-      result_dict.FindList(shill::kDevicesProperty);
+  const base::Value::List* devices = result->FindList(shill::kDevicesProperty);
   if (devices) {
     for (const base::Value& device : *devices) {
       std::string path = GetString(device);
@@ -197,7 +195,7 @@ void ShillDataCollector::OnGetManagerProperties(
   }
 
   const base::Value::List* services =
-      result_dict.FindList(shill::kServicesProperty);
+      result->FindList(shill::kServicesProperty);
   if (services) {
     for (const base::Value& service : *services) {
       std::string path = GetString(service);
@@ -215,8 +213,9 @@ void ShillDataCollector::OnGetManagerProperties(
   CheckIfDone();
 }
 
-void ShillDataCollector::OnGetDevice(const std::string& device_path,
-                                     absl::optional<base::Value> properties) {
+void ShillDataCollector::OnGetDevice(
+    const std::string& device_path,
+    absl::optional<base::Value::Dict> properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!properties) {
     collector_err_["Device"].emplace_back(device_path);
@@ -229,13 +228,13 @@ void ShillDataCollector::OnGetDevice(const std::string& device_path,
 
 void ShillDataCollector::AddDeviceAndRequestIPConfigs(
     const std::string& device_path,
-    const base::Value& properties) {
+    const base::Value::Dict& properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   shill_log_.FindDict(kNetworkDevices)
       ->Set(device_path, ExpandProperties(device_path, properties));
 
   const base::Value::List* ip_configs =
-      properties.GetIfDict()->FindList(shill::kIPConfigsProperty);
+      properties.FindList(shill::kIPConfigsProperty);
   if (!ip_configs)
     return;
 
@@ -252,9 +251,10 @@ void ShillDataCollector::AddDeviceAndRequestIPConfigs(
   }
 }
 
-void ShillDataCollector::OnGetIPConfig(const std::string& device_path,
-                                       const std::string& ip_config_path,
-                                       absl::optional<base::Value> properties) {
+void ShillDataCollector::OnGetIPConfig(
+    const std::string& device_path,
+    const std::string& ip_config_path,
+    absl::optional<base::Value::Dict> properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!properties) {
     collector_err_["IPConfig"].emplace_back(
@@ -268,7 +268,7 @@ void ShillDataCollector::OnGetIPConfig(const std::string& device_path,
 
 void ShillDataCollector::AddIPConfig(const std::string& device_path,
                                      const std::string& ip_config_path,
-                                     const base::Value& properties) {
+                                     const base::Value::Dict& properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::Value::Dict& device =
       shill_log_.FindDict(kNetworkDevices)->Find(device_path)->GetDict();
@@ -281,14 +281,15 @@ void ShillDataCollector::AddIPConfig(const std::string& device_path,
   ip_configs->Set(ip_config_path, ExpandProperties(ip_config_path, properties));
 }
 
-void ShillDataCollector::OnGetService(const std::string& service_path,
-                                      absl::optional<base::Value> properties) {
+void ShillDataCollector::OnGetService(
+    const std::string& service_path,
+    absl::optional<base::Value::Dict> properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!properties) {
     collector_err_["Service"].emplace_back(service_path);
   } else {
     shill_log_.FindDict(kNetworkServices)
-        ->Set(service_path, ExpandProperties(service_path, *properties));
+        ->Set(service_path, ExpandProperties(service_path, properties.value()));
   }
   --num_entries_left_;
   CheckIfDone();
@@ -296,9 +297,9 @@ void ShillDataCollector::OnGetService(const std::string& service_path,
 
 base::Value::Dict ShillDataCollector::ExpandProperties(
     const std::string& object_path,
-    const base::Value& properties) {
+    const base::Value::Dict& properties) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::Value::Dict dict = properties.GetIfDict()->Clone();
+  base::Value::Dict dict = properties.Clone();
   // Converts UIData from a string to a dictionary.
   std::string* ui_data = dict.FindString(shill::kUIDataProperty);
   if (ui_data) {
@@ -309,16 +310,16 @@ base::Value::Dict ShillDataCollector::ExpandProperties(
 
   if (base::StartsWith(object_path, kServicePrefix,
                        base::CompareCase::SENSITIVE)) {
-    pii_map_[feedback::PIIType::kSSID].insert(
+    pii_map_[redaction::PIIType::kSSID].insert(
         *dict.FindString(shill::kNameProperty));
   } else if (base::StartsWith(object_path, kDevicePrefix,
                               base::CompareCase::SENSITIVE)) {
     // Only detects "Address" in the top level Device dictionary, not globally
     // (which would mask IPConfigs which get anonymized separately).
-    pii_map_[feedback::PIIType::kSSID].insert(
+    pii_map_[redaction::PIIType::kSSID].insert(
         *dict.FindString(shill::kNameProperty));
   }
-  std::set<feedback::PIIType> empty = {};
+  std::set<redaction::PIIType> empty = {};
   DetectOrScrubPIIInDictionary(dict, /*scrub=*/false,
                                /*pii_types_to_keep=*/empty, pii_map_);
   return dict;
@@ -357,14 +358,14 @@ void ShillDataCollector::OnPIIDetected(PIIMap detected_pii) {
 }
 
 void ShillDataCollector::ExportCollectedDataWithPII(
-    std::set<feedback::PIIType> pii_types_to_keep,
+    std::set<redaction::PIIType> pii_types_to_keep,
     base::FilePath target_directory,
     scoped_refptr<base::SequencedTaskRunner> task_runner_for_redaction_tool,
-    scoped_refptr<feedback::RedactionToolContainer> redaction_tool_container,
+    scoped_refptr<redaction::RedactionToolContainer> redaction_tool_container,
     DataCollectorDoneCallback on_exported_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Only masks shill::kNameProperty in the top levels of devices and services.
-  if (!pii_types_to_keep.count(feedback::PIIType::kSSID)) {
+  if (!pii_types_to_keep.count(redaction::PIIType::kSSID)) {
     for (auto entry : *shill_log_.FindDict(kNetworkServices)) {
       std::string log_name = ash::NetworkPathId(entry.first);  // Not PII
       entry.second.GetDict().Set(shill::kNameProperty, log_name);

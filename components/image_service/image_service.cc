@@ -4,112 +4,28 @@
 
 #include "components/image_service/image_service.h"
 
-#include "base/barrier_closure.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/i18n/case_conversion.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "components/image_service/features.h"
 #include "components/omnibox/browser/remote_suggestions_service.h"
 #include "components/omnibox/browser/search_suggestion_parser.h"
+#include "components/search_engines/search_engine_type.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/unified_consent/url_keyed_data_collection_consent_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace image_service {
 
-namespace {
-
-// A one-time use object that encapsulates tagging a vector of clusters with
-// entity images. Used to manage all the fetch jobs dispatched, and runs the
-// main callback after it's done.
-// TODO(tommycli): This is kind of janky and surely not what we want to do.
-// Replace this with a dedicated server-side service.
-class FetchJobManager {
- public:
-  using ResultCallback =
-      base::OnceCallback<void(std::vector<history::Cluster>)>;
-
-  struct Request {
-    std::u16string query;
-    std::string entity_id;
-    raw_ptr<history::ClusterVisit> visit;
-  };
-
-  explicit FetchJobManager(std::vector<history::Cluster>&& clusters)
-      : clusters_(clusters) {}
-
-  void Start(ImageService* service, ResultCallback callback) {
-    std::vector<Request> requests;
-    for (auto& cluster : clusters_) {
-      for (auto& visit : cluster.visits) {
-        // Only fetch URL-keyed metadata for visits known to sync.
-        if (!visit.annotated_visit.visit_row.is_known_to_sync) {
-          continue;
-        }
-
-        // Only tag search visits for now.
-        const auto& search_terms =
-            visit.annotated_visit.content_annotations.search_terms;
-        if (!search_terms.empty()) {
-          // TODO(tommycli): Add entity_id once implemented.
-          requests.push_back({search_terms, "", &visit});
-        }
-      }
-    }
-
-    // If no requests needed, just early exit and give back the clusters.
-    if (requests.empty()) {
-      return FinishJob(std::move(callback));
-    }
-
-    // This encapsulates the final callback and is called after all the requests
-    // are completed.
-    auto finish_callback = base::BarrierClosure(
-        requests.size(),
-        base::BindOnce(&FetchJobManager::FinishJob, weak_factory_.GetWeakPtr(),
-                       std::move(callback)));
-
-    for (auto& request : requests) {
-      service->FetchImageFor(
-          request.query, request.entity_id,
-          base::BindOnce(&FetchJobManager::OnImageFetchedForVisit,
-                         weak_factory_.GetWeakPtr(), request.visit)
-              .Then(finish_callback));
-    }
-  }
-
- private:
-  // Populates the cluster visit's field. This is a member method and not a
-  // free function, because `visit` points to memory owned by this object.
-  void OnImageFetchedForVisit(history::ClusterVisit* visit,
-                              const GURL& image_url) {
-    visit->image_url = image_url;
-  }
-
-  void FinishJob(ResultCallback callback) {
-    std::move(callback).Run(std::move(clusters_));
-  }
-
-  std::vector<history::Cluster> clusters_;
-  base::WeakPtrFactory<FetchJobManager> weak_factory_{this};
-};
-
-// An anonymous function whose only job is to scope the lifetime of
-// ClusterVectorImageTaggingJob, then call `callback` with `clusters`.
-void DeleteManagerAndRunCallback(
-    std::unique_ptr<FetchJobManager> job,
-    base::OnceCallback<void(std::vector<history::Cluster>)> callback,
-    std::vector<history::Cluster> clusters) {
-  std::move(callback).Run(clusters);
-}
-
-}  // namespace
-
 // A one-time use object that uses Suggest to get an image URL corresponding
 // to `search_query` and `entity_id`. This is a hacky temporary implementation,
 // ideally this should be replaced by persisted Suggest-provided entities.
+// TODO(tommycli): Move this to its own separate file with unit tests.
 class ImageService::SuggestEntityImageURLFetcher {
  public:
   SuggestEntityImageURLFetcher(
@@ -125,6 +41,23 @@ class ImageService::SuggestEntityImageURLFetcher {
 
   // `callback` is called with the result.
   void Start(base::OnceCallback<void(const GURL&)> callback) {
+    const TemplateURLService* template_url_service =
+        autocomplete_provider_client_->GetTemplateURLService();
+    if (template_url_service == nullptr) {
+      return std::move(callback).Run(GURL());
+    }
+
+    // We are relying on the user's consent to Sync History, which in practice
+    // means only Google should get URL-keyed metadata requests via Suggest.
+    const TemplateURL* template_url =
+        template_url_service->GetDefaultSearchProvider();
+    if (template_url == nullptr ||
+        template_url->GetEngineType(
+            template_url_service->search_terms_data()) !=
+            SEARCH_ENGINE_GOOGLE) {
+      return std::move(callback).Run(GURL());
+    }
+
     DCHECK(!callback_);
     callback_ = std::move(callback);
 
@@ -137,20 +70,17 @@ class ImageService::SuggestEntityImageURLFetcher {
         autocomplete_provider_client_
             ->GetRemoteSuggestionsService(/*create_if_necessary=*/true)
             ->StartSuggestionsRequest(
-                search_terms_args,
-                autocomplete_provider_client_->GetTemplateURLService(),
+                template_url, search_terms_args,
+                template_url_service->search_terms_data(),
                 base::BindOnce(&SuggestEntityImageURLFetcher::OnURLLoadComplete,
                                weak_factory_.GetWeakPtr()));
   }
 
  private:
   void OnURLLoadComplete(const network::SimpleURLLoader* source,
+                         const bool response_received,
                          std::unique_ptr<std::string> response_body) {
     DCHECK_EQ(loader_.get(), source);
-    const bool response_received =
-        response_body && source->NetError() == net::OK &&
-        (source->ResponseInfo() && source->ResponseInfo()->headers &&
-         source->ResponseInfo()->headers->response_code() == 200);
     if (!response_received) {
       return std::move(callback_).Run(GURL());
     }
@@ -223,23 +153,51 @@ base::WeakPtr<ImageService> ImageService::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void ImageService::PopulateEntityImagesFor(
-    std::vector<history::Cluster> clusters,
-    base::OnceCallback<void(std::vector<history::Cluster>)> callback) {
-  if (!url_consent_helper_ || !url_consent_helper_->IsEnabled()) {
-    return std::move(callback).Run(std::move(clusters));
+void ImageService::FetchImageFor(mojom::ClientId client_id,
+                                 const GURL& page_url,
+                                 const mojom::Options& options,
+                                 ResultCallback callback) {
+  if (!base::FeatureList::IsEnabled(kImageService)) {
+    // In general this should never happen, because each UI should have its own
+    // feature gate, but this is just so we have a whole-service killswitch.
+    return std::move(callback).Run(GURL());
   }
 
-  auto manager = std::make_unique<FetchJobManager>(std::move(clusters));
-  // Use a raw pointer temporary so we can give ownership of the unique_ptr to
-  // the callback and have a well defined object lifetime.
-  auto* manager_ptr = manager.get();
-  manager_ptr->Start(
-      this, base::BindOnce(&DeleteManagerAndRunCallback, std::move(manager),
-                           std::move(callback)));
+  // TODO(b/244507194): This one only checks Sync consent, we probably need to
+  // delegate consent checking to the UI layer entirely, since Bookmarks needs
+  // to use a Bookmarks-specific Sync permission checker.
+  DCHECK(url_consent_helper_ && url_consent_helper_->IsEnabled());
+
+  if (options.suggest_images &&
+      base::FeatureList::IsEnabled(kImageServiceSuggestPoweredImages)) {
+    // TODO(b/244507194): Get our "own" TemplateURLService.
+    if (auto* template_url_service =
+            autocomplete_provider_client_->GetTemplateURLService()) {
+      auto search_metadata =
+          template_url_service->ExtractSearchMetadata(page_url);
+      // Fetch entity-keyed images for Google SRP visits only, because only
+      // Google SRP visits can expect to have a reasonable entity from Google
+      // Suggest.
+      if (search_metadata && search_metadata->template_url &&
+          search_metadata->template_url->GetEngineType(
+              template_url_service->search_terms_data()) ==
+              SEARCH_ENGINE_GOOGLE) {
+        return FetchImageFor(/*search_query=*/search_metadata->search_terms,
+                             /*entity_id=*/"", std::move(callback));
+      }
+    }
+  }
+
+  if (options.optimization_guide_images &&
+      base::FeatureList::IsEnabled(
+          kImageServiceOptimizationGuideSalientImages)) {
+    // TODO(b/248367751): Insert OptimizationGuide Salient Image call here.
+  }
+
+  std::move(callback).Run(GURL());
 }
 
-bool ImageService::FetchImageFor(const std::u16string& search_query,
+void ImageService::FetchImageFor(const std::u16string& search_query,
                                  const std::string& entity_id,
                                  ResultCallback callback) {
   DCHECK(url_consent_helper_ && url_consent_helper_->IsEnabled());
@@ -253,7 +211,6 @@ bool ImageService::FetchImageFor(const std::u16string& search_query,
   fetcher_raw_ptr->Start(
       base::BindOnce(&ImageService::OnImageFetched, weak_factory_.GetWeakPtr(),
                      std::move(fetcher), std::move(callback)));
-  return true;
 }
 
 void ImageService::OnImageFetched(

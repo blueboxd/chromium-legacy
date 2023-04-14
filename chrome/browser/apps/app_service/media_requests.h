@@ -70,40 +70,36 @@ class MediaRequests {
       const content::WebContents* web_contents);
 
  private:
-  bool HasRequest(
-      const std::string& app_id,
-      const content::WebContents* web_contents,
-      const std::map<std::string, std::set<const content::WebContents*>>&
-          app_id_to_web_contents);
+  // Web contents which are accessing the cemera or microphone.
+  using WebContents = std::set<const content::WebContents*>;
+
+  // Maps one app id to a set of web contents.
+  using AppIdToWebContents = std::map<std::string, WebContents>;
+
+  bool HasRequest(const std::string& app_id,
+                  const content::WebContents* web_contents,
+                  const AppIdToWebContents& app_id_to_web_contents);
 
   absl::optional<bool> MaybeAddRequest(
       const std::string& app_id,
       const content::WebContents* web_contents,
-      std::map<std::string, std::set<const content::WebContents*>>&
-          app_id_to_web_contents);
+      AppIdToWebContents& app_id_to_web_contents);
 
   absl::optional<bool> MaybeRemoveRequest(
       const std::string& app_id,
       const content::WebContents* web_contents,
-      std::map<std::string, std::set<const content::WebContents*>>&
-          app_id_to_web_contents);
+      AppIdToWebContents& app_id_to_web_contents);
 
   absl::optional<bool> MaybeRemoveRequest(
       const std::string& app_id,
-      std::map<std::string, std::set<const content::WebContents*>>&
-          app_id_to_web_contents);
+      AppIdToWebContents& app_id_to_web_contents);
 
   // Maps one app id to a set of web contents which are accessing the cemera.
-  // Web contents pointer is being used as a key and nothing else, and the
-  // pointer should not be dereferenced.
-  std::map<std::string, std::set<const content::WebContents*>>
-      app_id_to_web_contents_for_camera_;
+  AppIdToWebContents app_id_to_web_contents_for_camera_;
 
   // Maps one app id to a set of web contents which are accessing the
-  // microphone. Web contents pointer is being used as a key and nothing else,
-  // and the pointer should not be dereferenced.
-  std::map<std::string, std::set<const content::WebContents*>>
-      app_id_to_web_contents_for_microphone_;
+  // microphone.
+  AppIdToWebContents app_id_to_web_contents_for_microphone_;
 };
 
 }  // namespace apps

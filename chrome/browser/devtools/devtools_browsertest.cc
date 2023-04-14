@@ -358,8 +358,7 @@ class DevToolsWindowBeforeUnloadObserver
   void Wait();
  private:
   // Invoked when the beforeunload handler fires.
-  void BeforeUnloadFired(bool proceed,
-                         const base::TimeTicks& proceed_time) override;
+  void BeforeUnloadFired(bool proceed) override;
 
   bool m_fired;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
@@ -379,9 +378,7 @@ void DevToolsWindowBeforeUnloadObserver::Wait() {
   message_loop_runner_->Run();
 }
 
-void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(
-    bool proceed,
-    const base::TimeTicks& proceed_time) {
+void DevToolsWindowBeforeUnloadObserver::BeforeUnloadFired(bool proceed) {
   m_fired = true;
   if (message_loop_runner_.get())
     message_loop_runner_->Quit();
@@ -2255,6 +2252,7 @@ class RemoteDebuggingTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kRemoteDebuggingPort, "9222");
+    command_line->AppendSwitchASCII(switches::kRemoteAllowOrigins, "*");
 
     // Override the extension root path.
     base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir_);
@@ -3209,9 +3207,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsSyncTest, GetSyncInformation) {
       })();
     )"));
   ASSERT_TRUE(result.value.is_dict());
-  EXPECT_TRUE(*result.value.FindBoolKey("isSyncActive"));
-  EXPECT_TRUE(*result.value.FindBoolKey("arePreferencesSynced"));
-  EXPECT_EQ(*result.value.FindStringKey("accountEmail"), "user@gmail.com");
+  EXPECT_TRUE(*result.value.GetDict().FindBool("isSyncActive"));
+  EXPECT_TRUE(*result.value.GetDict().FindBool("arePreferencesSynced"));
+  EXPECT_EQ(*result.value.GetDict().FindString("accountEmail"),
+            "user@gmail.com");
 }
 
 // Regression test for https://crbug.com/1270184.

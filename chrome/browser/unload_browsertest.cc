@@ -29,6 +29,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/features.h"
 
 using content::BrowserThread;
 
@@ -224,6 +225,27 @@ class UnloadTest : public InProcessBrowserTest {
     chrome::CloseWindow(browser());
     ClickModalDialogButton(true);
     ui_test_utils::WaitForBrowserToClose();
+  }
+
+  const std::string GenerateDataURL(std::string listener_html,
+                                    bool is_onbeforeunload = true) {
+    std::string listener =
+        is_onbeforeunload
+            ? "window.onbeforeunload=function(event){"
+              "setTimeout('document.title=\"cancelled\"', "
+              "0);" +
+                  listener_html + "}"
+            : "window.addEventListener('beforeunload', function(event){"
+              "setTimeout('document.title=\"cancelled\"', "
+              "0);" +
+                  listener_html + "})";
+    std::string result =
+        "<html><head><title>beforeunload</title></head><body>"
+        "<script>" +
+        listener +
+        "</script>"
+        "</body></html>";
+    return result;
   }
 };
 
@@ -746,6 +768,152 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseWithSameSiteIframe) {
   // be clicked.
   PrepareForDialog(browser());
   ManuallyCloseWindow();
+}
+
+// Tests closing the browser with onbeforeunload handler and
+// event.preventDefault() will prompt confirmation dialog
+IN_PROC_BROWSER_TEST_F(UnloadTest, OnBeforeUnloadCancelByPreventDefault) {
+  std::string html =
+      GenerateDataURL("event.preventDefault()", /*is_onbeforeunload=*/true);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+  PrepareForDialog(browser());
+  chrome::CloseWindow(browser());
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  std::u16string expected_title = u"cancelled";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ManuallyCloseWindow();
+}
+
+// Tests closing the browser with onbeforeunload handler and
+// setting returnValue will prompt confirmation dialog
+IN_PROC_BROWSER_TEST_F(UnloadTest, OnBeforeUnloadCancelByReturnValue) {
+  std::string html = GenerateDataURL("event.returnValue = 'hello world'",
+                                     /*is_onbeforeunload=*/true);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+  PrepareForDialog(browser());
+  chrome::CloseWindow(browser());
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  std::u16string expected_title = u"cancelled";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ManuallyCloseWindow();
+}
+
+// Tests closing the browser with onbeforeunload handler and
+// having return value will prompt confirmation dialog
+IN_PROC_BROWSER_TEST_F(UnloadTest, OnBeforeUnloadCancelByReturn) {
+  std::string html =
+      GenerateDataURL("return 'hello world'", /*is_onbeforeunload=*/true);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+  PrepareForDialog(browser());
+  chrome::CloseWindow(browser());
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  std::u16string expected_title = u"cancelled";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ManuallyCloseWindow();
+}
+
+// Tests closing the browser with addEventListener('beforeunload') handler and
+// event.preventDefault() will prompt confirmation dialog
+IN_PROC_BROWSER_TEST_F(UnloadTest, BeforeUnloadListenerCancelByPreventDefault) {
+  std::string html =
+      GenerateDataURL("event.preventDefault()", /*is_onbeforeunload=*/false);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+  PrepareForDialog(browser());
+  chrome::CloseWindow(browser());
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  std::u16string expected_title = u"cancelled";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ManuallyCloseWindow();
+}
+
+// Tests closing the browser with addEventListener('beforeunload') handler and
+// setting returnValue will prompt confirmation dialog
+IN_PROC_BROWSER_TEST_F(UnloadTest, BeforeUnloadListenerCancelByReturnValue) {
+  std::string html = GenerateDataURL("event.returnValue = 'hello world'",
+                                     /*is_onbeforeunload=*/false);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+  PrepareForDialog(browser());
+  chrome::CloseWindow(browser());
+
+  // We wait for the title to change after cancelling the closure of browser
+  // window, to ensure that in-flight IPCs from the renderer reach the browser.
+  // Otherwise the browser won't put up the beforeunload dialog because it's
+  // waiting for an ack from the renderer.
+  std::u16string expected_title = u"cancelled";
+  content::TitleWatcher title_watcher(
+      browser()->tab_strip_model()->GetActiveWebContents(), expected_title);
+  ClickModalDialogButton(false);
+  ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  ManuallyCloseWindow();
+}
+
+// Tests closing the browser with addEventListener('beforeunload') handler and
+// having return value will _not_ prompt confirmation dialog
+// TODO(crbug/809277) Change this test if spec changes
+IN_PROC_BROWSER_TEST_F(UnloadTest, BeforeUnloadListenerCancelByReturn) {
+  std::string html =
+      GenerateDataURL("return 'hello world'", /*is_onbeforeunload=*/false);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+
+  CloseBrowsersVerifyUnloadSuccess(false);
+}
+
+// TODO(crbug/866818): Remove below test when feature
+// BeforeunloadEventCancelByPreventDefault is fully stable.
+class UnloadTestCancelByPreventDefaultDisabled : public UnloadTest {
+ public:
+  UnloadTestCancelByPreventDefaultDisabled() {
+    scoped_feature_list.InitAndDisableFeature(
+        blink::features::kBeforeunloadEventCancelByPreventDefault);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
+};
+
+// Tests closing the browser with onbeforeunload handler and
+// event.preventDefault() will not prompt confirmation dialog when
+// BeforeunloadEventCancelByPreventDefault is disabled.
+IN_PROC_BROWSER_TEST_F(UnloadTestCancelByPreventDefaultDisabled,
+                       OnBeforeUnload) {
+  std::string html =
+      GenerateDataURL("event.preventDefault()", /*is_onbeforeunload=*/true);
+  NavigateToDataURL(html.c_str(), "beforeunload");
+
+  CloseBrowsersVerifyUnloadSuccess(false);
 }
 
 // TODO(ojan): Add tests for unload/beforeunload that have multiple tabs

@@ -15,6 +15,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/buildflags.h"
+#include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/metrics/chrome_browser_sampling_trials.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -36,6 +38,8 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
+#include "chrome/common/channel_info.h"
+#include "chromeos/ash/components/login/auth/recovery/recovery_utils.h"
 #include "chromeos/ash/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
@@ -44,15 +48,20 @@ ChromeBrowserFieldTrials::ChromeBrowserFieldTrials(PrefService* local_state)
   DCHECK(local_state_);
 }
 
-ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() {
-}
+ChromeBrowserFieldTrials::~ChromeBrowserFieldTrials() = default;
 
 void ChromeBrowserFieldTrials::OnVariationsSetupComplete() {
-  // Persistent histograms must be enabled ASAP, but depends on Features.
+#if BUILDFLAG(IS_FUCHSIA)
+  // Persistent histograms must be enabled ASAP, but depends on Features. For
+  // non-Fuchsia platforms, it is enabled earlier on, and is not controlled by
+  // variations. See //chrome/app/chrome_main_delegate.cc.
   base::FilePath metrics_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &metrics_dir)) {
-    InstantiatePersistentHistograms(metrics_dir);
+    InstantiatePersistentHistogramsWithFeaturesAndCleanup(metrics_dir);
+  } else {
+    NOTREACHED();
   }
+#endif  // BUILDFLAG(IS_FUCHSIA)
 }
 
 void ChromeBrowserFieldTrials::SetUpClientSideFieldTrials(
@@ -76,6 +85,12 @@ void ChromeBrowserFieldTrials::SetUpClientSideFieldTrials(
       entropy_providers.default_entropy(), feature_list);
   metrics::CreateFallbackUkmSamplingTrialIfNeeded(
       entropy_providers.default_entropy(), feature_list);
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // For this feature we will use the client-side trial for rollout. The
+  // server-side/Finch config will be used only as a kill-switch. If it's
+  // configured - it will override the local trial.
+  ash::CreateFallbackFieldTrialForRecovery(chrome::GetChannel() == version_info::Channel::STABLE, feature_list);
+#endif
   if (!has_seed) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     ash::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
@@ -96,6 +111,9 @@ void ChromeBrowserFieldTrials::SetUpClientSideFieldTrials(
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  ChromeProcessSingleton::RegisterEarlySingletonFeature();
+#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 #if BUILDFLAG(IS_ANDROID)
   static constexpr char kReachedCodeProfilerTrial[] =
       "ReachedCodeProfilerSynthetic2";

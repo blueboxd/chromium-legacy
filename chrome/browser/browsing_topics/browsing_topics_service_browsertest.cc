@@ -85,6 +85,9 @@ constexpr char kExpectedHeaderValueForSiteB[] =
     "7;version=\"chrome.1:1:2\";config_version=\"chrome.1\";model_version="
     "\"2\";taxonomy_version=\"1\"";
 
+static constexpr char kBrowsingTopicsApiActionTypeHistogramId[] =
+    "BrowsingTopics.ApiActionType";
+
 EpochTopics CreateTestEpochTopics(
     const std::vector<std::pair<Topic, std::set<HashedDomain>>>& topics,
     base::Time calculation_time) {
@@ -839,50 +842,69 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, TopicsAPI_ObserveBehavior) {
                                            /*iframe_id=*/"frame",
                                            subframe_url));
 
-  // Invoked the API with {skipObservation: true}.
-  EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
-                                      web_contents()->GetPrimaryMainFrame(), 0),
-                                  /*skip_observation=*/true));
+  {
+    base::HistogramTester histogram_tester;
 
-  // Since {skipObservation: true} was specified, the page is not eligible for
-  // topics calculation.
-  EXPECT_FALSE(
-      BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
+    // Invoked the API with {skipObservation: true}.
+    EXPECT_EQ("[]",
+              InvokeTopicsAPI(content::ChildFrameAt(
+                                  web_contents()->GetPrimaryMainFrame(), 0),
+                              /*skip_observation=*/true));
 
-  // Since {skipObservation: true} was specified, the usage is not tracked. The
-  // returned entry was from the pre-existing storage.
-  std::vector<ApiUsageContext> api_usage_contexts =
-      content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
-  EXPECT_EQ(api_usage_contexts.size(), 1u);
+    // Since {skipObservation: true} was specified, the page is not eligible for
+    // topics calculation.
+    EXPECT_FALSE(
+        BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
 
-  // Invoked the API with {skipObservation: false}.
-  EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
-                      web_contents()->GetPrimaryMainFrame(), 0)));
+    // Since {skipObservation: true} was specified, the usage is not tracked.
+    // The returned entry was from the pre-existing storage.
+    std::vector<ApiUsageContext> api_usage_contexts =
+        content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
+    EXPECT_EQ(api_usage_contexts.size(), 1u);
 
-  // Since {skipObservation: false} was specified, the page is eligible for
-  // topics calculation.
-  EXPECT_TRUE(
-      BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
+    histogram_tester.ExpectUniqueSample(kBrowsingTopicsApiActionTypeHistogramId,
+                                        0 /*kGetViaDocumentApi*/,
+                                        /*expected_bucket_count=*/1);
+  }
 
-  // Since {skipObservation: false} was specified, the usage is tracked.
-  api_usage_contexts =
-      content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
+  {
+    base::HistogramTester histogram_tester;
 
-  EXPECT_EQ(api_usage_contexts.size(), 2u);
-  EXPECT_EQ(api_usage_contexts[0].hashed_main_frame_host,
-            HashMainFrameHostForStorage("foo1.com"));
-  EXPECT_EQ(api_usage_contexts[0].hashed_context_domain, HashedDomain(1));
+    // Invoked the API with {skipObservation: false}.
+    EXPECT_EQ("[]", InvokeTopicsAPI(content::ChildFrameAt(
+                        web_contents()->GetPrimaryMainFrame(), 0)));
 
-  EXPECT_EQ(
-      api_usage_contexts[1].hashed_main_frame_host,
-      HashMainFrameHostForStorage(https_server_.GetURL("a.test", "/").host()));
-  EXPECT_EQ(api_usage_contexts[1].hashed_context_domain,
-            GetHashedDomain("b.test"));
+    // Since {skipObservation: false} was specified, the page is eligible for
+    // topics calculation.
+    EXPECT_TRUE(
+        BrowsingTopicsEligibleForURLVisit(history_service(), main_frame_url));
+
+    // Since {skipObservation: false} was specified, the usage is tracked.
+    std::vector<ApiUsageContext> api_usage_contexts =
+        content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
+
+    EXPECT_EQ(api_usage_contexts.size(), 2u);
+    EXPECT_EQ(api_usage_contexts[0].hashed_main_frame_host,
+              HashMainFrameHostForStorage("foo1.com"));
+    EXPECT_EQ(api_usage_contexts[0].hashed_context_domain, HashedDomain(1));
+
+    EXPECT_EQ(api_usage_contexts[1].hashed_main_frame_host,
+              HashMainFrameHostForStorage(
+                  https_server_.GetURL("a.test", "/").host()));
+    EXPECT_EQ(api_usage_contexts[1].hashed_context_domain,
+              GetHashedDomain("b.test"));
+
+    histogram_tester.ExpectUniqueSample(kBrowsingTopicsApiActionTypeHistogramId,
+                                        1 /*kGetAndObserveViaDocumentApi*/,
+                                        /*expected_bucket_count=*/1);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(
     BrowsingTopicsBrowserTest,
     EmptyPage_PermissionsPolicyBrowsingTopicsNone_TopicsAPI) {
+  base::HistogramTester histogram_tester;
+
   GURL main_frame_url = https_server_.GetURL(
       "a.test", "/browsing_topics/empty_page_browsing_topics_none.html");
 
@@ -911,6 +933,12 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_FALSE(metrics_entries[0].topic0.IsValid());
   EXPECT_FALSE(metrics_entries[0].topic1.IsValid());
   EXPECT_FALSE(metrics_entries[0].topic2.IsValid());
+
+  // No BrowsingTopicsApiActionType metrics are recorded, as
+  // `BrowsingTopicsServiceImpl` did not get a chance to handle the request due
+  // to earlier permissions policy reject.
+  histogram_tester.ExpectTotalCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                    /*expected_count=*/0);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1230,6 +1258,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, FetchWithoutTopicsFlagSet) {
 IN_PROC_BROWSER_TEST_F(
     BrowsingTopicsBrowserTest,
     FetchSameOrigin_TopicsEligible_SendNoTopic_HasNoObserveResponse) {
+  base::HistogramTester histogram_tester;
+
   GURL main_frame_url =
       https_server_.GetURL("b.test", "/browsing_topics/empty_page.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
@@ -1255,11 +1285,17 @@ IN_PROC_BROWSER_TEST_F(
   std::vector<ApiUsageContext> api_usage_contexts =
       content::GetBrowsingTopicsApiUsage(browsing_topics_site_data_manager());
   EXPECT_EQ(api_usage_contexts.size(), 1u);
+
+  histogram_tester.ExpectUniqueSample(kBrowsingTopicsApiActionTypeHistogramId,
+                                      2 /*kGetViaFetchLikeApi*/,
+                                      /*expected_bucket_count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(
     BrowsingTopicsBrowserTest,
     FetchSameOrigin_TopicsEligible_SendNoTopic_HasObserveResponse) {
+  base::HistogramTester histogram_tester;
+
   GURL main_frame_url =
       https_server_.GetURL("b.test", "/browsing_topics/empty_page.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
@@ -1294,6 +1330,16 @@ IN_PROC_BROWSER_TEST_F(
       HashMainFrameHostForStorage(https_server_.GetURL("b.test", "/").host()));
   EXPECT_EQ(api_usage_contexts[1].hashed_context_domain,
             GetHashedDomain("b.test"));
+
+  // Expect a "get" event and an "observe" event respectively.
+  histogram_tester.ExpectTotalCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                    /*expected_count=*/2);
+  histogram_tester.ExpectBucketCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                     2 /*kGetViaFetchLikeApi*/,
+                                     /*expected_count=*/1);
+  histogram_tester.ExpectBucketCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                     3 /*kObserveViaFetchLikeApi*/,
+                                     /*expected_count=*/1);
 }
 
 IN_PROC_BROWSER_TEST_F(
@@ -1430,6 +1476,8 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
 
   {
+    base::HistogramTester histogram_tester;
+
     GURL fetch_url =
         https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
 
@@ -1442,9 +1490,17 @@ IN_PROC_BROWSER_TEST_F(
 
     // No topics header was sent, as the permissions policy denied it.
     EXPECT_FALSE(topics_header_value);
+
+    // No BrowsingTopicsApiActionType metrics are recorded, as
+    // `BrowsingTopicsServiceImpl` did not get a chance to handle the request
+    // due to earlier permissions policy reject.
+    histogram_tester.ExpectTotalCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                      /*expected_count=*/0);
   }
 
   {
+    base::HistogramTester histogram_tester;
+
     GURL fetch_url =
         https_server_.GetURL("c.test", "/browsing_topics/empty_page.html");
 
@@ -1456,6 +1512,10 @@ IN_PROC_BROWSER_TEST_F(
         GetTopicsHeaderForRequestPath("/browsing_topics/empty_page.html");
 
     EXPECT_TRUE(topics_header_value);
+
+    histogram_tester.ExpectUniqueSample(kBrowsingTopicsApiActionTypeHistogramId,
+                                        2 /*kGetViaFetchLikeApi*/,
+                                        /*expected_bucket_count=*/1);
   }
 }
 
@@ -1466,6 +1526,8 @@ IN_PROC_BROWSER_TEST_F(
 // c.test should have an empty topics header.)
 IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
                        FetchCrossOriginWithRedirect) {
+  base::HistogramTester histogram_tester;
+
   GURL main_frame_url =
       https_server_.GetURL("b.test", "/browsing_topics/empty_page.html");
 
@@ -1537,6 +1599,17 @@ IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest,
   EXPECT_EQ(api_usage_contexts[2].hashed_main_frame_host,
             HashMainFrameHostForStorage("foo1.com"));
   EXPECT_EQ(api_usage_contexts[2].hashed_context_domain, HashedDomain(1));
+
+  // Expect two "get" events and two "observe" events for the initial request
+  // and the redirect respectively.
+  histogram_tester.ExpectTotalCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                    /*expected_count=*/4);
+  histogram_tester.ExpectBucketCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                     2 /*kGetViaFetchLikeApi*/,
+                                     /*expected_count=*/2);
+  histogram_tester.ExpectBucketCount(kBrowsingTopicsApiActionTypeHistogramId,
+                                     3 /*kObserveViaFetchLikeApi*/,
+                                     /*expected_count=*/2);
 }
 
 // On site b.test, test fetch request to a.test that gets redirected to c.test.
@@ -1783,6 +1856,139 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(api_usage_contexts[1].hashed_main_frame_host,
             HashMainFrameHostForStorage("foo1.com"));
   EXPECT_EQ(api_usage_contexts[1].hashed_context_domain, HashedDomain(1));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, UseCounter_DocumentApi) {
+  base::HistogramTester histogram_tester;
+
+  GURL main_frame_url =
+      https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+  InvokeTopicsAPI(web_contents());
+
+  // Navigate away to flush use counters.
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  histogram_tester.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kTopicsAPI_BrowsingTopics_Method, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, UseCounter_Fetch) {
+  base::HistogramTester histogram_tester;
+
+  GURL main_frame_url =
+      https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
+
+  GURL fetch_url = main_frame_url;
+
+  {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+    // Send a fetch() request with `browsingTopics` set to false. Expect no
+    // `kTopicsAPIFetch` use counter.
+    EXPECT_TRUE(ExecJs(
+        web_contents()->GetPrimaryMainFrame(),
+        content::JsReplace("fetch($1, {browsingTopics: false})", fetch_url)));
+
+    // Navigate away to flush use counters.
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+    histogram_tester.ExpectBucketCount(
+        "Blink.UseCounter.Features", blink::mojom::WebFeature::kTopicsAPIFetch,
+        0);
+  }
+
+  {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+    // Send a fetch() request with `browsingTopics` set to true. Expect one
+    // `kTopicsAPIFetch` use counter.
+    EXPECT_TRUE(ExecJs(
+        web_contents()->GetPrimaryMainFrame(),
+        content::JsReplace("fetch($1, {browsingTopics: true})", fetch_url)));
+
+    // Navigate away to flush use counters.
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+    histogram_tester.ExpectBucketCount(
+        "Blink.UseCounter.Features", blink::mojom::WebFeature::kTopicsAPIFetch,
+        1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingTopicsBrowserTest, UseCounter_Xhr) {
+  base::HistogramTester histogram_tester;
+
+  GURL main_frame_url =
+      https_server_.GetURL("a.test", "/browsing_topics/empty_page.html");
+
+  GURL xhr_url = main_frame_url;
+
+  {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+    // Send a XHR request with `deprecatedBrowsingTopics` set to false. Expect
+    // no `kTopicsAPIXhr` use counter.
+    EXPECT_EQ("success", EvalJs(web_contents()->GetPrimaryMainFrame(),
+                                content::JsReplace(R"(
+      const xhr = new XMLHttpRequest();
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState == XMLHttpRequest.DONE) {
+          domAutomationController.send('success');
+        }
+      }
+
+      xhr.open('GET', $1);
+      xhr.deprecatedBrowsingTopics = false;
+      xhr.send();)",
+                                                   xhr_url),
+                                content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+
+    // Navigate away to flush use counters.
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+    histogram_tester.ExpectBucketCount("Blink.UseCounter.Features",
+                                       blink::mojom::WebFeature::kTopicsAPIXhr,
+                                       0);
+  }
+
+  {
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), main_frame_url));
+
+    // Send a XHR request with `deprecatedBrowsingTopics` set to false. Expect
+    // one `kTopicsAPIXhr` use counter.
+    EXPECT_EQ("success", EvalJs(web_contents()->GetPrimaryMainFrame(),
+                                content::JsReplace(R"(
+    const xhr = new XMLHttpRequest();
+
+    xhr.onreadystatechange = function() {
+      if (xhr.readyState == XMLHttpRequest.DONE) {
+        domAutomationController.send('success');
+      }
+    }
+
+    xhr.open('GET', $1);
+    xhr.deprecatedBrowsingTopics = true;
+    xhr.send();)",
+                                                   xhr_url),
+                                content::EXECUTE_SCRIPT_USE_MANUAL_REPLY));
+
+    // Navigate away to flush use counters.
+    ASSERT_TRUE(
+        ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+    histogram_tester.ExpectBucketCount("Blink.UseCounter.Features",
+                                       blink::mojom::WebFeature::kTopicsAPIXhr,
+                                       1);
+  }
 }
 
 }  // namespace browsing_topics

@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "net/base/net_errors.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_socket_dns_query_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_tcp_socket_open_info.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_tcp_socket_options.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -41,15 +42,15 @@ bool CheckSendReceiveBufferSize(const TCPSocketOptions* options,
   return true;
 }
 
-mojom::blink::DirectSocketOptionsPtr CreateTCPSocketOptions(
+mojom::blink::DirectTCPSocketOptionsPtr CreateTCPSocketOptions(
     const String& remote_address,
     const uint16_t remote_port,
     const TCPSocketOptions* options,
     ExceptionState& exception_state) {
-  auto socket_options = mojom::blink::DirectSocketOptions::New();
+  auto socket_options = mojom::blink::DirectTCPSocketOptions::New();
 
-  socket_options->remote_hostname = remote_address;
-  socket_options->remote_port = remote_port;
+  socket_options->remote_addr =
+      net::HostPortPair(remote_address.Utf8(), remote_port);
 
   if (!CheckSendReceiveBufferSize(options, exception_state)) {
     return {};
@@ -78,6 +79,17 @@ mojom::blink::DirectSocketOptionsPtr CreateTCPSocketOptions(
   }
   if (options->hasReceiveBufferSize()) {
     socket_options->receive_buffer_size = options->receiveBufferSize();
+  }
+
+  if (options->hasDnsQueryType()) {
+    switch (options->dnsQueryType().AsEnum()) {
+      case V8SocketDnsQueryType::Enum::kIpv4:
+        socket_options->dns_query_type = net::DnsQueryType::A;
+        break;
+      case V8SocketDnsQueryType::Enum::kIpv6:
+        socket_options->dns_query_type = net::DnsQueryType::AAAA;
+        break;
+    }
   }
 
   return socket_options;
@@ -155,7 +167,7 @@ bool TCPSocket::Open(const String& remote_address,
     return false;
   }
 
-  GetServiceRemote()->OpenTcpSocket(
+  GetServiceRemote()->OpenTCPSocket(
       std::move(open_tcp_socket_options), GetTCPSocketReceiver(),
       GetTCPSocketObserver(),
       WTF::BindOnce(&TCPSocket::Init, WrapPersistent(this)));

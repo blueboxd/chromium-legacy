@@ -19,11 +19,12 @@ public abstract class InterceptNavigationDelegate {
      * @param navigationHandle parameters describing the navigation.
      * @param escapedUrl The url from the NavigationHandle, properly escaped for external
      *         navigation.
+     * @param crossFrame whether the navigation has been initiated by another frame.
      * @return true if the navigation should be ignored.
      */
     @CalledByNative
     public abstract boolean shouldIgnoreNavigation(
-            NavigationHandle navigationHandle, GURL escapedUrl);
+            NavigationHandle navigationHandle, GURL escapedUrl, boolean crossFrame);
 
     /**
      * This method is called for navigations to external protocols in subframes, which on Android
@@ -37,7 +38,8 @@ public abstract class InterceptNavigationDelegate {
      * @param hasUserGesture Whether the navigation is associated with a user gesture.
      * @param initiatorOrigin The Origin that initiated this navigation, if any.
      *
-     * @return A URL to redirect the subframe to, or null if the frame should not be redirected.
+     * @return Tri-state: An empty URL indicating an async action is pending, a URL to redirect the
+     *         subframe to, or null if no action is to be taken.
      */
     @CalledByNative
     protected GURL handleSubframeExternalProtocol(GURL escapedUrl, @PageTransition int transition,

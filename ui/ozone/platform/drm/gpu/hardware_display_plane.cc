@@ -50,12 +50,13 @@ std::string IdSetToString(const base::flat_set<uint32_t>& ids) {
 }
 
 }  // namespace
+
 HardwareDisplayPlane::Properties::Properties() = default;
 HardwareDisplayPlane::Properties::~Properties() = default;
 
 HardwareDisplayPlane::HardwareDisplayPlane(uint32_t id) : id_(id) {}
 
-HardwareDisplayPlane::~HardwareDisplayPlane() {}
+HardwareDisplayPlane::~HardwareDisplayPlane() = default;
 
 bool HardwareDisplayPlane::CanUseForCrtcId(uint32_t crtc_id) const {
   return possible_crtc_ids_.contains(crtc_id);
@@ -112,11 +113,10 @@ bool HardwareDisplayPlane::Initialize(DrmDevice* drm) {
     type_ = properties_.type.value;
 
   if (properties_.plane_color_encoding.id) {
-    color_encoding_bt601_ =
-        GetEnumValueForName(drm->get_fd(), properties_.plane_color_encoding.id,
-                            "ITU-R BT.601 YCbCr");
+    color_encoding_bt601_ = GetEnumValueForName(
+        *drm, properties_.plane_color_encoding.id, "ITU-R BT.601 YCbCr");
     color_range_limited_ = GetEnumValueForName(
-        drm->get_fd(), properties_.plane_color_range.id, "YCbCr limited range");
+        *drm, properties_.plane_color_range.id, "YCbCr limited range");
   }
 
   VLOG(3) << "Initialized plane=" << id_

@@ -66,7 +66,7 @@ class PolicyDetails:
   # - the name of one of the protobufs for shared policy types
   # - the equivalent type in Android's App Restriction Schema
   TYPE_MAP = {
-      'dict': ('Type::DICTIONARY', 'string', 'String', 'string'),
+      'dict': ('Type::DICT', 'string', 'String', 'string'),
       'external': ('TYPE_EXTERNAL', 'string', 'String', 'invalid'),
       'int': ('Type::INTEGER', 'int64', 'Integer', 'integer'),
       'int-enum': ('Type::INTEGER', 'int64', 'Integer', 'choice'),
@@ -74,8 +74,8 @@ class PolicyDetails:
       'main': ('Type::BOOLEAN', 'bool', 'Boolean', 'bool'),
       'string': ('Type::STRING', 'string', 'String', 'string'),
       'string-enum': ('Type::STRING', 'string', 'String', 'choice'),
-      'string-enum-list': ('Type::LIST', 'StringList', 'StringList',
-                           'multi-select'),
+      'string-enum-list':
+      ('Type::LIST', 'StringList', 'StringList', 'multi-select'),
   }
 
   class EnumItem:
@@ -261,32 +261,10 @@ def main():
       help='generate cloud policy protobuf file',
       metavar='FILE')
   parser.add_argument(
-      '--cpfrp',
-      '--cloud-policy-full-runtime-protobuf',
-      dest='cloud_policy_full_runtime_proto_path',
-      help='generate cloud policy full runtime protobuf',
-      metavar='FILE')
-  parser.add_argument(
       '--csp',
       '--chrome-settings-protobuf',
       dest='chrome_settings_proto_path',
       help='generate chrome settings protobuf file',
-      metavar='FILE')
-  parser.add_argument(
-      '--policy-common-definitions-protobuf',
-      dest='policy_common_definitions_proto_path',
-      help='policy common definitions protobuf file path',
-      metavar='FILE')
-  parser.add_argument(
-      '--policy-common-definitions-full-runtime-protobuf',
-      dest='policy_common_definitions_full_runtime_proto_path',
-      help='generate policy common definitions full runtime protobuf file',
-      metavar='FILE')
-  parser.add_argument(
-      '--csfrp',
-      '--chrome-settings-full-runtime-protobuf',
-      dest='chrome_settings_full_runtime_proto_path',
-      help='generate chrome settings full runtime protobuf',
       metavar='FILE')
   parser.add_argument(
       '--ard',
@@ -420,20 +398,8 @@ def main():
     GenerateFile(args.risk_header_path, _WritePolicyRiskTagHeader)
   if args.cloud_policy_proto_path:
     GenerateFile(args.cloud_policy_proto_path, _WriteCloudPolicyProtobuf)
-  if (args.policy_common_definitions_full_runtime_proto_path and
-      args.policy_common_definitions_proto_path):
-    GenerateFile(
-        args.policy_common_definitions_full_runtime_proto_path,
-        partial(_WritePolicyCommonDefinitionsFullRuntimeProtobuf,
-                args.policy_common_definitions_proto_path))
-  if args.cloud_policy_full_runtime_proto_path:
-    GenerateFile(args.cloud_policy_full_runtime_proto_path,
-                 partial(_WriteCloudPolicyProtobuf, is_full_runtime=True))
   if args.chrome_settings_proto_path:
     GenerateFile(args.chrome_settings_proto_path, _WriteChromeSettingsProtobuf)
-  if args.chrome_settings_full_runtime_proto_path:
-    GenerateFile(args.chrome_settings_full_runtime_proto_path,
-                 partial(_WriteChromeSettingsProtobuf, is_full_runtime=True))
 
   if target_platform == 'android' and args.app_restrictions_path:
     GenerateFile(args.app_restrictions_path, _WriteAppRestrictions, xml=True)
@@ -868,8 +834,8 @@ class SchemaNodesGenerator:
       # invalidating all child schema indices.
       index = len(self.schema_nodes)
       self.schema_nodes.append(
-          SchemaNode('Type::DICTIONARY', INVALID_INDEX, is_sensitive_value,
-                     False, {name}))
+          SchemaNode('Type::DICT', INVALID_INDEX, is_sensitive_value, False,
+                     {name}))
 
       if 'additionalProperties' in schema:
         additionalProperties = self.GenerateAndCollectID(
@@ -1068,7 +1034,7 @@ class SchemaNodesGenerator:
 
     handled_schema_nodes.add(index)
     has_sensitive_children = False
-    if node.schema_type == 'Type::DICTIONARY':
+    if node.schema_type == 'Type::DICT':
       properties_node = self.properties_nodes[node.extra]
       # Iterate through properties and patternProperties.
       for property_index in range(properties_node.begin,
@@ -1375,7 +1341,7 @@ void SetEnterpriseUsersDefaults(PolicyMap* policy_map) {
 def _GetStringPolicyType(policy_type):
   if policy_type == 'Type::STRING':
     return 'StringPolicyType::STRING'
-  elif policy_type == 'Type::DICTIONARY':
+  elif policy_type == 'Type::DICT':
     return 'StringPolicyType::JSON'
   elif policy_type == 'TYPE_EXTERNAL':
     return 'StringPolicyType::EXTERNAL'
@@ -1515,27 +1481,27 @@ namespace policy {
 CHROME_SETTINGS_PROTO_HEAD = '''
 syntax = "proto2";
 
-{full_runtime_comment}option optimize_for = LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
 option go_package="chromium/policy/enterprise_management_proto";
 
 // For StringList and PolicyOptions.
-import "policy_common_definitions{full_runtime_suffix}.proto";
+import "policy_common_definitions.proto";
 
 '''
 
 CLOUD_POLICY_PROTO_HEAD = '''
 syntax = "proto2";
 
-{full_runtime_comment}option optimize_for = LITE_RUNTIME;
+option optimize_for = LITE_RUNTIME;
 
 package enterprise_management;
 
 option go_package="chromium/policy/enterprise_management_proto";
 
-import "policy_common_definitions{full_runtime_suffix}.proto";
+import "policy_common_definitions.proto";
 
 '''
 
@@ -1560,7 +1526,7 @@ def _WritePolicyProto(f, policy):
     _OutputComment(f, '\nValid values:')
     for item in policy.items:
       _OutputComment(f, '  %s: %s' % (str(item.value), item.caption))
-  if policy.policy_type == 'Type::DICTIONARY':
+  if policy.policy_type == 'Type::DICT':
     _OutputComment(
         f, '\nValue schema:\n%s' % json.dumps(
             policy.schema, sort_keys=True, indent=4, separators=(',', ': ')))
@@ -1598,20 +1564,9 @@ def _FieldNumber(policy_id, chunk_number):
     return (policy_id - _LAST_TOP_LEVEL_POLICY_ID - 1) % _CHUNK_SIZE + 1
 
 
-def _WriteChromeSettingsProtobuf(policies,
-                                 policy_atomic_groups,
-                                 target_platform,
-                                 f,
-                                 risk_tags,
-                                 is_full_runtime=False):
-  # For full runtime, disable LITE_RUNTIME switch and import full runtime
-  # version of policy_common_definitions.proto.
-  full_runtime_comment = '//' if is_full_runtime else ''
-  full_runtime_suffix = '_full_runtime' if is_full_runtime else ''
-  f.write(
-      CHROME_SETTINGS_PROTO_HEAD.format(
-          full_runtime_comment=full_runtime_comment,
-          full_runtime_suffix=full_runtime_suffix))
+def _WriteChromeSettingsProtobuf(policies, policy_atomic_groups,
+                                 target_platform, f, risk_tags):
+  f.write(CHROME_SETTINGS_PROTO_HEAD)
   fields = defaultdict(list)
   f.write('// PBs for individual settings.\n\n')
   for policy in policies:
@@ -1656,19 +1611,9 @@ def _WriteChromeSettingsProtobuf(policies,
   f.write('}\n')
 
 
-def _WriteCloudPolicyProtobuf(policies,
-                              policy_atomic_groups,
-                              target_platform,
-                              f,
-                              risk_tags,
-                              is_full_runtime=False):
-  # For full runtime, disable LITE_RUNTIME switch and import full runtime
-  # version of policy_common_definitions.proto.
-  full_runtime_comment = '//' if is_full_runtime else ''
-  full_runtime_suffix = '_full_runtime' if is_full_runtime else ''
-  f.write(
-      CLOUD_POLICY_PROTO_HEAD.format(full_runtime_comment=full_runtime_comment,
-                                     full_runtime_suffix=full_runtime_suffix))
+def _WriteCloudPolicyProtobuf(policies, policy_atomic_groups, target_platform,
+                              f, risk_tags):
+  f.write(CLOUD_POLICY_PROTO_HEAD)
 
   fields = defaultdict(list)
 
@@ -1705,18 +1650,6 @@ def _WriteCloudPolicyProtobuf(policies,
                _LAST_TOP_LEVEL_POLICY_ID + RESERVED_IDS + sorted_chunk_number))
 
   f.write('}\n')
-
-
-def _WritePolicyCommonDefinitionsFullRuntimeProtobuf(
-    policy_common_definitions_proto_path, policies, policy_atomic_groups,
-    target_platform, f, risk_tags):
-  # For full runtime, disable LITE_RUNTIME switch
-  with open(policy_common_definitions_proto_path, 'r') as proto_file:
-    policy_common_definitions_proto_code = proto_file.read()
-  f.write(
-      policy_common_definitions_proto_code.replace(
-          "option optimize_for = LITE_RUNTIME;",
-          "//option optimize_for = LITE_RUNTIME;"))
 
 
 #------------------ Chrome OS policy constants header --------------#

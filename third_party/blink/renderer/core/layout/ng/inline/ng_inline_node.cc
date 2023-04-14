@@ -11,10 +11,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
@@ -407,8 +404,12 @@ inline bool NeedsShaping(const NGInlineItem& item) {
     return false;
   // Text item with length==0 exists to maintain LayoutObject states such as
   // ClearNeedsLayout, but not needed to shape.
-  if (!item.Length())
+  if (!item.Length()) {
     return false;
+  }
+  if (item.IsUnsafeToReuseShapeResult()) {
+    return true;
+  }
   const ShapeResult* shape_result = item.TextShapeResult();
   if (!shape_result)
     return true;
@@ -442,15 +443,6 @@ void TruncateOrPadText(String* text, unsigned length) {
       builder.Append(kSpaceCharacter);
     *text = builder.ToString();
   }
-}
-
-bool IsDeferrableContent(const NGInlineNodeData& data) {
-  for (wtf_size_t i = 0; i < data.text_content.length(); ++i) {
-    if (data.text_content[i] != kObjectReplacementCharacter &&
-        !IsASCIISpace(data.text_content[i]))
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -492,44 +484,6 @@ void NGInlineNode::PrepareLayoutIfNeeded() const {
   }
 }
 
-void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
-  if (Data().shaping_state_ != NGInlineNodeData::kShapingNone) {
-    if (!ShouldBeReshaped())
-      return;
-  }
-
-  NGInlineNodeData* data = MutableData();
-  auto& ds_controller = DeferredShapingController::From(*this);
-  NGInlineNodeData::ShapingState new_state = NGInlineNodeData::kShapingDone;
-  if (ds_controller.AllowDeferredShaping() &&
-      !GetLayoutBox()->IsInsideFlowThread() &&
-      Style().IsContentVisibilityVisible() &&
-      Style().ViewTransitionName().empty()) {
-    DCHECK(IsHorizontalWritingMode(Style().GetWritingMode()));
-    const LayoutUnit viewport_bottom = ds_controller.CurrentViewportBottom();
-    DCHECK_NE(viewport_bottom, kIndefiniteSize) << GetLayoutBox();
-    LayoutUnit top = ds_controller.CurrentMinimumTop();
-    // For css2.1/t080301-c411-vt-mrgn-00-b.html we should apply negative
-    // margin, but not positive margin because of margin collapse.
-    NGBoxStrut margins = ComputeMarginsForSelf(space, Style());
-    if (margins.block_start < LayoutUnit())
-      top += margins.block_start;
-    if (viewport_bottom >= LayoutUnit() && IsDeferrableContent(*data) &&
-        top > viewport_bottom) {
-      new_state = NGInlineNodeData::kShapingDeferred;
-
-      if (Element* element = DynamicTo<Element>(GetDOMNode())) {
-        ds_controller.RegisterDeferred(*element);
-      } else {
-        // We don't support deferring anonymous IFCs because DisplayLock
-        // supports only elements.
-        new_state = NGInlineNodeData::kShapingDone;
-      }
-    }
-  }
-  ShapeTextIncludingFirstLine(new_state, MutableData(), nullptr, nullptr);
-}
-
 void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
@@ -537,20 +491,8 @@ void NGInlineNode::PrepareLayout(NGInlineNodeData* previous_data) const {
   DCHECK(data);
   CollectInlines(data, previous_data);
   SegmentText(data);
-  if ((previous_data && previous_data->IsShapingDone()) ||
-      UNLIKELY(IsTextCombine())) {
-    ShapeTextIncludingFirstLine(
-        NGInlineNodeData::kShapingDone, data,
-        previous_data ? &previous_data->text_content : nullptr, nullptr);
-  } else if (previous_data && previous_data->IsShapingDeferred()) {
-    if (IsDisplayLocked()) {
-      ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDeferred, data,
-                                  &previous_data->text_content, nullptr);
-    } else {
-      ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone, data, nullptr,
-                                  nullptr);
-    }
-  }
+  ShapeTextIncludingFirstLine(
+      data, previous_data ? &previous_data->text_content : nullptr, nullptr);
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
 
@@ -957,15 +899,8 @@ bool NGInlineNode::SetTextWithOffset(LayoutText* layout_text,
   // Relocates |ShapeResult| in |previous_data| after |offset|+|length|
   editor.Run();
   node.SegmentText(data);
-  if (previous_data->IsShapingDone()) {
-    node.ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone, data,
-                                     &previous_data->text_content,
-                                     &previous_data->items);
-  } else if (previous_data->IsShapingDeferred()) {
-    node.ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDeferred, data,
-                                     &previous_data->text_content,
-                                     &previous_data->items);
-  }
+  node.ShapeTextIncludingFirstLine(data, &previous_data->text_content,
+                                   &previous_data->items);
   node.AssociateItemsWithInlines(data);
   return true;
 }
@@ -1038,7 +973,6 @@ const NGOffsetMapping* NGInlineNode::GetOffsetMapping(
     // TODO(kojii): This shouldn't happen, but is not easy to fix all cases.
     // Return nullptr so that callers can chose to fail gracefully, or
     // null-deref. crbug.com/946004
-    base::debug::DumpWithoutCrashing();
     return nullptr;
   }
 
@@ -1418,16 +1352,8 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     }
 
     // Shape each item with the full context of the entire node.
-    scoped_refptr<ShapeResult> shape_result;
-    if (MutableData() && MutableData()->IsShapingDeferred() &&
-        font.PrimaryFont()) {
-      unsigned length = end_offset - start_item.StartOffset();
-      shape_result = ShapeResult::CreateForSpacesWithPerGlyphWidth(
-          &font, TextDirection::kLtr, start_item.StartOffset(), length,
-          font.PrimaryFont()->AvgCharWidth());
-    } else {
-      shape_result = shaper.Shape(start_item, font, end_offset);
-    }
+    scoped_refptr<ShapeResult> shape_result =
+        shaper.Shape(start_item, font, end_offset);
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription()))) {
       DCHECK(!IsTextCombine()) << GetLayoutBlockFlow();
@@ -1451,6 +1377,11 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
     // "32" is heuristic, most major sites are up to 8 or so, wikipedia is 21.
     Vector<ShapeResult::ShapeRange, 32> text_item_ranges;
     text_item_ranges.ReserveInitialCapacity(num_text_items);
+    const bool has_ligatures =
+        shape_result->NumGlyphs() < shape_result->NumCharacters();
+    if (has_ligatures) {
+      shape_result->EnsurePositionData();
+    }
     for (; index < end_index; index++) {
       NGInlineItem& item = (*items)[index];
       if (item.Type() != NGInlineItem::kText || !item.Length())
@@ -1466,6 +1397,14 @@ void NGInlineNode::ShapeText(NGInlineItemsData* data,
           ShapeResult::CreateEmpty(*shape_result.get());
       text_item_ranges.emplace_back(item.StartOffset(), item.EndOffset(),
                                     item_result.get());
+      if (has_ligatures && item.EndOffset() < shape_result->EndIndex() &&
+          shape_result->CachedNextSafeToBreakOffset(item.EndOffset()) !=
+              item.EndOffset()) {
+        // Note: We should not reuse `ShapeResult` ends with ligature glyph.
+        // e.g. <div>f<span>i</div> to <div>f</div> with ligature "fi".
+        // See http://crbug.com/1409702
+        item.SetUnsafeToReuseShapeResult();
+      }
       item.shape_result_ = std::move(item_result);
     }
     DCHECK_EQ(text_item_ranges.size(), num_text_items);
@@ -1530,22 +1469,11 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) const {
 }
 
 void NGInlineNode::ShapeTextIncludingFirstLine(
-    NGInlineNodeData::ShapingState new_state,
     NGInlineNodeData* data,
     const String* previous_text,
     const HeapVector<NGInlineItem>* previous_items) const {
-  DCHECK_NE(new_state, NGInlineNodeData::kShapingNone);
-  data->shaping_state_ = new_state;
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-  // Because |ElapsedTimer| causes notable speed regression on Android and
-  // ChromeOS, we don't use it. See http://crbug.com/1261519
-#else
-  FontPerformance::ShapeTextTimingScope shape_text_timing_scope;
-#endif
-
   ShapeText(data, previous_text, previous_items);
-  if (new_state == NGInlineNodeData::kShapingDone)
-    ShapeTextForFirstLineIfNeeded(data);
+  ShapeTextForFirstLineIfNeeded(data);
 }
 
 void NGInlineNode::AssociateItemsWithInlines(NGInlineNodeData* data) const {
@@ -1586,7 +1514,6 @@ const NGLayoutResult* NGInlineNode::Layout(
     const NGColumnSpannerPath* column_spanner_path,
     NGInlineChildLayoutContext* context) const {
   PrepareLayoutIfNeeded();
-  ShapeTextOrDefer(constraint_space);
 
   const auto* inline_break_token = To<NGInlineBreakToken>(break_token);
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space, inline_break_token,
@@ -1951,7 +1878,6 @@ MinMaxSizesResult NGInlineNode::ComputeMinMaxSizes(
     const NGConstraintSpace& space,
     const MinMaxSizesFloatInput& float_input) const {
   PrepareLayoutIfNeeded();
-  ShapeTextOrDefer(space);
 
   // Compute the max of inline sizes of all line boxes with 0 available inline
   // size. This gives the min-content, the width where lines wrap at every
@@ -1981,17 +1907,6 @@ MinMaxSizesResult NGInlineNode::ComputeMinMaxSizes(
 bool NGInlineNode::UseFirstLineStyle() const {
   return GetLayoutBox() &&
          GetLayoutBox()->GetDocument().GetStyleEngine().UsesFirstLineRules();
-}
-
-bool NGInlineNode::ShouldBeReshaped() const {
-  if (!Data().IsShapingDeferred())
-    return false;
-  return !IsDisplayLocked();
-}
-
-bool NGInlineNode::IsDisplayLocked() const {
-  return DeferredShapingController::From(*this).IsRegisteredDeferred(
-      *To<Element>(GetDOMNode()));
 }
 
 void NGInlineNode::CheckConsistency() const {

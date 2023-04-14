@@ -133,11 +133,13 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="163517899691012366">Las notificaciones se silencian cuando la función No molestar está activada</translation>
 <translation id="1637505162081889933"><ph name="NUM_DEVICES" /> dispositivos</translation>
 <translation id="1639239467298939599">Cargando</translation>
+<translation id="1647986356840967552">Página anterior</translation>
 <translation id="1654477262762802994">Iniciar una consulta por voz</translation>
 <translation id="1668469839109562275">VPN integrada</translation>
 <translation id="1677472565718498478">Queda: <ph name="TIME" /></translation>
 <translation id="1677507110654891115"><ph name="FEATURE_NAME" /> no se ha conectado.</translation>
 <translation id="1677582821739292812">Alguien está mirando tu pantalla</translation>
+<translation id="1683399938733266832">Uso actual de la CPU: <ph name="CPU_USEAGE" /> %</translation>
 <translation id="169515659049020177">Mayús</translation>
 <translation id="1698080062160024910">Temporizador de <ph name="TOTAL_TIME" /> · <ph name="LABEL" /></translation>
 <translation id="1698760176351776263">Dirección IPv6: <ph name="ADDRESS" /></translation>
@@ -162,7 +164,6 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="1771761307086386028">Desplazar a la derecha</translation>
 <translation id="1774796056689732716">Calendario, <ph name="CURRENT_MONTH_YEAR" />, actualmente está seleccionado el <ph name="DATE" />.</translation>
 <translation id="1787955149152357925">No</translation>
-<translation id="1797271123677381264">He olvidado la contraseña</translation>
 <translation id="1807246157184219062">Claro</translation>
 <translation id="181103072419391116">Intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>
 <translation id="1816896987747843206">Esto permite que accedan a la cámara todas las aplicaciones y sitios web con el permiso de cámara</translation>
@@ -381,6 +382,7 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3051189971848907985">Cambiando el nombre del perfil. Espera unos minutos.</translation>
 <translation id="3055162170959710888">Hoy has utilizado este dispositivo durante <ph name="USED_TIME" /></translation>
 <translation id="3062298103034426069">No compatible</translation>
+<translation id="3068622547379332530">Versión <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="3068711042108640621">La estantería está en la parte izquierda</translation>
 <translation id="3077734595579995578">mayús</translation>
 <translation id="3081696990447829002">Mostrar menú</translation>
@@ -421,9 +423,11 @@ Aquí tienes algunas cosas que puedes probar para empezar.</translation>
 <translation id="3289674678944039601">Cargando mediante adaptador de CA</translation>
 <translation id="3290356915286466215">No segura</translation>
 <translation id="3294437725009624529">Invitado</translation>
+<translation id="3298690094479023523">Todavía no se ha podido verificar tu PIN o contraseña. Inténtalo de nuevo.</translation>
 <translation id="3307642347673023554">Se ha cambiado al modo portátil</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> podrá iniciar sesión después de la eliminación.</translation>
 <translation id="3321628682574733415">Código parental incorrecto</translation>
+<translation id="332827762492701193">Las notificaciones están ocultas</translation>
 <translation id="3339826665088060472">Captura de pantalla, herramientas para hacer capturas y grabaciones de pantalla</translation>
 <translation id="3340978935015468852">configuración</translation>
 <translation id="3341303451326249809">Captura de pantalla guardada</translation>
@@ -555,12 +559,14 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="397726367135689299">Puede que la carga de la batería no sea fiable.</translation>
 <translation id="3977512764614765090">La batería se está cargando y está al <ph name="PERCENTAGE" /> %.</translation>
+<translation id="3984536049089846927">Página siguiente</translation>
 <translation id="3986082989454912832">Responder</translation>
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="40062176907008878">Escritura a mano</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
 <translation id="401993194061514265">Rotulador no disponible. Vuelve a abrir Grabación de pantalla.</translation>
 <translation id="4021716437419160885">Desplazarse hacia abajo</translation>
+<translation id="4024840464866786680">Si has olvidado el PIN y la contraseña o has cambiado la contraseña de tu cuenta de Google recientemente, prueba a recuperar este usuario.</translation>
 <translation id="4028481283645788203">Introduce la contraseña como medida de seguridad adicional</translation>
 <translation id="4032485810211612751"><ph name="HOURS" />:<ph name="MINUTES" />:<ph name="SECONDS" /></translation>
 <translation id="4042660782729322247">Estás compartiendo tu pantalla</translation>
@@ -576,9 +582,10 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4123259114412175274">Para desbloquear tu Chromebook, asegúrate de que el Bluetooth de tu teléfono esté activado</translation>
 <translation id="4125970834901680537">No se pueden emitir aplicaciones en modo Tablet. Vuelve a intentarlo en modo Portátil.</translation>
 <translation id="4129129681837227511">Para poder ver las notificaciones desde la pantalla de bloqueo, desbloquea el dispositivo para cambiar este ajuste</translation>
-<translation id="4130035430755296270">Mantén el cursor colocado sobre un elemento para ver más opciones de diseño</translation>
+<translation id="4131973331381812765">Temperatura: <ph name="TEMPERATURE" /> °C - Velocidad actual: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="4136724716305260864">Activada hasta el amanecer</translation>
 <translation id="4146833061457621061">Pon música</translation>
+<translation id="4150201353443180367">Pantalla</translation>
 <translation id="4165275524535002941">El cable no es compatible con las pantallas</translation>
 <translation id="4177913004758410636">{0,plural, =1{Actualiza el dispositivo en un plazo de 1 día}other{Actualiza el dispositivo en un plazo de # días}}</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -700,10 +707,12 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4735944890391795473">Escritorio 12</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4740516757091333363">¿Eliminar escritorio guardado?</translation>
+<translation id="4747410141429390146">Desbloquea el dispositivo para ver las notificaciones</translation>
 <translation id="4752784485658729358">Solo se pueden guardar 6 escritorios. Quita un escritorio para guardar uno nuevo.</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4762573482154983647">Ocultar aplicaciones</translation>
 <translation id="4774338217796918551">Vuelve mañana a las <ph name="COME_BACK_TIME" />.</translation>
+<translation id="4776584068981882959">Todavía no se ha podido verificar tu contraseña. Inténtalo de nuevo.</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4777825441726637019">Play Store</translation>
 <translation id="4778095205580009397">El Asistente de Google no está disponible en las sesiones de demostración.</translation>
@@ -728,6 +737,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4895488851634969361">La batería está llena.</translation>
 <translation id="490375751687810070">Vertical</translation>
 <translation id="490788395437447240"><ph name="BATTERY_PERCENTAGE" /> % de batería</translation>
+<translation id="491504982845934899">Activar <ph name="NETWORK_NAME" /> tras configurar el dispositivo</translation>
 <translation id="4917385247580444890">Buena</translation>
 <translation id="4918086044614829423">Aceptar</translation>
 <translation id="4919841137949306064"><ph name="APP_NAME" /> está usando tu cámara</translation>
@@ -843,6 +853,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5536723544185013515">Aplicaciones recientes, desplázate con las teclas de flecha hacia la izquierda o hacia la derecha para acceder a todas las aplicaciones recientes</translation>
 <translation id="553675580533261935">Saliendo de la sesión</translation>
 <translation id="5537725057119320332">Enviar</translation>
+<translation id="5546397813406633847">Recuperar usuario</translation>
 <translation id="554893713779400387">Activar o desactivar dictado</translation>
 <translation id="5558091555391176027">Activar o desactivar alta visibilidad en Compartir con Nearby</translation>
 <translation id="5560420195677022218">Consulta las aplicaciones de tu teléfono en tu <ph name="DEVICE_TYPE" /></translation>
@@ -859,6 +870,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5618148318840095371">Te hemos pasado a una red mejor</translation>
 <translation id="5619862035903135339">La política del administrador inhabilita la captura de pantalla</translation>
 <translation id="5625955975703555628">LTE+</translation>
+<translation id="5627392655516693966">No se ha podido verificar tu contraseña. Inténtalo de nuevo.</translation>
 <translation id="5648021990716966815">Conector jack para micrófono</translation>
 <translation id="5652575806481723716"><ph name="FOCUSED_APP_NAME" /> solicita tu atención.</translation>
 <translation id="5662075790140998213">Escritorio 10</translation>
@@ -877,6 +889,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5707775774148071965">Tu dispositivo admite una tasa de datos mayor que tu cable. El rendimiento del dispositivo puede verse limitado.</translation>
 <translation id="5710450975648804523">Modo No molestar activado</translation>
 <translation id="571295407079589142">Los datos móviles están desactivados</translation>
+<translation id="5727460725221669831">Si has olvidado la contraseña o has cambiado la contraseña de tu cuenta de Google recientemente, prueba a recuperar este usuario.</translation>
 <translation id="573413375004481890">Este dispositivo no puede admitir todas tus pantallas, así que se ha desconectado una</translation>
 <translation id="5740328398383587084">Compartir con Nearby</translation>
 <translation id="574392208103952083">Media</translation>
@@ -906,6 +919,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="5867606971598166637">El administrador del sistema está monitorizando tus pantallas</translation>
 <translation id="5876666360658629066">Introduce el código parental</translation>
 <translation id="5881540930187678962">Configurar Mi teléfono más tarde</translation>
+<translation id="5881663018261910378">Desactivada</translation>
 <translation id="5887954372087850114">Ventana <ph name="WINDOW_TITLE" /> asignada a <ph name="DESK_TITLE" /> y desasignada de todos los demás escritorios</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
 <translation id="589817443623831496">Búsqueda por punto</translation>
@@ -1320,6 +1334,7 @@ Nueva instalación</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8131994907636310308">Cerrar la notificación del sistema para ordenar</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
+<translation id="8138705869659070104">Activar tras la configuración</translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142441511840089262">Doble clic</translation>
 <translation id="8142699993796781067">Red privada</translation>

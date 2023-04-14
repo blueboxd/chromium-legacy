@@ -125,16 +125,18 @@ bool CheckAndSetPrefetchHoldbackStatus(
   if (!preloading_attempt)
     return true;
 
+  // In addition to the globally-controlled preloading config, check for the
+  // feature-specific holdback. We disable the feature if the user is in either
+  // of those holdbacks.
   if (base::GetFieldTrialParamByFeatureAsBool(kSearchPrefetchServicePrefetching,
                                               "prefetch_holdback", false)) {
     preloading_attempt->SetHoldbackStatus(
         content::PreloadingHoldbackStatus::kHoldback);
-    return false;
-  } else {
-    preloading_attempt->SetHoldbackStatus(
-        content::PreloadingHoldbackStatus::kAllowed);
-    return true;
   }
+  if (preloading_attempt->ShouldHoldback()) {
+    return false;
+  }
+  return true;
 }
 
 void SetTriggeringOutcome(content::PreloadingAttempt* preloading_attempt,
@@ -457,6 +459,10 @@ SearchPrefetchService::TakePrerenderFromMemoryCache(
   auto iter =
       RetrieveSearchTermsInMemoryCache(tentative_resource_request, recorder);
   if (iter == prefetches_.end()) {
+    // TODO(https://crbug.com/1414058): Recorder's state should not be
+    // kPrerendered, but it happened unexpectedly due to
+    // restarting/serviceworker interception within prerender navigation stack
+    // on ChromeOS.
     return nullptr;
   }
 
@@ -1108,6 +1114,7 @@ SearchPrefetchService::RetrieveSearchTermsInMemoryCache(
           SearchPrefetchServingReason::kRequestFailed));
       break;
     case SearchPrefetchStatus::kPrerendered:
+    case SearchPrefetchStatus::kPrerenderedAndClicked:
       recorder.reason_ = SearchPrefetchServingReason::kPrerendered;
       break;
     default:

@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Direkte Internetverbindung</translation>
 <translation id="1272293450992660632">Die PIN-Werte stimmen nicht überein.</translation>
 <translation id="1280820357415527819">Nach Mobilfunknetzen wird gesucht</translation>
-<translation id="1291603679744561561">SIM-Karte gesperrt</translation>
 <translation id="1293556467332435079">Dateien</translation>
 <translation id="1297922636971898492">Google Drive ist momentan nicht verfügbar. Das Hochladen deiner Dateien wird automatisch fortgesetzt, sobald Google Drive wieder verfügbar ist.</translation>
 <translation id="1307931752636661898">Linux-Dateien können nicht angezeigt werden</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Um Dateien in Parallels Desktop per Drag-and-drop abzulegen, muss die Datei in „Windows-Dateien“ verschoben werden.</translation>
 <translation id="1435838927755162558">Ordner für Parallels Desktop freigeben</translation>
 <translation id="1439919885608649279">Person mit Blumen</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> trennen</translation>
 <translation id="1471718551822868769">Slowakisch</translation>
 <translation id="1482884275703521657">Finnisch</translation>
 <translation id="148466539719134488">Schweizerdeutsch</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 Ordner für Bruschetta freigegeben</translation>
 <translation id="2578394532502990878">Tamil (phonetisch)</translation>
 <translation id="2579959351793446050">Oriya</translation>
+<translation id="2587195714949534472">Synchronisierung von „<ph name="FILE_NAME" />“ wird vorbereitet…</translation>
 <translation id="2602810353103180630">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Signalstärke <ph name="SIGNAL_STRENGTH" /> %, vom Administrator blockiert, Details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" />-Video</translation>
 <translation id="2620090360073999360">Google Drive ist momentan nicht erreichbar.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongolisch</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> Fehler</translation>
 <translation id="3509680540198371098">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" /> %, Details</translation>
+<translation id="3511705761158917664">Synchronisierung von <ph name="NUMBER_OF_ITEMS" /> Elementen wird vorbereitet…</translation>
 <translation id="3522708245912499433">Portugiesisch</translation>
 <translation id="3524311639100184459">Vorsicht: Dies sind temporäre Dateien, die möglicherweise automatisch gelöscht werden, um Speicherplatz freizugeben.  <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Ordner</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Einfügen</translation>
 <translation id="3952872973865944257">Telugu (phonetisch)</translation>
+<translation id="3954354850384043518">In Arbeit</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Mobiles Profil herunterladen, Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Englisch (Vereinigtes Königreich)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Benutzerdefinierte Nameserver</translation>
 <translation id="4465725236958772856">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, von deinem Administrator verwaltet, Verbinden</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Keine passenden Ergebnisse</translation>
 <translation id="4477002475007461989">Rumänisch</translation>
 <translation id="4477219268485577442">Bulgarisch – phonetisch</translation>
 <translation id="4508265954913339219">Aktivierung fehlgeschlagen</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Der Name darf höchstens <ph name="MAX_LENGTH" /> Zeichen lang sein</translation>
 <translation id="4973970068702235170">Fehler beim Zippen, unerwarteter Fehler: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japanisch</translation>
+<translation id="4987699874727873250">Englisch (Indien)</translation>
 <translation id="4988205478593450158">Soll "<ph name="FILE_NAME" />" wirklich gelöscht werden?</translation>
 <translation id="498902553138568924">Roter Schmetterling</translation>
 <translation id="4992066212339426712">Stummschaltung aufheben</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">Keine zuletzt angesehenen Bilder</translation>
 <translation id="7460898608667578234">Ukrainisch</translation>
 <translation id="7469894403370665791">Verbindung zu diesem Netzwerk automatisch herstellen</translation>
+<translation id="7481358317100446445">Bereit</translation>
 <translation id="7486315294984620427">Um Dateien in Parallels Desktop per Drag-and-drop abzulegen, muss die Datei in „Windows-Dateien“ kopiert werden.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (phonetisch)</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Einfacher Zugriff auf Google Fotos</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Versuch es mit einer anderen Suchanfrage</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> Elemente in Papierkorb verschoben</translation>
 <translation id="7693909743393669729">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht und alle vorhandenen Partitionen entfernt. Dies schließt ggf. auch Partitionen ein, die nicht sichtbar sind. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
 <translation id="7695430100978772476">"<ph name="DRIVE_NAME" />" konnte nicht formatiert werden</translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">Arabisch (Transliteration)</translation>
 <translation id="8873014196523807561">Wenn du diese Elemente wiederherstellen möchtest, ziehe sie in einen neuen Ordner. Die ursprünglichen Ordner für einige dieser Elemente wurden gelöscht.</translation>
 <translation id="8874184842967597500">Nicht verbunden</translation>
+<translation id="8876368061475701452">In der Warteschlange</translation>
 <translation id="8900820606136623064">Ungarisch</translation>
 <translation id="8903931173357132290">Absolvent</translation>
 <translation id="8912078710089354287">Hund, der mit dem Schwanz wedelt</translation>

@@ -9,9 +9,9 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
-#include "media/base/bind_to_current_loop.h"
 #include "media/base/cross_origin_data_source.h"
 #include "media/base/data_source.h"
 #include "media/base/media_switches.h"
@@ -140,10 +140,10 @@ void DemuxerManager::OnPipelineError(PipelineStatus error) {
 
 #if BUILDFLAG(IS_ANDROID)
   if (error == DEMUXER_ERROR_DETECTED_HLS) {
-    PipelineStatus::Or<GURL> hls_url =
+    PipelineStatus reset_status =
         ResetAfterHlsDetected(client_->IsSecurityOriginCryptographic());
-    if (!hls_url.has_value()) {
-      client_->OnError(std::move(hls_url).error().AddCause(std::move(error)));
+    if (!reset_status.is_ok()) {
+      client_->OnError(std::move(reset_status).AddCause(std::move(error)));
       return;
     }
     // We have to stop the pipeline and delete the demuxer thread dumper pronto.
@@ -171,7 +171,7 @@ void DemuxerManager::FreeResourcesAfterMediaThreadWait(base::OnceClosure cb) {
   // to post to the media thread and back.
   media_task_runner_->PostTask(
       FROM_HERE,
-      BindToCurrentLoop(base::BindOnce(
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
           [](std::unique_ptr<Demuxer> demuxer,
              std::unique_ptr<DataSource> data_source,
              base::OnceClosure done_cb) {
@@ -192,8 +192,7 @@ void DemuxerManager::SetLoadedUrl(GURL url) {
   loaded_url_ = std::move(url);
 }
 
-PipelineStatus::Or<GURL> DemuxerManager::ResetAfterHlsDetected(
-    bool cryptographic_url) {
+PipelineStatus DemuxerManager::ResetAfterHlsDetected(bool cryptographic_url) {
 #if BUILDFLAG(IS_ANDROID)
   // If HLS isn't enabled, HLS detection should be the error.
   if (!base::FeatureList::IsEnabled(kHlsPlayer)) {
@@ -239,7 +238,11 @@ PipelineStatus::Or<GURL> DemuxerManager::ResetAfterHlsDetected(
   // Can't fail anymore, so set hls flag to true for next time we create a
   // new demuxer.
   demuxer_found_hls_ = true;
-  return GetDataSourceUrlAfterRedirects().value();
+  loaded_url_ = GetDataSourceUrlAfterRedirects().value();
+  if (client_) {
+    client_->UpdateLoadedUrl(loaded_url_);
+  }
+  return OkStatus();
 #else
   return DEMUXER_ERROR_DETECTED_HLS;
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -479,11 +482,11 @@ std::unique_ptr<Demuxer> DemuxerManager::CreateChunkDemuxer() {
   }
 
   return std::make_unique<ChunkDemuxer>(
-      BindToCurrentLoop(base::BindOnce(&DemuxerManager::OnChunkDemuxerOpened,
-                                       weak_factory_.GetWeakPtr())),
-      BindToCurrentLoop(base::BindRepeating(&DemuxerManager::OnProgress,
-                                            weak_factory_.GetWeakPtr())),
-      BindToCurrentLoop(
+      base::BindPostTaskToCurrentDefault(base::BindOnce(
+          &DemuxerManager::OnChunkDemuxerOpened, weak_factory_.GetWeakPtr())),
+      base::BindPostTaskToCurrentDefault(base::BindRepeating(
+          &DemuxerManager::OnProgress, weak_factory_.GetWeakPtr())),
+      base::BindPostTaskToCurrentDefault(
           base::BindRepeating(&DemuxerManager::OnEncryptedMediaInitData,
                               weak_factory_.GetWeakPtr())),
       media_log_.get());
@@ -494,10 +497,10 @@ std::unique_ptr<Demuxer> DemuxerManager::CreateFFmpegDemuxer() {
   DCHECK(data_source_);
   return std::make_unique<FFmpegDemuxer>(
       media_task_runner_, data_source_.get(),
-      BindToCurrentLoop(
+      base::BindPostTaskToCurrentDefault(
           base::BindRepeating(&DemuxerManager::OnEncryptedMediaInitData,
                               weak_factory_.GetWeakPtr())),
-      BindToCurrentLoop(
+      base::BindPostTaskToCurrentDefault(
           base::BindRepeating(&DemuxerManager::OnFFmpegMediaTracksUpdated,
                               weak_factory_.GetWeakPtr())),
       media_log_.get(), IsLocalFile(loaded_url_));

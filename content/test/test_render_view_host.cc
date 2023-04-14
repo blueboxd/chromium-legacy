@@ -104,7 +104,12 @@ gfx::NativeViewAccessible TestRenderWidgetHostView::GetNativeViewAccessible() {
 }
 
 ui::TextInputClient* TestRenderWidgetHostView::GetTextInputClient() {
+#if !BUILDFLAG(IS_IOS)
   return &text_input_client_;
+#else
+  NOTREACHED();
+  return nullptr;
+#endif
 }
 
 bool TestRenderWidgetHostView::HasFocus() {
@@ -281,8 +286,10 @@ void TestRenderWidgetHostView::NotifyHostAndDelegateOnWasShown(
   }
 }
 
-void TestRenderWidgetHostView::RequestPresentationTimeFromHostOrDelegate(
-    blink::mojom::RecordContentToVisibleTimeRequestPtr visible_time_request) {
+void TestRenderWidgetHostView::
+    RequestSuccessfulPresentationTimeFromHostOrDelegate(
+        blink::mojom::RecordContentToVisibleTimeRequestPtr
+            visible_time_request) {
   // Should only be called if the view was already shown.
 #if !BUILDFLAG(IS_ANDROID)
   // TODO(jonross): Update the constructor to determine showing state
@@ -302,7 +309,7 @@ void TestRenderWidgetHostView::RequestPresentationTimeFromHostOrDelegate(
 }
 
 void TestRenderWidgetHostView::
-    CancelPresentationTimeRequestForHostAndDelegate() {
+    CancelSuccessfulPresentationTimeRequestForHostAndDelegate() {
   // Should only be called if the view was already shown.
   EXPECT_TRUE(is_showing_);
   EXPECT_FALSE(is_occluded_);

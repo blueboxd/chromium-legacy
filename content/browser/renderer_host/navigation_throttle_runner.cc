@@ -39,6 +39,8 @@ NavigationThrottle::ThrottleCheckResult ExecuteNavigationEvent(
       return throttle->WillFailRequest();
     case NavigationThrottleRunner::Event::WillProcessResponse:
       return throttle->WillProcessResponse();
+    case NavigationThrottleRunner::Event::WillCommitWithoutUrlLoader:
+      return throttle->WillCommitWithoutUrlLoader();
     default:
       NOTREACHED();
   }
@@ -56,6 +58,8 @@ const char* GetEventName(NavigationThrottleRunner::Event event) {
       return "NavigationThrottle::WillFailRequest";
     case NavigationThrottleRunner::Event::WillProcessResponse:
       return "NavigationThrottle::WillProcessResponse";
+    case NavigationThrottleRunner::Event::WillCommitWithoutUrlLoader:
+      return "NavigationThrottle::WillCommitWithoutUrlLoader";
     default:
       NOTREACHED();
   }
@@ -72,6 +76,8 @@ const char* GetEventNameForHistogram(NavigationThrottleRunner::Event event) {
       return "WillFailRequest";
     case NavigationThrottleRunner::Event::WillProcessResponse:
       return "WillProcessResponse";
+    case NavigationThrottleRunner::Event::WillCommitWithoutUrlLoader:
+      return "WillCommitWithoutUrlLoader";
     default:
       NOTREACHED();
   }
@@ -190,6 +196,46 @@ void NavigationThrottleRunner::RegisterNavigationThrottles() {
   // wait for the JS task that starts the navigation to finish, so add it close
   // to the end to not delay running other throttles.
   AddThrottle(RendererCancellationThrottle::MaybeCreateThrottleFor(request));
+
+  // Defer any cross-document subframe history navigations if there is an
+  // associated main-frame same-document history navigation in progress, until
+  // the main frame has had an opportunity to fire a navigate event in the
+  // renderer. If the navigate event cancels the history navigation, the
+  // subframe navigations should not proceed.
+  AddThrottle(
+      SubframeHistoryNavigationThrottle::MaybeCreateThrottleFor(request));
+
+  // Insert all testing NavigationThrottles last.
+  throttles_.insert(throttles_.end(),
+                    std::make_move_iterator(testing_throttles.begin()),
+                    std::make_move_iterator(testing_throttles.end()));
+}
+
+void NavigationThrottleRunner::
+    RegisterNavigationThrottlesForCommitWithoutUrlLoader() {
+  // Note: |throttle_| might not be empty. Some NavigationThrottles might have
+  // been registered with RegisterThrottleForTesting. These must reside at the
+  // end of |throttles_|. TestNavigationManagerThrottle expects that the
+  // NavigationThrottles added for test are the last NavigationThrottles to
+  // execute. Take them out while appending the rest of the
+  // NavigationThrottles.
+  std::vector<std::unique_ptr<NavigationThrottle>> testing_throttles =
+      std::move(throttles_);
+
+  // The NavigationRequest associated with the NavigationThrottles this
+  // NavigationThrottleRunner manages.
+  // Unit tests that do not use NavigationRequest should never call
+  // RegisterNavigationThrottlesForCommitWithoutUrlLoader as this function
+  // expects |delegate_| to be a NavigationRequest.
+  NavigationRequest* request = static_cast<NavigationRequest*>(delegate_);
+
+  // Defer any same-document subframe history navigations if there is an
+  // associated main-frame same-document history navigation in progress, until
+  // the main frame has had an opportunity to fire a navigate event in the
+  // renderer. If the navigate event cancels the history navigation, the
+  // subframe navigations should not proceed.
+  AddThrottle(
+      SubframeHistoryNavigationThrottle::MaybeCreateThrottleFor(request));
 
   // Insert all testing NavigationThrottles last.
   throttles_.insert(throttles_.end(),

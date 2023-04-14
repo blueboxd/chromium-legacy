@@ -232,7 +232,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
   switch (suggestion.frontend_id) {
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:
       // User selected 'Autofill Options'.
-      manager_->ShowAutofillSettings(popup_type_ == PopupType::kCreditCards);
+      autofill_metrics::LogAutofillSelectedManageEntry(popup_type_);
+      manager_->ShowAutofillSettings(popup_type_);
       break;
     case POPUP_ITEM_ID_CLEAR_FORM:
       // User selected 'Clear form'.
@@ -259,7 +260,8 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
       driver_->RendererShouldFillFieldWithValue(query_field_.global_id(),
                                                 suggestion.main_text.value);
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
-                                                suggestion.frontend_id);
+                                                suggestion.frontend_id,
+                                                query_form_, query_field_);
       break;
     case POPUP_ITEM_ID_SCAN_CREDIT_CARD:
       manager_->client()->ScanCreditCard(base::BindOnce(
@@ -291,7 +293,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const Suggestion& suggestion,
     case POPUP_ITEM_ID_SEE_PROMO_CODE_DETAILS:
       manager_->OnSeePromoCodeOfferDetailsSelected(
           suggestion.GetPayload<GURL>(), suggestion.main_text.value,
-          suggestion.frontend_id);
+          suggestion.frontend_id, query_form_, query_field_);
       break;
     default:
       if (suggestion.frontend_id > 0) {  // Denotes an Autofill suggestion.
@@ -440,11 +442,7 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
   // popup layout experiment.
   suggestions->push_back(Suggestion(GetSettingsSuggestionValue()));
   suggestions->back().frontend_id = POPUP_ITEM_ID_AUTOFILL_OPTIONS;
-
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillUseConsistentPopupSettingsIcons)) {
-    suggestions->back().icon = "settingsIcon";
-  }
+  suggestions->back().icon = "settingsIcon";
 
   // On Android and Desktop, Google Pay branding is shown along with Settings.
   // So Google Pay Icon is just attached to an existing menu item.

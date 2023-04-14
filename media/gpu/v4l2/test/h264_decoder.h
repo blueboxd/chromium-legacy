@@ -4,8 +4,15 @@
 #ifndef MEDIA_GPU_V4L2_TEST_H264_DECODER_H_
 #define MEDIA_GPU_V4L2_TEST_H264_DECODER_H_
 
-#include <linux/media/h264-ctrls-upstream.h>
+// build_config.h must come before BUILDFLAG()
+#include "build/build_config.h"
 
+// ChromeOS specific header; does not exist upstream
+#if BUILDFLAG(IS_CHROMEOS)
+#include <linux/media/h264-ctrls-upstream.h>
+#endif
+
+#include <map>
 #include <set>
 
 #include "base/files/memory_mapped_file.h"
@@ -26,9 +33,9 @@ struct PreviousRefPicOrder {
 };
 
 // H264DPB is a class representing a Decoded Picture Buffer (DPB).
-// The DPB is a vector of H264 picture slice metadata objects that
+// The DPB is a map of H264 picture slice metadata objects that
 // describe the pictures used in the H.264 decoding process.
-class H264DPB : public std::vector<std::unique_ptr<H264SliceMetadata>> {
+class H264DPB : public std::map<uint64_t, H264SliceMetadata> {
  public:
   H264DPB() = default;
   ~H264DPB() = default;
@@ -40,7 +47,7 @@ class H264DPB : public std::vector<std::unique_ptr<H264SliceMetadata>> {
   // in the DPB.
   int CountRefPics();
   // Deletes input H264SliceMetadata object from the DPB.
-  void Delete(H264SliceMetadata* pic);
+  void Delete(const H264SliceMetadata& pic);
   // Deletes any H264SliceMetadata object from DPB that is considered
   // to be unused by the decoder.
   // An H264SliceMetadata is unused if it has been outputted and is not a
@@ -56,7 +63,6 @@ class H264DPB : public std::vector<std::unique_ptr<H264SliceMetadata>> {
   // Updates every H264SliceMetadata object in the DPB to indicate that they are
   // not reference elements.
   void MarkAllUnusedRef();
-  void StorePic(H264SliceMetadata* pic);
   // Updates each H264SliceMetadata object in DPB's frame num wrap
   // based on the max frame num.
   void UpdateFrameNumWrap(const int curr_frame_num, const int max_frame_num);
@@ -88,9 +94,15 @@ class H264Decoder : public VideoDecoder {
               std::unique_ptr<V4L2Queue> OUTPUT_queue,
               std::unique_ptr<V4L2Queue> CAPTURE_queue);
 
-  // Processes NALU's until reaching the end of the current frame.  This method
-  // will send Ext Ctrls via IOCTL calls to indicate the start of a frame.
+  // Processes NALU's until reaching the end of the current frame.  To
+  // know the end of the current frame it may be necessary to start parsing
+  // the next frame.  If this occurs the NALU that was parsed needs to be
+  // held over until the next frame.  This is done in |pending_nalu_|
+  // Not every frame has a SPS/PPS associated with it.  The SPS/PPS must
+  // occur on an IDR frame.  Store the last seen slice header in
+  // |pending_slice_header_| so it will be available for the next frame.
   H264Parser::Result ProcessNextFrame(
+      const int frame_number,
       std::unique_ptr<H264SliceHeader>* resulting_slice_header);
 
   // Sends IOCTL call to device with the frame's SPS, PPS, and Scaling Matrix
@@ -99,20 +111,25 @@ class H264Decoder : public VideoDecoder {
       int sps_id,
       int pps_id,
       H264SliceHeader* slice_hdr,
-      std::unique_ptr<H264SliceMetadata>& slice_metadata,
+      H264SliceMetadata* slice_metadata,
       v4l2_ctrl_h264_decode_params* v4l2_decode_param);
 
-  // Transmits each H264 Slice associated with the current frame to the
-  // device.  Additionally sends Decode Parameters and Decode Mode
-  // via IOCTL Ext Ctrls.
-  VideoDecoder::Result SubmitSlice(H264SliceHeader curr_slice, int frame_num);
+  // Finishes frame processing for the current decoded frame. Transmits decode
+  // parameters via IOCTL Ext Ctrls. It continues to execute decoded ref
+  // picture marking process as defined in section 8.2.5. Finally, using
+  // the DPB, transmit H264 Slices to the device for the current frame.
+  VideoDecoder::Result FinishFrame(
+      const H264SliceHeader& curr_slice,
+      int frame_num,
+      v4l2_ctrl_h264_decode_params& v4l2_decode_param,
+      H264SliceMetadata& slice_metadata);
 
   // Initializes H264 Slice Metadata based on slice header and
   // based on H264 specifications which it calculates its pic order count.
   VideoDecoder::Result InitializeSliceMetadata(
       const H264SliceHeader& slice_hdr,
       const H264SPS* sps,
-      std::unique_ptr<H264SliceMetadata>& slice_metadata) const;
+      H264SliceMetadata* slice_metadata) const;
 
   // Returns all CAPTURE buffer indexes that can be reused for a
   // VIDIOC_QBUF ioctl call.

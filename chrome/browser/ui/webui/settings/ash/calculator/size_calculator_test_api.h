@@ -47,6 +47,23 @@ class FreeDiskSpaceTestAPI {
   FreeDiskSpaceCalculator free_disk_space_calculator_;
 };
 
+class DriveOfflineSizeTestAPI {
+ public:
+  DriveOfflineSizeTestAPI(StorageHandler* handler, Profile* profile)
+      : drive_offline_size_calculator_(profile) {
+    drive_offline_size_calculator_.AddObserver(handler);
+  }
+
+  void StartCalculation() { drive_offline_size_calculator_.StartCalculation(); }
+
+  void SimulateOnGetOfflineItemsSize(int64_t offline_bytes) {
+    drive_offline_size_calculator_.OnGetOfflineItemsSize(offline_bytes);
+  }
+
+ private:
+  DriveOfflineSizeCalculator drive_offline_size_calculator_;
+};
+
 class MyFilesSizeTestAPI {
  public:
   MyFilesSizeTestAPI(StorageHandler* handler, Profile* profile)
@@ -106,6 +123,13 @@ class AppsSizeTestAPI {
     apps_size_calculator_.OnGetAndroidAppsSize(succeeded, std::move(result));
   }
 
+  void SimulateOnGetBorealisAppsSize(
+      bool succeeded,
+      vm_tools::concierge::ListVmDisksResponse response) {
+    response.set_success(succeeded);
+    apps_size_calculator_.OnGetBorealisAppsSize(std::move(response));
+  }
+
  private:
   AppsSizeCalculator apps_size_calculator_;
 };
@@ -119,9 +143,11 @@ class CrostiniSizeTestAPI {
 
   void StartCalculation() { crostini_size_calculator_.StartCalculation(); }
 
-  void SimulateOnGetCrostiniSize(int64_t size) {
-    crostini_size_calculator_.OnGetCrostiniSize(
-        crostini::CrostiniResult::SUCCESS, size);
+  void SimulateOnGetCrostiniSize(
+      bool succeeded,
+      vm_tools::concierge::ListVmDisksResponse response) {
+    response.set_success(succeeded);
+    crostini_size_calculator_.OnGetCrostiniSize(std::move(response));
   }
 
  private:

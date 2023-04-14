@@ -120,6 +120,13 @@ class METRICS_EXPORT UkmRecorder {
   static SourceId GetSourceIdForRedirectUrl(base::PassKey<DIPSNavigationHandle>,
                                             const GURL& redirect_url);
 
+  // Gets a new SourceId of EXTENSION_ID type and updates the source url
+  // from the extension message port. This method should only be called in the
+  // ExtensionMessagePort class.
+  static SourceId GetSourceIdForExtensionUrl(
+      base::PassKey<extensions::ExtensionMessagePort>,
+      const GURL& extension_url);
+
   // Gets a new SourceId of REDIRECT_ID type and updates the source URL to the
   // given domain. This method should only be called in the DIPSService class
   // for sites in the DIPS database. `site` must be a registrable domain.
@@ -157,9 +164,6 @@ class METRICS_EXPORT UkmRecorder {
   friend metrics::UkmRecorderInterface;
   friend PermissionUmaUtil;
   friend content::RenderFrameHostImpl;
-  // `extensions::ExtensionMessagePort` is marked as friend to allow it to
-  // associate an extension URL with a new source Id.
-  friend extensions::ExtensionMessagePort;
 
   // Associates the SourceId with a URL. Most UKM recording code should prefer
   // to use a shared SourceId that is already associated with a URL, rather

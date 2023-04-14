@@ -11,6 +11,8 @@ source_set("test_support") {
   sources = [
     "components_test_suite.cc",
     "components_test_suite.h",
+    "test_switches.cc",
+    "test_switches.h",
   ]
 
   deps = [
@@ -33,7 +35,9 @@ source_set("test_support") {
     ]
 
     deps += [ "//services/network:test_support" ]
-  } else {
+  }
+
+  if (use_blink) {
     deps += [
       "//components/invalidation/impl",
       "//components/policy/core/browser",

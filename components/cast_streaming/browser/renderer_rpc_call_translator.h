@@ -31,13 +31,15 @@ class RendererRpcCallTranslator : public media::mojom::RendererClient,
   using RpcMessageProcessor = base::RepeatingCallback<void(
       openscreen::cast::RpcMessenger::Handle handle,
       std::unique_ptr<openscreen::cast::RpcMessage>)>;
+  using FlushUntilCallback = base::RepeatingCallback<void(uint32_t, uint32_t)>;
 
   // |renderer| is the remote media::mojom::Renderer to which commands
   // translated from proto messages should be sent.
   // |processor| is responsible for handling any proto messages ready to be sent
   // out.
   explicit RendererRpcCallTranslator(RpcMessageProcessor processor,
-                                     media::mojom::Renderer* renderer);
+                                     media::mojom::Renderer* renderer,
+                                     FlushUntilCallback flush_until_cb);
   ~RendererRpcCallTranslator() override;
 
   // Sets the |handle| to be used for future outgoing RPC calls.
@@ -70,18 +72,26 @@ class RendererRpcCallTranslator : public media::mojom::RendererClient,
   void OnRpcSetPlaybackRate(double playback_rate) override;
   void OnRpcSetVolume(double volume) override;
 
-  // Callbacks for mojo calls. |handle_at_time_of_sending| is included as an
-  // input so that if |handle_| changes before the response to this message is
-  // returned, it will send with the old |handle_| value.
+  // Callback for the Initialize() mojo call. |handle_at_time_of_sending| is
+  // included as an input so that if |handle_| changes before the response to
+  // this message is returned, it will send with the old |handle_| value.
   void OnInitializeCompleted(
       openscreen::cast::RpcMessenger::Handle handle_at_time_of_sending,
       bool succeeded);
-  void OnFlushCompleted(
-      openscreen::cast::RpcMessenger::Handle handle_at_time_of_sending);
+
+  // Callback to Flush() mojo call. Sends an ack message for the completion of
+  // the flush command for each handle in |flush_handles_|.
+  void OnFlushCompleted();
 
   // Signifies whether the Initialize() command has been sent to the Renderer,
   // which will only be done once over the duration of this instance's lifetime.
   bool has_been_initialized_ = false;
+
+  // Called as part of responding to an OnRpcFlush() call, to inform the owning
+  // class that in-flight frames should be flushed.
+  FlushUntilCallback flush_until_cb_;
+
+  std::vector<openscreen::cast::RpcMessenger::Handle> flush_handles_;
 
   RpcMessageProcessor message_processor_;
 

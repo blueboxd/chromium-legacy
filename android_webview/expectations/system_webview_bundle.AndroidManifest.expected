@@ -4,7 +4,9 @@
     package="com.android.webview"
     platformBuildVersionCode="33"
     platformBuildVersionName="13"
-    android:isolatedSplits="true">
+    android:isolatedSplits="true"
+    android:versionCode="OFFSET=0"
+    android:versionName="#.#.#.#">
   <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
   <uses-feature android:name="android.software.leanback" android:required="false"/>
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -17,8 +19,7 @@
       android:extractNativeLibs="false"
       android:icon="@$PACKAGE:drawable/icon_webview"
       android:label="Android System WebView"
-      android:multiArch="true"
-      android:use32bitAbi="true">
+      android:multiArch="true">
     <activity  # DIFF-ANCHOR: ea1a94af
         android:name="com.google.android.gms.common.api.GoogleApiActivity"
         android:exported="false"
@@ -90,18 +91,6 @@
         android:process=":webview_service"
         android:visibleToInstantApps="true">
     </provider>  # DIFF-ANCHOR: ecfff997
-    <receiver  # DIFF-ANCHOR: 0a6f8fa5
-        android:name="com.google.android.gms.cast.framework.media.MediaIntentReceiver"
-        android:exported="false">
-    </receiver>  # DIFF-ANCHOR: 0a6f8fa5
-    <service  # DIFF-ANCHOR: 749391ed
-        android:name="com.google.android.gms.cast.framework.ReconnectionService"
-        android:exported="false">
-    </service>  # DIFF-ANCHOR: 749391ed
-    <service  # DIFF-ANCHOR: 48ce9d28
-        android:name="com.google.android.gms.cast.framework.media.MediaNotificationService"
-        android:exported="false">
-    </service>  # DIFF-ANCHOR: 48ce9d28
     <service  # DIFF-ANCHOR: 1d3bf514
         android:name="org.chromium.android_webview.js_sandbox.service.JsSandboxService0"
         android:exported="true"
@@ -166,6 +155,7 @@
         android:enabled="false"
         android:exported="true">
       <meta-data android:name="STARTUP_FEATURE_SET_DATA_DIRECTORY_SUFFIX" android:value="true"/>
+      <meta-data android:name="STARTUP_FEATURE_SET_DIRECTORY_BASE_PATH:DEV" android:value="true"/>
     </service>  # DIFF-ANCHOR: c52936d7
     <service  # DIFF-ANCHOR: dc926e35
         android:name="org.chromium.android_webview.services.VariationsSeedServer"

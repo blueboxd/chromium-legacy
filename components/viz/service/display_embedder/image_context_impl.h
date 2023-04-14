@@ -31,7 +31,6 @@ namespace gpu {
 class MailboxManager;
 class SharedContextState;
 class SharedImageRepresentationFactory;
-class TextureBase;
 namespace gles2 {
 class TexturePassthrough;
 }
@@ -96,11 +95,6 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
       gpu::SharedImageRepresentationFactory* representation_factory,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores);
-
-  // Returns true if |texture_base| is a gles2::Texture and all necessary
-  // operations completed successfully. In this case, |*size| is the size of
-  // of level 0.
-  bool BindTextureIfNecessary(gpu::TextureBase* texture_base, gfx::Size* size);
 
   const bool maybe_concurrent_reads_ = false;
   const bool allow_keeping_read_access_ = true;

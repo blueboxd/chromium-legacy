@@ -110,6 +110,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/traced_value.h"
 #include "components/viz/common/transition_utils.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -176,8 +177,8 @@ viz::ResourceFormat TileRasterBufferFormat(
   // vs uploading textures.
   const gpu::Capabilities& caps = context_provider->ContextCapabilities();
   if (use_gpu_rasterization)
-    return viz::PlatformColor::BestSupportedRenderBufferFormat(caps);
-  return viz::PlatformColor::BestSupportedTextureFormat(caps);
+    return viz::PlatformColor::BestSupportedRenderBufferResourceFormat(caps);
+  return viz::PlatformColor::BestSupportedTextureResourceFormat(caps);
 }
 
 void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
@@ -338,6 +339,12 @@ void LayerTreeHostImpl::DidStartScroll() {
 void LayerTreeHostImpl::DidEndScroll() {
   scroll_affects_scroll_handler_ = false;
   current_scroll_did_checkerboard_large_area_ = false;
+
+#if BUILDFLAG(IS_ANDROID)
+  if (render_frame_metadata_observer_) {
+    render_frame_metadata_observer_->DidEndScroll();
+  }
+#endif
 }
 
 void LayerTreeHostImpl::DidMouseLeave() {
@@ -4560,7 +4567,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     return;
   }
 
-  viz::ResourceFormat format;
+  viz::SharedImageFormat format;
   switch (bitmap.GetFormat()) {
     case UIResourceBitmap::RGBA8:
       if (layer_tree_frame_sink_->context_provider()) {
@@ -4568,14 +4575,14 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
             layer_tree_frame_sink_->context_provider()->ContextCapabilities();
         format = viz::PlatformColor::BestSupportedTextureFormat(caps);
       } else {
-        format = viz::RGBA_8888;
+        format = viz::SinglePlaneFormat::kRGBA_8888;
       }
       break;
     case UIResourceBitmap::ALPHA_8:
-      format = viz::ALPHA_8;
+      format = viz::SinglePlaneFormat::kALPHA_8;
       break;
     case UIResourceBitmap::ETC1:
-      format = viz::ETC1;
+      format = viz::SinglePlaneFormat::kETC1;
       break;
   }
 
@@ -4615,14 +4622,16 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
     overlay_candidate =
         settings_.resource_settings.use_gpu_memory_buffer_resources &&
         caps.supports_scanout_shared_images &&
-        viz::IsGpuMemoryBufferFormatSupported(format);
+        viz::IsGpuMemoryBufferFormatSupported(format.resource_format());
     if (overlay_candidate) {
       shared_image_usage |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
-      texture_target = gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT,
-                                                   BufferFormat(format), caps);
+      texture_target = gpu::GetBufferTextureTarget(
+          gfx::BufferUsage::SCANOUT, BufferFormat(format.resource_format()),
+          caps);
     }
   } else {
-    shm = viz::bitmap_allocation::AllocateSharedBitmap(upload_size, format);
+    shm = viz::bitmap_allocation::AllocateSharedBitmap(
+        upload_size, format.resource_format());
     shared_bitmap_id = viz::SharedBitmap::GenerateId();
   }
 
@@ -4741,7 +4750,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
 
   UIResourceData data;
   data.opaque = bitmap.GetOpaque();
-  data.format = format;
+  data.format = format.resource_format();
   data.shared_bitmap_id = shared_bitmap_id;
   data.shared_mapping = std::move(shm.mapping);
   data.mailbox = mailbox;
@@ -5126,7 +5135,6 @@ void LayerTreeHostImpl::InitializeUkm(
     std::unique_ptr<ukm::UkmRecorder> recorder) {
   DCHECK(!ukm_manager_);
   ukm_manager_ = std::make_unique<UkmManager>(std::move(recorder));
-  frame_trackers_.SetUkmManager(ukm_manager_.get());
   compositor_frame_reporting_controller_->SetUkmManager(ukm_manager_.get());
 }
 

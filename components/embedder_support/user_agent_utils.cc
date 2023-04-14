@@ -65,18 +65,29 @@ constexpr wchar_t kUniversalApiContractName[] =
 const int kHighestKnownUniversalApiContractVersion = 14;
 
 int GetPreRS5UniversalApiContractVersion() {
-  if (base::win::GetVersion() == base::win::Version::WIN10)
+  // This calls Kernel32Version() to get the real non-spoofable version (as
+  // opposed to base::win::GetVersion() which as of writing this seems to return
+  // different results depending on compatibility mode, and is spoofable).
+  // See crbug.com/1404448.
+  const base::win::Version version = base::win::OSInfo::Kernel32Version();
+  if (version == base::win::Version::WIN10) {
     return 1;
-  if (base::win::GetVersion() == base::win::Version::WIN10_TH2)
+  }
+  if (version == base::win::Version::WIN10_TH2) {
     return 2;
-  if (base::win::GetVersion() == base::win::Version::WIN10_RS1)
+  }
+  if (version == base::win::Version::WIN10_RS1) {
     return 3;
-  if (base::win::GetVersion() == base::win::Version::WIN10_RS2)
+  }
+  if (version == base::win::Version::WIN10_RS2) {
     return 4;
-  if (base::win::GetVersion() == base::win::Version::WIN10_RS3)
+  }
+  if (version == base::win::Version::WIN10_RS3) {
     return 5;
-  if (base::win::GetVersion() == base::win::Version::WIN10_RS4)
+  }
+  if (version == base::win::Version::WIN10_RS4) {
     return 6;
+  }
   // The list above should account for all Windows versions prior to
   // RS5.
   NOTREACHED();
@@ -95,7 +106,8 @@ const std::string& GetUniversalApiContractVersion() {
       [] {
         int major_version = 0;
         int minor_version = 0;
-        if (base::win::GetVersion() <= base::win::Version::WIN10_RS4) {
+        if (base::win::OSInfo::Kernel32Version() <=
+            base::win::Version::WIN10_RS4) {
           major_version = GetPreRS5UniversalApiContractVersion();
         } else {
           base::win::RegKey version_key(
@@ -581,7 +593,7 @@ blink::UserAgentMetadata GetUserAgentMetadata(const PrefService* pref_service) {
   metadata.architecture = content::GetCpuArchitecture();
   metadata.model = content::BuildModelInfo();
   metadata.mobile = false;
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   metadata.mobile = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kUseMobileUserAgent);
 #endif

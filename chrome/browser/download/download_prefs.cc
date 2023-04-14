@@ -33,7 +33,6 @@
 #include "chrome/browser/download/download_target_determiner.h"
 #include "chrome/browser/download/trusted_sources_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -59,6 +58,10 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #endif
 
 using content::BrowserContext;
@@ -221,6 +224,8 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
       prefs::kSafeBrowsingForTrustedSourcesEnabled, prefs);
   download_restriction_.Init(prefs::kDownloadRestrictions, prefs);
   download_bubble_enabled_.Init(prefs::kDownloadBubbleEnabled, prefs);
+  prompt_for_duplicate_file_.Init(prefs::kDownloadDuplicateFilePromptEnabled,
+                                  prefs);
 
   pref_change_registrar_.Add(
       prefs::kDownloadExtensionsToOpenByPolicy,
@@ -291,6 +296,8 @@ void DownloadPrefs::RegisterProfilePrefs(
                                 content::SAVE_PAGE_TYPE_AS_COMPLETE_HTML);
   registry->RegisterIntegerPref(prefs::kDownloadRestrictions, 0);
   registry->RegisterBooleanPref(prefs::kDownloadBubbleEnabled, true);
+  registry->RegisterBooleanPref(prefs::kDownloadDuplicateFilePromptEnabled,
+                                true);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingForTrustedSourcesEnabled,
                                 true);
 
@@ -703,6 +710,15 @@ void DownloadPrefs::UpdateAllowedURLsForOpenByPolicy() {
   }
 
   auto_open_allowed_by_urls_.swap(allowed_urls);
+}
+
+bool DownloadPrefs::PromptForDuplicateFile() const {
+#if BUILDFLAG(IS_ANDROID)
+  return false;
+#else
+  return download::IsDownloadBubbleV2Enabled(profile_) &&
+         prompt_for_duplicate_file_.GetValue();
+#endif
 }
 
 bool DownloadPrefs::AutoOpenCompareFunctor::operator()(

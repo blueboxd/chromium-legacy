@@ -59,14 +59,15 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // Media properties requested by the user. Default instance represents
   // default media selection.
   struct RequestedMedia {
+    bool operator==(const RequestedMedia& other) const;
+    bool IsDefault() const {
+      return size_microns.IsEmpty() && vendor_id.empty();
+    }
+
     // Size of the media, in microns.
     gfx::Size size_microns;
     // Platform specific id to map it back to the particular media.
     std::string vendor_id;
-
-    bool IsDefault() const {
-      return size_microns.IsEmpty() && vendor_id.empty();
-    }
   };
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
@@ -77,6 +78,8 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   PrintSettings(const PrintSettings&);
   PrintSettings& operator=(const PrintSettings&);
   ~PrintSettings();
+
+  bool operator==(const PrintSettings& other) const;
 
   // Reinitialize the settings to the default values.
   void Clear();
@@ -264,6 +267,11 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   const std::vector<mojom::IppClientInfo>& client_infos() const {
     return client_infos_;
   }
+
+  void set_printer_manually_selected(bool printer_manually_selected) {
+    printer_manually_selected_ = printer_manually_selected;
+  }
+  bool printer_manually_selected() const { return printer_manually_selected_; }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   // Cookie generator. It is used to initialize `PrintedDocument` with its
@@ -372,6 +380,10 @@ class COMPONENT_EXPORT(PRINTING) PrintSettings {
   // Value of the 'client-info' that will be sent to the printer.
   // Should only be set for printers that support 'client-info'.
   std::vector<mojom::IppClientInfo> client_infos_;
+
+  // True if the user selects to print to a different printer than the original
+  // destination shown when Print Preview opens.
+  bool printer_manually_selected_;
 #endif  // BUILDFLAG(IS_CHROMEOS)
 };
 

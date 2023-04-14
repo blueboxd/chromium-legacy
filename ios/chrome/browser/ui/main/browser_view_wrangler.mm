@@ -204,37 +204,28 @@
   if (!_mainInterface)
     return nil;
   if (!_incognitoInterface) {
-    _incognitoInterface = [self createOTRInterfaceAfterClosingAllTabs:NO];
+    // The backing coordinator should not have been created yet.
+    DCHECK(!_incognitoBrowserCoordinator);
+    ChromeBrowserState* otrBrowserState =
+        _browserState->GetOffTheRecordChromeBrowserState();
+    DCHECK(otrBrowserState);
+    Browser* otrBrowser = self.otrBrowser;
+
+    _incognitoBrowserCoordinator = [self coordinatorForBrowser:otrBrowser];
+    [_incognitoBrowserCoordinator start];
+
+    // Restore the session after creating the coordinator.
+    SessionRestorationBrowserAgent::FromBrowser(otrBrowser)->RestoreSession();
+
+    DCHECK(_incognitoBrowserCoordinator.viewController);
+    _incognitoInterface = [[WrangledBrowser alloc]
+        initWithCoordinator:_incognitoBrowserCoordinator];
   }
   return _incognitoInterface;
 }
 
 - (BOOL)hasIncognitoInterface {
   return _incognitoInterface;
-}
-
-- (WrangledBrowser*)createOTRInterfaceAfterClosingAllTabs:(BOOL)allTabsClosed {
-  DCHECK(!_incognitoInterface);
-
-  // The backing coordinator should not have been created yet.
-  DCHECK(!_incognitoBrowserCoordinator);
-  ChromeBrowserState* otrBrowserState =
-      _browserState->GetOffTheRecordChromeBrowserState();
-  DCHECK(otrBrowserState);
-  Browser* otrBrowser = self.otrBrowser;
-
-  _incognitoBrowserCoordinator = [self coordinatorForBrowser:otrBrowser];
-  [_incognitoBrowserCoordinator start];
-
-  if (!allTabsClosed) {
-    // Restore the session after creating the coordinator, but only if not
-    // recreating the Off-The-Record UI after closing all the tabs.
-    SessionRestorationBrowserAgent::FromBrowser(otrBrowser)->RestoreSession();
-  }
-
-  DCHECK(_incognitoBrowserCoordinator.viewController);
-  return [[WrangledBrowser alloc]
-      initWithCoordinator:_incognitoBrowserCoordinator];
 }
 
 - (Browser*)mainBrowser {
@@ -257,8 +248,8 @@
 - (void)clearMainBrowser {
   if (_mainBrowser.get()) {
     WebStateList* webStateList = self.mainBrowser->GetWebStateList();
-    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
-    breakpad::StopMonitoringURLsForWebStateList(webStateList);
+    crash_report_helper::StopMonitoringTabStateForWebStateList(webStateList);
+    crash_report_helper::StopMonitoringURLsForWebStateList(webStateList);
     // Close all webstates in `webStateList`. Do this in an @autoreleasepool as
     // WebStateList observers will be notified (they are unregistered later). As
     // some of them may be implemented in Objective-C and unregister themselves
@@ -275,7 +266,7 @@
 - (void)setOtrBrowser:(std::unique_ptr<Browser>)otrBrowser {
   if (_otrBrowser.get()) {
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
-    breakpad::StopMonitoringTabStateForWebStateList(webStateList);
+    crash_report_helper::StopMonitoringTabStateForWebStateList(webStateList);
     // Close all webstates in `webStateList`. Do this in an @autoreleasepool as
     // WebStateList observers will be notified (they are unregistered later). As
     // some of them may be implemented in Objective-C and unregister themselves
@@ -306,7 +297,7 @@
   browserList->RemoveIncognitoBrowser(self.otrBrowser);
 
   // Stop watching the OTR webStateList's state for crashes.
-  breakpad::StopMonitoringTabStateForWebStateList(
+  crash_report_helper::StopMonitoringTabStateForWebStateList(
       self.otrBrowser->GetWebStateList());
 
   // At this stage, a new incognitoBrowserCoordinator shouldn't be lazily
@@ -342,10 +333,6 @@
   [self setOtrBrowser:[self buildBrowserForBrowserState:incognitoBrowserState]];
   DCHECK(self.otrBrowser->GetWebStateList()->empty());
 
-  // Recreate the off-the-record interface, but do not load the session as
-  // we had just closed all the tabs.
-  _incognitoInterface = [self createOTRInterfaceAfterClosingAllTabs:YES];
-
   if (_currentInterface == nil) {
     self.currentInterface = self.incognitoInterface;
   }
@@ -374,7 +361,7 @@
       self.otrBrowser->GetBrowserState());
   otrBrowserList->RemoveIncognitoBrowser(self.otrBrowser);
 
-  // Handles removing observers, stopping breakpad monitoring, and closing all
+  // Handles removing observers, stopping crash key monitoring, and closing all
   // tabs.
   [self clearMainBrowser];
   [self setOtrBrowser:nullptr];
@@ -436,12 +423,13 @@
 
   [self setSessionIDForBrowser:browser.get()];
 
-  breakpad::MonitorTabStateForWebStateList(browser->GetWebStateList());
+  crash_report_helper::MonitorTabStateForWebStateList(
+      browser->GetWebStateList());
 
   // Follow loaded URLs in the non-incognito browser to send those in case of
   // crashes.
   if (!browserState->IsOffTheRecord()) {
-    breakpad::MonitorURLsForWebStateList(browser->GetWebStateList());
+    crash_report_helper::MonitorURLsForWebStateList(browser->GetWebStateList());
   }
 
   return browser;

@@ -72,8 +72,9 @@ void ReadAnythingPageHandler::AccessibilityEventReceived(
 }
 
 void ReadAnythingPageHandler::OnActiveAXTreeIDChanged(
-    const ui::AXTreeID& tree_id) {
-  page_->OnActiveAXTreeIDChanged(tree_id);
+    const ui::AXTreeID& tree_id,
+    const ukm::SourceId& ukm_source_id) {
+  page_->OnActiveAXTreeIDChanged(tree_id, ukm_source_id);
 }
 
 void ReadAnythingPageHandler::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
@@ -85,8 +86,9 @@ void ReadAnythingPageHandler::OnReadAnythingThemeChanged(
     double font_scale,
     ui::ColorId foreground_color_id,
     ui::ColorId background_color_id,
-    read_anything::mojom::Spacing line_spacing,
-    read_anything::mojom::Spacing letter_spacing) {
+    ui::ColorId separator_color_id,
+    read_anything::mojom::LineSpacing line_spacing,
+    read_anything::mojom::LetterSpacing letter_spacing) {
   content::WebContents* web_contents = web_ui_->GetWebContents();
   SkColor foreground_skcolor =
       web_contents->GetColorProvider().GetColor(foreground_color_id);

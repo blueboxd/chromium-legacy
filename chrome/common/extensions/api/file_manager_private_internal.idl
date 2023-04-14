@@ -29,6 +29,7 @@ namespace fileManagerPrivateInternal {
     fileManagerPrivate.SearchType types;
     long maxResults;
     double timestamp;
+    fileManagerPrivate.FileCategory category;
   };
 
   callback SimpleCallback = void();
@@ -51,6 +52,8 @@ namespace fileManagerPrivateInternal {
       void(EntryDescription[] entries);
   callback GetDlpMetadataCallback =
       void(fileManagerPrivate.DlpMetadata[] entries);
+  callback GetDriveQuotaMetadataCallback =
+      void(optional fileManagerPrivate.DriveQuotaMetadata driveQuotaMetadata);
   callback IOTaskIdCallback = void(long taskId);
   callback ZipSelectionCallback = void(long zipId, double totalBytes);
   callback ValidatePathNameLengthCallback = void(boolean result);
@@ -117,6 +120,8 @@ namespace fileManagerPrivateInternal {
                                        GetDisallowedTransfersCallback callback);
     static void getDlpMetadata(DOMString[] entries,
                                GetDlpMetadataCallback callback);
+    static void getDriveQuotaMetadata(DOMString url,
+                                      GetDriveQuotaMetadataCallback callback);
     static void zipSelection(DOMString parentUrl,
                              DOMString[] urls,
                              DOMString destName,
@@ -130,7 +135,7 @@ namespace fileManagerPrivateInternal {
     static void getVolumeRoot(fileManagerPrivate.GetVolumeRootOptions options,
                               GetVolumeRootCallback callback);
     static void getRecentFiles(fileManagerPrivate.SourceRestriction restriction,
-                               fileManagerPrivate.RecentFileType file_type,
+                               fileManagerPrivate.FileCategory file_category,
                                boolean invalidate_cache,
                                GetRecentFilesCallback callback);
     static void sharePathsWithCrostini(DOMString vmName, DOMString[] urls,
@@ -161,6 +166,7 @@ namespace fileManagerPrivateInternal {
     static void invokeSharesheet(
         DOMString[] urls,
         fileManagerPrivate.SharesheetLaunchSource launchSource,
+        DOMString[] dlpSourceUrls,
         SimpleCallback callback);
     static void toggleAddedToHoldingSpace(DOMString[] urls, boolean add,
                                           optional SimpleCallback callback);

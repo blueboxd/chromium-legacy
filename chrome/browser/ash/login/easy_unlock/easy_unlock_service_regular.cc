@@ -288,10 +288,6 @@ EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
   return pref_manager_.get();
 }
 
-EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
-  return EasyUnlockService::TYPE_REGULAR;
-}
-
 AccountId EasyUnlockServiceRegular::GetAccountId() const {
   const user_manager::User* const primary_user =
       user_manager::UserManager::Get()->GetPrimaryUser();
@@ -304,27 +300,6 @@ const base::Value::List* EasyUnlockServiceRegular::GetRemoteDevices() const {
       profile()->GetPrefs()->GetDict(prefs::kEasyUnlockPairing);
 
   return pairing_dict.FindList(kKeyDevices);
-}
-
-std::string EasyUnlockServiceRegular::GetChallenge() const {
-  NOTREACHED();
-  return std::string();
-}
-
-std::string EasyUnlockServiceRegular::GetWrappedSecret() const {
-  NOTREACHED();
-  return std::string();
-}
-
-void EasyUnlockServiceRegular::RecordEasySignInOutcome(
-    const AccountId& account_id,
-    bool success) const {
-  NOTREACHED();
-}
-
-void EasyUnlockServiceRegular::RecordPasswordLoginEvent(
-    const AccountId& account_id) const {
-  NOTREACHED();
 }
 
 void EasyUnlockServiceRegular::InitializeInternal() {

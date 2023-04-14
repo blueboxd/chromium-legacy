@@ -135,7 +135,7 @@ void AdjustStyleForSvgElement(const SVGElement& element,
   builder.SetTextDecorationThickness(TextDecorationThickness(Length::Auto()));
   builder.SetTextEmphasisMark(TextEmphasisMark::kNone);
   builder.SetTextUnderlineOffset(Length());  // crbug.com/1247912
-  builder.SetTextUnderlinePosition(kTextUnderlinePositionAuto);
+  builder.SetTextUnderlinePosition(TextUnderlinePosition::kAuto);
 }
 
 // Adjust style for anchor() and anchor-size() queries.
@@ -186,9 +186,6 @@ bool ElementForcesStackingContext(Element* element) {
     return false;
   }
   if (element == element->GetDocument().documentElement()) {
-    return true;
-  }
-  if (element->IsInTopLayer()) {
     return true;
   }
   if (IsA<SVGForeignObjectElement>(*element)) {
@@ -269,32 +266,10 @@ static bool IsAtMediaUAShadowBoundary(const Element* element) {
 // to manually stop text-decorations to apply to text inside media controls.
 static bool StopPropagateTextDecorations(const ComputedStyleBuilder& builder,
                                          const Element* element) {
-  return builder.Display() == EDisplay::kInlineTable ||
-         builder.Display() == EDisplay::kInlineBlock ||
-         builder.Display() == EDisplay::kWebkitInlineBox ||
+  return builder.IsDisplayReplacedType() ||
          IsAtMediaUAShadowBoundary(element) || builder.IsFloating() ||
          builder.HasOutOfFlowPosition() || IsOutermostSVGElement(element) ||
          IsA<HTMLRTElement>(element);
-}
-
-// Certain elements (<a>, <font>) override text decoration colors.  "The font
-// element is expected to override the color of any text decoration that spans
-// the text of the element to the used value of the element's 'color' property."
-// (https://html.spec.whatwg.org/C/#phrasing-content-3)
-// The <a> behavior is non-standard.
-static bool OverridesTextDecorationColors(const Element* element) {
-  return !RuntimeEnabledFeatures::DisableTextDecorationColorOverrideEnabled() &&
-         element &&
-         (IsA<HTMLFontElement>(element) || IsA<HTMLAnchorElement>(element));
-}
-
-// FIXME: This helper is only needed because ResolveStyle passes a null
-// element to AdjustComputedStyle for pseudo-element styles, so we can't just
-// use element->isInTopLayer().
-static bool IsInTopLayer(const Element* element,
-                         const ComputedStyleBuilder& builder) {
-  return (element && element->IsInTopLayer()) ||
-         builder.StyleType() == kPseudoIdBackdrop;
 }
 
 static bool LayoutParentStyleForcesZIndexToCreateStackingContext(
@@ -348,7 +323,7 @@ void StyleAdjuster::AdjustStyleForCombinedText(ComputedStyleBuilder& builder) {
   builder.SetWordSpacing(0.0f);
   builder.SetWritingMode(WritingMode::kHorizontalTb);
 
-  builder.ClearAppliedTextDecorations();
+  builder.SetBaseTextDecorationData(nullptr);
   builder.ResetTextIndent();
   builder.UpdateFontOrientation();
 
@@ -384,8 +359,8 @@ static void AdjustStyleForMarker(ComputedStyleBuilder& builder,
 
   if (is_inside) {
     Document& document = parent_element.GetDocument();
-    auto margins = ListMarker::InlineMarginsForInside(
-        document, *builder.InternalStyle(), parent_style);
+    auto margins =
+        ListMarker::InlineMarginsForInside(document, builder, parent_style);
     LogicalToPhysicalSetter setter(builder.GetWritingDirection(), builder,
                                    &ComputedStyleBuilder::SetMarginTop,
                                    &ComputedStyleBuilder::SetMarginRight,
@@ -634,6 +609,12 @@ static void AdjustStyleForDisplay(ComputedStyleBuilder& builder,
     builder.SetTextOrientation(layout_parent_style.GetTextOrientation());
     builder.UpdateFontOrientation();
   }
+
+  // Blockify the child boxes of media elements. crbug.com/1379779.
+  if (RuntimeEnabledFeatures::LayoutMediaNoInlineChildrenEnabled() &&
+      IsAtMediaUAShadowBoundary(element)) {
+    builder.SetDisplay(EquivalentBlockDisplay(builder.Display()));
+  }
 }
 
 bool StyleAdjuster::IsEditableElement(Element* element,
@@ -860,13 +841,21 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       AdjustStyleForSvgElement(*svg_element, builder);
     }
 
+    if (!RuntimeEnabledFeatures::CSSTopLayerForTransitionsEnabled()) {
+      if ((element && element->IsInTopLayer()) ||
+          builder.StyleType() == kPseudoIdBackdrop ||
+          builder.StyleType() == kPseudoIdViewTransition) {
+        builder.SetTopLayer(ETopLayer::kBrowser);
+      }
+    }
+
     bool is_document_element =
         element && element->GetDocument().documentElement() == element;
     // Per the spec, position 'static' and 'relative' in the top layer compute
     // to 'absolute'. Root elements that are in the top layer should just
     // be left alone because the fullscreen.css doesn't apply any style to
     // them.
-    if (IsInTopLayer(element, builder) && !is_document_element) {
+    if (builder.TopLayer() == ETopLayer::kBrowser && !is_document_element) {
       if (builder.GetPosition() == EPosition::kStatic ||
           builder.GetPosition() == EPosition::kRelative) {
         builder.SetPosition(EPosition::kAbsolute);
@@ -942,6 +931,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     builder.SetForcesStackingContext(true);
   }
 
+  if (builder.TopLayer() == ETopLayer::kBrowser) {
+    builder.SetForcesStackingContext(true);
+  }
+
   if (builder.OverflowX() != EOverflow::kVisible ||
       builder.OverflowY() != EOverflow::kVisible) {
     AdjustOverflow(builder, element ? element : state.GetPseudoElement());
@@ -950,9 +943,10 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   // Highlight pseudos propagate decorations with inheritance only.
   if (StopPropagateTextDecorations(builder, element) ||
       state.IsForHighlight()) {
-    builder.ClearAppliedTextDecorations();
+    builder.SetBaseTextDecorationData(nullptr);
   } else {
-    builder.RestoreParentTextDecorations(layout_parent_style);
+    builder.SetBaseTextDecorationData(
+        layout_parent_style.AppliedTextDecorationData());
   }
 
   // The computed value of currentColor for highlight pseudos is the
@@ -968,12 +962,6 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       builder.SetInternalVisitedColor(
           originating_style->InternalVisitedColor());
     }
-  }
-
-  if (builder.Display() != EDisplay::kContents) {
-    builder.ApplyTextDecorations(parent_style.VisitedDependentColorFast(
-                                     GetCSSPropertyTextDecorationColor()),
-                                 OverridesTextDecorationColors(element));
   }
 
   // Cull out any useless layers and also repeat patterns into additional

@@ -35,25 +35,13 @@ class ProfilePicker {
     // (closed the browser app).
     kQuitAtEnd = 1,
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
     // The user exited the FRE before going through the mandatory steps.
     kQuitEarly = 2,
+#endif
   };
   using FirstRunExitedCallback =
       base::OnceCallback<void(FirstRunExitStatus status)>;
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // Added for bug investigation purposes.
-  // TODO(crbug.com/1340791): Remove this once the source of the bug is found.
-  enum class FirstRunExitSource {
-    kParamDestructor = 0,
-    kControllerDestructor = 1,
-    kFlowFinished = 2,
-    kReusingWindow = 3,
-  };
-  using DebugFirstRunExitedCallback =
-      base::OnceCallback<void(FirstRunExitStatus status,
-                              FirstRunExitSource source)>;
-#endif
 
   // Only work when passed as the argument 'on_select_profile_target_url' to
   // ProfilePicker::Show.
@@ -86,7 +74,14 @@ class ProfilePicker {
     // Opens the first run experience on non-Lacros desktop platforms to let the
     // user sign in, opt in to sync, etc.
     kFirstRun = 11,
-    kMaxValue = kFirstRun,
+    // There was no usable profile on startup (e.g. the profiles were locked by
+    // force signin).
+    kOnStartupNoProfile = 12,
+    // There was no usable profile when starting a new session while Chrome is
+    // already running (e.g. the profiles were locked by force signin).
+    kNewSessionOnExistingProcessNoProfile = 13,
+
+    kMaxValue = kNewSessionOnExistingProcessNoProfile,
   };
 
   class Params final {
@@ -158,12 +153,7 @@ class ProfilePicker {
     // If this method is not called by the time this `Param` is destroyed, an
     // intent to quit will be assumed and `first_run_exited_callback_` will be
     // called by the destructor with quit-related arguments.
-    void NotifyFirstRunExited(FirstRunExitStatus exit_status
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-                              ,
-                              FirstRunExitSource exit_source
-#endif
-    );
+    void NotifyFirstRunExited(FirstRunExitStatus exit_status);
 
     // Returns whether the current profile picker window can be reused for
     // different parameters. If this returns false, the picker cannot be reused

@@ -24,6 +24,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation_traits.h"
+#include "chromeos/ui/frame/multitask_menu/multitask_menu_nudge_controller.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/display/screen.h"
@@ -171,12 +172,10 @@ class MouseCursorEventFilter;
 class MruWindowTracker;
 class MultiDeviceNotificationPresenter;
 class MultiDisplayMetricsController;
-class MultitaskMenuNudgeController;
 class NearbyShareControllerImpl;
 class NearbyShareDelegate;
 class NightLightControllerImpl;
 class OcclusionTrackerPauser;
-class OverlayEventFilter;
 class OverviewController;
 class ParentAccessController;
 class PartialMagnifierController;
@@ -235,7 +234,6 @@ class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperControllerImpl;
 class WindowCycleController;
-class WindowPositioner;
 class WindowTreeHostManager;
 class WmModeController;
 class ArcInputMethodBoundsTracker;
@@ -483,6 +481,10 @@ class ASH_EXPORT Shell : public SessionObserver,
     return input_device_settings_controller_.get();
   }
 
+  InputDeviceTracker* input_device_tracker() {
+    return input_device_tracker_.get();
+  }
+
   EventClientImpl* event_client() { return event_client_.get(); }
   EventTransformationHandler* event_transformation_handler() {
     return event_transformation_handler_.get();
@@ -573,9 +575,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   MultiDisplayMetricsController* multi_display_metrics_controller() {
     return multi_display_metrics_controller_.get();
   }
-  MultitaskMenuNudgeController* multitask_menu_nudge_controller() {
-    return multitask_menu_nudge_controller_.get();
-  }
   NearbyShareControllerImpl* nearby_share_controller() {
     return nearby_share_controller_.get();
   }
@@ -585,7 +584,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   NightLightControllerImpl* night_light_controller() {
     return night_light_controller_.get();
   }
-  OverlayEventFilter* overlay_filter() { return overlay_filter_.get(); }
   ParentAccessController* parent_access_controller() {
     return parent_access_controller_.get();
   }
@@ -701,7 +699,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowCycleController* window_cycle_controller() {
     return window_cycle_controller_.get();
   }
-  WindowPositioner* window_positioner() { return window_positioner_.get(); }
   OverviewController* overview_controller() {
     return overview_controller_.get();
   }
@@ -867,7 +864,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<KeyboardModifierMetricsRecorder>
       keyboard_modifier_metrics_recorder_;
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  std::unique_ptr<WindowPositioner> window_positioner_;
 
   std::unique_ptr<AshAcceleratorConfiguration> ash_accelerator_configuration_;
   std::unique_ptr<AcceleratorControllerImpl> accelerator_controller_;
@@ -940,8 +936,8 @@ class ASH_EXPORT Shell : public SessionObserver,
       multi_display_metrics_controller_;
   std::unique_ptr<MultiDeviceNotificationPresenter>
       multidevice_notification_presenter_;
-  std::unique_ptr<MultitaskMenuNudgeController>
-      multitask_menu_nudge_controller_;
+  std::unique_ptr<chromeos::MultitaskMenuNudgeController::Delegate>
+      multitask_menu_nudge_delegate_;
   std::unique_ptr<NearbyShareControllerImpl> nearby_share_controller_;
   std::unique_ptr<NearbyShareDelegate> nearby_share_delegate_;
   std::unique_ptr<ParentAccessController> parent_access_controller_;
@@ -1006,10 +1002,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<SystemModalContainerEventFilter> modality_filter_;
   std::unique_ptr<EventClientImpl> event_client_;
   std::unique_ptr<EventTransformationHandler> event_transformation_handler_;
-
-  // An event filter that pre-handles key events while the partial
-  // screenshot UI or the keyboard overlay is active.
-  std::unique_ptr<OverlayEventFilter> overlay_filter_;
 
   // An event filter which handles swiping back from left side of the window.
   std::unique_ptr<BackGestureEventHandler> back_gesture_event_handler_;

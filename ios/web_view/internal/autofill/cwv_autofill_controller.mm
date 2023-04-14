@@ -19,6 +19,7 @@
 #import "components/autofill/core/browser/ui/popup_item_ids.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #import "components/autofill/ios/browser/autofill_driver_ios.h"
+#import "components/autofill/ios/browser/autofill_driver_ios_factory.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
 #import "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/suggestion_controller_java_script_feature.h"
@@ -129,9 +130,8 @@ using UserDecision =
     _autofillClient = std::move(autofillClient);
     _autofillClient->set_bridge(self);
 
-    autofill::AutofillDriverIOS::PrepareForWebStateWebFrameAndDelegate(
-        _webState, _autofillClient.get(), self, applicationLocale,
-        autofill::AutofillManager::EnableDownloadManager(true));
+    autofill::AutofillDriverIOSFactory::CreateForWebState(
+        _webState, _autofillClient.get(), self, applicationLocale);
 
     _passwordManagerClient = std::move(passwordManagerClient);
     _passwordManagerClient->set_bridge(self);
@@ -273,8 +273,9 @@ using UserDecision =
 }
 
 - (void)focusPreviousField {
-  web::WebFrame* frame = _webState->GetWebFramesManager()->GetFrameWithId(
-      _lastFormActivityWebFrameID);
+  web::WebFrame* frame =
+      _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
+          _lastFormActivityWebFrameID);
 
   if (!frame)
     return;
@@ -284,8 +285,9 @@ using UserDecision =
 }
 
 - (void)focusNextField {
-  web::WebFrame* frame = _webState->GetWebFramesManager()->GetFrameWithId(
-      _lastFormActivityWebFrameID);
+  web::WebFrame* frame =
+      _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
+          _lastFormActivityWebFrameID);
 
   if (!frame)
     return;
@@ -296,8 +298,9 @@ using UserDecision =
 
 - (void)checkIfPreviousAndNextFieldsAreAvailableForFocusWithCompletionHandler:
     (void (^)(BOOL previous, BOOL next))completionHandler {
-  web::WebFrame* frame = _webState->GetWebFramesManager()->GetFrameWithId(
-      _lastFormActivityWebFrameID);
+  web::WebFrame* frame =
+      _webState->GetPageWorldWebFramesManager()->GetFrameWithId(
+          _lastFormActivityWebFrameID);
 
   autofill::SuggestionControllerJavaScriptFeature::GetInstance()
       ->FetchPreviousAndNextElementsPresenceInFrame(

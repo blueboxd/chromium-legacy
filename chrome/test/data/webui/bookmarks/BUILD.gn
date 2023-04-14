@@ -10,7 +10,6 @@ build_webui_tests("build") {
   files = [
     "actions_test.ts",
     "app_test.ts",
-    "bookmarks_focus_test.js",
     "command_manager_test.ts",
     "dialog_focus_manager_test.ts",
     "dnd_manager_test.ts",
@@ -20,7 +19,7 @@ build_webui_tests("build") {
     "folder_node_focus_test.ts",
     "folder_node_test.ts",
     "item_test.ts",
-    "list_focus_test.js",
+    "list_focus_test.ts",
     "list_test.ts",
     "policy_test.ts",
     "reducers_test.ts",
@@ -48,5 +47,8 @@ build_webui_tests("build") {
     "//tools/typescript/definitions/tabs.d.ts",
     "//tools/typescript/definitions/windows.d.ts",
   ]
-  ts_deps = [ "//chrome/browser/resources/bookmarks:build_ts" ]
+  ts_deps = [
+    "//chrome/browser/resources/bookmarks:build_ts",
+    "//ui/webui/resources/js:build_ts",
+  ]
 }

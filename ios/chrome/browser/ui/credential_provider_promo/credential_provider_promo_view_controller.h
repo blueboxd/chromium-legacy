@@ -5,20 +5,18 @@
 #ifndef IOS_CHROME_BROWSER_UI_CREDENTIAL_PROVIDER_PROMO_CREDENTIAL_PROVIDER_PROMO_VIEW_CONTROLLER_H_
 #define IOS_CHROME_BROWSER_UI_CREDENTIAL_PROVIDER_PROMO_CREDENTIAL_PROVIDER_PROMO_VIEW_CONTROLLER_H_
 
-#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_consumer.h"
-
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_view_controller.h"
+#import "ios/chrome/browser/ui/credential_provider_promo/credential_provider_promo_consumer.h"
+#import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 
 // Container view controller for the Credential Provider Extension promo. Can be
 // configured to display the half-sheet or full-screen promo.
 @interface CredentialProviderPromoViewController
     : UIViewController <CredentialProviderPromoConsumer>
 
-// Child view controller used to display the alert screen for the half-screen
-// and full-screen promos.
-@property(nonatomic, strong) ConfirmationAlertViewController* alertScreen;
+// The action handler for interactions in this view controller.
+@property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
 @end
 

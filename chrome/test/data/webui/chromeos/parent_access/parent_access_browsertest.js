@@ -53,6 +53,12 @@ TEST_F('ParentAccessAppTest', 'TestShowExtensionApprovalsFlow', function() {
       parent_access_app_tests.TestNames.TestShowExtensionApprovalsFlow);
 });
 
+TEST_F(
+    'ParentAccessAppTest', 'TestShowExtensionApprovalsDisabledScreen',
+    function() {
+      this.runMochaTest(parent_access_app_tests.TestNames
+                            .TestShowExtensionApprovalsDisabledScreen);
+    });
 
 TEST_F('ParentAccessAppTest', 'TestShowErrorScreenOnOAuthFailure', function() {
   this.runMochaTest(

@@ -115,7 +115,6 @@
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
-#include "third_party/blink/renderer/core/layout/deferred_shaping_controller.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/navigation_api/navigation_api.h"
@@ -1743,8 +1742,6 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions* scroll_to_options) const {
   if (!page)
     return;
 
-  DeferredShapingController::From(*document())
-      ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
   document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
 
   float x = 0.0f;
@@ -1804,8 +1801,6 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions* scroll_to_options) const {
   // clamped, which is never the case for (0, 0).
   if (!scroll_to_options->hasLeft() || !scroll_to_options->hasTop() ||
       scroll_to_options->left() || scroll_to_options->top()) {
-    DeferredShapingController::From(*document())
-        ->ReshapeAllDeferred(ReshapeReason::kScrollingApi);
     document()->UpdateStyleAndLayout(DocumentUpdateReason::kJavaScript);
   }
 
@@ -2476,6 +2471,14 @@ bool LocalDOMWindow::IsPictureInPictureWindow() const {
 
 void LocalDOMWindow::SetIsPictureInPictureWindow() {
   is_picture_in_picture_window_ = true;
+}
+
+bool LocalDOMWindow::HasStorageAccess() const {
+  return has_storage_access_;
+}
+
+void LocalDOMWindow::SetHasStorageAccess() {
+  has_storage_access_ = true;
 }
 
 }  // namespace blink

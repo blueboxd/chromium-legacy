@@ -74,7 +74,6 @@
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_package/subresource_web_bundle_navigation_info.h"
-#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/trace_utils.h"
@@ -1133,7 +1132,14 @@ void NavigationControllerImpl::GoToIndex(
   TRACE_EVENT0("browser,navigation,benchmark",
                "NavigationControllerImpl::GoToIndex");
   if (index < 0 || index >= static_cast<int>(entries_.size())) {
-    NOTREACHED();
+    // We've seen reports of this NOTREACHED being hit on Android WebView, where
+    // we won't get the log message below. The following code ensures that
+    // `index` and `entries_size` will show up on the minidump for that case.
+    base::debug::Alias(&index);
+    const size_t entries_size = entries_.size();
+    base::debug::Alias(&entries_size);
+    NOTREACHED() << "Index " << index
+                 << " is out of bounds, entries_.size() is " << entries_size;
     return;
   }
 
@@ -1781,9 +1787,6 @@ void NavigationControllerImpl::UpdateNavigationEntryDetails(
       request ? request->common_params().initiator_base_url : absl::nullopt,
       request ? request->GetRedirectChain() : redirects, params.page_state,
       params.method, params.post_id, nullptr /* blob_url_loader_factory */,
-      (request && request->web_bundle_navigation_info())
-          ? request->web_bundle_navigation_info()->Clone()
-          : nullptr,
       (request ? request->GetSubresourceWebBundleNavigationInfo() : nullptr),
       ComputePolicyContainerPoliciesForFrameEntry(
           rfh, request && request->IsSameDocument(),
@@ -1917,7 +1920,6 @@ void NavigationControllerImpl::RendererDidNavigateToNewEntry(
         Referrer(*params.referrer), initiator_origin, initiator_base_url,
         request->GetRedirectChain(), params.page_state, params.method,
         params.post_id, nullptr /* blob_url_loader_factory */,
-        nullptr /* web_bundle_navigation_info */,
         request->GetSubresourceWebBundleNavigationInfo(),
         // We will set the document policies later in this function.
         nullptr /* policy_container_policies */,
@@ -2253,9 +2255,6 @@ void NavigationControllerImpl::RendererDidNavigateNewSubframe(
       Referrer(*params.referrer), initiator_origin, initiator_base_url,
       request->GetRedirectChain(), params.page_state, params.method,
       params.post_id, nullptr /* blob_url_loader_factory */,
-      request->web_bundle_navigation_info()
-          ? request->web_bundle_navigation_info()->Clone()
-          : nullptr,
       request->GetSubresourceWebBundleNavigationInfo(),
       std::move(policy_container_policies), protect_url_in_navigation_api);
 
@@ -2615,6 +2614,23 @@ bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(
 
   request->SetNavigationClient(std::move(*navigation_client));
 
+  SCOPED_CRASH_KEY_STRING256(
+      "Bug1400009", "req_url",
+      request->GetURL().GetWithEmptyPath().possibly_invalid_spec());
+  SCOPED_CRASH_KEY_NUMBER(
+      "Bug1400009", "nav_entry_si",
+      entry->site_instance() ? ((int)entry->site_instance()->GetId()) : -1);
+  SCOPED_CRASH_KEY_NUMBER("Bug1400009", "fne_si",
+                          frame_entry->site_instance()
+                              ? ((int)frame_entry->site_instance()->GetId())
+                              : -1);
+  bool has_sig =
+      (frame_entry->site_instance() && frame_entry->site_instance()->group());
+  SCOPED_CRASH_KEY_BOOL("Bug1400009", "fne_sig_exists", has_sig);
+  SCOPED_CRASH_KEY_BOOL("Bug1400009", "fne_sig_has_rvh",
+                        has_sig ? (!!frame_tree_->GetRenderViewHost(
+                                      frame_entry->site_instance()->group()))
+                                : false);
   render_frame_host->frame_tree_node()->navigator().Navigate(std::move(request),
                                                              ReloadType::NONE);
 
@@ -2715,7 +2731,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
         absl::nullopt /* commit_origin */, referrer, initiator_origin,
         initiator_base_url, std::vector<GURL>(), blink::PageState(), method, -1,
-        blob_url_loader_factory, nullptr /* web_bundle_navigation_info */,
+        blob_url_loader_factory,
         nullptr /* subresource_web_bundle_navigation_info */,
         nullptr /* policy_container_policies */);
   } else {
@@ -2754,7 +2770,7 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
         static_cast<SiteInstanceImpl*>(source_site_instance), url,
         absl::nullopt /* origin */, referrer, initiator_origin,
         initiator_base_url, std::vector<GURL>(), blink::PageState(), method, -1,
-        blob_url_loader_factory, nullptr /* web_bundle_navigation_info */,
+        blob_url_loader_factory,
         nullptr /* subresource_web_bundle_navigation_info */,
         nullptr /* policy_container_policies */,
         false /* protect_url_in_navigation_api */);
@@ -3143,6 +3159,22 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
     }
   }
 
+  // If it is possible that this traverse may involve a same-document navigation
+  // in the initiator and there is a Navigation API key involved, then we may
+  // need to notify the initiator if it fails. (The early returns above either
+  // do not involve these cases or already notify the initiator.)
+  // The event only needs to fire for the initiator, and only if the initiator
+  // itself is performing a same-document navigation (because the event will not
+  // fire if it navigates cross-document).
+  if (navigation_api_key) {
+    for (auto& item : same_document_loads) {
+      if (item->frame_tree_node() == initiator_rfh->frame_tree_node()) {
+        item->set_pending_navigation_api_key(*navigation_api_key);
+        break;
+      }
+    }
+  }
+
   // BackForwardCache:
   // Navigate immediately if the document is in the BackForwardCache.
   if (back_forward_cache_.GetEntry(nav_entry_id)) {
@@ -3220,6 +3252,32 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
   // to it. Grab a reference to delay potential deletion until the end of this
   // function.
   std::unique_ptr<PendingEntryRef> pending_entry_ref = ReferencePendingEntry();
+
+  // If there is a main-frame same-document history navigation, we may defer
+  // the subframe history navigations in order to give JS in the main frame the
+  // opportunity to cancel the entire traverse via the navigate event. In that
+  // case, we need to stash the main frame request's navigation token on the
+  // subframes, so they can look up the main frame request and defer themselves
+  // until it completes.
+  if (!same_document_loads.empty() &&
+      same_document_loads.at(0)->frame_tree_node()->IsMainFrame()) {
+    NavigationRequest* main_frame_request = same_document_loads.at(0).get();
+    // The token will only be returned in cases where deferring the navigation
+    // is necessary.
+    if (auto main_frame_same_document_token =
+            main_frame_request->GetNavigationTokenForDeferringSubframes()) {
+      for (auto& item : same_document_loads) {
+        if (item.get() != main_frame_request) {
+          item->set_main_frame_same_document_history_token(
+              main_frame_same_document_token);
+        }
+      }
+      for (auto& item : different_document_loads) {
+        item->set_main_frame_same_document_history_token(
+            main_frame_same_document_token);
+      }
+    }
+  }
 
   // Send all the same document frame loads before the different document loads.
   for (auto& item : same_document_loads) {
@@ -3633,7 +3691,6 @@ NavigationControllerImpl::CreateNavigationEntryFromLoadParams(
         params.url, absl::nullopt, params.referrer, params.initiator_origin,
         params.initiator_base_url, params.redirect_chain, blink::PageState(),
         "GET", -1, blob_url_loader_factory,
-        nullptr /* web_bundle_navigation_info */,
         nullptr /* subresource_web_bundle_navigation_info */,
         // If in NavigateWithoutEntry we later determine that this navigation is
         // a conversion of a new navigation into a reload, we will set the right
@@ -3827,8 +3884,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           /*data_url_as_string=*/std::string(),
 #endif
           /*is_browser_initiated=*/!params.is_renderer_initiated,
-          /*web_bundle_physical_url=*/GURL(),
-          /*base_url_override_for_web_bundle=*/GURL(),
           /*document_ukm_source_id=*/ukm::kInvalidSourceId,
           node->pending_frame_policy(),
           /*force_enabled_origin_trials=*/std::vector<std::string>(),

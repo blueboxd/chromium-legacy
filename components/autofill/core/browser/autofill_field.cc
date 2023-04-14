@@ -48,7 +48,7 @@ bool AreCollapsibleLogEvents(const AutofillField::FieldLogEventType& event1,
   }
 
   static_assert(
-      absl::variant_size<AutofillField::FieldLogEventType>() == 8,
+      absl::variant_size<AutofillField::FieldLogEventType>() == 9,
       "If you add a new field event type, you need to update this function");
 
   if (absl::holds_alternative<absl::monostate>(event1)) {
@@ -88,6 +88,11 @@ bool AreCollapsibleLogEvents(const AutofillField::FieldLogEventType& event1,
 
   if (absl::holds_alternative<ServerPredictionFieldLogEvent>(event1)) {
     using E = ServerPredictionFieldLogEvent;
+    return AreCollapsible(absl::get<E>(event1), absl::get<E>(event2));
+  }
+
+  if (absl::holds_alternative<RationalizationFieldLogEvent>(event1)) {
+    using E = RationalizationFieldLogEvent;
     return AreCollapsible(absl::get<E>(event1), absl::get<E>(event2));
   }
 
@@ -398,9 +403,11 @@ void AutofillField::AppendLogEventIfNotRepeated(
   // |field_log_events_| reaches certain threshold, e.g. 1000.
 
   // Disable it for now until we find a selection criterion to select forms to
-  // be recorded into UKM.
+  // be recorded into UKM. Always enable for clients with
+  // `features::kAutofillFeedback` enabled.
   if (!base::FeatureList::IsEnabled(
-          features::kAutofillLogUKMEventsWithSampleRate)) {
+          features::kAutofillLogUKMEventsWithSampleRate) &&
+      !base::FeatureList::IsEnabled(features::kAutofillFeedback)) {
     return;
   }
 

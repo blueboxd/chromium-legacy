@@ -843,14 +843,15 @@ public class RootUiCoordinator
             };
 
             mHistoryClustersCoordinator = new HistoryClustersCoordinator(profile, mActivity,
-                    TemplateUrlServiceFactory.get(), historyClustersDelegate,
+                    TemplateUrlServiceFactory.getForProfile(profile), historyClustersDelegate,
                     ChromeAccessibilityUtil.get(), mSnackbarManagerSupplier.get());
             mHistoryClustersCoordinatorSupplier.set(mHistoryClustersCoordinator);
         }
     }
 
     private void initMerchantTrustSignals() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.COMMERCE_MERCHANT_VIEWER)
+        if (ShoppingServiceFactory.getForProfile(Profile.getLastUsedRegularProfile())
+                        .isMerchantViewerEnabled()
                 && shouldInitializeMerchantTrustSignals()) {
             MerchantTrustSignalsCoordinator merchantTrustSignalsCoordinator =
                     new MerchantTrustSignalsCoordinator(mActivity, mWindowAndroid,
@@ -887,7 +888,9 @@ public class RootUiCoordinator
      * Generate the LoadUrlParams necessary to load the specified search query.
      */
     private static LoadUrlParams generateUrlParamsForSearch(Tab tab, String query) {
-        String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
+        String url = TemplateUrlServiceFactory
+                             .getForProfile(Profile.fromWebContents(tab.getWebContents()))
+                             .getUrlForSearchQuery(query);
         String headers = GeolocationHeader.getGeoHeader(url, tab);
 
         LoadUrlParams loadUrlParams = new LoadUrlParams(url);
@@ -1072,17 +1075,17 @@ public class RootUiCoordinator
             mIdentityDiscController = new IdentityDiscController(
                     mActivity, mActivityLifecycleDispatcher, mProfileSupplier);
             PriceTrackingButtonController priceTrackingButtonController =
-                    new PriceTrackingButtonController(mActivityTabProvider,
+                    new PriceTrackingButtonController(mActivity, mActivityTabProvider,
                             mModalDialogManagerSupplier.get(), getBottomSheetController(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.price_tracking_disabled),
                             mTabBookmarkerSupplier);
             ReaderModeToolbarButtonController readerModeToolbarButtonController =
-                    new ReaderModeToolbarButtonController(mActivityTabProvider,
+                    new ReaderModeToolbarButtonController(mActivity, mActivityTabProvider,
                             mModalDialogManagerSupplier.get(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.ic_mobile_friendly));
-            ShareButtonController shareButtonController = new ShareButtonController(
+            ShareButtonController shareButtonController = new ShareButtonController(mActivity,
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
                     mActivityTabProvider, mShareDelegateSupplier, trackerSupplier, new ShareUtils(),
@@ -1108,7 +1111,7 @@ public class RootUiCoordinator
                         }
                     };
             VoiceToolbarButtonController voiceToolbarButtonController =
-                    new VoiceToolbarButtonController(
+                    new VoiceToolbarButtonController(mActivity,
                             AppCompatResources.getDrawable(mActivity, R.drawable.btn_mic),
                             mActivityTabProvider, trackerSupplier,
                             mModalDialogManagerSupplier.get(), voiceSearchDelegate);

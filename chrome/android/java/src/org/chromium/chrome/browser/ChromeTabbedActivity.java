@@ -130,6 +130,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
 import org.chromium.chrome.browser.read_later.ReadingListBackPressHandler;
 import org.chromium.chrome.browser.read_later.ReadingListUtils;
 import org.chromium.chrome.browser.reengagement.ReengagementNotificationController;
@@ -205,13 +206,13 @@ import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.profile_metrics.BrowserProfileType;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.webapps.ShortcutSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
@@ -1037,6 +1038,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             ChromeAccessibilityUtil.get().addObserver(mLayoutManager);
             if (isTablet()) ChromeAccessibilityUtil.get().addObserver(mCompositorViewHolder);
             if (BackPressManager.isEnabled()) initializeBackPressHandlers();
+
+            mInactivityTracker.setLastVisibleTimeMsAndRecord(System.currentTimeMillis());
         }
     }
 
@@ -1073,6 +1076,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         if (!isWarmOnResume()) {
             SuggestionsMetrics.recordArticlesListVisible();
+        } else {
+            mInactivityTracker.setLastVisibleTimeMsAndRecord(System.currentTimeMillis());
         }
 
         FeatureNotificationUtils.handleIntentIfApplicable(getIntent());
@@ -1088,7 +1093,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         NavigationPredictorBridge.onPause();
         // Always track the last backgrounded time in case others are using the pref.
-        mInactivityTracker.setLastBackgroundedTimeInPrefsSync(System.currentTimeMillis());
+        mInactivityTracker.setLastBackgroundedTimeInPrefs(System.currentTimeMillis());
 
         super.onPauseWithNative();
     }
@@ -1762,16 +1767,13 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     public void performPostInflationStartup() {
         super.performPostInflationStartup();
 
+        if (isFinishing()) return;
+
         FontPreloader.getInstance().onPostInflationStartupTabbedActivity();
 
         TabModelSelector tabModelSelector = getTabModelSelector();
         IncognitoProfileDestroyer.observeTabModelSelector(tabModelSelector);
         IncognitoNotificationPresenceController.observeTabModelSelector(tabModelSelector);
-
-        // Critical path for startup. Create the minimum objects needed
-        // to allow a blank screen draw (without depending on any native code)
-        // and then yield ASAP.
-        if (isFinishing()) return;
 
         // Don't show the keyboard until user clicks in.
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN
@@ -1907,7 +1909,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         boolean tabModelWasCreated = mTabModelOrchestrator.createTabModels(
                 this, this, mNextTabPolicySupplier, mWindowId);
         if (!tabModelWasCreated) {
-            finish();
+            finishAndRemoveTask();
             return;
         }
 
@@ -1941,11 +1943,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 try (TraceEvent te = TraceEvent.scoped("updateActiveWebContents")) {
                     SendTabToSelfAndroidBridge.updateActiveWebContents(tab.getWebContents());
                 }
-            }
-
-            @Override
-            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
             }
         };
         mAppIndexingUtil = new AppIndexingUtil(mTabModelSelector);
@@ -2241,6 +2238,15 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             TabModel currentModel = mTabModelSelector.getCurrentModel();
             if (!currentModel.isIncognito()) currentModel.openMostRecentlyClosedEntry();
             RecordUserAction.record("MobileTabClosedUndoShortCut");
+        } else if (id == R.id.quick_delete_menu_id
+                && QuickDeleteController.isQuickDeleteEnabled()) {
+            assert !mTabModelSelector.getCurrentModel().isIncognito()
+                : "Quick delete is not supported in Incognito.";
+
+            QuickDeleteController
+                    .create(getModalDialogManager(), getSnackbarManager(),
+                            UserPrefs.get(mTabModelProfileSupplier.get()))
+                    .triggerQuickDeleteFlow();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
         }
@@ -2291,6 +2297,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (currentTab == null) {
             BackPressManager.record(BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
             MinimizeAppAndCloseTabBackPressHandler.record(MinimizeAppAndCloseTabType.MINIMIZE_APP);
+            assertOnLastBackPress();
             moveTaskToBack(true);
             return true;
         }
@@ -2341,7 +2348,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         //   exit Chrome on top of closing the tab
         final boolean minimizeApp =
                 !shouldCloseTab || TabAssociatedApp.isOpenedFromExternalApp(currentTab);
+
         BackPressManager.record(BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
+        assertOnLastBackPress();
+
         if (minimizeApp) {
             if (shouldCloseTab) {
                 MinimizeAppAndCloseTabBackPressHandler.record(
@@ -2364,6 +2374,14 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return false;
     }
 
+    private void assertOnLastBackPress() {
+        var currentTab = getActivityTab();
+        var activityTab = getActivityTabProvider().get();
+        MinimizeAppAndCloseTabBackPressHandler.assertOnLastBackPress(currentTab, activityTab,
+                this::backShouldCloseTab, mLayoutStateProviderSupplier,
+                isActivityFinishingOrDestroyed());
+    }
+
     private void initializeBackPressHandlers() {
         if (mReturnToChromeBackPressHandler == null && !isTablet()) {
             mReturnToChromeBackPressHandler = new ReturnToChromeBackPressHandler(
@@ -2379,7 +2397,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         }
         if (mMinimizeAppAndCloseTabBackPressHandler == null) {
             mMinimizeAppAndCloseTabBackPressHandler = new MinimizeAppAndCloseTabBackPressHandler(
-                    getActivityTabProvider(), this::backShouldCloseTab, this::sendToBackground);
+                    getActivityTabProvider(), this::backShouldCloseTab, this::sendToBackground,
+                    this::assertOnLastBackPress);
             mBackPressManager.addHandler(mMinimizeAppAndCloseTabBackPressHandler,
                     BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
         }
@@ -2596,7 +2615,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             final int layoutTypeToShowFinal = layoutTypeToShow;
             getCompositorViewHolderSupplier().get().hideKeyboard(
                     () -> mLayoutManager.showLayout(layoutTypeToShowFinal, true));
-            updateAccessibilityState(false);
             TasksUma.recordTabLaunchType(getCurrentTabModel());
         }
     }
@@ -2606,7 +2624,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         if (getCurrentTabModel().getCount() != 0) {
             // Don't hide overview if current tab stack is empty()
             mLayoutManager.showLayout(LayoutType.BROWSING, false);
-            updateAccessibilityState(true);
         }
     }
 
@@ -2627,14 +2644,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             showOverview(StartSurfaceState.SHOWING_HOMEPAGE, launchOrigin);
         }
         return true;
-    }
-
-    private void updateAccessibilityState(boolean enabled) {
-        Tab currentTab = getActivityTab();
-        WebContents webContents = currentTab != null ? currentTab.getWebContents() : null;
-        if (webContents != null) {
-            WebContentsAccessibility.fromWebContents(webContents).setState(enabled);
-        }
     }
 
     @Override
@@ -2822,6 +2831,10 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         return mStartSurfaceSupplier.get();
     }
 
+    public TabSwitcher getTabSwitcherForTesting() {
+        return mTabSwitcherSupplier.get();
+    }
+
     private ComposedBrowserControlsVisibilityDelegate getAppBrowserControlsVisibilityDelegate() {
         // TODO(jinsukkim): Move this to RootUiCoordinator.
         return ((TabbedRootUiCoordinator) mRootUiCoordinator)
@@ -2915,7 +2928,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     }
     private void returnToOverviewModeOnBackPressed() {
         Tab currentTab = getActivityTab();
-        assert currentTab != null;
+        assert currentTab != null && !currentTab.canGoBack();
 
         // If current tab is an incognito one, we need to change tab model to non-incognito for
         // showing non-incognito start surface homepage.

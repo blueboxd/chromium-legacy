@@ -446,17 +446,14 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
         app_controller_(app_controller) {
     DCHECK(profile_manager_);
     DCHECK(app_controller_);
-    // Listen to ProfileObserver and ProfileManagerObserver, if either one of
-    // kDestroyProfileOnBrowserClose or kUpdateHistoryEntryPointsInIncognito
-    // are enabled.
-    if (ObserveRegularProfiles() || ObserveOTRProfiles()) {
-      profile_manager_observer_.Observe(profile_manager_.get());
-      for (Profile* profile : profile_manager_->GetLoadedProfiles()) {
-        profile_observers_.AddObservation(profile);
-        Profile* otr_profile =
-            profile->GetPrimaryOTRProfile(/*create_if_needed=*/false);
-        if (otr_profile && ObserveOTRProfiles())
-          profile_observers_.AddObservation(otr_profile);
+    // Listen to ProfileObserver and ProfileManagerObserver.
+    profile_manager_observer_.Observe(profile_manager_.get());
+    for (Profile* profile : profile_manager_->GetLoadedProfiles()) {
+      profile_observers_.AddObservation(profile);
+      Profile* otr_profile =
+          profile->GetPrimaryOTRProfile(/*create_if_needed=*/false);
+      if (otr_profile) {
+        profile_observers_.AddObservation(otr_profile);
       }
     }
     storage_observer_.Observe(&profile_manager_->GetProfileAttributesStorage());
@@ -485,8 +482,6 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
 
   // ProfileManager::Observer implementation:
   void OnProfileAdded(Profile* profile) override {
-    if (!ObserveRegularProfiles() && !ObserveOTRProfiles())
-      return;
     profile_observers_.AddObservation(profile);
   }
 
@@ -494,9 +489,8 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   void OnProfileWillBeDestroyed(Profile* profile) override {
     profile_observers_.RemoveObservation(profile);
 
-    bool is_profile_observed = profile->IsOffTheRecord()
-                                   ? ObserveOTRProfiles()
-                                   : ObserveRegularProfiles();
+    bool is_profile_observed =
+        profile->IsOffTheRecord() || ObserveRegularProfiles();
 
     // If the profile is not observed, then no need to call rest.
     if (!is_profile_observed)
@@ -507,21 +501,12 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
   }
 
   void OnOffTheRecordProfileCreated(Profile* off_the_record) override {
-    // If off_the_record profiles are not observed, then do not add observer.
-    if (!ObserveOTRProfiles()) {
-      return;
-    }
     profile_observers_.AddObservation(off_the_record);
   }
 
   static bool ObserveRegularProfiles() {
     return base::FeatureList::IsEnabled(
         features::kDestroyProfileOnBrowserClose);
-  }
-
-  static bool ObserveOTRProfiles() {
-    return base::FeatureList::IsEnabled(
-        features::kUpdateHistoryEntryPointsInIncognito);
   }
 
   base::ScopedMultiSourceObservation<Profile, ProfileObserver>
@@ -868,12 +853,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   }
 
   Profile* profile = browser->profile();
-  // If kUpdateHistoryEntryPointsInIncognito is not enabled, always pass
-  // original profile.
-  if (!base::FeatureList::IsEnabled(
-          features::kUpdateHistoryEntryPointsInIncognito)) {
-    profile = profile->GetOriginalProfile();
-  }
+
   [self setLastProfile:profile];
   _lastActiveColorProvider = browser->window()->GetColorProvider();
 }
@@ -1417,7 +1397,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
       break;
     case IDC_MANAGE_EXTENSIONS:
       if (Browser* browser = ActivateBrowser(profile))
-        chrome::ShowExtensions(browser, std::string());
+        chrome::ShowExtensions(browser);
       else
         chrome::OpenExtensionsWindow(profile);
       break;

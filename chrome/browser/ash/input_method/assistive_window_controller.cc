@@ -14,7 +14,6 @@
 #include "chrome/browser/ash/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/ash/input_method/assistive_window_properties.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -205,6 +204,7 @@ void AssistiveWindowController::SetButtonHighlighted(
       if (highlighted)
         Announce(button.announce_string);
       break;
+    case ash::ime::AssistiveWindowType::kLearnMore:
     case ash::ime::AssistiveWindowType::kUndoWindow:
       if (!undo_window_)
         return;
@@ -238,6 +238,7 @@ AssistiveWindowController::WindowOrientationFor(
     ash::ime::AssistiveWindowType window_type) {
   switch (window_type) {
     case ash::ime::AssistiveWindowType::kLongpressDiacriticsSuggestion:
+    case ash::ime::AssistiveWindowType::kLearnMore:
       return ui::ime::SuggestionWindowView::Orientation::kHorizontal;
     case ash::ime::AssistiveWindowType::kUndoWindow:
     case ash::ime::AssistiveWindowType::kEmojiSuggestion:
@@ -270,11 +271,12 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
             bounds_.autocorrect.IsEmpty() ? bounds_.caret : bounds_.autocorrect;
         anchor_rect.Inset(-4);
         undo_window_->SetAnchorRect(anchor_rect);
-        undo_window_->Show();
+        undo_window_->Show(window.show_setting_link);
       } else {
         undo_window_->Hide();
       }
       break;
+    case ash::ime::AssistiveWindowType::kLearnMore:
     case ash::ime::AssistiveWindowType::kEmojiSuggestion:
     case ash::ime::AssistiveWindowType::kPersonalInfoSuggestion:
     case ash::ime::AssistiveWindowType::kMultiWordSuggestion:

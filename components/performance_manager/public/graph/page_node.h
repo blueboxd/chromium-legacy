@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/containers/flat_set.h"
-#include "base/functional/callback_forward.h"
+#include "base/functional/function_ref.h"
 #include "components/performance_manager/public/freezing/freezing.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
@@ -39,7 +39,7 @@ enum class PageType {
 // Extensions.
 class PageNode : public Node {
  public:
-  using FrameNodeVisitor = base::RepeatingCallback<bool(const FrameNode*)>;
+  using FrameNodeVisitor = base::FunctionRef<bool(const FrameNode*)>;
   using LifecycleState = mojom::LifecycleState;
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
@@ -199,11 +199,6 @@ class PageNode : public Node {
   // interactions.
   virtual bool HadFormInteraction() const = 0;
 
-  // Indicates if at least one of the frames in the page has received
-  // user-initiated edits. This is a superset of `HadFormInteraction()` that
-  // also includes changes to `contenteditable` elements.
-  virtual bool HadUserEdits() const = 0;
-
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
@@ -309,9 +304,6 @@ class PageNodeObserver {
   // Invoked when the HadFormInteraction property changes.
   virtual void OnHadFormInteractionChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the HadUserEdits property changes.
-  virtual void OnHadUserEditsChanged(const PageNode* page_node) = 0;
-
   // Invoked when the page state changes. See `PageState` for the valid
   // transitions.
   virtual void OnPageStateChanged(const PageNode* page_node,
@@ -326,6 +318,12 @@ class PageNodeObserver {
   // Fired when the favicon associated with a page is updated. This property is
   // not directly reflected on the node.
   virtual void OnFaviconUpdated(const PageNode* page_node) = 0;
+
+  // Fired after `new_page_node` is created but before `page_node` is deleted
+  // from being discarded. See the equivalent function on `WebContentsObserver`
+  // for more detail.
+  virtual void OnAboutToBeDiscarded(const PageNode* page_node,
+                                    const PageNode* new_page_node) = 0;
 
   // Called every time the aggregated freezing vote changes or gets invalidated.
   virtual void OnFreezingVoteChanged(
@@ -370,9 +368,10 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnMainFrameUrlChanged(const PageNode* page_node) override {}
   void OnMainFrameDocumentChanged(const PageNode* page_node) override {}
   void OnHadFormInteractionChanged(const PageNode* page_node) override {}
-  void OnHadUserEditsChanged(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}
   void OnFaviconUpdated(const PageNode* page_node) override {}
+  void OnAboutToBeDiscarded(const PageNode* page_node,
+                            const PageNode* new_page_node) override {}
   void OnFreezingVoteChanged(
       const PageNode* page_node,
       absl::optional<freezing::FreezingVote> previous_vote) override {}

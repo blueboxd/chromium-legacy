@@ -35,6 +35,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/timing/resource_timing.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_performance_entry_filter_options.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -74,11 +75,9 @@ class PerformanceMeasure;
 class PerformanceNavigation;
 class PerformanceObserver;
 class PerformanceTiming;
-class ResourceTimingInfo;
 class ScriptPromise;
 class ScriptState;
 class ScriptValue;
-class SecurityOrigin;
 class SoftNavigationEntry;
 class UserTiming;
 class V8ObjectBuilder;
@@ -156,30 +155,31 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   // Internal getter method for the time origin value.
   base::TimeTicks GetTimeOriginInternal() const { return time_origin_; }
 
-  // Get performance entries of the current frame, and optionally, nested
-  // same-origin iframes.
+  // Get all performance entries of the main frame. This is kept until the one
+  // with optional filtering options is enabled by default.
+  PerformanceEntryVector getEntries();
+
+  // Get performance entries with optional filtering options.
   PerformanceEntryVector getEntries(ScriptState* script_state,
-                                    bool include_frames = false);
-  // Get BufferedEntriesByType will return all entries in the buffer regardless
-  // of whether they are exposed in the Performance Timeline. getEntriesByType
-  // will only return all entries for existing types in
+                                    PerformanceEntryFilterOptions* options);
+
+  // This getBufferedEntriesByType method will return all entries in the buffer
+  // regardless of whether they are exposed in the Performance Timeline.
+  // getEntriesByType will only return all entries for existing types in
   // PerformanceEntry.IsValidTimelineEntryType.
   PerformanceEntryVector getBufferedEntriesByType(
-      const AtomicString& entry_type);
+      const AtomicString& entry_type,
+      bool include_triggered_by_soft_navigation = false);
 
   // Get performance entries of the current frame by type, and optionally,
   // nested same-origin iframes.
-  PerformanceEntryVector getEntriesByType(ScriptState* script_state,
-                                          const AtomicString& entry_type,
-                                          bool includeFrames = false);
+  PerformanceEntryVector getEntriesByType(const AtomicString& entry_type);
 
   // Get performance entries of the current frame by name and/or type, and
   // optionally, nested same-origin iframes.
   PerformanceEntryVector getEntriesByName(
-      ScriptState* script_state,
       const AtomicString& name,
-      const AtomicString& entry_type = g_null_atom,
-      bool includeFrames = false);
+      const AtomicString& entry_type = g_null_atom);
 
   void clearResourceTimings();
   void setResourceTimingBufferSize(unsigned);
@@ -197,32 +197,21 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                          const AtomicString& container_name);
 
   // Generates and add a performance entry for the given ResourceTimingInfo.
-  // |overridden_initiator_type| allows the initiator type to be overridden to
-  // the frame element name for the main resource.
-  void GenerateAndAddResourceTiming(
-      const ResourceTimingInfo&,
-      const AtomicString& overridden_initiator_type = g_null_atom);
-  // Generates timing info suitable for appending to the performance entries of
-  // a context with |origin|. This should be rarely used; most callsites should
-  // prefer the convenience method |GenerateAndAddResourceTiming()|.
-  static mojom::blink::ResourceTimingInfoPtr GenerateResourceTiming(
-      const SecurityOrigin& destination_origin,
-      const ResourceTimingInfo&,
-      ExecutionContext& context_for_use_counter);
   void AddResourceTiming(mojom::blink::ResourceTimingInfoPtr,
-                         const AtomicString& initiator_type,
-                         ExecutionContext* context);
+                         const AtomicString& initiator_type);
+
   void AddResourceTimingWithUnparsedServerTiming(
       mojom::blink::ResourceTimingInfoPtr,
       const String& server_timing_value,
-      const AtomicString& initiator_type,
-      ExecutionContext* context);
+      const AtomicString& initiator_type);
 
   void NotifyNavigationTimingToObservers();
 
-  void AddFirstPaintTiming(base::TimeTicks start_time);
+  void AddFirstPaintTiming(base::TimeTicks start_time,
+                           bool is_triggered_by_soft_navigation);
 
-  void AddFirstContentfulPaintTiming(base::TimeTicks start_time);
+  void AddFirstContentfulPaintTiming(base::TimeTicks start_time,
+                                     bool is_triggered_by_soft_navigation);
 
   bool IsElementTimingBufferFull() const;
   void AddElementTimingBuffer(PerformanceElementTiming&);
@@ -335,7 +324,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
  private:
   void AddPaintTiming(PerformancePaintTiming::PaintType,
-                      base::TimeTicks start_time);
+                      base::TimeTicks start_time,
+                      bool is_triggered_by_soft_navigation);
 
   PerformanceMeasure* MeasureInternal(
       ScriptState* script_state,
@@ -356,7 +346,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   PerformanceEntryVector getEntriesByTypeInternal(
       PerformanceEntry::EntryType type,
-      const AtomicString& maybe_name = g_null_atom);
+      const AtomicString& maybe_name = g_null_atom,
+      bool include_triggered_by_soft_navigation = false);
 
   void MeasureMemoryExperimentTimerFired(TimerBase*);
 
@@ -382,12 +373,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
               bool cross_origin_isolated_capability,
               scoped_refptr<base::SingleThreadTaskRunner>,
               ExecutionContext* context = nullptr);
-
-  // Expect WindowPerformance to override this method,
-  // WorkerPerformance doesn't have to override this.
-  virtual PerformanceNavigationTiming* CreateNavigationTimingInstance() {
-    return nullptr;
-  }
 
   bool CanAddResourceTimingEntry();
   void FireResourceTimingBufferFull(TimerBase*);
@@ -421,7 +406,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   PerformanceEntryVector visibility_state_buffer_;
   PerformanceEntryVector back_forward_cache_restoration_buffer_;
   PerformanceEntryVector soft_navigation_buffer_;
-  Member<PerformanceEntry> navigation_timing_;
+  Member<PerformanceNavigationTiming> navigation_timing_;
   Member<UserTiming> user_timing_;
   PerformanceEntryVector paint_entries_timing_;
   Member<PerformanceEventTiming> first_input_timing_;

@@ -10,6 +10,7 @@
 
 #include "base/containers/contains.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/values.h"
 #include "chrome/browser/web_applications/externally_installed_prefs_migration_metrics.h"
 #include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -21,6 +22,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -60,10 +62,10 @@ constexpr char kAppIdDeleted[] =
 constexpr char kInstallUrlsDeleted[] =
     "WebApp.ExternalPrefs.CorruptionFixedInstallUrlsDeleted";
 
-// Returns the base::Value in |pref_service| corresponding to our stored dict
-// for |app_id|, or nullptr if it doesn't exist.
-const base::Value* GetPreferenceValue(const PrefService* pref_service,
-                                      const AppId& app_id) {
+// Returns the base::Value in `pref_service` corresponding to our stored dict
+// for `app_id`, or `nullptr` if it doesn't exist.
+const base::Value::Dict* GetPreferenceValue(const PrefService* pref_service,
+                                            const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   const base::Value::Dict& urls_to_dicts =
       pref_service->GetDict(prefs::kWebAppsExtensionIDs);
@@ -71,18 +73,21 @@ const base::Value* GetPreferenceValue(const PrefService* pref_service,
   // key/value pairs. We expect both N and the number of times
   // GetPreferenceValue is called to be relatively small in practice. If they
   // turn out to be large, we can write a more sophisticated implementation.
-  for (auto it : urls_to_dicts) {
-    const base::Value* root = &it.second;
-    const base::Value* v = root;
-    if (v->is_dict()) {
-      v = v->FindKey(kExtensionId);
-      if (v && v->is_string() && (v->GetString() == app_id)) {
-        return root;
-      }
+  for (const auto it : urls_to_dicts) {
+    if (!it.second.is_dict()) {
+      continue;
+    }
+
+    const base::Value::Dict& dict = it.second.GetDict();
+    const std::string* extension_id = dict.FindString(kExtensionId);
+    if (extension_id && (*extension_id == app_id)) {
+      return &it.second.GetDict();
     }
   }
+
   return nullptr;
 }
+
 // Correct any corruption that has occurred due to Lacros processes starting in
 // inconsistent ways. https://crbug.com/1359205.
 void FixMigrationCorruptionFromLacrosSwitch(PrefService* pref_service,
@@ -138,12 +143,13 @@ bool ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
     const PrefService* pref_service,
     const AppId& app_id,
     ExternalInstallSource install_source) {
-  const base::Value* v = GetPreferenceValue(pref_service, app_id);
-  if (v == nullptr || !v->is_dict())
+  const base::Value::Dict* dict = GetPreferenceValue(pref_service, app_id);
+  if (dict == nullptr) {
     return false;
+  }
 
-  v = v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
-  return (v && v->GetInt() == static_cast<int>(install_source));
+  absl::optional<int> v = dict->FindInt(kInstallSource);
+  return (v.has_value() && v.value() == static_cast<int>(install_source));
 }
 
 // static
@@ -157,26 +163,27 @@ ExternallyInstalledWebAppPrefs::BuildAppIdsMap(
   base::flat_map<AppId, base::flat_set<GURL>> ids_to_urls;
 
   for (auto it : urls_to_dicts) {
-    const base::Value* v = &it.second;
+    const base::Value* const v = &it.second;
     if (!v->is_dict()) {
       continue;
     }
 
-    const base::Value* install_source_value =
-        v->FindKeyOfType(kInstallSource, base::Value::Type::INTEGER);
-    if (!install_source_value ||
-        (install_source_value->GetInt() != static_cast<int>(install_source))) {
+    const base::Value::Dict& dict = v->GetDict();
+    const absl::optional<int> install_source_pref =
+        dict.FindInt(kInstallSource);
+    if (!install_source_pref ||
+        (install_source_pref != static_cast<int>(install_source))) {
       continue;
     }
 
-    v = v->FindKey(kExtensionId);
-    if (!v || !v->is_string()) {
+    const std::string* extension_id = dict.FindString(kExtensionId);
+    if (!extension_id) {
       continue;
     }
 
     GURL url(it.first);
     DCHECK(url.is_valid() && !url.is_empty());
-    ids_to_urls[v->GetString()] = {url};
+    ids_to_urls[*extension_id] = {url};
   }
 
   return ids_to_urls;
@@ -192,7 +199,7 @@ void ExternallyInstalledWebAppPrefs::Insert(
     ExternalInstallSource install_source) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Value dict(base::Value::Type::DICTIONARY);
+  base::Value dict(base::Value::Type::DICT);
   dict.SetKey(kExtensionId, base::Value(app_id));
   dict.SetKey(kInstallSource, base::Value(static_cast<int>(install_source)));
 
@@ -209,31 +216,30 @@ absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupAppId(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::Value* v =
-      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
-  if (v && v->is_dict()) {
-    v = v->FindKey(kExtensionId);
-    if (v && v->is_string()) {
-      return absl::make_optional(v->GetString());
-    }
+  const base::Value::Dict* dict =
+      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).FindDict(url.spec());
+  if (!dict) {
+    return absl::nullopt;
   }
-  return absl::nullopt;
+
+  const std::string* extension_id = dict->FindString(kExtensionId);
+  return extension_id ? absl::make_optional(*extension_id) : absl::nullopt;
 }
 
 absl::optional<AppId> ExternallyInstalledWebAppPrefs::LookupPlaceholderAppId(
     const GURL& url) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::Value* entry =
-      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).Find(url.spec());
+  const base::Value::Dict* entry =
+      pref_service_->GetDict(prefs::kWebAppsExtensionIDs).FindDict(url.spec());
   if (!entry)
     return absl::nullopt;
 
-  absl::optional<bool> is_placeholder = entry->FindBoolKey(kIsPlaceholder);
+  absl::optional<bool> is_placeholder = entry->FindBool(kIsPlaceholder);
   if (!is_placeholder.has_value() || !is_placeholder.value())
     return absl::nullopt;
 
-  return *entry->FindStringKey(kExtensionId);
+  return *entry->FindString(kExtensionId);
 }
 
 void ExternallyInstalledWebAppPrefs::SetIsPlaceholder(const GURL& url,
@@ -254,10 +260,12 @@ bool ExternallyInstalledWebAppPrefs::IsPlaceholderApp(
     const AppId& app_id) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const base::Value* app_prefs = GetPreferenceValue(pref_service_, app_id);
-  if (!app_prefs || !app_prefs->is_dict())
+  const base::Value::Dict* app_prefs =
+      GetPreferenceValue(pref_service_, app_id);
+  if (!app_prefs) {
     return false;
-  return app_prefs->FindBoolKey(kIsPlaceholder).value_or(false);
+  }
+  return app_prefs->FindBool(kIsPlaceholder).value_or(false);
 }
 
 // static
@@ -269,26 +277,26 @@ ExternallyInstalledWebAppPrefs::ParseExternalPrefsToWebAppData(
   ParsedPrefs ids_to_parsed_data;
 
   for (auto it : urls_to_dicts) {
-    const base::Value* v = &it.second;
-    if (!v->is_dict()) {
+    if (!it.second.is_dict()) {
       continue;
     }
 
-    auto* app_id = v->FindKey(kExtensionId);
-    if (!app_id || !app_id->is_string()) {
+    const base::Value::Dict& dict = it.second.GetDict();
+    const std::string* app_id = dict.FindString(kExtensionId);
+    if (!app_id) {
       continue;
     }
 
-    auto* source = v->FindKey(kInstallSource);
+    const absl::optional<int> source = dict.FindInt(kInstallSource);
     if (!source) {
       continue;
     }
 
     WebAppManagement::Type source_type = ConvertExternalInstallSourceToSource(
-        static_cast<ExternalInstallSource>(source->GetInt()));
+        static_cast<ExternalInstallSource>(source.value()));
     WebApp::ExternalManagementConfig& config =
-        ids_to_parsed_data[app_id->GetString()][source_type];
-    config.is_placeholder = v->FindBoolKey(kIsPlaceholder).value_or(false);
+        ids_to_parsed_data[*app_id][source_type];
+    config.is_placeholder = dict.FindBool(kIsPlaceholder).value_or(false);
     config.install_urls.emplace(GURL(it.first));
   }
 

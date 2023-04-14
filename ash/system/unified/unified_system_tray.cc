@@ -232,7 +232,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   managed_device_view_ = AddTrayItemToContainer(
       std::make_unique<ManagedDeviceTrayItemView>(shelf));
 
-  if (!features::IsPrivacyIndicatorsEnabled()) {
+  if (!features::IsPrivacyIndicatorsEnabled() &&
+      !features::IsVideoConferenceEnabled()) {
     camera_view_ =
         AddTrayItemToContainer(std::make_unique<CameraMicTrayItemView>(
             shelf, CameraMicTrayItemView::Type::kCamera));
@@ -261,7 +262,11 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
             shelf, Shell::Get()->shell_delegate()->GetChannel()));
   }
 
-  if (features::IsPrivacyIndicatorsEnabled()) {
+  // Do not show this indicator if video conference feature is enabled since
+  // privacy indicator is already shown there. We also do not show this here in
+  // the new Quick Settings UI.
+  if (features::IsPrivacyIndicatorsEnabled() &&
+      !features::IsVideoConferenceEnabled() && !features::IsQsRevampEnabled()) {
     privacy_indicators_view_ = AddTrayItemToContainer(
         std::make_unique<PrivacyIndicatorsTrayItemView>(shelf));
   }
@@ -379,9 +384,13 @@ void UnifiedSystemTray::ShowVolumeSliderBubble() {
 }
 
 void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
-  // The settings menu bubble gains focus when |show_by_click| is true.
   ShowBubble();
   bubble_->ShowAudioDetailedView();
+}
+
+void UnifiedSystemTray::ShowDisplayDetailedViewBubble() {
+  ShowBubble();
+  bubble_->ShowDisplayDetailedView();
 }
 
 void UnifiedSystemTray::ShowNetworkDetailedViewBubble() {
@@ -542,6 +551,14 @@ void UnifiedSystemTray::OnDateTrayActionPerformed(const ui::Event& event) {
   if (!bubble_) {
     ShowBubble();
   }
+
+  // System Tray bubble will never be shown in kiosk app mode. So after
+  // `ShowBubble()` is called, there's still no bubble, the calendar view should
+  // not show up.
+  if (!bubble_) {
+    return;
+  }
+
   bubble_->ShowCalendarView(calendar_metrics::CalendarViewShowSource::kTimeView,
                             calendar_metrics::GetEventType(event));
 }
@@ -650,9 +667,9 @@ std::u16string UnifiedSystemTray::GetAccessibleNameForTray() {
 
   // For privacy string, we use either `privacy_indicators_view_` or the combo
   // of `mic_view_` and `camera_view_`.
-  if (features::IsPrivacyIndicatorsEnabled()) {
+  if (privacy_indicators_view_) {
     status.push_back(
-        privacy_indicators_view_ && privacy_indicators_view_->GetVisible()
+        privacy_indicators_view_->GetVisible()
             ? privacy_indicators_view_->GetTooltipText(gfx::Point())
             : base::EmptyString16());
   } else {

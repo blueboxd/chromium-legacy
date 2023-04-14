@@ -6,6 +6,7 @@
 
 #import "base/auto_reset.h"
 #import "base/check_op.h"
+#import "base/containers/fixed_flat_map.h"
 #import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "components/autofill/core/common/autofill_prefs.h"
@@ -48,6 +49,26 @@ using l10n_util::GetNSString;
 
 namespace {
 
+// Ordered list of all sync switches. If a new switch is added, a new entry
+// must be added in `kSyncableItemTypes`.
+static const SyncSetupService::SyncableDatatype kSyncSwitchItems[] = {
+    SyncSetupService::kSyncAutofill,       SyncSetupService::kSyncBookmarks,
+    SyncSetupService::kSyncOmniboxHistory, SyncSetupService::kSyncOpenTabs,
+    SyncSetupService::kSyncPasswords,      SyncSetupService::kSyncReadingList,
+    SyncSetupService::kSyncPreferences};
+
+// Map of all synceable types to the corresponding pref name.
+constexpr auto kSyncableItemTypes =
+    base::MakeFixedFlatMap<SyncSetupService::SyncableDatatype, const char*>({
+        {SyncSetupService::kSyncAutofill, syncer::prefs::kSyncAutofill},
+        {SyncSetupService::kSyncBookmarks, syncer::prefs::kSyncBookmarks},
+        {SyncSetupService::kSyncOmniboxHistory, syncer::prefs::kSyncTypedUrls},
+        {SyncSetupService::kSyncOpenTabs, syncer::prefs::kSyncTabs},
+        {SyncSetupService::kSyncPasswords, syncer::prefs::kSyncPasswords},
+        {SyncSetupService::kSyncReadingList, syncer::prefs::kSyncReadingList},
+        {SyncSetupService::kSyncPreferences, syncer::prefs::kSyncPreferences},
+    });
+
 // Returns the configuration to be used for the accessory.
 UIImageConfiguration* AccessoryConfiguration() {
   return [UIImageSymbolConfiguration
@@ -61,24 +82,6 @@ NSString* const kGoogleServicesEnterpriseImage = @"google_services_enterprise";
 // Sync error icon.
 NSString* const kGoogleServicesSyncErrorImage = @"google_services_sync_error";
 
-// Ordered list of all sync switches. If a new switch is added, a new entry
-// must be added in `kSyncableItemTypes` below.
-const std::vector<SyncSetupService::SyncableDatatype> kSyncSwitchItems = {
-    SyncSetupService::kSyncAutofill,       SyncSetupService::kSyncBookmarks,
-    SyncSetupService::kSyncOmniboxHistory, SyncSetupService::kSyncOpenTabs,
-    SyncSetupService::kSyncPasswords,      SyncSetupService::kSyncReadingList,
-    SyncSetupService::kSyncPreferences};
-// Map of all synceable types to the corresponding pref name.
-const std::map<SyncSetupService::SyncableDatatype, const char*>
-    kSyncableItemTypes = {
-        {SyncSetupService::kSyncAutofill, syncer::prefs::kSyncAutofill},
-        {SyncSetupService::kSyncBookmarks, syncer::prefs::kSyncBookmarks},
-        {SyncSetupService::kSyncOmniboxHistory, syncer::prefs::kSyncTypedUrls},
-        {SyncSetupService::kSyncOpenTabs, syncer::prefs::kSyncTabs},
-        {SyncSetupService::kSyncPasswords, syncer::prefs::kSyncPasswords},
-        {SyncSetupService::kSyncReadingList, syncer::prefs::kSyncReadingList},
-        {SyncSetupService::kSyncPreferences, syncer::prefs::kSyncPreferences},
-};
 }  // namespace
 
 @interface ManageSyncSettingsMediator () <
@@ -162,6 +165,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   [model addItem:self.syncEverythingItem
       toSectionWithIdentifier:SyncDataTypeSectionIdentifier];
   NSMutableArray* syncSwitchItems = [[NSMutableArray alloc] init];
+
   for (SyncSetupService::SyncableDatatype dataType : kSyncSwitchItems) {
     TableViewItem* switchItem = [self tableViewItemWithDataType:dataType];
     [syncSwitchItems addObject:switchItem];
@@ -292,12 +296,16 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   self.encryptionItem.title = GetNSString(IDS_IOS_MANAGE_SYNC_ENCRYPTION);
   // The detail text (if any) is an error message, so color it in red.
   self.encryptionItem.detailTextColor = [UIColor colorNamed:kRedColor];
-  // For kSyncServiceNeedsTrustedVaultKey, the disclosure indicator should not
+  // For kNeedsTrustedVaultKey, the disclosure indicator should not
   // be shown since the reauth dialog for the trusted vault is presented from
   // the bottom, and is not part of navigation controller.
+  const syncer::SyncService::UserActionableError error =
+      self.syncService->GetUserActionableError();
   BOOL hasDisclosureIndicator =
-      self.syncSetupService->GetSyncServiceState() !=
-      SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
+      error != syncer::SyncService::UserActionableError::
+                   kNeedsTrustedVaultKeyForPasswords &&
+      error != syncer::SyncService::UserActionableError::
+                   kNeedsTrustedVaultKeyForEverything;
   if (hasDisclosureIndicator) {
     self.encryptionItem.accessoryView = [[UIImageView alloc]
         initWithImage:DefaultSymbolWithConfiguration(kChevronForwardSymbol,
@@ -493,16 +501,20 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 #pragma mark - Properties
 
 - (BOOL)disabledBecauseOfSyncError {
-  switch (self.syncSetupService->GetSyncServiceState()) {
-    case SyncSetupService::kSyncServiceUnrecoverableError:
-    case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-    case SyncSetupService::kSyncServiceCouldNotConnect:
-    case SyncSetupService::kSyncServiceServiceUnavailable:
+  switch (self.syncService->GetUserActionableError()) {
+    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
+    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
       return YES;
-    case SyncSetupService::kNoSyncServiceError:
-    case SyncSetupService::kSyncServiceNeedsPassphrase:
-    case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
-    case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
+    case syncer::SyncService::UserActionableError::kNone:
+    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForEverything:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForEverything:
       return NO;
   }
   NOTREACHED();
@@ -519,8 +531,12 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 // to not need a trusted vault key.
 - (BOOL)shouldEncryptionItemBeEnabled {
   return !self.disabledBecauseOfSyncError &&
-         self.syncSetupService->GetSyncServiceState() !=
-             SyncSetupService::kSyncServiceNeedsTrustedVaultKey;
+         self.syncService->GetUserActionableError() !=
+             syncer::SyncService::UserActionableError::
+                 kNeedsTrustedVaultKeyForPasswords &&
+         self.syncService->GetUserActionableError() !=
+             syncer::SyncService::UserActionableError::
+                 kNeedsTrustedVaultKeyForEverything;
 }
 
 - (BOOL)syncConsentGiven {
@@ -652,14 +668,19 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 - (void)didSelectItem:(TableViewItem*)item cellRect:(CGRect)cellRect {
   SyncSettingsItemType itemType = static_cast<SyncSettingsItemType>(item.type);
   switch (itemType) {
-    case EncryptionItemType:
-      if (self.syncSetupService->GetSyncServiceState() ==
-          SyncSetupService::kSyncServiceNeedsTrustedVaultKey) {
+    case EncryptionItemType: {
+      const syncer::SyncService::UserActionableError error =
+          self.syncService->GetUserActionableError();
+      if (error == syncer::SyncService::UserActionableError::
+                       kNeedsTrustedVaultKeyForPasswords ||
+          error == syncer::SyncService::UserActionableError::
+                       kNeedsTrustedVaultKeyForEverything) {
         [self.syncErrorHandler openTrustedVaultReauthForFetchKeys];
         break;
       }
       [self.syncErrorHandler openPassphraseDialog];
       break;
+    }
     case GoogleActivityControlsItemType:
       [self.commandHandler openWebAppActivityDialog];
       break;
@@ -714,7 +735,7 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
   syncErrorItem.textLayoutConstraintAxis = UILayoutConstraintAxisVertical;
   syncErrorItem.text = GetNSString(IDS_IOS_SYNC_ERROR_TITLE);
   syncErrorItem.detailText =
-      GetSyncErrorDescriptionForSyncSetupService(self.syncSetupService);
+      GetSyncErrorDescriptionForSyncService(self.syncService);
   syncErrorItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   switch (itemType) {
     case ShowPassphraseDialogErrorItemType:
@@ -828,23 +849,27 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
     return absl::make_optional<SyncSettingsItemType>(
         SyncDisabledByAdministratorErrorItemType);
   }
-  switch (self.syncSetupService->GetSyncServiceState()) {
-    case SyncSetupService::kSyncServiceSignInNeedsUpdate:
+  switch (self.syncService->GetUserActionableError()) {
+    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
       return absl::make_optional<SyncSettingsItemType>(
           ReauthDialogAsSyncIsInAuthErrorItemType);
-    case SyncSetupService::kSyncServiceNeedsPassphrase:
+    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
       return absl::make_optional<SyncSettingsItemType>(
           ShowPassphraseDialogErrorItemType);
-    case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForEverything:
       return absl::make_optional<SyncSettingsItemType>(
           SyncNeedsTrustedVaultKeyErrorItemType);
-    case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForEverything:
       return absl::make_optional<SyncSettingsItemType>(
           SyncTrustedVaultRecoverabilityDegradedErrorItemType);
-    case SyncSetupService::kSyncServiceUnrecoverableError:
-    case SyncSetupService::kNoSyncServiceError:
-    case SyncSetupService::kSyncServiceCouldNotConnect:
-    case SyncSetupService::kSyncServiceServiceUnavailable:
+    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
+    case syncer::SyncService::UserActionableError::kNone:
       return absl::nullopt;
   }
   NOTREACHED();
@@ -890,10 +915,10 @@ const std::map<SyncSetupService::SyncableDatatype, const char*>
 
 // Returns NO if any syncable item is managed, YES otherwise.
 - (BOOL)allItemsAreSynceable {
-  for (auto iter = kSyncableItemTypes.begin(); iter != kSyncableItemTypes.end();
-       ++iter) {
-    if ([self isManagedSyncSettingsDataType:iter->first])
+  for (const auto& [type, pref_name] : kSyncableItemTypes) {
+    if ([self isManagedSyncSettingsDataType:type]) {
       return NO;
+    }
   }
   return YES;
 }

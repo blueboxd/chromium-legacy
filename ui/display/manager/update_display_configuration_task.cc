@@ -16,7 +16,9 @@
 #include "ui/display/types/native_display_delegate.h"
 
 namespace display {
+
 namespace {
+
 bool InternalDisplayThrottled(
     const std::vector<DisplaySnapshot*>& cached_displays) {
   for (const DisplaySnapshot* display : cached_displays) {
@@ -69,6 +71,7 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
     chromeos::DisplayPowerState new_power_state,
     int power_flags,
     RefreshRateThrottleState refresh_rate_throttle_state,
+    bool new_vrr_state_,
     bool force_configure,
     ConfigurationType configuration_type,
     ResponseCallback callback)
@@ -78,6 +81,7 @@ UpdateDisplayConfigurationTask::UpdateDisplayConfigurationTask(
       new_power_state_(new_power_state),
       power_flags_(power_flags),
       refresh_rate_throttle_state_(refresh_rate_throttle_state),
+      new_vrr_state_(new_vrr_state_),
       force_configure_(force_configure),
       configuration_type_(configuration_type),
       callback_(std::move(callback)),
@@ -125,6 +129,7 @@ void UpdateDisplayConfigurationTask::OnDisplaysUpdated(
           << " new_power_state=" << DisplayPowerStateToString(new_power_state_)
           << " flags=" << power_flags_ << " refresh_rate_throttle_state_="
           << RefreshRateThrottleStateToString(refresh_rate_throttle_state_)
+          << " new_vrr_state=" << new_vrr_state_
           << " force_configure=" << force_configure_
           << " display_count=" << cached_displays_.size();
   if (ShouldConfigure()) {
@@ -144,7 +149,7 @@ void UpdateDisplayConfigurationTask::EnterState(
   std::vector<DisplayConfigureRequest> requests;
   if (!layout_manager_->GetDisplayLayout(
           cached_displays_, new_display_state_, new_power_state_,
-          refresh_rate_throttle_state_, &requests)) {
+          refresh_rate_throttle_state_, new_vrr_state_, &requests)) {
     std::move(callback).Run(ConfigureDisplaysTask::ERROR);
     return;
   }
@@ -212,7 +217,7 @@ void UpdateDisplayConfigurationTask::FinishConfiguration(bool success) {
 
   std::move(callback_).Run(success, cached_displays_,
                            cached_unassociated_displays_, new_display_state_,
-                           new_power_state_);
+                           new_power_state_, new_vrr_state_);
 }
 
 bool UpdateDisplayConfigurationTask::ShouldForceDpms() const {
@@ -240,6 +245,10 @@ bool UpdateDisplayConfigurationTask::ShouldConfigure() const {
       InternalDisplayThrottled(cached_displays_))
     return true;
 
+  if (ShouldConfigureVrr()) {
+    return true;
+  }
+
   return false;
 }
 
@@ -265,6 +274,20 @@ MultipleDisplayState UpdateDisplayConfigurationTask::ChooseDisplayState()
   if (!state_controller)
     return MULTIPLE_DISPLAY_STATE_MULTI_EXTENDED;
   return state_controller->GetStateForDisplayIds(cached_displays_);
+}
+
+bool UpdateDisplayConfigurationTask::ShouldConfigureVrr() const {
+  for (const DisplaySnapshot* display : cached_displays_) {
+    if (!display->IsVrrCapable()) {
+      continue;
+    }
+
+    if (display->IsVrrEnabled() != new_vrr_state_) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace display

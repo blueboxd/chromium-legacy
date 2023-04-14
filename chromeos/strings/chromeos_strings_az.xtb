@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">"Proqramı xarici cihazlar üçün güncəlləyin" pəncərəsi açıqdır. <ph name="NUM_UPDATES" /> güncəlləmə əlçatandır.</translation>
 <translation id="1145516343487477149">Ümumi Chromebook suallarına yardım məqalələri və cavablar tapın</translation>
+<translation id="1167755866710282443">Düymələri fərdiləşdirmək üçün menyunu açın. Hərəkət etdirmək üçün menyunu sürüşdürün.</translation>
 <translation id="1175697296044146566">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur.</translation>
 <translation id="1175951029573070619">Orta (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> albomunu seçin</translation>
 <translation id="4111761024568264522">USB taçped</translation>
 <translation id="4117637339509843559">Qaranlıq rejim</translation>
+<translation id="4130035430755296270">Digər düzən seçimləri üçün mausla tuşlamağa davam edin</translation>
 <translation id="4131410914670010031">Ağ və qara</translation>
 <translation id="4145784616224233563">HTTP Qoruyucu divarı</translation>
 <translation id="4147897805161313378">Google Foto</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS ayırdetmə dəqiqliyi</translation>
 <translation id="4848429997038228357">İCRA EDİLİR</translation>
 <translation id="4854586501323951986">Quraşdırılmış taçskrin</translation>
+<translation id="4855250849489639581">Daha çox düzən seçimi üçün aşağı sürüşdürün</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} cəhd qalıb}other{<ph name="ERROR_MESSAGE" /> {0} cəhd qalıb}}</translation>
 <translation id="4873827928179867585">Doğrulama alqoritmi</translation>
 <translation id="4880328057631981605">Giriş nöqtəsi adı</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 şəkil</translation>
 <translation id="7177485034254901881">Bu <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> tərəfindən idarə olunur. Administratorlar cihazı məsafədən konfiqurasiya edə bilər.</translation>
 <translation id="7180611975245234373">Yeniləyin</translation>
+<translation id="7180865173735832675">Fərdiləşdirin</translation>
 <translation id="7212734716605298123">Xarici cihazlar üçün proqram güncəlləmələri</translation>
 <translation id="7216409898977639127">Mobil provayder</translation>
 <translation id="725133483556299729">E-poçt seçin</translation>

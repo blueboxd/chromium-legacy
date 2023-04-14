@@ -41,6 +41,7 @@
 #import "components/reading_list/core/reading_list_pref_names.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/search_engines/template_url_prepopulate_data.h"
+#import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
 #import "components/segmentation_platform/public/segmentation_platform_service.h"
 #import "components/sessions/core/session_id_generator.h"
 #import "components/signin/public/base/signin_pref_names.h"
@@ -71,6 +72,7 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
+#import "ios/chrome/browser/ui/content_suggestions/tile_ablation_field_trial.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/ios_popular_sites_field_trial.h"
@@ -188,6 +190,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   variations::VariationsService::RegisterPrefs(registry);
   trending_queries_field_trial::RegisterLocalStatePrefs(registry);
   ios_popular_sites_field_trial::RegisterLocalStatePrefs(registry);
+  tile_ablation_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
   component_updater::AutofillStatesComponentInstallerPolicy::RegisterPrefs(
       registry);
@@ -261,6 +264,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterIntegerPref(kTrialGroupMICeAndDefaultBrowserVersionPrefName,
                                 -1);
+
+  registry->RegisterBooleanPref(prefs::kIosCredentialProviderPromoStopPromo,
+                                false);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -286,6 +292,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   RegisterVoiceSearchBrowserStatePrefs(registry);
   safe_browsing::RegisterProfilePrefs(registry);
   segmentation_platform::SegmentationPlatformService::RegisterProfilePrefs(
+      registry);
+  segmentation_platform::DeviceSwitcherResultDispatcher::RegisterProfilePrefs(
       registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(registry);

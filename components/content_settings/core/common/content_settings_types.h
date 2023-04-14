@@ -311,6 +311,14 @@ enum class ContentSettingsType : int32_t {
   // being specific to a frame.
   TOP_LEVEL_STORAGE_ACCESS,
 
+  // Setting to indicate whether user has opted in to allowing auto re-authn via
+  // the FedCM API.
+  FEDERATED_IDENTITY_AUTO_REAUTHN_PERMISSION,
+
+  // Website setting which stores whether the user has explicitly registered
+  // a website as an identity-provider.
+  FEDERATED_IDENTITY_IDENTITY_PROVIDER_REGISTRATION,
+
   NUM_TYPES,
 };
 

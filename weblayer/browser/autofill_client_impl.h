@@ -29,6 +29,7 @@ class AutofillClientImpl
   // AutofillClient:
   bool IsOffTheRecord() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  autofill::AutofillDownloadManager* GetDownloadManager() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   autofill::AutocompleteHistoryManager* GetAutocompleteHistoryManager()
       override;
@@ -48,7 +49,7 @@ class AutofillClientImpl
   const translate::LanguageState* GetLanguageState() override;
   translate::TranslateDriver* GetTranslateDriver() override;
 
-  void ShowAutofillSettings(bool show_credit_card_settings) override;
+  void ShowAutofillSettings(autofill::PopupType popup_type) override;
   void ShowUnmaskPrompt(
       const autofill::CreditCard& card,
       const autofill::CardUnmaskPromptOptions& card_unmask_prompt_options,
@@ -112,9 +113,10 @@ class AutofillClientImpl
       AddressProfileSavePromptCallback callback) override;
   bool HasCreditCardScanFeature() override;
   void ScanCreditCard(CreditCardScanCallback callback) override;
-  bool TryToShowFastCheckout(const autofill::FormData& form,
-                             const autofill::FormFieldData& field,
-                             autofill::AutofillDriver* driver) override;
+  bool TryToShowFastCheckout(
+      const autofill::FormData& form,
+      const autofill::FormFieldData& field,
+      base::WeakPtr<autofill::AutofillManager> autofill_manager) override;
   void HideFastCheckout(bool allow_further_runs) override;
   bool IsFastCheckoutSupported() override;
   bool IsShowingFastCheckoutUI() override;
@@ -129,7 +131,7 @@ class AutofillClientImpl
   void UpdateAutofillPopupDataListValues(
       const std::vector<std::u16string>& values,
       const std::vector<std::u16string>& labels) override;
-  base::span<const autofill::Suggestion> GetPopupSuggestions() const override;
+  std::vector<autofill::Suggestion> GetPopupSuggestions() const override;
   void PinPopupView() override;
   autofill::AutofillClient::PopupOpenArgs GetReopenPopupArgs() const override;
   void UpdatePopup(const std::vector<autofill::Suggestion>& suggestions,
@@ -143,7 +145,6 @@ class AutofillClientImpl
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;
-  bool ShouldShowSigninPromo() override;
   void ExecuteCommand(int id) override;
   void OpenPromoCodeOfferDetailsURL(const GURL& url) override;
   autofill::FormInteractionsFlowId GetCurrentFormInteractionsFlowId() override;
@@ -155,6 +156,8 @@ class AutofillClientImpl
  private:
   explicit AutofillClientImpl(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AutofillClientImpl>;
+
+  std::unique_ptr<autofill::AutofillDownloadManager> download_manager_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

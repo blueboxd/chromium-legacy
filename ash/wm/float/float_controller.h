@@ -67,13 +67,17 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   // Checks if `floated_window` is tucked.
   bool IsFloatedWindowTuckedForTablet(const aura::Window* floated_window) const;
 
+  // Returns true if `floated_window` is not tucked and magnetized to the
+  // bottom. Used by the shelf layout manager to determine what window to use
+  // for the drag window from shelf feature.
+  bool IsFloatedWindowAlignedWithShelf(aura::Window* floated_window) const;
+
   // Gets the tuck handle for a floated and tucked window.
   views::Widget* GetTuckHandleWidget(const aura::Window* floated_window) const;
 
-  // Called by the resizer when a drag is completed. Updates the bounds
-  // and magnetism of the `floated_window`.
-  void OnDragCompletedForTablet(aura::Window* floated_window,
-                                const gfx::PointF& last_location_in_parent);
+  // Called by the resizer when a drag is completed. Updates the bounds and
+  // magnetism of the `floated_window`.
+  void OnDragCompletedForTablet(aura::Window* floated_window);
 
   // TODO(shidi): Temporary passing `floated_window` here, will follow-up in
   // desk logic to use only `active_floated_window_`.
@@ -135,6 +139,7 @@ class ASH_EXPORT FloatController : public TabletModeObserver,
   class FloatedWindowInfo;
   friend class DefaultState;
   friend class TabletModeWindowState;
+  friend class ClientControlledState;
   friend class WindowFloatTest;
   FRIEND_TEST_ALL_PREFIXES(WindowFloatMetricsTest, FloatWindowCountPerSession);
   FRIEND_TEST_ALL_PREFIXES(WindowFloatMetricsTest,

@@ -7,14 +7,15 @@ package org.chromium.chrome.browser.ui.android.webid;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.os.Handler;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Px;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AccountProperties;
-import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.AutoSignInCancelButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ContinueButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.DataSharingConsentProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties;
@@ -36,6 +37,8 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,6 +47,24 @@ import java.util.List;
  * to events like clicks.
  */
 class AccountSelectionMediator {
+    /**
+     * The following integers are used for histograms. Do not remove or modify existing values,
+     * but you may add new values at the end and increase NUM_ENTRIES. This enum should be kept in
+     * sync with SheetType in chrome/browser/ui/views/webid/fedcm_account_selection_view_desktop.h
+     * as well as with FedCmSheetType in tools/metrics/histograms/enums.xml.
+     */
+    @IntDef({SheetType.ACCOUNT_SELECTION, SheetType.VERIFYING, SheetType.AUTO_REAUTHN,
+            SheetType.SIGN_IN_TO_IDP_STATIC, SheetType.NUM_ENTRIES})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface SheetType {
+        int ACCOUNT_SELECTION = 0;
+        int VERIFYING = 1;
+        int AUTO_REAUTHN = 2;
+        int SIGN_IN_TO_IDP_STATIC = 3;
+
+        int NUM_ENTRIES = 4;
+    }
+
     private boolean mRegisteredObservers;
     private boolean mWasDismissed;
     private final AccountSelectionComponent.Delegate mDelegate;
@@ -55,10 +76,11 @@ class AccountSelectionMediator {
     private final BottomSheetController mBottomSheetController;
     private final AccountSelectionBottomSheetContent mBottomSheetContent;
     private final BottomSheetObserver mBottomSheetObserver;
-    private final Handler mAutoSignInTaskHandler = new Handler();
-    // TODO(yigu): Increase the time after adding a continue button for users to
-    // proceed. Eventually this should be specified by IDPs.
-    private static final int AUTO_SIGN_IN_CANCELLATION_TIMER_MS = 5000;
+
+    // Amount of time during which we ignore inputs. Note that this is timed from when we invoke the
+    // methods to show the accounts, so it does include any time spent animating the sheet into
+    // view.
+    public static final long POTENTIALLY_UNINTENDED_INPUT_THRESHOLD = 500;
 
     private HeaderType mHeaderType;
     private String mRpForDisplay;
@@ -72,6 +94,10 @@ class AccountSelectionMediator {
 
     // The account that the user has selected.
     private Account mSelectedAccount;
+
+    // Stores the value of SystemClock.elapsedRealtime() at the time in which the accounts are shown
+    // to the user.
+    private long mComponentShowTime;
 
     private KeyboardVisibilityListener mKeyboardVisibilityListener =
             new KeyboardVisibilityListener() {
@@ -126,7 +152,7 @@ class AccountSelectionMediator {
     private void handleBackPress() {
         mSelectedAccount = null;
         showAccountsInternal(mRpForDisplay, mIdpForDisplay, mAccounts, mIdpMetadata,
-                mClientMetadata, /*isAutoSignIn=*/false, /*focusItem=*/ItemProperties.HEADER);
+                mClientMetadata, /*isAutoReauthn=*/false, /*focusItem=*/ItemProperties.HEADER);
     }
 
     private PropertyModel createHeaderItem(HeaderType headerType, String rpForDisplay,
@@ -136,6 +162,8 @@ class AccountSelectionMediator {
 
             RecordHistogram.recordBooleanHistogram(
                     "Blink.FedCm.CloseVerifySheet.Android", mHeaderType == HeaderType.VERIFY);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "Blink.FedCm.ClosedSheetType.Android", getSheetType(), SheetType.NUM_ENTRIES);
         };
 
         return new PropertyModel.Builder(HeaderProperties.ALL_KEYS)
@@ -145,6 +173,19 @@ class AccountSelectionMediator {
                 .with(HeaderProperties.RP_FOR_DISPLAY, rpForDisplay)
                 .with(HeaderProperties.TYPE, headerType)
                 .build();
+    }
+
+    private int getSheetType() {
+        switch (mHeaderType) {
+            case SIGN_IN:
+                return SheetType.ACCOUNT_SELECTION;
+            case VERIFY:
+                return SheetType.VERIFYING;
+            case VERIFY_AUTO_REAUTHN:
+                return SheetType.AUTO_REAUTHN;
+        }
+        assert false; // NOTREACHED
+        return SheetType.ACCOUNT_SELECTION;
     }
 
     private void updateAccounts(
@@ -159,10 +200,25 @@ class AccountSelectionMediator {
         }
     }
 
+    /* Returns whether an input event being processed should be ignored due to it occurring too
+     * close in time to the time in which the dialog was shown.
+     */
+    private boolean shouldInputBeProcessed() {
+        assert mComponentShowTime != 0;
+        long currentTime = SystemClock.elapsedRealtime();
+        return currentTime - mComponentShowTime > POTENTIALLY_UNINTENDED_INPUT_THRESHOLD;
+    }
+
     void showVerifySheet(Account account) {
-        mHeaderType = HeaderType.VERIFY;
-        updateSheet(Arrays.asList(account), /*areAccountsClickable=*/false,
-                /* focusItem=*/ItemProperties.HEADER);
+        if (mHeaderType == HeaderType.SIGN_IN) {
+            mHeaderType = HeaderType.VERIFY;
+            updateSheet(Arrays.asList(account), /*areAccountsClickable=*/false,
+                    /* focusItem=*/ItemProperties.HEADER);
+        } else {
+            // We call showVerifySheet() from updateSheet()->onAccountSelected() in this case, so do
+            // not invoked updateSheet() as that would cause a loop and isn't needed.
+            assert mHeaderType == HeaderType.VERIFY_AUTO_REAUTHN;
+        }
     }
 
     void close() {
@@ -171,7 +227,7 @@ class AccountSelectionMediator {
 
     void showAccounts(String rpForDisplay, String idpForDisplay, List<Account> accounts,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientMetadata,
-            boolean isAutoSignIn) {
+            boolean isAutoReauthn) {
         if (!TextUtils.isEmpty(idpMetadata.getBrandIconUrl())) {
             // Use placeholder icon so that the header text wrapping does not change when the icon
             // is fetched.
@@ -182,7 +238,8 @@ class AccountSelectionMediator {
 
         mSelectedAccount = accounts.size() == 1 ? accounts.get(0) : null;
         showAccountsInternal(rpForDisplay, idpForDisplay, accounts, idpMetadata, clientMetadata,
-                isAutoSignIn, /*focusItem=*/ItemProperties.HEADER);
+                isAutoReauthn, /*focusItem=*/ItemProperties.HEADER);
+        setComponentShowTime(SystemClock.elapsedRealtime());
 
         if (!TextUtils.isEmpty(idpMetadata.getBrandIconUrl())) {
             int brandIconIdealSize = AccountSelectionBridge.getBrandIconIdealSize();
@@ -201,9 +258,14 @@ class AccountSelectionMediator {
         }
     }
 
+    @VisibleForTesting
+    void setComponentShowTime(long componentShowTime) {
+        mComponentShowTime = componentShowTime;
+    }
+
     private void showAccountsInternal(String rpForDisplay, String idpForDisplay,
             List<Account> accounts, IdentityProviderMetadata idpMetadata,
-            ClientIdMetadata clientMetadata, boolean isAutoSignIn, PropertyKey focusItem) {
+            ClientIdMetadata clientMetadata, boolean isAutoReauthn, PropertyKey focusItem) {
         mRpForDisplay = rpForDisplay;
         mIdpForDisplay = idpForDisplay;
         mAccounts = accounts;
@@ -214,7 +276,7 @@ class AccountSelectionMediator {
             accounts = Arrays.asList(mSelectedAccount);
         }
 
-        mHeaderType = isAutoSignIn ? HeaderType.AUTO_SIGN_IN : HeaderType.SIGN_IN;
+        mHeaderType = isAutoReauthn ? HeaderType.VERIFY_AUTO_REAUTHN : HeaderType.SIGN_IN;
         updateSheet(accounts, /*areAccountsClickable=*/mSelectedAccount == null, focusItem);
         updateBackPressBehavior();
     }
@@ -232,15 +294,11 @@ class AccountSelectionMediator {
             isDataSharingConsentVisible = !mSelectedAccount.isSignIn();
         }
 
-        if (mHeaderType == HeaderType.AUTO_SIGN_IN) {
+        if (mHeaderType == HeaderType.VERIFY_AUTO_REAUTHN) {
             assert mSelectedAccount != null;
             assert mSelectedAccount.isSignIn();
 
-            mModel.set(ItemProperties.AUTO_SIGN_IN_CANCEL_BUTTON, createAutoSignInCancelBtnItem());
-            mAutoSignInTaskHandler.postDelayed(
-                    () -> onAccountSelected(mSelectedAccount), AUTO_SIGN_IN_CANCELLATION_TIMER_MS);
-        } else {
-            mModel.set(ItemProperties.AUTO_SIGN_IN_CANCEL_BUTTON, null);
+            onAccountSelected(mSelectedAccount);
         }
 
         mModel.set(ItemProperties.CONTINUE_BUTTON,
@@ -315,6 +373,11 @@ class AccountSelectionMediator {
         return mWasDismissed;
     }
 
+    void onClickAccountSelected(Account selectedAccount) {
+        if (!shouldInputBeProcessed()) return;
+        onAccountSelected(selectedAccount);
+    }
+
     void onAccountSelected(Account selectedAccount) {
         if (mWasDismissed) return;
 
@@ -322,7 +385,7 @@ class AccountSelectionMediator {
         mSelectedAccount = selectedAccount;
         if (oldSelectedAccount == null && !mSelectedAccount.isSignIn()) {
             showAccountsInternal(mRpForDisplay, mIdpForDisplay, mAccounts, mIdpMetadata,
-                    mClientMetadata, /*isAutoSignIn=*/false,
+                    mClientMetadata, /*isAutoReauthn=*/false,
                     /*focusItem=*/ItemProperties.CONTINUE_BUTTON);
             return;
         }
@@ -337,16 +400,11 @@ class AccountSelectionMediator {
         mDelegate.onDismissed(dismissReason);
     }
 
-    void onAutoSignInCancelled() {
-        hideContent();
-        mDelegate.onAutoSignInCancelled();
-    }
-
     private PropertyModel createAccountItem(Account account, boolean isAccountClickable) {
         return new PropertyModel.Builder(AccountProperties.ALL_KEYS)
                 .with(AccountProperties.ACCOUNT, account)
                 .with(AccountProperties.ON_CLICK_LISTENER,
-                        isAccountClickable ? this::onAccountSelected : null)
+                        isAccountClickable ? this::onClickAccountSelected : null)
                 .build();
     }
 
@@ -355,14 +413,7 @@ class AccountSelectionMediator {
         return new PropertyModel.Builder(ContinueButtonProperties.ALL_KEYS)
                 .with(ContinueButtonProperties.IDP_METADATA, idpMetadata)
                 .with(ContinueButtonProperties.ACCOUNT, account)
-                .with(ContinueButtonProperties.ON_CLICK_LISTENER, this::onAccountSelected)
-                .build();
-    }
-
-    private PropertyModel createAutoSignInCancelBtnItem() {
-        return new PropertyModel.Builder(AutoSignInCancelButtonProperties.ALL_KEYS)
-                .with(AutoSignInCancelButtonProperties.ON_CLICK_LISTENER,
-                        this::onAutoSignInCancelled)
+                .with(ContinueButtonProperties.ON_CLICK_LISTENER, this::onClickAccountSelected)
                 .build();
     }
 

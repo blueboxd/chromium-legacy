@@ -755,6 +755,15 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
            IsStackingContext(style);
   }
 
+  // Returns true if the LayoutObject is rendered in the top layer.
+  bool IsInTopLayer() const {
+    NOT_DESTROYED();
+    if (Element* element = DynamicTo<Element>(GetNode())) {
+      return StyleRef().IsInTopLayer(*element);
+    }
+    return false;
+  }
+
   void NotifyPriorityScrollAnchorStatusChanged();
 
  private:
@@ -1943,7 +1952,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // from the originating element's style (because we can cache only one
   // version), while the uncached pseudo style can inherit from any style.
   const ComputedStyle* GetCachedPseudoElementStyle(PseudoId) const;
-  scoped_refptr<ComputedStyle> GetUncachedPseudoElementStyle(
+  scoped_refptr<const ComputedStyle> GetUncachedPseudoElementStyle(
       const StyleRequest&) const;
 
   // Returns the ::selection style, which may be stored in StyleCachedData (old
@@ -3537,9 +3546,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return bitfields_.DescendantNeedsPaintPropertyUpdate();
   }
-  // Called when some change needs paint property update of all ancestors (not
-  // crossing frame boundaries).
-  void ForceAllAncestorsNeedPaintPropertyUpdate();
 
   void SetIsScrollAnchorObject() {
     NOT_DESTROYED();
@@ -3615,8 +3621,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPaintChildren();
   }
-
-  bool IsShapingDeferred() const;
 
   // This flag caches StyleRef().HasBorderDecoration() &&
   // !Table()->ShouldCollapseBorders().

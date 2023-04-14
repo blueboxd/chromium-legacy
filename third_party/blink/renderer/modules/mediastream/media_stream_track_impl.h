@@ -105,6 +105,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute, kUnmute)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(ended, kEnded)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(capturehandlechange, kCapturehandlechange)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(configurationchange, kConfigurationchange)
 
   // Returns the enum value of the ready state.
   MediaStreamSource::ReadyState GetReadyState() override {
@@ -151,6 +152,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
  private:
   friend class CanvasCaptureMediaStreamTrack;
+  friend class InternalsMediaStream;
 
   // MediaStreamTrack
   void applyConstraints(ScriptPromiseResolver*,
@@ -158,6 +160,7 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
 
   // MediaStreamSource::Observer
   void SourceChangedState() override;
+  void SourceChangedCaptureConfiguration() override;
   void SourceChangedCaptureHandle() override;
 
   void PropagateTrackEnded();
@@ -171,6 +174,11 @@ class MODULES_EXPORT MediaStreamTrackImpl : public MediaStreamTrack,
                               bool initial_values);
 
   void setReadyState(MediaStreamSource::ReadyState ready_state);
+
+  // Callback used after getting the current image capture capabilities and
+  // settings to dispatch a configurationchange event if they differ from the
+  // old ones.
+  void MaybeDispatchConfigurationChange(bool has_changed);
 
   // This handle notifies the scheduler about a live media stream track
   // associated with a frame. The handle should be destroyed when the track

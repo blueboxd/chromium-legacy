@@ -22,6 +22,7 @@
 #include "components/media_router/browser/issue_manager.h"
 #include "components/media_router/browser/logger_impl.h"
 #include "components/media_router/browser/media_router_base.h"
+#include "components/media_router/browser/media_router_debugger.h"
 #include "components/media_router/browser/media_routes_observer.h"
 #include "components/media_router/common/issue.h"
 #include "components/media_router/common/mojom/logger.mojom.h"
@@ -142,6 +143,8 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                        const std::vector<url::Origin>& origins) override;
 
   LoggerImpl* GetLogger() override;
+
+  MediaRouterDebugger& GetDebugger() override;
 
   // Mojo remotes to media route providers. Providers are added via
   // RegisterMediaRouteProvider().
@@ -268,14 +271,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     base::ObserverList<MediaRoutesObserver> observers_;
   };
 
-  // See note in OnDesktopPickerDone().
-  struct PendingStreamRequest {
-    std::string stream_id;
-    int render_process_id;
-    int render_frame_id;
-    url::Origin origin;
-  };
-
   // A MediaRoutesObserver that maintains state about the current set of media
   // routes.
   class InternalMediaRoutesObserver : public MediaRoutesObserver {
@@ -331,19 +326,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   void GetLogsAsString(GetLogsAsStringCallback callback) override;
   void GetMediaSinkServiceStatus(
       mojom::MediaRouter::GetMediaSinkServiceStatusCallback callback) override;
-  void GetMirroringServiceHostForTab(
-      int32_t frame_tree_node_id,
-      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
-      override;
-  void GetMirroringServiceHostForDesktop(
-      const std::string& desktop_stream_id,
-      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
-      override;
-  void GetMirroringServiceHostForOffscreenTab(
-      const GURL& presentation_url,
-      const std::string& presentation_id,
-      mojo::PendingReceiver<mirroring::mojom::MirroringServiceHost> receiver)
-      override;
 
   // Result callback when Mojo TerminateRoute is invoked.
   // |route_id|: ID of MediaRoute passed to the TerminateRoute request.
@@ -442,11 +424,11 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   DesktopMediaPickerController desktop_picker_;
 
-  absl::optional<PendingStreamRequest> pending_stream_request_;
-
   // Collects logs from the Media Router and the native Media Route Providers.
   // TODO(crbug.com/1077138): Limit logging before Media Router usage.
   LoggerImpl logger_;
+
+  MediaRouterDebugger media_router_debugger_;
 };
 
 }  // namespace media_router

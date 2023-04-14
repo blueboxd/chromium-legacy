@@ -26,15 +26,14 @@ class NSSCertDatabase;
 class ClientCertStore;
 }  // namespace net
 
-namespace ash {
-namespace platform_keys {
+namespace ash::platform_keys {
 
 using GenerateKeyCallback =
-    base::OnceCallback<void(const std::string& public_key_spki_der,
+    base::OnceCallback<void(std::vector<uint8_t> public_key_spki_der,
                             chromeos::platform_keys::Status status)>;
 
 using SignCallback =
-    base::OnceCallback<void(const std::string& signature,
+    base::OnceCallback<void(std::vector<uint8_t> signature,
                             chromeos::platform_keys::Status status)>;
 
 // If the certificate request could be processed successfully, |matches| will
@@ -56,9 +55,9 @@ using GetCertificatesCallback =
 // be empty if no key pairs exist). Each available key pair is represented as a
 // DER-encoded SubjectPublicKeyInfo. If an error occurred,
 // |public_key_spki_der_list| will be empty.
-using GetAllKeysCallback =
-    base::OnceCallback<void(std::vector<std::string> public_key_spki_der_list,
-                            chromeos::platform_keys::Status status)>;
+using GetAllKeysCallback = base::OnceCallback<void(
+    std::vector<std::vector<uint8_t>> public_key_spki_der_list,
+    chromeos::platform_keys::Status status)>;
 
 using ImportCertificateCallback =
     base::OnceCallback<void(chromeos::platform_keys::Status status)>;
@@ -91,9 +90,9 @@ using SetAttributeForKeyCallback =
 
 // If the attribute value has been successfully retrieved, |attribute_value|
 // will contain the result. If an error occurs, |attribute_value| will be empty.
-using GetAttributeForKeyCallback =
-    base::OnceCallback<void(const absl::optional<std::string>& attribute_value,
-                            chromeos::platform_keys::Status status)>;
+using GetAttributeForKeyCallback = base::OnceCallback<void(
+    absl::optional<std::vector<uint8_t>> attribute_value,
+    chromeos::platform_keys::Status status)>;
 
 // If the availability of the key on the provided token has been successfully
 // determined, |on_token| will contain the result. If an error occurs,
@@ -159,8 +158,8 @@ class PlatformKeysService : public KeyedService {
   // signature or an error status.
   virtual void SignRSAPKCS1Digest(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       chromeos::platform_keys::HashAlgorithm hash_algorithm,
       SignCallback callback) = 0;
 
@@ -173,8 +172,8 @@ class PlatformKeysService : public KeyedService {
   // an error status.
   virtual void SignRSAPKCS1Raw(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       SignCallback callback) = 0;
 
   // Digests |data| and afterwards signs the data with the private key matching
@@ -184,8 +183,8 @@ class PlatformKeysService : public KeyedService {
   // status.
   virtual void SignECDSADigest(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       chromeos::platform_keys::HashAlgorithm hash_algorithm,
       SignCallback callback) = 0;
 
@@ -235,7 +234,7 @@ class PlatformKeysService : public KeyedService {
   // given |token_id| are considered. |callback| will be invoked on the UI
   // thread when the removal is finished, possibly with an error status.
   virtual void RemoveKey(chromeos::platform_keys::TokenId token_id,
-                         const std::string& public_key_spki_der,
+                         std::vector<uint8_t> public_key_spki_der,
                          RemoveKeyCallback callback) = 0;
 
   // Gets the list of available tokens. |callback| will be invoked when the list
@@ -247,7 +246,7 @@ class PlatformKeysService : public KeyedService {
   // |public_key_spki_der| is stored. |callback| will be invoked when the token
   // ids are determined, possibly with an error status. Calls |callback| on the
   // UI thread.
-  virtual void GetKeyLocations(const std::string& public_key_spki_der,
+  virtual void GetKeyLocations(std::vector<uint8_t> public_key_spki_der,
                                GetKeyLocationsCallback callback) = 0;
 
   // Sets |attribute_type| for the private key corresponding to
@@ -258,7 +257,7 @@ class PlatformKeysService : public KeyedService {
       chromeos::platform_keys::TokenId token_id,
       const std::string& public_key_spki_der,
       chromeos::platform_keys::KeyAttributeType attribute_type,
-      const std::string& attribute_value,
+      std::vector<uint8_t> attribute_value,
       SetAttributeForKeyCallback callback) = 0;
 
   // Gets |attribute_type| for the private key corresponding to
@@ -276,7 +275,7 @@ class PlatformKeysService : public KeyedService {
   // be invoked on the UI thread with the result. If an error occurred, an error
   // |status| will be returned and absl::nullopt |on_token| will be returned.
   virtual void IsKeyOnToken(chromeos::platform_keys::TokenId token_id,
-                            const std::string& public_key_spki_der,
+                            std::vector<uint8_t> public_key_spki_der,
                             IsKeyOnTokenCallback callback) = 0;
 
   // Softoken NSS PKCS11 module (used for testing) allows only predefined key
@@ -349,19 +348,19 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
                      GenerateKeyCallback callback) override;
   void SignRSAPKCS1Digest(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       chromeos::platform_keys::HashAlgorithm hash_algorithm,
       SignCallback callback) override;
   void SignRSAPKCS1Raw(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       SignCallback callback) override;
   void SignECDSADigest(
       absl::optional<chromeos::platform_keys::TokenId> token_id,
-      const std::string& data,
-      const std::string& public_key_spki_der,
+      std::vector<uint8_t> data,
+      std::vector<uint8_t> public_key_spki_der,
       chromeos::platform_keys::HashAlgorithm hash_algorithm,
       SignCallback callback) override;
   void SelectClientCertificates(
@@ -378,16 +377,16 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
                          const scoped_refptr<net::X509Certificate>& certificate,
                          RemoveCertificateCallback callback) override;
   void RemoveKey(chromeos::platform_keys::TokenId token_id,
-                 const std::string& public_key_spki_der,
+                 std::vector<uint8_t> public_key_spki_der,
                  RemoveKeyCallback callback) override;
   void GetTokens(GetTokensCallback callback) override;
-  void GetKeyLocations(const std::string& public_key_spki_der,
+  void GetKeyLocations(std::vector<uint8_t> public_key_spki_der,
                        const GetKeyLocationsCallback callback) override;
   void SetAttributeForKey(
       chromeos::platform_keys::TokenId token_id,
       const std::string& public_key_spki_der,
       chromeos::platform_keys::KeyAttributeType attribute_type,
-      const std::string& attribute_value,
+      std::vector<uint8_t> attribute_value,
       SetAttributeForKeyCallback callback) override;
   void GetAttributeForKey(
       chromeos::platform_keys::TokenId token_id,
@@ -395,7 +394,7 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
       chromeos::platform_keys::KeyAttributeType attribute_type,
       GetAttributeForKeyCallback callback) override;
   void IsKeyOnToken(chromeos::platform_keys::TokenId token_id,
-                    const std::string& public_key_spki_der,
+                    std::vector<uint8_t> public_key_spki_der,
                     IsKeyOnTokenCallback callback) override;
   void SetMapToSoftokenAttrsForTesting(
       bool map_to_softoken_attrs_for_testing) override;
@@ -411,7 +410,6 @@ class PlatformKeysServiceImpl final : public PlatformKeysService {
   base::WeakPtrFactory<PlatformKeysServiceImpl> weak_factory_{this};
 };
 
-}  // namespace platform_keys
-}  // namespace ash
+}  // namespace ash::platform_keys
 
 #endif  // CHROME_BROWSER_ASH_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_

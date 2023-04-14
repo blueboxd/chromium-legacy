@@ -74,7 +74,6 @@
 
 #if BUILDFLAG(USE_STARSCAN)
 #include "base/allocator/partition_allocator/starscan/pcscan.h"
-#include "base/allocator/partition_allocator/starscan/state_bitmap.h"
 #endif
 
 // We use this to make MEMORY_TOOL_REPLACES_ALLOCATOR behave the same for max
@@ -406,6 +405,8 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   PartitionRoot()
       : flags{QuarantineMode::kAlwaysDisabled, ScanMode::kDisabled} {}
   explicit PartitionRoot(PartitionOptions opts) : flags() { Init(opts); }
+  // TODO(tasak): remove ~PartitionRoot() after confirming all tests
+  // don't need ~PartitionRoot().
   ~PartitionRoot();
 
   // This will unreserve any space in the pool that the PartitionRoot is
@@ -585,6 +586,7 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
                  PartitionStatsDumper* partition_stats_dumper);
 
   static void DeleteForTesting(PartitionRoot* partition_root);
+  void ResetForTesting(bool allow_leaks);
   void ResetBookkeepingForTesting();
 
   PA_ALWAYS_INLINE BucketDistribution GetBucketDistribution() const {
@@ -653,10 +655,12 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   }
 
   internal::pool_handle ChoosePool() const {
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
     if (flags.use_configurable_pool) {
       PA_DCHECK(IsConfigurablePoolAvailable());
       return internal::kConfigurablePoolHandle;
     }
+#endif
 #if BUILDFLAG(ENABLE_PKEYS)
     if (flags.pkey != internal::kDefaultPkey) {
       return internal::kPkeyPoolHandle;
@@ -962,13 +966,13 @@ class ScopedSyscallTimer {
 PA_ALWAYS_INLINE uintptr_t
 PartitionAllocGetDirectMapSlotStartInBRPPool(uintptr_t address) {
   PA_DCHECK(IsManagedByPartitionAllocBRPPool(address));
-#if PA_CONFIG(HAS_64_BITS_POINTERS)
+#if BUILDFLAG(HAS_64_BIT_POINTERS)
   // Use this variant of GetDirectMapReservationStart as it has better
   // performance.
   uintptr_t offset = OffsetInBRPPool(address);
   uintptr_t reservation_start =
       GetDirectMapReservationStart(address, kBRPPoolHandle, offset);
-#else
+#else  // BUILDFLAG(HAS_64_BIT_POINTERS)
   uintptr_t reservation_start = GetDirectMapReservationStart(address);
 #endif
   if (!reservation_start) {

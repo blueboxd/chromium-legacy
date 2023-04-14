@@ -25,6 +25,8 @@
 #include "printing/print_job_constants_cups.h"
 #include "printing/printing_utils.h"
 #include "printing/units.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 using base::EqualsCaseInsensitiveASCII;
@@ -111,8 +113,8 @@ void GetResolutionSettings(ppd_file_t* ppd,
                            std::vector<gfx::Size>* dpis,
                            gfx::Size* default_dpi) {
   static constexpr const char* kResolutions[] = {
-      "Resolution", "JCLResolution",  "SetResolution",
-      "CNRes_PGP",  "HPPrintQuality", "LXResolution"};
+      "Resolution",     "JCLResolution", "SetResolution", "CNRes_PGP",
+      "HPPrintQuality", "LXResolution",  "BRResolution"};
   ppd_option_t* res;
   for (const char* res_name : kResolutions) {
     res = ppdFindOption(ppd, res_name);
@@ -353,6 +355,62 @@ bool GetHPColorModeSettings(ppd_file_t* ppd,
   return true;
 }
 
+bool GetCanonCNColorModeSettings(ppd_file_t* ppd,
+                                 mojom::ColorModel* color_model_for_black,
+                                 mojom::ColorModel* color_model_for_color,
+                                 bool* color_is_default) {
+  // Some Canon printers use "CNColorMode" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kCUPSCanonCNColorMode);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kColor)) {
+    *color_model_for_color = mojom::ColorModel::kCanonCNColorModeColor;
+  }
+
+  if (ppdFindChoice(color_mode_option, kMono)) {
+    *color_model_for_black = mojom::ColorModel::kCanonCNColorModeMono;
+  }
+
+  ppd_choice_t* marked_choice = ppdFindMarkedChoice(ppd, kCUPSCanonCNColorMode);
+  if (!marked_choice) {
+    marked_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+  if (marked_choice) {
+    *color_is_default =
+        EqualsCaseInsensitiveASCII(marked_choice->choice, kColor);
+  }
+  return true;
+}
+
+bool GetCanonCNIJGrayscaleSettings(ppd_file_t* ppd,
+                                   mojom::ColorModel* color_model_for_black,
+                                   mojom::ColorModel* color_model_for_color,
+                                   bool* color_is_default) {
+  // Some Canon printers use "CNIJGrayScale" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kCUPSCanonCNIJGrayScale);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kZero)) {
+    *color_model_for_color = mojom::ColorModel::kCanonCNIJGrayScaleZero;
+  }
+  if (ppdFindChoice(color_mode_option, kOne)) {
+    *color_model_for_black = mojom::ColorModel::kCanonCNIJGrayScaleOne;
+  }
+
+  ppd_choice_t* marked_choice =
+      ppdFindMarkedChoice(ppd, kCUPSCanonCNIJGrayScale);
+  if (marked_choice) {
+    *color_is_default =
+        !EqualsCaseInsensitiveASCII(marked_choice->choice, kOne);
+  }
+  return true;
+}
+
 bool GetEpsonInkSettings(ppd_file_t* ppd,
                          mojom::ColorModel* color_model_for_black,
                          mojom::ColorModel* color_model_for_color,
@@ -375,6 +433,95 @@ bool GetEpsonInkSettings(ppd_file_t* ppd,
 
   if (mode_choice) {
     *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+  }
+  return true;
+}
+
+bool GetKonicaMinoltaSelectColorSettings(
+    ppd_file_t* ppd,
+    mojom::ColorModel* color_model_for_black,
+    mojom::ColorModel* color_model_for_color,
+    bool* color_is_default) {
+  ppd_option_t* color_mode_option =
+      ppdFindOption(ppd, kCUPSKonicaMinoltaSelectColor);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kColor)) {
+    *color_model_for_color = mojom::ColorModel::kColor;
+  }
+  if (ppdFindChoice(color_mode_option, kGrayscale)) {
+    *color_model_for_black = mojom::ColorModel::kGrayscale;
+  }
+
+  ppd_choice_t* mode_choice =
+      ppdFindMarkedChoice(ppd, kCUPSKonicaMinoltaSelectColor);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+  }
+  return true;
+}
+
+bool GetLexmarkBLWSettings(ppd_file_t* ppd,
+                           mojom::ColorModel* color_model_for_black,
+                           mojom::ColorModel* color_model_for_color,
+                           bool* color_is_default) {
+  // Lexmark printers use "BLW" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kCUPSLexmarkBLW);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kLexmarkBLWFalse)) {
+    *color_model_for_color = mojom::ColorModel::kColor;
+  }
+  if (ppdFindChoice(color_mode_option, kLexmarkBLWTrue)) {
+    *color_model_for_black = mojom::ColorModel::kGray;
+  }
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kCUPSLexmarkBLW);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kColor);
+  }
+  return true;
+}
+
+bool GetOkiSettings(ppd_file_t* ppd,
+                    mojom::ColorModel* color_model_for_black,
+                    mojom::ColorModel* color_model_for_color,
+                    bool* color_is_default) {
+  // Oki printers use "OKControl" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kCUPSOkiControl);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kAuto)) {
+    *color_model_for_color = mojom::ColorModel::kOkiOKControlColor;
+  }
+  if (ppdFindChoice(color_mode_option, kGray)) {
+    *color_model_for_black = mojom::ColorModel::kOkiOKControlGray;
+  }
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kCUPSOkiControl);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    *color_is_default = EqualsCaseInsensitiveASCII(mode_choice->choice, kAuto);
   }
   return true;
 }
@@ -435,6 +582,37 @@ bool GetXeroxColorSettings(ppd_file_t* ppd,
   return true;
 }
 
+bool GetXeroxOutputColorSettings(ppd_file_t* ppd,
+                                 mojom::ColorModel* color_model_for_black,
+                                 mojom::ColorModel* color_model_for_color,
+                                 bool* color_is_default) {
+  // Some Xerox printers use "XROutputColor" attribute in their PPDs.
+  ppd_option_t* color_mode_option = ppdFindOption(ppd, kCUPSXeroxXROutputColor);
+  if (!color_mode_option) {
+    return false;
+  }
+
+  if (ppdFindChoice(color_mode_option, kPrintAsColor)) {
+    *color_model_for_color = mojom::ColorModel::kXeroxXROutputColorPrintAsColor;
+  }
+  if (ppdFindChoice(color_mode_option, kPrintAsGrayscale)) {
+    *color_model_for_black =
+        mojom::ColorModel::kXeroxXROutputColorPrintAsGrayscale;
+  }
+
+  ppd_choice_t* mode_choice = ppdFindMarkedChoice(ppd, kCUPSXeroxXROutputColor);
+  if (!mode_choice) {
+    mode_choice =
+        ppdFindChoice(color_mode_option, color_mode_option->defchoice);
+  }
+
+  if (mode_choice) {
+    *color_is_default =
+        EqualsCaseInsensitiveASCII(mode_choice->choice, kPrintAsColor);
+  }
+  return true;
+}
+
 bool GetProcessColorModelSettings(ppd_file_t* ppd,
                                   mojom::ColorModel* color_model_for_black,
                                   mojom::ColorModel* color_model_for_color,
@@ -482,9 +660,16 @@ bool GetColorModelSettings(ppd_file_t* ppd,
          GetHPColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetHPColorModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetBrotherColorSettings(ppd, cm_black, cm_color, is_color) ||
+         GetCanonCNColorModeSettings(ppd, cm_black, cm_color, is_color) ||
+         GetCanonCNIJGrayscaleSettings(ppd, cm_black, cm_color, is_color) ||
          GetEpsonInkSettings(ppd, cm_black, cm_color, is_color) ||
+         GetKonicaMinoltaSelectColorSettings(ppd, cm_black, cm_color,
+                                             is_color) ||
+         GetLexmarkBLWSettings(ppd, cm_black, cm_color, is_color) ||
+         GetOkiSettings(ppd, cm_black, cm_color, is_color) ||
          GetSharpARCModeSettings(ppd, cm_black, cm_color, is_color) ||
          GetXeroxColorSettings(ppd, cm_black, cm_color, is_color) ||
+         GetXeroxOutputColorSettings(ppd, cm_black, cm_color, is_color) ||
          GetProcessColorModelSettings(ppd, cm_black, cm_color, is_color);
 }
 
@@ -641,6 +826,34 @@ bool ParsePpdCapabilities(cups_dest_t* dest,
             paper.display_name = paper_choice->text;
           }
         }
+        int printable_area_left_um =
+            ConvertUnit(ppd->sizes[i].left, kPointsPerInch, kMicronsPerInch);
+        int printable_area_bottom_um =
+            ConvertUnit(ppd->sizes[i].bottom, kPointsPerInch, kMicronsPerInch);
+        // ppd->sizes[i].right is the horizontal distance from the left of the
+        // paper to the right of the printable area.
+        int printable_area_right_um =
+            ConvertUnit(ppd->sizes[i].right, kPointsPerInch, kMicronsPerInch);
+        // ppd->sizes[i].top is the vertical distance from the bottom of the
+        // paper to the top of the printable area.
+        int printable_area_top_um =
+            ConvertUnit(ppd->sizes[i].top, kPointsPerInch, kMicronsPerInch);
+
+        paper.printable_area_um = gfx::Rect(
+            printable_area_left_um, printable_area_bottom_um,
+            /*width=*/printable_area_right_um - printable_area_left_um,
+            /*height=*/printable_area_top_um - printable_area_bottom_um);
+
+        // Default to the paper size if printable area is empty.
+        // We've seen some drivers have a printable area that goes out of bounds
+        // of the paper size. In those cases, set the printable area to be the
+        // size. (See crbug.com/1412305.)
+        const gfx::Rect size_um_rect = gfx::Rect(paper.size_um);
+        if (paper.printable_area_um.IsEmpty() ||
+            !size_um_rect.Contains(paper.printable_area_um)) {
+          paper.printable_area_um = size_um_rect;
+        }
+
         caps.papers.push_back(paper);
         if (ppd->sizes[i].marked) {
           caps.default_paper = paper;

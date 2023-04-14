@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+function resolveOnStorageChanged(resolve) {
+  chrome.storage.local.onChanged.addListener(function local(changes,
+                                                            areaName) {
+    assertEq({'newValue': 'yes'}, changes['did_run_unload_1'])
+    chrome.storage.local.onChanged.removeListener(local);
+    resolve();
+  });
+}
+
 var secondTabId;
 chrome.test.runTests([
   function createSecondTab() {
@@ -11,20 +20,26 @@ chrome.test.runTests([
         secondTabId = tab.id;
         assertTrue(tab.active);
         assertEq(1, tab.index);
-        chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        chrome.tabs.onUpdated.addListener(function local(tabId,
+                                                         changeInfo,
+                                                         tab) {
           // Wait for the second tab to finish loading before moving on.
           if (tabId == secondTabId && changeInfo.status == 'complete') {
+            chrome.tabs.onUpdated.removeListener(local);
             chrome.test.succeed();
           }
         });
       });
   },
   function removeSecondTab() {
-    chrome.tabs.remove(secondTabId, () => {
-      // The second tab should've set the 'did_run_unload_1' value from
-      // its unload handler, which is accessible from the first tab too.
-      assertEq('yes', localStorage.getItem('did_run_unload_1'));
-      chrome.test.succeed();
+    let onStoragePromise = new Promise(resolveOnStorageChanged);
+
+    let removePromise = new Promise((resolve) => {
+      chrome.tabs.remove(secondTabId, () => {
+      resolve();
+      });
     });
+
+    Promise.all([onStoragePromise, removePromise]).then(chrome.test.succeed);
   }
 ]);

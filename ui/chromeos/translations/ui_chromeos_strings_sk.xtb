@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Priame pripojenie k Internetu</translation>
 <translation id="1272293450992660632">Kódy PIN sa nezhodujú.</translation>
 <translation id="1280820357415527819">Hľadajú sa mobilné siete</translation>
-<translation id="1291603679744561561">SIM karta je uzamknutá</translation>
 <translation id="1293556467332435079">Súbory</translation>
 <translation id="1297922636971898492">Služba Disk Google práve teraz nie je k dispozícii. Nahrávanie sa automaticky spustí znova, keď bude služba Disk Google opäť dostupná.</translation>
 <translation id="1307931752636661898">Súbory systému Linux sa nedajú zobraziť</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Ak chcete vložiť súbory do aplikácie Parallels Desktop, musíte ich presunúť do súborov pre Windows.</translation>
 <translation id="1435838927755162558">Zdieľanie priečinka aplikáciou Parallels Desktop</translation>
 <translation id="1439919885608649279">Osoba s kvetinami</translation>
+<translation id="1458457385801829801">Odpojiť <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Slovenská klávesnica</translation>
 <translation id="1482884275703521657">Fínska klávesnica</translation>
 <translation id="148466539719134488">Švajčiarska klávesnica</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">S virtuálnym počítačom je zdieľaný 1 priečinok</translation>
 <translation id="2578394532502990878">Tamilská fonetická klávesnica</translation>
 <translation id="2579959351793446050">Uríjska klávesnica</translation>
+<translation id="2587195714949534472">Pripravuje sa synchronizácia súboru <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, sila signálu: <ph name="SIGNAL_STRENGTH" /> %, zablokoval váš správca, podrobnosti</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Služba Disk Google nie je momentálne k dispozícii.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongolská klávesnica</translation>
 <translation id="3495304270784461826">Počet chýb: <ph name="COUNT" />.</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
+<translation id="3511705761158917664">Pripravuje sa synchronizácia <ph name="NUMBER_OF_ITEMS" /> položiek…</translation>
 <translation id="3522708245912499433">Portugalčina</translation>
 <translation id="3524311639100184459">Upozornenie: Tieto súbory sú dočasné a môžu byť automaticky odstránené na uvoľnenie priestoru na disku.  <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Priečinok</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Prilepiť</translation>
 <translation id="3952872973865944257">Telugská fonetická klávesnica</translation>
+<translation id="3954354850384043518">Prebieha</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Stiahnite si mobilný profil, sieť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Anglická (UK) klávesnica</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Vlastné menné servery</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, ovládaná správcom, pripojenie</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Žiadne zodpovedajúce výsledky</translation>
 <translation id="4477002475007461989">Rumunská klávesnica</translation>
 <translation id="4477219268485577442">Bulharská fonetická klávesnica</translation>
 <translation id="4508265954913339219">Aktivácia zlyhala</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Použite názov s maximálne <ph name="MAX_LENGTH" /> znakmi</translation>
 <translation id="4973970068702235170">Komprimovanie zlyhalo, neočakávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japonská klávesnica</translation>
+<translation id="4987699874727873250">angličtina (India)</translation>
 <translation id="4988205478593450158">Naozaj chcete odstrániť súbor <ph name="FILE_NAME" />?</translation>
 <translation id="498902553138568924">Červený motýľ</translation>
 <translation id="4992066212339426712">Zapnúť zvuk</translation>
@@ -786,6 +791,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7458955835361612701">Žiadne nedávne obrázky</translation>
 <translation id="7460898608667578234">Ukrajinčina</translation>
 <translation id="7469894403370665791">Automaticky sa pripojiť k tejto sieti</translation>
+<translation id="7481358317100446445">Pripravené</translation>
 <translation id="7486315294984620427">Ak chcete vložiť súbory do aplikácie Parallels Desktop, musíte ich skopírovať do súborov pre Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malajámská fonetická klávesnica</translation>
@@ -811,6 +817,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7655441028674523381">Jednoduchý prístup k Fotkám Google</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7663224033570512922">Hindská klávesnica</translation>
+<translation id="7665680517722058469">Skúste iné vyhľadávanie</translation>
 <translation id="7689532716264131859">Položky (<ph name="NUMBER_OF_ITEMS" />) boli presunuté do koša</translation>
 <translation id="7693909743393669729">Formátovaním kľúča vymažete všetky dáta, ktoré sú v ňom uložené, ako aj všetky existujúce oddiely vrátane tých, ktoré nemusia byť viditeľné. Táto akcia sa nedá vrátiť späť.</translation>
 <translation id="7695430100978772476">Disk <ph name="DRIVE_NAME" /> sa nepodarilo naformátovať</translation>
@@ -967,6 +974,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8866284467018526531">Arabská klávesnica (prepis)</translation>
 <translation id="8873014196523807561">Ak chcete tieto položky obnoviť, presuňte ich do nového priečinka. Pôvodné priečinky pre niektoré tieto položky boli odstránené.</translation>
 <translation id="8874184842967597500">Nepripojené</translation>
+<translation id="8876368061475701452">V poradí</translation>
 <translation id="8900820606136623064">Maďarčina</translation>
 <translation id="8903931173357132290">Absolvent</translation>
 <translation id="8912078710089354287">Pes krútiaci chvostom</translation>

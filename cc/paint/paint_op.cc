@@ -92,18 +92,44 @@ void DrawImageRect(SkCanvas* canvas,
                    SkCanvas::SrcRectConstraint constraint) {
   if (!image)
     return;
-  if (constraint == SkCanvas::kStrict_SrcRectConstraint &&
-      options.mipmap != SkMipmapMode::kNone &&
-      src.contains(SkRect::Make(image->dimensions()))) {
-    SkMatrix m;
-    m.setRectToRect(src, dst, SkMatrix::ScaleToFit::kFill_ScaleToFit);
+  if (constraint != SkCanvas::kStrict_SrcRectConstraint ||
+      options.mipmap == SkMipmapMode::kNone) {
+    canvas->drawImageRect(image, src, dst, options, paint, constraint);
+    return;
+  }
+  // Skia downgrades to SkMipmap::kNone if kStrict_SrcRectConstraint is used
+  // with drawImageRect.
+  SkMatrix m;
+  m.setRectToRect(src, dst, SkMatrix::ScaleToFit::kFill_ScaleToFit);
+  if (src.contains(SkRect::Make(image->dimensions()))) {
     canvas->save();
     canvas->concat(m);
     canvas->drawImage(image, 0, 0, options, paint);
     canvas->restore();
     return;
   }
-  canvas->drawImageRect(image, src, dst, options, paint, constraint);
+  // Draw a rect with an image shader wrapped in another shader that clamps
+  // the coordinates to a half pixel inset of the original source rectangle.
+  // This means in the base MIP level there will be no bleed from filtering.
+  // This matches Skia's behavior prior to changes related to skbug.com/13078
+  sk_sp<SkShader> shader = image->makeShader(options);
+  SkRect clampRect = src.makeInset(0.5f, 0.5f);
+  if (clampRect.width() < 0) {
+    clampRect.fLeft = clampRect.fRight = clampRect.centerX();
+  }
+  if (clampRect.height() < 0) {
+    clampRect.fTop = clampRect.fBottom = clampRect.centerY();
+  }
+  shader = SkShaders::CoordClamp(std::move(shader), clampRect);
+  // The matrix must happen outside of the clamp so that the clamp is in the
+  // image coordinate space.
+  shader = shader->makeWithLocalMatrix(m);
+  SkPaint shaderPaint;
+  if (paint) {
+    shaderPaint = *paint;
+  }
+  shaderPaint.setShader(std::move(shader));
+  canvas->drawRect(dst, shaderPaint);
 }
 
 #define TYPES(M)      \
@@ -125,6 +151,7 @@ void DrawImageRect(SkCanvas* canvas,
   M(DrawRectOp)       \
   M(DrawRRectOp)      \
   M(DrawSkottieOp)    \
+  M(DrawSlugOp)       \
   M(DrawTextBlobOp)   \
   M(NoopOp)           \
   M(RestoreOp)        \
@@ -145,8 +172,8 @@ static constexpr size_t kNumOpTypes =
 static_assert(kNumOpTypes == TYPES(M), "Missing op in list");
 #undef M
 
-#define M(T) sizeof(T),
-static const size_t g_type_to_size[kNumOpTypes] = {TYPES(M)};
+#define M(T) PaintOpBuffer::ComputeOpAlignedSize<T>(),
+static constexpr uint16_t g_type_to_aligned_size[kNumOpTypes] = {TYPES(M)};
 #undef M
 
 template <typename T, bool HasFlags>
@@ -256,7 +283,7 @@ PaintOp* Deserialize(PaintOpReader& reader, void* output, size_t output_size) {
     op->~T();
     return nullptr;
   }
-  op->skip = PaintOpBuffer::ComputeOpSkip(sizeof(T));
+  op->aligned_size = PaintOpBuffer::ComputeOpAlignedSize<T>();
   return op;
 }
 #define M(T) &Deserialize<T>,
@@ -319,7 +346,6 @@ static const AnalyzeOpFunc g_analyze_op_functions[kNumOpTypes] = {TYPES(M)};
 }  // namespace
 
 const SkRect PaintOp::kUnsetRect = {SK_ScalarInfinity, 0, 0, 0};
-const size_t PaintOp::kMaxSkip;
 
 std::string PaintOpTypeToString(PaintOpType type) {
   switch (type) {
@@ -359,6 +385,8 @@ std::string PaintOpTypeToString(PaintOpType type) {
       return "DrawRRect";
     case PaintOpType::DrawSkottie:
       return "DrawSkottie";
+    case PaintOpType::DrawSlug:
+      return "DrawSlug";
     case PaintOpType::DrawTextBlob:
       return "DrawTextBlob";
     case PaintOpType::Noop:
@@ -466,7 +494,6 @@ void DrawImageOp::Serialize(PaintOpWriter& writer,
   writer.Write(
       CreateDrawImage(image, flags_to_serialize, sampling, current_ctm),
       &serialized_scale_adjustment);
-  writer.AssertAlignment(alignof(SkScalar));
   writer.Write(serialized_scale_adjustment.width());
   writer.Write(serialized_scale_adjustment.height());
 
@@ -488,7 +515,6 @@ void DrawImageRectOp::Serialize(PaintOpWriter& writer,
   SkSize serialized_scale_adjustment = SkSize::Make(1.f, 1.f);
   writer.Write(CreateDrawImage(image, flags_to_serialize, sampling, matrix),
                &serialized_scale_adjustment);
-  writer.AssertAlignment(alignof(SkScalar));
   writer.Write(serialized_scale_adjustment.width());
   writer.Write(serialized_scale_adjustment.height());
 
@@ -511,7 +537,6 @@ void DrawLineOp::Serialize(PaintOpWriter& writer,
                            const SkM44& current_ctm,
                            const SkM44& original_ctm) const {
   writer.Write(*flags_to_serialize, current_ctm);
-  writer.AssertAlignment(alignof(SkScalar));
   writer.Write(x0);
   writer.Write(y0);
   writer.Write(x1);
@@ -633,10 +658,11 @@ void DrawSkottieOp::Serialize(PaintOpWriter& writer,
       });
 }
 
-void DrawTextBlobOp::Serialize(PaintOpWriter& writer,
-                               const PaintFlags* flags_to_serialize,
-                               const SkM44& current_ctm,
-                               const SkM44& original_ctm) const {
+void DrawSlugOp::SerializeSlugs(const sk_sp<GrSlug>& slug,
+                                const std::vector<sk_sp<GrSlug>>& extra_slugs,
+                                PaintOpWriter& writer,
+                                const PaintFlags* flags_to_serialize,
+                                const SkM44& current_ctm) {
   writer.Write(*flags_to_serialize, current_ctm);
   unsigned int count = extra_slugs.size() + 1;
   writer.Write(count);
@@ -644,6 +670,22 @@ void DrawTextBlobOp::Serialize(PaintOpWriter& writer,
   for (const auto& extra_slug : extra_slugs) {
     writer.Write(extra_slug);
   }
+}
+
+void DrawSlugOp::Serialize(PaintOpWriter& writer,
+                           const PaintFlags* flags_to_serialize,
+                           const SkM44& current_ctm,
+                           const SkM44& original_ctm) const {
+  DrawSlugOp::SerializeSlugs(slug, extra_slugs, writer, flags_to_serialize,
+                             current_ctm);
+}
+
+void DrawTextBlobOp::Serialize(PaintOpWriter& writer,
+                               const PaintFlags* flags_to_serialize,
+                               const SkM44& current_ctm,
+                               const SkM44& original_ctm) const {
+  DrawSlugOp::SerializeSlugs(slug, extra_slugs, writer, flags_to_serialize,
+                             current_ctm);
 }
 
 void NoopOp::Serialize(PaintOpWriter& writer,
@@ -779,7 +821,6 @@ PaintOp* DrawImageOp::Deserialize(PaintOpReader& reader, void* output) {
   reader.Read(&op->flags);
 
   reader.Read(&op->image);
-  reader.AssertAlignment(alignof(SkScalar));
   reader.Read(&op->scale_adjustment.fWidth);
   reader.Read(&op->scale_adjustment.fHeight);
 
@@ -795,7 +836,6 @@ PaintOp* DrawImageRectOp::Deserialize(PaintOpReader& reader, void* output) {
   reader.Read(&op->flags);
 
   reader.Read(&op->image);
-  reader.AssertAlignment(alignof(SkScalar));
   reader.Read(&op->scale_adjustment.fWidth);
   reader.Read(&op->scale_adjustment.fHeight);
 
@@ -817,7 +857,6 @@ PaintOp* DrawIRectOp::Deserialize(PaintOpReader& reader, void* output) {
 PaintOp* DrawLineOp::Deserialize(PaintOpReader& reader, void* output) {
   DrawLineOp* op = new (output) DrawLineOp;
   reader.Read(&op->flags);
-  reader.AssertAlignment(alignof(SkScalar));
   reader.Read(&op->x0);
   reader.Read(&op->y0);
   reader.Read(&op->x1);
@@ -953,8 +992,8 @@ PaintOp* DrawSkottieOp::Deserialize(PaintOpReader& reader, void* output) {
   return op;
 }
 
-PaintOp* DrawTextBlobOp::Deserialize(PaintOpReader& reader, void* output) {
-  DrawTextBlobOp* op = new (output) DrawTextBlobOp;
+PaintOp* DrawSlugOp::Deserialize(PaintOpReader& reader, void* output) {
+  DrawSlugOp* op = new (output) DrawSlugOp;
   reader.Read(&op->flags);
   unsigned int count = 0;
   reader.Read(&count);
@@ -964,6 +1003,11 @@ PaintOp* DrawTextBlobOp::Deserialize(PaintOpReader& reader, void* output) {
     reader.Read(&extra_slug);
   }
   return op;
+}
+
+PaintOp* DrawTextBlobOp::Deserialize(PaintOpReader& reader, void* output) {
+  NOTREACHED();
+  return nullptr;
 }
 
 PaintOp* NoopOp::Deserialize(PaintOpReader& reader, void* output) {
@@ -1352,35 +1396,47 @@ void DrawTextBlobOp::RasterWithFlags(const DrawTextBlobOp* op,
   // used for over scall on Android. So we cannot reuse slugs, they have to be
   // recreated.
   if (params.is_analyzing) {
-    const_cast<DrawTextBlobOp*>(op)->slug.reset();
-    const_cast<DrawTextBlobOp*>(op)->extra_slugs.clear();
+    op->slug.reset();
+    op->extra_slugs.clear();
   }
 
   // flags may contain SkDrawLooper for shadow effect, so we need to convert
   // SkTextBlob to slug for each run.
   size_t i = 0;
   flags->DrawToSk(canvas, [op, &params, &i](SkCanvas* c, const SkPaint& p) {
-    if (op->blob) {
-      c->drawTextBlob(op->blob.get(), op->x, op->y, p);
-      if (params.is_analyzing) {
-        auto s = GrSlug::ConvertBlob(c, *op->blob, {op->x, op->y}, p);
-        if (i == 0) {
-          const_cast<DrawTextBlobOp*>(op)->slug = std::move(s);
-        } else {
-          const_cast<DrawTextBlobOp*>(op)->extra_slugs.push_back(std::move(s));
-        }
+    DCHECK(op->blob);
+    c->drawTextBlob(op->blob.get(), op->x, op->y, p);
+    if (params.is_analyzing) {
+      auto s = GrSlug::ConvertBlob(c, *op->blob, {op->x, op->y}, p);
+      if (i == 0) {
+        op->slug = std::move(s);
+      } else {
+        op->extra_slugs.push_back(std::move(s));
       }
-    } else if (i < 1 + op->extra_slugs.size()) {
+    }
+    i++;
+  });
+
+  if (op->node_id) {
+    SkPDF::SetNodeId(canvas, 0);
+  }
+}
+
+void DrawSlugOp::RasterWithFlags(const DrawSlugOp* op,
+                                 const PaintFlags* flags,
+                                 SkCanvas* canvas,
+                                 const PlaybackParams& params) {
+  size_t i = 0;
+  flags->DrawToSk(canvas, [op, &params, &i](SkCanvas* c, const SkPaint& p) {
+    if (i < 1 + op->extra_slugs.size()) {
       DCHECK(!params.is_analyzing);
       const auto& draw_slug = i == 0 ? op->slug : op->extra_slugs[i - 1];
-      if (draw_slug)
+      if (draw_slug) {
         draw_slug->draw(c);
+      }
     }
     ++i;
   });
-
-  if (op->node_id)
-    SkPDF::SetNodeId(canvas, 0);
 }
 
 void RestoreOp::Raster(const RestoreOp* op,
@@ -1559,7 +1615,11 @@ bool DrawSkottieOp::EqualsForTesting(const DrawSkottieOp& other) const {
 
 bool DrawTextBlobOp::EqualsForTesting(const DrawTextBlobOp& other) const {
   return flags.EqualsForTesting(other.flags) &&  // IN-TEST
-         x == other.x && y == other.y && node_id == other.node_id &&
+         x == other.x && y == other.y && node_id == other.node_id;
+}
+
+bool DrawSlugOp::EqualsForTesting(const DrawSlugOp& other) const {
+  return flags.EqualsForTesting(other.flags) &&  // IN-TEST
          !slug == !other.slug &&
          (!slug || slug->serialize()->equals(other.slug->serialize().get()));
 }
@@ -1634,32 +1694,21 @@ size_t PaintOp::Serialize(void* memory,
                           const PaintFlags* flags_to_serialize,
                           const SkM44& current_ctm,
                           const SkM44& original_ctm) const {
-  // Need at least enough room for a skip/type header.
-  if (size < 4)
+  // Need at least enough room for the header.
+  if (size < PaintOpWriter::kHeaderBytes) {
     return 0u;
-
-  DCHECK_EQ(0u,
-            reinterpret_cast<uintptr_t>(memory) % PaintOpBuffer::kPaintOpAlign);
+  }
 
   PaintOpWriter writer(memory, size, options);
+  writer.ReserveOpHeader();
   g_serialize_functions[type](*this, writer, flags_to_serialize, current_ctm,
                               original_ctm);
-  size_t written = writer.size();
-  DCHECK_LE(written, size);
-  if (written < 4)
-    return 0u;
 
-  size_t aligned_written = ((written + PaintOpBuffer::kPaintOpAlign - 1) &
-                            ~(PaintOpBuffer::kPaintOpAlign - 1));
-  if (aligned_written >= kMaxSkip)
-    return 0u;
-  if (aligned_written > size)
-    return 0u;
-
-  // Update skip and type now that the size is known.
-  uint32_t bytes_to_skip = static_cast<uint32_t>(aligned_written);
-  static_cast<uint32_t*>(memory)[0] = type | bytes_to_skip << 8;
-  return bytes_to_skip;
+  // Convert DrawTextBlobOp to DrawSlugOp.
+  if (GetType() == PaintOpType::DrawTextBlob) {
+    return writer.FinishOp(static_cast<uint8_t>(PaintOpType::DrawSlug));
+  }
+  return writer.FinishOp(type);
 }
 
 PaintOp* PaintOp::Deserialize(const volatile void* input,
@@ -1668,17 +1717,13 @@ PaintOp* PaintOp::Deserialize(const volatile void* input,
                               size_t output_size,
                               size_t* read_bytes,
                               const DeserializeOptions& options) {
-  DCHECK_GE(output_size, sizeof(LargestPaintOp));
+  DCHECK_GE(output_size, kLargestPaintOpAlignedSize);
 
   uint8_t type;
-  uint32_t skip;
-  if (!PaintOpReader::ReadAndValidateOpHeader(input, input_size, &type,
-                                              &skip)) {
+  PaintOpReader reader(input, input_size, options);
+  if (!reader.ReadAndValidateOpHeader(&type, read_bytes)) {
     return nullptr;
   }
-
-  PaintOpReader reader(input, skip, options);
-  *read_bytes = skip;
   return g_deserialize_functions[type](reader, output, output_size);
 }
 
@@ -1689,25 +1734,22 @@ PaintOp* PaintOp::DeserializeIntoPaintOpBuffer(
     size_t* read_bytes,
     const DeserializeOptions& options) {
   uint8_t type;
-  uint32_t skip;
-  if (!PaintOpReader::ReadAndValidateOpHeader(input, input_size, &type,
-                                              &skip)) {
+  PaintOpReader reader(input, input_size, options);
+  if (!reader.ReadAndValidateOpHeader(&type, read_bytes)) {
     return nullptr;
   }
 
-  PaintOpReader reader(input, skip, options);
-  size_t op_skip = PaintOpBuffer::ComputeOpSkip(g_type_to_size[type]);
+  uint16_t op_aligned_size = g_type_to_aligned_size[type];
   if (auto* op = g_deserialize_functions[type](
-          reader, buffer->AllocatePaintOp(op_skip), op_skip)) {
+          reader, buffer->AllocatePaintOp(op_aligned_size), op_aligned_size)) {
     g_analyze_op_functions[type](buffer, op);
-    *read_bytes = skip;
     return op;
   }
 
   // The last allocated op has already been destroyed if it failed to
   // deserialize. Update the buffer's op tracking to exclude it to avoid
   // access during cleanup at destruction.
-  buffer->used_ -= op_skip;
+  buffer->used_ -= op_aligned_size;
   buffer->op_count_--;
   return nullptr;
 }
@@ -1785,6 +1827,12 @@ bool PaintOp::GetBounds(const PaintOp& op, SkRect* rect) {
     case PaintOpType::DrawTextBlob: {
       const auto& text_op = static_cast<const DrawTextBlobOp&>(op);
       *rect = text_op.blob->bounds().makeOffset(text_op.x, text_op.y);
+      rect->sort();
+      return true;
+    }
+    case PaintOpType::DrawSlug: {
+      const auto& slug_op = static_cast<const DrawSlugOp&>(op);
+      *rect = slug_op.slug->sourceBoundsWithOrigin();
       rect->sort();
       return true;
     }
@@ -1982,8 +2030,6 @@ AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
       data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
-AnnotateOp::AnnotateOp(const AnnotateOp&) = default;
-AnnotateOp& AnnotateOp::operator=(const AnnotateOp&) = default;
 
 DrawImageOp::DrawImageOp() : PaintOpWithFlags(kType) {}
 
@@ -2045,8 +2091,6 @@ DrawRecordOp::DrawRecordOp(PaintRecord record)
     : PaintOp(kType), record(std::move(record)) {}
 
 DrawRecordOp::~DrawRecordOp() = default;
-DrawRecordOp::DrawRecordOp(const DrawRecordOp&) = default;
-DrawRecordOp& DrawRecordOp::operator=(const DrawRecordOp&) = default;
 
 size_t DrawRecordOp::AdditionalBytesUsed() const {
   return record.bytes_used();
@@ -2073,8 +2117,6 @@ DrawSkottieOp::DrawSkottieOp(scoped_refptr<SkottieWrapper> skottie,
 DrawSkottieOp::DrawSkottieOp() : PaintOp(kType) {}
 
 DrawSkottieOp::~DrawSkottieOp() = default;
-DrawSkottieOp::DrawSkottieOp(const DrawSkottieOp&) = default;
-DrawSkottieOp& DrawSkottieOp::operator=(const DrawSkottieOp&) = default;
 
 bool DrawSkottieOp::HasDiscardableImages() const {
   return !images.empty();
@@ -2104,7 +2146,12 @@ DrawTextBlobOp::DrawTextBlobOp(sk_sp<SkTextBlob> blob,
       node_id(node_id) {}
 
 DrawTextBlobOp::~DrawTextBlobOp() = default;
-DrawTextBlobOp::DrawTextBlobOp(const DrawTextBlobOp&) = default;
-DrawTextBlobOp& DrawTextBlobOp::operator=(const DrawTextBlobOp&) = default;
+
+DrawSlugOp::DrawSlugOp() : PaintOpWithFlags(kType) {}
+
+DrawSlugOp::DrawSlugOp(sk_sp<GrSlug> slug, const PaintFlags& flags)
+    : PaintOpWithFlags(kType, flags), slug(std::move(slug)) {}
+
+DrawSlugOp::~DrawSlugOp() = default;
 
 }  // namespace cc

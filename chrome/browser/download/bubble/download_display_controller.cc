@@ -118,7 +118,8 @@ DownloadDisplayController::~DownloadDisplayController() {
   base::PowerMonitor::RemovePowerSuspendObserver(this);
 }
 
-void DownloadDisplayController::OnNewItem(bool show_details) {
+void DownloadDisplayController::OnNewItem(bool show_details,
+                                          bool show_animation) {
   if (!download::ShouldShowDownloadBubble(browser_->profile())) {
     return;
   }
@@ -143,6 +144,7 @@ void DownloadDisplayController::OnNewItem(bool show_details) {
     }
   } else {
     display_->ShowDetails();
+    display_->UpdateDownloadIcon(show_animation);
   }
 }
 
@@ -202,7 +204,7 @@ void DownloadDisplayController::HandleButtonPressed() {
   if (icon_info_.icon_state == DownloadIconState::kComplete) {
     icon_info_.is_active = false;
   }
-  display_->UpdateDownloadIcon();
+  display_->UpdateDownloadIcon(/*show_animation=*/false);
 }
 
 void DownloadDisplayController::ShowToolbarButton() {
@@ -293,12 +295,12 @@ void DownloadDisplayController::UpdateToolbarButtonState(
                                 last_complete_time)) {
     ShowToolbarButton();
   }
-  display_->UpdateDownloadIcon();
+  display_->UpdateDownloadIcon(/*show_animation=*/false);
 }
 
 void DownloadDisplayController::UpdateDownloadIconToInactive() {
   icon_info_.is_active = false;
-  display_->UpdateDownloadIcon();
+  display_->UpdateDownloadIcon(/*show_animation=*/false);
 }
 
 void DownloadDisplayController::ScheduleToolbarDisappearance(

@@ -109,7 +109,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     options.scope = scope_;
     registration_ = CreateNewServiceWorkerRegistration(
         helper_->context()->registry(), options,
-        blink::StorageKey(url::Origin::Create(scope_)));
+        blink::StorageKey::CreateFirstParty(url::Origin::Create(scope_)));
     version_ = CreateNewServiceWorkerVersion(
         helper_->context()->registry(), registration_.get(),
         GURL("https://www.example.com/test/service_worker.js"),
@@ -1315,7 +1315,7 @@ TEST_F(ServiceWorkerVersionTest, BadOrigin) {
 
   auto registration = CreateNewServiceWorkerRegistration(
       helper_->context()->registry(), options,
-      blink::StorageKey(url::Origin::Create(scope)));
+      blink::StorageKey::CreateFirstParty(url::Origin::Create(scope)));
   auto version = CreateNewServiceWorkerVersion(
       helper_->context()->registry(), registration_.get(),
       GURL("bad-origin://www.example.com/test/service_worker.js"),
@@ -1917,7 +1917,7 @@ TEST_F(ServiceWorkerVersionTest, SetResources) {
       blink::mojom::ScriptType::kClassic);
 
   // The checksum is empty because still no resource records.
-  EXPECT_EQ("", version->sha256_script_checksum());
+  EXPECT_FALSE(version->sha256_script_checksum());
 
   // Set resource records.
   std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> records;

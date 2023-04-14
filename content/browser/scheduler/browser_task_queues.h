@@ -144,6 +144,9 @@ class CONTENT_EXPORT BrowserTaskQueues {
     void ScheduleRunAllPendingTasksForTesting(
         base::OnceClosure on_pending_task_ran);
 
+    // Drop back-pointer to resource about to be freed.
+    void OnTaskQueuesDestroyed() { outer_ = nullptr; }
+
    private:
     friend base::RefCountedThreadSafe<Handle>;
 
@@ -156,9 +159,7 @@ class CONTENT_EXPORT BrowserTaskQueues {
 
     // |outer_| can only be safely used from a task posted to one of the
     // runners.
-    //
-    // TODO(crbug.com/1298696): Breaks events_unittests.
-    raw_ptr<BrowserTaskQueues, DegradeToNoOpWhenMTE> outer_ = nullptr;
+    raw_ptr<BrowserTaskQueues> outer_ = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> control_task_runner_;
     scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
     std::array<scoped_refptr<base::SingleThreadTaskRunner>, kNumQueueTypes>

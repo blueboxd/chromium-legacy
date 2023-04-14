@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Přímé připojení k internetu</translation>
 <translation id="1272293450992660632">Hodnoty kódů PIN se neshodují.</translation>
 <translation id="1280820357415527819">Vyhledávání mobilních sítí</translation>
-<translation id="1291603679744561561">SIM karta uzamknuta</translation>
 <translation id="1293556467332435079">Soubory</translation>
 <translation id="1297922636971898492">Disk Google aktuálně není k dispozici. Jakmile bude Disk Google opět dostupný, nahrávání se automaticky obnoví.</translation>
 <translation id="1307931752636661898">Soubory systému Linux nelze zobrazit</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Pokud chcete soubor přetáhnout do nástroje Parallels Desktop, musíte ho přesunout mezi soubory systému Windows.</translation>
 <translation id="1435838927755162558">Sdílení složky s nástrojem Parallels Desktop</translation>
 <translation id="1439919885608649279">Člověk s květinami</translation>
+<translation id="1458457385801829801">Odpojit <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">slovenština</translation>
 <translation id="1482884275703521657">finština</translation>
 <translation id="148466539719134488">Švýcarská klávesnice</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 složka je sdílena s Bruschettou</translation>
 <translation id="2578394532502990878">tamilština (fonetická)</translation>
 <translation id="2579959351793446050">urijština</translation>
+<translation id="2587195714949534472">Příprava k synchronizaci souboru <ph name="FILE_NAME" />…</translation>
 <translation id="2602810353103180630">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, blokováno administrátorem, podrobnosti</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Disk Google není momentálně k dispozici.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">mongolština</translation>
 <translation id="3495304270784461826">Chyby: <ph name="COUNT" />.</translation>
 <translation id="3509680540198371098">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
+<translation id="3511705761158917664">Příprava na synchronizaci položek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="3522708245912499433">portugalština</translation>
 <translation id="3524311639100184459">Upozornění: Tyto soubory jsou dočasné a mohou být automaticky smazány kvůli uvolnění místa na disku.  <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Složka</translation>
@@ -347,10 +349,12 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Vložit</translation>
 <translation id="3952872973865944257">telugština (fonetická)</translation>
+<translation id="3954354850384043518">Probíhá</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Stáhněte si mobilní profil, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">angličtina (Velká Británie)</translation>
 <translation id="3975895378829046965">bengálština (fonetická)</translation>
+<translation id="3999574733850440202">Nedávno otevřené soubory Microsoft byly přesunuty do služby OneDrive</translation>
 <translation id="4002066346123236978">Název</translation>
 <translation id="4017788180641807848">angličtina (USA) s klávesnicí Workman</translation>
 <translation id="4019998208269143058">Připnout do rychlých souborů</translation>
@@ -406,6 +410,7 @@
 <translation id="4462159676511157176">Vlastní názvové servery</translation>
 <translation id="4465725236958772856">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, spravováno administrátorem, připojit</translation>
 <translation id="4470564870223067757">Hangul – 2 sady</translation>
+<translation id="4474142134969976028">Dotazu neodpovídají žádné výsledky</translation>
 <translation id="4477002475007461989">rumunština</translation>
 <translation id="4477219268485577442">Bulharská fonetická klávesnice</translation>
 <translation id="4508265954913339219">Aktivace se nezdařila</translation>
@@ -477,6 +482,7 @@
 <translation id="4973523518332075481">Název nesmí být delší než <ph name="MAX_LENGTH" /> znaků</translation>
 <translation id="4973970068702235170">Komprimace se nezdařila, neočekávaná chyba: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japonština</translation>
+<translation id="4987699874727873250">Angličtina (Indie)‎</translation>
 <translation id="4988205478593450158">Opravdu soubor <ph name="FILE_NAME" /> chcete odstranit?</translation>
 <translation id="498902553138568924">Červený motýl</translation>
 <translation id="4992066212339426712">Zapnout zvuk</translation>
@@ -785,6 +791,7 @@
 <translation id="7458955835361612701">Žádné nedávné obrázky</translation>
 <translation id="7460898608667578234">ukrajinština</translation>
 <translation id="7469894403370665791">Automaticky připojit k této síti</translation>
+<translation id="7481358317100446445">Připraveno</translation>
 <translation id="7486315294984620427">Pokud chcete soubor přetáhnout do nástroje Parallels Desktop, musíte ho zkopírovat mezi soubory systému Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">malajálamština (fonetická)</translation>
@@ -810,6 +817,7 @@
 <translation id="7655441028674523381">Snadný přístup k Fotkám Google</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7663224033570512922">hindština</translation>
+<translation id="7665680517722058469">Zkuste vyhledat něco jiného</translation>
 <translation id="7689532716264131859">Položky (<ph name="NUMBER_OF_ITEMS" />) byly přesunuty do koše</translation>
 <translation id="7693909743393669729">Naformátováním jednotky smažete všechna na ní uložená data a odstraníte všechny stávající oddíly (včetně neviditelných). Tuto akci nelze vrátit zpět.</translation>
 <translation id="7695430100978772476">Disk <ph name="DRIVE_NAME" /> se nepodařilo naformátovat</translation>
@@ -897,6 +905,7 @@
 <translation id="8300849813060516376">Selhání OTASP</translation>
 <translation id="8312871300878166382">Vložit do složky</translation>
 <translation id="8329978297633540474">Prostý text</translation>
+<translation id="8332007959299458842">Nedávno otevřené soubory Microsoft byly přesunuty na Disk Google</translation>
 <translation id="8335587457941836791">Uvolnit z poličky</translation>
 <translation id="8335837413233998004">běloruština</translation>
 <translation id="8336153091935557858">Včera <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -966,6 +975,7 @@
 <translation id="8866284467018526531">arabština (přepis)</translation>
 <translation id="8873014196523807561">Pokud tyto položky chcete obnovit, přetáhněte je do nové složky. Původní složky některých z těchto položek byly smazány.</translation>
 <translation id="8874184842967597500">Nepřipojeno</translation>
+<translation id="8876368061475701452">Ve frontě</translation>
 <translation id="8900820606136623064">maďarština</translation>
 <translation id="8903931173357132290">Absolvent</translation>
 <translation id="8912078710089354287">Pes vrtící ocasem</translation>

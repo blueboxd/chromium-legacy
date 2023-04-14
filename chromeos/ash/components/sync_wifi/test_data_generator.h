@@ -11,12 +11,8 @@ namespace ash::sync_wifi {
 
 class NetworkIdentifier;
 
-// Creates a NetworkIdentifier with PSK security for a hex-encoded |ssid|.
+//  Creates a NetworkIdentifier with PSK security for the given |ssid|.
 NetworkIdentifier GeneratePskNetworkId(const std::string& ssid);
-
-// Creates a NetworkIdentifier with PSK security for a |ssid|. By removing the
-// hexencoding, we can test for invalid hex strings.
-NetworkIdentifier GenerateInvalidPskNetworkId(const std::string& ssid);
 
 // Creates a proto with default values and sets the hex_ssid and security_type
 // based on the input |id|.

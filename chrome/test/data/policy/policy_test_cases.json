@@ -2732,6 +2732,50 @@
       }
     ]
   },
+  "EnforceLocalAnchorConstraintsEnabled": {
+    "os": [
+      "win",
+      "mac",
+      "linux",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "android"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Policy not set. (The actual value isn't used as long as the pref is unmanaged.)",
+        "policies": {},
+        "prefs": {
+          "enforce_local_anchor_constraints_enabled": {
+            "location": "local_state",
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "EnforceLocalAnchorConstraintsEnabled": false
+        },
+        "prefs": {
+          "enforce_local_anchor_constraints_enabled": {
+            "location": "local_state",
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": {
+          "EnforceLocalAnchorConstraintsEnabled": true
+        },
+        "prefs": {
+          "enforce_local_anchor_constraints_enabled": {
+            "location": "local_state",
+            "value": true
+          }
+        }
+      }
+    ]
+  },
   "AuthSchemes": {
     "os": [
       "win",
@@ -3862,7 +3906,7 @@
       "linux",
       "mac",
       "chromeos_ash",
-      "crhomeos_lacros",
+      "chromeos_lacros",
       "fuchsia"
     ],
     "policy_pref_mapping_tests": [
@@ -3930,6 +3974,81 @@
           "extensions.manifest_v2": {
             "location": "signin_profile",
             "value": 1
+          }
+        }
+      }
+    ]
+  },
+  "ExtensionUnpublishedAvailability": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {
+          "ExtensionUnpublishedAvailability": 0
+        },
+        "prefs": {
+          "extensions.unpublished_availability": {
+            "value": 0
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExtensionUnpublishedAvailability": 1
+        },
+        "prefs": {
+          "extensions.unpublished_availability": {
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "extensions.unpublished_availability": {
+            "default_value": 0
+          }
+        }
+      }
+    ]
+  },
+  "ExtensionExtendedBackgroundLifetimeForPortConnectionsToUrls": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "extensions.extended_background_lifetime_urls": {
+            "default_value": []
+          }
+        }
+      },
+      {
+        "policies": {
+          "ExtensionExtendedBackgroundLifetimeForPortConnectionsToUrls": [
+            "chrome-extension://abcdefghijklmnopabcdefghijklmnop/",
+            "chrome-extension://bcdefghijklmnopabcdefghijklmnopa/"
+          ]
+        },
+        "prefs": {
+          "extensions.extended_background_lifetime_urls": {
+            "value": [
+              "chrome-extension://abcdefghijklmnopabcdefghijklmnop/",
+              "chrome-extension://bcdefghijklmnopabcdefghijklmnopa/"
+            ]
           }
         }
       }
@@ -4131,7 +4250,47 @@
     ]
   },
   "HeadlessMode": {
-    "reason_for_missing_test": "TODO(crbug.com/1213429) add test case"
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros",
+      "fuchsia"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "headless.mode": {
+            "location": "local_state",
+            "default_value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "HeadlessMode": 1
+        },
+        "prefs": {
+          "headless.mode": {
+            "location": "local_state",
+            "value": 1
+          }
+        }
+      },
+      {
+        "policies": {
+          "HeadlessMode": 2
+        },
+        "prefs": {
+          "headless.mode": {
+            "location": "local_state",
+            "value": 2
+          }
+        }
+      }
+    ]
   },
   "RestoreOnStartup": {
     "os": [
@@ -7227,7 +7386,8 @@
       "win",
       "linux",
       "mac",
-      "fuchsia"
+      "fuchsia",
+      "android"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -13212,6 +13372,12 @@
   "LogUploadEnabled": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
+  "DeviceActivityHeartbeatEnabled": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
+  "DeviceActivityHeartbeatCollectionRateMs": {
+    "reason_for_missing_test": "Maps into CrosSettings"
+  },
   "EnableDeviceGranularReporting": {
     "reason_for_missing_test": "Maps into CrosSettings"
   },
@@ -13402,7 +13568,7 @@
     "reason_for_missing_test": "Chrome OS device policy used by update_engine only, not used in Chrome."
   },
   "ReportDeviceLocation": {
-    "reason_for_missing_test": "Maps into CrosSettings"
+    "reason_for_missing_test": "Policy Removed"
   },
   "SystemTimezone": {
     "reason_for_missing_test": "Maps into CrosSettings"
@@ -19268,6 +19434,35 @@
       }
     ]
   },
+  "ChromeAppsWebViewPermissiveBehaviorAllowed": {
+    "os": ["win", "linux", "mac", "chromeos_ash", "chromeos_lacros", "fuchsia"],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": { "ChromeAppsWebViewPermissiveBehaviorAllowed": false },
+        "prefs": {
+          "extensions.webview_permissive_behavior": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "ChromeAppsWebViewPermissiveBehaviorAllowed": true },
+        "prefs": {
+          "extensions.webview_permissive_behavior": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "extensions.webview_permissive_behavior": {
+            "default_value": false
+          }
+        }
+      }
+    ]
+  },
   "FullRestoreEnabled": {
     "os": [
       "chromeos_ash"
@@ -20806,41 +21001,7 @@
     ]
   },
   "WebSQLNonSecureContextEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.web_sql_non_secure_context_enabled": {
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": { "WebSQLNonSecureContextEnabled": false },
-        "prefs": {
-          "policy.web_sql_non_secure_context_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "WebSQLNonSecureContextEnabled": true },
-        "prefs": {
-          "policy.web_sql_non_secure_context_enabled": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "IdleTimeout": {
     "os": [
@@ -20961,41 +21122,7 @@
     "reason_for_missing_test": "Policy was removed"
   },
   "PrefixedStorageInfoEnabled": {
-    "os": [
-      "win",
-      "linux",
-      "mac",
-      "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
-    ],
-    "policy_pref_mapping_tests": [
-      {
-        "policies": {},
-        "prefs": {
-          "policy.prefixed_storage_info_enabled": {
-            "default_value": false
-          }
-        }
-      },
-      {
-        "policies": { "PrefixedStorageInfoEnabled": false },
-        "prefs": {
-          "policy.prefixed_storage_info_enabled": {
-            "value": false
-          }
-        }
-      },
-      {
-        "policies": { "PrefixedStorageInfoEnabled": true },
-        "prefs": {
-          "policy.prefixed_storage_info_enabled": {
-            "value": true
-          }
-        }
-      }
-    ]
+    "reason_for_missing_test": "Policy was removed"
   },
   "HighEfficiencyModeEnabled": {
     "os": [
@@ -22008,5 +22135,48 @@
   },
   "MixedContentAutoupgradeEnabled": {
     "reason_for_missing_test": "Policy only available on iOS"
+  },
+  "WallpaperGooglePhotosIntegrationEnabled": {
+    "reason_for_missing_test": "TODO(b/269142637): Feature not yet implemented"
+  },
+  "WebRtcTextLogCollectionAllowed": {
+    "os": [
+      "win",
+      "linux",
+      "mac",
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "note": "Check default value (no policy set)",
+        "policies": {},
+        "prefs": {
+          "webrtc.text_log_collection_allowed": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "WebRtcTextLogCollectionAllowed": true
+        },
+        "prefs": {
+          "webrtc.text_log_collection_allowed": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "WebRtcTextLogCollectionAllowed": false
+        },
+        "prefs": {
+          "webrtc.text_log_collection_allowed": {
+            "value": false
+          }
+        }
+      }
+    ]
   }
 }

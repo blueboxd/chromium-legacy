@@ -18,9 +18,21 @@ crosapi::mojom::LacrosFeedbackSource ToMojoLacrosFeedbackSource(
       return crosapi::mojom::LacrosFeedbackSource::kLacrosBrowserCommand;
     case kFeedbackSourceMdSettingsAboutPage:
       return crosapi::mojom::LacrosFeedbackSource::kLacrosSettingsAboutPage;
+    case kFeedbackSourceAutofillContextMenu:
+      return crosapi::mojom::LacrosFeedbackSource::kLacrosAutofillContextMenu;
+    case kFeedbackSourceSadTabPage:
+      return crosapi::mojom::LacrosFeedbackSource::kLacrosSadTabPage;
+    case kFeedbackSourceChromeLabs:
+      return crosapi::mojom::LacrosFeedbackSource::kLacrosChromeLabs;
+    case kFeedbackSourceQuickAnswers:
+      return crosapi::mojom::LacrosFeedbackSource::kLacrosQuickAnswers;
+    case kFeedbackSourceWindowLayoutMenu:
+      return crosapi::mojom::LacrosFeedbackSource::kLacrosWindowLayoutMenu;
     default:
-      NOTREACHED() << "ShowFeedbackPage is called by unknown Lacros source";
-      return crosapi::mojom::LacrosFeedbackSource::kLacrosBrowserCommand;
+      LOG(ERROR) << "ShowFeedbackPage is called by unknown Lacros source: "
+                 << static_cast<int>(source);
+      NOTREACHED();
+      return crosapi::mojom::LacrosFeedbackSource::kUnknown;
   }
 }
 
@@ -30,7 +42,8 @@ crosapi::mojom::FeedbackInfoPtr ToMojoFeedbackInfo(
     const std::string& description_template,
     const std::string& description_placeholder_text,
     const std::string& category_tag,
-    const std::string& extra_diagnostics) {
+    const std::string& extra_diagnostics,
+    base::Value::Dict autofill_metadata) {
   auto mojo_feedback = crosapi::mojom::FeedbackInfo::New();
   mojo_feedback->page_url = page_url;
   mojo_feedback->source = ToMojoLacrosFeedbackSource(source);
@@ -38,6 +51,7 @@ crosapi::mojom::FeedbackInfoPtr ToMojoFeedbackInfo(
   mojo_feedback->description_placeholder_text = description_placeholder_text;
   mojo_feedback->category_tag = category_tag;
   mojo_feedback->extra_diagnostics = extra_diagnostics;
+  mojo_feedback->autofill_metadata = base::Value(std::move(autofill_metadata));
   return mojo_feedback;
 }
 
@@ -50,12 +64,13 @@ void ShowFeedbackPageLacros(const GURL& page_url,
                             const std::string& description_template,
                             const std::string& description_placeholder_text,
                             const std::string& category_tag,
-                            const std::string& extra_diagnostics) {
+                            const std::string& extra_diagnostics,
+                            base::Value::Dict autofill_metadata) {
   chromeos::LacrosService::Get()
       ->GetRemote<crosapi::mojom::Feedback>()
       ->ShowFeedbackPage(ToMojoFeedbackInfo(
           page_url, source, description_template, description_placeholder_text,
-          category_tag, extra_diagnostics));
+          category_tag, extra_diagnostics, std::move(autofill_metadata)));
 }
 
 }  // namespace internal

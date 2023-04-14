@@ -201,7 +201,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             new ObservableSupplierImpl<>();
     private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
     private final ConstraintsProxy mConstraintsProxy = new ConstraintsProxy();
-
     private ObservableSupplierImpl<BottomControlsCoordinator> mBottomControlsCoordinatorSupplier =
             new ObservableSupplierImpl<>();
     private TabModelSelector mTabModelSelector;
@@ -212,6 +211,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final LocationBarModel mLocationBarModel;
     private ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private final Callback<BookmarkModel> mBookmarkModelSupplierObserver;
+    private TemplateUrlService mTemplateUrlService;
     private TemplateUrlServiceObserver mTemplateUrlObserver;
     private LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
@@ -555,7 +555,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     return profile != null ? TrackerFactory.getTrackerForProfile(profile) : null;
                 },
                 mBottomControlsCoordinatorSupplier, ToolbarManager::homepageUrl,
-                this::updateButtonStatus);
+                this::updateButtonStatus, mActivityTabProvider);
         // clang-format on
         if (backPressManager != null && BackPressManager.isEnabled()) {
             backPressManager.addHandler(this, BackPressHandler.Type.TAB_HISTORY);
@@ -843,11 +843,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             }
 
             @Override
-            public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void onNavigationEntriesDeleted(Tab tab) {
                 if (tab == mLocationBarModel.getTab()) {
                     updateButtonStatus();
@@ -1028,6 +1023,15 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mStartSurface.addHeaderOffsetChangeListener(mStartSurfaceHeaderOffsetChangeListener);
         }));
 
+        Callback<Profile> profileObserver = new Callback<Profile>() {
+            @Override
+            public void onResult(Profile profile) {
+                mTemplateUrlService = TemplateUrlServiceFactory.getForProfile(profile);
+                mTemplateUrlService.runWhenLoaded(ToolbarManager.this::registerTemplateUrlObserver);
+                profileSupplier.removeObserver(this);
+            }
+        };
+        profileSupplier.addObserver(profileObserver);
         TraceEvent.end("ToolbarManager.ToolbarManager");
     }
 
@@ -1373,7 +1377,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             UpdateMenuItemHelper.getInstance().registerObserver(mStartSurfaceMenuStateObserver);
         }
 
-        TemplateUrlServiceFactory.get().runWhenLoaded(this::registerTemplateUrlObserver);
         mInitializedWithNative = true;
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
         refreshSelectedTab(mActivityTabProvider.get());
@@ -1487,7 +1490,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mBookmarkModelSupplier = null;
         }
         if (mTemplateUrlObserver != null) {
-            TemplateUrlServiceFactory.get().removeObserver(mTemplateUrlObserver);
+            mTemplateUrlService.removeObserver(mTemplateUrlObserver);
             mTemplateUrlObserver = null;
         }
         if (mLayoutStateProvider != null) {
@@ -1627,15 +1630,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     private void registerTemplateUrlObserver() {
-        final TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
         assert mTemplateUrlObserver == null;
         mTemplateUrlObserver = new TemplateUrlServiceObserver() {
             private TemplateUrl mSearchEngine =
-                    templateUrlService.getDefaultSearchEngineTemplateUrl();
+                    mTemplateUrlService.getDefaultSearchEngineTemplateUrl();
 
             @Override
             public void onTemplateURLServiceChanged() {
-                TemplateUrl searchEngine = templateUrlService.getDefaultSearchEngineTemplateUrl();
+                TemplateUrl searchEngine = mTemplateUrlService.getDefaultSearchEngineTemplateUrl();
                 if ((mSearchEngine == null && searchEngine == null)
                         || (mSearchEngine != null && mSearchEngine.equals(searchEngine))) {
                     return;
@@ -1645,7 +1647,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 mToolbar.onDefaultSearchEngineChanged();
             }
         };
-        templateUrlService.addObserver(mTemplateUrlObserver);
+        mTemplateUrlService.addObserver(mTemplateUrlObserver);
     }
 
     private void handleTabRestoreCompleted() {
@@ -2124,12 +2126,16 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     public void handleBackPress() {
         boolean ret = back();
         if (!ret) {
-            var bc = mBottomControlsCoordinatorSupplier.get();
+            var bc = mBottomControlsCoordinatorSupplier != null
+                    ? mBottomControlsCoordinatorSupplier.get()
+                    : null;
             var tab = mActivityTabProvider.get();
+            var t2 = mTabModelSelector != null ? mTabModelSelector.getCurrentTab() : null;
             var msg = String.format(
-                    "Bottom control %s, back press state %s; tab %s, back press state %s", bc,
+                    "BottomCtrl %s %s; actTab %s, urlBarTab %s, sTab %s, init %s, destroy %s", bc,
                     bc != null && Boolean.TRUE.equals(bc.getHandleBackPressChangedSupplier().get()),
-                    tab, mBackPressStateSupplier.get());
+                    tab, mLocationBarModel.getTab(), t2, tab != null && tab.isInitialized(),
+                    tab != null && tab.isDestroyed());
             assert false : msg;
         }
     }

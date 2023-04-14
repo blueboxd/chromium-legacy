@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Rechtstreekse internetverbinding</translation>
 <translation id="1272293450992660632">Pincodewaarden komen niet overeen.</translation>
 <translation id="1280820357415527819">Mobiele netwerken zoeken</translation>
-<translation id="1291603679744561561">Simkaart vergrendeld</translation>
 <translation id="1293556467332435079">Bestanden</translation>
 <translation id="1297922636971898492">Google Drive is momenteel niet beschikbaar. Het uploaden wordt automatisch gestart zodra Google Drive weer beschikbaar is.</translation>
 <translation id="1307931752636661898">Kan Linux-bestanden niet bekijken</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Als je bestanden wilt neerzetten in Parallels Desktop, moet het bestand worden verplaatst naar de map met Windows-bestanden.</translation>
 <translation id="1435838927755162558">Map delen met Parallels Desktop</translation>
 <translation id="1439919885608649279">Persoon met bloemen</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> verwijderen</translation>
 <translation id="1471718551822868769">Slowaaks</translation>
 <translation id="1482884275703521657">Fins</translation>
 <translation id="148466539719134488">Zwitsers</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 map gedeeld met Bruschetta</translation>
 <translation id="2578394532502990878">Tamil (fonetisch)</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2587195714949534472">Synchronisatie van <ph name="FILE_NAME" /> voorbereiden...</translation>
 <translation id="2602810353103180630">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, geblokkeerd door je beheerder, details</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" />-video</translation>
 <translation id="2620090360073999360">Kan Google Drive momenteel niet bereiken.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongools</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> fouten.</translation>
 <translation id="3509680540198371098">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, details</translation>
+<translation id="3511705761158917664">Synchronisatie van <ph name="NUMBER_OF_ITEMS" /> items voorbereiden...</translation>
 <translation id="3522708245912499433">Portugees</translation>
 <translation id="3524311639100184459">Let op: Deze bestanden zijn tijdelijk en kunnen automatisch worden verwijderd om schijfruimte vrij te maken.  <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Map</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Plak</translation>
 <translation id="3952872973865944257">Telugu (fonetisch)</translation>
+<translation id="3954354850384043518">In behandeling</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Mobiel profiel downloaden, netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Engels (VK)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Aangepaste naamservers</translation>
 <translation id="4465725236958772856">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, beheerd door je beheerder, verbinden</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Geen overeenkomende resultaten</translation>
 <translation id="4477002475007461989">Roemeens</translation>
 <translation id="4477219268485577442">Bulgaars fonetisch</translation>
 <translation id="4508265954913339219">Activering mislukt</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Gebruik een naam die maximaal <ph name="MAX_LENGTH" /> tekens bevat</translation>
 <translation id="4973970068702235170">Inpakken mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japans</translation>
+<translation id="4987699874727873250">Engels (India)</translation>
 <translation id="4988205478593450158">Weet je zeker dat je '<ph name="FILE_NAME" />' wilt verwijderen?</translation>
 <translation id="498902553138568924">Rode vlinder</translation>
 <translation id="4992066212339426712">Geluid aanzetten</translation>
@@ -787,6 +792,7 @@
 <translation id="7458955835361612701">Geen recente afbeeldingen</translation>
 <translation id="7460898608667578234">Oekraïens</translation>
 <translation id="7469894403370665791">Automatisch verbinding maken met dit netwerk</translation>
+<translation id="7481358317100446445">Klaar</translation>
 <translation id="7486315294984620427">Als je bestanden wilt neerzetten in Parallels Desktop, moet het bestand worden gekopieerd naar de map met Windows-bestanden.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam (fonetisch)</translation>
@@ -812,6 +818,7 @@
 <translation id="7655441028674523381">Krijg makkelijk toegang tot Google Foto's</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Probeer een andere zoekopdracht</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> items naar de prullenbak verplaatst</translation>
 <translation id="7693909743393669729">Tijdens het formatteren van een schijf worden alle opgeslagen gegevens en alle bestaande partities verwijderd, inclusief partities die mogelijk niet zichtbaar zijn. Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="7695430100978772476">Formatteren van <ph name="DRIVE_NAME" /> is mislukt</translation>
@@ -968,6 +975,7 @@
 <translation id="8866284467018526531">Arabisch (transliteratie)</translation>
 <translation id="8873014196523807561">Als je deze items wilt herstellen, sleep je ze naar een nieuwe map. De oorspronkelijke mappen voor sommige van deze items zijn verwijderd.</translation>
 <translation id="8874184842967597500">Niet verbonden</translation>
+<translation id="8876368061475701452">In wachtrij</translation>
 <translation id="8900820606136623064">Hongaars</translation>
 <translation id="8903931173357132290">Afgestudeerde</translation>
 <translation id="8912078710089354287">Hond die kwispelt</translation>

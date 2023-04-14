@@ -51,6 +51,7 @@ class OverviewItem;
 class OverviewWindowDragController;
 class SavedDeskDialogController;
 class SavedDeskPresenter;
+class ScopedFloatContainerStacker;
 
 // The Overview shows a grid of all of your windows, allowing to select
 // one by clicking or tapping on it.
@@ -307,6 +308,9 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // True if the saved desk library will be shown shortly.
   bool WillShowSavedDeskLibrary() const;
 
+  // True if we want to enter overview without animations.
+  bool ShouldEnterWithoutAnimations() const;
+
   // Updates the focusable overview widgets so that they point to the correct
   // next and previous widgets for a11y purposes. Needs to be updated when a
   // piece of UI is shown or hidden.
@@ -388,6 +392,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   SavedDeskDialogController* saved_desk_dialog_controller() {
     return saved_desk_dialog_controller_.get();
+  }
+
+  ScopedFloatContainerStacker* float_container_stacker() {
+    return float_container_stacker_.get();
   }
 
   void set_auto_add_windows_enabled(bool enabled) {
@@ -501,6 +509,11 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Controls showing and hiding dialogs associated with the saved desks
   // feature.
   std::unique_ptr<SavedDeskDialogController> saved_desk_dialog_controller_;
+
+  // Scoped object which handles stacking the float container while inside
+  // overview so it can appear under regular windows during several operations,
+  // such as scrolling and dragging.
+  std::unique_ptr<ScopedFloatContainerStacker> float_container_stacker_;
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 

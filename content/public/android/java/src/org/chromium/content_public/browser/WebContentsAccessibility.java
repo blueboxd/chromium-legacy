@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 package org.chromium.content_public.browser;
 
-import android.os.Bundle;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewStructure;
@@ -27,13 +26,6 @@ public interface WebContentsAccessibility {
     static WebContentsAccessibility fromWebContents(WebContents webContents) {
         return WebContentsAccessibilityImpl.fromWebContents(webContents);
     }
-
-    /**
-     * Determines whether or not the given accessibility action can be handled.
-     * @param action The action to perform.
-     * @return Whether or not this action is supported.
-     */
-    boolean supportsAction(int action);
 
     /**
      *  Determines if a11y enabled.
@@ -60,18 +52,6 @@ public interface WebContentsAccessibility {
     void addSpellingErrorForTesting(int virtualViewId, int startOffset, int endOffset);
 
     /**
-     * Attempts to perform an accessibility action on the web content.  If the accessibility action
-     * cannot be processed, it returns {@code null}, allowing the caller to know to call the
-     * super {@link View#performAccessibilityAction(int, Bundle)} method and use that return value.
-     * Otherwise the return value from this method should be used.
-     * @param action The action to perform.
-     * @param arguments Optional action arguments.
-     * @return Whether the action was performed or {@code null} if the call should be delegated to
-     *         the super {@link View} class.
-     */
-    boolean performAction(int action, Bundle arguments);
-
-    /**
      * If native accessibility is enabled and no other views are temporarily
      * obscuring this one, returns an AccessibilityNodeProvider that
      * implements native accessibility for this view. Returns null otherwise.
@@ -91,14 +71,6 @@ public interface WebContentsAccessibility {
      * to touch exploration events.
      */
     void setObscuredByAnotherView(boolean isObscured);
-
-    /**
-     * Turns browser accessibility on or off.
-     * If |state| is |false|, this turns off both native and injected accessibility.
-     * Otherwise, if accessibility script injection is enabled, this will enable the injected
-     * accessibility scripts. Native accessibility is enabled on demand.
-     */
-    void setState(boolean state);
 
     /**
      * Sets whether or not we should set accessibility focus on page load.
@@ -141,4 +113,10 @@ public interface WebContentsAccessibility {
      * Called to reset focus state to nothing.
      */
     void resetFocus();
+
+    /**
+     * Set the a11y focus to the DOM element that had it just before the focus
+     * gets out WebContents, e.g. by focusing a native view node.
+     */
+    void restoreFocus();
 }

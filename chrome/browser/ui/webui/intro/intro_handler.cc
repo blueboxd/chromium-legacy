@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/intro/intro_handler.h"
+
 #include "base/cancelable_callback.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -13,9 +14,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/ui/managed_ui.h"
+#include "chrome/browser/ui/webui/intro/intro_ui.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/core/common/cloud/machine_level_user_cloud_policy_manager.h"
+#include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {
@@ -41,7 +44,9 @@ enum class PolicyStoreState {
   kTimeout = 2,
   // OnStoreError called.
   kStoreError = 3,
-  kMaxValue = kStoreError,
+  // Store is null for a managed device.
+  kStoreNull = 4,
+  kMaxValue = kStoreNull,
 };
 
 void RecordDisclaimerMetrics(PolicyStoreState state,
@@ -65,6 +70,17 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
 
     // Update the disclaimer directly if the policy store is already loaded.
     auto* policy_store = GetCloudPolicyStore();
+
+    // GetCloudPolicyStore will return nullptr for managed devices with
+    // non-branded builds because the machine level cloud policy manager will be
+    // null while the device is still managed. In that case, we show a generic
+    // disclaimer.
+    if (!policy_store) {
+      // The device is not enrolled in Chrome Browser Cloud Management
+      HandlePolicyStoreStatusChange(PolicyStoreState::kStoreNull);
+      return;
+    }
+
     if (policy_store->is_initialized()) {
       HandlePolicyStoreStatusChange(PolicyStoreState::kSuccessAlreadyLoaded);
       return;
@@ -109,8 +125,11 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
     std::string managed_device_disclaimer;
     if (state == PolicyStoreState::kSuccess ||
         state == PolicyStoreState::kSuccessAlreadyLoaded) {
-      absl::optional<std::string> manager = chrome::GetDeviceManagerIdentity();
-      DCHECK(manager.has_value());
+      // TODO(crbug.com/1409028): Remove `.value_or` when we modify
+      // `GetDeviceManagerIdentity()` to return an empty string instead of a
+      // nullopt when we know that the device is managed.
+      absl::optional<std::string> manager =
+          chrome::GetDeviceManagerIdentity().value_or(std::string());
       managed_device_disclaimer =
           manager->empty()
               ? l10n_util::GetStringUTF8(IDS_FRE_MANAGED_DESCRIPTION)
@@ -134,7 +153,7 @@ class PolicyStoreObserver : public policy::CloudPolicyStore::Observer {
 #endif
 }  // namespace
 
-IntroHandler::IntroHandler(base::RepeatingCallback<void(bool sign_in)> callback,
+IntroHandler::IntroHandler(base::RepeatingCallback<void(IntroChoice)> callback,
                            bool is_device_managed)
     : callback_(std::move(callback)), is_device_managed_(is_device_managed) {
   DCHECK(callback_);
@@ -143,10 +162,12 @@ IntroHandler::IntroHandler(base::RepeatingCallback<void(bool sign_in)> callback,
 IntroHandler::~IntroHandler() = default;
 
 void IntroHandler::RegisterMessages() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   web_ui()->RegisterMessageCallback(
       "continueWithoutAccount",
       base::BindRepeating(&IntroHandler::HandleContinueWithoutAccount,
                           base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback(
       "continueWithAccount",
       base::BindRepeating(&IntroHandler::HandleContinueWithAccount,
@@ -158,10 +179,10 @@ void IntroHandler::RegisterMessages() {
 }
 
 void IntroHandler::OnJavascriptAllowed() {
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   if (!is_device_managed_) {
     return;
   }
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
   policy_store_observer_ = std::make_unique<PolicyStoreObserver>(base::BindOnce(
       &IntroHandler::FireManagedDisclaimerUpdate, base::Unretained(this)));
 #endif
@@ -169,13 +190,21 @@ void IntroHandler::OnJavascriptAllowed() {
 
 void IntroHandler::HandleContinueWithAccount(const base::Value::List& args) {
   CHECK(args.empty());
-  callback_.Run(/*sign_in=*/true);
+  callback_.Run(IntroChoice::kContinueWithAccount);
 }
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 void IntroHandler::HandleContinueWithoutAccount(const base::Value::List& args) {
   CHECK(args.empty());
-  callback_.Run(/*sign_in=*/false);
+  callback_.Run(IntroChoice::kContinueWithoutAccount);
 }
+
+void IntroHandler::ResetIntroButtons() {
+  if (IsJavascriptAllowed()) {
+    FireWebUIListener("reset-intro-buttons");
+  }
+}
+#endif
 
 void IntroHandler::HandleInitializeMainView(const base::Value::List& args) {
   CHECK(args.empty());

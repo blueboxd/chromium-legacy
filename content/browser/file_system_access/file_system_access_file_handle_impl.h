@@ -10,6 +10,7 @@
 #include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
 #include "base/thread_annotations.h"
+#include "build/build_config.h"
 #include "content/browser/file_system_access/file_system_access_handle_base.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/common/content_export.h"
@@ -71,8 +72,26 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
       const base::FilePath& swap_path) {
     return GetSwapURL(swap_path);
   }
+#if BUILDFLAG(IS_MAC)
+  void set_swap_file_cloning_will_fail_for_testing() {
+    swap_file_cloning_will_fail_for_testing_ = true;
+  }
+  bool get_did_attempt_swap_file_cloning_for_testing() const {
+    return did_attempt_swap_file_cloning_for_testing_;
+  }
+  bool get_did_create_cloned_swap_file_for_testing() const {
+    return did_create_cloned_swap_file_for_testing_;
+  }
+#endif  // BUILDFLAG(IS_MAC)
 
  private:
+#if BUILDFLAG(IS_MAC)
+  // Returns whether the swap file is eligible to be created using a
+  // copy-on-write file. This is only relevant on file systems which support
+  // COW, such as APFS.
+  bool CanUseCowSwapFile() const;
+#endif  // BUILDFLAG(IS_MAC)
+
   void DidGetMetaDataForBlob(AsBlobCallback callback,
                              base::File::Error result,
                              const base::File::Info& info);
@@ -91,6 +110,38 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
       bool auto_close,
       scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>,
       CreateFileWriterCallback callback);
+  void CreateEmptySwapFile(
+      int count,
+      const storage::FileSystemURL& swap_url,
+      bool keep_existing_data,
+      bool auto_close,
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>,
+      CreateFileWriterCallback callback);
+#if BUILDFLAG(IS_MAC)
+  // Attempts to create a swap file using the underlying platform's support for
+  // copy-on-write files. This will automatically keep the existing contents of
+  // the source file.
+  void CreateClonedSwapFile(
+      int count,
+      const storage::FileSystemURL& swap_url,
+      bool auto_close,
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock>,
+      CreateFileWriterCallback callback);
+  void DoCloneSwapFile(
+      int count,
+      const storage::FileSystemURL& swap_url,
+      bool auto_close,
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+      CreateFileWriterCallback callback,
+      base::File::Error result);
+  void DidCloneSwapFile(
+      int count,
+      const storage::FileSystemURL& swap_url,
+      bool auto_close,
+      scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
+      CreateFileWriterCallback callback,
+      base::File::Error result);
+#endif  // BUILDFLAG(IS_MAC)
   void DidCreateSwapFile(
       int count,
       const storage::FileSystemURL& swap_url,
@@ -130,6 +181,14 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
   // file is created. This sets the limit on the number of swap files per
   // handle.
   int max_swap_files_ = 100;
+
+#if BUILDFLAG(IS_MAC)
+  // Used to test that swap file creation attempts to use file cloning in some
+  // circumstances, and gracefully handles file cloning errors.
+  bool swap_file_cloning_will_fail_for_testing_ = false;
+  bool did_attempt_swap_file_cloning_for_testing_ = false;
+  bool did_create_cloned_swap_file_for_testing_ = false;
+#endif  // BUILDFLAG(IS_MAC)
 
   base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() override;
 

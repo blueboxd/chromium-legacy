@@ -226,15 +226,12 @@ class CSSSelectorPredicate : public DocumentRulePredicate {
       : style_rules_(std::move(style_rules)) {}
 
   bool Matches(const HTMLAnchorElement& link) const override {
-    // TODO(crbug.com/1371522): We should be able to assert that style is clean
-    // here (i.e. we have computed the latest matched selectors for a link),
-    // otherwise we might be using stale results and preloading extra URLs.
-    // TODO(crbug.com/1371522): We need to deal with "display: none" elements,
-    // they will not have a ComputedStyle (even if style is clean).
+    DCHECK(!link.GetDocument().NeedsLayoutTreeUpdate());
     const ComputedStyle* computed_style = link.GetComputedStyle();
-    if (!computed_style) {
-      return false;
-    }
+    DCHECK(computed_style);
+    // TODO(crbug.com/1371522): If the link has a display-locked ancestor,
+    // it will have a ComputedStyle with a stale list of matched selectors
+    // (styling is skipped but the old ComputedStyle is still kept).
     const Persistent<HeapHashSet<WeakMember<StyleRule>>>& matched_selectors =
         computed_style->DocumentRulesSelectors();
     if (!matched_selectors) {

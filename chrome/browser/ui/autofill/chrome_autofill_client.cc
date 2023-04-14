@@ -28,7 +28,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_promo_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
@@ -161,6 +160,15 @@ ChromeAutofillClient::GetURLLoaderFactory() {
       ->GetURLLoaderFactoryForBrowserProcess();
 }
 
+AutofillDownloadManager* ChromeAutofillClient::GetDownloadManager() {
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
+}
+
 PersonalDataManager* ChromeAutofillClient::GetPersonalDataManager() {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
@@ -193,9 +201,9 @@ MerchantPromoCodeManager* ChromeAutofillClient::GetMerchantPromoCodeManager() {
   return MerchantPromoCodeManagerFactory::GetForProfile(profile);
 }
 
-CreditCardCVCAuthenticator* ChromeAutofillClient::GetCVCAuthenticator() {
+CreditCardCvcAuthenticator* ChromeAutofillClient::GetCvcAuthenticator() {
   if (!cvc_authenticator_)
-    cvc_authenticator_ = std::make_unique<CreditCardCVCAuthenticator>(this);
+    cvc_authenticator_ = std::make_unique<CreditCardCvcAuthenticator>(this);
   return cvc_authenticator_.get();
 }
 
@@ -350,21 +358,35 @@ ChromeAutofillClient::CreateCreditCardInternalAuthenticator(
 #endif
 }
 
-void ChromeAutofillClient::ShowAutofillSettings(
-    bool show_credit_card_settings) {
+void ChromeAutofillClient::ShowAutofillSettings(PopupType popup_type) {
+  DCHECK(popup_type != PopupType::kPasswords);
 #if BUILDFLAG(IS_ANDROID)
-  if (show_credit_card_settings) {
-    ShowAutofillCreditCardSettings(web_contents());
-  } else {
-    ShowAutofillProfileSettings(web_contents());
+  switch (popup_type) {
+    case PopupType::kCreditCards:
+      ShowAutofillCreditCardSettings(web_contents());
+      return;
+    case PopupType::kPersonalInformation:
+    case PopupType::kAddresses:
+      ShowAutofillProfileSettings(web_contents());
+      return;
+    case PopupType::kUnspecified:
+    case PopupType::kPasswords:
+      NOTREACHED();
   }
 #else
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   if (browser) {
-    if (show_credit_card_settings) {
-      chrome::ShowSettingsSubPage(browser, chrome::kPaymentsSubPage);
-    } else {
-      chrome::ShowSettingsSubPage(browser, chrome::kAddressesSubPage);
+    switch (popup_type) {
+      case PopupType::kCreditCards:
+        chrome::ShowSettingsSubPage(browser, chrome::kPaymentsSubPage);
+        return;
+      case PopupType::kPersonalInformation:
+      case PopupType::kAddresses:
+        chrome::ShowSettingsSubPage(browser, chrome::kAddressesSubPage);
+        return;
+      case PopupType::kUnspecified:
+      case PopupType::kPasswords:
+        NOTREACHED();
     }
   }
 #endif  // BUILDFLAG(IS_ANDROID)
@@ -711,13 +733,14 @@ void ChromeAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
                                               std::move(callback));
 }
 
-bool ChromeAutofillClient::TryToShowFastCheckout(const FormData& form,
-                                                 const FormFieldData& field,
-                                                 AutofillDriver* driver) {
+bool ChromeAutofillClient::TryToShowFastCheckout(
+    const FormData& form,
+    const FormFieldData& field,
+    base::WeakPtr<AutofillManager> autofill_manager) {
 #if BUILDFLAG(IS_ANDROID)
   const GURL& url = web_contents()->GetLastCommittedURL();
   return FastCheckoutClient::GetOrCreateForWebContents(web_contents())
-      ->TryToStart(url, form, field, driver);
+      ->TryToStart(url, form, field, autofill_manager);
 #else
   return false;
 #endif
@@ -725,8 +748,10 @@ bool ChromeAutofillClient::TryToShowFastCheckout(const FormData& form,
 
 void ChromeAutofillClient::HideFastCheckout(bool allow_further_runs) {
 #if BUILDFLAG(IS_ANDROID)
-  FastCheckoutClient::GetOrCreateForWebContents(web_contents())
-      ->Stop(/*allow_further_runs=*/allow_further_runs);
+  if (IsShowingFastCheckoutUI()) {
+    FastCheckoutClient::GetOrCreateForWebContents(web_contents())
+        ->Stop(/*allow_further_runs=*/allow_further_runs);
+  }
 #endif
 }
 
@@ -816,10 +841,9 @@ void ChromeAutofillClient::UpdateAutofillPopupDataListValues(
     popup_controller_->UpdateDataListValues(values, labels);
 }
 
-base::span<const Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
-  if (!popup_controller_.get())
-    return base::span<const Suggestion>();
-  return popup_controller_->GetUnelidedSuggestions();
+std::vector<Suggestion> ChromeAutofillClient::GetPopupSuggestions() const {
+  return popup_controller_ ? popup_controller_->GetSuggestions()
+                           : std::vector<Suggestion>();
 }
 
 void ChromeAutofillClient::PinPopupView() {
@@ -1015,15 +1039,6 @@ bool ChromeAutofillClient::IsContextSecure() const {
          security_level != security_state::DANGEROUS;
 }
 
-bool ChromeAutofillClient::ShouldShowSigninPromo() {
-#if !BUILDFLAG(IS_ANDROID)
-  return false;
-#else
-  return signin::ShouldShowPromo(
-      Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
-#endif
-}
-
 void ChromeAutofillClient::ExecuteCommand(int id) {
 #if BUILDFLAG(IS_ANDROID)
   if (id == POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO) {
@@ -1096,7 +1111,8 @@ void ChromeAutofillClient::OnWebContentsFocused(
 }
 
 #if !BUILDFLAG(IS_ANDROID)
-void ChromeAutofillClient::OnZoomControllerDestroyed() {
+void ChromeAutofillClient::OnZoomControllerDestroyed(
+    zoom::ZoomController* source) {
   zoom_observation_.Reset();
 }
 

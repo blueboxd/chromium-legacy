@@ -74,20 +74,6 @@ if (safe_browsing_mode == 1) {
       "//third_party/unrar:unrar",
     ]
 
-    defines = [
-      "_FILE_OFFSET_BITS=64",
-      "LARGEFILE_SOURCE",
-      "RAR_SMP",
-      "SILENT",
-
-      # The following is set to disable certain macro definitions in the unrar
-      # source code.
-      "CHROMIUM_UNRAR",
-
-      # Disables exceptions in unrar, replaces them with process termination.
-      "UNRAR_NO_EXCEPTIONS",
-    ]
-
     public_deps = [ "//components/safe_browsing/core/common/proto:csd_proto" ]
   }
 
@@ -105,11 +91,6 @@ if (safe_browsing_mode == 1) {
         "//components/safe_browsing/content/common:file_type_policies",
         "//components/safe_browsing/core/common",
         "//third_party/maldoca:maldoca",
-      ]
-
-      defines = [
-        "MALDOCA_IN_CHROMIUM",
-        "MALDOCA_CHROME",
       ]
 
       public_deps = [ "//components/safe_browsing/core/common/proto:csd_proto" ]

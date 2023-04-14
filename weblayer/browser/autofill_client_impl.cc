@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "content/public/browser/browser_context.h"
@@ -31,6 +32,15 @@ AutofillClientImpl::GetURLLoaderFactory() {
       ->GetBrowserContext()
       ->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
+}
+
+autofill::AutofillDownloadManager* AutofillClientImpl::GetDownloadManager() {
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<autofill::AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
 }
 
 autofill::PersonalDataManager* AutofillClientImpl::GetPersonalDataManager() {
@@ -122,7 +132,7 @@ translate::TranslateDriver* AutofillClientImpl::GetTranslateDriver() {
   return nullptr;
 }
 
-void AutofillClientImpl::ShowAutofillSettings(bool show_credit_card_settings) {
+void AutofillClientImpl::ShowAutofillSettings(autofill::PopupType popup_type) {
   NOTREACHED();
 }
 
@@ -265,7 +275,7 @@ bool AutofillClientImpl::IsFastCheckoutSupported() {
 bool AutofillClientImpl::TryToShowFastCheckout(
     const autofill::FormData& form,
     const autofill::FormFieldData& field,
-    autofill::AutofillDriver* driver) {
+    base::WeakPtr<autofill::AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -309,10 +319,10 @@ void AutofillClientImpl::HideAutofillPopup(autofill::PopupHidingReason reason) {
   // take.
 }
 
-base::span<const autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
+std::vector<autofill::Suggestion> AutofillClientImpl::GetPopupSuggestions()
     const {
   NOTIMPLEMENTED();
-  return base::span<const autofill::Suggestion>();
+  return {};
 }
 
 void AutofillClientImpl::PinPopupView() {
@@ -356,11 +366,6 @@ void AutofillClientImpl::DidFillOrPreviewField(
 }
 
 bool AutofillClientImpl::IsContextSecure() const {
-  NOTREACHED();
-  return false;
-}
-
-bool AutofillClientImpl::ShouldShowSigninPromo() {
   NOTREACHED();
   return false;
 }

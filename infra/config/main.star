@@ -25,6 +25,7 @@ lucicfg.config(
         "cq-builders.md",
         "cq-usage/default.cfg",
         "cq-usage/full.cfg",
+        "health-specs/health-specs.json",
         "luci/commit-queue.cfg",
         "luci/cr-buildbucket.cfg",
         "luci/luci-analysis.cfg",
@@ -202,6 +203,7 @@ exec("//notifiers.star")
 
 exec("//subprojects/chromium/subproject.star")
 exec("//subprojects/chrome/subproject.star")
+exec("//subprojects/crossbench/subproject.star")
 branches.exec("//subprojects/codesearch/subproject.star")
 branches.exec("//subprojects/findit/subproject.star")
 branches.exec("//subprojects/flakiness/subproject.star")

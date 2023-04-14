@@ -367,6 +367,9 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
     return true;
   }
 
+  if (old_style->TopLayer() != new_style->TopLayer()) {
+    return true;
+  }
   return false;
 }
 
@@ -424,6 +427,10 @@ ComputedStyle::ComputeDifferenceIgnoringInheritedFirstLineStyle(
     return Difference::kInherited;
   }
   if (old_style.JustifyItems() != new_style.JustifyItems()) {
+    return Difference::kInherited;
+  }
+  if (old_style.AppliedTextDecorations() !=
+      new_style.AppliedTextDecorations()) {
     return Difference::kInherited;
   }
   bool non_inherited_equal = old_style.NonInheritedEqual(new_style);
@@ -1498,11 +1505,7 @@ bool ComputedStyle::TextShadowDataEquivalent(const ComputedStyle& other) const {
 }
 
 bool ComputedStyle::CanRenderBorderImage() const {
-  if (!HasBorderDecoration()) {
-    return false;
-  }
-
-  StyleImage* border_image = BorderImage().GetImage();
+  const StyleImage* border_image = BorderImage().GetImage();
   return border_image && border_image->CanRender() && border_image->IsLoaded();
 }
 
@@ -1816,9 +1819,9 @@ FontHeight ComputedStyle::GetFontHeight(FontBaseline baseline) const {
 
 bool ComputedStyle::TextDecorationVisualOverflowEqual(
     const ComputedStyle& o) const {
-  const Vector<AppliedTextDecoration>& applied_with_this =
+  const Vector<AppliedTextDecoration, 1>& applied_with_this =
       AppliedTextDecorations();
-  const Vector<AppliedTextDecoration>& applied_with_other =
+  const Vector<AppliedTextDecoration, 1>& applied_with_other =
       o.AppliedTextDecorations();
   if (applied_with_this.size() != applied_with_other.size()) {
     return false;
@@ -1837,7 +1840,7 @@ bool ComputedStyle::TextDecorationVisualOverflowEqual(
       return false;
     }
   }
-  if (TextUnderlinePosition() != o.TextUnderlinePosition()) {
+  if (GetTextUnderlinePosition() != o.GetTextUnderlinePosition()) {
     return false;
   }
 
@@ -1845,45 +1848,54 @@ bool ComputedStyle::TextDecorationVisualOverflowEqual(
 }
 
 TextDecorationLine ComputedStyle::TextDecorationsInEffect() const {
-  if (HasSimpleUnderlineInternal()) {
-    return TextDecorationLine::kUnderline;
+  TextDecorationLine decorations = GetTextDecorationLine();
+  if (const auto& base_decorations = BaseTextDecorationDataInternal()) {
+    for (const AppliedTextDecoration& decoration : base_decorations->data) {
+      decorations |= decoration.Lines();
+    }
   }
-  if (!AppliedTextDecorationsInternal()) {
-    return TextDecorationLine::kNone;
-  }
-
-  TextDecorationLine decorations = TextDecorationLine::kNone;
-
-  const Vector<AppliedTextDecoration>& applied = AppliedTextDecorations();
-
-  for (const AppliedTextDecoration& decoration : applied) {
-    decorations |= decoration.Lines();
-  }
-
   return decorations;
 }
 
-const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
-    const {
-  if (HasSimpleUnderlineInternal()) {
-    DEFINE_STATIC_LOCAL(
-        Vector<AppliedTextDecoration>, underline,
-        (1, AppliedTextDecoration(
-                TextDecorationLine::kUnderline, ETextDecorationStyle::kSolid,
-                VisitedDependentColor(GetCSSPropertyTextDecorationColor()),
-                TextDecorationThickness(), Length::Auto())));
-    // Since we only have one of these in memory, just update the color before
-    // returning.
-    underline.at(0).SetColor(
-        VisitedDependentColor(GetCSSPropertyTextDecorationColor()));
-    return underline;
+base::RefCountedData<Vector<AppliedTextDecoration, 1>>*
+ComputedStyle::EnsureAppliedTextDecorationsCache() const {
+  DCHECK(IsDecoratingBox());
+
+  if (!cached_data_ || !cached_data_->applied_text_decorations_) {
+    using DecorationsVector = Vector<AppliedTextDecoration, 1>;
+    DecorationsVector decorations;
+    if (const auto& base_decorations = BaseTextDecorationDataInternal()) {
+      decorations.ReserveInitialCapacity(base_decorations->data.size() + 1u);
+      decorations = base_decorations->data;
+    }
+    decorations.emplace_back(
+        GetTextDecorationLine(), TextDecorationStyle(),
+        VisitedDependentColor(GetCSSPropertyTextDecorationColor()),
+        GetTextDecorationThickness(), TextUnderlineOffset());
+    EnsureCachedData().applied_text_decorations_ =
+        base::MakeRefCounted<base::RefCountedData<DecorationsVector>>(
+            std::move(decorations));
   }
-  if (!AppliedTextDecorationsInternal()) {
-    DEFINE_STATIC_LOCAL(Vector<AppliedTextDecoration>, empty, ());
+
+  return cached_data_->applied_text_decorations_.get();
+}
+
+const Vector<AppliedTextDecoration, 1>& ComputedStyle::AppliedTextDecorations()
+    const {
+  if (!HasAppliedTextDecorations()) {
+    using DecorationsVector = Vector<AppliedTextDecoration, 1>;
+    DEFINE_STATIC_LOCAL(DecorationsVector, empty, ());
     return empty;
   }
 
-  return AppliedTextDecorationsInternal()->data;
+  if (!IsDecoratingBox()) {
+    const auto& base_decorations = BaseTextDecorationDataInternal();
+    DCHECK(base_decorations);
+    DCHECK_GE(base_decorations->data.size(), 1u);
+    return base_decorations->data;
+  }
+
+  return EnsureAppliedTextDecorationsCache()->data;
 }
 
 static bool HasInitialVariables(const StyleInitialData* initial_data) {
@@ -2267,7 +2279,8 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
                  BorderLeftStyle(), sides_to_include.left);
 }
 
-void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
+void ComputedStyle::CopyChildDependentFlagsFrom(
+    const ComputedStyle& other) const {
   if (other.ChildHasExplicitInheritance()) {
     SetChildHasExplicitInheritance();
   }
@@ -2455,6 +2468,10 @@ bool ComputedStyle::CalculateIsStackingContextWithoutContainment() const {
   return false;
 }
 
+bool ComputedStyle::IsInTopLayer(const Element& element) const {
+  return element.IsInTopLayer() && TopLayer() == ETopLayer::kBrowser;
+}
+
 void ComputedStyleBuilder::PropagateIndependentInheritedProperties(
     const ComputedStyle& parent_style) {
   ComputedStyleBuilderBase::PropagateIndependentInheritedProperties(
@@ -2614,8 +2631,6 @@ CSSVariableData* ComputedStyleBuilder::GetVariableData(
 }
 
 StyleInheritedVariables& ComputedStyleBuilder::MutableInheritedVariables() {
-  ClearVariableNamesCache();
-
   scoped_refptr<StyleInheritedVariables>& variables =
       MutableInheritedVariablesInternal();
   if (!variables) {
@@ -2628,123 +2643,12 @@ StyleInheritedVariables& ComputedStyleBuilder::MutableInheritedVariables() {
 
 StyleNonInheritedVariables&
 ComputedStyleBuilder::MutableNonInheritedVariables() {
-  ClearVariableNamesCache();
-
   std::unique_ptr<StyleNonInheritedVariables>& variables =
       MutableNonInheritedVariablesInternal();
   if (!variables) {
     variables = std::make_unique<StyleNonInheritedVariables>();
   }
   return *variables;
-}
-
-void ComputedStyleBuilder::AddAppliedTextDecoration(
-    const AppliedTextDecoration& decoration) {
-  scoped_refptr<AppliedTextDecorationList>& list =
-      MutableAppliedTextDecorationsInternal();
-
-  if (!list) {
-    list = base::MakeRefCounted<AppliedTextDecorationList>();
-  } else if (!list->HasOneRef()) {
-    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
-  }
-
-  list->data.push_back(decoration);
-
-  // Most of the time, this vector will only have a single element,
-  // and thus, the default Vector initial size of 4 is wasteful.
-  //
-  // In the rare case, AddAppliedTextDecoration() might be called twice
-  // for a single element (if it has both a simple underline and another
-  // decoration), and so this will cause two allocations instead of one,
-  // but that is an edge case we're willing to live with.
-  list->data.shrink_to_fit();
-}
-
-void ComputedStyleBuilder::OverrideTextDecorationColors(
-    blink::Color override_color) {
-  scoped_refptr<AppliedTextDecorationList>& list =
-      MutableAppliedTextDecorationsInternal();
-  DCHECK(list);
-  if (!list->HasOneRef()) {
-    list = base::MakeRefCounted<AppliedTextDecorationList>(list->data);
-  }
-
-  for (AppliedTextDecoration& decoration : list->data) {
-    decoration.SetColor(override_color);
-  }
-}
-
-void ComputedStyleBuilder::ApplyTextDecorations(
-    const blink::Color& parent_text_decoration_color,
-    bool override_existing_colors) {
-  if (GetTextDecorationLine() == TextDecorationLine::kNone &&
-      !HasSimpleUnderlineInternal() && !AppliedTextDecorationsInternal()) {
-    return;
-  }
-
-  // If there are any color changes or decorations set by this element, stop
-  // using m_hasSimpleUnderline.
-  // TODO(crbug.com/1377295): Eliminate this dependency on `style_`.
-  blink::Color current_text_decoration_color =
-      style_->VisitedDependentColor(GetCSSPropertyTextDecorationColor());
-  if (HasSimpleUnderlineInternal() &&
-      (GetTextDecorationLine() != TextDecorationLine::kNone ||
-       current_text_decoration_color != parent_text_decoration_color)) {
-    SetHasSimpleUnderlineInternal(false);
-    AddAppliedTextDecoration(AppliedTextDecoration(
-        TextDecorationLine::kUnderline, ETextDecorationStyle::kSolid,
-        parent_text_decoration_color, TextDecorationThickness(),
-        Length::Auto()));
-  }
-  if (override_existing_colors && AppliedTextDecorationsInternal()) {
-    OverrideTextDecorationColors(current_text_decoration_color);
-  }
-  if (GetTextDecorationLine() == TextDecorationLine::kNone) {
-    return;
-  }
-  DCHECK(!HasSimpleUnderlineInternal());
-  // To save memory, we don't use AppliedTextDecoration objects in the common
-  // case of a single simple underline of currentColor.
-  TextDecorationLine decoration_lines = GetTextDecorationLine();
-  ETextDecorationStyle decoration_style = TextDecorationStyle();
-  bool is_simple_underline =
-      decoration_lines == TextDecorationLine::kUnderline &&
-      decoration_style == ETextDecorationStyle::kSolid &&
-      TextDecorationColor().IsCurrentColor() &&
-      TextUnderlineOffset().IsAuto() && GetTextDecorationThickness().IsAuto();
-  if (is_simple_underline && !AppliedTextDecorationsInternal()) {
-    SetHasSimpleUnderlineInternal(true);
-    return;
-  }
-
-  AddAppliedTextDecoration(AppliedTextDecoration(
-      decoration_lines, decoration_style, current_text_decoration_color,
-      GetTextDecorationThickness(), TextUnderlineOffset()));
-}
-
-void ComputedStyleBuilder::ClearAppliedTextDecorations() {
-  SetHasSimpleUnderlineInternal(false);
-
-  if (AppliedTextDecorationsInternal()) {
-    SetAppliedTextDecorationsInternal(nullptr);
-  }
-}
-
-void ComputedStyleBuilder::RestoreParentTextDecorations(
-    const ComputedStyle& parent_style) {
-  SetHasSimpleUnderlineInternal(parent_style.HasSimpleUnderlineInternal());
-  if (AppliedTextDecorationsInternal() !=
-      parent_style.AppliedTextDecorationsInternal()) {
-    SetAppliedTextDecorationsInternal(scoped_refptr<AppliedTextDecorationList>(
-        parent_style.AppliedTextDecorationsInternal()));
-  }
-}
-
-void ComputedStyleBuilder::ClearVariableNamesCache() {
-  if (style_->cached_data_) {
-    style_->cached_data_->variable_names_.reset();
-  }
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

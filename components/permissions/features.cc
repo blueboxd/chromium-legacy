@@ -20,6 +20,12 @@ BASE_FEATURE(kBlockPromptsIfIgnoredOften,
              "BlockPromptsIfIgnoredOften",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Once the user has auto re-authenticated, automatically block subsequent auto
+// re-authn prompts within the next 10 minutes.
+BASE_FEATURE(kBlockRepeatedAutoReauthnPrompts,
+             "BlockRepeatedAutoReauthnPrompts",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Once the user declines a notification permission prompt in a WebContents,
 // automatically dismiss subsequent prompts in the same WebContents, from any
 // origin, until the next user-initiated navigation.
@@ -121,7 +127,7 @@ BASE_FEATURE(kPermissionsPromptSurvey,
 // is not handled by this component, but left to the embedding browser.
 BASE_FEATURE(kRecordPermissionExpirationTimestamps,
              "RecordPermissionExpirationTimestamps",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

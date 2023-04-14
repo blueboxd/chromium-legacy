@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
+#include "components/supervised_user/core/browser/kids_management_url_checker_client.h"
 
 #include <memory>
 #include <utility>
@@ -13,14 +13,16 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/kids_chrome_management/kids_chrome_management_client_factory.h"
-#include "chrome/browser/supervised_user/kids_chrome_management/kidschromemanagement_messages.pb.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/account_id/account_id.h"
+#include "components/supervised_user/core/browser/kids_chrome_management_client.h"
+#include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +64,11 @@ class KidsChromeManagementClientForTesting : public KidsChromeManagementClient {
  public:
   explicit KidsChromeManagementClientForTesting(
       content::BrowserContext* context)
-      : KidsChromeManagementClient(static_cast<Profile*>(context)) {}
+      : KidsChromeManagementClient(Profile::FromBrowserContext(context)
+                                       ->GetDefaultStoragePartition()
+                                       ->GetURLLoaderFactoryForBrowserProcess(),
+                                   IdentityManagerFactory::GetForProfile(
+                                       Profile::FromBrowserContext(context))) {}
 
   KidsChromeManagementClientForTesting(
       const KidsChromeManagementClientForTesting&) = delete;
@@ -90,11 +96,6 @@ class KidsChromeManagementClientForTesting : public KidsChromeManagementClient {
   std::unique_ptr<ClassifyUrlResponse> response_proto_;
   KidsChromeManagementClient::ErrorCode error_code_;
 };
-
-std::unique_ptr<KeyedService> CreateKidsChromeManagementClient(
-    content::BrowserContext* context) {
-  return std::make_unique<KidsChromeManagementClientForTesting>(context);
-}
 
 }  // namespace
 
@@ -132,19 +133,17 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
 
     DCHECK(test_profile_);
 
-    KidsChromeManagementClientFactory::GetInstance()->SetTestingFactory(
-        test_profile_, base::BindRepeating(&CreateKidsChromeManagementClient));
-
-    url_classifier_ = std::make_unique<KidsManagementURLCheckerClient>("us");
+    test_kids_chrome_management_client_ =
+        std::make_unique<KidsChromeManagementClientForTesting>(test_profile_);
+    url_classifier_ = std::make_unique<KidsManagementURLCheckerClient>(
+        test_kids_chrome_management_client_.get(), "us");
   }
 
  protected:
   void SetupClientResponse(std::unique_ptr<ClassifyUrlResponse> response_proto,
                            KidsChromeManagementClient::ErrorCode error_code) {
-    static_cast<KidsChromeManagementClientForTesting*>(
-        KidsChromeManagementClientFactory::GetInstance()->GetForBrowserContext(
-            test_profile_))
-        ->SetupResponse(std::move(response_proto), error_code);
+    test_kids_chrome_management_client_->SetupResponse(
+        std::move(response_proto), error_code);
   }
 
   // Asynchronously checks the URL and waits until finished.
@@ -163,6 +162,8 @@ class KidsManagementURLCheckerClientTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   raw_ptr<TestingProfile> test_profile_;
   std::unique_ptr<TestingProfileManager> test_profile_manager_;
+  std::unique_ptr<KidsChromeManagementClientForTesting>
+      test_kids_chrome_management_client_;
   std::unique_ptr<KidsManagementURLCheckerClient> url_classifier_;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::FakeChromeUserManager* user_manager_;

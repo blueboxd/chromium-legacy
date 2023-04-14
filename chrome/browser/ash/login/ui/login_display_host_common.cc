@@ -45,7 +45,6 @@
 #include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
-#include "chrome/browser/ui/webui/ash/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
@@ -446,13 +445,6 @@ bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
     return true;
   }
 
-  if (action == LoginAcceleratorAction::kToggleSystemInfo) {
-    if (!GetOobeUI())
-      return false;
-    GetOobeUI()->GetCoreOobeView()->ToggleSystemInfo();
-    return true;
-  }
-
   // This path should only handle screen-specific acceletators, so we do not
   // need to create WebUI here.
   if (IsWizardControllerCreated() &&
@@ -531,11 +523,8 @@ void LoginDisplayHostCommon::ShowTosForExistingUser() {
 }
 
 void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
-  if (features::IsOobeConsolidatedConsentEnabled()) {
-    SetScreenAfterManagedTos(ConsolidatedConsentScreenView::kScreenId);
-  } else {
-    SetScreenAfterManagedTos(EulaView::kScreenId);
-  }
+  SetScreenAfterManagedTos(ConsolidatedConsentScreenView::kScreenId);
+
   wizard_context_->is_cloud_ready_update_flow = true;
   StartWizard(TermsOfServiceScreenView::kScreenId);
 }
@@ -543,9 +532,10 @@ void LoginDisplayHostCommon::ShowNewTermsForFlexUsers() {
 void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
     const UserContext& user_context) {
   if (PinSetupScreen::ShouldSkipBecauseOfPolicy() &&
-      !features::IsCryptohomeRecoverySetupEnabled() &&
-      RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy())
+      !features::IsCryptohomeRecoveryEnabled() &&
+      RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy()) {
     return;
+  }
 
   wizard_context_->extra_factors_auth_session =
       std::make_unique<UserContext>(user_context);

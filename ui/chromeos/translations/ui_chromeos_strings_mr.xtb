@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">थेट इंटरनेट कनेक्शन</translation>
 <translation id="1272293450992660632">पिन मूल्ये जुळत नाहीत.</translation>
 <translation id="1280820357415527819">मोबाइल नेटवर्क शोधत आहे</translation>
-<translation id="1291603679744561561">सिम लॉक केले आहे</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google ड्राइव्ह आत्ता उपलब्ध नाही. Google ड्राइव्ह एकदा परत आल्यानंतर अपलोड करणे आपोआप रीस्टार्ट होईल.</translation>
 <translation id="1307931752636661898">Linux फाइल पाहू शकत नाही</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Parallels Desktop मध्ये फाइल ड्रॉप करण्यासाठी, Windows च्या फाइलमध्ये फाइल हलवणे आवश्यक आहे.</translation>
 <translation id="1435838927755162558">Parallels Desktop सोबत फोल्डर शेअर करा</translation>
 <translation id="1439919885608649279">हातात फुले असलेली व्यक्ती</translation>
+<translation id="1458457385801829801"><ph name="TARGET_NAME" /> बाहेर काढा</translation>
 <translation id="1471718551822868769">स्लोव्हाक</translation>
 <translation id="1482884275703521657">फिनिश</translation>
 <translation id="148466539719134488">स्विस</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">Bruschetta सोबत एक फोल्डर शेअर केले</translation>
 <translation id="2578394532502990878">तमिळ फोनेटिक</translation>
 <translation id="2579959351793446050">ओडिया</translation>
+<translation id="2587195714949534472"><ph name="FILE_NAME" /> सिंक करण्‍याची तयारी करत आहे...</translation>
 <translation id="2602810353103180630"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तुमच्या अ‍ॅडमिनिस्ट्रेटर ने ब्लॉक केलेले नेटवर्क, तपशील</translation>
 <translation id="2614589611416690597"><ph name="VIDEO_TYPE" /> व्हिडिओ</translation>
 <translation id="2620090360073999360">Google ड्राइव्ह यावेळी पोहोचू शकत नाही.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">मंगोलियन</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> एरर.</translation>
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल क्षमता <ph name="SIGNAL_STRENGTH" />%, तपशील</translation>
+<translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> आयटम सिंक करण्‍याची तयारी करत आहे...</translation>
 <translation id="3522708245912499433">पोर्तुगीज</translation>
 <translation id="3524311639100184459">सावधान: या फाइल तात्पुरत्या आहेत आणि डिस्कवरील जागा मोकळी करण्यासाठी त्या आपोआप हटवल्या जाऊ शकतात.  <ph name="BEGIN_LINK" />अधिक जाणून घ्या<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">फोल्डर</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">पेस्ट करा</translation>
 <translation id="3952872973865944257">तेलुगु फोनेटिक</translation>
+<translation id="3954354850384043518">प्रगतीपथावर</translation>
 <translation id="3958548648197196644">किवी</translation>
 <translation id="3971140002794351170">मोबाइल प्रोफाइल डाउनलोड करा, <ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">इंग्रजी (यूके)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">कस्टम नाव सर्व्हर</translation>
 <translation id="4465725236958772856"><ph name="NETWORK_COUNT" /> पैकी <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, तुमच्या अ‍ॅडमिनिस्ट्रेटरने व्यवस्थापित केलेले, कनेक्ट करा</translation>
 <translation id="4470564870223067757">हँगल 2 संच</translation>
+<translation id="4474142134969976028">जुळणारे परिणाम नाहीत</translation>
 <translation id="4477002475007461989">रोमानियन</translation>
 <translation id="4477219268485577442">बल्गेरियन ध्वन्यात्मक</translation>
 <translation id="4508265954913339219">सक्रियन अयशस्वी</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481"><ph name="MAX_LENGTH" /> किंवा त्यापेक्षा कमी वर्णांचे नाव वापरा</translation>
 <translation id="4973970068702235170">झिप करता आले नाही, अनपेक्षित एरर: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">जपानी</translation>
+<translation id="4987699874727873250">इंग्रजी (भारत)</translation>
 <translation id="4988205478593450158">तुम्हाला "<ph name="FILE_NAME" />" नक्की हटवायची आहे का?</translation>
 <translation id="498902553138568924">लाल फुलपाखरू</translation>
 <translation id="4992066212339426712">अनम्यूट करा</translation>
@@ -786,6 +791,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7458955835361612701">अलीकडील कोणत्याही इमेज नाहीत</translation>
 <translation id="7460898608667578234">यूक्रेनियन</translation>
 <translation id="7469894403370665791">या नेटवर्कशी स्वयंचलितपणे कनेक्ट व्हा</translation>
+<translation id="7481358317100446445">तयार</translation>
 <translation id="7486315294984620427">Parallels Desktop मध्ये फाइल ड्रॉप करण्यासाठी, Windows च्या फाइलमध्ये फाइल कॉपी करणे आवश्यक आहे.</translation>
 <translation id="749452993132003881">हिरगाना</translation>
 <translation id="7495372004724182530">मल्याळम फोनेटिक</translation>
@@ -811,6 +817,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="7655441028674523381">Google Photos सहजपणे ॲक्सेस करा</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7663224033570512922">हिंदी</translation>
+<translation id="7665680517722058469">दुसरे काहीतरी शोधून पहा</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> आयटम ट्रॅशमध्ये हलवले आहेत</translation>
 <translation id="7693909743393669729">ड्राइव्ह फॉरमॅट केल्याने त्यावर स्टोअर केलेला सर्व डेटा मिटवला जाईल आणि दृश्यमान नसू शकणार्‍या पार्टिशनसह, सध्याची सर्व पार्टिशन काढून टाकली जातील. ही कृती पहिल्यासारखी केली जाऊ शकत नाही.</translation>
 <translation id="7695430100978772476"><ph name="DRIVE_NAME" /> फॉरमॅट करता आली नाही</translation>
@@ -967,6 +974,7 @@ Google ड्राइव्ह मधील फाइल अपडेट के
 <translation id="8866284467018526531">अरबी लिप्यंतरण</translation>
 <translation id="8873014196523807561">हे आयटम रिस्टोअर करण्यासाठी, ते नवीन फोल्डरमध्ये ड्रॅग करा. यापैकी काही आयटमची मूळ फोल्डर ही हटवली गेली आहेत.</translation>
 <translation id="8874184842967597500">कनेक्ट नाही</translation>
+<translation id="8876368061475701452">क्यूमध्ये आहे</translation>
 <translation id="8900820606136623064">हंगेरियन</translation>
 <translation id="8903931173357132290">पदवीधर</translation>
 <translation id="8912078710089354287">शेपुट हलवत असलेला कुत्रा</translation>

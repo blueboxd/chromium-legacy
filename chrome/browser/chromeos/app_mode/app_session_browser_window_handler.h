@@ -15,6 +15,8 @@
 
 namespace chromeos {
 
+class KioskTroubleshootingController;
+
 extern const char kKioskNewBrowserWindowHistogram[];
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -24,16 +26,17 @@ enum class KioskBrowserWindowType {
   kSettingsPage = 0,
   kClosedRegularBrowser = 1,
   kOpenedRegularBrowser = 2,
-  kMaxValue = kOpenedRegularBrowser,
+  kOpenedDevToolsBrowser = 3,
+  kMaxValue = kOpenedDevToolsBrowser,
 };
 
 // This class monitors for the addition and removal of new browser windows
 // during the kiosk session. On construction for web kiosk sessions, it gets a
-// wab app name stored as |web_app_name_|.
+// wab app name stored as `web_app_name_`.
 //
 //
 // If a new browser window is opened, this gets closed immediately, unless it's
-// an allowed Settings window or |CanOpenNewBrowserWindow| method returns true.
+// an allowed Settings window or `CanOpenNewBrowserWindow` method returns true.
 //
 // If the last browser window gets closed, the session gets ended.
 //
@@ -45,7 +48,9 @@ class AppSessionBrowserWindowHandler : public BrowserListObserver {
       const absl::optional<std::string>& web_app_name,
       base::RepeatingCallback<void(bool is_closing)>
           on_browser_window_added_callback,
-      base::RepeatingClosure on_last_browser_window_closed_callback);
+      base::OnceClosure on_last_browser_window_closed_callback,
+      std::unique_ptr<KioskTroubleshootingController>
+          kiosk_troubleshooting_controller);
   AppSessionBrowserWindowHandler(const AppSessionBrowserWindowHandler&) =
       delete;
   AppSessionBrowserWindowHandler& operator=(
@@ -65,27 +70,34 @@ class AppSessionBrowserWindowHandler : public BrowserListObserver {
   // Returns true if open by web application and allowed by policy.
   bool IsNewBrowserWindowAllowed(Browser* browser) const;
 
+  // Returns true if open devtools browser and it is allowed by policy.
+  bool IsDevToolsAllowedBrowser(Browser* browser) const;
+
   // Returns true in case of the initial browser window existed for web kiosks.
   bool ShouldExitKioskWhenLastBrowserRemoved() const;
 
-  // Checks that there is no app browser and only |settings_browser_| remains
+  // Checks that there is no app browser and only `settings_browser_` remains
   // open.
   bool IsOnlySettingsBrowserRemainOpen() const;
 
+  // Owned by `ProfileManager`.
   const raw_ptr<Profile, DanglingUntriaged> profile_;
-  // |web_app_name_| is set only when we have the initial browser in the web
+  // `web_app_name_` is set only when we have the initial browser in the web
   // kiosk session.
   const absl::optional<std::string> web_app_name_;
   base::RepeatingCallback<void(bool is_closing)>
       on_browser_window_added_callback_;
-  base::RepeatingClosure on_last_browser_window_closed_callback_;
+  base::OnceClosure on_last_browser_window_closed_callback_;
+
+  std::unique_ptr<KioskTroubleshootingController>
+      kiosk_troubleshooting_controller_;
 
   // Browser in which settings are shown, restricted by
   // KioskSettingsNavigationThrottle.
   raw_ptr<Browser> settings_browser_ = nullptr;
 
   // Provides access to app session related policies.
-  std::unique_ptr<AppSessionPolicies> app_session_policies_;
+  AppSessionPolicies app_session_policies_;
 
   base::WeakPtrFactory<AppSessionBrowserWindowHandler> weak_ptr_factory_{this};
 };

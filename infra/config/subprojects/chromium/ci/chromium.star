@@ -9,6 +9,7 @@ load("//lib/builders.star", "os", "reclient", "sheriff_rotations")
 load("//lib/branches.star", "branches")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
+load("//lib/builder_health_indicators.star", "health_spec")
 
 ci.defaults.set(
     executable = ci.DEFAULT_EXECUTABLE,
@@ -239,6 +240,46 @@ ci.builder(
 )
 
 ci.builder(
+    name = "linux-lacros-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    cores = 8,
+    # TODO(crbug.com/1362019): Turn on when stable.
+    sheriff_rotations = args.ignore_default(None),
+    tree_closing = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "lnx",
+    ),
+    properties = {
+        # The format of these properties is defined at archive/properties.proto
+        "$build/archive": {
+            "source_side_spec_path": [
+                "src",
+                "infra",
+                "archive_config",
+                "linux-lacros-archive-rel.json",
+            ],
+        },
+    },
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
+)
+
+ci.builder(
     name = "lacros64-archive-rel",
     builder_spec = builder_config.builder_spec(
         gclient_config = builder_config.gclient_config(
@@ -464,6 +505,13 @@ ci.builder(
         short_name = "off",
     ),
     execution_timeout = 7 * time.hour,
+    health_spec = health_spec(
+        build_time = struct(
+            p50_mins = 240,
+            p95_mins = 300,
+            p99_mins = 360,
+        ),
+    ),
 )
 
 ci.builder(
@@ -490,6 +538,7 @@ ci.builder(
         category = "mac",
         short_name = "dbg",
     ),
+    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -527,6 +576,7 @@ ci.builder(
             ],
         },
     },
+    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -552,6 +602,7 @@ ci.builder(
         category = "mac|arm",
         short_name = "dbg",
     ),
+    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -589,6 +640,7 @@ ci.builder(
             ],
         },
     },
+    reclient_scandeps_server = True,
 )
 
 ci.builder(
@@ -618,6 +670,7 @@ ci.builder(
     # TODO(crbug.com/1279290) builds with PGO change take long time.
     # Keep in sync with mac-official in try/chromium.star.
     execution_timeout = 9 * time.hour,
+    reclient_scandeps_server = True,
 )
 
 ci.builder(

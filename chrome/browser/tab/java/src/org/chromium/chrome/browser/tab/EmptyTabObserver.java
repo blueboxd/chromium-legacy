@@ -101,17 +101,11 @@ public class EmptyTabObserver implements TabObserver {
     }
 
     @Override
-    public void onDidStartNavigationNoop(Tab tab, NavigationHandle navigationHandle) {}
-
-    @Override
     public void onDidRedirectNavigation(Tab tab, NavigationHandle navigationHandle) {}
 
     @Override
     public void onDidFinishNavigationInPrimaryMainFrame(
             Tab tab, NavigationHandle navigationHandle) {}
-
-    @Override
-    public void onDidFinishNavigationNoop(Tab tab, NavigationHandle navigationHandle) {}
 
     @Override
     public void didFirstVisuallyNonEmptyPaint(Tab tab) {}

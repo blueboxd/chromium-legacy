@@ -20,7 +20,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ash/input_method/ui/input_method_menu_item.h"
 #include "chrome/browser/ash/input_method/ui/input_method_menu_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -615,12 +614,11 @@ void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
 }
 
 void InputMethodEngine::SetSurroundingText(const std::u16string& text,
-                                           uint32_t cursor_pos,
-                                           uint32_t anchor_pos,
+                                           const gfx::Range selection_range,
                                            uint32_t offset_pos) {
-  observer_->OnSurroundingTextChanged(
-      active_component_id_, text, static_cast<int>(cursor_pos),
-      static_cast<int>(anchor_pos), static_cast<int>(offset_pos));
+  observer_->OnSurroundingTextChanged(active_component_id_, text,
+                                      selection_range,
+                                      static_cast<int>(offset_pos));
 }
 
 void InputMethodEngine::SetCaretBounds(const gfx::Rect& caret_bounds) {

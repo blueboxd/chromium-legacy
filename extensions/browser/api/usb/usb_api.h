@@ -16,7 +16,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
-#include "extensions/browser/api/api_resource_manager.h"
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
@@ -112,7 +111,7 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
       std::vector<device::mojom::UsbDeviceInfoPtr> devices);
   void OnDeviceOpened(const std::string& guid,
                       mojo::Remote<device::mojom::UsbDevice> device_ptr,
-                      device::mojom::UsbOpenDeviceError error);
+                      device::mojom::UsbOpenDeviceResultPtr result);
   void OpenComplete();
   void OnDisconnect();
 
@@ -216,7 +215,7 @@ class UsbOpenDeviceFunction : public UsbPermissionCheckingFunction {
 
   void OnDeviceOpened(std::string guid,
                       mojo::Remote<device::mojom::UsbDevice> device,
-                      device::mojom::UsbOpenDeviceError error);
+                      device::mojom::UsbOpenDeviceResultPtr result);
   void OnDisconnect();
 };
 

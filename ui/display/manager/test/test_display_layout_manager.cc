@@ -8,8 +8,7 @@
 
 #include "ui/display/types/display_snapshot.h"
 
-namespace display {
-namespace test {
+namespace display::test {
 
 TestDisplayLayoutManager::TestDisplayLayoutManager(
     std::vector<std::unique_ptr<DisplaySnapshot>> displays,
@@ -42,6 +41,7 @@ bool TestDisplayLayoutManager::GetDisplayLayout(
     MultipleDisplayState new_display_state,
     chromeos::DisplayPowerState new_power_state,
     RefreshRateThrottleState new_throttle_state,
+    bool new_vrr_state,
     std::vector<DisplayConfigureRequest>* requests) const {
   NOTREACHED();
   return false;
@@ -60,5 +60,4 @@ bool TestDisplayLayoutManager::IsMirroring() const {
   return display_state_ == MULTIPLE_DISPLAY_STATE_MULTI_MIRROR;
 }
 
-}  // namespace test
-}  // namespace display
+}  // namespace display::test

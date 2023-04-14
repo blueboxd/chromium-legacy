@@ -25,7 +25,6 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/process/launch.h"
 #include "base/sequence_checker.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
@@ -36,15 +35,10 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
-#include "base/threading/thread_checker.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "base/win/atl.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_bstr.h"
-#include "base/win/scoped_variant.h"
-#include "base/win/shlwapi.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/service_proxy_factory.h"
 #include "chrome/updater/update_service.h"
@@ -54,10 +48,9 @@
 #include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/install_progress_observer.h"
+#include "chrome/updater/win/installer/exit_code.h"
 #include "chrome/updater/win/manifest_util.h"
-#include "chrome/updater/win/scoped_impersonation.h"
 #include "chrome/updater/win/ui/resources/resources.grh"
-#include "chrome/updater/win/user_info.h"
 #include "chrome/updater/win/win_constants.h"
 
 #pragma clang diagnostic push
@@ -66,7 +59,6 @@
 #include "chrome/updater/win/ui/progress_wnd.h"
 #include "chrome/updater/win/ui/resources/updater_installer_strings.h"
 #include "chrome/updater/win/ui/splash_screen.h"
-#include "chrome/updater/win/ui/ui_util.h"
 #pragma clang diagnostic pop
 
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -80,7 +72,6 @@ class InstallProgressSilentObserver : public InstallProgressObserver {
   ~InstallProgressSilentObserver() override = default;
 
   // Overrides for InstallProgressObserver.
-  // These functions are called on the thread which owns this class.
   void OnCheckingForUpdate() override;
   void OnUpdateAvailable(const std::u16string& app_id,
                          const std::u16string& app_name,
@@ -105,7 +96,7 @@ class InstallProgressSilentObserver : public InstallProgressObserver {
   void OnComplete(const ObserverCompletionInfo& observer_info) override;
 
  private:
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // Event sink must out-live this observer.
   raw_ptr<ui::OmahaWndEvents> events_sink_ = nullptr;
@@ -118,20 +109,20 @@ InstallProgressSilentObserver::InstallProgressSilentObserver(
 }
 
 void InstallProgressSilentObserver::OnCheckingForUpdate() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnUpdateAvailable(
     const std::u16string& app_id,
     const std::u16string& app_name,
     const std::u16string& version_string) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnWaitingToDownload(
     const std::u16string& app_id,
     const std::u16string& app_name) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnDownloading(
@@ -139,37 +130,37 @@ void InstallProgressSilentObserver::OnDownloading(
     const std::u16string& app_name,
     int time_remaining_ms,
     int pos) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnWaitingRetryDownload(
     const std::u16string& app_id,
     const std::u16string& app_name,
     const base::Time& next_retry_time) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnWaitingToInstall(
     const std::u16string& app_id,
     const std::u16string& app_name,
     bool* can_start_install) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnInstalling(const std::u16string& app_id,
                                                  const std::u16string& app_name,
                                                  int time_remaining_ms,
                                                  int pos) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnPause() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void InstallProgressSilentObserver::OnComplete(
     const ObserverCompletionInfo& observer_info) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(events_sink_);
   VLOG(1) << __func__;
 
@@ -182,7 +173,7 @@ void InstallProgressSilentObserver::OnComplete(
 // Implements a simple inter-thread communication protocol based on Windows
 // messages exchanged between the application installer and its UI.
 //
-// Since the installer code and the UI code execute on different threads, the
+// Since the installer code and the UI code execute on different sequences, the
 // installer can't invoke directly functions exposed by the UI.
 class InstallProgressObserverIPC : public InstallProgressObserver {
  public:
@@ -214,9 +205,8 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   }
 
   // Overrides for InstallProgressObserver.
-  // Called by the application installer code on the main updater thread.
   void OnCheckingForUpdate() override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
     PostClosure(base::BindOnce(&InstallProgressObserver::OnUpdateAvailable,
                                base::Unretained(observer_), std::u16string(),
@@ -226,7 +216,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   void OnUpdateAvailable(const std::u16string& app_id,
                          const std::u16string& app_name,
                          const std::u16string& version_string) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
     PostClosure(base::BindOnce(&InstallProgressObserver::OnUpdateAvailable,
                                base::Unretained(observer_), app_id, app_name,
@@ -242,7 +232,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
                      const std::u16string& app_name,
                      int time_remaining_ms,
                      int pos) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
     PostClosure(base::BindOnce(&InstallProgressObserver::OnDownloading,
                                base::Unretained(observer_), app_id, app_name,
@@ -258,7 +248,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   void OnWaitingToInstall(const std::u16string& app_id,
                           const std::u16string& app_name,
                           bool* can_start_install) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
 
     // TODO(crbug.com/1014591): handle `can_start_install`.
@@ -271,7 +261,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
                     const std::u16string& app_name,
                     int time_remaining_ms,
                     int pos) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
 
     // TODO(crbug.com/1014594): implement progress.
@@ -283,7 +273,7 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
   void OnPause() override { NOTREACHED(); }
 
   void OnComplete(const ObserverCompletionInfo& observer_info) override {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(observer_);
     PostClosure(base::BindOnce(&InstallProgressObserver::OnComplete,
                                base::Unretained(observer_), observer_info));
@@ -291,14 +281,14 @@ class InstallProgressObserverIPC : public InstallProgressObserver {
 
  private:
   void PostClosure(base::OnceClosure closure) {
-    DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     std::unique_ptr<base::OnceClosure> closure_wrapper =
         std::make_unique<base::OnceClosure>(std::move(closure));
     ::PostThreadMessage(observer_thread_id_, WM_PROGRESS_WINDOW_IPC, 0,
                         reinterpret_cast<LPARAM>(closure_wrapper.release()));
   }
 
-  THREAD_CHECKER(thread_checker_);
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // This member is not owned by this class.
   raw_ptr<InstallProgressObserver> observer_ = nullptr;
@@ -397,7 +387,7 @@ class AppInstallControllerImpl : public AppInstallController,
   void InitializeUI();
   void RunUI();
 
-  // These functions are called on the main updater thread.
+  // These functions are called on the main updater sequence.
   void DoInstallApp();
   void DoInstallAppOffline(const base::FilePath& installer_path,
                            const std::string& install_args,
@@ -416,7 +406,7 @@ class AppInstallControllerImpl : public AppInstallController,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Provides an execution environment for the updater main thread.
+  // Provides an execution environment for the updater main sequence.
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
 
   // Provides an execution environment for the UI code. Typically, it runs
@@ -496,12 +486,15 @@ void AppInstallControllerImpl::DoInstallApp() {
 
   RegistrationRequest request;
   request.app_id = app_id_;
+  request.version = base::Version(kNullVersion);
   absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id_);
   absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
-  if (app_args)
+  if (app_args) {
     request.ap = app_args->ap;
-  if (tag_args)
+  }
+  if (tag_args) {
     request.brand_code = tag_args->brand_code;
+  }
 
   base::ThreadPool::PostTaskAndReply(
       FROM_HERE,
@@ -616,13 +609,16 @@ void AppInstallControllerImpl::DoInstallAppOffline(
       GetTagArgsForCommandLine(cmd_line).tag_args;
   RegistrationRequest request;
   request.app_id = app_id_;
+  request.version = base::Version(kNullVersion);
 
   absl::optional<tagging::AppArgs> app_args =
       GetAppArgsForCommandLine(cmd_line, app_id_);
-  if (app_args)
+  if (app_args) {
     request.ap = app_args->ap;
-  if (tag_args)
+  }
+  if (tag_args) {
     request.brand_code = tag_args->brand_code;
+  }
 
   VLOG(1) << __func__ << ": " << installer_path << ": " << install_args << ": "
           << install_data;
@@ -640,8 +636,7 @@ void AppInstallControllerImpl::DoInstallAppOffline(
                  const std::string& install_args,
                  const std::string& install_data,
                  const std::string& install_settings, int result) {
-                if (result != kRegistrationSuccess &&
-                    result != kRegistrationAlreadyRegistered) {
+                if (result != kRegistrationSuccess) {
                   VLOG(1) << "Registration failed: " << result;
                   self->InstallComplete(UpdateService::Result::kServiceFailed);
                   return;

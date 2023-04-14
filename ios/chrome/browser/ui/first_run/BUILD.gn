@@ -11,7 +11,6 @@ source_set("field_trial") {
     "trending_queries_field_trial.h",
   ]
   deps = [
-    ":field_trial_constants",
     ":field_trial_ids",
     "//base",
     "//components/prefs",
@@ -23,14 +22,6 @@ source_set("field_trial") {
     "//ios/chrome/browser/ui/content_suggestions:feature_flags",
     "//ios/chrome/browser/ui/start_surface:feature_flags",
     "//ios/chrome/common",
-  ]
-}
-
-source_set("field_trial_constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [
-    "field_trial_constants.cc",
-    "field_trial_constants.h",
   ]
 }
 
@@ -186,7 +177,6 @@ source_set("unit_tests") {
   sources = [ "trending_queries_field_trial_unittest.mm" ]
   deps = [
     ":field_trial",
-    ":field_trial_constants",
     ":field_trial_ids",
     ":first_run",
     ":utils",
@@ -219,12 +209,11 @@ source_set("eg2_tests") {
   testonly = true
   sources = [
     "enterprise_loading_screen_egtest.mm",
-    "first_run_two_steps_egtest.mm",
+    "first_run_egtest.mm",
   ]
   deps = [
     ":constants",
     ":eg_test_support+eg2",
-    ":field_trial_constants",
     "//base",
     "//base/test:test_support",
     "//components/enterprise",
@@ -247,6 +236,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/browser/ui/authentication/views:views_constants",
     "//ios/chrome/browser/ui/bookmarks:eg_test_support+eg2",
+    "//ios/chrome/browser/ui/elements:constants",
     "//ios/chrome/browser/ui/settings/google_services:constants",
     "//ios/chrome/common:string_util",
     "//ios/chrome/common/ui/promo_style:constants",

@@ -47,6 +47,7 @@
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_cert_verifier_browser_test.h"
 #include "content/public/test/navigation_handle_observer.h"
@@ -55,7 +56,6 @@
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
-#include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "media/media_buildflags.h"
@@ -78,6 +78,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -150,7 +151,8 @@ class FinishNavigationObserver : public WebContentsObserver {
   absl::optional<net::Error> error_code_;
 };
 
-class MockContentBrowserClient final : public ContentBrowserClient {
+class MockContentBrowserClient final
+    : public ContentBrowserTestContentBrowserClient {
  public:
   std::string GetAcceptLangs(BrowserContext* context) override {
     return accept_langs_;
@@ -192,12 +194,12 @@ class SignedExchangeRequestHandlerBrowserTestBase
     inactive_rfh_deletion_observer_ =
         std::make_unique<InactiveRenderFrameHostDeletionObserver>(
             shell()->web_contents());
-    original_client_ = SetBrowserClientForTesting(&client_);
+    client_ = std::make_unique<MockContentBrowserClient>();
   }
 
   void TearDownOnMainThread() override {
     sxg_test_helper_.TearDownOnMainThread();
-    SetBrowserClientForTesting(original_client_);
+    client_.reset();
   }
 
  protected:
@@ -231,7 +233,7 @@ class SignedExchangeRequestHandlerBrowserTestBase
   }
 
   void SetAcceptLangs(const std::string langs) {
-    client_.SetAcceptLangs(langs);
+    client_->SetAcceptLangs(langs);
     StoragePartitionImpl* partition =
         static_cast<StoragePartitionImpl*>(shell()
                                                ->web_contents()
@@ -245,11 +247,9 @@ class SignedExchangeRequestHandlerBrowserTestBase
 
   const base::HistogramTester histogram_tester_;
 
-  MockContentBrowserClient client_;
+  std::unique_ptr<MockContentBrowserClient> client_;
 
  private:
-  raw_ptr<ContentBrowserClient> original_client_ = nullptr;
-
   base::test::ScopedFeatureList feature_list_;
   SignedExchangeBrowserTestHelper sxg_test_helper_;
 };
@@ -390,9 +390,6 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest, Simple) {
                                          SignedExchangeLoadResult::kSuccess, 1);
     histogram_tester_.ExpectTotalCount("PrefetchedSignedExchangeCache.Count",
                                        1);
-  } else {
-    histogram_tester_.ExpectUniqueSample(
-        "SignedExchange.Prefetch.Recall.30Seconds", false, 1);
   }
 }
 
@@ -973,8 +970,15 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
+// TODO(crbug.com/1412461): Re-enable this test when de-flaked.
+#if BUILDFLAG(IS_FUCHSIA)
+#define MAYBE_NotControlledByDistributorsSW \
+  DISABLED_NotControlledByDistributorsSW
+#else
+#define MAYBE_NotControlledByDistributorsSW NotControlledByDistributorsSW
+#endif
 IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
-                       NotControlledByDistributorsSW) {
+                       MAYBE_NotControlledByDistributorsSW) {
   // SW-scope: http://127.0.0.1:PORT/sxg/
   // SXG physical URL: http://127.0.0.1:PORT/sxg/test.example.org_test.sxg
   // SXG logical URL: https://test.example.org/test/
@@ -1601,7 +1605,7 @@ class SignedExchangePKPBrowserTest
       mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
       mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-      GetNetworkService()->BindTestInterface(
+      GetNetworkService()->BindTestInterfaceForTesting(
           network_service_test.BindNewPipeAndPassReceiver());
       network_service_test->SetTransportSecurityStateSource(0);
     } else {
@@ -1623,7 +1627,7 @@ class SignedExchangePKPBrowserTest
 
     if (IsOutOfProcessNetworkService()) {
       mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-      GetNetworkService()->BindTestInterface(
+      GetNetworkService()->BindTestInterfaceForTesting(
           network_service_test.BindNewPipeAndPassReceiver());
       network_service_test->SetTransportSecurityStateSource(reporting_port);
     } else {

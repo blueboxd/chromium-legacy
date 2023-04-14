@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/clipboard/clipboard_history_item.h"
 #include "ash/clipboard/clipboard_history_util.h"
 #include "ash/display/display_util.h"
 #include "ash/public/cpp/clipboard_image_model_factory.h"
@@ -14,24 +15,17 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/bind.h"
-#include "base/metrics/histogram_functions.h"
-#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
-#include "base/strings/escape.h"
-#include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/clipboard/clipboard_data.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/strings/grit/ui_strings.h"
 
 namespace ash {
 
@@ -41,17 +35,6 @@ constexpr int kPlaceholderImageWidth = 234;
 constexpr int kPlaceholderImageHeight = 74;
 constexpr int kPlaceholderImageOutlineCornerRadius = 8;
 constexpr int kPlaceholderImageSVGSize = 32;
-
-// Used in histograms, each value corresponds with an underlying placeholder
-// string displayed by a ClipboardHistoryTextItemView. Do not reorder entries,
-// if you must add to it, add at the end.
-enum class ClipboardHistoryPlaceholderStringType {
-  kBitmap = 0,
-  kHtml = 1,
-  kRtf = 2,
-  kWebSmartPaste = 3,
-  kMaxValue = 3,
-};
 
 // Used to draw the UnrenderedHTMLPlaceholderImage, which is shown while HTML is
 // rendering. Drawn in order to turn the square and single colored SVG into a
@@ -89,41 +72,6 @@ class UnrenderedHTMLPlaceholderImage : public gfx::CanvasImageSource {
   }
 };
 
-// Helpers ---------------------------------------------------------------------
-
-// Returns the localized string for the specified |resource_id|.
-std::u16string GetLocalizedString(int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().GetLocalizedString(
-      resource_id);
-}
-
-// Returns label to display for the file system data contained within |data|.
-std::u16string GetLabelForFileSystemData(const ui::ClipboardData& data) {
-  // This code should not be reached if `data` doesn't contain file system data.
-  std::u16string sources;
-  std::vector<base::StringPiece16> source_list;
-  clipboard_history_util::GetSplitFileSystemData(data, &source_list, &sources);
-  if (sources.empty()) {
-    NOTREACHED();
-    return std::u16string();
-  }
-
-  // Strip path information, so all that's left are file names.
-  for (auto it = source_list.begin(); it != source_list.end(); ++it)
-    *it = it->substr(it->find_last_of(u"/") + 1);
-
-  // Join file names, unescaping encoded character sequences for display. This
-  // ensures that "My%20File.txt" will display as "My File.txt".
-  return base::UTF8ToUTF16(base::UnescapeURLComponent(
-      base::UTF16ToUTF8(base::JoinString(source_list, u", ")),
-      base::UnescapeRule::SPACES));
-}
-
-void RecordPlaceholderString(ClipboardHistoryPlaceholderStringType type) {
-  base::UmaHistogramEnumeration(
-      "Ash.ClipboardHistory.ContextMenu.ShowPlaceholderString", type);
-}
-
 }  // namespace
 
 // ClipboardHistoryResourceManager ---------------------------------------------
@@ -152,39 +100,6 @@ ui::ImageModel ClipboardHistoryResourceManager::GetImageModel(
     return placeholder_image_model_;
   }
   return cached_image_model->image_model;
-}
-
-std::u16string ClipboardHistoryResourceManager::GetLabel(
-    const ClipboardHistoryItem& item) const {
-  const ui::ClipboardData& data = item.data();
-  switch (clipboard_history_util::CalculateMainFormat(data).value()) {
-    case ui::ClipboardInternalFormat::kPng:
-      RecordPlaceholderString(ClipboardHistoryPlaceholderStringType::kBitmap);
-      return GetLocalizedString(IDS_CLIPBOARD_MENU_IMAGE);
-    case ui::ClipboardInternalFormat::kText:
-      return base::UTF8ToUTF16(data.text());
-    case ui::ClipboardInternalFormat::kHtml:
-      // Show plain-text if it exists, otherwise show the placeholder.
-      if (!data.text().empty())
-        return base::UTF8ToUTF16(data.text());
-      RecordPlaceholderString(ClipboardHistoryPlaceholderStringType::kHtml);
-      return GetLocalizedString(IDS_CLIPBOARD_MENU_HTML);
-    case ui::ClipboardInternalFormat::kSvg:
-      return base::UTF8ToUTF16(data.svg_data());
-    case ui::ClipboardInternalFormat::kRtf:
-      RecordPlaceholderString(ClipboardHistoryPlaceholderStringType::kRtf);
-      return GetLocalizedString(IDS_CLIPBOARD_MENU_RTF_CONTENT);
-    case ui::ClipboardInternalFormat::kBookmark:
-      return base::UTF8ToUTF16(data.bookmark_title());
-    case ui::ClipboardInternalFormat::kWeb:
-      RecordPlaceholderString(
-          ClipboardHistoryPlaceholderStringType::kWebSmartPaste);
-      return GetLocalizedString(IDS_CLIPBOARD_MENU_WEB_SMART_PASTE);
-    case ui::ClipboardInternalFormat::kFilenames:
-    case ui::ClipboardInternalFormat::kCustom:
-      // Currently the only supported type of custom data is file system data.
-      return GetLabelForFileSystemData(data);
-  }
 }
 
 void ClipboardHistoryResourceManager::AddObserver(Observer* observer) const {
@@ -257,8 +172,7 @@ void ClipboardHistoryResourceManager::OnClipboardHistoryItemAdded(
 
   // For items that will be represented by their rendered HTML, we need to do
   // some prep work to pre-render and cache an image model.
-  if (clipboard_history_util::CalculateDisplayFormat(item.data()) !=
-      clipboard_history_util::DisplayFormat::kHtml) {
+  if (item.display_format() != ClipboardHistoryItem::DisplayFormat::kHtml) {
     return;
   }
 
@@ -310,8 +224,7 @@ void ClipboardHistoryResourceManager::OnClipboardHistoryItemAdded(
 void ClipboardHistoryResourceManager::OnClipboardHistoryItemRemoved(
     const ClipboardHistoryItem& item) {
   // For items that will not be represented by their rendered HTML, do nothing.
-  if (clipboard_history_util::CalculateDisplayFormat(item.data()) !=
-      clipboard_history_util::DisplayFormat::kHtml) {
+  if (item.display_format() != ClipboardHistoryItem::DisplayFormat::kHtml) {
     return;
   }
 

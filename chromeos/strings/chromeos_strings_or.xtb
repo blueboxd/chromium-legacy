@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">ଏକ୍ସଟର୍ନଲ ଡିଭାଇସଗୁଡ଼ିକ ପାଇଁ ଫାର୍ମୱେର ଅପଡେଟ ୱିଣ୍ଡୋ ଖୋଲା ଅଛି। <ph name="NUM_UPDATES" />ଟି ଅପଡେଟ ଉପଲବ୍ଧ ଅଛି।</translation>
 <translation id="1145516343487477149">ସହାୟତା ଆର୍ଟିକିଲ ଏବଂ ସାଧାରଣ Chromebook ପ୍ରଶ୍ନଗୁଡ଼ିକର ଉତ୍ତର ପାଆନ୍ତୁ</translation>
+<translation id="1167755866710282443">କୀ'ଗୁଡ଼ିକୁ କଷ୍ଟମାଇଜ କରିବା ପାଇଁ ମେନୁ ଖୋଲନ୍ତୁ। ମୁଭ କରିବା ପାଇଁ ମେନୁକୁ ଡ୍ରାଗ କରନ୍ତୁ।</translation>
 <translation id="1175697296044146566">ଏହି <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି।</translation>
 <translation id="1175951029573070619">ସାଧାରଣ (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">କାଢ଼ି ଦିଅନ୍ତୁ</translation>
@@ -77,7 +78,7 @@
 <translation id="1639239467298939599">ଲୋଡ୍ ହେଉଛି</translation>
 <translation id="1641857168437328880">ଡକ୍ୟୁମେଣ୍ଟ ଫିଡର୍ (ଗୋଟିଏ-ପାର୍ଶ୍ୱ)</translation>
 <translation id="1643449475550628585">ୱାଲପେପର୍ ଛବିକୁ ଦୈନିକ ପରିବର୍ତ୍ତନ କରନ୍ତୁ</translation>
-<translation id="1644574205037202324">ଇତିହାସ</translation>
+<translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
 <translation id="1662989795263954667">ବନ୍ଦ ହୋଇଯାଇଛି - ସ୍ୟାହି ସରିଯାଇଛି</translation>
 <translation id="1664796644829245314"><ph name="PREVIEW_OBJECT" />ର ପ୍ରିଭ୍ୟୁ କରନ୍ତୁ</translation>
 <translation id="1668469839109562275">ବିଲ୍ଟ-ଇନ VPN</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">ଆଲବମ୍ <ph name="TITLE" /> <ph name="DESC" /> ଚୟନ କରନ୍ତୁ</translation>
 <translation id="4111761024568264522">USB ଟଚପ୍ୟାଡ</translation>
 <translation id="4117637339509843559">ଡାର୍କ ମୋଡ୍</translation>
+<translation id="4130035430755296270">ଅଧିକ ଲେଆଉଟ ବିକଳ୍ପ ପାଇଁ ହୋଭର କରିବା ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="4131410914670010031">କଳା ଏବଂ ଧଳା</translation>
 <translation id="4145784616224233563">HTTP ଫାୟାରୱାଲ୍</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS ରିଜୋଲ୍ୟୁସନ୍</translation>
 <translation id="4848429997038228357">ଚାଲୁଛି</translation>
 <translation id="4854586501323951986">ବିଲ୍ଟ-ଇନ ଟଚସ୍କ୍ରିନ</translation>
+<translation id="4855250849489639581">ଅଧିକ ଲେଆଉଟ ବିକଳ୍ପ ପାଇଁ ତଳକୁ ସ୍ୱାଇପ କରନ୍ତୁ</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0}ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି}other{<ph name="ERROR_MESSAGE" />{0}ଟି ପ୍ରଚେଷ୍ଟା ବାକି ଅଛି}}</translation>
 <translation id="4873827928179867585">ପ୍ରମାଣୀକରଣ ଆଲଗୋରିଦମ</translation>
 <translation id="4880328057631981605">ଆକ୍ସେସ୍ ପଏଣ୍ଟର ନାମ</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1ଟି ଛବି</translation>
 <translation id="7177485034254901881">ଏହି <ph name="DEVICE_TYPE" />, <ph name="MANAGER" /> ଦ୍ୱାରା ପରିଚାଳିତ ହେଉଛି। ଆଡମିନିଷ୍ଟ୍ରେଟରମାନେ ଡିଭାଇସଟିକୁ ରିମୋଟ୍ ଭାବେ କନଫିଗର୍ କରିପାରନ୍ତି।</translation>
 <translation id="7180611975245234373">ରିଫ୍ରେଶ୍</translation>
+<translation id="7180865173735832675">କଷ୍ଟୋମାଇଜ୍</translation>
 <translation id="7212734716605298123">ଏକ୍ସଟର୍ନଲ ଡିଭାଇସଗୁଡ଼ିକ ପାଇଁ ଫାର୍ମୱେର ଅପଡେଟଗୁଡ଼ିକ</translation>
 <translation id="7216409898977639127">ସେଲ୍ୟୁଲାର୍ ସେବା ପ୍ରଦାତା</translation>
 <translation id="725133483556299729">ଇମେଲ ଚୟନ କରନ୍ତୁ</translation>

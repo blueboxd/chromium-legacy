@@ -10,6 +10,7 @@
 #include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css/style_rule.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_including_tree_order_traversal.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -18,6 +19,7 @@
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/speculation_rule_loader.h"
+#include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/speculation_rules/document_rule_predicate.h"
 #include "third_party/blink/renderer/core/speculation_rules/speculation_rules_metrics.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
@@ -182,6 +184,8 @@ void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
     }
   }
   QueueUpdateSpeculationCandidates();
+
+  probe::DidAddSpeculationRuleSet(*GetSupplementable(), *rule_set);
 }
 
 void DocumentSpeculationRules::RemoveRuleSet(SpeculationRuleSet* rule_set) {
@@ -195,6 +199,8 @@ void DocumentSpeculationRules::RemoveRuleSet(SpeculationRuleSet* rule_set) {
     }
   }
   QueueUpdateSpeculationCandidates();
+
+  probe::DidRemoveSpeculationRuleSet(*GetSupplementable(), *rule_set);
 }
 
 void DocumentSpeculationRules::AddSpeculationRuleLoader(
@@ -296,8 +302,27 @@ void DocumentSpeculationRules::DocumentBaseURLChanged() {
 void DocumentSpeculationRules::LinkMatchedSelectorsUpdated(
     HTMLAnchorElement* link) {
   DCHECK(initialized_);
+  DCHECK(SelectorMatchesEnabled());
+
   InvalidateLink(link);
   QueueUpdateSpeculationCandidates();
+}
+
+void DocumentSpeculationRules::LinkGainedOrLostComputedStyle(
+    HTMLAnchorElement* link) {
+  if (!SelectorMatchesEnabled() || !initialized_) {
+    return;
+  }
+
+  InvalidateLink(link);
+  QueueUpdateSpeculationCandidates();
+}
+
+void DocumentSpeculationRules::DocumentStyleUpdated() {
+  if (pending_update_state_ ==
+      PendingUpdateState::kUpdateWithCleanStylePending) {
+    UpdateSpeculationCandidates();
+  }
 }
 
 void DocumentSpeculationRules::Trace(Visitor* visitor) const {
@@ -324,21 +349,42 @@ mojom::blink::SpeculationHost* DocumentSpeculationRules::GetHost() {
 }
 
 void DocumentSpeculationRules::QueueUpdateSpeculationCandidates() {
-  if (has_pending_update_)
+  if (pending_update_state_ != PendingUpdateState::kNoUpdatePending) {
     return;
+  }
+
+  // If "selector_matches" is enabled and style isn't clean, we don't need to
+  // enqueue a microtask to run UpdateSpeculationCandidates, and instead wait
+  // for DocumentStyleUpdated to be called.
+  if (SelectorMatchesEnabled() &&
+      GetSupplementable()->NeedsLayoutTreeUpdate()) {
+    SetPendingUpdateState(PendingUpdateState::kUpdateWithCleanStylePending);
+    return;
+  }
 
   auto* execution_context = GetSupplementable()->GetExecutionContext();
   if (!execution_context)
     return;
 
-  has_pending_update_ = true;
+  SetPendingUpdateState(PendingUpdateState::kUpdatePending);
   execution_context->GetAgent()->event_loop()->EnqueueMicrotask(
       WTF::BindOnce(&DocumentSpeculationRules::UpdateSpeculationCandidates,
                     WrapWeakPersistent(this)));
 }
 
 void DocumentSpeculationRules::UpdateSpeculationCandidates() {
-  has_pending_update_ = false;
+  DCHECK_NE(pending_update_state_, PendingUpdateState::kNoUpdatePending);
+
+  // Style may be invalidated after we enqueue a microtask, in which case we
+  // wait for style to be clean before proceeding.
+  if (SelectorMatchesEnabled() &&
+      GetSupplementable()->NeedsLayoutTreeUpdate()) {
+    SetPendingUpdateState(PendingUpdateState::kUpdateWithCleanStylePending);
+    return;
+  }
+
+  // We are actually performing the update below, so mark as no update pending.
+  SetPendingUpdateState(PendingUpdateState::kNoUpdatePending);
 
   mojom::blink::SpeculationHost* host = GetHost();
   auto* execution_context = GetSupplementable()->GetExecutionContext();
@@ -427,11 +473,22 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
     ExecutionContext* execution_context =
         GetSupplementable()->GetExecutionContext();
     DCHECK(execution_context);
+    const bool selector_matches_enabled = SelectorMatchesEnabled();
 
     const auto push_link_candidates =
-        [&link, &link_candidates, &execution_context](
+        [&link, &link_candidates, &execution_context,
+         &selector_matches_enabled](
             mojom::blink::SpeculationAction action,
             const HeapVector<Member<SpeculationRule>>& speculation_rules) {
+          // We exclude links that don't have a ComputedStyle stored (or have a
+          // ComputedStyle only because EnsureComputedStyle was called, and
+          // otherwise wouldn't). This corresponds to links that are not in the
+          // flat tree or links with a "display: none" inclusive-ancestor.
+          if (selector_matches_enabled &&
+              ComputedStyle::IsNullOrEnsured(link->GetComputedStyle())) {
+            return;
+          }
+
           for (SpeculationRule* rule : speculation_rules) {
             if (!rule->predicate())
               continue;
@@ -573,11 +630,7 @@ void DocumentSpeculationRules::InvalidateAllLinks() {
 }
 
 void DocumentSpeculationRules::UpdateSelectors() {
-  ExecutionContext* execution_context =
-      GetSupplementable()->GetExecutionContext();
-  if (!RuntimeEnabledFeatures::
-          SpeculationRulesDocumentRulesSelectorMatchesEnabled(
-              execution_context)) {
+  if (!SelectorMatchesEnabled()) {
     return;
   }
 
@@ -588,6 +641,25 @@ void DocumentSpeculationRules::UpdateSelectors() {
 
   selectors_ = std::move(selectors);
   GetSupplementable()->GetStyleEngine().DocumentRulesSelectorsChanged();
+}
+
+void DocumentSpeculationRules::SetPendingUpdateState(
+    PendingUpdateState new_state) {
+  PendingUpdateState old_state = pending_update_state_;
+  // This is the only invalid state transition.
+  DCHECK(!(old_state == PendingUpdateState::kUpdateWithCleanStylePending &&
+           new_state == PendingUpdateState::kUpdatePending));
+  pending_update_state_ = new_state;
+}
+
+bool DocumentSpeculationRules::SelectorMatchesEnabled() {
+  if (was_selector_matches_enabled_) {
+    return true;
+  }
+  was_selector_matches_enabled_ = RuntimeEnabledFeatures::
+      SpeculationRulesDocumentRulesSelectorMatchesEnabled(
+          GetSupplementable()->GetExecutionContext());
+  return was_selector_matches_enabled_;
 }
 
 }  // namespace blink

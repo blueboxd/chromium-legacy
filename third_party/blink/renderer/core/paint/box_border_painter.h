@@ -50,10 +50,6 @@ class BoxBorderPainter {
                           const AutoDarkMode& auto_dark_mode);
 
  private:
-  static Color CalculateBorderStyleColor(const EBorderStyle& style,
-                                         const BoxSide& side,
-                                         const Color& color);
-
   // For PaintBorder().
   BoxBorderPainter(GraphicsContext&,
                    const PhysicalRect& border_rect,
@@ -119,7 +115,6 @@ class BoxBorderPainter {
                                       EBorderStyle) const;
   void ClipBorderSidePolygon(BoxSide, MiterType miter1, MiterType miter2) const;
   gfx::Rect CalculateSideRectIncludingInner(BoxSide) const;
-  void ClipBorderSideForComplexInnerPath(BoxSide) const;
 
   MiterType ComputeMiter(BoxSide, BoxSide adjacent_side, BorderEdgeFlags) const;
   static bool MitersRequireClipping(MiterType miter1,

@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/types/strong_alias.h"
@@ -27,6 +28,7 @@
 #include "components/app_constants/constants.h"
 #include "components/app_restore/app_launch_info.h"
 #include "components/desks_storage/core/desk_model_observer.h"
+#include "components/desks_storage/core/desk_storage_metrics_util.h"
 #include "components/desks_storage/core/desk_template_conversion.h"
 #include "components/desks_storage/core/desk_test_util.h"
 #include "components/desks_storage/core/saved_desk_builder.h"
@@ -714,7 +716,7 @@ class DeskSyncBridgeTest : public testing::Test {
             "admin template 1", AdvanceAndGetTime()));
 
     std::string policy_json;
-    base::Value template_list(base::Value::Type::LIST);
+    base::Value::List template_list;
     template_list.Append(
         desk_template_conversion::SerializeDeskTemplateAsPolicy(
             admin_template1.get(), cache_.get()));
@@ -1267,7 +1269,7 @@ TEST_F(DeskSyncBridgeTest, AddEntryShouldFailWhenEntryIsTooLarge) {
   loop.Run();
 }
 
-TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWheSyncIsDisabled) {
+TEST_F(DeskSyncBridgeTest, AddEntryShouldSucceedWhenSyncIsDisabled) {
   InitializeBridge();
   DisableBridgeSync();
 
@@ -1741,6 +1743,41 @@ TEST_F(DeskSyncBridgeTest, GetTemplateJsonShouldReturnList) {
         loop.Quit();
       }));
   loop.Run();
+}
+
+TEST_F(DeskSyncBridgeTest, AddUnknownDeskTypeShouldFail) {
+  InitializeBridge();
+
+  WorkspaceDeskSpecifics unknown_desk = CreateUnknownDeskType();
+  std::unique_ptr<DeskTemplate> desk_template =
+      desk_template_conversion::FromSyncProto(unknown_desk);
+
+  base::RunLoop loop;
+  bridge()->AddOrUpdateEntry(
+      std::move(desk_template),
+      base::BindLambdaForTesting(
+          [&](DeskModel::AddOrUpdateEntryStatus status,
+              std::unique_ptr<ash::DeskTemplate> new_entry) {
+            EXPECT_EQ(status,
+                      DeskModel::AddOrUpdateEntryStatus::kInvalidArgument);
+            loop.Quit();
+          }));
+  loop.Run();
+}
+
+TEST_F(DeskSyncBridgeTest, CanRecordFileSizeMetrics) {
+  base::HistogramTester histogram_tester;
+
+  InitializeBridge();
+
+  AddTwoTemplates();
+
+  EXPECT_EQ(2ul, bridge()->GetEntryCount());
+
+  histogram_tester.ExpectTotalCount(kSaveAndRecallTemplateSizeHistogramName,
+                                    2u);
+  histogram_tester.ExpectBucketCount(kSaveAndRecallTemplateSizeHistogramName,
+                                     572, 2u);
 }
 
 }  // namespace

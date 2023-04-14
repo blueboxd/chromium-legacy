@@ -35,11 +35,11 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/browser/metrics/autofill_metrics.h"
-#include "components/autofill/core/browser/payments/iban_save_strike_database.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics_utils.h"
 #include "components/autofill/core/browser/payments/test_virtual_card_enrollment_manager.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
+#include "components/autofill/core/browser/strike_databases/payments/iban_save_strike_database.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -1699,6 +1699,22 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_InsufficientAddress) {
       ConstructFormStructureFromTypeValuePairs(type_value_pairs);
   // Verify that no profile is imported.
   ImportAddressProfileAndVerifyImportOfNoProfile(*form_structure);
+}
+
+TEST_P(FormDataImporterTest, ImportAddressProfiles_MissingName) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillRequireNameForProfileImport);
+  // A full profile will be imported as usual.
+  ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(
+      *ConstructDefaultProfileFormStructure());
+  // The same profile won't be imported if its name component is empty.
+  personal_data_manager_->ClearAllLocalData();
+  TypeValuePairs type_value_pairs = GetDefaultProfileTypeValuePairs();
+  SetValueForType(type_value_pairs, NAME_FIRST, "");
+  SetValueForType(type_value_pairs, NAME_LAST, "");
+  ImportAddressProfileAndVerifyImportOfNoProfile(
+      *ConstructFormStructureFromTypeValuePairs(type_value_pairs));
 }
 
 // Ensure that if a verified profile already exists, aggregated profiles cannot
@@ -4133,8 +4149,7 @@ TEST_P(FormDataImporterTest, RemoveInaccessibleProfileValuesMetrics) {
       "Autofill.ProfileImport.InaccessibleFieldsRemoved.";
   histogram_tester.ExpectUniqueSample(metric + "Total", true, 1);
   histogram_tester.ExpectUniqueSample(
-      metric + "ByFieldType",
-      AutofillMetrics::SettingsVisibleFieldTypeForMetrics::kState, 1);
+      metric + "ByFieldType", SettingsVisibleFieldTypeForMetrics::kState, 1);
 }
 
 // Tests a 2-page multi-step extraction.

@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP – TTLS</translation>
 <translation id="1145018782460575098">Вікно "Оновіть мікропрограму для зовнішніх пристроїв" відкрито. Доступно оновлень: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">Шукайте довідкові статті та відповіді на поширені запитання про Chromebook</translation>
+<translation id="1167755866710282443">Відкрийте меню, щоб налаштувати клавіші. Щоб перемістити меню, перетягніть його.</translation>
 <translation id="1175697296044146566">Цим пристроєм <ph name="DEVICE_TYPE" /> керує <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Середній сигнал (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Вибрати альбом "<ph name="TITLE" />" з описом "<ph name="DESC" />"</translation>
 <translation id="4111761024568264522">Сенсорна панель USB</translation>
 <translation id="4117637339509843559">Темний режим</translation>
+<translation id="4130035430755296270">Продовжуйте наводити курсор на варіанти макета</translation>
 <translation id="4131410914670010031">Чорно-білий</translation>
 <translation id="4145784616224233563">Брандмауер HTTP</translation>
 <translation id="4147897805161313378">Google Фото</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">Перетворення DNS (Android)</translation>
 <translation id="4848429997038228357">ТРИВАЄ</translation>
 <translation id="4854586501323951986">Вбудований сенсорний екран</translation>
+<translation id="4855250849489639581">Проведіть пальцем по екрану вниз, щоб переглянути інші варіанти макета</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Залишилася {0} спроба}one{<ph name="ERROR_MESSAGE" /> Залишилася {0} спроба}few{<ph name="ERROR_MESSAGE" /> Залишилися {0} спроби}many{<ph name="ERROR_MESSAGE" /> Залишилося {0} спроб}other{<ph name="ERROR_MESSAGE" /> Залишилося {0} спроби}}</translation>
 <translation id="4873827928179867585">Алгоритм автентифікації</translation>
 <translation id="4880328057631981605">Ім’я точки доступу</translation>
@@ -479,7 +482,7 @@
 <translation id="5372659122375744710">Мережа Wi-Fi ненадійна</translation>
 <translation id="5376354385557966694">Автоматичний світлий режим</translation>
 <translation id="5378184552853359930">Тип IP-адреси</translation>
-<translation id="5389159777326897627">Оформлення і стиль</translation>
+<translation id="5389159777326897627">Оформлення та стиль</translation>
 <translation id="5389224261615877010">Веселка</translation>
 <translation id="5400907029458559844">Підключення пристрою.</translation>
 <translation id="5401938042319910061">Виконати всі послідовності дій</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 зображення</translation>
 <translation id="7177485034254901881">Цим пристроєм <ph name="DEVICE_TYPE" /> керує <ph name="MANAGER" />. Адміністратори можуть віддалено налаштовувати його.</translation>
 <translation id="7180611975245234373">Оновити</translation>
+<translation id="7180865173735832675">Налаштувати</translation>
 <translation id="7212734716605298123">Оновлення мікропрограми для зовнішніх пристроїв</translation>
 <translation id="7216409898977639127">Постачальник мобільного зв’язку</translation>
 <translation id="725133483556299729">Вибрати електронну адресу</translation>
@@ -817,7 +821,7 @@
 <translation id="8675354002693747642">Спільний ключ</translation>
 <translation id="8677859815076891398">Немає альбомів. Створіть їх у <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Щоб керувати цією функцією, натискайте стрілки ліворуч або праворуч.</translation>
-<translation id="8712637175834984815">OK</translation>
+<translation id="8712637175834984815">Виконано</translation>
 <translation id="871560550817059752">Не надруковано – закінчилося чорнило</translation>
 <translation id="8723108084122415655">Затримка мережі не за умовчанням задовга</translation>
 <translation id="8725066075913043281">Повторити спробу</translation>

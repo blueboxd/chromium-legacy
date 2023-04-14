@@ -12,12 +12,11 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/test/test_future.h"
-#include "chrome/browser/ash/platform_keys/chaps_util.h"
+#include "chrome/browser/chromeos/platform_keys/chaps_util.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace ash {
-namespace platform_keys {
+namespace ash::platform_keys {
 
 class PlatformKeysService;
 
@@ -42,32 +41,6 @@ class GetTokensExecutionWaiter
   chromeos::platform_keys::Status status();
 };
 
-// Supports waiting for the result of the PlatformKeysService::GenerateKey*
-// function family.
-class GenerateKeyExecutionWaiter
-    : public base::test::TestFuture<std::string,
-                                    chromeos::platform_keys::Status> {
- public:
-  const std::string& public_key_spki_der();
-  chromeos::platform_keys::Status status();
-
-  base::OnceCallback<void(const std::string&, chromeos::platform_keys::Status)>
-  GetCallback();
-};
-
-// Supports waiting for the result of the PlatformKeysService::Sign* function
-// family.
-class SignExecutionWaiter
-    : public base::test::TestFuture<std::string,
-                                    chromeos::platform_keys::Status> {
- public:
-  const std::string& signature();
-  chromeos::platform_keys::Status status();
-
-  base::OnceCallback<void(const std::string&, chromeos::platform_keys::Status)>
-  GetCallback();
-};
-
 // Supports waiting for the result of the PlatformKeysService::GetCertificates.
 class GetCertificatesExecutionWaiter
     : public base::test::TestFuture<std::unique_ptr<net::CertificateList>,
@@ -77,34 +50,8 @@ class GetCertificatesExecutionWaiter
   chromeos::platform_keys::Status status();
 };
 
-// Supports waiting for the result of the
-// PlatformKeysService::SetAttributeForKey.
-using SetAttributeForKeyExecutionWaiter = StatusWaiter;
-
-// Supports waiting for the result of the
-// PlatformKeysService::GetAttributeForKey.
-class GetAttributeForKeyExecutionWaiter
-    : public base::test::TestFuture<absl::optional<std::string>,
-                                    chromeos::platform_keys::Status> {
- public:
-  const absl::optional<std::string>& attribute_value();
-  chromeos::platform_keys::Status status();
-
-  base::OnceCallback<void(const absl::optional<std::string>&,
-                          chromeos::platform_keys::Status)>
-  GetCallback();
-};
-
 // Supports waiting for the result of the PlatformKeysService::RemoveKey.
 using RemoveKeyExecutionWaiter = StatusWaiter;
-
-class GetAllKeysExecutionWaiter
-    : public base::test::TestFuture<std::vector<std::string>,
-                                    chromeos::platform_keys::Status> {
- public:
-  const std::vector<std::string>& public_keys();
-  chromeos::platform_keys::Status status();
-};
 
 class IsKeyOnTokenExecutionWaiter
     : public base::test::TestFuture<absl::optional<bool>,
@@ -129,7 +76,7 @@ class GetKeyLocationsExecutionWaiter
 
 // A fake implementation of ChapsUtil which actually just generates a key pair
 // through NSS.
-class FakeChapsUtil : public ChapsUtil {
+class FakeChapsUtil : public chromeos::platform_keys::ChapsUtil {
  public:
   using OnKeyGenerated = base::RepeatingCallback<void(const std::string& spki)>;
 
@@ -165,7 +112,7 @@ class ScopedChapsUtilOverride {
   }
 
  private:
-  std::unique_ptr<ChapsUtil> CreateChapsUtil();
+  std::unique_ptr<chromeos::platform_keys::ChapsUtil> CreateChapsUtil();
 
   // Called when a FakeChapsUtil instance created by CreateChapsUtil generates a
   // key pair.
@@ -179,7 +126,6 @@ class ScopedChapsUtilOverride {
 };
 
 }  // namespace test_util
-}  // namespace platform_keys
-}  // namespace ash
+}  // namespace ash::platform_keys
 
 #endif  // CHROME_BROWSER_ASH_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_TEST_UTIL_H_

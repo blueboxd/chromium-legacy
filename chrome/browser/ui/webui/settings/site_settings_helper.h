@@ -67,8 +67,15 @@ constexpr char kType[] = "type";
 constexpr char kIsDirectory[] = "isDirectory";
 constexpr char kIsEmbargoed[] = "isEmbargoed";
 constexpr char kIsWritable[] = "isWritable";
+constexpr char kDirectoryReadGrants[] = "directoryReadGrants";
+constexpr char kDirectoryWriteGrants[] = "directoryWriteGrants";
+constexpr char kFilePath[] = "filePath";
+constexpr char kFileReadGrants[] = "fileReadGrants";
+constexpr char kFileWriteGrants[] = "fileWriteGrants";
 constexpr char kNotificationInfoString[] = "notificationInfoString";
 constexpr char kPermissions[] = "permissions";
+constexpr char kExtensionName[] = "extensionName";
+constexpr char kExtensionNameWithId[] = "extensionNameWithId";
 
 enum class SiteSettingSource {
   kAllowlist,
@@ -147,14 +154,12 @@ void GetContentCategorySetting(const HostContentSettingsMap* map,
 // of that setting, and its display name, which will be different if it's an
 // extension. Note this is similar to GetContentCategorySetting() above but this
 // goes through the PermissionManager (preferred, see https://crbug.com/739241).
-ContentSetting GetContentSettingForOrigin(
-    Profile* profile,
-    const HostContentSettingsMap* map,
-    const GURL& origin,
-    ContentSettingsType content_type,
-    std::string* source_string,
-    const extensions::ExtensionRegistry* extension_registry,
-    std::string* display_name);
+ContentSetting GetContentSettingForOrigin(Profile* profile,
+                                          const HostContentSettingsMap* map,
+                                          const GURL& origin,
+                                          ContentSettingsType content_type,
+                                          std::string* source_string,
+                                          std::string* display_name);
 
 // Returns URLs with granted entries from the File System Access API.
 void GetFileSystemGrantedEntries(std::vector<base::Value::Dict>* exceptions,
@@ -213,6 +218,11 @@ base::Value::List GetChooserExceptionListFromProfile(
 // Returns the short name of a web app in case of an Isolated Web App.
 absl::optional<std::string> GetIsolatedWebAppName(Profile* profile,
                                                   GURL origin);
+
+// Returns the short name of a browser extension, or nullopt if `origin` is not
+// an extension URL.
+absl::optional<std::string> GetExtensionDisplayName(Profile* profile,
+                                                    GURL origin);
 
 }  // namespace site_settings
 

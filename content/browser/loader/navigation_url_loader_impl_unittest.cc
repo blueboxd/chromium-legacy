@@ -47,6 +47,7 @@
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/single_request_url_loader_factory.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
 #include "services/network/test/url_loader_context_for_tests.h"
@@ -123,11 +124,13 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
         mojo::NullRemote() /* url_loader_network_observer */,
         /*devtools_observer=*/mojo::NullRemote(),
         /*accept_ch_frame_observer=*/mojo::NullRemote(),
-        /*third_party_cookies_enabled=*/true,
-        /*cache_transparency_settings=*/nullptr);
+        /*third_party_cookies_enabled=*/true, net::CookieSettingOverrides(),
+        /*cache_transparency_settings=*/nullptr,
+        /*attribution_request_helper=*/nullptr);
   }
 
   bool MaybeCreateLoaderForResponse(
+      const network::URLLoaderCompletionStatus& status,
       const network::ResourceRequest& request,
       network::mojom::URLResponseHeadPtr* response,
       mojo::ScopedDataPipeConsumerHandle* response_body,
@@ -224,6 +227,7 @@ class NavigationURLLoaderImplTest : public testing::Test {
             blink::mojom::MixedContentContextType::kBlockable,
             false /* is_form_submission */,
             false /* was_initiated_by_link_click */,
+            blink::mojom::ForceHistoryPush::kNo,
             GURL() /* searchable_form_url */,
             std::string() /* searchable_form_encoding */,
             GURL() /* client_side_redirect_url */,

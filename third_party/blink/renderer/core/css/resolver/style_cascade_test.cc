@@ -91,12 +91,12 @@ class TestCascade {
       : state_(document, target ? *target : *document.body()),
         cascade_(InitState(state_)) {}
 
-  scoped_refptr<ComputedStyle> TakeStyle() { return state_.TakeStyle(); }
+  scoped_refptr<const ComputedStyle> TakeStyle() { return state_.TakeStyle(); }
 
   StyleResolverState& State() { return state_; }
   StyleCascade& InnerCascade() { return cascade_; }
 
-  void InheritFrom(scoped_refptr<ComputedStyle> parent) {
+  void InheritFrom(scoped_refptr<const ComputedStyle> parent) {
     state_.SetParentStyle(parent);
     state_.StyleBuilder().InheritFrom(*parent);
   }
@@ -226,12 +226,13 @@ class TestCascade {
   Element* Body() const { return GetDocument().body(); }
 
   static StyleResolverState& InitState(StyleResolverState& state) {
-    state.SetStyle(InitialStyle(state.GetDocument()));
+    state.SetStyle(*InitialStyle(state.GetDocument()));
     state.SetParentStyle(InitialStyle(state.GetDocument()));
+    state.SetOldStyle(state.GetElement().GetComputedStyle());
     return state;
   }
 
-  static scoped_refptr<ComputedStyle> InitialStyle(Document& document) {
+  static scoped_refptr<const ComputedStyle> InitialStyle(Document& document) {
     return document.GetStyleResolver().InitialStyleForElement();
   }
 
@@ -270,7 +271,8 @@ class TestCascade {
 
   void CalculateInterpolationUpdate() {
     CSSAnimations::CalculateTransitionUpdate(
-        state_.AnimationUpdate(), state_.GetElement(), state_.StyleBuilder());
+        state_.AnimationUpdate(), state_.GetElement(), state_.StyleBuilder(),
+        state_.OldStyle());
     CSSAnimations::CalculateAnimationUpdate(
         state_.AnimationUpdate(), state_.GetElement(), state_.GetElement(),
         state_.StyleBuilder(), state_.ParentStyle(),

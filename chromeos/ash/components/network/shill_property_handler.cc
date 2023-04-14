@@ -157,7 +157,8 @@ bool ShillPropertyHandler::IsTechnologyUninitialized(
 void ShillPropertyHandler::SetTechnologyEnabled(
     const std::string& technology,
     bool enabled,
-    network_handler::ErrorCallback error_callback) {
+    network_handler::ErrorCallback error_callback,
+    base::OnceClosure success_callback) {
   if (enabled) {
     if (prohibited_technologies_.find(technology) !=
         prohibited_technologies_.end()) {
@@ -173,8 +174,8 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     disabling_technologies_.erase(technology);
     shill_manager_->EnableTechnology(
         technology,
-        base::BindOnce(&NetworkMetricsHelper::LogEnableTechnologyResult,
-                       technology, /*success=*/true, absl::nullopt),
+        base::BindOnce(&ShillPropertyHandler::EnableTechnologySuccess,
+                       AsWeakPtr(), technology, std::move(success_callback)),
         base::BindOnce(&ShillPropertyHandler::EnableTechnologyFailed,
                        AsWeakPtr(), technology, std::move(error_callback)));
   } else {
@@ -183,8 +184,8 @@ void ShillPropertyHandler::SetTechnologyEnabled(
     disabling_technologies_.insert(technology);
     shill_manager_->DisableTechnology(
         technology,
-        base::BindOnce(&NetworkMetricsHelper::LogDisableTechnologyResult,
-                       technology, /*success=*/true, absl::nullopt),
+        base::BindOnce(&ShillPropertyHandler::DisableTechnologySuccess,
+                       AsWeakPtr(), technology, std::move(success_callback)),
         base::BindOnce(&ShillPropertyHandler::DisableTechnologyFailed,
                        AsWeakPtr(), technology, std::move(error_callback)));
   }
@@ -360,13 +361,13 @@ void ShillPropertyHandler::OnPropertyChanged(const std::string& key,
 // Private methods
 
 void ShillPropertyHandler::ManagerPropertiesCallback(
-    absl::optional<base::Value> properties) {
+    absl::optional<base::Value::Dict> properties) {
   if (!properties) {
     NET_LOG(ERROR) << "ManagerPropertiesCallback Failed";
     return;
   }
   NET_LOG(EVENT) << "ManagerPropertiesCallback: Success";
-  for (const auto item : properties->DictItems()) {
+  for (const auto item : *properties) {
     ManagerPropertyChanged(item.first, item.second);
   }
 
@@ -569,6 +570,13 @@ void ShillPropertyHandler::UpdateProhibitedTechnologies(
   listener_->TechnologyListChanged();
 }
 
+void ShillPropertyHandler::EnableTechnologySuccess(
+    const std::string& technology,
+    base::OnceClosure success_callback) {
+  NetworkMetricsHelper::LogEnableTechnologyResult(technology, /*success=*/true);
+  std::move(success_callback).Run();
+}
+
 void ShillPropertyHandler::EnableTechnologyFailed(
     const std::string& technology,
     network_handler::ErrorCallback error_callback,
@@ -582,6 +590,14 @@ void ShillPropertyHandler::EnableTechnologyFailed(
       "EnableTechnology Failed", technology, std::move(error_callback),
       dbus_error_name, dbus_error_message);
   listener_->TechnologyListChanged();
+}
+
+void ShillPropertyHandler::DisableTechnologySuccess(
+    const std::string& technology,
+    base::OnceClosure success_callback) {
+  NetworkMetricsHelper::LogDisableTechnologyResult(technology,
+                                                   /*success=*/true);
+  std::move(success_callback).Run();
 }
 
 void ShillPropertyHandler::DisableTechnologyFailed(
@@ -602,7 +618,7 @@ void ShillPropertyHandler::DisableTechnologyFailed(
 void ShillPropertyHandler::GetPropertiesCallback(
     ManagedState::ManagedType type,
     const std::string& path,
-    absl::optional<base::Value> properties) {
+    absl::optional<base::Value::Dict> properties) {
   pending_updates_[type].erase(path);
   if (!properties) {
     // The shill service no longer exists.  This can happen when a network
@@ -614,14 +630,12 @@ void ShillPropertyHandler::GetPropertiesCallback(
 
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     // Request IPConfig properties.
-    const base::Value* value =
-        properties->GetDict().Find(shill::kIPConfigProperty);
+    const base::Value* value = properties->Find(shill::kIPConfigProperty);
     if (value)
       RequestIPConfig(type, path, *value);
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     // Clear and request IPConfig properties for each entry in IPConfigs.
-    const base::Value* value =
-        properties->GetDict().Find(shill::kIPConfigsProperty);
+    const base::Value* value = properties->Find(shill::kIPConfigsProperty);
     if (value)
       RequestIPConfigsList(type, path, *value);
   }
@@ -685,7 +699,7 @@ void ShillPropertyHandler::GetIPConfigCallback(
     ManagedState::ManagedType type,
     const std::string& path,
     const std::string& ip_config_path,
-    absl::optional<base::Value> properties) {
+    absl::optional<base::Value::Dict> properties) {
   if (!properties) {
     // IP Config properties not available. Shill will emit a property change
     // when they are.

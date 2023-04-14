@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/queue.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -18,7 +19,7 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/floss/exported_callback_manager.h"
 #include "device/bluetooth/floss/floss_dbus_client.h"
-#include "device/bluetooth/floss/floss_gatt_client.h"
+#include "device/bluetooth/floss/floss_gatt_manager_client.h"
 
 namespace dbus {
 class ObjectPath;
@@ -167,6 +168,7 @@ class DEVICE_BLUETOOTH_EXPORT FlossLEScanClient : public FlossDBusClient,
                          uint8_t scanner_id,
                          GattStatus status) override;
   void ScanResultReceived(ScanResult scan_result) override;
+  void ScanResultLost(ScanResult scan_result) override;
 
   // Managed by FlossDBusManager - we keep local pointer to access object proxy.
   raw_ptr<dbus::Bus> bus_ = nullptr;
@@ -185,6 +187,11 @@ class DEVICE_BLUETOOTH_EXPORT FlossLEScanClient : public FlossDBusClient,
 
   ExportedCallbackManager<ScannerClientObserver>
       exported_scanner_callback_manager_{kScannerCallbackInterfaceName};
+
+  // List of callbacks to register a scanner for once |RegisterScannerCallback|
+  // completes.
+  base::queue<ResponseCallback<device::BluetoothUUID>>
+      pending_register_scanners_;
 
   void RegisterScannerCallback();
 

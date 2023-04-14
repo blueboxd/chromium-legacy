@@ -45,6 +45,7 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/profiles/profile_test_util.h"
+#include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -635,8 +636,20 @@ IN_PROC_BROWSER_TEST_F(AppControllerProfilePickerBrowserTest, MenuCommands) {
 
 class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
  protected:
-  AppControllerOpenShortcutBrowserTest() {
-    scoped_feature_list_.InitWithFeatures({welcome::kForceEnabled}, {});
+  AppControllerOpenShortcutBrowserTest()
+      : AppControllerOpenShortcutBrowserTest(/*enable_fre=*/false) {}
+
+  AppControllerOpenShortcutBrowserTest(bool enable_fre) {
+    std::vector<base::test::FeatureRef> enabled_features = {
+        welcome::kForceEnabled};
+    std::vector<base::test::FeatureRef> disabled_features = {};
+    if (enable_fre) {
+      enabled_features.push_back(kForYouFre);
+    } else {
+      disabled_features.push_back(kForYouFre);
+    }
+
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -685,6 +698,24 @@ IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
                        OpenShortcutOnStartup) {
   // The two tabs expected are the Welcome page and the desired URL.
   EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(g_open_shortcut_url, browser()
+                                     ->tab_strip_model()
+                                     ->GetActiveWebContents()
+                                     ->GetLastCommittedURL());
+}
+
+class AppControllerOpenShortcutWithFreBrowserTest
+    : public AppControllerOpenShortcutBrowserTest {
+ protected:
+  AppControllerOpenShortcutWithFreBrowserTest()
+      : AppControllerOpenShortcutBrowserTest(/*enable_fre=*/true) {}
+};
+
+IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutWithFreBrowserTest,
+                       OpenShortcutOnStartup) {
+  // The Welcome page is not expected.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
   EXPECT_EQ(g_open_shortcut_url,
       browser()->tab_strip_model()->GetActiveWebContents()
           ->GetLastCommittedURL());
@@ -1010,6 +1041,48 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
   EXPECT_EQ(BrowserList::GetInstance()->size(), 2u);
   EXPECT_TRUE(new_browser->profile()->IsRegularProfile());
   EXPECT_EQ(profile, new_browser->profile());
+}
+
+// Test switching from Regular to OTR profiles updates the history menu.
+IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
+                       SwitchToIncognitoRemovesHistoryItems) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AppController* ac =
+      base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
+  ASSERT_TRUE(ac);
+
+  GURL simple(embedded_test_server()->GetURL("/simple.html"));
+  SendOpenUrlToAppController(simple);
+
+  Profile* profile = browser()->profile();
+  EXPECT_EQ(BrowserList::GetInstance()->size(), 1u);
+
+  // Load profile's History Service backend so it will be assigned to the
+  // HistoryMenuBridge, or else this test will fail flaky.
+  ui_test_utils::WaitForHistoryToLoad(HistoryServiceFactory::GetForProfile(
+      profile, ServiceAccessType::EXPLICIT_ACCESS));
+
+  // Verify that history bridge service is available for regular profiles.
+  EXPECT_TRUE([ac historyMenuBridge]->service());
+
+  // Open a URL in Incognito window.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), simple, WindowOpenDisposition::OFF_THE_RECORD,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_BROWSER);
+
+  // Check that there are exactly 2 browsers (regular and incognito).
+  BrowserList* active_browser_list = BrowserList::GetInstance();
+  EXPECT_EQ(2u, active_browser_list->size());
+
+  // Verify that history beidge service is not available in Incognito.
+  EXPECT_FALSE([ac historyMenuBridge]->service());
+
+  // Switch back to the regular profile window.
+  Browser* browser1 = active_browser_list->get(0);
+  browser1->window()->Show();
+
+  // Verify that history bridge service is available again.
+  EXPECT_TRUE([ac historyMenuBridge]->service());
 }
 
 class AppControllerIncognitoSwitchTest : public InProcessBrowserTest {

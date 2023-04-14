@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/os_integration/web_app_file_handler_registration.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -37,9 +38,12 @@
 #if BUILDFLAG(IS_MAC)
 #include <ImageIO/ImageIO.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
+#include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
+#include "net/base/filename_util.h"
 #import "skia/ext/skia_utils_mac.h"
 #endif
 
@@ -48,8 +52,19 @@
 
 #include <shellapi.h>
 #include "base/command_line.h"
+#include "base/containers/contains.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_split.h"
+#include "base/win/registry.h"
+#include "base/win/scoped_gdi_object.h"
 #include "base/win/shortcut.h"
+#include "chrome/browser/web_applications/os_integration/web_app_handler_registration_utils_win.h"
+#include "chrome/browser/web_applications/web_app_helpers.h"
+#include "chrome/browser/win/jumplist_updater.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/installer/util/shell_util.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/icon_util.h"
 #endif
@@ -92,6 +107,23 @@ base::FilePath GetShortcutProfile(base::FilePath shortcut_path) {
         shortcut_cmd_line.GetSwitchValuePath(switches::kProfileDirectory);
   }
   return shortcut_profile;
+}
+
+std::vector<std::wstring> GetFileExtensionsForProgId(
+    const std::wstring& file_handler_prog_id) {
+  const std::wstring prog_id_path =
+      base::StrCat({ShellUtil::kRegClasses, L"\\", file_handler_prog_id});
+
+  // Get list of handled file extensions from value FileExtensions at
+  // HKEY_CURRENT_USER\Software\Classes\<file_handler_prog_id>.
+  base::win::RegKey file_extensions_key(HKEY_CURRENT_USER, prog_id_path.c_str(),
+                                        KEY_QUERY_VALUE);
+  std::wstring handled_file_extensions;
+  DCHECK_EQ(file_extensions_key.ReadValue(L"FileExtensions",
+                                          &handled_file_extensions),
+            ERROR_SUCCESS);
+  return base::SplitString(handled_file_extensions, std::wstring(L";"),
+                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 }
 #endif
 
@@ -166,6 +198,65 @@ bool OsIntegrationTestOverride::IsRunOnOsLoginEnabled(
 #endif
 }
 
+bool OsIntegrationTestOverride::IsFileExtensionHandled(
+    Profile* profile,
+    const AppId& app_id,
+    std::string app_name,
+    std::string file_extension) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  bool is_file_handled = false;
+#if BUILDFLAG(IS_WIN)
+  const std::wstring prog_id = GetProgIdForApp(profile->GetPath(), app_id);
+  const std::vector<std::wstring> file_handler_prog_ids =
+      ShellUtil::GetFileHandlerProgIdsForAppId(prog_id);
+
+  base::win::RegKey key;
+  std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+  for (const auto& file_handler_prog_id : file_handler_prog_ids) {
+    const std::vector<std::wstring> supported_file_extensions =
+        GetFileExtensionsForProgId(file_handler_prog_id);
+    std::wstring extension = converter.from_bytes(file_extension);
+    if (base::Contains(supported_file_extensions, extension)) {
+      const std::wstring reg_key = std::wstring(ShellUtil::kRegClasses) +
+                                   base::FilePath::kSeparators[0] + extension +
+                                   base::FilePath::kSeparators[0] +
+                                   ShellUtil::kRegOpenWithProgids;
+      DCHECK_EQ(ERROR_SUCCESS,
+                key.Open(HKEY_CURRENT_USER, reg_key.data(), KEY_READ));
+      return key.HasValue(file_handler_prog_id.data());
+    }
+  }
+#elif BUILDFLAG(IS_MAC)
+  base::ScopedTempDir temp_test_dir;
+  DCHECK(temp_test_dir.CreateUniqueTempDirUnderPath(chrome_apps_folder()));
+  const base::FilePath test_file_path =
+      temp_test_dir.GetPath().AppendASCII("test" + file_extension);
+  const base::File test_file(
+      test_file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  const GURL test_file_url = net::FilePathToFileURL(test_file_path);
+  base::FilePath app_path =
+      GetShortcutPath(profile, chrome_apps_folder(), app_id, app_name);
+  is_file_handled =
+      shell_integration::CanApplicationHandleURL(app_path, test_file_url);
+#elif BUILDFLAG(IS_LINUX)
+  for (const LinuxFileRegistration& command : linux_file_registration()) {
+    if (base::Contains(command.xdg_command, app_id) &&
+        base::Contains(command.xdg_command,
+                       profile->GetPath().BaseName().value())) {
+      if (base::StartsWith(command.xdg_command, "xdg-mime install")) {
+        is_file_handled = base::Contains(command.file_contents,
+                                         "\"*" + file_extension + "\"");
+      } else {
+        DCHECK(base::StartsWith(command.xdg_command, "xdg-mime uninstall"))
+            << command.xdg_command;
+        is_file_handled = false;
+      }
+    }
+  }
+#endif
+  return is_file_handled;
+}
+
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
 absl::optional<SkColor> OsIntegrationTestOverride::GetShortcutIconTopLeftColor(
     Profile* profile,
@@ -180,6 +271,47 @@ absl::optional<SkColor> OsIntegrationTestOverride::GetShortcutIconTopLeftColor(
   return GetIconTopLeftColorFromShortcutFile(shortcut_path);
 }
 #endif
+
+#if BUILDFLAG(IS_WIN)
+void OsIntegrationTestOverride::AddShortcutsMenuJumpListEntryForApp(
+    const std::wstring& app_user_model_id,
+    const std::vector<scoped_refptr<ShellLinkItem>>& shell_link_items) {
+  jump_list_entry_map_[app_user_model_id] = shell_link_items;
+  shortcut_menu_apps_registered_.emplace(app_user_model_id);
+}
+
+void OsIntegrationTestOverride::DeleteShortcutsMenuJumpListEntryForApp(
+    const std::wstring& app_user_model_id) {
+  jump_list_entry_map_.erase(app_user_model_id);
+  shortcut_menu_apps_registered_.erase(app_user_model_id);
+}
+
+int OsIntegrationTestOverride::GetCountOfShortcutIconsCreated(
+    const std::wstring& app_user_model_id) {
+  DCHECK(IsShortcutsMenuRegisteredForApp(app_user_model_id));
+  return jump_list_entry_map_[app_user_model_id].size();
+}
+
+std::vector<SkColor> OsIntegrationTestOverride::GetIconColorsForShortcutsMenu(
+    const std::wstring& app_user_model_id) {
+  DCHECK(IsShortcutsMenuRegisteredForApp(app_user_model_id));
+  std::vector<SkColor> icon_colors;
+  for (auto& shell_link_item : jump_list_entry_map_[app_user_model_id]) {
+    icon_colors.emplace_back(
+        ReadColorFromShortcutMenuIcoFile(shell_link_item->icon_path()));
+  }
+  return icon_colors;
+}
+
+bool OsIntegrationTestOverride::IsShortcutsMenuRegisteredForApp(
+    const std::wstring& app_user_model_id) {
+  return base::Contains(jump_list_entry_map_, app_user_model_id);
+}
+#endif
+
+bool OsIntegrationTestOverride::AreShortcutsMenuRegistered() {
+  return !shortcut_menu_apps_registered_.empty();
+}
 
 base::FilePath OsIntegrationTestOverride::GetShortcutPath(
     Profile* profile,
@@ -479,6 +611,21 @@ SkColor OsIntegrationTestOverride::GetIconTopLeftColorFromShortcutFile(
     return 0;
   }
 #endif
+}
+#endif
+
+#if BUILDFLAG(IS_WIN)
+SkColor OsIntegrationTestOverride::ReadColorFromShortcutMenuIcoFile(
+    const base::FilePath& file_path) {
+  HICON icon = static_cast<HICON>(
+      LoadImage(NULL, file_path.value().c_str(), IMAGE_ICON, 32, 32,
+                LR_LOADTRANSPARENT | LR_LOADFROMFILE));
+  base::win::ScopedHICON scoped_icon(icon);
+  SkBitmap output_image =
+      IconUtil::CreateSkBitmapFromHICON(scoped_icon.get(), gfx::Size(32, 32));
+  SkColor color = output_image.getColor(output_image.dimensions().width() / 2,
+                                        output_image.dimensions().height() / 2);
+  return color;
 }
 #endif
 

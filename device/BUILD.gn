@@ -187,7 +187,10 @@ test("device_unittests") {
       "fido/virtual_u2f_device_unittest.cc",
     ]
 
-    deps += [ "//device/fido:mocks" ]
+    deps += [
+      "//device/fido:mocks",
+      "//services/data_decoder/public/cpp:test_support",
+    ]
 
     if (is_mac) {
       data_deps += [ "fido/strings:fido_test_strings" ]
@@ -196,6 +199,7 @@ test("device_unittests") {
 
   if (is_mac) {
     sources += [
+      "fido/mac/authenticator_unittest.mm",
       "fido/mac/browsing_data_deletion_unittest.mm",
       "fido/mac/credential_metadata_unittest.cc",
       "fido/mac/credential_store_unittest.mm",
@@ -282,7 +286,7 @@ test("device_unittests") {
       "bluetooth/floss/floss_advertiser_client_unittest.cc",
       "bluetooth/floss/floss_battery_manager_client_unittest.cc",
       "bluetooth/floss/floss_dbus_client_unittest.cc",
-      "bluetooth/floss/floss_gatt_client_unittest.cc",
+      "bluetooth/floss/floss_gatt_manager_client_unittest.cc",
       "bluetooth/floss/floss_lescan_client_unittest.cc",
       "bluetooth/floss/floss_manager_client_unittest.cc",
       "bluetooth/floss/floss_socket_manager_unittest.cc",
@@ -343,8 +347,6 @@ test("device_unittests") {
     sources += [
       "bluetooth/bluetooth_classic_win_fake.cc",
       "bluetooth/bluetooth_classic_win_fake.h",
-      "bluetooth/bluetooth_low_energy_win_fake.cc",
-      "bluetooth/bluetooth_low_energy_win_fake.h",
       "bluetooth/test/fake_bluetooth_adapter_winrt.cc",
       "bluetooth/test/fake_bluetooth_adapter_winrt.h",
       "bluetooth/test/fake_bluetooth_le_advertisement_data_section_winrt.cc",

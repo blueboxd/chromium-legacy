@@ -39,9 +39,9 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/manifest_constants.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
 #include "ui/color/color_provider_manager.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/native_theme/native_theme.h"
 
 using extensions::ActionInfo;
@@ -199,13 +199,13 @@ void ExtensionActionViewController::SetDelegate(
   }
 }
 
-gfx::Image ExtensionActionViewController::GetIcon(
+ui::ImageModel ExtensionActionViewController::GetIcon(
     content::WebContents* web_contents,
     const gfx::Size& size) {
   if (!ExtensionIsValid())
-    return gfx::Image();
+    return ui::ImageModel();
 
-  return gfx::Image(
+  return ui::ImageModel::FromImageSkia(
       gfx::ImageSkia(GetIconImageSource(web_contents, size), size));
 }
 
@@ -314,10 +314,8 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu(
   if (!ExtensionIsValid())
     return nullptr;
 
-  ToolbarActionViewController* const action =
-      extensions_container_->GetActionForId(GetId());
   extensions::ExtensionContextMenuModel::ButtonVisibility visibility =
-      extensions_container_->GetActionVisibility(action);
+      extensions_container_->GetActionVisibility(GetId());
 
   // Reconstruct the menu every time because the menu's contents are dynamic.
   context_menu_model_ = std::make_unique<extensions::ExtensionContextMenuModel>(
@@ -327,11 +325,11 @@ ui::MenuModel* ExtensionActionViewController::GetContextMenu(
 }
 
 void ExtensionActionViewController::OnContextMenuShown() {
-  extensions_container_->OnContextMenuShown(this);
+  extensions_container_->OnContextMenuShown(GetId());
 }
 
 void ExtensionActionViewController::OnContextMenuClosed() {
-  extensions_container_->OnContextMenuClosed(this);
+  extensions_container_->OnContextMenuClosed();
 }
 
 void ExtensionActionViewController::ExecuteUserAction(InvocationSource source) {

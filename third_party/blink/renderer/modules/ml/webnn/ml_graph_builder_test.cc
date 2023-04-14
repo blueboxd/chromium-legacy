@@ -16,11 +16,9 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_ml_operand_descriptor.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/modules/ml/ml.h"
-#include "third_party/blink/renderer/modules/ml/ml_context.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_graph_builder.h"
+#include "third_party/blink/renderer/modules/ml/webnn/ml_graph_test_base.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operand.h"
 #include "third_party/blink/renderer/modules/ml/webnn/ml_operator.h"
 
@@ -35,119 +33,27 @@ class MLGraphBuilderTest : public testing::Test {
   ~MLGraphBuilderTest() override = default;
 };
 
-MLGraphBuilder* CreateMLGraphBuilder(V8TestingScope& scope,
-                                     MLContextOptions* options) {
-  auto* ml = MakeGarbageCollected<ML>(scope.GetExecutionContext());
-  auto* context = MakeGarbageCollected<MLContext>(
-      options->devicePreference(), options->powerPreference(),
-      options->modelFormat(), options->numThreads(), ml);
-  auto* builder = MLGraphBuilder::Create(context);
-  EXPECT_NE(builder, nullptr);
-  return builder;
-}
-
-MLOperand* BuildInput(V8TestingScope& scope,
-                      MLGraphBuilder* builder,
-                      const String& name,
-                      const Vector<uint32_t>& dimensions,
-                      V8MLOperandType::Enum type) {
-  auto* desc = MLOperandDescriptor::Create();
-  desc->setDimensions(dimensions);
-  desc->setType(type);
-  auto* input = builder->input(name, desc, scope.GetExceptionState());
-  EXPECT_NE(input, nullptr);
-  EXPECT_EQ(input->Kind(), MLOperand::OperandKind::kInput);
-  EXPECT_EQ(input->Type(), type);
-  EXPECT_EQ(input->Dimensions(), dimensions);
-  EXPECT_EQ(input->Name(), name);
-  return input;
-}
-
-NotShared<DOMArrayBufferView> CreateDOMArrayBufferView(
-    size_t size,
-    V8MLOperandType::Enum type) {
-  NotShared<DOMArrayBufferView> buffer_view;
-  switch (type) {
-    case V8MLOperandType::Enum::kFloat32: {
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMFloat32Array::Create(size));
-      break;
-    }
-    case V8MLOperandType::Enum::kFloat16: {
-      // Using Uint16Array for float16 is a workaround of WebNN spec issue:
-      // https://github.com/webmachinelearning/webnn/issues/127
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMUint16Array::Create(size));
-      break;
-    }
-    case V8MLOperandType::Enum::kInt32: {
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMInt32Array::Create(size));
-      break;
-    }
-    case V8MLOperandType::Enum::kUint32: {
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMUint32Array::Create(size));
-      break;
-    }
-    case V8MLOperandType::Enum::kInt8: {
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMInt8Array::Create(size));
-      break;
-    }
-    case V8MLOperandType::Enum::kUint8: {
-      buffer_view =
-          NotShared<DOMArrayBufferView>(blink::DOMUint8Array::Create(size));
-      break;
-    }
-  }
-  CHECK(buffer_view.Get());
-  return buffer_view;
-}
-
-MLOperand* BuildConstant(
-    V8TestingScope& scope,
-    MLGraphBuilder* builder,
-    const Vector<uint32_t>& dimensions,
-    V8MLOperandType::Enum type,
-    absl::optional<NotShared<DOMArrayBufferView>> user_buffer_view) {
-  auto* desc = MLOperandDescriptor::Create();
-  desc->setDimensions(dimensions);
-  desc->setType(type);
-  size_t size = std::accumulate(dimensions.begin(), dimensions.end(), size_t(1),
-                                std::multiplies<uint32_t>());
-  NotShared<DOMArrayBufferView> buffer_view =
-      user_buffer_view ? std::move(user_buffer_view.value())
-                       : CreateDOMArrayBufferView(size, type);
-  auto* constant =
-      builder->constant(desc, buffer_view, scope.GetExceptionState());
-  EXPECT_NE(constant, nullptr);
-  EXPECT_EQ(constant->Kind(), MLOperand::OperandKind::kConstant);
-  EXPECT_EQ(constant->Type(), type);
-  EXPECT_EQ(constant->Dimensions(), dimensions);
-  EXPECT_EQ(constant->ArrayBufferView(), buffer_view.Get());
-  return constant;
-}
-
 TEST_F(MLGraphBuilderTest, InputTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building a 2-D input without errors.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({3, 4});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("input", desc, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "input", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     EXPECT_NE(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kNoError);
+    EXPECT_EQ(input->Kind(), MLOperand::OperandKind::kInput);
+    EXPECT_EQ(input->Type(), V8MLOperandType::Enum::kFloat32);
+    EXPECT_EQ(input->Dimensions(), Vector<uint32_t>({3, 4}));
+    EXPECT_EQ(input->Name(), "input");
   }
   {
     // Test throwing exception if the name is empty.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({3, 4});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("", desc, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     EXPECT_EQ(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -155,10 +61,9 @@ TEST_F(MLGraphBuilderTest, InputTest) {
   }
   {
     // Test throwing exception if a dimension size is 0.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({3, 0});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("input", desc, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "input", {3, 0}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     EXPECT_EQ(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -167,10 +72,9 @@ TEST_F(MLGraphBuilderTest, InputTest) {
   }
   {
     // Test throwing exception if the dimensions is empty.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("input", desc, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "input", {}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     EXPECT_EQ(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -179,11 +83,10 @@ TEST_F(MLGraphBuilderTest, InputTest) {
   }
   {
     // Test throwing exception if the number of elements is too large.
-    auto* desc = MLOperandDescriptor::Create();
     // Set the dimensions that let the number of elements be 2 * SIZE_MAX.
-    desc->setDimensions({1, 2, kSquareRootOfSizeMax, kSquareRootOfSizeMax});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("input", desc, scope.GetExceptionState());
+    auto* input = BuildInput(
+        builder, "input", {1, 2, kSquareRootOfSizeMax, kSquareRootOfSizeMax},
+        V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     EXPECT_EQ(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -193,11 +96,10 @@ TEST_F(MLGraphBuilderTest, InputTest) {
   }
   {
     // Test throwing exception if the byte length is too large.
-    auto* desc = MLOperandDescriptor::Create();
     // Set the dimensions and type that let the byte length be 4 * SIZE_MAX.
-    desc->setDimensions({1, 1, kSquareRootOfSizeMax, kSquareRootOfSizeMax});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    auto* input = builder->input("input", desc, scope.GetExceptionState());
+    auto* input = BuildInput(
+        builder, "input", {1, 1, kSquareRootOfSizeMax, kSquareRootOfSizeMax},
+        V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     EXPECT_EQ(input, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -208,29 +110,24 @@ TEST_F(MLGraphBuilderTest, InputTest) {
 
 TEST_F(MLGraphBuilderTest, ConstantTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building a 2-D constant without errors.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({2, 3});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    NotShared<DOMArrayBufferView> buffer_view =
-        CreateDOMArrayBufferView(6, V8MLOperandType::Enum::kFloat32);
     auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+        BuildConstant(builder, {2, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     EXPECT_NE(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kNoError);
+    EXPECT_EQ(constant->Kind(), MLOperand::OperandKind::kConstant);
+    EXPECT_EQ(constant->Type(), V8MLOperandType::Enum::kFloat32);
+    EXPECT_EQ(constant->Dimensions(), Vector<uint32_t>({2, 3}));
   }
   {
     // Test throwing exception if a dimension is 0.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({2, 0});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
-    NotShared<DOMArrayBufferView> buffer_view =
-        CreateDOMArrayBufferView(6, V8MLOperandType::Enum::kFloat32);
     auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+        BuildConstant(builder, {2, 0}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     EXPECT_EQ(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -240,13 +137,11 @@ TEST_F(MLGraphBuilderTest, ConstantTest) {
   {
     // Test throwing exception if buffer view type doesn't match the operand
     // type.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({2, 3});
-    desc->setType(V8MLOperandType::Enum::kInt32);
     NotShared<DOMArrayBufferView> buffer_view =
         CreateDOMArrayBufferView(6, V8MLOperandType::Enum::kFloat32);
     auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+        BuildConstant(builder, {2, 3}, V8MLOperandType::Enum::kInt32,
+                      scope.GetExceptionState(), buffer_view);
     EXPECT_EQ(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -255,13 +150,11 @@ TEST_F(MLGraphBuilderTest, ConstantTest) {
   }
   {
     // Test throwing exception if buffer view size is not expected.
-    auto* desc = MLOperandDescriptor::Create();
-    desc->setDimensions({2, 2});
-    desc->setType(V8MLOperandType::Enum::kInt32);
     NotShared<DOMArrayBufferView> buffer_view =
         CreateDOMArrayBufferView(8, V8MLOperandType::Enum::kInt32);
     auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+        BuildConstant(builder, {2, 2}, V8MLOperandType::Enum::kInt32,
+                      scope.GetExceptionState(), buffer_view);
     EXPECT_EQ(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -271,14 +164,13 @@ TEST_F(MLGraphBuilderTest, ConstantTest) {
   }
   {
     // Test throwing exception if the number of elements is too large.
-    auto* desc = MLOperandDescriptor::Create();
     // Set the dimensions that let the number of elements be 2 * SIZE_MAX.
-    desc->setDimensions({1, 2, kSquareRootOfSizeMax, kSquareRootOfSizeMax});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
     NotShared<DOMArrayBufferView> buffer_view =
         CreateDOMArrayBufferView(1, V8MLOperandType::Enum::kFloat32);
-    auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+    auto* constant = BuildConstant(
+        builder, {1, 2, kSquareRootOfSizeMax, kSquareRootOfSizeMax},
+        V8MLOperandType::Enum::kFloat32, scope.GetExceptionState(),
+        buffer_view);
     EXPECT_EQ(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -288,14 +180,13 @@ TEST_F(MLGraphBuilderTest, ConstantTest) {
   }
   {
     // Test throwing exception if the byte length is too large.
-    auto* desc = MLOperandDescriptor::Create();
     // Set the dimensions and type that let the byte length be 4 * SIZE_MAX.
-    desc->setDimensions({1, 1, kSquareRootOfSizeMax, kSquareRootOfSizeMax});
-    desc->setType(V8MLOperandType::Enum::kFloat32);
     NotShared<DOMArrayBufferView> buffer_view =
         CreateDOMArrayBufferView(1, V8MLOperandType::Enum::kFloat32);
-    auto* constant =
-        builder->constant(desc, buffer_view, scope.GetExceptionState());
+    auto* constant = BuildConstant(
+        builder, {1, 1, kSquareRootOfSizeMax, kSquareRootOfSizeMax},
+        V8MLOperandType::Enum::kFloat32, scope.GetExceptionState(),
+        buffer_view);
     EXPECT_EQ(constant, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
               DOMExceptionCode::kDataError);
@@ -324,13 +215,15 @@ MLOperand* BuildConv2d(V8TestingScope& scope,
 
 TEST_F(MLGraphBuilderTest, Conv2dTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test conv2d with default options.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     EXPECT_TRUE(options->hasAutoPad());
     EXPECT_EQ(options->autoPad(), V8MLAutoPad::Enum::kExplicit);
@@ -351,10 +244,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with padding=1.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setPadding({1, 1, 1, 1});
     auto* output = BuildConv2d(scope, builder, input, filter, options);
@@ -362,10 +257,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with autopad="same-lower".
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setAutoPad(V8MLAutoPad::Enum::kSameLower);
     auto* output = BuildConv2d(scope, builder, input, filter, options);
@@ -373,10 +270,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with autopad="same-upper".
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setAutoPad(V8MLAutoPad::Enum::kSameUpper);
     auto* output = BuildConv2d(scope, builder, input, filter, options);
@@ -384,10 +283,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with strides=2 and padding=1.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setPadding({1, 1, 1, 1});
     options->setStrides({2, 2});
@@ -396,10 +297,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with strides=2 and asymmetric padding.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 4, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 4, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setPadding({1, 2, 0, 1});
     options->setStrides({2, 2});
@@ -408,10 +311,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test depthwise conv2d by setting groups to input channels.
-    auto* input = BuildInput(scope, builder, "input", {1, 4, 2, 2},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {4, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 4, 2, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {4, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setGroups(4);
     auto* output = BuildConv2d(scope, builder, input, filter, options);
@@ -420,10 +325,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test depthwise conv2d with groups=4, inputLayout="nhwc" and
     // filterLayout="ihwo".
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 2, 2, 4},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 2, 2, 4}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setGroups(4);
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
@@ -434,10 +341,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test conv2d with dilations=4, inputLayout="nhwc" and
     // filterLayout="ihwo".
-    auto* input = BuildInput(scope, builder, "input", {1, 65, 65, 1},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 3, 3, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 65, 65, 1},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 3, 3, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kIhwo);
@@ -447,10 +356,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nchw" and filterLayout="oihw".
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 2, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 2, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNchw);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kOihw);
@@ -459,10 +370,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nchw" and filterLayout="hwio".
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {3, 3, 2, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {3, 3, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNchw);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kHwio);
@@ -471,10 +384,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nchw" and filterLayout="ohwi".
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 3, 3, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 3, 3, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNchw);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kOhwi);
@@ -483,10 +398,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nchw" and filterLayout="ihwo".
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {2, 3, 3, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {2, 3, 3, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNchw);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kIhwo);
@@ -495,10 +412,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nhwc" and filterLayout="oihw".
-    auto* input = BuildInput(scope, builder, "input", {1, 5, 5, 2},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 2, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 5, 5, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 2, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kOihw);
@@ -507,10 +426,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nhwc" and filterLayout="hwio".
-    auto* input = BuildInput(scope, builder, "input", {1, 5, 5, 2},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {3, 3, 2, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 5, 5, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {3, 3, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kHwio);
@@ -519,10 +440,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nhwc" and filterLayout="ohwi".
-    auto* input = BuildInput(scope, builder, "input", {1, 5, 5, 2},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 3, 3, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 5, 5, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 3, 3, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kOhwi);
@@ -531,10 +454,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test conv2d with inputLayout="nhwc" and filterLayout="ihwo".
-    auto* input = BuildInput(scope, builder, "input", {1, 5, 5, 2},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {2, 3, 3, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 5, 5, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {2, 3, 3, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setInputLayout(V8MLInputOperandLayout::Enum::kNhwc);
     options->setFilterLayout(V8MLConv2dFilterOperandLayout::Enum::kIhwo);
@@ -547,11 +472,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
     // Set the input and filter dimensions that let the output's number of
     // lements be 2 * SIZE_MAX.
     auto* input =
-        BuildInput(scope, builder, "input",
+        BuildInput(builder, "input",
                    {1, 1, kSquareRootOfSizeMax / 2, kSquareRootOfSizeMax / 2},
-                   V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {8, 1, 1, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {8, 1, 1, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* output = builder->conv2d(input, filter, MLConv2dOptions::Create(),
                                    scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -566,11 +492,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
     // Set the dimensions and type of input and filter that let the output's
     // byte length be 4 * SIZE_MAX.
     auto* input =
-        BuildInput(scope, builder, "input",
+        BuildInput(builder, "input",
                    {1, 1, kSquareRootOfSizeMax / 2, kSquareRootOfSizeMax / 2},
-                   V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {4, 1, 1, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {4, 1, 1, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* output = builder->conv2d(input, filter, MLConv2dOptions::Create(),
                                    scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -581,10 +508,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the input is not a 4-D tensor.
-    auto* input = BuildInput(scope, builder, "input", {1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 2, 2, 1},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 5, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 2, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -596,10 +525,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the filter is not a 4-D tensor.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* filter =
-        BuildConstant(scope, builder, {2, 2}, V8MLOperandType::Enum::kFloat32);
+        BuildConstant(builder, {2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -612,10 +543,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception when the filter type doesn't match the input
     // type.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kInt32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -627,10 +560,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the length of padding is not 4.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setPadding({2, 2});
     auto* output =
@@ -643,10 +578,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the length of strides is not 2.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setStrides({2});
     auto* output =
@@ -659,10 +596,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when one stride value is smaller than 1.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setStrides({1, 0});
     auto* output =
@@ -675,10 +614,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the length of dilations is not 2.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({1});
     auto* output =
@@ -691,10 +632,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the one dilation value is smaller than 1.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({1, 0});
     auto* output =
@@ -707,10 +650,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when input_channels % groups() != 0.
-    auto* input = BuildInput(scope, builder, "input", {1, 4, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 4, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setGroups(3);
     auto* output =
@@ -725,10 +670,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception when filter_input_channels != input_channels /
     // groups().
-    auto* input = BuildInput(scope, builder, "input", {1, 4, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 4, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setGroups(2);
     auto* output =
@@ -742,10 +689,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the groups is smaller than 1.
-    auto* input = BuildInput(scope, builder, "input", {1, 4, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 4, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setGroups(0);
     auto* output =
@@ -759,10 +708,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to overflow when calculating the padding
     // along the height dimension.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 23567, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter = BuildConstant(builder, {1, 1, 23567, 2},
+                                 V8MLOperandType::Enum::kFloat32,
+                                 scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setStrides({193232, 3});
     options->setDilations({232328, 2});
@@ -779,10 +730,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to overflow when calculating the padding
     // along the width dimension.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 28476},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter = BuildConstant(builder, {1, 1, 2, 28476},
+                                 V8MLOperandType::Enum::kFloat32,
+                                 scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setStrides({1, 284234});
     options->setDilations({1, 434329});
@@ -799,10 +752,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to overflow when calculating the effective
     // filter height.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 434983, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter = BuildConstant(builder, {1, 1, 434983, 2},
+                                 V8MLOperandType::Enum::kFloat32,
+                                 scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({328442, 1});
     auto* output =
@@ -818,10 +773,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to overflow when calculating the effective
     // filter width.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 234545},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter = BuildConstant(builder, {1, 1, 2, 234545},
+                                 V8MLOperandType::Enum::kFloat32,
+                                 scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({2, 843452});
     auto* output =
@@ -837,10 +794,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to underflow when calculating the output
     // height.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 4, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 4, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({4, 1});
     options->setPadding({1, 1, 1, 1});
@@ -857,10 +816,12 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception due to underflow when calculating the output
     // width.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 8},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 8}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
     options->setDilations({1, 4});
     options->setPadding({1, 1, 1, 1});
@@ -876,13 +837,15 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the bias is not a 1-D tensor.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
-    auto* bias =
-        BuildConstant(scope, builder, {1, 2}, V8MLOperandType::Enum::kFloat32);
+    auto* bias = BuildConstant(builder, {1, 2}, V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
     options->setBias(bias);
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -895,13 +858,15 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   {
     // Test throwing exception when the bias shape is not equal to
     // [output_channels].
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
-    auto* bias =
-        BuildConstant(scope, builder, {2}, V8MLOperandType::Enum::kFloat32);
+    auto* bias = BuildConstant(builder, {2}, V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
     options->setBias(bias);
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -913,13 +878,15 @@ TEST_F(MLGraphBuilderTest, Conv2dTest) {
   }
   {
     // Test throwing exception when the bias type doesn't match input type.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 2, 2},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 2, 2}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* options = MLConv2dOptions::Create();
-    auto* bias =
-        BuildConstant(scope, builder, {1}, V8MLOperandType::Enum::kInt32);
+    auto* bias = BuildConstant(builder, {1}, V8MLOperandType::Enum::kInt32,
+                               scope.GetExceptionState());
     options->setBias(bias);
     auto* output =
         builder->conv2d(input, filter, options, scope.GetExceptionState());
@@ -971,13 +938,14 @@ void CheckPool2dOutput(const MLOperand* input,
 
 TEST_F(MLGraphBuilderTest, Pool2dTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   const auto Pool2dKinds = {Pool2dKind::kAverage, Pool2dKind::kMax};
   for (const auto pool2d_kind : Pool2dKinds) {
     {
       // Test pool2d with default options.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 4, 4},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 4, 4},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       EXPECT_TRUE(options->hasAutoPad());
       EXPECT_EQ(options->autoPad(), V8MLAutoPad::Enum::kExplicit);
@@ -996,8 +964,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d without padding.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 4, 4},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 4, 4},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({3, 3});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1006,8 +975,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with padding=2.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({5, 5});
       options->setPadding({2, 2, 2, 2});
@@ -1017,8 +987,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with autoPad="same-upper".
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({5, 5});
       options->setAutoPad(V8MLAutoPad::Enum::kSameUpper);
@@ -1028,8 +999,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with autoPad="same-lower".
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({5, 5});
       options->setAutoPad(V8MLAutoPad::Enum::kSameLower);
@@ -1039,8 +1011,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({2, 2});
       options->setStrides({2, 2});
@@ -1050,8 +1023,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2 and padding=1.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({3, 3});
       options->setPadding({1, 1, 1, 1});
@@ -1062,8 +1036,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2 and asymmetric padding.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({2, 1, 2, 1});
@@ -1074,8 +1049,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2, padding=1 and roundingType="floor".
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({1, 1, 1, 1});
@@ -1087,8 +1063,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2, padding=1 and roundingType="ceil".
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({1, 1, 1, 1});
@@ -1102,8 +1079,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
       // Test pool2d with strides=2, padding=1 and outputSizes=[3, 3].
       // When the output sizes are explicitly specified, the
       // options.roundingType is ignored.
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({1, 1, 1, 1});
@@ -1116,8 +1094,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2, padding=1 and outputSizes=[3, 3].
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({1, 1, 1, 1});
@@ -1129,8 +1108,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with strides=2, padding=1 and outputSizes=[4, 4].
-      auto* input = BuildInput(scope, builder, "input", {1, 3, 7, 7},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 3, 7, 7},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({4, 4});
       options->setPadding({1, 1, 1, 1});
@@ -1142,8 +1122,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with layout="nchw".
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({3, 3});
       options->setLayout(V8MLInputOperandLayout::Enum::kNchw);
@@ -1153,8 +1134,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test pool2d with layout="nhwc".
-      auto* input = BuildInput(scope, builder, "input", {1, 5, 5, 2},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 5, 5, 2},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({3, 3});
       options->setLayout(V8MLInputOperandLayout::Enum::kNhwc);
@@ -1167,10 +1149,10 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
       // large.
       // Set the type and sizes of input, padding and window that let the output
       // operands' byte length be greater than SIZE_MAX.
-      auto* input =
-          BuildInput(scope, builder, "input",
-                     {1, 1, kSquareRootOfSizeMax / 2, kSquareRootOfSizeMax / 2},
-                     V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(
+          builder, "input",
+          {1, 1, kSquareRootOfSizeMax / 2, kSquareRootOfSizeMax / 2},
+          V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({1, 1});
       options->setPadding({2, 2, 2, 2});
@@ -1183,8 +1165,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the input is not a 4-D tensor.
-      auto* input = BuildInput(scope, builder, "input", {1, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input);
       EXPECT_EQ(output, nullptr);
       EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -1194,8 +1177,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the output size is incorrect.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({2, 2});
       options->setPadding({2, 2, 2, 2});
@@ -1210,8 +1194,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the length of output size is not 2.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({2, 2});
       options->setPadding({2, 2, 2, 2});
@@ -1226,8 +1211,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the length of window dimensions is not 2.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({1, 1, 1, 1});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1240,8 +1226,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     {
       // Test throwing exception when not all window dimensions is greater than
       // or equal to 1.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({0, 2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1254,8 +1241,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     {
       // Test throwing exception when the input height is too small to fill the
       // pool window height.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({8, 2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1269,8 +1257,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     {
       // Test throwing exception when the input width is too small to fill the
       // pool window width.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({2, 8});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1284,8 +1273,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     {
       // Test throwing exception when the calculated output height is equal to
       // 0.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setWindowDimensions({6, 3});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1297,8 +1287,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the length of padding is not 4.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setPadding({2, 2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1310,8 +1301,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the length of strides is not 2.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setStrides({2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1323,8 +1315,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when one stride value is smaller than 1.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setStrides({0, 2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1336,8 +1329,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when the length of dilations is not 2.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setDilations({1, 1, 2});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1349,8 +1343,9 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
     }
     {
       // Test throwing exception when one dilation value is smaller than 1.
-      auto* input = BuildInput(scope, builder, "input", {1, 2, 5, 5},
-                               V8MLOperandType::Enum::kFloat32);
+      auto* input = BuildInput(builder, "input", {1, 2, 5, 5},
+                               V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
       auto* options = MLPool2dOptions::Create();
       options->setDilations({1, 0});
       auto* output = BuildPool2d(scope, builder, pool2d_kind, input, options);
@@ -1365,12 +1360,13 @@ TEST_F(MLGraphBuilderTest, Pool2dTest) {
 
 TEST_F(MLGraphBuilderTest, ReluTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building relu with float32 input.
     Vector<uint32_t> input_shape({3, 4, 5});
-    auto* input = BuildInput(scope, builder, "input", input_shape,
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", input_shape,
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -1385,8 +1381,9 @@ TEST_F(MLGraphBuilderTest, ReluTest) {
   {
     // Test building relu with int32 input.
     Vector<uint32_t> input_shape({3, 4, 5});
-    auto* input = BuildInput(scope, builder, "input", input_shape,
-                             V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", input_shape, V8MLOperandType::Enum::kInt32,
+                   scope.GetExceptionState());
     auto* output = builder->relu(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -1410,12 +1407,13 @@ TEST_F(MLGraphBuilderTest, ReluTest) {
 
 TEST_F(MLGraphBuilderTest, HardSwishTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   ASSERT_NE(nullptr, builder);
   {
     // Test building hard-swish with float32 input.
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->hardSwish(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -1429,8 +1427,9 @@ TEST_F(MLGraphBuilderTest, HardSwishTest) {
   }
   {
     // Test throwing exception when building hard-swish with int32 input.
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kInt32,
+                   scope.GetExceptionState());
     auto* output = builder->hardSwish(input, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -1467,14 +1466,14 @@ MLOperand* BuildGemm(V8TestingScope& scope,
 
 TEST_F(MLGraphBuilderTest, GemmTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   ASSERT_NE(nullptr, builder);
   {
     // Test building gemm with default option.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     EXPECT_FALSE(options->hasC());
     EXPECT_TRUE(options->hasAlpha());
@@ -1491,10 +1490,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
   {
     // Test building gemm with two matrices - {2, 3} and {2, 4} that can't be
     // multiplied together due to incompatible dimensions.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {2, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -1509,10 +1508,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with aTranspose = true.
     // Transposed a_dimensions would be {3, 2} and it's compatible with
     // b_dimensions {2, 4}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {2, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     options->setATranspose(true);
     auto* output = BuildGemm(scope, builder, a, b, options);
@@ -1522,10 +1521,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with aTranspose = true.
     // Transposed a_dimensions would be {3, 2} and it can't be multiplied with
     // b_dimensions {3, 4}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     options->setATranspose(true);
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
@@ -1541,10 +1540,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with bTranspose = true.
     // Transposed b_dimensions would be {3, 4} and it's compatible with
     // a_dimensions {2, 3}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {4, 3},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     options->setBTranspose(true);
     auto* output = BuildGemm(scope, builder, a, b, options);
@@ -1554,10 +1553,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with bTranspose = true.
     // Transposed b_dimensions would be {4, 3} and it's incompatible with
     // a_dimensions {2, 3}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     options->setBTranspose(true);
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
@@ -1572,10 +1571,11 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
   {
     // Test building gemm with a_dimensions = {2, 3, 1}.
     // Test throwing an error due to input_a is not a 2-D tensor.
-    auto* a = BuildInput(scope, builder, "a", {2, 3, 1},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {2, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a =
+        BuildInput(builder, "a", {2, 3, 1}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -1586,10 +1586,10 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
   }
   {
     // Test building gemm with two mismatching input types.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b =
-        BuildInput(scope, builder, "b", {3, 4}, V8MLOperandType::Enum::kInt32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kInt32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -1602,13 +1602,13 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with setting optional input C.
     // The output dimensions of a * b would be {2, 4} and
     // c_dimensions {4} is able to broadcast to {2, 4}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
-    auto* c =
-        BuildInput(scope, builder, "c", {4}, V8MLOperandType::Enum::kFloat32);
+    auto* c = BuildInput(builder, "c", {4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     options->setC(c);
     auto* output = BuildGemm(scope, builder, a, b, options);
     EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({2, 4}));
@@ -1617,13 +1617,13 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with aTranspose = true, bTranspose = true.
     // The output dimensions of a * b would be {2, 4} and
     // c_dimension {2, 3} is incompatible with {2, 4}.
-    auto* a = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
-    auto* c = BuildInput(scope, builder, "a", {2, 3},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* c = BuildInput(builder, "a", {2, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     options->setC(c);
     auto* output = builder->gemm(a, b, options, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -1637,13 +1637,13 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with aTranspose = true, bTranspose = true.
     // Set optional input C with type = int32 and it mismatches with input
     // type float32.
-    auto* a = BuildInput(scope, builder, "a", {3, 2},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {4, 3},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {3, 2}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
-    auto* c =
-        BuildInput(scope, builder, "c", {2, 4}, V8MLOperandType::Enum::kInt32);
+    auto* c = BuildInput(builder, "c", {2, 4}, V8MLOperandType::Enum::kInt32,
+                         scope.GetExceptionState());
     options->setC(c);
     options->setATranspose(true);
     options->setBTranspose(true);
@@ -1658,13 +1658,14 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test building gemm with aTranspose = true, bTranspose = true.
     // Set optional input C with dimensions = {2, 3, 4} and an error should be
     // thrown since c_dimensions is not a 2-D tensor.
-    auto* a = BuildInput(scope, builder, "a", {3, 2},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {4, 3},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {3, 2}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* options = MLGemmOptions::Create();
-    auto* c = BuildInput(scope, builder, "c", {2, 3, 4},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* c =
+        BuildInput(builder, "c", {2, 3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     options->setC(c);
     options->setATranspose(true);
     options->setBTranspose(true);
@@ -1680,10 +1681,12 @@ TEST_F(MLGraphBuilderTest, GemmTest) {
     // Test throwing exception if the output operand's byte length is too large.
     // Set the type and dimensions of inputs that let the output operand's byte
     // length be 4 * SIZE_MAX.
-    auto* a = BuildInput(scope, builder, "a", {kSquareRootOfSizeMax, 2},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {2, kSquareRootOfSizeMax},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a =
+        BuildInput(builder, "a", {kSquareRootOfSizeMax, 2},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* b =
+        BuildInput(builder, "b", {2, kSquareRootOfSizeMax},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* output =
         builder->gemm(a, b, MLGemmOptions::Create(), scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
@@ -1751,7 +1754,7 @@ MLOperand* BuildElementWiseBinary(V8TestingScope& scope,
 
 TEST_F(MLGraphBuilderTest, ElementWiseBinaryTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Testing building add with two input dimensions - {8, 1, 6, 1} and {7, 1,
     // 5}. Both the a and b dimensions have axes with length one that are
@@ -1759,10 +1762,12 @@ TEST_F(MLGraphBuilderTest, ElementWiseBinaryTest) {
     // a_dimensions     (4d) 8 * 1 * 6 * 1
     // b_dimensions     (3d)     7 * 1 * 5
     // output_dimenions (4d) 8 * 7 * 6 * 5
-    auto* a = BuildInput(scope, builder, "a", {8, 1, 6, 1},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {7, 1, 5},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a =
+        BuildInput(builder, "a", {8, 1, 6, 1}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* b =
+        BuildInput(builder, "b", {7, 1, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(scope, builder,
                                           ElementWiseBinaryKind::kAdd, a, b);
     EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({8, 7, 6, 5}));
@@ -1772,20 +1777,21 @@ TEST_F(MLGraphBuilderTest, ElementWiseBinaryTest) {
     // a_dimensions     (3d) 4 * 2 * 1
     // b_dimensions     (1d)         4
     // output_dimenions (3d) 4 * 2 * 4
-    auto* a = BuildInput(scope, builder, "a", {4, 2, 1},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b =
-        BuildInput(scope, builder, "b", {4}, V8MLOperandType::Enum::kFloat32);
+    auto* a =
+        BuildInput(builder, "a", {4, 2, 1}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* output = BuildElementWiseBinary(scope, builder,
                                           ElementWiseBinaryKind::kAdd, a, b);
     EXPECT_EQ(output->Dimensions(), Vector<uint32_t>({4, 2, 4}));
   }
   {
     // Test throwing exception when the input shapes are not broadcastable.
-    auto* a = BuildInput(scope, builder, "a", {4, 2},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b =
-        BuildInput(scope, builder, "b", {4}, V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {4, 2}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* output = builder->sub(a, b, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
@@ -1795,10 +1801,10 @@ TEST_F(MLGraphBuilderTest, ElementWiseBinaryTest) {
   }
   {
     // Test throwing exception when the input types don't match.
-    auto* a = BuildInput(scope, builder, "a", {4, 2},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b =
-        BuildInput(scope, builder, "b", {1}, V8MLOperandType::Enum::kInt32);
+    auto* a = BuildInput(builder, "a", {4, 2}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {1}, V8MLOperandType::Enum::kInt32,
+                         scope.GetExceptionState());
     auto* output = builder->max(a, b, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
@@ -1810,12 +1816,14 @@ TEST_F(MLGraphBuilderTest, ElementWiseBinaryTest) {
 
 TEST_F(MLGraphBuilderTest, ReshapeTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
-    // Test building reshape with new shape = {3, -1}.
-    auto* input = BuildInput(scope, builder, "input", {2, 3, 4},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output = builder->reshape(input, {3, -1}, scope.GetExceptionState());
+    // Test building reshape with new shape = {3, null}.
+    auto* input =
+        BuildInput(builder, "input", {2, 3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output =
+        builder->reshape(input, {3, absl::nullopt}, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
     EXPECT_EQ(output->Type(), V8MLOperandType::Enum::kFloat32);
@@ -1826,10 +1834,12 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
     EXPECT_EQ(reshape->IsConnected(), true);
   }
   {
-    // Test building reshape with new shape = {-1}, src shape = {2, 3, 4}.
-    auto* input = BuildInput(scope, builder, "input", {2, 3, 4},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output = builder->reshape(input, {-1}, scope.GetExceptionState());
+    // Test building reshape with new shape = {null}, src shape = {2, 3, 4}.
+    auto* input =
+        BuildInput(builder, "input", {2, 3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output =
+        builder->reshape(input, {absl::nullopt}, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
     EXPECT_EQ(output->Type(), V8MLOperandType::Enum::kFloat32);
@@ -1840,10 +1850,12 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
     EXPECT_EQ(reshape->IsConnected(), true);
   }
   {
-    // Test building reshape with new shape = {-1}, src shape = {1}.
-    auto* input = BuildInput(scope, builder, "input", {1},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output = builder->reshape(input, {-1}, scope.GetExceptionState());
+    // Test building reshape with new shape = {null}, src shape = {1}.
+    auto* input =
+        BuildInput(builder, "input", {1}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output =
+        builder->reshape(input, {absl::nullopt}, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
     EXPECT_EQ(output->Type(), V8MLOperandType::Enum::kFloat32);
@@ -1855,22 +1867,24 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
   }
   {
     // Test throwing error when one value of new shape is 0.
-    auto* input = BuildInput(scope, builder, "input", {2, 4},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output =
-        builder->reshape(input, {2, -1, 0}, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "input", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output = builder->reshape(input, {2, absl::nullopt, 0},
+                                    scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
               scope.GetExceptionState().Code());
     EXPECT_EQ(scope.GetExceptionState().Message(),
-              "The value of new shape should be positive or -1.");
+              "The value of new shape should not be 0.");
   }
   {
     // Setting new shape = {}.
     // Test throwing error since the number of elements implied by new shape is
     // not equal to the number of elements in the input tensor.
-    auto* input = BuildInput(scope, builder, "input", {2, 3, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {2, 3, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->reshape(input, {}, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
@@ -1880,24 +1894,27 @@ TEST_F(MLGraphBuilderTest, ReshapeTest) {
               "the number of elements (24) in the input tensor.");
   }
   {
-    // Test throwing error when more than one components of new_shape are -1.
-    auto* input = BuildInput(scope, builder, "input", {2, 3, 1},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output =
-        builder->reshape(input, {6, -1, -1}, scope.GetExceptionState());
+    // Test throwing error when more than one components of new_shape are null.
+    auto* input =
+        BuildInput(builder, "input", {2, 3, 1}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output = builder->reshape(input, {6, absl::nullopt, absl::nullopt},
+                                    scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
               scope.GetExceptionState().Code());
     EXPECT_EQ(scope.GetExceptionState().Message(),
-              "Only one component of new shape can be -1.");
+              "Only one component of new shape can be null.");
   }
   {
     // Test throwing error since the number of elements (9) of the input tensor
     // can't be divided evenly by the number of elements (2) implied by the new
     // shape.
-    auto* input = BuildInput(scope, builder, "input", {3, 3},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* output = builder->reshape(input, {2, -1}, scope.GetExceptionState());
+    auto* input =
+        BuildInput(builder, "input", {3, 3}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* output =
+        builder->reshape(input, {2, absl::nullopt}, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(ToExceptionCode(DOMExceptionCode::kDataError),
               scope.GetExceptionState().Code());
@@ -1926,11 +1943,12 @@ MLOperand* BuildResample2d(V8TestingScope& scope,
 
 TEST_F(MLGraphBuilderTest, Resample2dTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building resample2d with default options.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     EXPECT_TRUE(options->hasMode());
     EXPECT_EQ(options->mode(), V8MLInterpolationMode::Enum::kNearestNeighbor);
@@ -1942,8 +1960,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test building resample2d with scales = {2.0, 2.0}.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({2.0, 2.0});
     auto* output = BuildResample2d(scope, builder, input, options);
@@ -1951,8 +1970,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test building resample2d with scales = {0.5, 0.5}.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({0.5, 0.5});
     auto* output = BuildResample2d(scope, builder, input, options);
@@ -1962,8 +1982,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
     // Test building resample2d with sizes = {3, 6}.
     // When the target sizes are specified, scales argument is
     // ignored.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({2.0, 2.0});
     options->setSizes({3, 6});
@@ -1972,8 +1993,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test building resample2d with scales = {1.0, 2.0} and axes = {0, 1}.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({1.0, 2.0});
     options->setAxes({0, 1});
@@ -1982,8 +2004,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test building resample2d with scales = {2.0, 2.0} and axes = {1, 2}.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({2.0, 2.0});
     options->setAxes({1, 2});
@@ -1992,8 +2015,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the input is not a 4-D tensor.
-    auto* input = BuildInput(scope, builder, "input", {2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     auto* output =
         builder->resample2d(input, options, scope.GetExceptionState());
@@ -2005,8 +2029,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the length of scales is not 2.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({1.0, 1.0, 2.0, 2.0});
     auto* output =
@@ -2019,8 +2044,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the scale is negative.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({1.0, -2.0});
     auto* output =
@@ -2033,8 +2059,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the length of sizes is not 2.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setSizes({1, 1, 4, 6});
     auto* output =
@@ -2047,8 +2074,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the scale height is too large.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 34902, 23243},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({232433, 4});
     auto* output =
@@ -2061,8 +2089,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the scale width is too large.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 34902, 23243},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 34902, 23243},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setScales({20, 434324});
     auto* output =
@@ -2075,8 +2104,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the length of axes is not 2.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setAxes({0, 1, 2});
     auto* output =
@@ -2089,8 +2119,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when the values of axes are inconsecutive.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setAxes({0, 2});
     auto* output =
@@ -2103,8 +2134,9 @@ TEST_F(MLGraphBuilderTest, Resample2dTest) {
   }
   {
     // Test throwing error when one value of axes is negative.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLResample2dOptions::Create();
     options->setAxes({-1, 2});
     auto* output =
@@ -2135,11 +2167,12 @@ MLOperand* BuildClamp(V8TestingScope& scope,
 
 TEST_F(MLGraphBuilderTest, ClampTest) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building clamp with default options.
-    auto* input = BuildInput(scope, builder, "input", {2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* options = MLClampOptions::Create();
     EXPECT_FALSE(options->hasMaxValue());
     EXPECT_FALSE(options->hasMinValue());
@@ -2148,8 +2181,9 @@ TEST_F(MLGraphBuilderTest, ClampTest) {
   }
   {
     // Test building clamp with max value = 0 and min value = 0.
-    auto* input = BuildInput(scope, builder, "input", {1, 2, 2, 7},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 2, 2, 7},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* options = MLClampOptions::Create();
     options->setMaxValue(0);
     options->setMinValue(0);
@@ -2158,8 +2192,9 @@ TEST_F(MLGraphBuilderTest, ClampTest) {
   }
   {
     // Test throwing error when the max value is less than the min value.
-    auto* input = BuildInput(scope, builder, "input", {2, 4},
-                             V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", {2, 4}, V8MLOperandType::Enum::kInt32,
+                   scope.GetExceptionState());
     auto* options = MLClampOptions::Create();
     options->setMaxValue(-3.243432);
     options->setMinValue(4.432232);
@@ -2184,11 +2219,12 @@ TEST_F(MLGraphBuilderTest, ClampTest) {
 
 TEST_F(MLGraphBuilderTest, Softmax) {
   V8TestingScope scope;
-  MLGraphBuilder* builder = CreateMLGraphBuilder(scope);
+  MLGraphBuilder* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building softmax with float32 input.
-    auto* input = BuildInput(scope, builder, "input", {2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {2, 4}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* output = builder->softmax(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -2202,8 +2238,9 @@ TEST_F(MLGraphBuilderTest, Softmax) {
   }
   {
     // Test throwing exception when building softmax with 4-D input.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 2, 4},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 2, 4},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* output = builder->softmax(input, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -2213,8 +2250,9 @@ TEST_F(MLGraphBuilderTest, Softmax) {
   }
   {
     // Test throwing exception when building softmax with int32 input.
-    auto* input = BuildInput(scope, builder, "input", {3, 4},
-                             V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", {3, 4}, V8MLOperandType::Enum::kInt32,
+                   scope.GetExceptionState());
     auto* output = builder->softmax(input, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -2226,12 +2264,13 @@ TEST_F(MLGraphBuilderTest, Softmax) {
 
 TEST_F(MLGraphBuilderTest, SigmoidTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test building sigmoid with float32 input.
     Vector<uint32_t> input_shape({3, 4, 5});
-    auto* input = BuildInput(scope, builder, "input", input_shape,
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", input_shape,
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
     auto* output = builder->sigmoid(input, scope.GetExceptionState());
     EXPECT_NE(output, nullptr);
     EXPECT_EQ(output->Kind(), MLOperand::OperandKind::kOutput);
@@ -2246,8 +2285,9 @@ TEST_F(MLGraphBuilderTest, SigmoidTest) {
   {
     // Test throwing exception when building sigmoid with int32 input.
     Vector<uint32_t> input_shape({3, 4, 5});
-    auto* input = BuildInput(scope, builder, "input", input_shape,
-                             V8MLOperandType::Enum::kInt32);
+    auto* input =
+        BuildInput(builder, "input", input_shape, V8MLOperandType::Enum::kInt32,
+                   scope.GetExceptionState());
     auto* output = builder->sigmoid(input, scope.GetExceptionState());
     EXPECT_EQ(output, nullptr);
     EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -2328,94 +2368,6 @@ FakeMLGraphBackend* ToFakeMLGraphBackend(V8TestingScope* scope,
       scope->GetIsolate(), value.V8Value(), scope->GetExceptionState());
 }
 
-MLGraph* ToMLGraph(V8TestingScope* scope, ScriptValue value) {
-  return NativeValueTraits<MLGraph>::NativeValue(
-      scope->GetIsolate(), value.V8Value(), scope->GetExceptionState());
-}
-
-std::string ExecutionModeParamToString(
-    const ::testing::TestParamInfo<ExecutionMode>& execution_mode) {
-  switch (execution_mode.param) {
-    case ExecutionMode::kAsync:
-      return "Async";
-    case ExecutionMode::kSync:
-      return "Sync";
-  }
-}
-
-MLGraphTestBase::BuildResult MLGraphTestBase::BuildGraph(
-    V8TestingScope& scope,
-    MLGraphBuilder* builder,
-    const MLNamedOperands& named_operands) {
-  switch (GetParam()) {
-    case ExecutionMode::kAsync: {
-      ScriptPromiseTester tester(
-          scope.GetScriptState(),
-          builder->buildAsync(scope.GetScriptState(), named_operands,
-                              scope.GetExceptionState()));
-      tester.WaitUntilSettled();
-      if (tester.IsFulfilled()) {
-        return BuildResult{.graph = ToMLGraph(&scope, tester.Value()),
-                           .exception = nullptr};
-      } else {
-        return BuildResult{.graph = nullptr,
-                           .exception = V8DOMException::ToImplWithTypeCheck(
-                               scope.GetIsolate(), tester.Value().V8Value())};
-      }
-    }
-    case ExecutionMode::kSync: {
-      auto* graph =
-          builder->buildSync(named_operands, scope.GetExceptionState());
-      if (graph) {
-        return BuildResult{.graph = static_cast<MLGraph*>(graph),
-                           .exception = nullptr};
-      } else {
-        return BuildResult{
-            .graph = nullptr,
-            .exception = MakeGarbageCollected<DOMException>(
-                scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
-                scope.GetExceptionState().Message())};
-      }
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
-DOMException* MLGraphTestBase::ComputeGraph(
-    V8TestingScope& scope,
-    MLGraph* graph,
-    const MLNamedArrayBufferViews& inputs,
-    const MLNamedArrayBufferViews& outputs) {
-  switch (GetParam()) {
-    case ExecutionMode::kAsync: {
-      auto* resolver =
-          MakeGarbageCollected<ScriptPromiseResolver>(scope.GetScriptState());
-      ScriptPromiseTester tester(scope.GetScriptState(), resolver->Promise());
-      graph->ComputeAsync(inputs, outputs, resolver);
-      tester.WaitUntilSettled();
-      if (tester.IsFulfilled()) {
-        return nullptr;
-      } else {
-        return V8DOMException::ToImplWithTypeCheck(scope.GetIsolate(),
-                                                   tester.Value().V8Value());
-      }
-    }
-    case ExecutionMode::kSync: {
-      graph->ComputeSync(inputs, outputs, scope.GetExceptionState());
-      if (scope.GetExceptionState().HadException()) {
-        return MakeGarbageCollected<DOMException>(
-            scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
-            scope.GetExceptionState().Message());
-      } else {
-        return nullptr;
-      }
-    }
-    default:
-      NOTREACHED();
-  }
-}
-
 namespace {
 
 // Helper class to create the FakeMLGraphBackend that is intended to test
@@ -2454,7 +2406,7 @@ class FakeMLGraphTest : public MLGraphTestBase {
 
 TEST_P(FakeMLGraphTest, BuildTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   {
     // Test throwing exception if the named outputs is empty.
     MLNamedOperands named_outputs;
@@ -2467,8 +2419,9 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   }
   {
     // Test throwing exception if the named output is an input operand.
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto [graph, exception] = BuildGraph(scope, builder, {{"output", input}});
     EXPECT_NE(exception, nullptr);
     EXPECT_EQ(exception->name(),
@@ -2478,8 +2431,9 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   }
   {
     // Test throwing exception if the named output is a constant operand.
-    auto* constant = BuildConstant(scope, builder, {3, 4, 5},
-                                   V8MLOperandType::Enum::kFloat32);
+    auto* constant =
+        BuildConstant(builder, {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto [graph, exception] =
         BuildGraph(scope, builder, {{"output", constant}});
     EXPECT_NE(exception, nullptr);
@@ -2491,10 +2445,12 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   {
     // Test throwing exception if the named outputs is a mix of input and
     // constant operands.
-    auto* input = BuildInput(scope, builder, "input", {3, 4, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* constant = BuildConstant(scope, builder, {3, 4, 5},
-                                   V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* constant =
+        BuildConstant(builder, {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto [graph, exception] =
         BuildGraph(scope, builder, {{"output1", input}, {"output2", constant}});
     EXPECT_NE(exception, nullptr);
@@ -2505,10 +2461,12 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   }
   {
     // Test throwing exception if two inputs have the same name.
-    auto* a = BuildInput(scope, builder, "a", {3, 4, 5},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "a", {3, 4, 5},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a =
+        BuildInput(builder, "a", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
+    auto* b =
+        BuildInput(builder, "a", {3, 4, 5}, V8MLOperandType::Enum::kFloat32,
+                   scope.GetExceptionState());
     auto* c = builder->add(a, b, scope.GetExceptionState());
     ASSERT_NE(c, nullptr);
 
@@ -2521,10 +2479,10 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   {
     // Test building a fake graph with two inputs, one gemm operation and one
     // output.
-    auto* a = BuildInput(scope, builder, "a", {3, 4},
-                         V8MLOperandType::Enum::kFloat32);
-    auto* b = BuildInput(scope, builder, "b", {4, 3},
-                         V8MLOperandType::Enum::kFloat32);
+    auto* a = BuildInput(builder, "a", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
+    auto* b = BuildInput(builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32,
+                         scope.GetExceptionState());
     auto* c = BuildGemm(scope, builder, a, b);
 
     auto [graph, exception] = BuildGraph(scope, builder, {{"c", c}});
@@ -2542,13 +2500,15 @@ TEST_P(FakeMLGraphTest, BuildTest) {
   }
   {
     // Test building a fake graph with conv2d, add and relu operations.
-    auto* input = BuildInput(scope, builder, "input", {1, 1, 5, 5},
-                             V8MLOperandType::Enum::kFloat32);
-    auto* filter = BuildConstant(scope, builder, {1, 1, 3, 3},
-                                 V8MLOperandType::Enum::kFloat32);
+    auto* input =
+        BuildInput(builder, "input", {1, 1, 5, 5},
+                   V8MLOperandType::Enum::kFloat32, scope.GetExceptionState());
+    auto* filter =
+        BuildConstant(builder, {1, 1, 3, 3}, V8MLOperandType::Enum::kFloat32,
+                      scope.GetExceptionState());
     auto* conv2d = BuildConv2d(scope, builder, input, filter);
-    auto* bias =
-        BuildConstant(scope, builder, {1}, V8MLOperandType::Enum::kFloat32);
+    auto* bias = BuildConstant(builder, {1}, V8MLOperandType::Enum::kFloat32,
+                               scope.GetExceptionState());
     auto* add = builder->add(conv2d, bias, scope.GetExceptionState());
     ASSERT_NE(add, nullptr);
     auto* output = builder->relu(add, scope.GetExceptionState());
@@ -2585,12 +2545,12 @@ NotShared<DOMArrayBufferView> CreateArrayBufferViewForOperand(
 
 TEST_P(FakeMLGraphTest, ComputeTest) {
   V8TestingScope scope;
-  auto* builder = CreateMLGraphBuilder(scope);
+  auto* builder = CreateMLGraphBuilder(scope.GetExecutionContext());
   // Build a fake graph represents computation 'c = a * b';
-  auto* a =
-      BuildInput(scope, builder, "a", {3, 4}, V8MLOperandType::Enum::kFloat32);
-  auto* b =
-      BuildInput(scope, builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32);
+  auto* a = BuildInput(builder, "a", {3, 4}, V8MLOperandType::Enum::kFloat32,
+                       scope.GetExceptionState());
+  auto* b = BuildInput(builder, "b", {4, 3}, V8MLOperandType::Enum::kFloat32,
+                       scope.GetExceptionState());
   auto* c = BuildGemm(scope, builder, a, b);
   auto [graph, build_exception] = BuildGraph(scope, builder, {{"c", c}});
   DCHECK_NE(graph, nullptr);

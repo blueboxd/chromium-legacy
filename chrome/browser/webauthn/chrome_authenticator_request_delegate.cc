@@ -218,10 +218,15 @@ bool ChromeWebAuthenticationDelegate::OriginMayUseRemoteDesktopClientOverride(
     return false;
   }
 
-  constexpr char kGoogleCorpCrdOrigin[] =
-      "https://remotedesktop.corp.google.com";
-  if (caller_origin == url::Origin::Create(GURL(kGoogleCorpCrdOrigin))) {
-    return true;
+  constexpr const char* const kGoogleCorpCrdOrigins[] = {
+      "https://remotedesktop.corp.google.com",
+      "https://remotedesktop-autopush.corp.google.com/",
+      "https://remotedesktop-daily-6.corp.google.com/",
+  };
+  for (const char* corp_crd_origin : kGoogleCorpCrdOrigins) {
+    if (caller_origin == url::Origin::Create(GURL(corp_crd_origin))) {
+      return true;
+    }
   }
 
   // An additional origin can be passed on the command line for testing.
@@ -330,14 +335,6 @@ absl::optional<bool> ChromeWebAuthenticationDelegate::
   if (testing_api_override) {
     return *testing_api_override;
   }
-
-#if BUILDFLAG(IS_WIN)
-  // TODO(crbug.com/908622): Enable platform authenticators in Incognito on
-  // Windows once the API allows triggering an adequate warning dialog.
-  if (render_frame_host->GetBrowserContext()->IsOffTheRecord()) {
-    return false;
-  }
-#endif
 
   // Chrome disables platform authenticators is Guest sessions. They may be
   // available (behind an additional interstitial) in Incognito mode.

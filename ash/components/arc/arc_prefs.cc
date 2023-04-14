@@ -71,8 +71,6 @@ const char kArcManagementTransition[] = "arc.management_transition";
 const char kArcPolicyComplianceReported[] = "arc.policy_compliance_reported";
 // A preference that indicates that user accepted PlayStore terms.
 const char kArcTermsAccepted[] = "arc.terms.accepted";
-// A preference that indicates that ToS was shown in OOBE flow.
-const char kArcTermsShownInOobe[] = "arc.terms.shown_in_oobe";
 // A preference to keep user's consent to use location service.
 const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 // A preference to keep list of Android packages and their infomation.
@@ -153,6 +151,11 @@ const char kArcSnapshotHours[] = "arc.snapshot_hours";
 // A preferece to keep ARC snapshot related info in dictionary.
 const char kArcSnapshotInfo[] = "arc.snapshot";
 
+// A time pref indicating the time in microseconds when ARCVM success executed
+// vmm swap out. If it never swapped out, the pref holds the default value
+// base::Time().
+const char kArcVmmSwapOutTime[] = "arc_vmm_swap_out_time";
+
 // A preference to keep track of whether or not Android WebView was used in the
 // current ARC session.
 const char kWebViewProcessStarted[] = "arc.webview.started";
@@ -163,6 +166,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kArcSerialNumberSalt, std::string());
   registry->RegisterDictionaryPref(kArcSnapshotHours);
   registry->RegisterDictionaryPref(kArcSnapshotInfo);
+  registry->RegisterTimePref(kArcVmmSwapOutTime, base::Time());
   registry->RegisterDictionaryPref(kStabilityMetrics);
 
   registry->RegisterIntegerPref(kAnrPendingCount, 0);
@@ -209,7 +213,6 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcSignedIn, false);
   registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
-  registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterListPref(kArcVisibleExternalStorages);
   registry->RegisterIntegerPref(
       kArcVmDataMigrationStatus,

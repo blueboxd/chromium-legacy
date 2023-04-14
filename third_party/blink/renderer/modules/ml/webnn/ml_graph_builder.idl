@@ -97,14 +97,15 @@ dictionary MLResample2dOptions {
   [RaisesException] MLOperand relu(MLOperand input);
   [RaisesException] MLOperator relu();
 
-  [RaisesException] MLOperand reshape(MLOperand input, sequence<long> newShape);
+  [RaisesException] MLOperand reshape(MLOperand input, sequence<[EnforceRange] unsigned long?> newShape);
 
   [RaisesException] MLOperand resample2d(MLOperand input, optional MLResample2dOptions options = {});
-
-  [RaisesException] MLOperand softmax(MLOperand input);
 
   [RaisesException] MLOperand sigmoid(MLOperand input);
   [RaisesException] MLOperator sigmoid();
 
-  [CallWith=ScriptState, RaisesException] Promise<MLGraph> buildAsync(MLNamedOperands outputs);
+  [RaisesException] MLOperand softmax(MLOperand input);
+
+  [CallWith=ScriptState, RaisesException] Promise<MLGraph> build(MLNamedOperands outputs);
+  [RaisesException, Exposed=DedicatedWorker] MLGraph buildSync(MLNamedOperands outputs);
 };

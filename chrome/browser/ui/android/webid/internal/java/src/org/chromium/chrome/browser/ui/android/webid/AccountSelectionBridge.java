@@ -80,15 +80,15 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
      * @param rpForDisplay is the formatted RP URL to display in the FedCM prompt.
      * @param idpForDisplay is the formatted IDP URL to display in the FedCM prompt.
      * @param accounts is the list of accounts to be shown.
-     * @param isAutoSignIn represents whether this is an auto sign in flow.
+     * @param isAutoReauthn represents whether this is an auto re-authn flow.
      */
     @CalledByNative
     private void showAccounts(String rpForDisplay, String idpForDisplay, Account[] accounts,
             IdentityProviderMetadata idpMetadata, ClientIdMetadata clientIdMetadata,
-            boolean isAutoSignIn) {
+            boolean isAutoReauthn) {
         assert accounts != null && accounts.length > 0;
         mAccountSelectionComponent.showAccounts(rpForDisplay, idpForDisplay,
-                Arrays.asList(accounts), idpMetadata, clientIdMetadata, isAutoSignIn);
+                Arrays.asList(accounts), idpMetadata, clientIdMetadata, isAutoReauthn);
     }
 
     @Override
@@ -109,22 +109,11 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
         }
     }
 
-    @Override
-    public void onAutoSignInCancelled() {
-        if (mNativeView != 0) {
-            // This call passes the account fields directly as String and GURL parameters as an
-            // optimization to avoid needing multiple JNI getters on the Account class on for each
-            // field.
-            AccountSelectionBridgeJni.get().onAutoSignInCancelled(mNativeView);
-        }
-    }
-
     @NativeMethods
     interface Natives {
         void onAccountSelected(long nativeAccountSelectionViewAndroid, GURL idpConfigUrl,
                 String[] accountFields, GURL accountPictureUrl, boolean isSignedIn);
         void onDismiss(long nativeAccountSelectionViewAndroid,
                 @IdentityRequestDialogDismissReason int dismissReason);
-        void onAutoSignInCancelled(long nativeAccountSelectionViewAndroid);
     }
 }

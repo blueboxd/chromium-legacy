@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Sambungan Internet Langsung</translation>
 <translation id="1272293450992660632">Nilai PIN tidak sepadan.</translation>
 <translation id="1280820357415527819">Mencari rangkaian mudah alih</translation>
-<translation id="1291603679744561561">SIM Dikunci</translation>
 <translation id="1293556467332435079">Fail</translation>
 <translation id="1297922636971898492">Google Drive tidak tersedia pada masa ini. Memuat naik akan dimulakan semula secara automatik sebaik sahaja Google Drive kembali.</translation>
 <translation id="1307931752636661898">Tidak dapat melihat fail Linux</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Untuk melepaskan fail dalam Parallels Desktop, fail itu mesti dialihkan ke fail Windows.</translation>
 <translation id="1435838927755162558">Kongsi folder dengan Parallels Desktop</translation>
 <translation id="1439919885608649279">Orang dengan bunga</translation>
+<translation id="1458457385801829801">Usir <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Slovak</translation>
 <translation id="1482884275703521657">Finland</translation>
 <translation id="148466539719134488">Bahasa Switzerland</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 folder dikongsi dengan Bruschetta</translation>
 <translation id="2578394532502990878">Fonetik Tamil</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2587195714949534472">Membuat persediaan untuk menyegerakkan <ph name="FILE_NAME" />...</translation>
 <translation id="2602810353103180630">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Disekat oleh Pentadbir anda, Butiran</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Google Drive tidak dapat dicapai pada masa ini.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongolia</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> ralat.</translation>
 <translation id="3509680540198371098">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />%, Butiran</translation>
+<translation id="3511705761158917664">Membuat persediaan untuk menyegerakkan <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="3522708245912499433">Bahasa Portugis</translation>
 <translation id="3524311639100184459">Awas: Fail ini bersifat sementara dan mungkin dipadamkan secara automatik untuk mengosongkan ruang cakera.  <ph name="BEGIN_LINK" />Ketahui Lebih Lanjut<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Tampal</translation>
 <translation id="3952872973865944257">Fonetik Telugu</translation>
+<translation id="3954354850384043518">Sedang berlangsung</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Muat turun profil mudah alih, Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inggeris (UK)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Nama pelayan tersuai</translation>
 <translation id="4465725236958772856">Rangkaian <ph name="NETWORK_INDEX" /> daripada <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Diurus oleh Pentadbir anda, Sambung</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Tiada hasil carian yang sepadan</translation>
 <translation id="4477002475007461989">Romania</translation>
 <translation id="4477219268485577442">Fonetik bahasa Bulgaria</translation>
 <translation id="4508265954913339219">Pengaktifan gagal</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Gunakan nama yang mengandungi tidak lebih daripada <ph name="MAX_LENGTH" /> aksara</translation>
 <translation id="4973970068702235170">Gagal mengezip, ralat tidak dijangka: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Jepun</translation>
+<translation id="4987699874727873250">Bahasa Inggeris (India)</translation>
 <translation id="4988205478593450158">Adakah anda pasti anda mahu memadamkan "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Rama-rama merah</translation>
 <translation id="4992066212339426712">Nyahredam</translation>
@@ -786,6 +791,7 @@
 <translation id="7458955835361612701">Tiada imej baru-baru ini</translation>
 <translation id="7460898608667578234">Bahasa Ukraine</translation>
 <translation id="7469894403370665791">Menyambung ke rangkaian ini secara automatik</translation>
+<translation id="7481358317100446445">Sedia</translation>
 <translation id="7486315294984620427">Untuk melepaskan fail dalam Parallels Desktop, fail itu mesti disalin ke fail Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Fonetik Malayalam</translation>
@@ -811,6 +817,7 @@
 <translation id="7655441028674523381">Akses Google Photos dengan mudah</translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Cuba carian lain</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> item dialihkan ke folder sampah</translation>
 <translation id="7693909743393669729">Tindakan memformatkan pemacu akan memadamkan semua data yang disimpan pada pemacu itu dan mengalih keluar semua petakan yang sedia ada, termasuk petakan yang mungkin tidak kelihatan. Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="7695430100978772476">Tidak boleh memformat <ph name="DRIVE_NAME" /></translation>
@@ -967,6 +974,7 @@
 <translation id="8866284467018526531">Alih Huruf Arab</translation>
 <translation id="8873014196523807561">Untuk memulihkan item ini, seret item ke folder baharu. Folder asal untuk beberapa item ini telah dipadamkan.</translation>
 <translation id="8874184842967597500">Tidak bersambung</translation>
+<translation id="8876368061475701452">Dibaris Gilir</translation>
 <translation id="8900820606136623064">Bahasa Hungary</translation>
 <translation id="8903931173357132290">Graduan</translation>
 <translation id="8912078710089354287">Anjing menggoyang-goyangkan ekor</translation>

@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/css/style_rule_keyframe.h"
 
 #include <memory>
+
+#include "third_party/blink/renderer/core/animation/timing.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -24,8 +26,9 @@ String StyleRuleKeyframe::KeyText() const {
     if (i) {
       key_text.Append(", ");
     }
-    if (keys_.at(i).name != Timing::TimelineNamedRange::kNone) {
-      key_text.Append(Timing::TimelineRangeNameToString(keys_.at(i).name));
+    if (keys_.at(i).name != TimelineOffset::NamedRange::kNone) {
+      key_text.Append(
+          TimelineOffset::TimelineRangeNameToString(keys_.at(i).name));
       key_text.Append(" ");
     }
     key_text.AppendNumber(keys_.at(i).percent * 100);

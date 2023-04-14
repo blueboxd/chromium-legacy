@@ -11,7 +11,6 @@
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
-#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
 // The set of user-selectable datatypes. This must be in the same order as
@@ -74,22 +73,33 @@ bool SyncSetupService::UserActionIsRequiredToHaveTabSyncWork() {
   if (!CanSyncFeatureStart() || !IsDataTypePreferred(syncer::PROXY_TABS)) {
     return true;
   }
-  switch (this->GetSyncServiceState()) {
+
+  switch (sync_service_->GetUserActionableError()) {
     // No error.
-    case SyncSetupService::kNoSyncServiceError:
-    // These errors are transient and don't mean that sync is off.
-    case SyncSetupService::kSyncServiceCouldNotConnect:
-    case SyncSetupService::kSyncServiceServiceUnavailable:
-    case SyncSetupService::kSyncServiceTrustedVaultRecoverabilityDegraded:
+    case syncer::SyncService::UserActionableError::kNone:
       return false;
-    // These errors effectively amount to disabled sync and require a signin.
-    case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-    case SyncSetupService::kSyncServiceNeedsPassphrase:
-    case SyncSetupService::kSyncServiceUnrecoverableError:
+
+    // These errors effectively amount to disabled sync or effectively paused.
+    case syncer::SyncService::UserActionableError::kSignInNeedsUpdate:
+    case syncer::SyncService::UserActionableError::kNeedsPassphrase:
+    case syncer::SyncService::UserActionableError::kGenericUnrecoverableError:
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForEverything:
       return true;
-    case SyncSetupService::kSyncServiceNeedsTrustedVaultKey:
-      return IsEncryptEverythingEnabled();
+
+    // This error doesn't stop tab sync.
+    case syncer::SyncService::UserActionableError::
+        kNeedsTrustedVaultKeyForPasswords:
+      return false;
+
+    // These errors don't actually stop sync.
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForPasswords:
+    case syncer::SyncService::UserActionableError::
+        kTrustedVaultRecoverabilityDegradedForEverything:
+      return false;
   }
+
   NOTREACHED() << "Unknown sync service state.";
   return true;
 }
@@ -126,54 +136,6 @@ void SyncSetupService::SetSyncEnabled(bool sync_enabled) {
     SetSyncingAllDataTypes(true);
 }
 
-SyncSetupService::SyncServiceState SyncSetupService::GetSyncServiceState() {
-  switch (sync_service_->GetAuthError().state()) {
-    case GoogleServiceAuthError::REQUEST_CANCELED:
-      return kSyncServiceCouldNotConnect;
-    // TODO(crbug.com/1194007): This will support the SyncDisabled policy that
-    // can force the Sync service to become unavailable.
-    // Based on GetSyncStatusLabelsForAuthError, SERVICE_UNAVAILABLE
-    // corresponds to sync having been disabled for the user's domain.
-    case GoogleServiceAuthError::SERVICE_UNAVAILABLE:
-      return kSyncServiceServiceUnavailable;
-    case GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS:
-      return kSyncServiceSignInNeedsUpdate;
-    // The following errors are not shown to the user.
-    case GoogleServiceAuthError::NONE:
-    // Connection failed is not shown to the user, as this will happen if the
-    // service retuned a 500 error. A more detail error can always be checked
-    // on chrome://sync-internals.
-    case GoogleServiceAuthError::CONNECTION_FAILED:
-    case GoogleServiceAuthError::USER_NOT_SIGNED_UP:
-    case GoogleServiceAuthError::UNEXPECTED_SERVICE_RESPONSE:
-      break;
-    // The following errors are unexpected on iOS.
-    case GoogleServiceAuthError::SERVICE_ERROR:
-    case GoogleServiceAuthError::SCOPE_LIMITED_UNRECOVERABLE_ERROR:
-    // Conventional value for counting the states, never used.
-    case GoogleServiceAuthError::NUM_STATES:
-      NOTREACHED() << "Unexpected Auth error ("
-                   << sync_service_->GetAuthError().state()
-                   << "): " << sync_service_->GetAuthError().error_message();
-      break;
-  }
-  if (sync_service_->HasUnrecoverableError())
-    return kSyncServiceUnrecoverableError;
-  if (sync_service_->GetUserSettings()
-          ->IsPassphraseRequiredForPreferredDataTypes()) {
-    return kSyncServiceNeedsPassphrase;
-  }
-  if (sync_service_->GetUserSettings()
-          ->IsTrustedVaultKeyRequiredForPreferredDataTypes()) {
-    return kSyncServiceNeedsTrustedVaultKey;
-  }
-  if (sync_service_->GetUserSettings()
-          ->IsTrustedVaultRecoverabilityDegraded()) {
-    return kSyncServiceTrustedVaultRecoverabilityDegraded;
-  }
-  return kNoSyncServiceError;
-}
-
 bool SyncSetupService::IsEncryptEverythingEnabled() const {
   return sync_service_->GetUserSettings()->IsEncryptEverythingEnabled();
 }
@@ -193,9 +155,6 @@ bool SyncSetupService::IsInitialSetupOngoing() {
 }
 
 void SyncSetupService::PrepareForFirstSyncSetup() {
-  // `PrepareForFirstSyncSetup` should always be called while the user is signed
-  // out. At that time, sync setup is not completed.
-  DCHECK(!sync_service_->GetUserSettings()->IsFirstSetupComplete());
   if (!sync_blocker_)
     sync_blocker_ = sync_service_->GetSetupInProgressHandle();
 }

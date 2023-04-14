@@ -169,9 +169,22 @@ struct FacetBrandingInfo {
 
 // Facet struct, corresponds to the |Facet| message in affiliation_api.proto.
 struct Facet {
+  explicit Facet(FacetURI uri,
+                 FacetBrandingInfo branding_info = FacetBrandingInfo(),
+                 GURL change_password_url = GURL(),
+                 std::string main_domain = std::string());
+
+  ~Facet();
+
+  Facet(const Facet& other);
+  Facet(Facet&& other);
+  Facet& operator=(const Facet& other);
+  Facet& operator=(Facet&& other);
+
   FacetURI uri;
   FacetBrandingInfo branding_info;
   GURL change_password_url;
+  std::string main_domain;
 };
 
 // A collection of facets affiliated with each other, i.e. an equivalence class.
@@ -227,10 +240,10 @@ std::ostream& operator<<(std::ostream& os, const FacetURI& facet_uri);
 // Needed for testing.
 bool operator==(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs);
 bool operator!=(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs);
-
-// Needed for testing.
 bool operator==(const Facet& lhs, const Facet& rhs);
 bool operator!=(const Facet& lhs, const Facet& rhs);
+bool operator==(const GroupedFacets& lhs, const GroupedFacets& rhs);
+bool operator!=(const GroupedFacets& lhs, const GroupedFacets& rhs);
 
 struct FacetURIHash {
   size_t operator()(const FacetURI& facet_uri) const {

@@ -20,7 +20,6 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_observer.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/ui/browser.h"
@@ -33,6 +32,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -148,11 +148,12 @@ class SupervisedUserBlockModeTest : public SupervisedUserURLFilterTest {
   void SetUpOnMainThread() override {
     SupervisedUserURLFilterTest::SetUpOnMainThread();
     Profile* profile = browser()->profile();
-    SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForKey(
-            profile->GetProfileKey());
+    supervised_user::SupervisedUserSettingsService*
+        supervised_user_settings_service =
+            SupervisedUserSettingsServiceFactory::GetForKey(
+                profile->GetProfileKey());
     supervised_user_settings_service->SetLocalSetting(
-        supervised_users::kContentPackDefaultFilteringBehavior,
+        supervised_user::kContentPackDefaultFilteringBehavior,
         base::Value(SupervisedUserURLFilter::BLOCK));
   }
 };
@@ -270,15 +271,15 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockNewTabAfterLoading) {
 
   {
     // Block the current URL.
-    SupervisedUserSettingsService* supervised_user_settings_service =
-        SupervisedUserSettingsServiceFactory::GetForKey(
-            browser()->profile()->GetProfileKey());
+    supervised_user::SupervisedUserSettingsService*
+        supervised_user_settings_service =
+            SupervisedUserSettingsServiceFactory::GetForKey(
+                browser()->profile()->GetProfileKey());
     supervised_user_settings_service->SetLocalSetting(
-        supervised_users::kContentPackDefaultFilteringBehavior,
+        supervised_user::kContentPackDefaultFilteringBehavior,
         base::Value(SupervisedUserURLFilter::BLOCK));
 
-    const SupervisedUserURLFilter* filter =
-        supervised_user_service_->GetURLFilter();
+    SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
     ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
               filter->GetFilteringBehaviorForURL(test_url));
 
@@ -315,15 +316,15 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, DontShowInterstitialTwice) {
   ASSERT_FALSE(ShownPageIsInterstitial(browser()));
 
   // Block the current URL.
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackDefaultFilteringBehavior,
+      supervised_user::kContentPackDefaultFilteringBehavior,
       base::Value(SupervisedUserURLFilter::BLOCK));
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -362,17 +363,17 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest,
 IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
   GURL allowed_url("http://www.example.com/simple.html");
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
 
   // Set the host as allowed.
   base::Value::Dict dict;
   dict.Set(allowed_url.host(), true);
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+      supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(allowed_url));
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
@@ -430,14 +431,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, GoBackOnDontProceed) {
   // Set the host as blocked and wait for the interstitial to appear.
   base::Value::Dict dict;
   dict.Set(test_url.host(), false);
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+      supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -468,14 +469,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest,
   // Set the host as blocked and wait for the interstitial to appear.
   base::Value::Dict dict;
   dict.Set(test_url.host(), false);
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+      supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -494,19 +495,19 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockThenUnblock) {
 
   ASSERT_FALSE(ShownPageIsInterstitial(browser()));
 
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   // Set the host as blocked and wait for the interstitial to appear.
   {
     base::Value::Dict dict;
     dict.Set(test_url.host(), false);
     supervised_user_settings_service->SetLocalSetting(
-        supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+        supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
   }
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
@@ -518,7 +519,7 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserURLFilterTest, BlockThenUnblock) {
     base::Value::Dict dict;
     dict.Set(test_url.host(), true);
     supervised_user_settings_service->SetLocalSetting(
-        supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+        supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
     ASSERT_EQ(SupervisedUserURLFilter::ALLOW,
               filter->GetFilteringBehaviorForURL(test_url));
   }
@@ -545,14 +546,14 @@ IN_PROC_BROWSER_TEST_F(SupervisedUserBlockModeTest, Unblock) {
   // Set the host as allowed.
   base::Value::Dict dict;
   dict.Set(test_url.host(), true);
-  SupervisedUserSettingsService* supervised_user_settings_service =
-      SupervisedUserSettingsServiceFactory::GetForKey(
-          browser()->profile()->GetProfileKey());
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service =
+          SupervisedUserSettingsServiceFactory::GetForKey(
+              browser()->profile()->GetProfileKey());
   supervised_user_settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
+      supervised_user::kContentPackManualBehaviorHosts, std::move(dict));
 
-  const SupervisedUserURLFilter* filter =
-      supervised_user_service_->GetURLFilter();
+  SupervisedUserURLFilter* filter = supervised_user_service_->GetURLFilter();
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(test_url.GetWithEmptyPath()));
 
@@ -580,7 +581,7 @@ class MockSupervisedUserURLFilterObserver
               OnURLChecked,
               (const GURL& url,
                SupervisedUserURLFilter::FilteringBehavior behavior,
-               supervised_user_error_page::FilteringBehaviorReason reason,
+               supervised_user::FilteringBehaviorReason reason,
                bool uncertain),
               (override));
 

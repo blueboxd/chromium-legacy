@@ -28,19 +28,21 @@ extern DEVICE_BLUETOOTH_EXPORT int kDBusTimeoutMs;
 // TODO(b/189499077) - Expose via floss package
 extern DEVICE_BLUETOOTH_EXPORT const char kAdapterService[];
 extern DEVICE_BLUETOOTH_EXPORT const char kManagerService[];
-extern DEVICE_BLUETOOTH_EXPORT const char kAdapterInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kGattInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kAdminInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kManagerInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kExperimentalInterface[];
-extern DEVICE_BLUETOOTH_EXPORT const char kManagerObject[];
-extern DEVICE_BLUETOOTH_EXPORT const char kAdapterObjectFormat[];
-extern DEVICE_BLUETOOTH_EXPORT const char kGattObjectFormat[];
-extern DEVICE_BLUETOOTH_EXPORT const char kMediaObjectFormat[];
-extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerObjectFormat[];
 
-// Other interfaces
+extern DEVICE_BLUETOOTH_EXPORT const char kAdapterLoggingObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kAdapterObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGattObjectFormat[];
+extern DEVICE_BLUETOOTH_EXPORT const char kManagerObject[];
+extern DEVICE_BLUETOOTH_EXPORT const char kMediaObjectFormat[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kAdapterInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kAdapterLoggingInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kAdminInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kBatteryManagerInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kExperimentalInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGattInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kManagerInterface[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSocketManagerInterface[];
 
 namespace adapter {
@@ -48,6 +50,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kGetAddress[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetName[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetName[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetDiscoverable[];
+extern DEVICE_BLUETOOTH_EXPORT const char kGetDiscoverableTimeout[];
 extern DEVICE_BLUETOOTH_EXPORT const char kSetDiscoverable[];
 extern DEVICE_BLUETOOTH_EXPORT const char kStartDiscovery[];
 extern DEVICE_BLUETOOTH_EXPORT const char kCancelDiscovery[];
@@ -93,6 +96,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnDeviceDisconnected[];
 
 extern DEVICE_BLUETOOTH_EXPORT const char kOnScannerRegistered[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnScanResult[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnScanResultLost[];
 }  // namespace adapter
 
 namespace manager {
@@ -154,6 +158,7 @@ extern DEVICE_BLUETOOTH_EXPORT const char kReadRemoteRssi[];
 extern DEVICE_BLUETOOTH_EXPORT const char kConfigureMtu[];
 extern DEVICE_BLUETOOTH_EXPORT const char kConnectionParameterUpdate[];
 extern DEVICE_BLUETOOTH_EXPORT const char kCallbackInterface[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerCallbackInterface[];
 
 extern DEVICE_BLUETOOTH_EXPORT const char kOnClientRegistered[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnClientConnectionState[];
@@ -170,6 +175,29 @@ extern DEVICE_BLUETOOTH_EXPORT const char kOnReadRemoteRssi[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnConfigureMtu[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnConnectionUpdated[];
 extern DEVICE_BLUETOOTH_EXPORT const char kOnServiceChanged[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kRegisterServer[];
+extern DEVICE_BLUETOOTH_EXPORT const char kUnregisterServer[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerConnect[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerDisconnect[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerSetPreferredPhy[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerReadPhy[];
+extern DEVICE_BLUETOOTH_EXPORT const char kAddService[];
+extern DEVICE_BLUETOOTH_EXPORT const char kRemoveService[];
+extern DEVICE_BLUETOOTH_EXPORT const char kClearServices[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSendResponse[];
+extern DEVICE_BLUETOOTH_EXPORT const char kServerSendNotification[];
+
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerRegistered[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerConnectionState[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerServiceAdded[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerCharacteristicReadRequest[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerDescriptorReadRequest[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerCharacteristicWriteRequest[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerDescriptorWriteRequest[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerNotificationSent[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerMtuChanged[];
+extern DEVICE_BLUETOOTH_EXPORT const char kOnServerSubrateChange[];
 }  // namespace gatt
    //
 namespace advertiser {
@@ -221,6 +249,11 @@ extern DEVICE_BLUETOOTH_EXPORT const char kSetAllowedServices[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetAllowedServices[];
 extern DEVICE_BLUETOOTH_EXPORT const char kGetDevicePolicyEffect[];
 }  // namespace admin
+
+namespace adapter_logging {
+extern DEVICE_BLUETOOTH_EXPORT const char kIsDebugEnabled[];
+extern DEVICE_BLUETOOTH_EXPORT const char kSetDebugLogging[];
+}  // namespace adapter_logging
 
 // BluetoothDevice structure for DBus apis.
 struct DEVICE_BLUETOOTH_EXPORT FlossDeviceId {
@@ -403,8 +436,12 @@ class DEVICE_BLUETOOTH_EXPORT FlossDBusClient {
 
   // Convert adapter number to battery_manager object path.
   static dbus::ObjectPath GenerateBatteryManagerPath(int adapter_index);
+
   // Convert adapter number to admin object path.
   static dbus::ObjectPath GenerateAdminPath(int adapter_index);
+
+  // Convert adapter number to logging object path.
+  static dbus::ObjectPath GenerateLoggingPath(int adapter_index);
 
   // Generalized DBus serialization (used for generalized method call
   // invocation).

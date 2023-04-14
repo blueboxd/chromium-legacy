@@ -9,7 +9,6 @@ load("@stdlib//internal/luci/common.star", "keys", "kinds", "triggerer")
 load("./args.star", "args")
 load("./nodes.star", "nodes")
 load("./structs.star", "structs")
-load("//project.star", "settings")
 
 def _enum(**kwargs):
     """Create an enum struct.
@@ -516,7 +515,10 @@ def _get_mirroring_builders(bc_state, node):
 
 def _builder_id(node):
     return dict(
-        project = settings.project,
+        # TODO(crbug.com/868153) Once the configs for all chromium builders are
+        # migrated src-side, switch this to settings.project and remove the use
+        # of project_trigger_override within the starlark
+        project = "chromium",
         bucket = node.key.container.id,
         builder = node.key.id,
     )

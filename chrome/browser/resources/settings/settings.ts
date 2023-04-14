@@ -13,6 +13,7 @@ export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group
 export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
 export {CrToolbarElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
 export {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+export {OpenWindowProxy, OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 export {PluralStringProxyImpl as SettingsPluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 export {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 export {SettingsAboutPageElement} from './about_page/about_page.js';
@@ -48,7 +49,6 @@ export {SettingsStartupUrlDialogElement} from './on_startup_page/startup_url_dia
 export {EDIT_STARTUP_URL_EVENT, SettingsStartupUrlEntryElement} from './on_startup_page/startup_url_entry.js';
 export {SettingsStartupUrlsPageElement} from './on_startup_page/startup_urls_page.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.js';
-export {OpenWindowProxy, OpenWindowProxyImpl} from './open_window_proxy.js';
 export {pageVisibility, PrivacyPageVisibility, setPageVisibilityForTesting} from './page_visibility.js';
 // <if expr="chromeos_ash">
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './people_page/account_manager_browser_proxy.js';
@@ -61,9 +61,9 @@ export {BATTERY_SAVER_MODE_PREF, SettingsBatteryPageElement} from './performance
 export {PerformanceBrowserProxy, PerformanceBrowserProxyImpl} from './performance_page/performance_browser_proxy.js';
 export {BatterySaverModeState, HighEfficiencyModeExceptionListAction, PerformanceMetricsProxy, PerformanceMetricsProxyImpl} from './performance_page/performance_metrics_proxy.js';
 export {HIGH_EFFICIENCY_MODE_PREF, SettingsPerformancePageElement} from './performance_page/performance_page.js';
-export {MAX_TAB_DISCARD_EXCEPTION_RULE_LENGTH, SUBMIT_EVENT, TabDiscardExceptionDialogElement} from './performance_page/tab_discard_exception_dialog.js';
+export {MAX_TAB_DISCARD_EXCEPTION_RULE_LENGTH, TAB_DISCARD_EXCEPTIONS_MANAGED_PREF, TAB_DISCARD_EXCEPTIONS_PREF, TabDiscardExceptionDialogElement} from './performance_page/tab_discard_exception_dialog.js';
 export {TabDiscardExceptionEntryElement} from './performance_page/tab_discard_exception_entry.js';
-export {TAB_DISCARD_EXCEPTIONS_MANAGED_PREF, TAB_DISCARD_EXCEPTIONS_PREF, TabDiscardExceptionListElement} from './performance_page/tab_discard_exception_list.js';
+export {TabDiscardExceptionListElement} from './performance_page/tab_discard_exception_list.js';
 export {prefToString, stringToPrefValue} from './prefs/pref_util.js';
 export {SettingsPrefsElement} from './prefs/prefs.js';
 export {PrefsMixin, PrefsMixinInterface} from './prefs/prefs_mixin.js';
@@ -77,7 +77,7 @@ export {ResetBrowserProxy, ResetBrowserProxyImpl} from './reset_page/reset_brows
 export {SettingsResetProfileBannerElement} from './reset_page/reset_profile_banner.js';
 export {buildRouter, routes} from './route.js';
 export {Route, Router, SettingsRoutes} from './router.js';
-export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckChromeCleanerStatus, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
+export {SafetyCheckBrowserProxy, SafetyCheckBrowserProxyImpl, SafetyCheckCallbackConstants, SafetyCheckExtensionsStatus, SafetyCheckParentStatus, SafetyCheckPasswordsStatus, SafetyCheckSafeBrowsingStatus, SafetyCheckUpdatesStatus} from './safety_check_page/safety_check_browser_proxy.js';
 export {SafetyCheckIconStatus, SettingsSafetyCheckChildElement} from './safety_check_page/safety_check_child.js';
 export {SettingsSafetyCheckExtensionsChildElement} from './safety_check_page/safety_check_extensions_child.js';
 export {SettingsSafetyCheckNotificationPermissionsElement} from './safety_check_page/safety_check_notification_permissions.js';

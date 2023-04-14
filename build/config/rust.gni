@@ -22,6 +22,9 @@ declare_args() {
   # The base::JSONReader implementation.
   enable_rust_json = true
 
+  # Support for chrome://crash-rust to check crash dump collection works.
+  enable_rust_crash = true
+
   # Use experimental Rust toolchain built in-tree. See //tools/rust. For now,
   # only use it for linux targets. The package only has prebuilt libs for linux.
   # More targets will be added later.
@@ -34,8 +37,11 @@ declare_args() {
   # TODO(https://crbug.com/1245714): fix std handling and check `current_os`.
   use_chromium_rust_toolchain = target_os == "linux" && host_os == "linux"
 
-  # The version string returned by rustc -V, if using an alternative toolchain.
-  rustc_version = ""
+  # Build libstd locally with GN and use that instead of the prebuilts, where
+  # applicable. If this is false the prebuilt libstd will always be used. If
+  # true, the local build is only used with the Chromium Rust toolchain and only
+  # on supported platforms and GN targets.
+  enable_local_libstd = true
 
   # Chromium currently has a Rust toolchain for Android and Linux, but
   # if you wish to experiment on more platforms you can use this
@@ -66,34 +72,10 @@ declare_args() {
   # more work is done.
   use_goma_rust = false
 
-  # Rust code may end up being linked into a final executable by:
-  # * rustc (which calls lld)
-  # * our pre-existing C++ linker invocations
-  # At the moment, this first pipeline is incompatible with the ldflags we use
-  # for thin LTO, due to some problem in escaping gn rules. There's a further
-  # problem with -lunwind on Android.
-  # However, Rust code is still useful if it's contributing to our existing
-  # C++ linker invocations, so this doesn't disable Rust entirely. It does
-  # disable Rust unit test executables, so we do need to fix this.
-  # https://crbug.com/1229423
-  # NB this may be overridden by individual toolchains
-  rustc_can_link = !is_android
-
+  # The host toolchain to use when you don't want sanitizers enabled. By default
+  # it is the regular toolchain, but when that toolchain has sanitizers, then
+  # this variable is changed to avoid them.
   host_toolchain_no_sanitizers = host_toolchain
-}
-
-# Set rustc_version to the in-tree toolchain version, if enabled, or otherwise
-# the Android toolchain version. If using a custom toolchain it is not changed.
-if (enable_rust) {
-  if (use_chromium_rust_toolchain) {
-    assert(rustc_version == "",
-           "Cannot override rustc_version when using in-tree rust build")
-    rustc_version =
-        read_file("//third_party/rust-toolchain/VERSION", "trim string")
-  } else if (rustc_version == "") {
-    # Android toolchain version.
-    rustc_version = "rustc 1.64.0-dev (Android Rust Toolchain version 9099361)"
-  }
 }
 
 # Platform support for "official" toolchains (Android or Chromium)
@@ -112,10 +94,29 @@ toolchain_has_rust =
      (!use_chromium_rust_toolchain && android_toolchain_supports_platform) ||
      (rust_sysroot_absolute != "" && custom_toolchain_supports_platform))
 
-# We use the Rust linker for building test executables, so we only build them
-# if we're able to use the Rust linker. We could use the C++ linker for this
-# too, we've just not set up GN to do so at the moment.
-can_build_rust_unit_tests = toolchain_has_rust && rustc_can_link
+# The rustc_revision is used to introduce a dependency on the toolchain version
+# (so e.g. rust targets are rebuilt, and the standard library is re-copied when
+# the toolchain changes). It is left empty for custom toolchains.
+rustc_revision = ""
+if (toolchain_has_rust && rust_sysroot_absolute == "") {
+  if (use_chromium_rust_toolchain) {
+    update_rust_args = [ "--print-package-version" ]
+    rustc_revision = exec_script("//tools/rust/update_rust.py",
+                                 update_rust_args,
+                                 "trim string")
+  } else {
+    # Android toolchain version.
+    rustc_revision = "rustc 1.64.0-dev (Android Rust Toolchain version 9099361)"
+  }
+}
+
+# TODO(crbug.com/1278030): To build unit tests for Android we need to build
+# them as a dylib and put them into an APK. We should reuse all the same logic
+# for gtests from the `//testing/test:test` template.
+can_build_rust_unit_tests = toolchain_has_rust && !is_android
+
+# Whether to build chrome://crash/rust support.
+build_rust_crash = toolchain_has_rust && enable_rust_crash
 
 # We want to store rust_sysroot as a source-relative variable for ninja
 # portability. In practice if an external toolchain was specified, it might
@@ -197,9 +198,38 @@ if (is_linux) {
   } else {
     assert(false, "Architecture not supported")
   }
+} else if (is_win) {
+  rust_abi_target = "x86_64-pc-windows-msvc"
 }
 
 assert(!toolchain_has_rust || rust_abi_target != "")
+
+# This variable is passed to the Rust libstd build.
+rust_target_arch = ""
+if (current_cpu == "x86") {
+  rust_target_arch = "x86"
+} else if (current_cpu == "x64") {
+  rust_target_arch = "x86_64"
+} else if (current_cpu == "arm") {
+  rust_target_arch = "arm"
+} else if (current_cpu == "arm64") {
+  rust_target_arch = "aarch64"
+} else if (current_cpu == "mipsel") {
+  rust_target_arch = "mips"
+} else if (current_cpu == "mips64el") {
+  rust_target_arch = "mips64"
+} else if (current_cpu == "s390x") {
+  rust_target_arch = "s390x"
+} else if (current_cpu == "ppc64") {
+  rust_target_arch = "powerpc64"
+} else if (current_cpu == "riscv64") {
+  rust_target_arch = "riscv64"
+}
+
+assert(!toolchain_has_rust || rust_target_arch != "")
+
+# Determine whether the local libstd can and should be built.
+local_libstd_supported = enable_local_libstd && use_chromium_rust_toolchain
 
 # Arguments for Rust invocation.
 # This is common between gcc/clang, Mac and Windows toolchains so specify once,

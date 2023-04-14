@@ -113,6 +113,13 @@ if (is_android || is_chromeos) {
     public_android_sdk = true
   }
 
+  if (android_sdk_release == "tprivacysandbox") {
+    default_android_sdk_root = public_android_sdk_root
+    default_android_sdk_version = "TiramisuPrivacySandbox"
+    default_android_sdk_build_tools_version = "33.0.0"
+    public_android_sdk = true
+  }
+
   # For use downstream when we are building with preview Android SDK
   if (!defined(final_android_sdk)) {
     final_android_sdk = public_android_sdk
@@ -142,26 +149,6 @@ if (is_android || is_chromeos) {
   # targets (e.g. google_play_services_base_java) are located.
   if (!defined(google_play_services_package)) {
     google_play_services_package = "//third_party/android_deps"
-  }
-
-  if (!defined(dagger_java_target)) {
-    dagger_java_target =
-        "//third_party/android_deps:com_google_dagger_dagger_java"
-  }
-
-  if (!defined(dagger_annotation_processor_target)) {
-    dagger_annotation_processor_target =
-        "//third_party/android_deps:com_google_dagger_dagger_compiler_java"
-  }
-
-  if (!defined(guava_android_target)) {
-    guava_android_target =
-        "//third_party/android_deps:com_google_guava_guava_android_java"
-  }
-
-  if (!defined(material_design_target)) {
-    material_design_target =
-        "//third_party/android_deps:com_google_android_material_material_java"
   }
 
   if (!defined(android_protoc_bin)) {
@@ -254,6 +241,11 @@ if (is_android || is_chromeos) {
     # support mapping these names.
     enable_arsc_obfuscation = true
 
+    # Controls whether |strip_unused_resources| is respected. Useful when trying
+    # to analyze APKs using tools that do not support missing resources from
+    # resources.arsc.
+    enable_unused_resource_stripping = is_official_build
+
     # The target to use as the system WebView implementation.
     if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
       system_webview_apk_target = "//android_webview:system_webview_64_apk"
@@ -284,17 +276,13 @@ if (is_android || is_chromeos) {
     use_hashed_jni_names = !is_java_debug
 
     # Enables JNI multiplexing to reduce JNI native methods overhead.
-    enable_jni_multiplexing = false
+    allow_jni_multiplexing = false
 
     # Enables trace event injection on Android views with bytecode rewriting.
     # This adds an additional step on android_app_bundle_module targets that
     # adds trace events to some methods in android.view.View subclasses.
     enable_trace_event_bytecode_rewriting =
         !is_java_debug && android_channel != "stable"
-  }
-
-  if (enable_jni_multiplexing) {
-    use_hashed_jni_names = false
   }
 
   # Host stuff -----------------------------------------------------------------

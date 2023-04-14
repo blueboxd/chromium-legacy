@@ -64,6 +64,7 @@
 #include "chromeos/ui/wm/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/display/manager/display_manager.h"
@@ -209,7 +210,7 @@ aura::Window* GetTopVisibleWindow() {
 
     // Floated windows can be tucked offscreen in tablet mode. Their target
     // visibility is true but the app list is fully visible under them.
-    if (chromeos::wm::features::IsFloatWindowEnabled() &&
+    if (chromeos::wm::features::IsWindowLayoutMenuEnabled() &&
         WindowState::Get(window)->IsFloated() &&
         Shell::Get()->float_controller()->IsFloatedWindowTuckedForTablet(
             window)) {
@@ -1251,14 +1252,6 @@ void AppListControllerImpl::GetContextMenuModel(
   if (client_)
     client_->GetContextMenuModel(profile_id_, id, item_context,
                                  std::move(callback));
-}
-
-ui::ImplicitAnimationObserver* AppListControllerImpl::GetAnimationObserver(
-    AppListViewState target_state) {
-  // |presenter_| observes the close animation only.
-  if (target_state == AppListViewState::kClosed)
-    return fullscreen_presenter_.get();
-  return nullptr;
 }
 
 void AppListControllerImpl::ShowWallpaperContextMenu(

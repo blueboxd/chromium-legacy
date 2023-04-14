@@ -57,6 +57,8 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chromeos/ash/components/dbus/dbus_thread_manager.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
+#include "device/bluetooth/floss/floss_dbus_manager.h"
+#include "device/bluetooth/floss/floss_features.h"
 #elif BUILDFLAG(IS_LINUX)
 #include "device/bluetooth/dbus/dbus_bluez_manager_wrapper_linux.h"
 #endif
@@ -73,7 +75,7 @@
 namespace content {
 
 namespace {
-
+#if !BUILDFLAG(IS_IOS)
 GURL GetStartupURL() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kBrowserTest))
@@ -99,6 +101,7 @@ GURL GetStartupURL() {
       base::MakeAbsoluteFilePath(base::FilePath(args[0])));
 #endif
 }
+#endif
 
 scoped_refptr<base::RefCountedMemory> PlatformResourceProvider(int key) {
   if (key == IDR_DIR_HEADER_HTML) {
@@ -122,7 +125,11 @@ void ShellBrowserMainParts::PostCreateMainMessageLoop() {
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-  bluez::BluezDBusManager::InitializeFake();
+  if (floss::features::IsFlossEnabled()) {
+    floss::FlossDBusManager::InitializeFake();
+  } else {
+    bluez::BluezDBusManager::InitializeFake();
+  }
 #elif BUILDFLAG(IS_LINUX)
   bluez::DBusBluezManagerWrapperLinux::Initialize();
 #endif
@@ -150,8 +157,10 @@ void ShellBrowserMainParts::InitializeBrowserContexts() {
 }
 
 void ShellBrowserMainParts::InitializeMessageLoopContext() {
+#if !BUILDFLAG(IS_IOS)
   Shell::CreateNewWindow(browser_context_.get(), GetStartupURL(), nullptr,
                          gfx::Size());
+#endif
 }
 
 void ShellBrowserMainParts::ToolkitInitialized() {
@@ -210,7 +219,11 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
 void ShellBrowserMainParts::PostDestroyThreads() {
 #if BUILDFLAG(IS_CHROMEOS)
   device::BluetoothAdapterFactory::Shutdown();
-  bluez::BluezDBusManager::Shutdown();
+  if (floss::features::IsFlossEnabled()) {
+    floss::FlossDBusManager::Shutdown();
+  } else {
+    bluez::BluezDBusManager::Shutdown();
+  }
 #elif BUILDFLAG(IS_LINUX)
   device::BluetoothAdapterFactory::Shutdown();
   bluez::DBusBluezManagerWrapperLinux::Shutdown();

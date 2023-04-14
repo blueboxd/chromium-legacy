@@ -25,7 +25,6 @@ const net::SiteForCookies kSiteForCookies =
     net::SiteForCookies::FromOrigin(kOrigin);
 
 using GetSettingCallback = base::RepeatingCallback<ContentSetting(const GURL&)>;
-using QueryReason = CookieSettingsBase::QueryReason;
 
 ContentSettingPatternSource CreateSetting(ContentSetting setting) {
   return ContentSettingPatternSource(
@@ -41,10 +40,6 @@ ContentSettingPatternSource CreateThirdPartySetting(ContentSetting setting) {
       std::string(), false);
 }
 
-std::string BoolToString(bool b) {
-  return b ? "true" : "false";
-}
-
 class CallbackCookieSettings : public CookieSettingsBase {
  public:
   explicit CallbackCookieSettings(GetSettingCallback callback)
@@ -56,8 +51,7 @@ class CallbackCookieSettings : public CookieSettingsBase {
       const GURL& first_party_url,
       bool is_third_party_request,
       net::CookieSettingOverrides overrides,
-      content_settings::SettingSource* source,
-      QueryReason query_reason) const override {
+      content_settings::SettingSource* source) const override {
     return callback_.Run(url);
   }
   ContentSetting GetSettingForLegacyCookieAccess(
@@ -155,24 +149,21 @@ TEST(CookieSettingsBaseTest, CookieAccessNotAllowedWithBlockedSetting) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
   EXPECT_FALSE(settings.IsFullCookieAccessAllowed(
-      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides(),
-      CallbackCookieSettings::QueryReason::kCookies));
+      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides()));
 }
 
 TEST(CookieSettingsBaseTest, CookieAccessAllowedWithAllowSetting) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
   EXPECT_TRUE(settings.IsFullCookieAccessAllowed(
-      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides(),
-      CallbackCookieSettings::QueryReason::kCookies));
+      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides()));
 }
 
 TEST(CookieSettingsBaseTest, CookieAccessAllowedWithSessionOnlySetting) {
   CallbackCookieSettings settings(base::BindRepeating(
       [](const GURL&) { return CONTENT_SETTING_SESSION_ONLY; }));
   EXPECT_TRUE(settings.IsFullCookieAccessAllowed(
-      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides(),
-      CallbackCookieSettings::QueryReason::kCookies));
+      kURL, kSiteForCookies, kOrigin, net::CookieSettingOverrides()));
 }
 
 TEST(CookieSettingsBaseTest, LegacyCookieAccessSemantics) {
@@ -189,22 +180,19 @@ TEST(CookieSettingsBaseTest, LegacyCookieAccessSemantics) {
 TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithAllowSetting) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
-  EXPECT_FALSE(settings.IsCookieSessionOnly(
-      kURL, CookieSettingsBase::QueryReason::kCookies));
+  EXPECT_FALSE(settings.IsCookieSessionOnly(kURL));
 }
 
 TEST(CookieSettingsBaseTest, IsCookieSessionOnlyWithBlockSetting) {
   CallbackCookieSettings settings(
       base::BindRepeating([](const GURL&) { return CONTENT_SETTING_BLOCK; }));
-  EXPECT_FALSE(settings.IsCookieSessionOnly(
-      kURL, CookieSettingsBase::QueryReason::kCookies));
+  EXPECT_FALSE(settings.IsCookieSessionOnly(kURL));
 }
 
 TEST(CookieSettingsBaseTest, IsCookieSessionOnlySessionWithOnlySetting) {
   CallbackCookieSettings settings(base::BindRepeating(
       [](const GURL&) { return CONTENT_SETTING_SESSION_ONLY; }));
-  EXPECT_TRUE(settings.IsCookieSessionOnly(
-      kURL, CookieSettingsBase::QueryReason::kCookies));
+  EXPECT_TRUE(settings.IsCookieSessionOnly(kURL));
 }
 
 TEST(CookieSettingsBaseTest, IsValidSetting) {
@@ -235,64 +223,51 @@ TEST(CookieSettingsBaseTest, IsValidLegacyAccessSetting) {
 }
 
 class CookieSettingsBaseStorageAccessAPITest
-    : public testing::TestWithParam<std::tuple<bool, bool, bool>> {
+    : public testing::TestWithParam<std::tuple<bool, bool>> {
  public:
   CookieSettingsBaseStorageAccessAPITest() {
+    CookieSettingsBase::SetStorageAccessAPIGrantsUnpartitionedStorageForTesting(
+        PermissionGrantsUnpartitionedStorage());
+
     std::vector<base::test::FeatureRefAndParams> enabled;
     std::vector<base::test::FeatureRef> disabled;
-    if (IsStorageAccessAPIEnabled()) {
-      enabled.push_back({net::features::kStorageAccessAPI,
-                         {{"storage-access-api-grants-unpartitioned-storage",
-                           BoolToString(IsStorageGrantedByPermission())}}});
+    if (IsStoragePartitioned()) {
+      enabled.push_back({net::features::kThirdPartyStoragePartitioning, {}});
     } else {
-      disabled.push_back(net::features::kStorageAccessAPI);
+      disabled.push_back(net::features::kThirdPartyStoragePartitioning);
     }
     features_.InitWithFeaturesAndParameters(enabled, disabled);
   }
 
-  bool IsStorageAccessAPIEnabled() const { return std::get<0>(GetParam()); }
   bool PermissionGrantsUnpartitionedStorage() const {
-    return std::get<1>(GetParam());
+    return std::get<0>(GetParam());
   }
-  bool IsStoragePartitioned() const { return std::get<2>(GetParam()); }
-
-  bool IsStorageGrantedByPermission() const {
-    // Storage access should only be granted if the permission grants
-    // unpartitioned storage, or if storage is partitioned.
-    return IsStorageAccessAPIEnabled() &&
-           (PermissionGrantsUnpartitionedStorage() || IsStoragePartitioned());
-  }
+  bool IsStoragePartitioned() const { return std::get<1>(GetParam()); }
 
  private:
   base::test::ScopedFeatureList features_;
 };
 
 TEST_P(CookieSettingsBaseStorageAccessAPITest,
-       ShouldConsiderStorageAccessGrants) {
-  EXPECT_FALSE(CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      QueryReason::kSetting, IsStorageAccessAPIEnabled(),
-      PermissionGrantsUnpartitionedStorage(), IsStoragePartitioned()));
+       SettingOverridesForStorageAccessAPIs) {
+  CallbackCookieSettings settings(
+      base::BindRepeating([](const GURL&) { return CONTENT_SETTING_ALLOW; }));
 
-  EXPECT_FALSE(CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-      QueryReason::kPrivacySandbox, IsStorageAccessAPIEnabled(),
-      PermissionGrantsUnpartitionedStorage(), IsStoragePartitioned()));
+  net::CookieSettingOverrides overrides = settings.SettingOverridesForStorage();
 
-  EXPECT_EQ(CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-                QueryReason::kSiteStorage, IsStorageAccessAPIEnabled(),
-                PermissionGrantsUnpartitionedStorage(), IsStoragePartitioned()),
-            IsStorageGrantedByPermission());
-
-  EXPECT_EQ(CookieSettingsBase::ShouldConsiderStorageAccessGrantsInternal(
-                QueryReason::kCookies, IsStorageAccessAPIEnabled(),
-                PermissionGrantsUnpartitionedStorage(), IsStoragePartitioned()),
-            IsStorageAccessAPIEnabled());
+  EXPECT_EQ(
+      overrides.Has(net::CookieSettingOverride::kStorageAccessGrantEligible),
+      PermissionGrantsUnpartitionedStorage() || IsStoragePartitioned());
+  EXPECT_EQ(
+      overrides.Has(
+          net::CookieSettingOverride::kTopLevelStorageAccessGrantEligible),
+      IsStoragePartitioned());
 }
 
-INSTANTIATE_TEST_SUITE_P(/* no prefix */,
-                         CookieSettingsBaseStorageAccessAPITest,
-                         testing::Combine(testing::Bool(),
-                                          testing::Bool(),
-                                          testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    CookieSettingsBaseStorageAccessAPITest,
+    testing::Combine(testing::Bool(), testing::Bool()));
 
 }  // namespace
 }  // namespace content_settings

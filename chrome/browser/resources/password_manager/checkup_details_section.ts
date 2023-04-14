@@ -20,13 +20,27 @@ import {CredentialsChangedListener, PasswordCheckInteraction, PasswordManagerImp
 import {PrefMixin} from './prefs/pref_mixin.js';
 import {CheckupSubpage, Page, Route, RouteObserverMixin, Router} from './router.js';
 
+export class ReusedPasswordInfo {
+  constructor(credentials: chrome.passwordsPrivate.PasswordUiEntry[]) {
+    this.credentials = credentials;
+  }
+
+  async init() {
+    this.title = await PluralStringProxyImpl.getInstance().getPluralString(
+        'numberOfPasswordReuse', this.credentials.length);
+  }
+
+  credentials: chrome.passwordsPrivate.PasswordUiEntry[];
+  title: string;
+}
+
 export interface CheckupDetailsSectionElement {
   $: {
     description: HTMLElement,
     moreActionsMenu: CrActionMenuElement,
     menuShowPassword: HTMLButtonElement,
     menuEditPassword: HTMLButtonElement,
-    menuRemovePassword: HTMLButtonElement,
+    menuDeletePassword: HTMLButtonElement,
     subtitle: HTMLElement,
   };
 }
@@ -62,6 +76,19 @@ export class CheckupDetailsSectionElement extends
         type: Array,
         observer: 'onCredentialsChanged_',
       },
+
+      credentialsWithReusedPassword_: {
+        type: Array,
+      },
+
+      /**
+       * The ids of insecure credentials for which user clicked "Change
+       * Password" button
+       */
+      clickedChangePasswordIds_: {
+        type: Object,
+        value: new Set(),
+      },
     };
   }
 
@@ -70,9 +97,12 @@ export class CheckupDetailsSectionElement extends
   private groups_: chrome.passwordsPrivate.CredentialGroup[] = [];
   private allInsecureCredentials_: chrome.passwordsPrivate.PasswordUiEntry[];
   private shownInsecureCredentials_: chrome.passwordsPrivate.PasswordUiEntry[];
+  private credentialsWithReusedPassword_: ReusedPasswordInfo[];
   private mutedCompromisedCredentials_:
       chrome.passwordsPrivate.PasswordUiEntry[];
   private activeListItem_: CheckupListItemElement|null;
+  private clickedChangePasswordIds_: Set<number>;
+  private activeCredential_: chrome.passwordsPrivate.PasswordUiEntry|undefined;
   private insecureCredentialsChangedListener_: CredentialsChangedListener|null =
       null;
 
@@ -103,7 +133,6 @@ export class CheckupDetailsSectionElement extends
 
   override currentRouteChanged(route: Route, _: Route): void {
     if (route.page !== Page.CHECKUP_DETAILS) {
-      this.insecurityType_ = undefined;
       return;
     }
     this.insecurityType_ = route.details as unknown as CheckupSubpage;
@@ -113,24 +142,39 @@ export class CheckupDetailsSectionElement extends
     Router.getInstance().navigateTo(Page.CHECKUP);
   }
 
-  private updateShownCredentials_() {
+  private async updateShownCredentials_() {
     if (!this.insecurityType_ || !this.allInsecureCredentials_) {
       return;
     }
-    this.shownInsecureCredentials_ =
-        this.allInsecureCredentials_.filter(cred => {
-          return !cred.compromisedInfo!.isMuted &&
-              cred.compromisedInfo!.compromiseTypes.some(type => {
-                return this.getInsecurityType_().includes(type);
-              });
-        });
-    this.mutedCompromisedCredentials_ =
-        this.allInsecureCredentials_.filter(cred => {
-          return cred.compromisedInfo!.isMuted &&
-              cred.compromisedInfo!.compromiseTypes.some(type => {
-                return this.getInsecurityType_().includes(type);
-              });
-        });
+    const insecureCredentialsForThisType = this.allInsecureCredentials_.filter(
+        cred => cred.compromisedInfo!.compromiseTypes.some(type => {
+          return this.getInsecurityType_().includes(type);
+        }));
+    if (this.isCompromisedType()) {
+      // Compromised credentials can be muted. Show muted credentials
+      // separately.
+      this.mutedCompromisedCredentials_ = insecureCredentialsForThisType.filter(
+          cred => cred.compromisedInfo!.isMuted);
+      this.shownInsecureCredentials_ = insecureCredentialsForThisType.filter(
+          cred => !cred.compromisedInfo!.isMuted);
+    } else {
+      this.shownInsecureCredentials_ = insecureCredentialsForThisType;
+    }
+
+    if (this.isReusedType()) {
+      const allReusedCredentials = await PasswordManagerImpl.getInstance()
+                                       .getCredentialsWithReusedPassword();
+      this.credentialsWithReusedPassword_ =
+          await Promise.all(allReusedCredentials.map(
+              async(credentials): Promise<ReusedPasswordInfo> => {
+                const reuseInfo = new ReusedPasswordInfo(credentials.entries);
+                await reuseInfo.init();
+                return reuseInfo;
+              }));
+      this.credentialsWithReusedPassword_.sort(
+          (lhs, rhs) =>
+              (lhs.credentials.length > rhs.credentials.length ? -1 : 1));
+    }
   }
 
   private async onCredentialsChanged_() {
@@ -165,11 +209,11 @@ export class CheckupDetailsSectionElement extends
     return this.i18n(`${this.insecurityType_}PasswordsDescription`);
   }
 
-  private isCompromisedSection(): boolean {
+  private isCompromisedType(): boolean {
     return this.insecurityType_ === CheckupSubpage.COMPROMISED;
   }
 
-  private isReusedSection(): boolean {
+  private isReusedType(): boolean {
     return this.insecurityType_ === CheckupSubpage.REUSED;
   }
 
@@ -186,6 +230,20 @@ export class CheckupDetailsSectionElement extends
     this.activeListItem_ = null;
     PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
         PasswordCheckInteraction.SHOW_PASSWORD);
+  }
+
+  private async onMenuEditPasswordClick_() {
+    this.activeListItem_?.showEditDialog();
+    this.$.moreActionsMenu.close();
+    this.activeListItem_ = null;
+    PasswordManagerImpl.getInstance().recordPasswordCheckInteraction(
+        PasswordCheckInteraction.EDIT_PASSWORD);
+  }
+
+  private async onMenuDeletePasswordClick_() {
+    this.activeListItem_?.showDeleteDialog();
+    this.$.moreActionsMenu.close();
+    this.activeListItem_ = null;
   }
 
   private getShowHideTitle_(): string {
@@ -222,6 +280,16 @@ export class CheckupDetailsSectionElement extends
       |undefined {
     return this.groups_.find(
         group => group.entries.some(entry => entry.id === id));
+  }
+
+  private onChangePasswordClick_(event: CustomEvent<number>) {
+    this.clickedChangePasswordIds_.add(event.detail);
+    this.notifyPath('clickedChangePasswordIds_.size');
+  }
+
+  private clickedChangePassword_(item: chrome.passwordsPrivate.PasswordUiEntry):
+      boolean {
+    return this.clickedChangePasswordIds_.has(item.id);
   }
 }
 

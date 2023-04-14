@@ -13,6 +13,7 @@
 #include "base/scoped_observation.h"
 #include "base/strings/strcat.h"
 #include "base/types/optional_util.h"
+#include "base/types/pass_key.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -318,7 +319,7 @@ void ExtensionMessagePort::DispatchOnMessage(const Message& message) {
 }
 
 void ExtensionMessagePort::IncrementLazyKeepaliveCount(
-    bool is_for_native_message_connect) {
+    bool should_have_strong_keepalive) {
   ProcessManager* pm = ProcessManager::Get(browser_context_);
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
@@ -334,7 +335,7 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount(
        pm->GetServiceWorkersForExtension(extension_id_)) {
     std::string request_uuid = pm->IncrementServiceWorkerKeepaliveCount(
         worker_id,
-        is_for_native_message_connect
+        should_have_strong_keepalive
             ? content::ServiceWorkerExternalRequestTimeoutType::kDoesNotTimeout
             : content::ServiceWorkerExternalRequestTimeoutType::kDefault,
         Activity::MESSAGE_PORT, PortIdToString(port_id_));
@@ -511,9 +512,9 @@ void ExtensionMessagePort::SendToPort(IPCBuilderCallback ipc_builder) {
               back_forward_cache::DisabledReasonId::
                   kExtensionSentMessageToCachedFrame,
               /*context=*/extension_id_),
-          ukm::UkmRecorder::GetSourceIdFromScopeImpl(
-              Extension::GetBaseURLFromExtensionId(extension_id_),
-              ukm::SourceIdType::EXTENSION_ID));
+          ukm::UkmRecorder::GetSourceIdForExtensionUrl(
+              base::PassKey<ExtensionMessagePort>(),
+              Extension::GetBaseURLFromExtensionId(extension_id_)));
 
       continue;
     }

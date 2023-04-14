@@ -142,11 +142,6 @@ class SyncEngineImpl : public SyncEngine,
   // these events.
   void HandleProtocolEventOnFrontendLoop(std::unique_ptr<ProtocolEvent> event);
 
-  // Overwrites the kSyncInvalidationVersions preference with the most recent
-  // set of invalidation versions for each type.
-  void UpdateInvalidationVersions(
-      const std::map<ModelType, int64_t>& invalidation_versions);
-
   void HandleSyncStatusChanged(const SyncStatus& status);
 
   // Handles backend initialization failure.
@@ -158,7 +153,7 @@ class SyncEngineImpl : public SyncEngine,
       const SyncCycleSnapshot& snapshot);
 
   // Let the front end handle the actionable error event.
-  void HandleActionableErrorEventOnFrontendLoop(
+  void HandleActionableProtocolErrorEventOnFrontendLoop(
       const SyncProtocolError& sync_error);
 
   // Handle a migration request.

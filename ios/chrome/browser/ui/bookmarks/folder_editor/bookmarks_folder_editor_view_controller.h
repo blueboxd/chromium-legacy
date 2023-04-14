@@ -5,6 +5,7 @@
 #define IOS_CHROME_BROWSER_UI_BOOKMARKS_FOLDER_EDITOR_BOOKMARKS_FOLDER_EDITOR_VIEW_CONTROLLER_H_
 
 #import <UIKit/UIKit.h>
+#import <set>
 
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 
@@ -18,20 +19,30 @@ class BookmarkNode;
 }  // namespace bookmarks
 
 @protocol BookmarksFolderEditorViewControllerDelegate
+
+// Used to show the folder chooser UI when the user decides to update the
+// parent folder.
+- (void)showBookmarksFolderChooserWithParentFolder:
+            (const bookmarks::BookmarkNode*)parent
+                                       hiddenNodes:
+                                           (const std::set<
+                                               const bookmarks::BookmarkNode*>&)
+                                               hiddenNodes;
 // Called when the controller successfully created or edited `folder`.
-- (void)bookmarkFolderEditor:(BookmarksFolderEditorViewController*)folderEditor
-      didFinishEditingFolder:(const bookmarks::BookmarkNode*)folder;
+- (void)bookmarksFolderEditor:(BookmarksFolderEditorViewController*)folderEditor
+       didFinishEditingFolder:(const bookmarks::BookmarkNode*)folder;
 // Called when the user deletes the edited folder.
 // This is never called if the editor is created with
 // `folderCreatorWithBookmarkModel:parentFolder:`.
-- (void)bookmarkFolderEditorDidDeleteEditedFolder:
+- (void)bookmarksFolderEditorDidDeleteEditedFolder:
     (BookmarksFolderEditorViewController*)folderEditor;
 // Called when the user cancels the folder creation.
-- (void)bookmarkFolderEditorDidCancel:
+- (void)bookmarksFolderEditorDidCancel:
     (BookmarksFolderEditorViewController*)folderEditor;
 // Called when the controller is going to commit the title change.
-- (void)bookmarkFolderEditorWillCommitTitleChange:
+- (void)bookmarksFolderEditorWillCommitTitleChange:
     (BookmarksFolderEditorViewController*)folderEditor;
+
 @end
 
 // View controller for creating or editing a bookmark folder. Allows editing of
@@ -66,6 +77,14 @@ class BookmarkNode;
                           browser:(Browser*)browser;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
+
+// Called when the user attempt to swipe down the view controller.
+- (void)presentationControllerDidAttemptToDismiss;
+// Whether the bookmarks folder editor can be dismissed.
+- (BOOL)canDismiss;
+// TODO(crbug.com/1402758): Remove this method after model code is moved to the
+// mediator.
+- (void)updateParentFolder:(const bookmarks::BookmarkNode*)parent;
 
 @end
 

@@ -4,8 +4,8 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 import("//third_party/closure_compiler/js_unit_tests.gni")
-import("//ui/file_manager/base/gn/files_webui_bundle/files_webui_bundle.gni")
 import("//ui/file_manager/base/gn/js_test_type_check.gni")
+import("//ui/webui/resources/tools/optimize_webui.gni")
 
 js_type_check("closure_compile_jsmodules") {
   closure_flags = default_closure_args + [
@@ -193,13 +193,11 @@ image_loader_path =
     rebase_path("$root_gen_dir/ui/file_manager/preprocessed/image_loader",
                 root_build_dir)
 
-files_webui_bundle("build") {
+optimize_webui("build") {
   host = "image_loader"
 
   input = preprocess_folder
   js_module_in_files = [ "background.js" ]
-
-  js_out_files = [ "background.rollup.js" ]
 
   external_paths = [
     "chrome://file-manager|$files_app_path",
@@ -211,6 +209,5 @@ files_webui_bundle("build") {
     "//ui/file_manager:preprocess_generated",
     "//ui/file_manager:preprocess_static",
     "//ui/file_manager:preprocess_static_image_loader",
-    "//ui/webui/resources:library",
   ]
 }

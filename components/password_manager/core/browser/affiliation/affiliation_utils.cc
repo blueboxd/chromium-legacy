@@ -177,9 +177,12 @@ bool ParseAndCanonicalizeFacetURI(const std::string& input_uri,
   base::StringPiece scheme = ComponentString(input_uri, input_parsed.scheme);
   if (base::EqualsCaseInsensitiveASCII(scheme, url::kHttpsScheme)) {
     return CanonicalizeWebFacetURI(input_uri, input_parsed, canonical_uri);
-  } else if (base::EqualsCaseInsensitiveASCII(scheme, kAndroidAppScheme)) {
+  }
+  if (base::EqualsCaseInsensitiveASCII(scheme, kAndroidAppScheme)) {
     return CanonicalizeAndroidFacetURI(input_uri, input_parsed, canonical_uri);
   }
+
+  *canonical_uri = input_uri;
   return false;
 }
 
@@ -265,6 +268,27 @@ FacetURI::FacetURI(const std::string& canonical_spec, bool is_valid)
                         &parsed_);
 }
 
+// Facet
+
+Facet::Facet(FacetURI uri,
+             FacetBrandingInfo branding_info,
+             GURL change_password_url,
+             std::string main_domain)
+    : uri(std::move(uri)),
+      branding_info(std::move(branding_info)),
+      change_password_url(std::move(change_password_url)),
+      main_domain(std::move(main_domain)) {}
+
+Facet::~Facet() = default;
+
+Facet::Facet(const Facet& other) = default;
+
+Facet::Facet(Facet&& other) = default;
+
+Facet& Facet::operator=(const Facet& other) = default;
+
+Facet& Facet::operator=(Facet&& other) = default;
+
 // GroupedFacets
 
 GroupedFacets::GroupedFacets() = default;
@@ -312,11 +336,22 @@ bool operator!=(const FacetBrandingInfo& lhs, const FacetBrandingInfo& rhs) {
 }
 
 bool operator==(const Facet& lhs, const Facet& rhs) {
-  return std::tie(lhs.uri, lhs.branding_info) ==
-         std::tie(rhs.uri, rhs.branding_info);
+  return std::tie(lhs.uri, lhs.branding_info, lhs.main_domain) ==
+         std::tie(rhs.uri, rhs.branding_info, rhs.main_domain);
 }
 
 bool operator!=(const Facet& lhs, const Facet& rhs) {
+  return !(lhs == rhs);
+}
+
+bool operator==(const GroupedFacets& lhs, const GroupedFacets& rhs) {
+  if (!base::ranges::is_permutation(lhs.facets, rhs.facets)) {
+    return false;
+  }
+  return lhs.branding_info == rhs.branding_info;
+}
+
+bool operator!=(const GroupedFacets& lhs, const GroupedFacets& rhs) {
   return !(lhs == rhs);
 }
 

@@ -574,8 +574,9 @@ void ExtensionManagement::Refresh() {
     if (defer_load_settings) {
       auto* extension_prefs = ExtensionPrefs::Get(profile_);
       auto extensions_info = extension_prefs->GetInstalledExtensionsInfo();
-      for (auto& extension_info : *extensions_info)
+      for (auto& extension_info : extensions_info) {
         installed_extensions.insert(extension_info->extension_id);
+      }
     }
 
     for (auto iter : *dict_pref) {
@@ -744,7 +745,7 @@ const base::Value::Dict* ExtensionManagement::LoadDictPreference(
     const char* pref_name,
     bool force_managed) const {
   const base::Value* value =
-      LoadPreference(pref_name, force_managed, base::Value::Type::DICTIONARY);
+      LoadPreference(pref_name, force_managed, base::Value::Type::DICT);
   return value ? &value->GetDict() : nullptr;
 }
 

@@ -11,10 +11,6 @@
 #import "ios/chrome/browser/ui/ntp/logo_animation_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_configuring.h"
 
-namespace web {
-class WebState;
-}
-
 @class BubblePresenter;
 @protocol NewTabPageControllerDelegate;
 @protocol ThumbStripSupporting;
@@ -36,29 +32,25 @@ class WebState;
 @property(weak, nonatomic, readwrite) UIViewController* baseViewController;
 
 // ViewController associated with this coordinator.
-@property(nonatomic, strong, readonly) UIViewController* viewController;
-
-// Webstate associated with this coordinator.
-@property(nonatomic, assign) web::WebState* webState;
+@property(nonatomic, readonly) UIViewController* viewController;
 
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
 
 // Returns `YES` if the coordinator is started.
-@property(nonatomic, assign, getter=isStarted) BOOL started;
+@property(nonatomic, readonly) BOOL started;
 
 // The pan gesture handler for the view controller.
 @property(nonatomic, weak) ViewRevealingVerticalPanHandler* panGestureHandler;
 
 // Allows for the in-flight enabling/disabling of the thumb strip.
-@property(nonatomic, weak, readonly) id<ThumbStripSupporting>
-    thumbStripSupporting;
+@property(nonatomic, readonly) id<ThumbStripSupporting> thumbStripSupporting;
 
 // Bubble presenter for displaying IPH bubbles relating to the NTP.
 @property(nonatomic, strong) BubblePresenter* bubblePresenter;
 
 // Currently selected feed.
-@property(nonatomic, assign, readonly) FeedType selectedFeed;
+@property(nonatomic, readonly) FeedType selectedFeed;
 
 // Animates the NTP fakebox to the focused position and focuses the real
 // omnibox.
@@ -76,8 +68,11 @@ class WebState;
 // Reloads the content of the NewTabPage. Does not do anything on Incognito.
 - (void)reload;
 
-// Calls when the visibility of the NTP changes.
-- (void)ntpDidChangeVisibility:(BOOL)visible;
+// Called when the user navigates to the NTP.
+- (void)didNavigateToNTP;
+
+// Called when the user navigates away from the NTP.
+- (void)didNavigateAwayFromNTP;
 
 // The location bar has lost focus.
 - (void)locationBarDidResignFirstResponder;
@@ -94,6 +89,10 @@ class WebState;
 
 // Called when the given `feedType` has completed updates.
 - (void)handleFeedModelDidEndUpdates:(FeedType)feedType;
+
+// Checks if there are any WebStates showing an NTP at this time. If not, then
+// stops the NTP.
+- (void)stopIfNeeded;
 
 @end
 

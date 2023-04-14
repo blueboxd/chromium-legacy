@@ -35,7 +35,8 @@ ExternallyManagedInstallCommand::ExternallyManagedInstallCommand(
     const ExternalInstallOptions& external_install_options,
     InstallAndReplaceCallback callback,
     base::WeakPtr<content::WebContents> contents,
-    std::unique_ptr<WebAppDataRetriever> data_retriever)
+    std::unique_ptr<WebAppDataRetriever> data_retriever,
+    WebAppUrlLoader* web_app_url_loader)
     : WebAppCommandTemplate<NoopLock>("ExternallyManagedInstallCommand"),
       profile_(profile),
       noop_lock_description_(std::make_unique<NoopLockDescription>()),
@@ -47,6 +48,7 @@ ExternallyManagedInstallCommand::ExternallyManagedInstallCommand(
       install_callback_(std::move(callback)),
       web_contents_(contents),
       data_retriever_(std::move(data_retriever)),
+      web_app_url_loader_(web_app_url_loader),
       install_error_log_entry_(/*background_installation=*/true,
                                install_surface_) {
   debug_value_.Set("external_install_options",
@@ -183,6 +185,27 @@ void ExternallyManagedInstallCommand::OnDidPerformInstallableCheck(
   const bool skip_page_favicons = opt_manifest && !opt_manifest->icons.empty();
 
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info_);
+
+  // PrepareForLoad() navigates to about:blank. This ensure that no further
+  // navigation/redirection is still running that could interrupt icon fetching.
+  if (web_app_url_loader_ && !web_contents_->GetVisibleURL().EqualsIgnoringRef(
+                                 GURL(url::kAboutBlankURL))) {
+    web_app_url_loader_->PrepareForLoad(
+        web_contents_.get(),
+        base::BindOnce(
+            &ExternallyManagedInstallCommand::OnPreparedForIconRetrieving,
+            weak_factory_.GetWeakPtr(), std::move(icon_urls),
+            skip_page_favicons));
+    return;
+  }
+  OnPreparedForIconRetrieving(std::move(icon_urls), skip_page_favicons,
+                              WebAppUrlLoaderResult::kUrlLoaded);
+}
+
+void ExternallyManagedInstallCommand::OnPreparedForIconRetrieving(
+    base::flat_set<GURL> icon_urls,
+    const bool& skip_page_favicons,
+    WebAppUrlLoaderResult result) {
   data_retriever_->GetIcons(
       web_contents_.get(), std::move(icon_urls), skip_page_favicons,
       base::BindOnce(&ExternallyManagedInstallCommand::
@@ -236,7 +259,6 @@ void ExternallyManagedInstallCommand::OnLockUpgradedFinalizeInstall(
   finalize_options.locally_installed = install_params_.locally_installed;
   finalize_options.overwrite_existing_manifest_fields =
       install_params_.force_reinstall;
-  finalize_options.parent_app_id = install_params_.parent_app_id;
 
   ApplyParamsToFinalizeOptions(install_params_, finalize_options);
 
@@ -292,9 +314,10 @@ void ExternallyManagedInstallCommand::OnInstallFinalized(
   }
 
   if (base::FeatureList::IsEnabled(features::kRecordWebAppDebugInfo)) {
-    base::Value task_error_dict = install_error_log_entry_.TakeErrorDict();
-    if (!task_error_dict.DictEmpty())
-      command_manager()->LogToInstallManager(std::move(task_error_dict));
+    if (install_error_log_entry_.HasErrorDict()) {
+      command_manager()->LogToInstallManager(
+          install_error_log_entry_.TakeErrorDict());
+    }
   }
 
   webapps::InstallableMetrics::TrackInstallResult(webapps::IsSuccess(code));

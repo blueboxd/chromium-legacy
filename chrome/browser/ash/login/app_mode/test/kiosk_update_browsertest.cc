@@ -12,6 +12,7 @@
 #include "base/test/gtest_tags.h"
 #include "base/test/scoped_chromeos_version_info.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/ash/app_mode/test_kiosk_extension_builder.h"
 #include "chrome/browser/ash/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/ash/login/app_mode/test/kiosk_base_test.h"
 #include "chrome/browser/ash/login/app_mode/test/test_app_data_load_waiter.h"
@@ -105,6 +106,9 @@ const char kFakeUsbMountPathLowerCrxVersion[] =
     "chromeos/app_mode/external_update/lower_crx_version";
 const char kFakeUsbMountPathBadCrx[] =
     "chromeos/app_mode/external_update/bad_crx";
+
+// Placeholder for an icon, as the icon is required by the kiosk app manager.
+const char kFakeIconURL[] = "/chromeos/app_mode/red16x16.png";
 
 bool IsAppInstalled(const std::string& app_id, const std::string& version) {
   Profile* app_profile = ProfileManager::GetPrimaryUserProfile();
@@ -219,10 +223,11 @@ class KioskUpdateTest : public KioskBaseTest {
     KioskAppManager* manager = KioskAppManager::Get();
     TestAppDataLoadWaiter waiter(manager, app_id, version);
     ReloadKioskApps();
-    if (wait_for_app_data)
+    if (wait_for_app_data) {
       waiter.WaitForAppData();
-    else
+    } else {
       waiter.Wait();
+    }
     EXPECT_TRUE(waiter.loaded());
     std::string cached_version;
     base::FilePath file_path;
@@ -295,7 +300,7 @@ class KioskUpdateTest : public KioskBaseTest {
 
     // Launch the primary app.
     SimulateNetworkOnline();
-    EXPECT_TRUE(LaunchApp(test_app_id()));
+    ASSERT_TRUE(LaunchApp(test_app_id()));
     WaitForAppLaunchWithOptions(false, true);
 
     // Verify the primary app and the secondary apps are all installed.
@@ -310,24 +315,28 @@ class KioskUpdateTest : public KioskBaseTest {
     TestAppInfo primary_app(kTestPrimaryKioskApp, "1.0.0",
                             std::string(kTestPrimaryKioskApp) + "-1.0.0.crx",
                             extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_app_1(kTestSecondaryApp1, "1.0.0",
                                 std::string(kTestSecondaryApp1) + "-1.0.0.crx",
                                 extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(secondary_app_1);
     secondary_apps.push_back(secondary_app_1);
     TestAppInfo secondary_app_2(kTestSecondaryApp2, "1.0.0",
                                 std::string(kTestSecondaryApp2) + "-1.0.0.crx",
                                 extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(secondary_app_2);
     secondary_apps.push_back(secondary_app_2);
 
     LaunchKioskWithSecondaryApps(primary_app, secondary_apps);
   }
 
-  void LaunchTestKioskAppWithSeconadayExtension() {
+  void LaunchTestKioskAppWithSecondaryExtension() {
     TestAppInfo primary_app(kTestPrimaryKioskApp, "24.0.0",
                             std::string(kTestPrimaryKioskApp) + "-24.0.0.crx",
                             extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_extension(
@@ -344,6 +353,7 @@ class KioskUpdateTest : public KioskBaseTest {
         kTestSharedModulePrimaryApp, "1.0.0",
         std::string(kTestSharedModulePrimaryApp) + "-1.0.0.crx",
         extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     TestAppInfo secondary_app(kTestSecondaryApp, "1.0.0",
@@ -366,6 +376,7 @@ class KioskUpdateTest : public KioskBaseTest {
         kTestSharedModulePrimaryApp, "2.0.0",
         std::string(kTestSharedModulePrimaryApp) + "-2.0.0.crx",
         extensions::Manifest::TYPE_PLATFORM_APP);
+    SetupAppDetailInFakeCws(primary_app);
 
     std::vector<TestAppInfo> secondary_apps;
     // Setting up FakeCWS for shared module is the same for shared module as
@@ -385,6 +396,19 @@ class KioskUpdateTest : public KioskBaseTest {
                  ->GetPendingExtensionUpdate(test_app_id());
   }
 
+  void SetupAppDetailInFakeCws(const TestAppInfo& app) {
+    TestKioskExtensionBuilder app_builder(
+        extensions::Manifest::TYPE_PLATFORM_APP, app.id);
+    app_builder.set_version(app.version);
+    std::string manifest_json;
+    base::JSONWriter::Write(*app_builder.Build()->manifest()->value(),
+                            &manifest_json);
+    // In these tests we need to provide basic app detail, not necessary correct
+    // one, just to prevent KioskAppData to remove the app.
+    fake_cws()->SetAppDetails(app.id, /*localized_name=*/"Test App",
+                              /*icon_url=*/kFakeIconURL, manifest_json);
+  }
+
  private:
   class KioskAppExternalUpdateWaiter : public KioskAppManagerObserver {
    public:
@@ -401,8 +425,9 @@ class KioskUpdateTest : public KioskBaseTest {
     ~KioskAppExternalUpdateWaiter() override { manager_->RemoveObserver(this); }
 
     void Wait() {
-      if (quit_)
+      if (quit_) {
         return;
+      }
       runner_ = std::make_unique<base::RunLoop>();
       runner_->Run();
     }
@@ -414,16 +439,18 @@ class KioskUpdateTest : public KioskBaseTest {
    private:
     // KioskAppManagerObserver overrides:
     void OnKioskAppCacheUpdated(const std::string& app_id) override {
-      if (app_id_ != app_id)
+      if (app_id_ != app_id) {
         return;
+      }
       app_update_notified_ = true;
     }
 
     void OnKioskAppExternalUpdateComplete(bool success) override {
       quit_ = true;
       update_success_ = success;
-      if (runner_.get())
+      if (runner_.get()) {
         runner_->Quit();
+      }
     }
 
     std::unique_ptr<base::RunLoop> runner_;
@@ -831,10 +858,13 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
-  set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
-                           std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
-                           "2.0.0");
+  TestAppInfo primary_app(kTestPrimaryKioskApp, "2.0.0",
+                          std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
+                          extensions::Manifest::TYPE_PLATFORM_APP);
+  set_test_app_id(primary_app.id);
+  fake_cws()->SetUpdateCrx(primary_app.id, primary_app.crx_filename,
+                           primary_app.version);
+  SetupAppDetailInFakeCws(primary_app);
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
 
@@ -855,15 +885,21 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskAddOneApp) {
 // Update the primary app to version 3 which adds a new secondary app in its
 // manifest.
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskAddOneApp) {
-  set_test_app_id(kTestPrimaryKioskApp);
-  fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
-                           std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",
-                           "3.0.0");
+  TestAppInfo primary_app(kTestPrimaryKioskApp, "3.0.0",
+                          std::string(kTestPrimaryKioskApp) + "-3.0.0.crx",
+                          extensions::Manifest::TYPE_PLATFORM_APP);
+  set_test_app_id(primary_app.id);
+  fake_cws()->SetUpdateCrx(primary_app.id, primary_app.crx_filename,
+                           primary_app.version);
+  SetupAppDetailInFakeCws(primary_app);
   fake_cws()->SetNoUpdate(kTestSecondaryApp1);
   fake_cws()->SetNoUpdate(kTestSecondaryApp2);
-  fake_cws()->SetUpdateCrx(kTestSecondaryApp3,
-                           std::string(kTestSecondaryApp3) + "-1.0.0.crx",
-                           "1.0.0");
+  TestAppInfo secondary_app(kTestSecondaryApp3, "1.0.0",
+                            std::string(kTestSecondaryApp3) + "-1.0.0.crx",
+                            extensions::Manifest::TYPE_PLATFORM_APP);
+  fake_cws()->SetUpdateCrx(secondary_app.id, secondary_app.crx_filename,
+                           secondary_app.version);
+  SetupAppDetailInFakeCws(secondary_app);
 
   SimulateNetworkOnline();
   EXPECT_TRUE(LaunchApp(test_app_id()));
@@ -880,7 +916,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, LaunchKioskAppWithSecondaryExtension) {
   base::AddFeatureIdTagToTestResult(
       "screenplay-22a4b826-851a-4065-a32b-273a0e261bf3");
 
-  LaunchTestKioskAppWithSeconadayExtension();
+  LaunchTestKioskAppWithSecondaryExtension();
 }
 
 IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
@@ -949,6 +985,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
       kTestSharedModulePrimaryApp, "3.0.0",
       std::string(kTestSharedModulePrimaryApp) + "-3.0.0.crx",
       extensions::Manifest::TYPE_PLATFORM_APP);
+  SetupAppDetailInFakeCws(primary_app);
 
   std::vector<TestAppInfo> secondary_apps;
   // Setting up FakeCWS for shared module is the same for shared module as

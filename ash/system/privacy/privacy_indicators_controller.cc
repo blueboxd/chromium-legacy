@@ -13,9 +13,11 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/notification_center/notification_center_tray.h"
 #include "ash/system/privacy/privacy_indicators_tray_item_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/functional/callback_forward.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/message_center/message_center.h"
@@ -25,12 +27,27 @@
 namespace ash {
 
 PrivacyIndicatorsNotificationDelegate::PrivacyIndicatorsNotificationDelegate(
-    const AppActionClosure& launch_app,
-    const AppActionClosure& launch_settings)
-    : launch_app_(launch_app), launch_settings_(launch_settings) {}
+    absl::optional<base::RepeatingClosure> launch_app,
+    absl::optional<base::RepeatingClosure> launch_settings)
+    : launch_app_callback_(launch_app),
+      launch_settings_callback_(launch_settings) {
+  UpdateButtonIndices();
+}
 
 PrivacyIndicatorsNotificationDelegate::
     ~PrivacyIndicatorsNotificationDelegate() = default;
+
+void PrivacyIndicatorsNotificationDelegate::SetLaunchAppCallback(
+    const base::RepeatingClosure& launch_app) {
+  launch_app_callback_ = launch_app;
+  UpdateButtonIndices();
+}
+
+void PrivacyIndicatorsNotificationDelegate::SetLaunchSettingsCallback(
+    const base::RepeatingClosure& launch_settings) {
+  launch_settings_callback_ = launch_settings;
+  UpdateButtonIndices();
+}
 
 void PrivacyIndicatorsNotificationDelegate::Click(
     const absl::optional<int>& button_index,
@@ -39,7 +56,27 @@ void PrivacyIndicatorsNotificationDelegate::Click(
   if (!button_index)
     return;
 
-  launch_settings_.Run();
+  if (*button_index == launch_app_button_index_) {
+    DCHECK(launch_app_callback_);
+    launch_app_callback_->Run();
+    return;
+  }
+
+  if (*button_index == launch_settings_button_index_) {
+    DCHECK(launch_settings_callback_);
+    launch_settings_callback_->Run();
+  }
+}
+
+void PrivacyIndicatorsNotificationDelegate::UpdateButtonIndices() {
+  int current_index = 0;
+  if (launch_app_callback_) {
+    launch_app_button_index_ = current_index++;
+  }
+
+  if (launch_settings_callback_) {
+    launch_settings_button_index_ = current_index;
+  }
 }
 
 std::string GetPrivacyIndicatorsNotificationId(const std::string& app_id) {
@@ -52,7 +89,7 @@ CreatePrivacyIndicatorsNotification(
     absl::optional<std::u16string> app_name,
     bool is_camera_used,
     bool is_microphone_used,
-    scoped_refptr<message_center::NotificationDelegate> delegate) {
+    scoped_refptr<PrivacyIndicatorsNotificationDelegate> delegate) {
   std::u16string app_name_str = app_name.value_or(l10n_util::GetStringUTF16(
       IDS_PRIVACY_NOTIFICATION_MESSAGE_DEFAULT_APP_NAME));
 
@@ -84,9 +121,15 @@ CreatePrivacyIndicatorsNotification(
 
   optional_fields.parent_vector_small_image = &kPrivacyIndicatorsIcon;
 
-  // TODO(b/251686202): Add back the "Launch App button".
-  optional_fields.buttons.emplace_back(
-      l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_BUTTON_APP_SETTINGS));
+  if (delegate->launch_app_callback()) {
+    optional_fields.buttons.emplace_back(
+        l10n_util::GetStringUTF16(IDS_PRIVACY_NOTIFICATION_BUTTON_APP_LAUNCH));
+  }
+
+  if (delegate->launch_settings_callback()) {
+    optional_fields.buttons.emplace_back(l10n_util::GetStringUTF16(
+        IDS_PRIVACY_NOTIFICATION_BUTTON_APP_SETTINGS));
+  }
 
   auto notification = CreateSystemNotificationPtr(
       message_center::NotificationType::NOTIFICATION_TYPE_SIMPLE,
@@ -111,6 +154,11 @@ void ModifyPrivacyIndicatorsNotification(
     bool is_camera_used,
     bool is_microphone_used,
     scoped_refptr<PrivacyIndicatorsNotificationDelegate> delegate) {
+  // With `features::kVideoConference` enabled, the tray serves as this
+  // notifier, so do not show these notifications.
+  if (features::IsVideoConferenceEnabled()) {
+    return;
+  }
   auto* message_center = message_center::MessageCenter::Get();
   std::string id = GetPrivacyIndicatorsNotificationId(app_id);
   bool notification_exists = message_center->FindVisibleNotificationById(id);
@@ -133,16 +181,28 @@ void ModifyPrivacyIndicatorsNotification(
 void UpdatePrivacyIndicatorsView(const std::string& app_id,
                                  bool is_camera_used,
                                  bool is_microphone_used) {
-  DCHECK(ash::Shell::HasInstance());
+  // Privacy indicators don't exist when video conference controls are enabled.
+  if (!features::IsPrivacyIndicatorsEnabled() ||
+      features::IsVideoConferenceEnabled()) {
+    return;
+  }
+  DCHECK(Shell::HasInstance());
   for (auto* root_window_controller :
-       ash::Shell::Get()->GetAllRootWindowControllers()) {
+       Shell::Get()->GetAllRootWindowControllers()) {
     DCHECK(root_window_controller);
-    DCHECK(root_window_controller->GetStatusAreaWidget());
+    auto* status_area_widget = root_window_controller->GetStatusAreaWidget();
+    DCHECK(status_area_widget);
 
-    root_window_controller->GetStatusAreaWidget()
-        ->unified_system_tray()
-        ->privacy_indicators_view()
-        ->Update(app_id, is_camera_used, is_microphone_used);
+    auto* privacy_indicators_view =
+        features::IsQsRevampEnabled()
+            ? status_area_widget->notification_center_tray()
+                  ->privacy_indicators_view()
+            : status_area_widget->unified_system_tray()
+                  ->privacy_indicators_view();
+
+    DCHECK(privacy_indicators_view);
+
+    privacy_indicators_view->Update(app_id, is_camera_used, is_microphone_used);
   }
 }
 
@@ -150,16 +210,23 @@ void UpdatePrivacyIndicatorsScreenShareStatus(bool is_screen_sharing) {
   if (!features::IsPrivacyIndicatorsEnabled())
     return;
 
-  DCHECK(ash::Shell::HasInstance());
+  DCHECK(Shell::HasInstance());
   for (auto* root_window_controller :
-       ash::Shell::Get()->GetAllRootWindowControllers()) {
+       Shell::Get()->GetAllRootWindowControllers()) {
     DCHECK(root_window_controller);
-    DCHECK(root_window_controller->GetStatusAreaWidget());
+    auto* status_area_widget = root_window_controller->GetStatusAreaWidget();
+    DCHECK(status_area_widget);
 
-    root_window_controller->GetStatusAreaWidget()
-        ->unified_system_tray()
-        ->privacy_indicators_view()
-        ->UpdateScreenShareStatus(is_screen_sharing);
+    auto* privacy_indicators_view =
+        features::IsQsRevampEnabled()
+            ? status_area_widget->notification_center_tray()
+                  ->privacy_indicators_view()
+            : status_area_widget->unified_system_tray()
+                  ->privacy_indicators_view();
+
+    DCHECK(privacy_indicators_view);
+
+    privacy_indicators_view->UpdateScreenShareStatus(is_screen_sharing);
   }
 }
 

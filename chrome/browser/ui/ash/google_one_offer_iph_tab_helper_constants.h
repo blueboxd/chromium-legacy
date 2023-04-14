@@ -8,11 +8,11 @@
 // Fallback texts are used if params are not provided, e.g. IPH demo mode. We
 // won't expect that those fallback texts are used in prod.
 constexpr char kFallbackNotificationDisplaySource[] = "ChromeOS Perks";
-constexpr char kFallbackNotificationTitle[] = "Get 100GB of cloud storage";
+constexpr char kFallbackNotificationTitle[] = "Get 100 GB of cloud storage";
 constexpr char kFallbackNotificationMessage[] =
-    "Your Chromebook comes with 100GB for files and photos, free of charge for "
-    "12 months";
-constexpr char kFallbackGetPerkButtonTitle[] = "Get storage";
+    "Keep your files & photos backed up with 12 months of Google One at no "
+    "charge";
+constexpr char kFallbackGetPerkButtonTitle[] = "Claim now";
 
 static constexpr char kIPHGoogleOneOfferNotificationId[] =
     "iph-google-one-offer-notification-id";

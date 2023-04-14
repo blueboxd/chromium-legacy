@@ -362,12 +362,14 @@ void ReadAnythingAppController::UnserializeUpdates(
 }
 
 void ReadAnythingAppController::OnActiveAXTreeIDChanged(
-    const ui::AXTreeID& tree_id) {
+    const ui::AXTreeID& tree_id,
+    ukm::SourceId ukm_source_id) {
   if (tree_id == active_tree_id_) {
     return;
   }
   ui::AXTreeID previous_active_tree_id = active_tree_id_;
   active_tree_id_ = tree_id;
+  active_ukm_source_id_ = ukm_source_id;
   // Unserialize all pending updates on the formerly active AXTree.
   // TODO(crbug.com/1266555): If distillation is in progress, cancel the
   // distillation request.
@@ -393,6 +395,7 @@ void ReadAnythingAppController::OnAXTreeDestroyed(const ui::AXTreeID& tree_id) {
     // TODO(crbug.com/1266555): If distillation is in progress, cancel the
     // distillation request.
     active_tree_id_ = ui::AXTreeIDUnknown();
+    active_ukm_source_id_ = ukm::kInvalidSourceId;
   }
   // Under rare circumstances, an accessibility tree is not constructed in a
   // tab. For example, after a browser restart, old tabs are only laid out after
@@ -458,7 +461,7 @@ void ReadAnythingAppController::Distill() {
   ui::AXTreeUpdate snapshot;
   CHECK(serializer.SerializeChanges(tree->root(), &snapshot));
   distillation_in_progress_ = true;
-  distiller_->Distill(*tree, snapshot);
+  distiller_->Distill(*tree, snapshot, active_ukm_source_id_);
 }
 
 void ReadAnythingAppController::OnAXTreeDistilled(
@@ -466,8 +469,8 @@ void ReadAnythingAppController::OnAXTreeDistilled(
     const std::vector<ui::AXNodeID>& content_node_ids) {
   // Reset state.
   display_node_ids_.clear();
-  start_node_ = nullptr;
-  end_node_ = nullptr;
+  start_node_id_ = ui::kInvalidAXNodeID;
+  end_node_id_ = ui::kInvalidAXNodeID;
   start_offset_ = -1;
   end_offset_ = -1;
   content_node_ids_ = content_node_ids;
@@ -526,28 +529,32 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
   DCHECK_NE(active_tree_id_, ui::AXTreeIDUnknown());
   DCHECK(base::Contains(trees_, active_tree_id_));
   ui::AXSelection selection = trees_[active_tree_id_]->GetUnignoredSelection();
-  // Identify the start and end nodes and offsets. The start node comes earlier
-  // the end node in the tree order.
-  ui::AXNode* anchor_node = GetAXNode(selection.anchor_object_id);
-  DCHECK(anchor_node);
-  ui::AXNode* focus_node = GetAXNode(selection.focus_object_id);
-  DCHECK(focus_node);
-  start_node_ = selection.is_backward ? focus_node : anchor_node;
-  end_node_ = selection.is_backward ? anchor_node : focus_node;
+  // Identify the start and end node ids and offsets. The start node comes
+  // earlier the end node in the tree order.
+  start_node_id_ = selection.is_backward ? selection.focus_object_id
+                                         : selection.anchor_object_id;
+  end_node_id_ = selection.is_backward ? selection.anchor_object_id
+                                       : selection.focus_object_id;
   start_offset_ =
       selection.is_backward ? selection.focus_offset : selection.anchor_offset;
   end_offset_ =
       selection.is_backward ? selection.anchor_offset : selection.focus_offset;
+  ui::AXNode* start_node = GetAXNode(start_node_id_);
+  DCHECK(start_node);
+  ui::AXNode* end_node = GetAXNode(end_node_id_);
+  DCHECK(end_node);
 
   // If start node or end node is ignored, go to the nearest unignored node
   // within the selection.
-  if (start_node_->IsIgnored()) {
-    start_node_ = start_node_->GetNextUnignoredInTreeOrder();
+  if (start_node->IsIgnored()) {
+    start_node = start_node->GetNextUnignoredInTreeOrder();
+    start_node_id_ = start_node->id();
     start_offset_ = 0;
   }
-  if (end_node_->IsIgnored()) {
-    end_node_ = end_node_->GetNextUnignoredInTreeOrder();
-    end_offset_ = 0;
+  if (end_node->IsIgnored()) {
+    end_node = end_node->GetPreviousUnignoredInTreeOrder();
+    end_node_id_ = end_node->id();
+    end_offset_ = end_node->GetTextContentLengthUTF8();
   }
 
   // Display nodes are the nodes which will be displayed by the rendering
@@ -557,7 +564,7 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
   // Add all ancestor ids of start node, including the start node itself. This
   // does a first walk down to start node.
   base::queue<ui::AXNode*> ancestors =
-      start_node_->GetAncestorsCrossingTreeBoundaryAsQueue();
+      start_node->GetAncestorsCrossingTreeBoundaryAsQueue();
   while (!ancestors.empty()) {
     ui::AXNodeID ancestor_id = ancestors.front()->id();
     display_node_ids_.insert(ancestor_id);
@@ -566,10 +573,10 @@ void ReadAnythingAppController::PostProcessAXTreeWithSelection() {
 
   // Do a pre-order walk of the tree from the start node to the end node and add
   // all nodes to the list of display node ids.
-  ui::AXNode* next_node = start_node_;
-  DCHECK(!start_node_->IsIgnored());
-  DCHECK(!end_node_->IsIgnored());
-  while (next_node != end_node_) {
+  ui::AXNode* next_node = start_node;
+  DCHECK(!start_node->IsIgnored());
+  DCHECK(!end_node->IsIgnored());
+  while (next_node != end_node) {
     next_node = next_node->GetNextUnignoredInTreeOrder();
     display_node_ids_.insert(next_node->id());
   }
@@ -631,12 +638,7 @@ void ReadAnythingAppController::PostProcessDistillableAXTree() {
 }
 
 void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
-  background_color_ = new_theme->background_color;
-  font_name_ = new_theme->font_name;
-  font_size_ = new_theme->font_size;
-  foreground_color_ = new_theme->foreground_color;
-  letter_spacing_ = GetLetterSpacingValue(new_theme->letter_spacing);
-  line_spacing_ = GetLineSpacingValue(new_theme->line_spacing);
+  model_.OnThemeChanged(std::move(new_theme));
 
   // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
   // replace this function call with firing an event.
@@ -648,9 +650,13 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return gin::Wrappable<ReadAnythingAppController>::GetObjectTemplateBuilder(
              isolate)
+      .SetProperty("rootId", &ReadAnythingAppController::RootId)
+      .SetProperty("startNodeId", &ReadAnythingAppController::StartNodeId)
+      .SetProperty("startOffset", &ReadAnythingAppController::StartOffset)
+      .SetProperty("endNodeId", &ReadAnythingAppController::EndNodeId)
+      .SetProperty("endOffset", &ReadAnythingAppController::EndOffset)
       .SetProperty("backgroundColor",
                    &ReadAnythingAppController::BackgroundColor)
-      .SetProperty("rootId", &ReadAnythingAppController::RootId)
       .SetProperty("fontName", &ReadAnythingAppController::FontName)
       .SetProperty("fontSize", &ReadAnythingAppController::FontSize)
       .SetProperty("foregroundColor",
@@ -683,28 +689,44 @@ ui::AXNodeID ReadAnythingAppController::RootId() const {
   return tree->root()->id();
 }
 
+ui::AXNodeID ReadAnythingAppController::StartNodeId() const {
+  return start_node_id_;
+}
+
+int ReadAnythingAppController::StartOffset() const {
+  return start_offset_;
+}
+
+ui::AXNodeID ReadAnythingAppController::EndNodeId() const {
+  return end_node_id_;
+}
+
+int ReadAnythingAppController::EndOffset() const {
+  return end_offset_;
+}
+
 SkColor ReadAnythingAppController::BackgroundColor() const {
-  return background_color_;
+  return model_.background_color();
 }
 
 std::string ReadAnythingAppController::FontName() const {
-  return font_name_;
+  return model_.font_name();
 }
 
 float ReadAnythingAppController::FontSize() const {
-  return font_size_;
+  return model_.font_size();
 }
 
 SkColor ReadAnythingAppController::ForegroundColor() const {
-  return foreground_color_;
+  return model_.foreground_color();
 }
 
 float ReadAnythingAppController::LetterSpacing() const {
-  return letter_spacing_;
+  return model_.letter_spacing();
 }
 
 float ReadAnythingAppController::LineSpacing() const {
-  return line_spacing_;
+  return model_.line_spacing();
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
@@ -745,16 +767,7 @@ std::string ReadAnythingAppController::GetTextContent(
     ui::AXNodeID ax_node_id) const {
   ui::AXNode* ax_node = GetAXNode(ax_node_id);
   DCHECK(ax_node);
-  std::string text_content = ax_node->GetTextContentUTF8();
-  // If this node is the start or end node, truncate the text content by the
-  // corresponding offset.
-  if (has_selection_) {
-    if (ax_node == start_node_)
-      text_content.erase(0, start_offset_);
-    if (ax_node == end_node_)
-      text_content.resize(end_offset_);
-  }
-  return text_content;
+  return ax_node->GetTextContentUTF8();
 }
 
 std::string ReadAnythingAppController::GetTextDirection(
@@ -846,10 +859,22 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
   if (distillation_in_progress_) {
     return;
   }
+
+  // If the selection change matches the tree's selection, this means it was
+  // set by the controller. Javascript selections set by the controller are
+  // always forward selections. This means the anchor node always comes before
+  // the focus node.
+  if (anchor_node_id == start_node_id_ && anchor_offset == start_offset_ &&
+      focus_node_id == end_node_id_ && focus_offset == end_offset_) {
+    return;
+  }
+
   page_handler_->OnSelectionChange(active_tree_id_, anchor_node_id,
                                    anchor_offset, focus_node_id, focus_offset);
 }
 
+// TODO(crbug.com/1266555): Change line_spacing and letter_spacing types from
+// int to their corresponding enums.
 void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
                                                    float font_size,
                                                    SkColor foreground_color,
@@ -857,9 +882,9 @@ void ReadAnythingAppController::SetThemeForTesting(const std::string& font_name,
                                                    int line_spacing,
                                                    int letter_spacing) {
   auto line_spacing_enum =
-      static_cast<read_anything::mojom::Spacing>(line_spacing);
+      static_cast<read_anything::mojom::LineSpacing>(line_spacing);
   auto letter_spacing_enum =
-      static_cast<read_anything::mojom::Spacing>(letter_spacing);
+      static_cast<read_anything::mojom::LetterSpacing>(letter_spacing);
   OnThemeChanged(ReadAnythingTheme::New(font_name, font_size, foreground_color,
                                         background_color, line_spacing_enum,
                                         letter_spacing_enum));
@@ -872,7 +897,7 @@ void ReadAnythingAppController::SetContentForTesting(
   ui::AXTreeUpdate snapshot =
       GetSnapshotFromV8SnapshotLite(isolate, v8_snapshot_lite);
   AccessibilityEventReceived(snapshot.tree_data.tree_id, {snapshot}, {});
-  OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id);
+  OnActiveAXTreeIDChanged(snapshot.tree_data.tree_id, ukm::kInvalidSourceId);
   OnAXTreeDistilled(snapshot.tree_data.tree_id, content_node_ids);
 }
 
@@ -886,37 +911,6 @@ void ReadAnythingAppController::SetPageHandlerForTesting(
     mojo::PendingRemote<read_anything::mojom::PageHandler> page_handler) {
   page_handler_.reset();
   page_handler_.Bind(std::move(page_handler));
-}
-
-double ReadAnythingAppController::GetLetterSpacingValue(
-    read_anything::mojom::Spacing letter_spacing) const {
-  // auto ls = static_cast<read_anything::mojom::Spacing>(letter_spacing);
-  switch (letter_spacing) {
-    case read_anything::mojom::Spacing::kTight:
-      return -0.05;
-    case read_anything::mojom::Spacing::kDefault:
-      return 0;
-    case read_anything::mojom::Spacing::kLoose:
-      return 0.05;
-    case read_anything::mojom::Spacing::kVeryLoose:
-      return 0.1;
-  }
-}
-
-double ReadAnythingAppController::GetLineSpacingValue(
-    read_anything::mojom::Spacing line_spacing) const {
-  // auto ls = static_cast<read_anything::mojom::Spacing>(line_spacing);
-  switch (line_spacing) {
-    case read_anything::mojom::Spacing::kTight:
-      return 1.0;
-    case read_anything::mojom::Spacing::kDefault:
-    default:
-      return 1.15;
-    case read_anything::mojom::Spacing::kLoose:
-      return 1.5;
-    case read_anything::mojom::Spacing::kVeryLoose:
-      return 2.0;
-  }
 }
 
 ui::AXNode* ReadAnythingAppController::GetAXNode(

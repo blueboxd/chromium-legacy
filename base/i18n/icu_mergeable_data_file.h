@@ -105,8 +105,8 @@ class BASE_I18N_EXPORT IcuMergeableDataFile {
   FilePath GetLacrosFilePath();
 
   File lacros_file_;
-  int64_t lacros_length_ = 0;
-  raw_ptr<uint8_t> lacros_data_ = nullptr;
+  size_t lacros_length_ = 0;
+  raw_ptr<uint8_t, AllowPtrArithmetic> lacros_data_ = nullptr;
   bool used_cached_hashes_ = false;
 };
 

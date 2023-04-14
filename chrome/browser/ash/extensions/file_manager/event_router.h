@@ -29,6 +29,7 @@
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_mount_provider_registry.h"
+#include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
 #include "chromeos/ash/components/settings/timezone_settings.h"
@@ -193,6 +194,9 @@ class EventRouter
                     guest_os::GuestOsMountProvider* provider) override;
   void OnUnregistered(guest_os::GuestOsMountProviderRegistry::Id id) override;
 
+  // Broadcast to Files app frontend that file tasks might have changed.
+  void BroadcastOnAppsUpdatedEvent();
+
   // Use this method for unit tests to bypass checking if there are any SWA
   // windows.
   void ForceBroadcastingForTesting(bool enabled) {
@@ -279,6 +283,8 @@ class EventRouter
       const file_manager_private::ProgressStatus& event_status);
 
   std::map<base::FilePath, std::unique_ptr<FileWatcher>> file_watchers_;
+  std::unique_ptr<plugin_vm::PluginVmPolicySubscription>
+      plugin_vm_subscription_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
   Profile* profile_;
 

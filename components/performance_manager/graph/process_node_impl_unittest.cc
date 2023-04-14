@@ -141,9 +141,7 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   }
 
  private:
-  // TODO(crbug.com/1298696): Breaks components_unittests.
-  raw_ptr<const ProcessNode, DegradeToNoOpWhenMTE> notified_process_node_ =
-      nullptr;
+  raw_ptr<const ProcessNode> notified_process_node_ = nullptr;
 };
 
 using MockObserver = ::testing::StrictMock<LenientMockObserver>;
@@ -285,11 +283,11 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   }
 
   decltype(public_frame_nodes) visited_frame_nodes;
-  public_process_node->VisitFrameNodes(base::BindLambdaForTesting(
+  public_process_node->VisitFrameNodes(
       [&visited_frame_nodes](const FrameNode* frame_node) -> bool {
         visited_frame_nodes.insert(frame_node);
         return true;
-      }));
+      });
   EXPECT_EQ(public_frame_nodes, visited_frame_nodes);
 
   process_node->SetMainThreadTaskLoadIsLow(true);

@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/modules/mediastream/apply_constraints_request.h"
 #include "third_party/blink/renderer/modules/mediastream/browser_capture_media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/media_constraints_impl.h"
-#include "third_party/blink/renderer/modules/mediastream/media_error_state.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_utils.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_video_track.h"
@@ -733,12 +732,12 @@ void MediaStreamTrackImpl::SetConstraintsInternal(
 void MediaStreamTrackImpl::applyConstraints(
     ScriptPromiseResolver* resolver,
     const MediaTrackConstraints* constraints) {
-  MediaErrorState error_state;
+  String error_message;
   ExecutionContext* execution_context =
       ExecutionContext::From(resolver->GetScriptState());
   MediaConstraints web_constraints = media_constraints_impl::Create(
-      execution_context, constraints, error_state);
-  if (error_state.HadException()) {
+      execution_context, constraints, error_message);
+  if (web_constraints.IsNull()) {
     resolver->Reject(
         OverconstrainedError::Create(String(), "Cannot parse constraints"));
     return;
@@ -828,6 +827,30 @@ void MediaStreamTrackImpl::SourceChangedState() {
       break;
   }
   SendLogMessage(String::Format("%s()", __func__));
+}
+
+void MediaStreamTrackImpl::SourceChangedCaptureConfiguration() {
+  DCHECK(IsMainThread());
+
+  if (Ended()) {
+    return;
+  }
+
+  // Update the current image capture capabilities and settings and dispatch a
+  // configurationchange event if they differ from the old ones.
+  if (image_capture_) {
+    image_capture_->UpdateAndCheckMediaTrackSettingsAndCapabilities(
+        WTF::BindOnce(&MediaStreamTrackImpl::MaybeDispatchConfigurationChange,
+                      WrapWeakPersistent(this)));
+  }
+}
+
+void MediaStreamTrackImpl::MaybeDispatchConfigurationChange(bool has_changed) {
+  DCHECK(IsMainThread());
+
+  if (has_changed) {
+    DispatchEvent(*Event::Create(event_type_names::kConfigurationchange));
+  }
 }
 
 void MediaStreamTrackImpl::SourceChangedCaptureHandle() {

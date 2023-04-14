@@ -472,8 +472,15 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 }
 
 // Tests that the browser counts anchors from anywhere on the page.
+// TODO(crbug.com/1415981): Flaky on Windows ASAN.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_ViewportOnlyAndUrlIncrementByOne \
+  DISABLED_ViewportOnlyAndUrlIncrementByOne
+#else
+#define MAYBE_ViewportOnlyAndUrlIncrementByOne ViewportOnlyAndUrlIncrementByOne
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       ViewportOnlyAndUrlIncrementByOne) {
+                       MAYBE_ViewportOnlyAndUrlIncrementByOne) {
   auto test_ukm_recorder = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   ResetUKM();
 
@@ -502,7 +509,13 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 
 // Test that anchors are dispated to the single observer, except for anchors
 // linking to the same page (e.g. fragment links).
-IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, SingleObserver) {
+// TODO(crbug.com/1415578): Failing on Windows.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_SingleObserver DISABLED_SingleObserver
+#else
+#define MAYBE_SingleObserver SingleObserver
+#endif
+IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest, MAYBE_SingleObserver) {
   TestObserver observer;
 
   NavigationPredictorKeyedService* service =
@@ -673,10 +686,11 @@ class NavigationPredictorPrerenderBrowserTest
   content::test::PrerenderTestHelper prerender_test_helper_;
 };
 
+// TODO(crbug.com/1416494): Re-enable this test. Test is flaky.
 // Test that prerendering doesn't create a predictor object and doesn't affect
 // the primary page's behavior.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorPrerenderBrowserTest,
-                       PrerenderingDontCreatePredictor) {
+                       DISABLED_PrerenderingDontCreatePredictor) {
   auto test_ukm_recorder = std::make_unique<ukm::TestAutoSetUkmRecorder>();
   ResetUKM();
 

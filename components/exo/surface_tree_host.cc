@@ -33,10 +33,12 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/color/color_id.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/display_color_spaces.h"
 #include "ui/gfx/geometry/dip_util.h"
@@ -123,6 +125,8 @@ SurfaceTreeHost::~SurfaceTreeHost() {
   SetRootSurface(nullptr);
   LayerTreeFrameSinkHolder::DeleteWhenLastResourceHasBeenReclaimed(
       std::move(layer_tree_frame_sink_holder_));
+
+  CleanUpCallbacks();
 }
 
 void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
@@ -143,22 +147,6 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     // Force recreating resources when the surface is added to a tree again.
     root_surface_->SurfaceHierarchyResourcesLost();
     root_surface_ = nullptr;
-
-    // Call all frame callbacks with a null frame time to indicate that they
-    // have been cancelled.
-    while (!frame_callbacks_.empty()) {
-      frame_callbacks_.front().Run(base::TimeTicks());
-      frame_callbacks_.pop_front();
-    }
-
-    DCHECK(presentation_callbacks_.empty());
-    for (auto entry : active_presentation_callbacks_) {
-      while (!entry.second.empty()) {
-        entry.second.front().Run(gfx::PresentationFeedback());
-        entry.second.pop_front();
-      }
-    }
-    active_presentation_callbacks_.clear();
   }
 
   if (root_surface) {
@@ -180,10 +168,11 @@ void SurfaceTreeHost::GetHitTestMask(SkPath* mask) const {
 }
 
 void SurfaceTreeHost::DidReceiveCompositorFrameAck() {
-  while (!frame_callbacks_.empty()) {
-    frame_callbacks_.front().Run(base::TimeTicks::Now());
-    frame_callbacks_.pop_front();
+  const base::TimeTicks now = base::TimeTicks::Now();
+  for (auto& callback : frame_callbacks_.front()) {
+    callback.Run(now);
   }
+  frame_callbacks_.pop();
 }
 
 void SurfaceTreeHost::DidPresentCompositorFrame(
@@ -204,6 +193,16 @@ void SurfaceTreeHost::SetScaleFactor(float scale_factor) {
 void SurfaceTreeHost::SetSecurityDelegate(SecurityDelegate* security_delegate) {
   DCHECK(security_delegate_ == nullptr);
   security_delegate_ = security_delegate;
+}
+
+void SurfaceTreeHost::SubmitCompositorFrameForTesting(
+    viz::CompositorFrame frame) {
+  // Make sure that every submission has an entry pushed into
+  // `frame_callbacks_`, which will be pop when ack is received.
+  frame_callbacks_.emplace();
+  active_presentation_callbacks_[frame.metadata.frame_token] =
+      PresentationCallbacks();
+  layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -296,25 +295,46 @@ void SurfaceTreeHost::SubmitCompositorFrame() {
         << ", StartupId=" << (startup_id ? *startup_id : "''");
   }
 
-  root_surface_->AppendSurfaceHierarchyCallbacks(&frame_callbacks_,
+  std::list<Surface::FrameCallback> current_frame_callbacks;
+  root_surface_->AppendSurfaceHierarchyCallbacks(&current_frame_callbacks,
                                                  &presentation_callbacks_);
+
+  frame_callbacks_.push(std::move(current_frame_callbacks));
+
+  const uint32_t frame_token = frame.metadata.frame_token;
   if (!presentation_callbacks_.empty()) {
-    DCHECK_EQ(active_presentation_callbacks_.count(*next_token_), 0u);
-    active_presentation_callbacks_[*next_token_] =
+    DCHECK_EQ(active_presentation_callbacks_.count(frame_token), 0u);
+    active_presentation_callbacks_[frame_token] =
         std::move(presentation_callbacks_);
   } else {
-    active_presentation_callbacks_[*next_token_] = PresentationCallbacks();
+    active_presentation_callbacks_[frame_token] = PresentationCallbacks();
   }
 
   root_surface_->AppendSurfaceHierarchyContentsToFrame(
       gfx::PointF(root_surface_origin_), GetScaleFactor(),
+      client_submits_surfaces_in_pixel_coordinates(),
       layer_tree_frame_sink_holder_->resource_manager(), &frame);
 
   std::vector<GLbyte*> sync_tokens;
-  for (auto& resource : frame.resource_list)
+  // We track previously verified tokens and set them to be verified to avoid
+  // the considerable overhead of flush verification in
+  // 'VerifySyncTokensCHROMIUM'.
+  for (auto& resource : frame.resource_list) {
+    if (prev_frame_verified_tokens_.find(resource.mailbox_holder.sync_token) !=
+        prev_frame_verified_tokens_.end()) {
+      resource.mailbox_holder.sync_token.SetVerifyFlush();
+    }
     sync_tokens.push_back(resource.mailbox_holder.sync_token.GetData());
+  }
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gles2->VerifySyncTokensCHROMIUM(sync_tokens.data(), sync_tokens.size());
+
+  prev_frame_verified_tokens_.clear();
+  for (auto& resource : frame.resource_list) {
+    if (resource.mailbox_holder.sync_token.verified_flush()) {
+      prev_frame_verified_tokens_.insert(resource.mailbox_holder.sync_token);
+    }
+  }
 
   frame.metadata.content_color_usage = gfx::ContentColorUsage::kSRGB;
   for (auto& resource : frame.resource_list) {
@@ -346,7 +366,13 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
   viz::SolidColorDrawQuad* solid_quad =
       render_pass->CreateAndAppendDrawQuad<viz::SolidColorDrawQuad>();
   solid_quad->SetNew(quad_state, quad_rect, quad_rect, SkColors::kBlack,
-                     /*force_anti_aliasing_off=*/false);
+                     /*anti_aliasing_off=*/false);
+
+  // Make sure that every submission has an entry pushed into
+  // `frame_callbacks_`, which will be pop when ack is received.
+  frame_callbacks_.emplace();
+  active_presentation_callbacks_[frame.metadata.frame_token] =
+      PresentationCallbacks();
   layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
 }
 
@@ -394,12 +420,13 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
     // it's resources are lost anyways.
     layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
         this, host_window_->CreateLayerTreeFrameSink());
+    CleanUpCallbacks();
   }
 
   viz::CompositorFrame frame;
   frame.metadata.begin_frame_ack =
       viz::BeginFrameAck::CreateManualAckWithDamage();
-  frame.metadata.frame_token = ++next_token_;
+  frame.metadata.frame_token = GenerateNextFrameToken();
   frame.render_pass_list.push_back(viz::CompositorRenderPass::Create());
   const std::unique_ptr<viz::CompositorRenderPass>& render_pass =
       frame.render_pass_list.back();
@@ -453,9 +480,37 @@ void SurfaceTreeHost::HandleContextLost() {
 }
 
 float SurfaceTreeHost::GetScaleFactor() {
-  if (scale_factor_)
+  if (scale_factor_) {
+    // TODO(crbug.com/1412420): Remove this once the scale factor precision
+    // issue is fixed.
+    if (std::abs(scale_factor_.value() -
+                 host_window_->layer()->device_scale_factor()) <
+        display::kDeviceScaleFactorErrorTolerance) {
+      return host_window_->layer()->device_scale_factor();
+    }
     return scale_factor_.value();
+  }
   return host_window_->layer()->device_scale_factor();
+}
+
+void SurfaceTreeHost::CleanUpCallbacks() {
+  // Call all frame callbacks with a null frame time to indicate that they
+  // have been cancelled.
+  while (!frame_callbacks_.empty()) {
+    for (auto& callback : frame_callbacks_.front()) {
+      callback.Run(base::TimeTicks());
+    }
+    frame_callbacks_.pop();
+  }
+
+  DCHECK(presentation_callbacks_.empty());
+  for (auto entry : active_presentation_callbacks_) {
+    while (!entry.second.empty()) {
+      entry.second.front().Run(gfx::PresentationFeedback());
+      entry.second.pop_front();
+    }
+  }
+  active_presentation_callbacks_.clear();
 }
 
 }  // namespace exo

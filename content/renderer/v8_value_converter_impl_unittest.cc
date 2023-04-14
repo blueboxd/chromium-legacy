@@ -213,18 +213,19 @@ class V8ValueConverterImplTest : public testing::Test {
                   .ToLocalChecked(),
               val)
         .Check();
-    std::unique_ptr<base::Value> dictionary(
+    std::unique_ptr<base::Value> dictionary_val(
         converter.FromV8Value(object, context));
-    ASSERT_TRUE(dictionary.get());
-    ASSERT_TRUE(dictionary->is_dict());
+    ASSERT_TRUE(dictionary_val.get());
+    ASSERT_TRUE(dictionary_val->is_dict());
+    const base::Value::Dict& dictionary = dictionary_val->GetDict();
 
     if (expected_value) {
-      const base::Value* temp = dictionary->FindKey("test");
+      const base::Value* temp = dictionary.Find("test");
       ASSERT_TRUE(temp);
       EXPECT_EQ(expected_type, temp->type());
       EXPECT_EQ(*expected_value, *temp);
     } else {
-      EXPECT_FALSE(dictionary->FindKey("test"));
+      EXPECT_FALSE(dictionary.contains("test"));
     }
 
     v8::Local<v8::Array> array(v8::Array::New(isolate_));
@@ -529,9 +530,9 @@ TEST_F(V8ValueConverterImplTest, WeirdTypes) {
                 base::Value::Type::NONE,  // Arbitrary type, result is NULL.
                 std::unique_ptr<base::Value>());
   TestWeirdType(converter, v8::Date::New(context, 1000).ToLocalChecked(),
-                base::Value::Type::DICTIONARY,
+                base::Value::Type::DICT,
                 std::make_unique<base::Value>(base::Value::Type::DICT));
-  TestWeirdType(converter, regex, base::Value::Type::DICTIONARY,
+  TestWeirdType(converter, regex, base::Value::Type::DICT,
                 std::make_unique<base::Value>(base::Value::Type::DICT));
 
   converter.SetDateAllowed(true);

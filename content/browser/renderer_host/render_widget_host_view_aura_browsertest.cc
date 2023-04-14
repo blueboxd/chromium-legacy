@@ -118,9 +118,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should trigger a copy of the stale
   // frame content.
   GetRenderWidgetHostView()->Hide();
-  auto* dfh = GetDelegatedFrameHost();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
+      ->EvictDelegatedFrame();
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
             DelegatedFrameHost::FrameEvictionState::kPendingEvictionRequests);
 
@@ -159,9 +158,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should trigger a copy of the stale
   // frame content.
   GetRenderWidgetHostView()->Hide();
-  auto* dfh = GetDelegatedFrameHost();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
+      ->EvictDelegatedFrame();
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
             DelegatedFrameHost::FrameEvictionState::kPendingEvictionRequests);
 
@@ -200,9 +198,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserTest,
   // Hide the view and evict the frame. This should not trigger a copy of the
   // stale frame content as the WebContentDelegate returns false.
   GetRenderWidgetHostView()->Hide();
-  auto* dfh = GetDelegatedFrameHost();
-  static_cast<viz::FrameEvictorClient*>(dfh)->EvictDelegatedFrame(
-      dfh->GetFrameEvictorForTesting()->CollectSurfaceIdsForEviction());
+  static_cast<viz::FrameEvictorClient*>(GetDelegatedFrameHost())
+      ->EvictDelegatedFrame();
 
   EXPECT_EQ(GetDelegatedFrameHost()->frame_eviction_state_,
             DelegatedFrameHost::FrameEvictionState::kNotStarted);

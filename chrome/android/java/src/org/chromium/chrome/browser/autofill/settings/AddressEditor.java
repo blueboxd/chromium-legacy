@@ -15,6 +15,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PhoneNumberUtil;
+import org.chromium.chrome.browser.autofill.Source;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorBase;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorModel;
 import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.AddressField;
@@ -22,8 +23,15 @@ import org.chromium.chrome.browser.autofill.settings.AutofillProfileBridge.Addre
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.AutofillAddress;
 import org.chromium.chrome.browser.payments.AutofillAddress.CompletenessCheckType;
+import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
+import org.chromium.chrome.browser.sync.SyncService;
 import org.chromium.components.autofill.prefeditor.EditorFieldModel;
 import org.chromium.components.autofill.prefeditor.EditorFieldModel.EditorFieldValidator;
+import org.chromium.components.signin.base.CoreAccountInfo;
+import org.chromium.components.signin.identitymanager.ConsentLevel;
+import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.sync.UserSelectableType;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -130,11 +138,12 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
 
         if (mAutofillProfileBridge == null) mAutofillProfileBridge = new AutofillProfileBridge();
 
-        // If |toEdit| is null, we're creating a new autofill profile with the country code of the
-        // default locale on this device.
         final String editTitle;
         final AutofillAddress address;
-        if (toEdit == null) {
+        final boolean isProfileNew = toEdit == null;
+        if (isProfileNew) {
+            // When creating a new autofill profile, we use the country code of the default locale
+            // on the device.
             address = new AutofillAddress(
                     mContext, new AutofillProfile(), CompletenessCheckType.NORMAL);
             editTitle = mContext.getString(R.string.autofill_create_profile);
@@ -143,8 +152,42 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
             editTitle = mContext.getString(R.string.autofill_edit_address_dialog_title);
         }
 
-        mEditor = new EditorModel(editTitle, mCustomDoneButtonText);
         mProfile = address.getProfile();
+
+        String footerMessageText = null;
+        String deleteConfirmationText = null;
+        String deleteConfirmationTitle =
+                mContext.getString(R.string.autofill_delete_address_confirmation_dialog_title);
+        if (mProfile.getSource() == Source.ACCOUNT) {
+            final IdentityManager identityManager =
+                    IdentityServicesProvider.get().getIdentityManager(
+                            Profile.getLastUsedRegularProfile());
+            CoreAccountInfo accountInfo =
+                    identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
+            @Nullable
+            String email = CoreAccountInfo.getEmailFrom(accountInfo);
+
+            if (email != null) {
+                footerMessageText =
+                        mContext.getString(R.string.autofill_edit_account_address_source_notice)
+                                .replace("$1", email);
+                deleteConfirmationText =
+                        mContext.getString(R.string.autofill_delete_account_address_source_notice)
+                                .replace("$1", email);
+            }
+        } else {
+            if (SyncService.get().isSyncFeatureEnabled()
+                    && SyncService.get().getSelectedTypes().contains(UserSelectableType.AUTOFILL)) {
+                deleteConfirmationText =
+                        mContext.getString(R.string.autofill_delete_sync_address_source_notice);
+            } else {
+                deleteConfirmationText =
+                        mContext.getString(R.string.autofill_delete_local_address_source_notice);
+            }
+        }
+
+        mEditor = new EditorModel(editTitle, mCustomDoneButtonText, footerMessageText,
+                deleteConfirmationTitle, deleteConfirmationText);
 
         // The country dropdown is always present on the editor.
         if (mCountryField == null) {
@@ -167,7 +210,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
                 mEditor.removeAllFields();
                 mPhoneFormatter.setCountryCode(eventData.first);
                 mPhoneValidator.setCountryCode(eventData.first);
-                addAddressFieldsToEditor(eventData.first, Locale.getDefault().getLanguage());
+                addAddressFieldsToEditor(
+                        eventData.first, Locale.getDefault().getLanguage(), isProfileNew);
                 // Notify EditorDialog that the fields in the model have changed. EditorDialog
                 // should re-read the model and update the UI accordingly.
                 mHandler.post(eventData.second);
@@ -276,7 +320,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
 
         // This should be called when all required fields are put in mAddressField.
         setAddressFieldValuesFromCache();
-        addAddressFieldsToEditor(mCountryField.getValue().toString(), mProfile.getLanguageCode());
+        addAddressFieldsToEditor(
+                mCountryField.getValue().toString(), mProfile.getLanguageCode(), isProfileNew);
         mEditorDialog.show(mEditor);
     }
 
@@ -384,12 +429,20 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
      * For example, "US" will not add dependent locality to the editor. A "JP" address will start
      * with a person's full name or with a prefecture name, depending on whether the language code
      * is "ja-Latn" or "ja".
+     *
+     * @param countryCode The country for which fields are to be added.
+     * @param languageCode The language in which localized strings (e.g. label) are presented.
+     * @param isProfileNew Whether the profile new or not is required for setting validation:
+     *                     it is softer for existing profiles with originally invalid values.
      */
-    private void addAddressFieldsToEditor(String countryCode, String languageCode) {
-        mAddressUiComponents =
-                mAutofillProfileBridge.getAddressUiComponents(countryCode, languageCode);
+    private void addAddressFieldsToEditor(
+            String countryCode, String languageCode, boolean isProfileNew) {
+        mAddressUiComponents = mAutofillProfileBridge.getAddressUiComponents(
+                countryCode, languageCode, AddressValidationType.ACCOUNT);
         // In terms of order, country must be the first field.
         mEditor.addField(mCountryField);
+
+        boolean isStoredInAccount = mProfile.getSource() == Source.ACCOUNT;
         for (int i = 0; i < mAddressUiComponents.size(); i++) {
             AddressUiComponent component = mAddressUiComponents.get(i);
 
@@ -405,6 +458,18 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
             field.setLabel(component.label);
             field.setIsFullLine(component.isFullLine || component.id == AddressField.LOCALITY
                     || component.id == AddressField.DEPENDENT_LOCALITY);
+
+            // For account-stored profiles, we enforce that required fields are non-empty. This
+            // applies to all fields for a new profile, and previously non-empty fields for an
+            // existing profile.
+            String fieldContents = AutofillAddress.getProfileField(mProfile, component.id);
+            if (isStoredInAccount && component.isRequired
+                    && (isProfileNew || !TextUtils.isEmpty(fieldContents))) {
+                String message =
+                        mContext.getString(R.string.autofill_edit_address_required_field_error)
+                                .replace("$1", component.label);
+                field.setRequiredErrorMessage(message);
+            }
 
             mEditor.addField(field);
         }

@@ -47,7 +47,6 @@
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
-#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/transition_manager/full_browser_transition_manager.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
@@ -136,8 +135,8 @@
 #endif
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 #endif
 
@@ -302,7 +301,7 @@ void TestingProfile::Init(bool is_supervised_profile) {
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   if (!IsOffTheRecord()) {
-    SupervisedUserSettingsService* settings_service =
+    supervised_user::SupervisedUserSettingsService* settings_service =
         SupervisedUserSettingsServiceFactory::GetForKey(key_.get());
     supervised_user_pref_store_ = new TestingPrefStore();
     settings_service->Init(supervised_user_pref_store_.get());
@@ -473,15 +472,6 @@ void TestingProfile::FinishInit() {
   if (delegate_) {
     delegate_->OnProfileCreationFinished(this, CREATE_MODE_ASYNCHRONOUS, true,
                                          false);
-  } else {
-    // It is the role of the delegate to ensure that the signout allowed is
-    // properly updated after the profile is create is initialized.
-    // For testing profiles that do not have a delegate, the signout allowed
-    // must be initialized when the testing profile finishes its
-    // initialization.
-
-    signin_util::UserSignoutSetting::GetForProfile(this)
-        ->InitializeUserSignoutSettingIfNeeded();
   }
 }
 
@@ -676,7 +666,7 @@ const Profile* TestingProfile::GetOriginalProfile() const {
 void TestingProfile::SetIsSupervisedProfile() {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   GetPrefs()->SetString(prefs::kSupervisedUserId,
-                        supervised_users::kChildAccountSUID);
+                        supervised_user::kChildAccountSUID);
 #else
   NOTREACHED() << "Supervised users are not enabled";
 #endif
@@ -685,7 +675,7 @@ void TestingProfile::SetIsSupervisedProfile() {
 bool TestingProfile::IsChild() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return GetPrefs()->GetString(prefs::kSupervisedUserId) ==
-         supervised_users::kChildAccountSUID;
+         supervised_user::kChildAccountSUID;
 #else
   return false;
 #endif

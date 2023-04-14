@@ -27,6 +27,7 @@ chromium-metrics-reviews@google.com.
   <owner>ellyjones@chromium.org</owner>
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
+  <improvement direction="HIGHER_IS_BETTER"/>
   <summary>
     The UI surface that started any share attempt. Android only.
 
@@ -39,6 +40,7 @@ chromium-metrics-reviews@google.com.
     expires_after="never">
   <owner>kristipark@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
+  <improvement direction="HIGHER_IS_BETTER"/>
   <summary>
     The UI surface that started any share attempt. Desktop only.
 
@@ -116,7 +118,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.DefaultSharesheetAndroid.Opened" enum="ShareOrigin"
-    expires_after="2023-02-26">
+    expires_after="2023-07-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -212,7 +214,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.MessageReceivedType" enum="SharingMessageType"
-    expires_after="2023-06-04">
+    expires_after="2023-08-08">
   <owner>mvanouwerkerk@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -393,7 +395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SendMessageResult" enum="SharingSendMessageResult"
-    expires_after="2023-06-18">
+    expires_after="2023-08-20">
 <!-- Name completed by histogram_suffixes SharingChannelType,
     SharingDevicePlatform, SharingMessage, and SharingPulseInterval. -->
 
@@ -509,7 +511,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.ThirdPartyAppUsage"
-    enum="SharingHubBottomRowIndex" expires_after="2023-02-26">
+    enum="SharingHubBottomRowIndex" expires_after="2023-07-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -541,7 +543,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubAndroid.TimeToShowShareSheet" units="ms"
-    expires_after="2023-02-26">
+    expires_after="2023-07-26">
   <owner>sophey@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -585,6 +587,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Sharing.SharingHubDesktop.TimeToFetchFaviconPreviewImage"
     units="ms" expires_after="2023-03-12">
+  <obsolete>
+    Never actually logged in production, removed in M111.
+  </obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -598,6 +603,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Sharing.SharingHubDesktop.TimeToFetchHQPreviewImage"
     units="ms" expires_after="2023-03-12">
+  <obsolete>
+    Never actually logged in production, removed in M111.
+  </obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>
@@ -610,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Sharing.SharingHubDesktop.TimeToShow" units="ms"
-    expires_after="2023-02-26">
+    expires_after="2023-07-26">
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <summary>

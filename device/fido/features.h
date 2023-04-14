@@ -52,6 +52,14 @@ BASE_DECLARE_FEATURE(kDisableWebAuthnWithBrokenCerts);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnNoPasskeysError);
 
+// Set credProtect=3 when rk=required and uv=preferred.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnCredProtectThree);
+
+// Advertise support for the `prf` extension as a hybrid authenticator.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnPRFAsAuthenticator);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_FEATURES_H_

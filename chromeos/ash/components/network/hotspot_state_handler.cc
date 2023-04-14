@@ -144,7 +144,7 @@ void HotspotStateHandler::LoggedInStateChanged() {
 
 void HotspotStateHandler::UpdateHotspotConfigAndRunCallback(
     SetHotspotConfigCallback callback,
-    absl::optional<base::Value> properties) {
+    absl::optional<base::Value::Dict> properties) {
   if (!properties) {
     NET_LOG(ERROR) << "Error getting Shill manager properties.";
     std::move(callback).Run(
@@ -152,7 +152,7 @@ void HotspotStateHandler::UpdateHotspotConfigAndRunCallback(
     return;
   }
   const base::Value::Dict* shill_tethering_config =
-      properties->GetDict().FindDict(shill::kTetheringConfigProperty);
+      properties->FindDict(shill::kTetheringConfigProperty);
   if (!shill_tethering_config) {
     NET_LOG(ERROR) << "Error getting " << shill::kTetheringConfigProperty
                    << " in Shill manager properties";
@@ -169,19 +169,27 @@ void HotspotStateHandler::UpdateHotspotConfigAndRunCallback(
 
 void HotspotStateHandler::OnPropertyChanged(const std::string& key,
                                             const base::Value& value) {
-  if (key == shill::kTetheringStatusProperty)
+  if (key == shill::kTetheringStatusProperty) {
     UpdateHotspotStatus(value.GetDict());
+  } else if (key == shill::kProfilesProperty) {
+    // Shill initializes the tethering config with random value and signals
+    // "Profiles" property changes when the tethering config is fully loaded
+    // from persistent storage.
+    ShillManagerClient::Get()->GetProperties(
+        base::BindOnce(&HotspotStateHandler::UpdateHotspotConfigAndRunCallback,
+                       weak_ptr_factory_.GetWeakPtr(), base::DoNothing()));
+  }
 }
 
 void HotspotStateHandler::OnManagerProperties(
-    absl::optional<base::Value> properties) {
+    absl::optional<base::Value::Dict> properties) {
   if (!properties) {
     NET_LOG(ERROR) << "HotspotStateHandler: Failed to get manager properties.";
     return;
   }
 
   const base::Value::Dict* status =
-      properties->GetDict().FindDict(shill::kTetheringStatusProperty);
+      properties->FindDict(shill::kTetheringStatusProperty);
   if (!status) {
     NET_LOG(EVENT) << "HotspotStateHandler: No dict value for: "
                    << shill::kTetheringStatusProperty;
@@ -217,10 +225,6 @@ void HotspotStateHandler::UpdateHotspotStatus(const base::Value::Dict& status) {
 
   active_client_count_ = active_client_count;
   NotifyHotspotStatusChanged();
-}
-
-void HotspotStateHandler::SetPolicyAllowHotspot(bool allow) {
-  // TODO (jiajunz)
 }
 
 void HotspotStateHandler::NotifyHotspotStatusChanged() {

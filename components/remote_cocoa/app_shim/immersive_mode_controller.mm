@@ -205,6 +205,17 @@ NSView* GetNSTitlebarContainerViewFromWindow(NSWindow* window) {
             options:NSKeyValueObservingOptionInitial |
                     NSKeyValueObservingOptionNew
             context:NULL];
+
+  // Sometimes AppKit incorrectly positions NSToolbarFullScreenWindow entirely
+  // offscreen (particularly when this is a out-of-process app shim). Toggling
+  // visibility seems to fix the positioning.
+  // Only toggle the visibility if fullScreenMinHeight is not zero though, as
+  // triggering the repositioning when the toolbar is set to auto hide would
+  // result in it being incorrectly positioned in that case.
+  if (self.fullScreenMinHeight != 0 && !self.hidden) {
+    self.hidden = YES;
+    self.hidden = NO;
+  }
 }
 
 - (BOOL)titlebarFullyVisible {
@@ -407,11 +418,6 @@ ImmersiveModeController::ImmersiveModeController(NSWindow* browser_widget,
       NSLayoutAttributeBottom;
   thin_titlebar_view_controller_.get().fullScreenMinHeight =
       kThinControllerHeight;
-
-  // Move sub-widgets from the browser widget to the overlay widget so that
-  // they are rendered above the toolbar.
-  ObserveOverlayChildWindows();
-  ReparentChildWindows(browser_window_, overlay_window_);
 }
 
 ImmersiveModeController::~ImmersiveModeController() {
@@ -441,6 +447,12 @@ void ImmersiveModeController::Enable() {
   enabled_ = true;
   [browser_window_ addTitlebarAccessoryViewController:
                        immersive_mode_titlebar_view_controller_];
+
+  // Move sub-widgets from the browser widget to the overlay widget so that
+  // they are rendered above the toolbar.
+  ObserveOverlayChildWindows();
+  ReparentChildWindows(browser_window_, overlay_window_);
+
   [browser_window_
       addTitlebarAccessoryViewController:thin_titlebar_view_controller_];
   NSRect frame = thin_titlebar_view_controller_.get().view.frame;
@@ -576,7 +588,7 @@ void ImmersiveModeController::ReparentChildWindows(NSWindow* source,
   // TODO(kerenzhu): DCHECK(source_bridge && target_bridge)
   // Only in unittests the associated bridges might not exist.
   if (source_bridge && target_bridge) {
-    source_bridge->MoveChildrenTo(target_bridge);
+    source_bridge->MoveChildrenTo(target_bridge, /*anchored_only=*/true);
   }
 }
 

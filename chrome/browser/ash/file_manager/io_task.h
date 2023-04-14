@@ -77,6 +77,9 @@ struct PauseParams {
 
   // Set true if there are potentially multiple conflicted file names.
   bool conflict_multiple = false;
+
+  // The conflict copy or move target URL.
+  std::string conflict_target_url;
 };
 
 // Resume I/O task parameters.
@@ -119,6 +122,9 @@ struct ProgressStatus {
   // Allow ProgressStatus to be moved.
   ProgressStatus(ProgressStatus&& other);
   ProgressStatus& operator=(ProgressStatus&& other);
+
+  // True if the task is in kPaused state.
+  bool IsPaused() const;
 
   // True if the task is in a terminal state and won't receive further updates.
   bool IsCompleted() const;
@@ -183,6 +189,9 @@ class IOTask {
   // |progress_callback| should be called on the same sequeuence Execute() was.
   virtual void Execute(ProgressCallback progress_callback,
                        CompleteCallback complete_callback) = 0;
+
+  // Resumes a task.
+  virtual void Resume(ResumeParams params);
 
   // Cancels the task. This should set the progress state to be |kCancelled|,
   // but not call any of Execute()'s callbacks. The task will be deleted

@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_menu_button.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
@@ -38,6 +39,7 @@ ReadAnythingToolbarView::ReadAnythingToolbarView(
   // Set a FlexLayout LayoutManager for this view.
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetDefault(views::kMarginsKey, gfx::Insets::VH(0, kButtonPadding))
       .SetMainAxisAlignment(views::LayoutAlignment::kStart)
       .SetInteriorMargin(gfx::Insets(kInternalInsets));
 
@@ -135,7 +137,7 @@ void ReadAnythingToolbarView::ChangeLineSpacingCallback() {
 void ReadAnythingToolbarView::ChangeLetterSpacingCallback() {
   if (delegate_)
     delegate_->OnLetterSpacingChanged(
-        letter_spacing_button_->GetSelectedIndex().value_or(1));
+        letter_spacing_button_->GetSelectedIndex().value_or(0));
 }
 
 void ReadAnythingToolbarView::OnCoordinatorDestroyed() {
@@ -153,8 +155,9 @@ void ReadAnythingToolbarView::OnReadAnythingThemeChanged(
     double font_scale,
     ui::ColorId foreground_color_id,
     ui::ColorId background_color_id,
-    read_anything::mojom::Spacing line_spacing,
-    read_anything::mojom::Spacing letter_spacing) {
+    ui::ColorId separator_color_id,
+    read_anything::mojom::LineSpacing line_spacing,
+    read_anything::mojom::LetterSpacing letter_spacing) {
   if (!GetColorProvider())
     return;
 
@@ -187,7 +190,7 @@ void ReadAnythingToolbarView::OnReadAnythingThemeChanged(
                                   foreground_skcolor);
 
   for (views::Separator* separator : separators_) {
-    separator->SetColorId(foreground_color_id);
+    separator->SetColorId(separator_color_id);
   }
 
   font_combobox_->SetForegroundColorId(foreground_color_id);
@@ -218,6 +221,9 @@ void ReadAnythingToolbarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetDescription(
       l10n_util::GetStringUTF16(IDS_READ_ANYTHING_TOOLBAR_LABEL));
 }
+
+BEGIN_METADATA(ReadAnythingToolbarView, views::View)
+END_METADATA
 
 ReadAnythingToolbarView::~ReadAnythingToolbarView() {
   // If |this| is being destroyed before the associated coordinator, then

@@ -11,10 +11,11 @@
 #import "base/values.h"
 
 // Consumer for the Credential Provider Extension Promo. All of the setters
-// should be called before the view is created.
+// should be called before -viewDidLoad is called.
 @protocol CredentialProviderPromoConsumer
 
-// Sets the respective state in the consumer.
+// Sets the respective state in the consumer. Must be called before -viewDidLoad
+// is called.
 - (void)setTitleString:(NSString*)titleString
            subtitleString:(NSString*)subtitleString
       primaryActionString:(NSString*)primaryActionString
@@ -22,8 +23,9 @@
      tertiaryActionString:(NSString*)tertiaryActionString
                     image:(UIImage*)image;
 
-// Passes the animation to the consumer.
-- (void)setAnimation:(std::unique_ptr<base::Value>)animationAsset;
+// Passes the animation path to the consumer. Must be called before -viewDidLoad
+// is called.
+- (void)setAnimation:(NSString*)animationResourcePath;
 
 @end
 

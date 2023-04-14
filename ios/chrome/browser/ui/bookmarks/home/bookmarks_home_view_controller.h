@@ -65,12 +65,18 @@ class GURL;
 // Setter to set _rootNode value.
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
 
+// Setter to set _externalBookmark value.
+- (void)setExternalBookmark:(const bookmarks::BookmarkNode*)node;
+
 // Returns an array of BookmarksHomeViewControllers, one per BookmarkNode in the
 // path from this view controller's node to the latest cached node (as
 // determined by BookmarkPathCache).  Includes `self` as the first element of
 // the returned array.  Sets the cached scroll position for the last element of
 // the returned array, if appropriate.
 - (NSArray<BookmarksHomeViewController*>*)cachedViewControllerStack;
+
+// Whether the browser can be dismissed.
+- (BOOL)canDismiss;
 
 @end
 

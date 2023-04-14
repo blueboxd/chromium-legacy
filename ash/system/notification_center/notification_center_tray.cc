@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "ash/constants/ash_features.h"
 #include "ash/constants/tray_background_view_catalog.h"
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/public/cpp/shelf_config.h"
@@ -13,6 +14,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/notification_center/notification_center_bubble.h"
 #include "ash/system/notification_center/notification_center_view.h"
+#include "ash/system/privacy/privacy_indicators_tray_item_view.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "ash/system/tray/tray_container.h"
@@ -21,7 +23,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
-#include "ui/views/layout/flex_layout.h"
 
 namespace ash {
 
@@ -32,7 +33,6 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(shelf)) {
   SetID(VIEW_ID_SA_NOTIFICATION_TRAY);
-  SetLayoutManager(std::make_unique<views::FlexLayout>());
   set_use_bounce_in_animation(false);
 
   message_center::MessageCenter::Get()->AddObserver(this);
@@ -47,6 +47,14 @@ NotificationCenterTray::NotificationCenterTray(Shelf* shelf)
   // `NotificationCenterTray` from the controller. We should make sure views are
   // only added by host views.
   notification_icons_controller_->AddNotificationTrayItems(tray_container());
+
+  // Do not show this indicator if video conference feature is enabled since
+  // privacy indicator is already shown there.
+  if (features::IsPrivacyIndicatorsEnabled() &&
+      !features::IsVideoConferenceEnabled()) {
+    privacy_indicators_view_ = tray_container()->AddChildView(
+        std::make_unique<PrivacyIndicatorsTrayItemView>(shelf));
+  }
 }
 
 NotificationCenterTray::~NotificationCenterTray() {

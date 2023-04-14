@@ -20,6 +20,10 @@
 
 class Profile;
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 namespace web_app {
 
 class WebAppFileHandlerManager;
@@ -126,9 +130,6 @@ class WebAppShortcutManager {
       base::RepeatingCallback<void(Profile*, base::OnceClosure)>;
   static void SetUpdateShortcutsForAllAppsCallback(
       UpdateShortcutsForAllAppsCallback callback);
-
-  using ShortcutCallback = base::OnceCallback<void(const ShortcutInfo*)>;
-  static void SetShortcutUpdateCallbackForTesting(ShortcutCallback callback);
 
  private:
   void OnIconsRead(const AppId& app_id,

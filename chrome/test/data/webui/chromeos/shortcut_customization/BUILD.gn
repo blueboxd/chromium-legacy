@@ -26,15 +26,20 @@ ts_library("build_ts") {
     "accelerator_subsection_test.ts",
     "accelerator_view_test.ts",
     "fake_shortcut_provider_test.ts",
+    "fake_shortcut_search_handler_test.ts",
     "input_key_test.ts",
     "shortcut_customization_test.ts",
     "shortcut_customization_test_util.ts",
+    "shortcut_search_handler_test.ts",
     "shortcut_utils_test.ts",
     "text_accelerator_test.ts",
+    "search_box_test.ts",
   ]
   deps = [
     "../..:build_ts",
     "//ash/webui/shortcut_customization_ui/resources:build_ts",
+    "//ui/webui/resources/cr_elements:build_ts",
+    "//ui/webui/resources/js:build_ts",
   ]
 }
 

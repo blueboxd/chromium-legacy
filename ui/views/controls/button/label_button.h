@@ -16,6 +16,7 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button_label.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_provider.h"
@@ -49,7 +50,8 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   virtual gfx::ImageSkia GetImage(ButtonState for_state) const;
   // TODO(http://crbug.com/1100034) prefer SetImageModel over SetImage().
   void SetImage(ButtonState for_state, const gfx::ImageSkia& image);
-  void SetImageModel(ButtonState for_state, const ui::ImageModel& image_model);
+  virtual void SetImageModel(ButtonState for_state,
+                             const ui::ImageModel& image_model);
   bool HasImage(ButtonState for_state) const;
 
   // Gets or sets the text shown on the button.
@@ -127,8 +129,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   int GetHeightForWidth(int w) const override;
   void Layout() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-  void AddLayerBeneathView(ui::Layer* new_layer) override;
-  void RemoveLayerBeneathView(ui::Layer* old_layer) override;
+  void AddLayerToRegion(ui::Layer* new_layer,
+                        views::LayerRegion region) override;
+  void RemoveLayerFromRegions(ui::Layer* old_layer) override;
 
   // NativeThemeDelegate:
   ui::NativeTheme::Part GetThemePart() const override;
@@ -272,7 +275,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   gfx::HorizontalAlignment horizontal_alignment_ = gfx::ALIGN_LEFT;
 
   // Corner radius of the focus ring.
-  float focus_ring_corner_radius_ = FocusableBorder::kCornerRadiusDp;
+  float focus_ring_corner_radius_ = FocusRing::kDefaultCornerRadiusDp;
 
   base::CallbackListSubscription paint_as_active_subscription_;
 

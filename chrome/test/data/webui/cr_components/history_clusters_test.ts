@@ -7,16 +7,17 @@ import 'chrome://webui-test/mojo_webui_test_support.js';
 
 import {BrowserProxyImpl} from 'chrome://resources/cr_components/history_clusters/browser_proxy.js';
 import {HistoryClustersElement} from 'chrome://resources/cr_components/history_clusters/clusters.js';
-import {Cluster, PageCallbackRouter, PageHandlerRemote, PageRemote, QueryResult, RawVisitData, URLVisit} from 'chrome://resources/cr_components/history_clusters/history_clusters.mojom-webui.js';
+import {Cluster, RawVisitData, URLVisit} from 'chrome://resources/cr_components/history_clusters/history_cluster_types.mojom-webui.js';
+import {PageCallbackRouter, PageHandlerRemote, PageRemote, QueryResult} from 'chrome://resources/cr_components/history_clusters/history_clusters.mojom-webui.js';
 import {assertEquals} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
-import {TestBrowserProxy} from 'chrome://webui-test/test_browser_proxy.js';
+import {TestMock} from 'chrome://webui-test/test_mock.js';
 
-let handler: PageHandlerRemote&TestBrowserProxy;
+let handler: TestMock<PageHandlerRemote>&PageHandlerRemote;
 let callbackRouterRemote: PageRemote;
 
 function createBrowserProxy() {
-  handler = TestBrowserProxy.fromClass(PageHandlerRemote);
+  handler = TestMock.fromClass(PageHandlerRemote);
   const callbackRouter = new PageCallbackRouter();
   BrowserProxyImpl.setInstance(new BrowserProxyImpl(handler, callbackRouter));
   callbackRouterRemote = callbackRouter.$.bindNewPipeAndPassRemote();
@@ -45,26 +46,32 @@ suite('history-clusters', () => {
       duplicates: [],
       relativeDate: '',
       annotations: [],
-      hidden: false,
       debugInfo: {},
       rawVisitData: rawVisitData,
       isKnownToSync: false,
+      imageUrl: undefined,
     };
 
     const cluster1: Cluster = {
       id: BigInt(111),
       visits: [urlVisit1],
+      label: undefined,
       labelMatchPositions: [],
       relatedSearches: [],
+      imageUrl: undefined,
       fromPersistence: false,
+      debugInfo: undefined,
     };
 
     const cluster2: Cluster = {
       id: BigInt(222),
       visits: [],
+      label: undefined,
       labelMatchPositions: [],
       relatedSearches: [],
+      imageUrl: undefined,
       fromPersistence: false,
+      debugInfo: undefined,
     };
 
     const queryResult: QueryResult = {

@@ -10,7 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom-blink.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_popup_menu_info.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -26,6 +25,7 @@
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/testing/url_loader_mock_factory.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
@@ -93,8 +93,8 @@ class TestLocalFrameExternalPopupClient : public FakeLocalFrameHost {
     selected_item_ = selected_item;
     menu_items_ = std::move(menu_items);
     popup_client_.Bind(std::move(popup_client));
-    popup_client_.set_disconnect_handler(base::BindOnce(
-        &TestLocalFrameExternalPopupClient::Reset, base::Unretained(this)));
+    popup_client_.set_disconnect_handler(WTF::BindOnce(
+        &TestLocalFrameExternalPopupClient::Reset, WTF::Unretained(this)));
     std::move(showed_callback_).Run();
   }
 

@@ -8,6 +8,11 @@
 #include <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
+// Keys of UMA IOS.TabSwitcher.Idle histograms.
+extern const char kUMATabSwitcherIdleIncognitoTabGridPageHistogram[];
+extern const char kUMATabSwitcherIdleRecentTabsHistogram[];
+extern const char kUMATabSwitcherIdleRegularTabGridPageHistogram[];
+
 // Accessibility identifiers for automated testing.
 extern NSString* const kTabGridIncognitoTabsPageButtonIdentifier;
 extern NSString* const kTabGridRegularTabsPageButtonIdentifier;
@@ -22,6 +27,7 @@ extern NSString* const kTabGridRegularTabsEmptyStateIdentifier;
 extern NSString* const kTabGridScrollViewIdentifier;
 extern NSString* const kRegularTabGridIdentifier;
 extern NSString* const kIncognitoTabGridIdentifier;
+extern NSString* const kInactiveTabGridIdentifier;
 
 extern NSString* const kTabGridEditButtonIdentifier;
 extern NSString* const kTabGridEditCloseTabsButtonIdentifier;

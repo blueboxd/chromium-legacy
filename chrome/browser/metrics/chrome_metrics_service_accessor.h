@@ -23,7 +23,6 @@ class ChromeProcessSingleton;
 class HttpsFirstModeService;
 class NavigationMetricsRecorder;
 class PrefService;
-class Profile;
 
 namespace {
 class CrashesDOMHandler;
@@ -50,10 +49,6 @@ namespace metrics {
 class ChromeOSPerUserMetricsBrowserTestBase;
 class UkmConsentParamBrowserTest;
 }  // namespace metrics
-
-namespace welcome {
-void JoinOnboardingGroup(Profile* profile);
-}
 
 namespace safe_browsing {
 class ChromeCleanerControllerDelegate;
@@ -134,7 +129,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend class ChromeProcessSingleton;
-  friend void welcome::JoinOnboardingGroup(Profile* profile);
   friend class NavigationMetricsRecorder;
   friend class ChromeBrowserMainExtraPartsGpu;
   friend class Browser;
@@ -145,7 +139,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class browser_sync::DeviceInfoSyncClientImpl;
   friend class feed::WebFeedSubscriptionCoordinator;
   friend class HttpsFirstModeService;
-  friend class webauthn::authenticator::IsMetricsAndCrashReportingEnabled;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   friend class ChromeCameraAppUIDelegate;

@@ -310,12 +310,13 @@ class UpdateServiceProxyImpl
               const std::string& install_data_index,
               UpdateService::Priority priority,
               UpdateService::PolicySameVersionUpdate policy_same_version_update,
+              bool do_update_check_only,
               UpdateService::StateChangeCallback state_update,
               UpdateService::Callback callback) {
     PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::UpdateOnSTA, this,
                                app_id, install_data_index, priority,
-                               policy_same_version_update, state_update,
-                               std::move(callback)));
+                               policy_same_version_update, do_update_check_only,
+                               state_update, std::move(callback)));
   }
 
   void Install(const RegistrationRequest& registration,
@@ -493,6 +494,7 @@ class UpdateServiceProxyImpl
       const std::string& install_data_index,
       UpdateService::Priority priority,
       UpdateService::PolicySameVersionUpdate policy_same_version_update,
+      bool do_update_check_only,
       UpdateService::StateChangeCallback state_update,
       UpdateService::Callback callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -524,9 +526,9 @@ class UpdateServiceProxyImpl
         static_cast<int>(priority),
         policy_same_version_update ==
             UpdateService::PolicySameVersionUpdate::kAllowed,
-        observer.Get());
+        do_update_check_only, observer.Get());
     if (FAILED(hr)) {
-      VLOG(2) << "Failed to call IUpdater::UpdateAll: " << std::hex << hr;
+      VLOG(2) << "Failed to call IUpdater::Update: " << std::hex << hr;
       observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
       return;
     }
@@ -721,12 +723,14 @@ void UpdateServiceProxy::Update(
     const std::string& install_data_index,
     UpdateService::Priority priority,
     PolicySameVersionUpdate policy_same_version_update,
+    bool do_update_check_only,
     StateChangeCallback state_update,
     Callback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   impl_->Update(app_id, install_data_index, priority,
-                policy_same_version_update, OnCurrentSequence(state_update),
+                policy_same_version_update, do_update_check_only,
+                OnCurrentSequence(state_update),
                 OnCurrentSequence(std::move(callback)));
 }
 

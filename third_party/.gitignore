@@ -63,11 +63,13 @@
 /cast_web_runtime
 /catapult
 /ced/src
+/centipede/src
 /checkstyle/*.jar
 /chromeos_login_manager
 /chromeos_text_input
 /chromevox/third_party/sre/src
 /chromite
+/crossbench
 /cld_2/src
 /cld_3/src
 /colorama/src
@@ -132,7 +134,11 @@
 /icu4j/lib/
 /instrumented_libraries/scripts/*.tgz
 /instrumented_libraries/scripts/out/*
+/jacoco/coverage/
+/jacoco/doc/
+/jacoco/index.html
 /jacoco/lib/
+/jacoco/test/
 /javalang/src/
 /javax_inject/lib/
 /jdk/current
@@ -233,8 +239,8 @@
 /requests/src
 /robolectric/lib/
 /robolectric/robolectric
-/rust-src
 /rust-toolchain
+/rust_src/src
 /ruy/src
 /scan-build/src
 /scons-2.0.1

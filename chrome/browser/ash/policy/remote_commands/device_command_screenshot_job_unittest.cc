@@ -10,15 +10,13 @@
 
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
-#include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/test_future.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -88,7 +86,7 @@ MockUploadJob::MockUploadJob(const GURL& upload_url,
       delegate_(delegate),
       error_code_(std::move(error_code)) {}
 
-MockUploadJob::~MockUploadJob() {}
+MockUploadJob::~MockUploadJob() = default;
 
 void MockUploadJob::AddDataSegment(
     const std::string& name,
@@ -116,8 +114,9 @@ scoped_refptr<base::RefCountedBytes> GenerateTestPNG(const int& width,
   SkBitmap bmp;
   bmp.allocN32Pixels(width, height);
   for (int y = 0; y < height; ++y) {
-    for (int x = 0; x < width; ++x)
+    for (int x = 0; x < width; ++x) {
       *bmp.getAddr32(x, y) = background_color;
+    }
   }
   scoped_refptr<base::RefCountedBytes> png_bytes(new base::RefCountedBytes());
   gfx::PNGCodec::ColorFormat color_format = gfx::PNGCodec::FORMAT_RGBA;
@@ -156,7 +155,7 @@ MockScreenshotDelegate::MockScreenshotDelegate(
     : upload_job_error_code_(std::move(upload_job_error_code)),
       screenshot_allowed_(screenshot_allowed) {}
 
-MockScreenshotDelegate::~MockScreenshotDelegate() {}
+MockScreenshotDelegate::~MockScreenshotDelegate() = default;
 
 bool MockScreenshotDelegate::IsScreenshotAllowed() {
   return screenshot_allowed_;
@@ -188,7 +187,7 @@ class DeviceCommandScreenshotTest : public ChromeAshTestBase {
   DeviceCommandScreenshotTest& operator=(const DeviceCommandScreenshotTest&) =
       delete;
 
-  void VerifyResults(RemoteCommandJob* job,
+  void VerifyResults(const RemoteCommandJob& job,
                      RemoteCommandJob::Status expected_status,
                      std::string expected_payload);
 
@@ -206,7 +205,6 @@ class DeviceCommandScreenshotTest : public ChromeAshTestBase {
   std::string CreatePayloadFromResultCode(
       DeviceCommandScreenshotJob::ResultCode result_code);
 
-  base::RunLoop run_loop_;
   base::TimeTicks test_start_time_;
 
  private:
@@ -239,23 +237,23 @@ std::string DeviceCommandScreenshotTest::CreatePayloadFromResultCode(
     DeviceCommandScreenshotJob::ResultCode result_code) {
   std::string payload;
   base::Value::Dict root_dict;
-  if (result_code != DeviceCommandScreenshotJob::SUCCESS)
+  if (result_code != DeviceCommandScreenshotJob::SUCCESS) {
     root_dict.Set(kResultFieldName, result_code);
+  }
   base::JSONWriter::Write(root_dict, &payload);
   return payload;
 }
 
 void DeviceCommandScreenshotTest::VerifyResults(
-    RemoteCommandJob* job,
+    const RemoteCommandJob& job,
     RemoteCommandJob::Status expected_status,
     std::string expected_payload) {
-  EXPECT_EQ(expected_status, job->status());
-  if (job->status() == RemoteCommandJob::SUCCEEDED) {
-    std::unique_ptr<std::string> payload = job->GetResultPayload();
+  EXPECT_EQ(expected_status, job.status());
+  if (job.status() == RemoteCommandJob::SUCCEEDED) {
+    std::unique_ptr<std::string> payload = job.GetResultPayload();
     EXPECT_TRUE(payload);
     EXPECT_EQ(expected_payload, *payload);
   }
-  run_loop_.Quit();
 }
 
 TEST_F(DeviceCommandScreenshotTest, Success) {
@@ -263,14 +261,14 @@ TEST_F(DeviceCommandScreenshotTest, Success) {
       std::make_unique<MockScreenshotDelegate>(nullptr, true)));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(
-          &DeviceCommandScreenshotTest::VerifyResults, base::Unretained(this),
-          base::Unretained(job.get()), RemoteCommandJob::SUCCEEDED,
-          CreatePayloadFromResultCode(DeviceCommandScreenshotJob::SUCCESS)));
+  base::test::TestFuture<void> job_finished_future;
+  bool success = job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                          job_finished_future.GetCallback());
   EXPECT_TRUE(success);
-  run_loop_.Run();
+  ASSERT_TRUE(job_finished_future.Wait()) << "Job did not finish.";
+  VerifyResults(
+      *job, RemoteCommandJob::SUCCEEDED,
+      CreatePayloadFromResultCode(DeviceCommandScreenshotJob::SUCCESS));
 }
 
 TEST_F(DeviceCommandScreenshotTest, FailureUserInput) {
@@ -278,15 +276,14 @@ TEST_F(DeviceCommandScreenshotTest, FailureUserInput) {
       std::make_unique<MockScreenshotDelegate>(nullptr, false)));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandScreenshotTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::FAILED,
-                     CreatePayloadFromResultCode(
-                         DeviceCommandScreenshotJob::FAILURE_USER_INPUT)));
+  base::test::TestFuture<void> job_finished_future;
+  bool success = job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                          job_finished_future.GetCallback());
   EXPECT_TRUE(success);
-  run_loop_.Run();
+  ASSERT_TRUE(job_finished_future.Wait()) << "Job did not finish.";
+  VerifyResults(*job, RemoteCommandJob::FAILED,
+                CreatePayloadFromResultCode(
+                    DeviceCommandScreenshotJob::FAILURE_USER_INPUT));
 }
 
 TEST_F(DeviceCommandScreenshotTest, Failure) {
@@ -297,15 +294,14 @@ TEST_F(DeviceCommandScreenshotTest, Failure) {
       std::make_unique<MockScreenshotDelegate>(std::move(error_code), true)));
   InitializeScreenshotJob(job.get(), kUniqueID, test_start_time_,
                           kMockUploadUrl);
-  bool success = job->Run(
-      base::Time::Now(), base::TimeTicks::Now(),
-      base::BindOnce(&DeviceCommandScreenshotTest::VerifyResults,
-                     base::Unretained(this), base::Unretained(job.get()),
-                     RemoteCommandJob::FAILED,
-                     CreatePayloadFromResultCode(
-                         DeviceCommandScreenshotJob::FAILURE_AUTHENTICATION)));
+  base::test::TestFuture<void> job_finished_future;
+  bool success = job->Run(base::Time::Now(), base::TimeTicks::Now(),
+                          job_finished_future.GetCallback());
   EXPECT_TRUE(success);
-  run_loop_.Run();
+  ASSERT_TRUE(job_finished_future.Wait()) << "Job did not finish.";
+  VerifyResults(*job, RemoteCommandJob::FAILED,
+                CreatePayloadFromResultCode(
+                    DeviceCommandScreenshotJob::FAILURE_AUTHENTICATION));
 }
 
 }  // namespace policy

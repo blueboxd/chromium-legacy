@@ -20,13 +20,12 @@ namespace arc::input_overlay {
 
 namespace {
 
-constexpr int kTouchPointShadowElevation = 5;
-
 constexpr int kDotCenterDiameter = 14;
 constexpr int kDotInsideStrokeThickness = 1;
 constexpr int kDotOutsideStrokeThickness = 3;
 
 constexpr int kCrossCenterLength = 78;
+constexpr int kCrossCenterMiddleLength = 30;
 constexpr int kCrossInsideStrokeThickness = 1;
 constexpr int kCrossOutsideStrokeThickness = 4;
 constexpr int kCrossCornerRadius = 6;
@@ -35,7 +34,6 @@ constexpr int kCrossCornerRadius = 6;
 constexpr float kHaloInset = -6;
 // Thickness of focus ring.
 constexpr float kHaloThickness = 3;
-constexpr SkColor kFocusRingColor = gfx::kGoogleBlue300;
 
 constexpr SkColor kOutsideStrokeColor =
     SkColorSetA(SK_ColorWHITE, 0xCC /*80%*/);
@@ -118,7 +116,7 @@ SkPath DrawCrossPath(SkScalar overall_length,
 SkPath DrawCrossCenter(gfx::Canvas* canvas) {
   return DrawCrossPath(
       /*overall_length=*/SkIntToScalar(kCrossCenterLength),
-      /*mid_length=*/SkIntToScalar(kCrossCenterLength / 3),
+      /*mid_length=*/SkIntToScalar(kCrossCenterMiddleLength),
       /*corner_radius=*/SkIntToScalar(kCrossCornerRadius),
       /*out_stroke_thickness=*/SkIntToScalar(0));
 }
@@ -126,7 +124,7 @@ SkPath DrawCrossCenter(gfx::Canvas* canvas) {
 SkPath DrawCrossInsideStroke(gfx::Canvas* canvas) {
   return DrawCrossPath(
       /*overall_length=*/SkIntToScalar(kCrossCenterLength),
-      /*mid_length=*/SkIntToScalar(kCrossCenterLength / 3),
+      /*mid_length=*/SkIntToScalar(kCrossCenterMiddleLength),
       /*corner_radius=*/SkIntToScalar(kCrossCornerRadius),
       /*out_stroke_thickness=*/SkIntToScalar(kCrossInsideStrokeThickness));
 }
@@ -136,7 +134,7 @@ SkPath DrawCrossOutsideStroke(gfx::Canvas* canvas) {
       /*overall_length=*/SkIntToScalar(kCrossCenterLength +
                                        2 * kCrossInsideStrokeThickness),
       /*mid_length=*/
-      SkIntToScalar(kCrossCenterLength / 3 + 2 * kCrossInsideStrokeThickness),
+      SkIntToScalar(kCrossCenterMiddleLength + 2 * kCrossInsideStrokeThickness),
       /*corner_radius=*/SkIntToScalar(kCrossCornerRadius),
       /*out_stroke_thickness=*/SkIntToScalar(kCrossOutsideStrokeThickness));
 }
@@ -447,6 +445,7 @@ class CrossTouchPoint : public TouchPoint {
       : TouchPoint(center_pos) {}
   ~CrossTouchPoint() override = default;
 
+  // TouchPoint:
   void Init() override {
     touch_outside_stroke_ =
         AddChildView(std::make_unique<CrossOutsideStroke>());
@@ -456,6 +455,13 @@ class CrossTouchPoint : public TouchPoint {
     touch_inside_stroke_ = AddChildView(std::make_unique<CrossInsideStroke>());
     TouchPoint::Init();
   }
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    int size = kCrossCenterLength + 2 * kCrossInsideStrokeThickness +
+               2 * kCrossOutsideStrokeThickness;
+    return gfx::Size(size, size);
+  }
 };
 
 class DotTouchPoint : public TouchPoint {
@@ -464,6 +470,7 @@ class DotTouchPoint : public TouchPoint {
       : TouchPoint(center_pos) {}
   ~DotTouchPoint() override = default;
 
+  // TouchPoint:
   void Init() override {
     touch_outside_stroke_ = AddChildView(std::make_unique<DotOutsideStroke>());
     touch_center_ = AddChildView(std::make_unique<DotCenter>());
@@ -471,6 +478,13 @@ class DotTouchPoint : public TouchPoint {
     // and it doesn't show up obviously probably due to the round issue.
     touch_inside_stroke_ = AddChildView(std::make_unique<DotInsideStroke>());
     TouchPoint::Init();
+  }
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    int size = kDotCenterDiameter + 2 * kDotInsideStrokeThickness +
+               2 * kDotOutsideStrokeThickness;
+    return gfx::Size(size, size);
   }
 };
 
@@ -501,12 +515,32 @@ TouchPoint* TouchPoint::Show(views::View* parent,
   return touch_point_ptr;
 }
 
+gfx::Size TouchPoint::GetSize(ActionType action_type) {
+  int size = 0;
+  switch (action_type) {
+    case ActionType::TAP:
+      size = kDotCenterDiameter + kDotInsideStrokeThickness * 2 +
+             kDotOutsideStrokeThickness * 2;
+      break;
+    case ActionType::MOVE:
+      size = kCrossCenterLength + kCrossInsideStrokeThickness * 2 +
+             kCrossOutsideStrokeThickness * 2;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return gfx::Size(size, size);
+}
+
 TouchPoint::TouchPoint(const gfx::Point& center_pos)
     : center_pos_(center_pos) {}
 
 TouchPoint::~TouchPoint() = default;
 
 void TouchPoint::Init() {
+  SizeToPreferredSize();
+  SetPosition(gfx::Point(std::max(0, center_pos_.x() - size().width() / 2),
+                         std::max(0, center_pos_.y() - size().height() / 2)));
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kGroup);
   // TODO(b/260868602): Update the name.
   GetViewAccessibility().OverrideName(u"touch point");
@@ -514,16 +548,15 @@ void TouchPoint::Init() {
   SetFocusBehavior(FocusBehavior::ALWAYS);
   views::FocusRing::Install(this);
   auto* focus_ring = views::FocusRing::Get(this);
-  focus_ring->SetColorId(kFocusRingColor);
+  focus_ring->SetColorId(ui::kColorAshInputOverlayFocusRing);
   focus_ring->SetHaloInset(kHaloInset);
   focus_ring->SetHaloThickness(kHaloThickness);
+}
 
-  auto size = touch_outside_stroke_->size();
-  SetSize(size);
-  SetPosition(gfx::Point(std::max(0, center_pos_.x() - size.width() / 2),
-                         std::max(0, center_pos_.y() - size.height() / 2)));
-
-  std::make_unique<ash::ViewShadow>(this, kTouchPointShadowElevation);
+void TouchPoint::OnCenterPositionChanged(const gfx::Point& point) {
+  center_pos_ = point;
+  SetPosition(gfx::Point(std::max(0, center_pos_.x() - size().width() / 2),
+                         std::max(0, center_pos_.y() - size().height() / 2)));
 }
 
 void TouchPoint::SetToDefault() {

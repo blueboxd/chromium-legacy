@@ -50,19 +50,17 @@ struct PatternData {
 
 LayoutSVGResourcePattern::LayoutSVGResourcePattern(SVGPatternElement* node)
     : LayoutSVGResourcePaintServer(node),
-      should_collect_pattern_attributes_(true),
-      attributes_wrapper_(MakeGarbageCollected<PatternAttributesWrapper>()),
-      pattern_map_(MakeGarbageCollected<PatternMap>()) {}
+      should_collect_pattern_attributes_(true) {}
 
 void LayoutSVGResourcePattern::Trace(Visitor* visitor) const {
-  visitor->Trace(attributes_wrapper_);
+  visitor->Trace(attributes_);
   visitor->Trace(pattern_map_);
   LayoutSVGResourcePaintServer::Trace(visitor);
 }
 
 void LayoutSVGResourcePattern::RemoveAllClientsFromCache() {
   NOT_DESTROYED();
-  pattern_map_->clear();
+  pattern_map_.clear();
   should_collect_pattern_attributes_ = true;
   To<SVGPatternElement>(*GetElement()).InvalidateDependentPatterns();
   MarkAllClientsForInvalidation(kPaintInvalidation);
@@ -88,10 +86,11 @@ void LayoutSVGResourcePattern::StyleDidChange(StyleDifference diff,
 bool LayoutSVGResourcePattern::RemoveClientFromCache(
     SVGResourceClient& client) {
   NOT_DESTROYED();
-  auto entry = pattern_map_->find(&client);
-  if (entry == pattern_map_->end())
+  auto entry = pattern_map_.find(&client);
+  if (entry == pattern_map_.end()) {
     return false;
-  pattern_map_->erase(entry);
+  }
+  pattern_map_.erase(entry);
   return true;
 }
 
@@ -101,13 +100,11 @@ const PatternAttributes& LayoutSVGResourcePattern::EnsureAttributes() const {
   // avoid tearing down the pattern we're currently working on. Preferably the
   // state validation should have no side-effects though.
   if (should_collect_pattern_attributes_) {
-    attributes_wrapper_->Set(PatternAttributes());
-    auto* pattern_element = To<SVGPatternElement>(GetElement());
-    pattern_element->CollectPatternAttributes(
-        attributes_wrapper_->Attributes());
+    attributes_ =
+        To<SVGPatternElement>(*GetElement()).CollectPatternAttributes();
     should_collect_pattern_attributes_ = false;
   }
-  return Attributes();
+  return attributes_;
 }
 
 bool LayoutSVGResourcePattern::FindCycleFromSelf() const {
@@ -165,8 +162,7 @@ std::unique_ptr<PatternData> LayoutSVGResourcePattern::BuildPatternData(
   }
 
   pattern_data->pattern = Pattern::CreatePaintRecordPattern(
-      AsPaintRecord(tile_bounds.size(), tile_transform),
-      gfx::RectF(tile_bounds.size()));
+      AsPaintRecord(tile_transform), gfx::RectF(tile_bounds.size()));
 
   // Compute pattern space transformation.
   pattern_data->transform.Translate(tile_bounds.x(), tile_bounds.y());
@@ -185,7 +181,7 @@ bool LayoutSVGResourcePattern::ApplyShader(
   ClearInvalidationMask();
 
   std::unique_ptr<PatternData>& pattern_data =
-      pattern_map_->insert(&client, nullptr).stored_value->value;
+      pattern_map_.insert(&client, nullptr).stored_value->value;
   if (!pattern_data)
     pattern_data = BuildPatternData(reference_box);
 
@@ -202,21 +198,14 @@ bool LayoutSVGResourcePattern::ApplyShader(
 }
 
 PaintRecord LayoutSVGResourcePattern::AsPaintRecord(
-    const gfx::SizeF& size,
     const AffineTransform& tile_transform) const {
   NOT_DESTROYED();
   DCHECK(!should_collect_pattern_attributes_);
 
-  AffineTransform content_transform;
-  if (Attributes().PatternContentUnits() ==
-      SVGUnitTypes::kSvgUnitTypeObjectboundingbox)
-    content_transform = tile_transform;
-
-  gfx::RectF bounds(size);
   PaintRecorder paint_recorder;
   cc::PaintCanvas* canvas = paint_recorder.beginRecording();
 
-  auto* pattern_content_element = Attributes().PatternContentElement();
+  auto* pattern_content_element = attributes_.PatternContentElement();
   DCHECK(pattern_content_element);
   // If the element or some of its ancestor prevents us from doing paint, we can
   // early out. Note that any locked ancestor would prevent paint.
@@ -230,7 +219,7 @@ PaintRecord LayoutSVGResourcePattern::AsPaintRecord(
   DCHECK(pattern_layout_object);
   DCHECK(!pattern_layout_object->NeedsLayout());
 
-  SubtreeContentTransformScope content_transform_scope(content_transform);
+  SubtreeContentTransformScope content_transform_scope(tile_transform);
 
   auto* builder = MakeGarbageCollected<PaintRecordBuilder>();
   for (LayoutObject* child = pattern_layout_object->FirstChild(); child;

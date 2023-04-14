@@ -27,71 +27,83 @@ namespace blink {
 class PLATFORM_EXPORT BlinkStorageKey {
 
  public:
-  // Creates a BlinkStorageKey with a unique opaque origin and top-level site.
+  // [Block 1 - Constructors] - Keep in sync with StorageKey.
+
+  // (1A) Construct with a unique, opaque, origin and top_level_site.
+  // This should be used only in tests or where memory must be initialized
+  // before the context of some frame is known.
   BlinkStorageKey();
 
-  // Creates a BlinkStorageKey with the given origin. `origin` must not be null.
-  // `origin` can be opaque. This implicitly sets `top_level_site_` to the same
-  // origin.
-  // TODO(https://crbug.com/1271615): Remove or mark as test-only most of these
-  // constructors and factory methods.
-  explicit BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin);
+  // (1B) Construct a first-party (origin and top_level_site match) key.
+  // This should be used only in contexts verified to be first-party or where
+  // a third-party context is impossible, otherwise use Create().
+  static BlinkStorageKey CreateFirstParty(
+      scoped_refptr<const SecurityOrigin> origin);
 
-  // Creates a BlinkStorageKey with the given origin, top-level site and nonce.
-  // `origin` must not be null. `origin` can be opaque.
-  // `nonce` can be null to create a key without a nonce.
-  // `ancestor_chain_bit` must not be null, if it cannot be determined, default
-  // to kSameSite.
-  BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin,
-                  const BlinkSchemefulSite& top_level_site,
-                  const base::UnguessableToken* nonce,
-                  mojom::blink::AncestorChainBit ancestor_chain_bit);
-
-  // Creates a BlinkStorageKey converting the given StorageKey `storage_key`.
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  BlinkStorageKey(const StorageKey& storage_key);
-
-  // Converts this BlinkStorageKey into a StorageKey.
-  // NOLINTNEXTLINE(google-explicit-constructor)
-  operator StorageKey() const;
-
-  ~BlinkStorageKey() = default;
-
-  BlinkStorageKey(const BlinkStorageKey& other) = default;
-  BlinkStorageKey& operator=(const BlinkStorageKey& other) = default;
-  BlinkStorageKey(BlinkStorageKey&& other) = default;
-  BlinkStorageKey& operator=(BlinkStorageKey&& other) = default;
-
+  // (1C) Construct for an ephemeral browsing context with a nonce.
+  // This is a common entry point when constructing a context, and callsites
+  // generally must branch and call Create() if a nonce isn't set.
   static BlinkStorageKey CreateWithNonce(
       scoped_refptr<const SecurityOrigin> origin,
       const base::UnguessableToken& nonce);
 
+  // (1D) Construct for a specific first or third party context.
+  // This is a common entry point when constructing a context, and callsites
+  // generally must branch and call CreateWithNonce() if a nonce is set.
+  static BlinkStorageKey Create(
+      scoped_refptr<const SecurityOrigin> origin,
+      const BlinkSchemefulSite& top_level_site,
+      mojom::blink::AncestorChainBit ancestor_chain_bit);
+
+  // (1E) Construct for the provided isolation_info.
+  // Only in StorageKey, but could be added if needed.
+
+  // (1F) Construct a first-party storage key for tests.
   static BlinkStorageKey CreateFromStringForTesting(const WTF::String& origin);
 
-  // Takes in a SecurityOrigin `origin` and a BlinkSchemefulSite
-  // `top_level_site` and returns a BlinkStorageKey with a nullptr nonce and an
-  // AncestorChainBit set based on whether `origin` and `top_level_site` are
-  // schemeful-same-site. NOTE: The approach used by this method for calculating
-  // the AncestorChainBit is different than what's done in production code,
-  // where the whole frame tree is used. In other words, this method cannot be
-  // used to create a StorageKey corresponding to a first-party iframe with a
-  // cross-site ancestor (e.g., "a.com" -> "b.com" -> "a.com"). To create a
-  // BlinkStorageKey for that scenario, use the BlinkStorageKey constructor that
-  // has an AncestorChainBit parameter.
-  static BlinkStorageKey CreateForTesting(
-      scoped_refptr<const SecurityOrigin> origin,
-      const BlinkSchemefulSite& top_level_site);
+  // (1G) Copy, move, and destruct.
+  BlinkStorageKey(const BlinkStorageKey& other) = default;
+  BlinkStorageKey& operator=(const BlinkStorageKey& other) = default;
+  BlinkStorageKey(BlinkStorageKey&& other) = default;
+  BlinkStorageKey& operator=(BlinkStorageKey&& other) = default;
+  ~BlinkStorageKey() = default;
 
-  // Tries to construct an instance from (potentially
-  // untrusted) values that got received over Mojo.
-  //
-  // Returns whether successful or not. Doesn't touch
-  // `out` if false is returned.  This returning true does
-  // not mean that whoever sent the values did not lie,
-  // merely that they are well-formed.
-  //
-  // This function should only be used for serializing from Mojo or
-  // testing.
+  // [Block 2 - Side Loaders] - Keep in sync with StorageKey.
+
+  // (2A) Return a copy updated as though origin was used in construction.
+  // Note that if a nonce is set this may update the top_level_site* and if
+  // a nonce isn't set this may update the ancestor_chain_bit*.
+  BlinkStorageKey WithOrigin(scoped_refptr<const SecurityOrigin> origin) const;
+
+  // (2B) Return a copy updated as though storage partitioning was enabled.
+  // Returns a copy of what this storage key would have been if
+  // `kThirdPartyStoragePartitioning` were enabled. This is a convenience
+  // function for callsites that benefit from future functionality.
+  // TODO(crbug.com/1159586): Remove when no longer needed.
+  BlinkStorageKey CopyWithForceEnabledThirdPartyStoragePartitioning() const {
+    BlinkStorageKey storage_key = *this;
+    storage_key.top_level_site_ =
+        storage_key.top_level_site_if_third_party_enabled_;
+    storage_key.ancestor_chain_bit_ =
+        storage_key.ancestor_chain_bit_if_third_party_enabled_;
+    DCHECK(storage_key.IsValid());
+    return storage_key;
+  }
+
+  // [Block 3 - Serialization] - Keep in sync with StorageKey.
+
+  // (3A) Conversion from StorageKey to BlinkStorageKey.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  BlinkStorageKey(const StorageKey& storage_key);
+
+  // (3B) Conversion from BlinkStorageKey to StorageKey.
+  // NOLINTNEXTLINE(google-explicit-constructor)
+  operator StorageKey() const;
+
+  // (3C) Conversion from Mojom values into `out`.
+  // Note that if false is returned the combinations of values would not
+  // construct a well-formed StorageKey and `out` was not touched.
+  // TODO(crbug.com/1159586): Remove when no longer needed.
   static bool FromWire(
       scoped_refptr<const SecurityOrigin> origin,
       const BlinkSchemefulSite& top_level_site,
@@ -100,6 +112,14 @@ class PLATFORM_EXPORT BlinkStorageKey {
       mojom::blink::AncestorChainBit ancestor_chain_bit,
       mojom::blink::AncestorChainBit ancestor_chain_bit_if_third_party_enabled,
       BlinkStorageKey& out);
+
+  // (3D) Deserialization from string.
+  // Only in StorageKey.
+
+  // (3E) Serialization to string.
+  // Only in StorageKey.
+
+  // [Block 4 - Accessors] - Keep in sync with StorageKey.
 
   const scoped_refptr<const SecurityOrigin>& GetSecurityOrigin() const {
     return origin_;
@@ -115,41 +135,80 @@ class PLATFORM_EXPORT BlinkStorageKey {
     return ancestor_chain_bit_;
   }
 
+  // [Block 5 - Shared Utility] - Keep in sync with StorageKey.
+
+  // (5A) Serialize to string for use in debugging only.
   String ToDebugString() const;
 
-  // Returns a copy of what this storage key would have been if
-  // `kThirdPartyStoragePartitioning` were enabled. This is a convenience
-  // function for callsites that benefit from future functionality.
+  // (5B) Check exact match for testing only.
+  // Checks if every single member in this key matches those in `other`.
+  // Since the *_if_third_party_enabled_ fields aren't used normally
+  // this function is only useful for testing purposes.
   // TODO(crbug.com/1159586): Remove when no longer needed.
-  BlinkStorageKey CopyWithForceEnabledThirdPartyStoragePartitioning() const {
-    BlinkStorageKey storage_key = *this;
-    storage_key.top_level_site_ =
-        storage_key.top_level_site_if_third_party_enabled_;
-    storage_key.ancestor_chain_bit_ =
-        storage_key.ancestor_chain_bit_if_third_party_enabled_;
-    return storage_key;
-  }
-
-  // Checks if every single member in a BlinkStorageKey matches those in
-  // `other`. Since the *_if_third_party_enabled_ fields aren't used normally
-  // this function is only useful for testing purposes. This function can be
-  // removed when  the *_if_third_party_enabled_ fields are removed.
   bool ExactMatchForTesting(const blink::BlinkStorageKey& other) const;
 
- private:
-  BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin,
-                  const base::UnguessableToken* nonce);
+  // [Block 6 - Other Utility] - These don't exist in StorageKey.
 
+  // Remove this comment if any are added.
+
+ private:
+  // [Block 7 - Private Methods] - Keep in sync with StorageKey.
+
+  // (7A) Internal constructor for custom values.
+  // Note: Other than the opaque and copy/move constructors, this should be the
+  // only non-static method for initializing a storage key to keep consistency.
+  BlinkStorageKey(scoped_refptr<const SecurityOrigin> origin,
+                  const BlinkSchemefulSite& top_level_site,
+                  const base::UnguessableToken* nonce,
+                  mojom::blink::AncestorChainBit ancestor_chain_bit);
+
+  // (7B) Operators.
+  // Note that not all must be friends, but all are to consolidate the header.
+  PLATFORM_EXPORT
+  friend bool operator==(const BlinkStorageKey& lhs,
+                         const BlinkStorageKey& rhs);
+  PLATFORM_EXPORT
+  friend bool operator!=(const BlinkStorageKey& lhs,
+                         const BlinkStorageKey& rhs);
+  // If there were a need for an operator< it would go here.
+  PLATFORM_EXPORT
+  friend std::ostream& operator<<(std::ostream& ostream,
+                                  const BlinkStorageKey& sk);
+
+  // (7C) Check validity of current storage key members.
+  // This should be used when constructing, side-loading, and deserializing
+  // a key to ensure correctness. This does not imply that the key is
+  // serializable as keys with opaque origins will still return true.
+  bool IsValid() const;
+
+  // [Block 8 - Private Members] - Keep in sync with StorageKey.
+
+  // The current site in the given context. BlinkStorageKey is generally
+  // passed in contexts which used to pass SecurityOrigin before partitioning.
   scoped_refptr<const SecurityOrigin> origin_;
+
+  // The "top-level site"/"top-level frame"/"main frame" of the context
+  // this BlinkStorageKey was created for (for storage partitioning purposes).
+  // For extensions or related enterprise policies this may not represent the
+  // top-level site. For contexts with a `nonce_` or contexts without storage
+  // partitioning enabled, this will be the eTLD+1 of `origin_`.
   BlinkSchemefulSite top_level_site_;
+
   // Stores the value `top_level_site_` would have had if
   // `kThirdPartyStoragePartitioning` were enabled. This isn't used in
   // serialization or comparison.
   // TODO(crbug.com/1159586): Remove when no longer needed.
   BlinkSchemefulSite top_level_site_if_third_party_enabled_ = top_level_site_;
+
+  // Optional, forcing partitioned storage and used by anonymous iframes:
+  // https://github.com/camillelamy/explainers/blob/master/anonymous_iframes.md
   absl::optional<base::UnguessableToken> nonce_;
+
+  // kSameSite if the entire ancestor chain is same-site with the current frame.
+  // kCrossSite otherwise. Used by service workers.
   mojom::blink::AncestorChainBit ancestor_chain_bit_{
-      mojom::blink::AncestorChainBit::kSameSite};
+      mojom::blink::AncestorChainBit::kCrossSite};
+
   // Stores the value `ancestor_chain_bit_` would have had if
   // `kThirdPartyStoragePartitioning` were enabled. This isn't used in
   // serialization or comparison.
@@ -157,13 +216,6 @@ class PLATFORM_EXPORT BlinkStorageKey {
   mojom::blink::AncestorChainBit ancestor_chain_bit_if_third_party_enabled_ =
       ancestor_chain_bit_;
 };
-
-PLATFORM_EXPORT
-bool operator==(const BlinkStorageKey&, const BlinkStorageKey&);
-PLATFORM_EXPORT
-bool operator!=(const BlinkStorageKey&, const BlinkStorageKey&);
-PLATFORM_EXPORT
-std::ostream& operator<<(std::ostream&, const BlinkStorageKey&);
 
 }  // namespace blink
 

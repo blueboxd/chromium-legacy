@@ -11,20 +11,20 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/supervised_user/supervised_user_settings_service.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
 
 namespace {
 
 base::Value::Dict GetManualBehaviorHostDict(Profile* profile) {
-  SupervisedUserSettingsService* settings_service =
+  supervised_user::SupervisedUserSettingsService* settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(profile->GetProfileKey());
   const base::Value::Dict& local_settings =
       settings_service->LocalSettingsForTest();
 
   if (const base::Value::Dict* dict = local_settings.FindDict(
-          supervised_users::kContentPackManualBehaviorHosts)) {
+          supervised_user::kContentPackManualBehaviorHosts)) {
     return dict->Clone();
   }
 
@@ -77,12 +77,12 @@ void PermissionRequestCreatorMock::HandleDelayedRequests() {
     dict_to_insert.Set(url_requests_[i].host(), result_);
   }
 
-  SupervisedUserSettingsService* settings_service =
+  supervised_user::SupervisedUserSettingsService* settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(
           profile_->GetProfileKey());
 
   settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts,
+      supervised_user::kContentPackManualBehaviorHosts,
       std::move(dict_to_insert));
 
   delay_handling_ = false;
@@ -93,10 +93,10 @@ void PermissionRequestCreatorMock::CreateURLAccessRequestImpl(
   base::Value::Dict dict_to_insert = GetManualBehaviorHostDict(profile_);
   dict_to_insert.Set(url_requested.host(), result_);
 
-  SupervisedUserSettingsService* settings_service =
+  supervised_user::SupervisedUserSettingsService* settings_service =
       SupervisedUserSettingsServiceFactory::GetForKey(
           profile_->GetProfileKey());
   settings_service->SetLocalSetting(
-      supervised_users::kContentPackManualBehaviorHosts,
+      supervised_user::kContentPackManualBehaviorHosts,
       std::move(dict_to_insert));
 }

@@ -364,6 +364,39 @@
       ],
     },
   },
+  'chromeos-betty-finch': {
+    'swarming': {
+      'dimension_sets': [
+        {
+          'cpu': 'x86',
+          'kvm': '1',
+          'gce': '1',
+          'os': 'Ubuntu-18.04',
+          'pool': 'chrome.tests.finch',
+        }
+      ],
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'cros_vm',
+          }
+        ],
+      },
+      # See the 'chromeos-amd64-generic' mixin above for the purpose of this
+      # cache.
+      'named_caches': [
+        {
+          'name': 'cros_vm',
+          'path': 'magic_cros_vm_cache',
+        },
+      ],
+    },
+    '$mixin_append': {
+      'args': [
+        '--magic-vm-cache=magic_cros_vm_cache',
+      ],
+    },
+  },
   'chromeos-jacuzzi': {
     'swarming': {
       'dimensions': {
@@ -428,14 +461,6 @@
       ],
     },
   },
-  'chromeos-zork': {
-    'swarming': {
-      'dimensions': {
-        'os': 'ChromeOS',
-        'device_type': 'zork',
-      },
-    },
-  },
   'chromium-tester-dev-service-account': {
     'swarming': {
       'service_account': 'chromium-tester-dev@chops-service-accounts.iam.gserviceaccount.com',
@@ -498,13 +523,6 @@
       },
     },
   },
-  'femu-additional-ram': {
-    '$mixin_append': {
-      'args': [
-        '--ram-size-mb=16384',
-      ],
-    },
-  },
   'finch-chromium-swarming-pool': {
     'swarming': {
       'dimensions': {
@@ -524,7 +542,6 @@
   'fuchsia-code-coverage': {
     '$mixin_append': {
       'args': [
-        '--code-coverage',
         '--code-coverage-dir=${ISOLATED_OUTDIR}'
       ],
     },
@@ -534,13 +551,6 @@
       'args': [
         '--logs-dir=${ISOLATED_OUTDIR}/logs',
       ],
-    },
-  },
-  'gpu-exp-swarming-pool': {
-    'swarming': {
-      'dimensions': {
-        'pool': 'chromium.tests.gpu.experimental',
-      },
     },
   },
   'gpu-swarming-pool': {
@@ -558,6 +568,13 @@
       # TODO(crbug.com/1163797): Remove the 'enable' field in favor of
       # 'has_native_resultdb_integration'.
       'has_native_resultdb_integration': True,
+    },
+  },
+  'integrity_high': {
+    'swarming': {
+      'dimensions': {
+        'integrity': 'high',
+      },
     },
   },
   'ios_custom_webkit': {
@@ -676,6 +693,15 @@
       ]
     },
   },
+  # TODO(crbug.com/901197): Remove this mixin and all uses once LIFO rolls
+  # out more widely.
+  'lifo-test-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests.lifo',
+      },
+    },
+  },
   'limited_capacity_bot': {
     # Some FYI bot configurations have a limited number of bots in the swarming
     # pool. Increase the default expiration time from 1 hour to 6 hours to
@@ -749,6 +775,10 @@
     },
   },
   'linux_nvidia_gtx_1660_stable': {
+    # TODO(crbug.com/1408314): The swarming dimensions for
+    # webgpu_blink_web_tests and webgpu_cts_tests on linux-code-coverage
+    # must be kept manually in sync with the appropriate mixin; currently,
+    # this one, which is used by Dawn Linux x64 Release (NVIDIA).
     'swarming': {
       'dimensions': {
         'gpu': '10de:2184-440.100',
@@ -851,6 +881,22 @@
       },
     },
   },
+  'mac_13_arm64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'arm64',
+        'os': 'Mac-13',
+      },
+    },
+  },
+  'mac_13_x64': {
+    'swarming': {
+      'dimensions': {
+        'cpu': 'x86-64',
+        'os': 'Mac-13',
+      },
+    },
+  },
   'mac_arm64_apple_m1_gpu_experimental': {
     'swarming': {
       'dimensions': {
@@ -900,6 +946,10 @@
     },
   },
   'mac_mini_intel_gpu_stable': {
+    # TODO(crbug.com/1408314): The swarming dimensions for
+    # webgpu_blink_web_tests and webgpu_cts_tests on mac-code-coverage
+    # must be kept manually in sync with the appropriate mixin; currently,
+    # this one, which is used by Dawn Mac x64 Release (Intel).
     'swarming': {
       'dimensions': {
         'cpu': 'x86-64',
@@ -1211,6 +1261,28 @@
       'io_timeout': 900,
     },
   },
+  'updater-default-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.tests',
+      },
+    },
+  },
+  'updater-mac-pool': {
+    'swarming': {
+      'dimensions': {
+        # Bots in this pool support passwordless sudo.
+        'pool': 'chromium.updater.mac',
+      },
+    },
+  },
+  'updater-win-uac-pool': {
+    'swarming': {
+      'dimensions': {
+        'pool': 'chromium.win.uac',
+      },
+    },
+  },
   'vr_instrumentation_test': {
      '$mixin_append': {
        'args': [
@@ -1339,6 +1411,10 @@
     },
   },
   'win10_nvidia_gtx_1660_stable': {
+    # TODO(crbug.com/1408314): The swarming dimensions for
+    # webgpu_blink_web_tests and webgpu_cts_tests on win10-code-coverage
+    # must be kept manually in sync with the appropriate mixin; currently,
+    # this one, which is used by Dawn Win10 x64 Release (NVIDIA).
     'swarming': {
       'dimensions': {
         'gpu': '10de:2184-27.21.14.5638',

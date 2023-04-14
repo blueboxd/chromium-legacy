@@ -117,11 +117,6 @@ public class CreatorTabMediator {
             }
 
             @Override
-            public void didStartNavigationNoop(NavigationHandle navigation) {
-                if (!navigation.isInPrimaryMainFrame()) return;
-            }
-
-            @Override
             public void titleWasSet(String title) {
                 mSheetContent.updateTitle(title);
             }
@@ -139,11 +134,6 @@ public class CreatorTabMediator {
                             .show();
                     mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
                 }
-            }
-
-            @Override
-            public void didFinishNavigationNoop(NavigationHandle navigation) {
-                if (navigation.isInPrimaryMainFrame()) return;
             }
         };
     }

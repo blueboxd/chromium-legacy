@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">A janela de atualização do firmware para dispositivos externos está aberta. <ph name="NUM_UPDATES" /> atualizações disponíveis</translation>
 <translation id="1145516343487477149">Encontre artigos de ajuda e respostas a perguntas comuns sobre o Chromebook</translation>
+<translation id="1167755866710282443">Abra o menu para personalizar as teclas. Arraste o menu para o mover.</translation>
 <translation id="1175697296044146566">Este <ph name="DEVICE_TYPE" /> é gerido por <ph name="MANAGER" />.</translation>
 <translation id="1175951029573070619">Média (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">Remover</translation>
@@ -154,7 +155,7 @@
 <translation id="2271469253353559191">Horário do modo escuro</translation>
 <translation id="2276999893457278469">Conteúdo de ajuda principal</translation>
 <translation id="2287186687001756809">Nenhuma imagem disponível. Para adicionar fotos, aceda a <ph name="LINK" /></translation>
-<translation id="2307344026739914387">Usar par de chaves atual</translation>
+<translation id="2307344026739914387">Utilizar par de chaves atual</translation>
 <translation id="2320295602967756579">Ativar tema claro</translation>
 <translation id="2323506179655536734">IGNORADO</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> ppp</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">Selecionar o álbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4117637339509843559">Modo escuro</translation>
+<translation id="4130035430755296270">Mantenha o cursor do rato sobre o conteúdo para obter mais opções de esquema</translation>
 <translation id="4131410914670010031">Preto e branco</translation>
 <translation id="4145784616224233563">Firewall HTTP</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) Resolução de DNS</translation>
 <translation id="4848429997038228357">EM EXECUÇÃO</translation>
 <translation id="4854586501323951986">Ecrã tátil incorporado</translation>
+<translation id="4855250849489639581">Deslize rapidamente para baixo para obter mais opções de esquemas</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} tentativa restante.}other{<ph name="ERROR_MESSAGE" /> {0} tentativas restantes.}}</translation>
 <translation id="4873827928179867585">Algoritmo de autenticação</translation>
 <translation id="4880328057631981605">Nome do ponto de acesso</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">Aumentar o brilho do ecrã</translation>
 <translation id="57838592816432529">Desativar som</translation>
 <translation id="5784136236926853061">Latência elevada de HTTP</translation>
+<translation id="5826644637650799838">Acerca da arte</translation>
 <translation id="5832805196449965646">Adicionar pessoa</translation>
 <translation id="583281660410589416">Desconhecido</translation>
 <translation id="5843706793424741864">Fahrenheit</translation>
@@ -613,7 +617,7 @@
 <translation id="6566314079205407217">Digitalização de várias páginas</translation>
 <translation id="6574762126505704998">Preenchimento</translation>
 <translation id="6575134580692778371">Não configurado</translation>
-<translation id="6579509898032828423">Usar esta foto</translation>
+<translation id="6579509898032828423">Utilizar esta foto</translation>
 <translation id="6596816719288285829">Endereço IP</translation>
 <translation id="6599673642868607614">Agradecemos o seu feedback. O seu feedback ajuda-nos a melhorar a experiência do Chromebook e vai ser analisado pela nossa equipa. Devido ao elevado número de relatórios, não é possível enviar uma resposta.</translation>
 <translation id="6618744767048954150">Em execução</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">1 imagem</translation>
 <translation id="7177485034254901881">Este <ph name="DEVICE_TYPE" /> é gerido por <ph name="MANAGER" />. Os administradores podem configurar remotamente o dispositivo.</translation>
 <translation id="7180611975245234373">Atualizar</translation>
+<translation id="7180865173735832675">Personalizar</translation>
 <translation id="7212734716605298123">Atualizações de firmware para dispositivos externos</translation>
 <translation id="7216409898977639127">Operador de telemóvel</translation>
 <translation id="725133483556299729">Selecionar email</translation>
@@ -734,7 +739,7 @@
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="779591286616261875">Enviar novo relatório</translation>
 <translation id="7799817062559422778">Modo claro</translation>
-<translation id="780301667611848630">Não</translation>
+<translation id="780301667611848630">Não, obrigado</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="7819857487979277519">PSK (WPA ou RSN)</translation>
 <translation id="7841134249932030522">Ativar modo escuro</translation>
@@ -817,7 +822,7 @@
 <translation id="8675354002693747642">Chave pré-partilhada</translation>
 <translation id="8677859815076891398">Não existem álbuns. Crie um álbum no <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Utilize as teclas das setas para a esquerda ou para a direita para gerir esta funcionalidade.</translation>
-<translation id="8712637175834984815">OK</translation>
+<translation id="8712637175834984815">Entendido</translation>
 <translation id="871560550817059752">Falha – Sem tinta</translation>
 <translation id="8723108084122415655">Rede não predefinida acima do limite de latência.</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
@@ -866,7 +871,7 @@
 <translation id="9062831201344759865">A resolução de DNS tem uma latência elevada</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
-<translation id="9082718469794970195">Usar este vídeo</translation>
+<translation id="9082718469794970195">Utilizar este vídeo</translation>
 <translation id="9087578468327036362">Denunciar esta consulta</translation>
 <translation id="9088306295921699330">Utilização atual</translation>
 <translation id="9095775724867566971">Pluginvm</translation>

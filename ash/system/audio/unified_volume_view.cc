@@ -92,6 +92,7 @@ UnifiedVolumeView::UnifiedVolumeView(
   }
 
   if (features::IsQsRevampEnabled()) {
+    more_button_->SetIconColorId(cros_tokens::kCrosSysSecondary);
     // TODO(b/257151067): Update the a11y name id.
     // Adds the live caption button before `more_button_`.
     a11y_controller_->AddObserver(this);
@@ -112,6 +113,21 @@ UnifiedVolumeView::UnifiedVolumeView(
             /*is_togglable=*/true,
             /*has_border=*/true),
         GetIndexOf(more_button_).value());
+    // Sets the icon, icon color, background color for `live_caption_button_`
+    // when it's toggled.
+    live_caption_button_->SetToggledVectorIcon(kUnifiedMenuLiveCaptionIcon);
+    live_caption_button_->SetIconToggledColorId(
+        cros_tokens::kCrosSysSystemOnPrimaryContainer);
+    live_caption_button_->SetBackgroundToggledColorId(
+        cros_tokens::kCrosSysSystemPrimaryContainer);
+    // Sets the icon, icon color, background color for `live_caption_button_`
+    // when it's not toggled.
+    live_caption_button_->SetVectorIcon(kUnifiedMenuLiveCaptionOffIcon);
+    live_caption_button_->SetIconColorId(cros_tokens::kCrosSysOnSurface);
+    live_caption_button_->SetBackgroundColorId(
+        cros_tokens::kCrosSysSystemOnBase);
+
+    live_caption_button_->SetToggled(enabled);
   }
 
   Update(/*by_user=*/false);
@@ -180,6 +196,12 @@ void UnifiedVolumeView::Update(bool by_user) {
         IDS_ASH_STATUS_TRAY_VOLUME, state_tooltip_text));
   } else {
     level = audio_handler->GetOutputVolumePercentForDevice(device_id_) / 100.f;
+    // When muted by keyboard, the level stored in `audio_handler` should be
+    // preserved but the slider should appear as muted. `level` is set to 0
+    // manually to update the slider and icon.
+    if (audio_handler->IsOutputMutedForDevice(device_id_)) {
+      level = 0;
+    }
     auto active_device_id = audio_handler->GetPrimaryActiveOutputNode();
 
     switch (slider_style_) {
@@ -262,10 +284,9 @@ void UnifiedVolumeView::OnAccessibilityStatusChanged() {
 
   const bool enabled = a11y_controller_->live_caption().enabled();
 
-  // Updates the icon of `live_caption_button_`.
-  live_caption_button_->SetVectorIcon(a11y_controller_->live_caption().enabled()
-                                          ? kUnifiedMenuLiveCaptionIcon
-                                          : kUnifiedMenuLiveCaptionOffIcon);
+  // Sets `live_caption_button_` toggle state to update its icon, icon color,
+  // and background color.
+  live_caption_button_->SetToggled(enabled);
 
   // Updates the tooltip of `live_caption_button_`.
   std::u16string toggle_tooltip = l10n_util::GetStringUTF16(

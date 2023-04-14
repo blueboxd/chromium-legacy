@@ -29,7 +29,6 @@
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/keep_alive/scoped_profile_keep_alive.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/web_contents_tags.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -322,7 +321,7 @@ bool DevToolsEventForwarder::ForwardEvent(
   if (whitelisted_keys_.find(key) == whitelisted_keys_.end())
     return false;
 
-  base::Value event_data(base::Value::Type::DICTIONARY);
+  base::Value event_data(base::Value::Type::DICT);
   event_data.SetStringKey("type", event_type);
   event_data.SetStringKey("key", ui::KeycodeConverter::DomKeyToKeyString(
                                      static_cast<ui::DomKey>(event.dom_key)));
@@ -472,6 +471,12 @@ DevToolsWindow::~DevToolsWindow() {
   // access it.
   if (reattach_complete_callback_) {
     std::move(reattach_complete_callback_).Run();
+  }
+
+  // If window gets destroyed during a test run, need to stop the test.
+  if (!ready_for_test_callback_.is_null()) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(ready_for_test_callback_));
   }
 }
 

@@ -16,6 +16,8 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/notreached.h"
+#include "components/android_autofill/browser/autofill_provider_android.h"
+#include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -61,6 +63,18 @@ AwAutofillClient::GetURLLoaderFactory() {
       .GetBrowserContext()
       ->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
+}
+
+autofill::AutofillDownloadManager* AwAutofillClient::GetDownloadManager() {
+  if (autofill::AutofillProvider::is_download_manager_disabled_for_testing()) {
+    return nullptr;
+  }
+  if (!download_manager_) {
+    // Lazy initialization to avoid virtual function calls in the constructor.
+    download_manager_ = std::make_unique<autofill::AutofillDownloadManager>(
+        this, GetChannel(), GetLogManager());
+  }
+  return download_manager_.get();
 }
 
 autofill::PersonalDataManager* AwAutofillClient::GetPersonalDataManager() {
@@ -138,7 +152,7 @@ translate::TranslateDriver* AwAutofillClient::GetTranslateDriver() {
   return nullptr;
 }
 
-void AwAutofillClient::ShowAutofillSettings(bool show_credit_card_settings) {
+void AwAutofillClient::ShowAutofillSettings(autofill::PopupType popup_type) {
   NOTIMPLEMENTED();
 }
 
@@ -213,7 +227,7 @@ bool AwAutofillClient::IsFastCheckoutSupported() {
 bool AwAutofillClient::TryToShowFastCheckout(
     const autofill::FormData& form,
     const autofill::FormFieldData& field,
-    autofill::AutofillDriver* driver) {
+    base::WeakPtr<autofill::AutofillManager> autofill_manager) {
   return false;
 }
 
@@ -262,10 +276,10 @@ void AwAutofillClient::UpdateAutofillPopupDataListValues(
   // See crrev.com/18102002 if need to implement.
 }
 
-base::span<const autofill::Suggestion> AwAutofillClient::GetPopupSuggestions()
+std::vector<autofill::Suggestion> AwAutofillClient::GetPopupSuggestions()
     const {
   NOTIMPLEMENTED();
-  return base::span<const autofill::Suggestion>();
+  return {};
 }
 
 void AwAutofillClient::PinPopupView() {
@@ -336,10 +350,6 @@ bool AwAutofillClient::IsContextSecure() const {
          !net::IsCertStatusError(ssl_status.cert_status) &&
          !(ssl_status.content_status &
            content::SSLStatus::RAN_INSECURE_CONTENT);
-}
-
-bool AwAutofillClient::ShouldShowSigninPromo() {
-  return false;
 }
 
 void AwAutofillClient::ExecuteCommand(int id) {

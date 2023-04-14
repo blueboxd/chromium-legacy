@@ -29,7 +29,6 @@
 #include "chrome/browser/extensions/omaha_attributes_handler.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/safe_browsing_verdict_handler.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
 #include "components/sync/model/string_ordinal.h"
@@ -62,6 +61,7 @@
 
 class BlocklistedExtensionSyncServiceTest;
 class Profile;
+class ProfileManager;
 
 namespace base {
 class CommandLine;
@@ -182,6 +182,7 @@ class ExtensionService : public ExtensionServiceInterface,
   ExtensionService(Profile* profile,
                    const base::CommandLine* command_line,
                    const base::FilePath& install_directory,
+                   const base::FilePath& unpacked_install_directory,
                    ExtensionPrefs* extension_prefs,
                    Blocklist* blocklist,
                    bool autoupdate_enabled,
@@ -387,8 +388,10 @@ class ExtensionService : public ExtensionServiceInterface,
   // permission in |e|.
   // NOTE: If this is ever called with high frequency, the implementation may
   // need to be made more efficient.
-  static void RecordPermissionMessagesHistogram(const Extension* extension,
-                                                const char* histogram);
+  static void RecordPermissionMessagesHistogram(
+      const Extension* extension,
+      const char* histogram,
+      bool log_user_profile_histograms);
 
   // Unloads the given extension and marks the extension as terminated. This
   // doesn't notify the user that the extension was terminated, if such a
@@ -423,6 +426,9 @@ class ExtensionService : public ExtensionServiceInterface,
   bool extensions_enabled() const { return extensions_enabled_; }
 
   const base::FilePath& install_directory() const { return install_directory_; }
+  const base::FilePath& unpacked_install_directory() const {
+    return unpacked_install_directory_;
+  }
 
   const ExtensionSet* delayed_installs() const { return &delayed_installs_; }
 
@@ -674,6 +680,10 @@ class ExtensionService : public ExtensionServiceInterface,
 
   // The full path to the directory where extensions are installed.
   base::FilePath install_directory_;
+
+  // The full path to the directory where unpacked (e.g. from .zip files)
+  // extensions are installed.
+  base::FilePath unpacked_install_directory_;
 
   // Whether or not extensions are enabled.
   bool extensions_enabled_ = true;

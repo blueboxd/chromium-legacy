@@ -36,9 +36,9 @@ import {afterNextRender, DomRepeatEvent, mixinBehaviors, PolymerElement} from 'c
 
 import {Setting} from '../../mojom-webui/setting.mojom-webui.js';
 import {castExists} from '../assert_extras.js';
-import {DeepLinkingBehavior, DeepLinkingBehaviorInterface} from '../deep_linking_behavior.js';
+import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
-import {routes} from '../os_route.js';
+import {routes} from '../os_settings_routes.js';
 import {RouteOriginMixin, RouteOriginMixinInterface} from '../route_origin_mixin.js';
 import {Route, Router} from '../router.js';
 
@@ -50,12 +50,11 @@ const SettingsInternetSubpageElementBase =
         [
           NetworkListenerBehavior,
           CrPolicyNetworkBehaviorMojo,
-          DeepLinkingBehavior,
         ],
-        RouteOriginMixin(I18nMixin(PolymerElement))) as {
+        DeepLinkingMixin(RouteOriginMixin(I18nMixin(PolymerElement)))) as {
       new (): PolymerElement & I18nMixinInterface & RouteOriginMixinInterface &
-          NetworkListenerBehaviorInterface &
-          CrPolicyNetworkBehaviorMojoInterface & DeepLinkingBehaviorInterface,
+          DeepLinkingMixinInterface & NetworkListenerBehaviorInterface &
+          CrPolicyNetworkBehaviorMojoInterface,
     };
 
 class SettingsInternetSubpageElement extends
@@ -203,11 +202,11 @@ class SettingsInternetSubpageElement extends
       },
 
       /**
-       * Used by DeepLinkingBehavior to focus this page's deep links.
+       * Used by DeepLinkingMixin to focus this page's deep links.
        */
       supportedSettingIds: {
         type: Object,
-        value: () => new Set([
+        value: () => new Set<Setting>([
           Setting.kWifiOnOff,
           Setting.kWifiAddNetwork,
           Setting.kMobileOnOff,
@@ -279,7 +278,7 @@ class SettingsInternetSubpageElement extends
   }
 
   /**
-   * Overridden from DeepLinkingBehavior.
+   * Overridden from DeepLinkingMixin.
    */
   override beforeDeepLinkAttempt(settingId: Setting): boolean {
     if (settingId === Setting.kAddESimNetwork) {
@@ -302,7 +301,7 @@ class SettingsInternetSubpageElement extends
         // If both Cellular and Instant Tethering are enabled, we show a special
         // toggle for Instant Tethering. If it exists, deep link to it.
         const tetherEnabled =
-            this.shadowRoot!.querySelector('#tetherEnabledButton');
+            this.shadowRoot!.querySelector<HTMLElement>('#tetherEnabledButton');
         if (tetherEnabled) {
           this.showDeepLinkElement(tetherEnabled);
           return;
@@ -310,7 +309,7 @@ class SettingsInternetSubpageElement extends
         // Otherwise, the device does not support Cellular and Instant Tethering
         // on/off is controlled by the top-level "Mobile data" toggle instead.
         const deviceEnabled =
-            this.shadowRoot!.querySelector('#deviceEnabledButton');
+            this.shadowRoot!.querySelector<HTMLElement>('#deviceEnabledButton');
         if (deviceEnabled) {
           this.showDeepLinkElement(deviceEnabled);
           return;
@@ -324,7 +323,7 @@ class SettingsInternetSubpageElement extends
   }
 
   /**
-   * RouteObserverBehavior override
+   * RouteObserverMixin override
    */
   override currentRouteChanged(newRoute: Route, oldRoute?: Route): void {
     if (newRoute !== routes.INTERNET_NETWORKS) {
@@ -403,7 +402,7 @@ class SettingsInternetSubpageElement extends
     }
 
     // Scans should only be triggered by the "networks" subpage.
-    if (Router.getInstance().getCurrentRoute() !== routes.INTERNET_NETWORKS) {
+    if (Router.getInstance().currentRoute !== routes.INTERNET_NETWORKS) {
       this.stopScanning_();
       return;
     }

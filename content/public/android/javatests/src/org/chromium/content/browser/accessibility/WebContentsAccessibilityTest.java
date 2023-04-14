@@ -36,6 +36,9 @@ import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.Acces
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SET_SELECTION;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SET_TEXT;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.AccessibilityActionCompat.ACTION_SHOW_ON_SCREEN;
+import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH;
+import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX;
+import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_CHARACTER;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_PARAGRAPH;
 import static androidx.core.view.accessibility.AccessibilityNodeInfoCompat.MOVEMENT_GRANULARITY_WORD;
@@ -55,15 +58,12 @@ import static org.chromium.content.browser.accessibility.AccessibilityHistogramR
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_BASIC;
 import static org.chromium.content.browser.accessibility.AccessibilityHistogramRecorder.PERCENTAGE_DROPPED_HISTOGRAM_AXMODE_COMPLETE;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_DATA_REQUEST_IMAGE_DATA_KEY;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_CHROME_ROLE;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_IMAGE_DATA;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_OFFSCREEN;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_BOTTOM;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRAS_KEY_UNCLIPPED_TOP;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_LENGTH;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRA_DATA_TEXT_CHARACTER_LOCATION_ARG_START_INDEX;
-import static org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl.EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_DATA_REQUEST_IMAGE_DATA_KEY;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_CHROME_ROLE;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_IMAGE_DATA;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_OFFSCREEN;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_UNCLIPPED_BOTTOM;
+import static org.chromium.content.browser.accessibility.AccessibilityNodeInfoBuilder.EXTRAS_KEY_UNCLIPPED_TOP;
 
 import android.annotation.SuppressLint;
 import android.content.ClipData;
@@ -587,6 +587,51 @@ public class WebContentsAccessibilityTest {
 
         Assert.assertFalse(FOCUSING_ERROR, rootNodeInfo.isAccessibilityFocused());
         Assert.assertFalse(FOCUSING_ERROR, mNodeInfo.isAccessibilityFocused());
+    }
+
+    /**
+     * Test restoring focus of the latest focused element with the {restoreFocus} method.
+     */
+    @Test
+    @SmallTest
+    public void testRestoreFocus() throws Throwable {
+        // Setup test page with example paragraphs.
+        setupTestWithHTML("<input id='id1'><input id='id2'>");
+
+        // Find the root node, and a paragraph node, then focus the paragraph.
+        int rootVvid = waitForNodeMatching(sClassNameMatcher, "android.webkit.WebView");
+        int vvid1 = waitForNodeMatching(sViewIdResourceNameMatcher, "id1");
+        int vvid2 = waitForNodeMatching(sViewIdResourceNameMatcher, "id2");
+
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, createAccessibilityNodeInfo(rootVvid));
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, createAccessibilityNodeInfo(vvid1));
+        Assert.assertNotNull(NODE_TIMEOUT_ERROR, createAccessibilityNodeInfo(vvid2));
+
+        Assert.assertFalse(
+                FOCUSING_ERROR, createAccessibilityNodeInfo(vvid1).isAccessibilityFocused());
+        focusNode(vvid1);
+
+        // Reset focus explicitly.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.mWcax.resetFocus());
+        CriteriaHelper.pollUiThread(
+                () -> !createAccessibilityNodeInfo(vvid1).isAccessibilityFocused());
+
+        // Restore focus, verify that it gets back.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.mWcax.restoreFocus());
+        CriteriaHelper.pollUiThread(
+                () -> createAccessibilityNodeInfo(vvid1).isAccessibilityFocused());
+
+        focusNode(vvid1);
+        focusNode(vvid2);
+
+        // Reset focus by performing an action, it covers one more way of losing focus.
+        Assert.assertTrue(performActionOnUiThread(vvid2, ACTION_CLEAR_ACCESSIBILITY_FOCUS, null,
+                () -> !createAccessibilityNodeInfo(vvid2).isAccessibilityFocused()));
+
+        // Restore focus, verify that the second (latest focused) element gets focus.
+        TestThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.mWcax.restoreFocus());
+        CriteriaHelper.pollUiThread(
+                () -> createAccessibilityNodeInfo(vvid2).isAccessibilityFocused());
     }
 
     // ------------------ Tests of AccessibilityNodeInfo caching mechanism ------------------ //
@@ -1540,15 +1585,16 @@ public class WebContentsAccessibilityTest {
     @SmallTest
     public void testNodeInfo_Actions_OverflowScroll() throws Throwable {
         // Build a simple web page with a div and overflow:scroll
-        setupTestWithHTML("<div title='1234' style='overflow:scroll; width: 200px; height:50px'>\n"
-                + "  <p>Example Paragraph 1</p>\n"
-                + "  <p>Example Paragraph 2</p>\n"
+        setupTestWithHTML(
+                "<div id='div1' title='1234' style='overflow:scroll; width: 200px; height:50px'>\n"
+                + "  <p id='p1'>Example Paragraph 1</p>\n"
+                + "  <p id='p2'>Example Paragraph 2</p>\n"
                 + "</div>");
 
-        // Define our root node and paragraph node IDs by looking for their text.
-        int vvIdDiv = waitForNodeMatching(sTextMatcher, "1234");
-        int vvIdP1 = waitForNodeMatching(sTextMatcher, "Example Paragraph 1");
-        int vvIdP2 = waitForNodeMatching(sTextMatcher, "Example Paragraph 2");
+        // Define our root node and paragraph node IDs by looking for their ids.
+        int vvIdDiv = waitForNodeMatching(sViewIdResourceNameMatcher, "div1");
+        int vvIdP1 = waitForNodeMatching(sViewIdResourceNameMatcher, "p1");
+        int vvIdP2 = waitForNodeMatching(sViewIdResourceNameMatcher, "p2");
 
         // Get the |AccessibilityNodeInfo| objects for our nodes.
         AccessibilityNodeInfoCompat nodeInfoDiv = createAccessibilityNodeInfo(vvIdDiv);

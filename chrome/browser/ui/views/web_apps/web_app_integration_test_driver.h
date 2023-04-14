@@ -52,6 +52,7 @@ enum class Site {
   kStandaloneNestedB,
   kStandaloneNotStartUrl,
   kMinimalUi,
+  kTabbed,
   kNotPromotable,
   kWco,
   kFileHandler,
@@ -69,6 +70,7 @@ enum class InstallableSite {
   kStandaloneNestedB,
   kStandaloneNotStartUrl,
   kMinimalUi,
+  kTabbed,
   kWco,
   kFileHandler,
   kNoServiceWorker,
@@ -93,7 +95,7 @@ enum class IsShown { kShown, kNotShown };
 
 enum class IsOn { kOn, kOff };
 
-enum class Display { kBrowser, kStandalone, kMinimalUi, kWco };
+enum class Display { kBrowser, kStandalone, kMinimalUi, kTabbed, kWco };
 
 enum class WindowOptions { kWindowed, kBrowser };
 
@@ -245,6 +247,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AwaitManifestUpdate(Site site_mode);
   void CloseCustomToolbar();
   void ClosePwa();
+  void MaybeClosePwa();
   void DisableRunOnOsLogin(Site site);
   void EnableRunOnOsLogin(Site site);
   void DisableFileHandling(Site site);
@@ -350,6 +353,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckWindowControlsOverlayToggle(Site site, IsShown is_shown);
   void CheckWindowDisplayBrowser();
   void CheckWindowDisplayMinimal();
+  void CheckWindowDisplayTabbed();
   void CheckWindowDisplayStandalone();
   void CheckNotHasSubApp(Site subapp);
   void CheckHasSubApp(Site subapp);
@@ -468,10 +472,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
   raw_ptr<Profile, DanglingUntriaged> active_profile_ = nullptr;
   AppId active_app_id_;
-  // TODO(crbug.com/1298696): browser_tests breaks with MTECheckedPtr
-  // enabled. Triage.
-  raw_ptr<Browser, DanglingUntriagedDegradeToNoOpWhenMTE> app_browser_ =
-      nullptr;
+  raw_ptr<Browser, DanglingUntriaged> app_browser_ = nullptr;
 
   bool in_tear_down_ = false;
   bool is_performing_manifest_update_ = false;

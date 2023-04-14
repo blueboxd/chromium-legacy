@@ -37,8 +37,8 @@ namespace {
 // Returns the path to the global prefs.json file of the Chromium updater.
 absl::optional<base::FilePath> GetUpdaterGlobalPrefsPath(bool is_machine) {
   const absl::optional<base::FilePath> global_prefs_dir =
-      updater::GetBaseDataDirectory(is_machine ? updater::UpdaterScope::kSystem
-                                               : updater::UpdaterScope::kUser);
+      updater::GetInstallDirectory(is_machine ? updater::UpdaterScope::kSystem
+                                              : updater::UpdaterScope::kUser);
   return global_prefs_dir
              ? absl::make_optional(global_prefs_dir->AppendASCII("prefs.json"))
              : absl::nullopt;
@@ -140,6 +140,7 @@ TEST_F(UpdaterStateTest, UpdaterNamePerUser) {
 #endif  // BUILDFLAG(IS_WIN)
 
   // Create an empty updater prefs file to mock a detection of the updater.
+  EXPECT_TRUE(base::CreateDirectory(prefs_path->DirName()));
   EXPECT_TRUE(base::WriteFile(*prefs_path, "{}"));
   EXPECT_STREQ("ChromiumUpdater",
                UpdaterState::GetState(false).at("name").c_str());

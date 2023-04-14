@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
 #include "chrome/browser/ash/authpolicy/authpolicy_helper.h"
-#include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/ash/login/hats_unlock_survey_trigger.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/lock/views_screen_locker.h"
@@ -72,6 +71,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "services/audio/public/cpp/sounds/sounds_manager.h"
+#include "services/device/public/mojom/fingerprint.mojom-shared.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -189,9 +189,11 @@ ScreenLocker::ScreenLocker(const user_manager::UserList& users)
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   audio::SoundsManager* manager = audio::SoundsManager::Get();
   manager->Initialize(static_cast<int>(Sound::kLock),
-                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_LOCK_WAV),
+                      media::AudioCodec::kPCM);
   manager->Initialize(static_cast<int>(Sound::kUnlock),
-                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV));
+                      bundle.GetRawDataResource(IDR_SOUND_UNLOCK_WAV),
+                      media::AudioCodec::kPCM);
   content::GetDeviceService().BindFingerprint(
       fp_service_.BindNewPipeAndPassReceiver());
 
@@ -328,8 +330,6 @@ void ScreenLocker::OnAuthSuccess(const UserContext& user_context) {
       quick_unlock_storage->pin_storage_prefs()->ResetUnlockAttemptCount();
       quick_unlock_storage->fingerprint_storage()->ResetUnlockAttemptCount();
     }
-
-    UserSessionManager::GetInstance()->UpdateEasyUnlockKeys(user_context);
   } else {
     NOTREACHED() << "Logged in user not found.";
   }
@@ -847,6 +847,22 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
 void ScreenLocker::OnRestarted() {
   StartFingerprintAuthSession(
       user_manager::UserManager::Get()->GetPrimaryUser());
+}
+
+void ScreenLocker::OnStatusChanged(
+    device::mojom::BiometricsManagerStatus status) {
+  switch (status) {
+    case device::mojom::BiometricsManagerStatus::INITIALIZED:
+      StartFingerprintAuthSession(
+          user_manager::UserManager::Get()->GetPrimaryUser());
+      return;
+    case device::mojom::BiometricsManagerStatus::UNKNOWN:
+    default:
+      break;
+  }
+  LOG(ERROR) << "ScreenLocker StatusChanged to an unknown state: "
+             << static_cast<int>(status);
+  NOTREACHED();
 }
 
 void ScreenLocker::OnEnrollScanDone(device::mojom::ScanResult scan_result,

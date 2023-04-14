@@ -11,6 +11,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_ios) {
+  import("//build/config/ios/bundle_data_from_filelist.gni")
+}
+
 cc_component("cc") {
   sources = [
     "benchmarks/benchmark_instrumentation.cc",
@@ -204,8 +208,6 @@ cc_component("cc") {
     "metrics/lcd_text_metrics_reporter.cc",
     "metrics/lcd_text_metrics_reporter.h",
     "metrics/shared_metrics_buffer.h",
-    "metrics/throughput_ukm_reporter.cc",
-    "metrics/throughput_ukm_reporter.h",
     "metrics/total_frame_counter.cc",
     "metrics/total_frame_counter.h",
     "metrics/ukm_smoothness_data.cc",
@@ -671,6 +673,13 @@ cc_test_static_library("test_support") {
   }
 }
 
+if (is_ios) {
+  bundle_data_from_filelist("unit_tests_bundle_data") {
+    testonly = true
+    filelist_name = "unit_tests_bundle_data.filelist"
+  }
+}
+
 cc_test("cc_unittests") {
   use_xvfb = use_xvfb_in_this_config
 
@@ -756,6 +765,7 @@ cc_test("cc_unittests") {
     "paint/paint_image_unittest.cc",
     "paint/paint_op_buffer_unittest.cc",
     "paint/paint_op_helper_unittest.cc",
+    "paint/paint_op_writer_reader_unittest.cc",
     "paint/paint_shader_unittest.cc",
     "paint/paint_worklet_input_unittest.cc",
     "paint/scoped_raster_flags_unittest.cc",
@@ -773,6 +783,15 @@ cc_test("cc_unittests") {
     "resources/resource_pool_unittest.cc",
     "scheduler/scheduler_state_machine_unittest.cc",
     "scheduler/scheduler_unittest.cc",
+    "slim/slim_layer_tree_compositor_frame_unittest.cc",
+    "slim/slim_layer_tree_unittest.cc",
+    "slim/slim_layer_unittest.cc",
+    "slim/test_frame_sink_impl.cc",
+    "slim/test_frame_sink_impl.h",
+    "slim/test_layer_tree_client.cc",
+    "slim/test_layer_tree_client.h",
+    "slim/test_layer_tree_impl.cc",
+    "slim/test_layer_tree_impl.h",
     "tiles/checker_image_tracker_unittest.cc",
     "tiles/decoded_image_tracker_unittest.cc",
     "tiles/gpu_image_decode_cache_unittest.cc",
@@ -860,6 +879,7 @@ cc_test("cc_unittests") {
     "//build:chromeos_buildflags",
     "//cc/mojo_embedder",
     "//cc/paint",
+    "//cc/slim",
     "//components/power_scheduler",
     "//components/ukm:test_support",
     "//components/viz/client",
@@ -921,6 +941,10 @@ cc_test("cc_unittests") {
       "//gpu/vulkan:test_support",
       "//gpu/vulkan/init",
     ]
+  }
+
+  if (is_ios) {
+    public_deps = [ ":unit_tests_bundle_data" ]
   }
 }
 

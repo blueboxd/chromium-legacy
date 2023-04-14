@@ -95,7 +95,12 @@ base::scoped_nsprotocol<id<MTLTexture>> CreateMetalTexture(
   // TODO(https://crbug.com/952063): For zero-copy resources that are populated
   // on the CPU (e.g, video frames), it may be that MTLStorageModeManaged will
   // be more appropriate.
+#if BUILDFLAG(IS_IOS)
+  // On iOS we are using IOSurfaces which must use MTLStorageModeShared.
+  [mtl_tex_desc setStorageMode:MTLStorageModeShared];
+#else
   [mtl_tex_desc setStorageMode:MTLStorageModePrivate];
+#endif
   mtl_texture.reset([mtl_device newTextureWithDescriptor:mtl_tex_desc
                                                iosurface:io_surface
                                                    plane:plane_index]);
@@ -376,6 +381,7 @@ bool OverlayIOSurfaceRepresentation::IsInUseByWindowServer() const {
   return IOSurfaceIsInUse(io_surface_);
 }
 
+#if BUILDFLAG(USE_DAWN)
 ///////////////////////////////////////////////////////////////////////////////
 // DawnIOSurfaceRepresentation
 
@@ -518,6 +524,7 @@ void DawnIOSurfaceRepresentation::EndAccess() {
   dawn_procs_.textureRelease(texture_);
   texture_ = nullptr;
 }
+#endif  // BUILDFLAG(USE_DAWN)
 
 ////////////////////////////////////////////////////////////////////////////////
 // SharedEventAndSignalValue
@@ -582,9 +589,12 @@ IOSurfaceImageBacking::IOSurfaceImageBacking(
   if (usage & SHARED_IMAGE_USAGE_HIGH_PERFORMANCE_GPU)
     return;
 
+// iOS uses Metal and doesn't need to retain the GL texture.
+#if !BUILDFLAG(IS_IOS)
   // NOTE: Mac currently retains GLTexture and reuses it. Not sure if this is
   // best approach as it can lead to issues with context losses.
   egl_state_for_legacy_mailbox_ = RetainGLTexture();
+#endif
 }
 
 IOSurfaceImageBacking::~IOSurfaceImageBacking() {
@@ -614,8 +624,7 @@ IOSurfaceImageBacking::RetainGLTexture() {
     // Allocate the GL texture.
     scoped_refptr<gles2::TexturePassthrough> gl_texture;
     GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-        gl_target_, /*service_id=*/0, framebuffer_attachment_angle_,
-        &gl_texture, nullptr);
+        gl_target_, framebuffer_attachment_angle_, &gl_texture, nullptr);
     // Set the IOSurface to be initially unbound from the GL texture.
     gl_texture->SetEstimatedSize(GetEstimatedSize());
     gl_texture->set_bind_pending();

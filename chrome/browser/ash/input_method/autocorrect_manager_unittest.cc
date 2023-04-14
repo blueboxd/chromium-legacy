@@ -16,6 +16,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -370,6 +371,15 @@ ui::ime::AssistiveWindowButton CreateHighlightedUndoButton(
   return button;
 }
 
+// A helper to create highlighted learn more button in assistive window.
+ui::ime::AssistiveWindowButton CreateHighlightedLearnMoreButton() {
+  ui::ime::AssistiveWindowButton button = ui::ime::AssistiveWindowButton();
+  button.id = ui::ime::ButtonId::kLearnMore;
+  button.announce_string = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  button.window_type = ash::ime::AssistiveWindowType::kLearnMore;
+  return button;
+}
+
 // A helper for creating key event.
 ui::KeyEvent CreateKeyEvent(ui::DomKey key, ui::DomCode code) {
   return ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, code, ui::EF_NONE,
@@ -389,12 +399,11 @@ ui::KeyEvent KeyA() {
 void SetAutocorrectPreferenceTo(Profile& profile,
                                 const std::string& engine_id,
                                 int autocorrect_level) {
-  base::Value input_method_setting(base::Value::Type::DICTIONARY);
-  input_method_setting.SetPath(
-      engine_id + ".physicalKeyboardAutoCorrectionLevel",
-      base::Value(autocorrect_level));
+  base::Value::Dict input_method_setting;
+  input_method_setting.SetByDottedPath(
+      engine_id + ".physicalKeyboardAutoCorrectionLevel", autocorrect_level);
   profile.GetPrefs()->Set(::prefs::kLanguageInputMethodSpecificSettings,
-                          input_method_setting);
+                          base::Value(std::move(input_method_setting)));
 }
 
 class MockSuggestionHandler : public SuggestionHandlerInterface {
@@ -522,9 +531,9 @@ TEST_F(AutocorrectManagerTest,
        TypingFewCharsAfterRangeDoesNotClearAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
-  manager_.OnSurroundingTextChanged(u"the ab", 6, 6);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u"the ab", gfx::Range(6));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(0, 3));
@@ -534,10 +543,10 @@ TEST_F(AutocorrectManagerTest,
        TypingEnoughCharsAfterRangeClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
-  manager_.OnSurroundingTextChanged(u"the ab", 6, 6);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u"the ab", gfx::Range(6));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range());
@@ -546,17 +555,17 @@ TEST_F(AutocorrectManagerTest,
 TEST_F(AutocorrectManagerTest,
        TypingFewCharsBeforeRangeDoesNotClearAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
 
   // Move cursor to position 0.
-  manager_.OnSurroundingTextChanged(u" the ", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(0));
   // Add two chars and move the ranges accordingly.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(2, 5),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"a the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"a the ", gfx::Range(1));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(3, 6),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"ab the ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"ab the ", gfx::Range(2));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(3, 6));
@@ -565,20 +574,20 @@ TEST_F(AutocorrectManagerTest,
 TEST_F(AutocorrectManagerTest,
        TypingEnoughCharsBeforeRangeClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
 
   // Move cursor to position 0.
-  manager_.OnSurroundingTextChanged(u" the ", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(0));
   // Add three chars and move the range accordingly.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(2, 5),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"a the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"a the ", gfx::Range(1));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(3, 6),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"ab the ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"ab the ", gfx::Range(2));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(4, 7),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"abc the ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"abc the ", gfx::Range(3));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range());
@@ -588,12 +597,12 @@ TEST_F(AutocorrectManagerTest,
        TypingFewCharsBeforeAndAfterRangeDoesNotClearAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
-  manager_.OnSurroundingTextChanged(u" the a", 6, 6);
-  manager_.OnSurroundingTextChanged(u" the a", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u" the a", gfx::Range(6));
+  manager_.OnSurroundingTextChanged(u" the a", gfx::Range(0));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(2, 5),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"b the a", 1, 1);
+  manager_.OnSurroundingTextChanged(u"b the a", gfx::Range(1));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(2, 5));
@@ -603,15 +612,15 @@ TEST_F(AutocorrectManagerTest,
        TypingEnoughCharsAfterAndBeforeRangeClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
-  manager_.OnSurroundingTextChanged(u" the a", 6, 6);
-  manager_.OnSurroundingTextChanged(u" the a", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u" the a", gfx::Range(6));
+  manager_.OnSurroundingTextChanged(u" the a", gfx::Range(0));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(2, 5),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"b the a", 1, 1);
+  manager_.OnSurroundingTextChanged(u"b the a", gfx::Range(1));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(3, 6),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"bc the a", 2, 2);
+  manager_.OnSurroundingTextChanged(u"bc the a", gfx::Range(2));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range());
@@ -622,10 +631,10 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Add characters.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ab", 6, 6);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ab", gfx::Range(6));
   // Now remove them.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(0, 3));
 }
@@ -635,13 +644,13 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Add characters.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ab", 6, 6);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ab", gfx::Range(6));
   // Now removing them should not be counted.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   // Now addition of a new character must trigger the clearance process,
   // to ensure backspaced does not impact the output.
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range());
@@ -651,11 +660,11 @@ TEST_F(AutocorrectManagerTest,
        PastingFewCharsBeforeRangeDoesNotClearAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
-  manager_.OnSurroundingTextChanged(u" the ", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(0));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(3, 6),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"ab the ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"ab the ", gfx::Range(2));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(3, 6));
@@ -665,11 +674,11 @@ TEST_F(AutocorrectManagerTest,
        PastingEnoughCharsBeforeRangeClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(1, 4), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u" the ", 5, 5);
-  manager_.OnSurroundingTextChanged(u" the ", 0, 0);
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u" the ", gfx::Range(0));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(4, 7),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"abc the ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"abc the ", gfx::Range(3));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range());
@@ -694,8 +703,7 @@ TEST_F(AutocorrectManagerTest,
 }
 
 TEST_F(AutocorrectManagerTest, MovingCursorInsideRangeShowsAssistiveWindow) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   AssistiveWindowProperties properties =
@@ -703,8 +711,7 @@ TEST_F(AutocorrectManagerTest, MovingCursorInsideRangeShowsAssistiveWindow) {
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, properties, _));
 
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 }
 
 TEST_F(AutocorrectManagerTest,
@@ -713,13 +720,11 @@ TEST_F(AutocorrectManagerTest,
 
   // Range is not validate validated yet. So, no expectation on show undo
   // window call. If it happens, test will fail by StrictMock.
-  manager_.OnSurroundingTextChanged(u"teh ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(1));
 }
 
 TEST_F(AutocorrectManagerTest, MovingCursorOutsideRangeHidesAssistiveWindow) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   {
@@ -736,24 +741,21 @@ TEST_F(AutocorrectManagerTest, MovingCursorOutsideRangeHidesAssistiveWindow) {
                 SetAssistiveWindowProperties(_, hidden_properties, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 }
 
 TEST_F(AutocorrectManagerTest,
        MovingCursorRetriesPrevFailedUndoWindowHide) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Show undo window.
   AssistiveWindowProperties shown_properties =
       CreateVisibleUndoWindowProperties(u"teh", u"the");
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // Accept autocorrect implicitly and make the request to hide the window
   // fail.
@@ -763,27 +765,25 @@ TEST_F(AutocorrectManagerTest,
               SetAssistiveWindowProperties(_, hidden_properties, _))
       .WillOnce(DoAll(SetArgPointee<2>("Error"), Return(false)))
       .RetiresOnSaturation();
-  manager_.OnSurroundingTextChanged(u"the abcd", 8, 8);
+  manager_.OnSurroundingTextChanged(u"the abcd", gfx::Range(8));
 
   // Now moving cursor should retry hiding autocorrect range.
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, hidden_properties, _));
-  manager_.OnSurroundingTextChanged(u"the abcd", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abcd", gfx::Range(7));
 }
 
 TEST_F(AutocorrectManagerTest,
        MovingCursorInsideRangeRetriesPrevFailedUndoWindowHide) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Show undo window.
   AssistiveWindowProperties shown_properties =
       CreateVisibleUndoWindowProperties(u"teh", u"the");
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // Make first try to hide the window fail.
   AssistiveWindowProperties hidden_properties =
@@ -791,8 +791,7 @@ TEST_F(AutocorrectManagerTest,
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, hidden_properties, _))
       .WillOnce(DoAll(SetArgPointee<2>("Error"), Return(false)));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   {
     ::testing::InSequence seq;
@@ -808,23 +807,20 @@ TEST_F(AutocorrectManagerTest,
   }
 
   // Try hiding undo window before showing it again.
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 }
 
 TEST_F(AutocorrectManagerTest,
        ShowingNewUndoWindowStopsRetryingPrevFailedUndoWindowHide) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Show the undo window first time.
   AssistiveWindowProperties shown_properties =
       CreateVisibleUndoWindowProperties(u"teh", u"the");
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // Make first two call to hide undo window to fail.
   AssistiveWindowProperties hidden_properties =
@@ -841,26 +837,22 @@ TEST_F(AutocorrectManagerTest,
   // Show a new undo window.
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // No retry should be applied to hide undo window as it is overridden.
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/2,
-                                    /*anchor_pos=*/2);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(2));
 }
 
 TEST_F(AutocorrectManagerTest, FocusChangeHidesUndoWindow) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Show a window.
   AssistiveWindowProperties shown_properties =
       CreateVisibleUndoWindowProperties(u"teh", u"the");
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // OnFocus should try hiding the window.
   AssistiveWindowProperties hidden_properties =
@@ -872,8 +864,7 @@ TEST_F(AutocorrectManagerTest, FocusChangeHidesUndoWindow) {
 }
 
 TEST_F(AutocorrectManagerTest, OnFocusRetriesHidingUndoWindow) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Show undo window.
@@ -881,8 +872,7 @@ TEST_F(AutocorrectManagerTest, OnFocusRetriesHidingUndoWindow) {
       CreateVisibleUndoWindowProperties(u"teh", u"the");
   EXPECT_CALL(mock_suggestion_handler_,
               SetAssistiveWindowProperties(_, shown_properties, _));
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   // Make it fail to hide window for OnBlur.
   AssistiveWindowProperties hidden_properties =
@@ -900,8 +890,7 @@ TEST_F(AutocorrectManagerTest, OnFocusRetriesHidingUndoWindow) {
 
 TEST_F(AutocorrectManagerTest,
        PressingUpArrowKeyHighlightsUndoButtonWhenUndoWindowIsVisible) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   {
@@ -913,21 +902,24 @@ TEST_F(AutocorrectManagerTest,
     EXPECT_CALL(mock_suggestion_handler_,
                 SetAssistiveWindowProperties(_, shown_properties, _));
 
-    ui::ime::AssistiveWindowButton button =
-          CreateHighlightedUndoButton(u"teh");
+    ui::ime::AssistiveWindowButton undo_button =
+        CreateHighlightedUndoButton(u"teh");
     EXPECT_CALL(mock_suggestion_handler_,
-                SetButtonHighlighted(_, button, true, _));
+                SetButtonHighlighted(_, undo_button, true, _));
+
+    ui::ime::AssistiveWindowButton learn_more_button =
+        CreateHighlightedLearnMoreButton();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetButtonHighlighted(_, learn_more_button, false, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_UP));
 }
 
 TEST_F(AutocorrectManagerTest,
        PressingTabKeyHighlightsUndoButtonWhenUndoWindowIsVisible) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   {
@@ -939,20 +931,24 @@ TEST_F(AutocorrectManagerTest,
     EXPECT_CALL(mock_suggestion_handler_,
                 SetAssistiveWindowProperties(_, shown_properties, _));
 
-    ui::ime::AssistiveWindowButton button = CreateHighlightedUndoButton(u"teh");
+    ui::ime::AssistiveWindowButton undo_button =
+        CreateHighlightedUndoButton(u"teh");
     EXPECT_CALL(mock_suggestion_handler_,
-                SetButtonHighlighted(_, button, true, _));
+                SetButtonHighlighted(_, undo_button, true, _));
+
+    ui::ime::AssistiveWindowButton learn_more_button =
+        CreateHighlightedLearnMoreButton();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetButtonHighlighted(_, learn_more_button, false, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::TAB));
 }
 
 TEST_F(AutocorrectManagerTest,
        PressingEnterKeyHidesUndoWindowWhenButtonIsHighlighted) {
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   {
@@ -964,10 +960,15 @@ TEST_F(AutocorrectManagerTest,
     EXPECT_CALL(mock_suggestion_handler_,
                 SetAssistiveWindowProperties(_, shown_properties, _));
 
-    ui::ime::AssistiveWindowButton button =
+    ui::ime::AssistiveWindowButton undo_button =
         CreateHighlightedUndoButton(u"teh");
     EXPECT_CALL(mock_suggestion_handler_,
-                SetButtonHighlighted(_, button, true, _));
+                SetButtonHighlighted(_, undo_button, true, _));
+
+    ui::ime::AssistiveWindowButton learn_more_button =
+        CreateHighlightedLearnMoreButton();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetButtonHighlighted(_, learn_more_button, false, _));
 
     AssistiveWindowProperties hidden_properties =
         CreateHiddenUndoWindowProperties();
@@ -975,8 +976,7 @@ TEST_F(AutocorrectManagerTest,
                 SetAssistiveWindowProperties(_, hidden_properties, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/1,
-                                    /*anchor_pos=*/1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_UP));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ENTER));
 }
@@ -988,8 +988,7 @@ TEST_F(AutocorrectManagerTest, UndoAutocorrectSingleWordInComposition) {
   ime.SetFocusedTextInputClient(&fake_text_input_client);
 
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", /*cursor_pos=*/4,
-                                    /*anchor_pos=*/4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Move cursor to the middle of 'the' and bring the text into composition.
   fake_text_input_client.SetTextAndSelection(u"the ", gfx::Range(2));
@@ -1027,8 +1026,7 @@ TEST_F(AutocorrectManagerTest, UndoAutocorrectMultipleWordInComposition) {
 
   manager_.HandleAutocorrect(gfx::Range(0, 11), u"helloworld", u"hello world");
 
-  manager_.OnSurroundingTextChanged(u"hello world ", /*cursor_pos=*/12,
-                                    /*anchor_pos=*/12);
+  manager_.OnSurroundingTextChanged(u"hello world ", gfx::Range(12));
 
   // Move cursor to the middle of 'hello' and bring the word into composition.
   fake_text_input_client.SetTextAndSelection(u"hello world ", gfx::Range(2));
@@ -1041,14 +1039,14 @@ TEST_F(AutocorrectManagerTest, UndoAutocorrectMultipleWordInComposition) {
 
 TEST_F(AutocorrectManagerTest, MovingCursorDoesNotAcceptAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(5, 8), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"abcd the efghij", 4, 4);
+  manager_.OnSurroundingTextChanged(u"abcd the efghij", gfx::Range(4));
 
   // Move cursor to different positions in one session does not
   // accept or clear the the autocorrect range implicitly.
-  manager_.OnSurroundingTextChanged(u"abcd the efghij", 15, 15);
-  manager_.OnSurroundingTextChanged(u"abcd the efghij", 0, 0);
-  manager_.OnSurroundingTextChanged(u"abcd the efghij", 4, 4);
-  manager_.OnSurroundingTextChanged(u"abcd the efghij", 9, 9);
+  manager_.OnSurroundingTextChanged(u"abcd the efghij", gfx::Range(15));
+  manager_.OnSurroundingTextChanged(u"abcd the efghij", gfx::Range(0));
+  manager_.OnSurroundingTextChanged(u"abcd the efghij", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"abcd the efghij", gfx::Range(9));
 
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(5, 8));
@@ -1058,9 +1056,9 @@ TEST_F(AutocorrectManagerTest,
        InsertingFewCharsDoesNotRecordMetricsForPendingAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   // Add characters.
-  manager_.OnSurroundingTextChanged(u" the b", 6, 6);
+  manager_.OnSurroundingTextChanged(u" the b", gfx::Range(6));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1072,8 +1070,8 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Add characters.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"c the b", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"c the b", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1090,8 +1088,8 @@ TEST_F(
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Add characters.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"c the b", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"c the b", gfx::Range(7));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1107,10 +1105,10 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Add characters.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ab", 6, 6);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ab", gfx::Range(6));
   // Now remove them.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1121,12 +1119,12 @@ TEST_F(AutocorrectManagerTest,
        InsertingCharsRecordsMetricsWhenClearingAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
 
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u" the b", 6, 6);
+  manager_.OnSurroundingTextChanged(u" the b", gfx::Range(6));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1141,12 +1139,12 @@ TEST_F(
                                  DisabledFeatures());
   manager_.OnActivate(kUsEnglishEngineId);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
 
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u" the b", 6, 6);
+  manager_.OnSurroundingTextChanged(u" the b", gfx::Range(6));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1164,12 +1162,12 @@ TEST_F(AutocorrectManagerTest,
 
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the a", 5, 5);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the a", gfx::Range(5));
 
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u" the b", 6, 6);
+  manager_.OnSurroundingTextChanged(u" the b", gfx::Range(6));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/0,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1181,7 +1179,7 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Range not validated yet.
-  manager_.OnSurroundingTextChanged(u"t ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"t ", gfx::Range(2));
 
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
@@ -1189,7 +1187,7 @@ TEST_F(AutocorrectManagerTest,
 
   // Empty range is received and ignored because the new suggestion is still
   // not validated.
-  manager_.OnSurroundingTextChanged(u"th ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"th ", gfx::Range(3));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1202,13 +1200,13 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Validate the range.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Clear the range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
   // Process the cleared range ('the' is mutated to implicitly reject it).
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1225,8 +1223,8 @@ TEST_F(AutocorrectManagerTest,
   IMEBridge::Get()->SetInputContextHandler(nullptr);
   // Null input context invalidates the previous range even if rules are
   // triggered to accept the range.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1249,8 +1247,8 @@ TEST_F(
   IMEBridge::Get()->SetInputContextHandler(nullptr);
   // Null input context invalidates the previous range even if rules are
   // triggered to accept the range.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1265,11 +1263,11 @@ TEST_F(AutocorrectManagerTest,
        MovingCursorDoesNotRecordMetricsForPendingAutocorrect) {
   manager_.HandleAutocorrect(gfx::Range(4, 7), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"abc the def", 8, 8);
-  manager_.OnSurroundingTextChanged(u"abc the def", 1, 1);
-  manager_.OnSurroundingTextChanged(u"abc the def", 10, 10);
-  manager_.OnSurroundingTextChanged(u"abc the def", 3, 3);
-  manager_.OnSurroundingTextChanged(u"abc the def", 8, 8);
+  manager_.OnSurroundingTextChanged(u"abc the def", gfx::Range(8));
+  manager_.OnSurroundingTextChanged(u"abc the def", gfx::Range(1));
+  manager_.OnSurroundingTextChanged(u"abc the def", gfx::Range(10));
+  manager_.OnSurroundingTextChanged(u"abc the def", gfx::Range(3));
+  manager_.OnSurroundingTextChanged(u"abc the def", gfx::Range(8));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1283,7 +1281,7 @@ TEST_F(AutocorrectManagerTest,
   // This suppresses strict mock.
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
 
-  manager_.OnSurroundingTextChanged(u"the", 0, 0);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(0));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1298,7 +1296,7 @@ TEST_F(AutocorrectManagerTest,
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
 
   // Moving cursor inside the range does not increase window_shown.
-  manager_.OnSurroundingTextChanged(u"the", 3, 3);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(3));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1316,7 +1314,7 @@ TEST_F(AutocorrectManagerTest,
   // This suppresses strict mock.
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
   // Moving cursor inside the range does not increase window_shown.
-  manager_.OnSurroundingTextChanged(u"the", 3, 3);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(3));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
@@ -1334,9 +1332,9 @@ TEST_F(AutocorrectManagerTest,
   // This suppresses strict mock.
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
 
-  manager_.OnSurroundingTextChanged(u"the", 0, 0);
-  manager_.OnSurroundingTextChanged(u"the", 3, 3);
-  manager_.OnSurroundingTextChanged(u"the", 2, 2);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(0));
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(3));
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(2));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1354,9 +1352,9 @@ TEST_F(AutocorrectManagerTest,
 
   // Moving cursor first inside range, then outside the range and then again
   // back to the range increments the metric for shown window twice.
-  manager_.OnSurroundingTextChanged(u"the", 1, 1);
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the", 3, 3);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(1));
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(3));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1496,7 +1494,7 @@ TEST_F(AutocorrectManagerTest,
        HandleAutocorrectRecordsMetricsWhenAcceptingPendingAutocorrect) {
   // Create a pending autocorrect range.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Create a new autocorrect range.
   manager_.HandleAutocorrect(gfx::Range(4, 7), u"cn", u"can");
@@ -1514,7 +1512,7 @@ TEST_F(AutocorrectManagerTest,
 
   // Create a pending autocorrect range.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Disable autocorrect.
   mock_ime_input_context_handler_.set_autocorrect_enabled(false);
@@ -1535,7 +1533,7 @@ TEST_F(AutocorrectManagerTest,
        HandleAutocorrectRecordsMetricsWhenClearingPendingAutocorrect) {
   // Create a pending autocorrect range.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Clear the previous autocorrect range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
@@ -1554,7 +1552,7 @@ TEST_F(AutocorrectManagerTest,
        HandleAutocorrectRecordsMetricsCorrectlyForNullInputContext) {
   // Create a pending autocorrect range.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Make Input context null.
   IMEBridge::Get()->SetInputContextHandler(nullptr);
@@ -1594,7 +1592,7 @@ TEST_F(AutocorrectManagerTest,
   // When there is a pending autocorrect, empty input range makes the pending
   // to be counted as accepted.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.HandleAutocorrect(gfx::Range(), u"", u"");
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
@@ -1608,11 +1606,11 @@ TEST_F(AutocorrectManagerTest,
   // When there is a pending autocorrect, but cleared beforehand,
   // empty input range makes the pending to be counted as cleared.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
   manager_.HandleAutocorrect(gfx::Range(), u"", u"");
-  manager_.OnSurroundingTextChanged(u"", 0, 0);
+  manager_.OnSurroundingTextChanged(u"", gfx::Range(0));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1625,8 +1623,8 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1637,7 +1635,7 @@ TEST_F(AutocorrectManagerTest,
                                                       base::DoNothing());
 
   // Adding extra character should not double count.
-  manager_.OnSurroundingTextChanged(u"the abcd", 8, 8);
+  manager_.OnSurroundingTextChanged(u"the abcd", gfx::Range(8));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1648,10 +1646,10 @@ TEST_F(AutocorrectManagerTest,
        InsertingCharsDoesNotRecordMetricsForStaleAndClearedRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1661,7 +1659,7 @@ TEST_F(AutocorrectManagerTest,
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(0, 3),
                                                       base::DoNothing());
 
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -1673,8 +1671,8 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1686,7 +1684,7 @@ TEST_F(AutocorrectManagerTest,
 
   // Handle a new autocorrect and ensure the metric is not increased twice.
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/2,
@@ -1699,8 +1697,8 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1723,7 +1721,7 @@ TEST_F(AutocorrectManagerTest,
 TEST_F(AutocorrectManagerTest,
        OnFocusDoesNotRecordMetricsForStaleAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Accept autocorrect implicitly.
   manager_.OnBlur();
@@ -1749,14 +1747,14 @@ TEST_F(AutocorrectManagerTest,
 TEST_F(AutocorrectManagerTest, ImplicitAcceptanceClearsAutocorrectRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 7), u"smeone", u"someone");
 
-  manager_.OnSurroundingTextChanged(u"someone ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"someone ", gfx::Range(8));
 
   // Ensure range is as expected.
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(0, 7));
 
   // Implicitly accept autocorrect by three character insertion.
-  manager_.OnSurroundingTextChanged(u"someone abc", 11, 11);
+  manager_.OnSurroundingTextChanged(u"someone abc", gfx::Range(11));
 
   EXPECT_TRUE(mock_ime_input_context_handler_.GetAutocorrectRange().is_empty());
 }
@@ -1770,9 +1768,9 @@ TEST_F(AutocorrectManagerTest, AsyncDelayDoesNotMakeAutocorrectAccepted) {
   manager_.HandleAutocorrect(gfx::Range(0, 7), u"smeone", u"someone");
 
   // Late surrounding text related to IME delete.
-  manager_.OnSurroundingTextChanged(u"s ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"s ", gfx::Range(1));
   // Late surrounding text related to IME insert.
-  manager_.OnSurroundingTextChanged(u"someone ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"someone ", gfx::Range(8));
 
   // Autocorrect range is not cleared by the stale surrounding text.
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
@@ -1784,16 +1782,16 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 7), u"smeone", u"someone");
 
   // Late surrounding text related to IME delete.
-  manager_.OnSurroundingTextChanged(u"s ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"s ", gfx::Range(1));
   // Late surrounding text related to IME insert.
-  manager_.OnSurroundingTextChanged(u"someone ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"someone ", gfx::Range(8));
   // User adds two characters.
-  manager_.OnSurroundingTextChanged(u"someone ab", 10, 10);
+  manager_.OnSurroundingTextChanged(u"someone ab", gfx::Range(10));
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
             gfx::Range(0, 7));
 
   // Third character, implicitly accepts autocorrect.
-  manager_.OnSurroundingTextChanged(u"someone abc", 11, 11);
+  manager_.OnSurroundingTextChanged(u"someone abc", gfx::Range(11));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1814,7 +1812,7 @@ TEST_F(AutocorrectManagerTest,
   // VK is made hidden, but still the metrics need to be recorded for VK
   // given VK was visible at underline time.
   keyboard_client_->set_keyboard_visible_for_test(false);
-  manager_.OnSurroundingTextChanged(u"the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/true,
                               /*window_shown=*/1, /*underlined=*/1,
@@ -1834,7 +1832,7 @@ TEST_F(AutocorrectManagerTest,
   // VK is made visible, but still metrics must not be recorded for VK
   // as it was not visible at the time of underline.
   keyboard_client_->set_keyboard_visible_for_test(true);
-  manager_.OnSurroundingTextChanged(u"the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/1, /*underlined=*/1,
@@ -1844,7 +1842,7 @@ TEST_F(AutocorrectManagerTest,
 
 TEST_F(AutocorrectManagerTest, UndoRecordsMetricsAfterRevert) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.UndoAutocorrect();
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
@@ -1861,7 +1859,7 @@ TEST_F(AutocorrectManagerTest, UndoRecordsMetricsAfterRevertEnableByDefault) {
   manager_.OnActivate(kUsEnglishEngineId);
 
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.UndoAutocorrect();
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
@@ -1897,10 +1895,10 @@ TEST_F(AutocorrectManagerTest,
        AcceptingAutocorrectRecordsMetricsWhenVkIsVisible) {
   keyboard_client_->set_keyboard_visible_for_test(true);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   // Implicitly accept autocorrect
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/true,
                               /*window_shown=*/0, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/1,
@@ -1912,9 +1910,9 @@ TEST_F(AutocorrectManagerTest, ThreeValidationFailuresDoesNotClearRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Three validation failures.
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   // Range is not cleared.
   EXPECT_EQ(mock_ime_input_context_handler_.GetAutocorrectRange(),
@@ -1925,10 +1923,10 @@ TEST_F(AutocorrectManagerTest, FourValidationFailuresClearsRange) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Four validation failure.
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   EXPECT_TRUE(mock_ime_input_context_handler_.GetAutocorrectRange().is_empty());
 }
@@ -1937,10 +1935,10 @@ TEST_F(AutocorrectManagerTest, InvalidRangeFailsValidationAndClearsRange) {
   manager_.HandleAutocorrect(gfx::Range(2, 5), u"teh", u"the");
 
   // Four validation failure because the range is invalid.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   EXPECT_TRUE(mock_ime_input_context_handler_.GetAutocorrectRange().is_empty());
 }
@@ -1950,10 +1948,10 @@ TEST_F(AutocorrectManagerTest,
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Four validation failure.
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/false,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -1966,7 +1964,7 @@ TEST_F(AutocorrectManagerTest,
 TEST_F(AutocorrectManagerTest, UndoRecordsMetricsWhenVkIsVisible) {
   keyboard_client_->set_keyboard_visible_for_test(true);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.UndoAutocorrect();
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/true,
@@ -1980,11 +1978,11 @@ TEST_F(AutocorrectManagerTest,
        ClearingAutocorrectRecordsMetricsWhenVkIsVisible) {
   keyboard_client_->set_keyboard_visible_for_test(true);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/true,
                               /*window_shown=*/0, /*underlined=*/1,
@@ -2003,16 +2001,16 @@ TEST_F(AutocorrectManagerTest, ConsistentAsyncDelayClearsRangeIncorrectly) {
 
   // Each OnSurroundingTextChanged is received with stale autocorrect range
   // belonging to the previous state.
-  manager_.OnSurroundingTextChanged(u"athe ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"athe ", gfx::Range(1));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(1, 4),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"abthe ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"abthe ", gfx::Range(2));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(2, 5),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"abcthe ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"abcthe ", gfx::Range(3));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(3, 6),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"abcdthe ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"abcdthe ", gfx::Range(4));
 
   // Expect that the validation fails.
   EXPECT_TRUE(mock_ime_input_context_handler_.GetAutocorrectRange().is_empty());
@@ -2032,10 +2030,10 @@ TEST_F(AutocorrectManagerTest,
 
   // Surrounding text changed is stale (updated one is 'this this').
   // The range is now validated because stale range matches the new suggestion.
-  manager_.OnSurroundingTextChanged(u"this t", 6, 6);
+  manager_.OnSurroundingTextChanged(u"this t", gfx::Range(6));
 
   // Updated surrounding text counts three insertions.
-  manager_.OnSurroundingTextChanged(u"this this ", 10, 10);
+  manager_.OnSurroundingTextChanged(u"this this ", gfx::Range(10));
 
   // The range is accepted incorrectly.
   EXPECT_TRUE(mock_ime_input_context_handler_.GetAutocorrectRange().is_empty());
@@ -2111,7 +2109,7 @@ TEST_F(AutocorrectManagerTest, ShowingUndoWindowRecordsMetricsWhenVkIsVisible) {
   // This suppresses strict mock.
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
 
-  manager_.OnSurroundingTextChanged(u"the", 0, 0);
+  manager_.OnSurroundingTextChanged(u"the", gfx::Range(0));
   ExpectAutocorrectHistograms(histogram_tester_, /*visible_vk=*/true,
                               /*window_shown=*/1, /*underlined=*/1,
                               /*reverted=*/0, /*accepted=*/0,
@@ -2122,8 +2120,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForAccentChange) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"francais", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
-  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
+  manager_.OnSurroundingTextChanged(u"français abc", gfx::Range(12));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkAcceptedHistName,
@@ -2145,8 +2143,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForWordSplit) {
   manager_.HandleAutocorrect(gfx::Range(0, 11), u"helloworld", u"hello world");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"hello world ", 12, 12);
-  manager_.OnSurroundingTextChanged(u"hello world abc", 15, 15);
+  manager_.OnSurroundingTextChanged(u"hello world ", gfx::Range(12));
+  manager_.OnSurroundingTextChanged(u"hello world abc", gfx::Range(15));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkAcceptedHistName,
@@ -2171,8 +2169,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForRemovingLetters) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
-  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
+  manager_.OnSurroundingTextChanged(u"français abc", gfx::Range(12));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkAcceptedHistName,
@@ -2188,8 +2186,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForCapitalizedWorld) {
   manager_.HandleAutocorrect(gfx::Range(0, 1), u"i", u"I");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"I ", 2, 2);
-  manager_.OnSurroundingTextChanged(u"I have", 6, 6);
+  manager_.OnSurroundingTextChanged(u"I ", gfx::Range(2));
+  manager_.OnSurroundingTextChanged(u"I have", gfx::Range(6));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkAcceptedHistName,
@@ -2217,8 +2215,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForLowerCasedLetter) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"Français", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
-  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
+  manager_.OnSurroundingTextChanged(u"français abc", gfx::Range(12));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkAcceptedHistName,
@@ -2244,8 +2242,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForDefaultPkAccepted) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
-  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
+  manager_.OnSurroundingTextChanged(u"français abc", gfx::Range(12));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityDefaultPkAcceptedHistName,
@@ -2264,8 +2262,8 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForVkAccepted) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
-  manager_.OnSurroundingTextChanged(u"français abc", 12, 12);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
+  manager_.OnSurroundingTextChanged(u"français abc", gfx::Range(12));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityVkAcceptedHistName,
@@ -2282,11 +2280,11 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForVkRejected) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"franças ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"franças ", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityVkRejectedHistName,
@@ -2302,11 +2300,11 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownForPkRejected) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"franças ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"franças ", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityPkRejectedHistName,
@@ -2328,11 +2326,11 @@ TEST_F(AutocorrectManagerTest, RecordQualityBreakdownDefaultForPkRejected) {
   manager_.HandleAutocorrect(gfx::Range(0, 8), u"françaisss", u"français");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"français ", 9, 9);
+  manager_.OnSurroundingTextChanged(u"français ", gfx::Range(9));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"franças ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"franças ", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2QualityDefaultPkRejectedHistName,
@@ -2353,8 +2351,8 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricForVkAccepted) {
   int expected_value = (4 - 1) * 30 + (1 - 1);
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"cafè ", 5, 5);
-  manager_.OnSurroundingTextChanged(u"cafè abc", 8, 8);
+  manager_.OnSurroundingTextChanged(u"cafè ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u"cafè abc", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dVkAcceptedHistName, expected_value, 1);
@@ -2372,8 +2370,8 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricForPkAccepted) {
   int expected_value = (1 - 1) * 30 + (1 - 1);
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"I ", 2, 2);
-  manager_.OnSurroundingTextChanged(u"I abc", 5, 5);
+  manager_.OnSurroundingTextChanged(u"I ", gfx::Range(2));
+  manager_.OnSurroundingTextChanged(u"I abc", gfx::Range(5));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dPkAcceptedHistName, expected_value, 1);
@@ -2392,11 +2390,11 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricForVkRejected) {
   int expected_value = (10 - 1) * 30 + (3 - 1);
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"because they ", 13, 13);
+  manager_.OnSurroundingTextChanged(u"because they ", gfx::Range(13));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"because ", 8, 8);
+  manager_.OnSurroundingTextChanged(u"because ", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dVkRejectedHistName, expected_value, 1);
@@ -2419,12 +2417,13 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricForPkRejected) {
 
   // Accept autocorrect implicitly.
   manager_.OnSurroundingTextChanged(
-      u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ", 43, 43);
+      u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ", gfx::Range(43));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
   manager_.OnSurroundingTextChanged(
-      u"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ", 55, 55);
+      u"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa ",
+      gfx::Range(55));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dPkRejectedHistName, expected_value, 1);
@@ -2439,13 +2438,13 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricForPkRejected) {
 TEST_F(AutocorrectManagerTest, DistanceMetricNoChange) {
   manager_.HandleAutocorrect(gfx::Range(0, 9), u"no change", u"no change");
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"no change ", 10, 10);
-  manager_.OnSurroundingTextChanged(u"no change abc", 13, 13);
+  manager_.OnSurroundingTextChanged(u"no change ", gfx::Range(10));
+  manager_.OnSurroundingTextChanged(u"no change abc", gfx::Range(13));
   manager_.HandleAutocorrect(gfx::Range(0, 9), u"", u"not empty");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"not empty ", 10, 10);
-  manager_.OnSurroundingTextChanged(u"not empty abc", 13, 13);
+  manager_.OnSurroundingTextChanged(u"not empty ", gfx::Range(10));
+  manager_.OnSurroundingTextChanged(u"not empty abc", gfx::Range(13));
 
   histogram_tester_.ExpectTotalCount(
       kAutocorrectV2DistanceSuggestedPkAcceptedHistName, 0);
@@ -2459,17 +2458,17 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricNoOverlap) {
   //  (|aaaa|-1) * MAX_LENGTH + (min(<number of changes>, MAX_LENGTH) - 1)
   int expected_value1 = (4 - 1) * 30 + (30 - 1);
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ", 33,
-                                    33);
-  manager_.OnSurroundingTextChanged(u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb abc", 35,
-                                    35);
+  manager_.OnSurroundingTextChanged(u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb ",
+                                    gfx::Range(33));
+  manager_.OnSurroundingTextChanged(u"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb abc",
+                                    gfx::Range(35));
 
   manager_.HandleAutocorrect(gfx::Range(0, 4), u"aaaaa", u"aaaa");
   //  (|aaaaa|-1) * MAX_LENGTH + (|{'a'->''}| - 1)
   int expected_value2 = (5 - 1) * 30 + (1 - 1);
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"aaaa ", 5, 5);
-  manager_.OnSurroundingTextChanged(u"aaaa abc", 8, 8);
+  manager_.OnSurroundingTextChanged(u"aaaa ", gfx::Range(5));
+  manager_.OnSurroundingTextChanged(u"aaaa abc", gfx::Range(8));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dPkAcceptedHistName, expected_value1, 1);
@@ -2492,8 +2491,8 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricAlmostMaxLength) {
   int expected_value = (29 - 1) * 30 + (29 - 1);
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"I ", 2, 2);
-  manager_.OnSurroundingTextChanged(u"I abc", 5, 5);
+  manager_.OnSurroundingTextChanged(u"I ", gfx::Range(2));
+  manager_.OnSurroundingTextChanged(u"I abc", gfx::Range(5));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2Distance2dPkAcceptedHistName, expected_value, 1);
@@ -2503,7 +2502,7 @@ TEST_F(AutocorrectManagerTest, RecordDistanceMetricAlmostMaxLength) {
 
 TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoWithKeyboard) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   {
     ::testing::InSequence seq;
@@ -2514,9 +2513,15 @@ TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoWithKeyboard) {
     EXPECT_CALL(mock_suggestion_handler_,
                 SetAssistiveWindowProperties(_, shown_properties, _));
 
-    ui::ime::AssistiveWindowButton button = CreateHighlightedUndoButton(u"teh");
+    ui::ime::AssistiveWindowButton undo_button =
+        CreateHighlightedUndoButton(u"teh");
     EXPECT_CALL(mock_suggestion_handler_,
-                SetButtonHighlighted(_, button, true, _));
+                SetButtonHighlighted(_, undo_button, true, _));
+
+    ui::ime::AssistiveWindowButton learn_more_button =
+        CreateHighlightedLearnMoreButton();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetButtonHighlighted(_, learn_more_button, false, _));
 
     AssistiveWindowProperties hidden_properties =
         CreateHiddenUndoWindowProperties();
@@ -2524,7 +2529,7 @@ TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoWithKeyboard) {
                 SetAssistiveWindowProperties(_, hidden_properties, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", 1, 1);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_UP));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ENTER));
 
@@ -2539,12 +2544,12 @@ TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoWithKeyboard) {
 
 TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoControlZ) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.OnKeyEvent(PressKeyWithCtrl(ui::DomCode::US_Z));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   histogram_tester_.ExpectBucketCount(kAutocorrectV2PkRejectionHistName,
                                       AutocorrectRejectionBreakdown::kUndoCtrlZ,
@@ -2557,12 +2562,12 @@ TEST_F(AutocorrectManagerTest, RecordRejectionForPkUndoControlZ) {
 
 TEST_F(AutocorrectManagerTest, RecordRejectionForPkControlBackspace) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.OnKeyEvent(PressKeyWithCtrl(ui::DomCode::BACKSPACE));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"", 0, 0);
+  manager_.OnSurroundingTextChanged(u"", gfx::Range(0));
 
   histogram_tester_.ExpectBucketCount(
       kAutocorrectV2PkRejectionHistName,
@@ -2588,11 +2593,11 @@ TEST_P(RejectMetric, RecordRejectionForMetricOther) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
   // Accept autocorrect implicitly.
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   // Clear range.
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name, AutocorrectRejectionBreakdown::kRejectionOther,
@@ -2607,7 +2612,7 @@ TEST_P(RejectMetric, RecordRejectionForVkUndo) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   manager_.UndoAutocorrect();
 
@@ -2624,7 +2629,7 @@ TEST_P(RejectMetric, RecordRejectionForBackspace) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   if (!test_case.vk_visible) {
     manager_.OnKeyEvent(
@@ -2632,7 +2637,7 @@ TEST_P(RejectMetric, RecordRejectionForBackspace) {
   }
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"th", 2, 2);
+  manager_.OnSurroundingTextChanged(u"th", gfx::Range(2));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -2652,12 +2657,12 @@ TEST_P(RejectMetric, RecordRejectionForFullSelectionTyping) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
-  manager_.OnSurroundingTextChanged(u"the ", 0, 3);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(0, 3));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"new ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"new ", gfx::Range(4));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -2672,12 +2677,12 @@ TEST_P(RejectMetric, RecordRejectionForPartialSelectionTyping) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
-  manager_.OnSurroundingTextChanged(u"the ", 0, 2);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(0, 2));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"newe ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"newe ", gfx::Range(3));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -2692,12 +2697,12 @@ TEST_P(RejectMetric, RecordRejectionForFullWithExternalSelectionTyping) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
-  manager_.OnSurroundingTextChanged(u"the ", 0, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(0, 4));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"new ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"new ", gfx::Range(4));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -2712,12 +2717,12 @@ TEST_P(RejectMetric, RecordRejectionForPartialWithExternalSelectionTyping) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
-  manager_.OnSurroundingTextChanged(u"the ", 2, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(2, 4));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"thnew", 5, 5);
+  manager_.OnSurroundingTextChanged(u"thnew", gfx::Range(5));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -2732,7 +2737,7 @@ TEST_P(RejectMetric, RecordRejectionForTypingNoSelection) {
   const RejectCase& test_case = GetParam();
   keyboard_client_->set_keyboard_visible_for_test(test_case.vk_visible);
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   {
     ::testing::InSequence seq;
@@ -2749,10 +2754,10 @@ TEST_P(RejectMetric, RecordRejectionForTypingNoSelection) {
                 SetAssistiveWindowProperties(_, hidden_properties, _));
   }
 
-  manager_.OnSurroundingTextChanged(u"the ", 2, 2);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(2));
   mock_ime_input_context_handler_.SetAutocorrectRange(gfx::Range(),
                                                       base::DoNothing());
-  manager_.OnSurroundingTextChanged(u"thee ", 3, 3);
+  manager_.OnSurroundingTextChanged(u"thee ", gfx::Range(3));
 
   histogram_tester_.ExpectBucketCount(
       test_case.histogram_name,
@@ -3193,11 +3198,11 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForInvalidRange) {
 
   task_environment_.FastForwardBy(base::Milliseconds(501));
 
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(2u, ukm_entries.size());
@@ -3209,7 +3214,7 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForInvalidRange) {
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForRevertedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(501));
 
@@ -3228,7 +3233,7 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForWindowShown) {
   // This suppresses strict mock.
   EXPECT_CALL(mock_suggestion_handler_, SetAssistiveWindowProperties(_, _, _));
 
-  manager_.OnSurroundingTextChanged(u"the ", 0, 0);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(0));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(2u, ukm_entries.size());
@@ -3240,12 +3245,12 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForWindowShown) {
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForVeryFastAcceptedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(200));
 
   // Implicitly accept autocorrect.
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(3u, ukm_entries.size());
@@ -3262,12 +3267,12 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForFastAcceptedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(500));
 
   // Implicitly accept autocorrect.
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(3u, ukm_entries.size());
@@ -3284,12 +3289,12 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForAcceptedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(501));
 
   // Implicitly accept autocorrect.
-  manager_.OnSurroundingTextChanged(u"the abc", 7, 7);
+  manager_.OnSurroundingTextChanged(u"the abc", gfx::Range(7));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(2u, ukm_entries.size());
@@ -3302,14 +3307,14 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForVeryFastRejectedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(200));
 
   // Clear the range.
   mock_input_method_ash_.SetAutocorrectRange(gfx::Range(), base::DoNothing());
   // Process the cleared range ('the' is mutated to implicitly reject it).
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(3u, ukm_entries.size());
@@ -3326,14 +3331,14 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForFastRejectedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(500));
 
   // Clear the range.
   mock_input_method_ash_.SetAutocorrectRange(gfx::Range(), base::DoNothing());
   // Process the cleared range ('the' is mutated to implicitly reject it).
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(3u, ukm_entries.size());
@@ -3350,14 +3355,14 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForRejectedSuggestion) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(501));
 
   // Clear the range.
   mock_input_method_ash_.SetAutocorrectRange(gfx::Range(), base::DoNothing());
   // Process the cleared range ('the' is mutated to implicitly reject it).
-  manager_.OnSurroundingTextChanged(u"teh ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"teh ", gfx::Range(4));
 
   auto ukm_entries = test_recorder_.GetEntriesByName(UkmEntry::kEntryName);
   EXPECT_EQ(2u, ukm_entries.size());
@@ -3370,7 +3375,7 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 TEST_F(AutocorrectManagerUkmMetricsTest,
        RecordsAppCompatUkmForVeryFastExitField) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(200));
   manager_.OnBlur();
@@ -3388,7 +3393,7 @@ TEST_F(AutocorrectManagerUkmMetricsTest,
 
 TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForFastExitField) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(500));
   manager_.OnBlur();
@@ -3406,7 +3411,7 @@ TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForFastExitField) {
 
 TEST_F(AutocorrectManagerUkmMetricsTest, RecordsAppCompatUkmForExitField) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the ", 4, 4);
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
 
   task_environment_.FastForwardBy(base::Milliseconds(501));
   manager_.OnBlur();

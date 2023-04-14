@@ -93,8 +93,8 @@ void GinJavaBridgeMessageFilter::RemoveHost(GinJavaBridgeDispatcherHost* host) {
   auto iter = hosts_.begin();
   while (iter != hosts_.end()) {
     if (iter->second == host) {
-      hosts_is_in_primary_main_frame_.erase(iter->first);
       hosts_.erase(iter++);
+      hosts_is_in_primary_main_frame_.erase(iter->first);
     } else {
       ++iter;
     }
@@ -161,7 +161,7 @@ scoped_refptr<GinJavaBridgeDispatcherHost> GinJavaBridgeMessageFilter::FindHost(
     if (is_in_primary_main_frame) {
       auto main_frame_iter =
           hosts_is_in_primary_main_frame_.find(current_routing_id_);
-      CHECK(main_frame_iter != hosts_is_in_primary_main_frame_.end());
+      DCHECK(main_frame_iter != hosts_is_in_primary_main_frame_.end());
 
       *is_in_primary_main_frame = main_frame_iter->second;
     }

@@ -48,14 +48,22 @@ void BucketManagerHost::OpenBucket(const std::string& name,
 
   storage::BucketInitParams params(storage_key_, name);
   if (policies) {
-    if (policies->expires)
+    if (policies->expires) {
       params.expiration = *policies->expires;
+    }
 
-    if (policies->has_quota)
+    if (policies->has_quota) {
+      if (policies->quota <= 0) {
+        receivers_.ReportBadMessage("Invalid quota");
+        return;
+      }
+
       params.quota = policies->quota;
+    }
 
-    if (policies->has_durability)
+    if (policies->has_durability) {
       params.durability = policies->durability;
+    }
 
     if (policies->has_persisted) {
       // Only grant persistence if permitted.
@@ -120,9 +128,31 @@ void BucketManagerHost::DidGetBucket(
     storage::QuotaErrorOr<storage::BucketInfo> result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!result.ok() || !bucket_context) {
-    // Getting a bucket can fail if there is a database error.
-    std::move(callback).Run(mojo::NullRemote());
+  if (!bucket_context) {
+    std::move(callback).Run(mojo::NullRemote(),
+                            blink::mojom::BucketError::kUnknown);
+    return;
+  }
+
+  if (!result.ok()) {
+    auto error = [](storage::QuotaError code) {
+      switch (code) {
+        case storage::QuotaError::kQuotaExceeded:
+          return blink::mojom::BucketError::kQuotaExceeded;
+        case storage::QuotaError::kInvalidExpiration:
+          return blink::mojom::BucketError::kInvalidExpiration;
+        case storage::QuotaError::kNone:
+        case storage::QuotaError::kNotFound:
+        case storage::QuotaError::kEntryExistsError:
+        case storage::QuotaError::kFileOperationError:
+          NOTREACHED();
+          ABSL_FALLTHROUGH_INTENDED;
+        case storage::QuotaError::kDatabaseError:
+        case storage::QuotaError::kUnknownError:
+          return blink::mojom::BucketError::kUnknown;
+      }
+    }(result.error());
+    std::move(callback).Run(mojo::NullRemote(), error);
     return;
   }
 
@@ -135,7 +165,8 @@ void BucketManagerHost::DidGetBucket(
   }
 
   auto pending_remote = it->second->CreateStorageBucketBinding(bucket_context);
-  std::move(callback).Run(std::move(pending_remote));
+  std::move(callback).Run(std::move(pending_remote),
+                          blink::mojom::BucketError::kUnknown);
 }
 
 void BucketManagerHost::DidGetBuckets(
@@ -148,8 +179,9 @@ void BucketManagerHost::DidGetBuckets(
 
   std::vector<std::string> keys;
   for (auto& bucket : buckets.value()) {
-    if (!bucket.is_default())
+    if (!bucket.is_default()) {
       keys.push_back(bucket.name);
+    }
   }
   std::sort(keys.begin(), keys.end());
 

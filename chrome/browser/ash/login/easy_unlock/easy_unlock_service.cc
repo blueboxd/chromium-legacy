@@ -62,15 +62,6 @@ PrefService* GetLocalState() {
   return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
-void RecordAuthResultFailure(
-    EasyUnlockAuthAttempt::Type auth_attempt_type,
-    SmartLockMetricsRecorder::SmartLockAuthResultFailureReason failure_reason) {
-  if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_UNLOCK)
-    SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(failure_reason);
-  else if (auth_attempt_type == EasyUnlockAuthAttempt::TYPE_SIGNIN)
-    SmartLockMetricsRecorder::RecordAuthResultSignInFailure(failure_reason);
-}
-
 void SetAuthTypeIfChanged(
     proximity_auth::ScreenlockBridge::LockHandler* lock_handler,
     const AccountId& account_id,
@@ -351,10 +342,7 @@ void EasyUnlockService::OnUserEnteredPassword() {
 }
 
 bool EasyUnlockService::AttemptAuth(const AccountId& account_id) {
-  const EasyUnlockAuthAttempt::Type auth_attempt_type =
-      GetType() == TYPE_REGULAR ? EasyUnlockAuthAttempt::TYPE_UNLOCK
-                                : EasyUnlockAuthAttempt::TYPE_SIGNIN;
-  PA_LOG(VERBOSE) << "User began auth attempt (unlock or sign in attempt).";
+  PA_LOG(VERBOSE) << "User began unlock auth attempt.";
 
   if (auth_attempt_) {
     PA_LOG(VERBOSE) << "Already attempting auth, skipping this request.";
@@ -363,16 +351,14 @@ bool EasyUnlockService::AttemptAuth(const AccountId& account_id) {
 
   if (!GetAccountId().is_valid()) {
     PA_LOG(ERROR) << "Empty user account. Auth attempt failed.";
-    RecordAuthResultFailure(
-        auth_attempt_type,
+    SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kEmptyUserAccount);
     return false;
   }
 
   if (GetAccountId() != account_id) {
-    RecordAuthResultFailure(
-        auth_attempt_type,
+    SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kInvalidAccoundId);
 
@@ -381,11 +367,9 @@ bool EasyUnlockService::AttemptAuth(const AccountId& account_id) {
     return false;
   }
 
-  auth_attempt_ =
-      std::make_unique<EasyUnlockAuthAttempt>(account_id, auth_attempt_type);
+  auth_attempt_ = std::make_unique<EasyUnlockAuthAttempt>(account_id);
   if (!auth_attempt_->Start()) {
-    RecordAuthResultFailure(
-        auth_attempt_type,
+    SmartLockMetricsRecorder::RecordAuthResultUnlockFailure(
         SmartLockMetricsRecorder::SmartLockAuthResultFailureReason::
             kAuthAttemptCannotStart);
     auth_attempt_.reset();
@@ -418,36 +402,6 @@ void EasyUnlockService::FinalizeUnlock(bool success) {
   if (!success) {
     auth_attempt_.reset();
     RecordEasyUnlockScreenUnlockEvent(EASY_UNLOCK_FAILURE);
-    if (!base::FeatureList::IsEnabled(features::kSmartLockUIRevamp)) {
-      HandleAuthFailure(GetAccountId());
-    }
-  }
-
-  if (base::FeatureList::IsEnabled(features::kSmartLockUIRevamp)) {
-    NotifySmartLockAuthResult(success);
-  }
-}
-
-void EasyUnlockService::FinalizeSignin(const std::string& key) {
-  if (!auth_attempt_)
-    return;
-
-  std::string wrapped_secret = GetWrappedSecret();
-  if (!wrapped_secret.empty())
-    auth_attempt_->FinalizeSignin(GetAccountId(), wrapped_secret, key);
-
-  // If successful, allow |auth_attempt_| to continue until
-  // UpdateSmartLockState() is called (indicating sign in).
-
-  // Processing empty key is equivalent to auth cancellation. In this case the
-  // signin request will not actually be processed by login stack, so the lock
-  // screen state should be set from here.
-  bool success = !key.empty();
-
-  if (success) {
-    set_will_authenticate_using_easy_unlock(true);
-  } else {
-    auth_attempt_.reset();
     if (!base::FeatureList::IsEnabled(features::kSmartLockUIRevamp)) {
       HandleAuthFailure(GetAccountId());
     }
@@ -789,9 +743,6 @@ void EasyUnlockService::SetProximityAuthDevices(
     PA_LOG(VERBOSE) << "Creating ProximityAuthSystem.";
     proximity_auth_system_ =
         std::make_unique<proximity_auth::ProximityAuthSystem>(
-            GetType() == TYPE_SIGNIN
-                ? proximity_auth::ProximityAuthSystem::SIGN_IN
-                : proximity_auth::ProximityAuthSystem::SESSION_LOCK,
             proximity_auth_client(), secure_channel_client_);
   }
 
@@ -846,7 +797,7 @@ void EasyUnlockService::OnSuspendDone() {
 }
 
 void EasyUnlockService::EnsureTpmKeyPresentIfNeeded() {
-  if (tpm_key_checked_ || GetType() != TYPE_REGULAR || GetAccountId().empty() ||
+  if (tpm_key_checked_ || GetAccountId().empty() ||
       GetHardlockState() == SmartLockStateHandler::NO_PAIRING) {
     return;
   }

@@ -18,6 +18,58 @@ namespace {
 // Scale factor for inactive items when a tab is expanded.
 const CGFloat kInactiveItemScale = 0.95;
 
+// Minimum resize ratio used to calculate the resizeDamping correction.
+const CGFloat kMinResizeRatio = 0.70;
+// Resize ratio multiplier used to calculate the resizeDamping correction.
+const CGFloat kResizeRatioMultiplier = 0.37;
+
+// To visually match the active cell's damping effect during scale animation,
+// the resizeDamping value should not be static. It should be adjusted based on
+// the device's screen size which directly affects the active item's resize
+// ratio.
+//
+// To put it simple: the larger screen user has the bigger amplitude damping
+// will be during scale animation. This happens due to unequal scaling ratios
+// on the different screen sizes while resizing the tab view to a tab grid
+// cell (and vice versa). The tab view size basically equals the device's
+// screen size, whether the tab grid cells have the same size across the
+// different devices.
+//
+// For example, the tab view to a regular tab grid cell scale animation on the
+// iPhone SE will have a scale ratio of 0.30. Whether, the same scale ratio
+// on the iPad Pro would be only 0.19. This means that on the iPad the same
+// animation will dampen more with the same resizeDamping value.
+//
+// The issue is getting much more visible when scaling from the tab view to a
+// pinned tab grid cell. In this case the scale ratio is only 0.03! This is 10
+// times less compared to the regular tab grid cell on the iPhone SE.
+//
+// Therefore, the resizeDamping value should be corrected. But on the other
+// hand, changing the resizeDamping value for only 0.1 has a huge effect on its
+// amplitude. This means that the correction itself should be minimal.
+//
+// To calculate the correction we'll take known scales ratios as the boundaries
+// for the calculation. E.g. minimum = 0.03 (pinned cell on iPad),
+// maximum = 0.30 (regular cell on iPhone SE). The lower scale ratio is the
+// higher resizeDamping should be. It would be easier to operate the inverted
+// values: (1 - 0.30) = 0.7 as a minimum possible value and (1 - 0.03) = 0.97
+// as a maximum possible value.
+//
+// To achieve 0.1 resizeDamping correction the value should be multiplied by
+// 0.37. This comes from:
+//   max_correction = (max - min) * multiplier
+//   multiplier = max_correction / (max - min)
+//   multiplier = 0.1 / (0.97 - 0.7) = 0.1 / 0.27 = 0.37
+//
+// Based on the above, the correction formula should be:
+//   correction = ((1 - value) - 0.7) * 0.37
+//
+CGFloat CalculateResizeDampingCorrection(GridTransitionLayout* layout) {
+  CGFloat resizeRatio = CGRectGetHeight(layout.activeItem.cell.frame) /
+                        CGRectGetHeight(layout.expandedRect);
+
+  return ((1 - resizeRatio) - kMinResizeRatio) * kResizeRatioMultiplier;
+}
 }
 
 @interface GridTransitionAnimation ()
@@ -32,17 +84,11 @@ const CGFloat kInactiveItemScale = 0.95;
 // Corner radius that the active cell will have when it is animated into the
 // regulat grid.
 @property(nonatomic, assign) CGFloat finalActiveCellCornerRadius;
+// The resize damping correction for the current layout.
+@property(nonatomic, assign) CGFloat resizeDampingCorrection;
 @end
 
 @implementation GridTransitionAnimation
-
-@synthesize activeCell = _activeCell;
-
-@synthesize animations = _animations;
-@synthesize layout = _layout;
-@synthesize duration = _duration;
-@synthesize direction = _direction;
-@synthesize finalActiveCellCornerRadius = _finalActiveCellCornerRadius;
 
 - (instancetype)initWithLayout:(GridTransitionLayout*)layout
                       duration:(NSTimeInterval)duration
@@ -53,12 +99,21 @@ const CGFloat kInactiveItemScale = 0.95;
     _duration = duration;
     _direction = direction;
     _finalActiveCellCornerRadius = _layout.activeItem.cell.cornerRadius;
+    _resizeDampingCorrection = CalculateResizeDampingCorrection(layout);
   }
   return self;
 }
 
 - (id<UIViewImplicitlyAnimating>)animator {
   return self.animations;
+}
+
+- (UIView*)activeItem {
+  return self.layout.activeItem.cell;
+}
+
+- (UIView*)selectionItem {
+  return self.layout.selectionItem.cell;
 }
 
 #pragma mark - UIView
@@ -73,6 +128,9 @@ const CGFloat kInactiveItemScale = 0.95;
 - (void)didMoveToSuperview {
   if (!self.superview)
     return;
+
+  [self prepareForTransition];
+
   // Positioning the animating items depends on converting points to this
   // view's coordinate system, so wait until it's in a view hierarchy.
   switch (self.direction) {
@@ -102,7 +160,7 @@ const CGFloat kInactiveItemScale = 0.95;
   CGFloat shortDelay = 0.2;
 
   // Damping ratio for the resize animation.
-  CGFloat resizeDamping = 0.8;
+  CGFloat resizeDamping = 0.8 + _resizeDampingCorrection;
 
   // If there's only one cell, the animation has two parts.
   //   (A) Zooming the active cell into position.
@@ -110,7 +168,7 @@ const CGFloat kInactiveItemScale = 0.95;
   //   (C) Rounding the corners of the active cell.
   //
   //  {0%}----------------------[A]-------------------{100%}
-  //                            {50%}----[B]----{80%}
+  //  {0%}----------------------[B]-------------{80%}
   //  {0%}---[C]---{30%}
 
   // If there's more than once cell, the animation adds two more parts:
@@ -119,7 +177,7 @@ const CGFloat kInactiveItemScale = 0.95;
   // The overall timing is as follows:
   //
   //  {0%}----------------------[A]-------------------{100%}
-  //                            {50%}----[B]----{80%}
+  //  {0%}----------------------[B]-------------{80%}
   //  {0%}---[C]---{30%}
   //           {20%}--[D]-----------------------------{100%}
   //           {20%}--[E]-----------------------{80%}
@@ -149,7 +207,6 @@ const CGFloat kInactiveItemScale = 0.95;
   auto fadeInAuxillaryKeyframeAnimation =
       [self keyframeAnimationFadingView:activeCell.topTabView
                           throughToView:activeCell.topCellView
-                          relativeStart:0.5
                        relativeDuration:briefDuration];
 
   UIViewPropertyAnimator* fadeInAuxillary = [[UIViewPropertyAnimator alloc]
@@ -222,7 +279,7 @@ const CGFloat kInactiveItemScale = 0.95;
   CGFloat delay = 0.1;
 
   // Damping ratio for the resize animation.
-  CGFloat resizeDamping = 0.7;
+  CGFloat resizeDamping = 0.7 + _resizeDampingCorrection;
 
   // If there's only one cell, the animation has three parts:
   //   (A) Zooming the active cell out into the expanded position.
@@ -378,6 +435,12 @@ const CGFloat kInactiveItemScale = 0.95;
   [self addSubview:self.layout.activeItem.cell];
 }
 
+// Prepares the the views for a transition.
+- (void)prepareForTransition {
+  UIView<GridToTabTransitionView>* cell = self.layout.activeItem.cell;
+  [cell prepareForTransitionWithAnimationDirection:self.direction];
+}
+
 // Positions the active item in the expanded grid position with a zero corner
 // radius and a 0% opacity auxilliary view.
 - (void)positionExpandedActiveItem {
@@ -417,7 +480,6 @@ const CGFloat kInactiveItemScale = 0.95;
   }
   [self positionItemInGrid:self.layout.activeItem];
   [self.layout.activeItem.cell positionCellViews];
-  self.activeCell = self.layout.activeItem.cell;
   [self positionItemInGrid:self.layout.selectionItem];
 }
 
@@ -460,16 +522,15 @@ const CGFloat kInactiveItemScale = 0.95;
 // animation curev should be EaseInEaseOut.
 - (void (^)(void))keyframeAnimationFadingView:(UIView*)startView
                                 throughToView:(UIView*)endView
-                                relativeStart:(double)start
                              relativeDuration:(double)duration {
   CGFloat halfDuration = duration / 2;
   auto keyframes = ^{
-    [UIView addKeyframeWithRelativeStartTime:start
+    [UIView addKeyframeWithRelativeStartTime:0
                             relativeDuration:halfDuration
                                   animations:^{
                                     startView.alpha = 0.0;
                                   }];
-    [UIView addKeyframeWithRelativeStartTime:start + halfDuration
+    [UIView addKeyframeWithRelativeStartTime:halfDuration
                             relativeDuration:halfDuration
                                   animations:^{
                                     endView.alpha = 1.0;

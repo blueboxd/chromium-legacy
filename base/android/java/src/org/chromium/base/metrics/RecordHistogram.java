@@ -10,6 +10,8 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.build.annotations.MainDex;
 
+import java.util.List;
+
 /**
  * Java API for recording UMA histograms.
  * */
@@ -261,9 +263,7 @@ public class RecordHistogram {
      *
      * WARNING:
      * Does not reset between batched tests. Use
-     * {@link org.chromium.base.test.metrics.HistogramTestRule} instead. Or use
-     * {@link org.chromium.base.test.util.MetricsUtils.HistogramDelta} to account for cases where
-     * the initial histogram value is not 0 at the start of the testing logic.
+     * {@link org.chromium.base.test.util.HistogramWatcher} instead.
      *
      * @param name name of the histogram to look up
      * @param sample the bucket containing this sample value will be looked up
@@ -278,12 +278,17 @@ public class RecordHistogram {
      *
      * WARNING:
      * Does not reset between batched tests. Use
-     * {@link org.chromium.base.test.metrics.HistogramTestRule} instead.
+     * {@link org.chromium.base.test.util.HistogramWatcher} instead.
      *
      * @param name name of the histogram to look up
      */
     @VisibleForTesting
     public static int getHistogramTotalCountForTesting(String name) {
         return UmaRecorderHolder.get().getHistogramTotalCountForTesting(name);
+    }
+
+    @VisibleForTesting
+    public static List<HistogramBucket> getHistogramSamplesForTesting(String name) {
+        return UmaRecorderHolder.get().getHistogramSamplesForTesting(name);
     }
 }

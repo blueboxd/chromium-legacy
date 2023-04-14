@@ -19,10 +19,14 @@ import {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.j
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert_ts.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
+import {isUndoKeyboardEvent} from 'chrome://resources/js/util_ts.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {MetricsBrowserProxy, MetricsBrowserProxyImpl, SafetyCheckUnusedSitePermissionsModuleInteractions} from '../metrics_browser_proxy.js';
+import {routes} from '../route.js';
+import {Route, RouteObserverMixin} from '../router.js';
 import {ContentSettingsTypes, MODEL_UPDATE_DELAY_MS} from '../site_settings/constants.js';
 import {SiteSettingsMixin} from '../site_settings/site_settings_mixin.js';
 import {SiteSettingsPermissionsBrowserProxy, SiteSettingsPermissionsBrowserProxyImpl, UnusedSitePermissions} from '../site_settings/site_settings_permissions_browser_proxy.js';
@@ -51,8 +55,8 @@ interface UnusedSitePermissionsDisplay extends UnusedSitePermissions {
   visible: boolean;
 }
 
-const SettingsUnusedSitePermissionsElementBase = TooltipMixin(
-    I18nMixin(WebUiListenerMixin(SiteSettingsMixin(PolymerElement))));
+const SettingsUnusedSitePermissionsElementBase = TooltipMixin(I18nMixin(
+    RouteObserverMixin(WebUiListenerMixin(SiteSettingsMixin(PolymerElement)))));
 
 export class SettingsUnusedSitePermissionsElement extends
     SettingsUnusedSitePermissionsElementBase {
@@ -126,6 +130,7 @@ export class SettingsUnusedSitePermissionsElement extends
 
   private browserProxy_: SiteSettingsPermissionsBrowserProxy =
       SiteSettingsPermissionsBrowserProxyImpl.getInstance();
+  private eventTracker_: EventTracker = new EventTracker();
   private headerString_: string;
   private lastUnusedSitePermissionsAllowedAgain_: UnusedSitePermissions|null;
   private lastUnusedSitePermissionsListAcknowledged_: UnusedSitePermissions[]|
@@ -142,8 +147,6 @@ export class SettingsUnusedSitePermissionsElement extends
   private shouldRefocusExpandButton_: boolean = false;
 
   override async connectedCallback() {
-    super.connectedCallback();
-
     this.addWebUiListener(
         'unused-permission-review-list-maybe-changed',
         (sites: UnusedSitePermissions[]) =>
@@ -151,12 +154,31 @@ export class SettingsUnusedSitePermissionsElement extends
 
     const sites =
         await this.browserProxy_.getRevokedUnusedSitePermissionsList();
-    this.metricsBrowserProxy_
-        .recordSafetyCheckUnusedSitePermissionsListCountHistogram(sites.length);
+
     this.onUnusedSitePermissionListChanged_(sites);
+    // This should be called after the sites have been retrieved such that
+    // currentRouteChanged is called afterwards.
+    super.connectedCallback();
+  }
+
+  override currentRouteChanged(currentRoute: Route) {
+    if (currentRoute !== routes.SITE_SETTINGS) {
+      // Remove event listener when navigating away from the page.
+      this.eventTracker_.remove(document, 'keydown');
+      return;
+    }
+    // Only record the metrics when the user navigates to the site settings page
+    // that shows the unused sites module.
+    assert(this.sites_);
+    this.metricsBrowserProxy_
+        .recordSafetyCheckUnusedSitePermissionsListCountHistogram(
+            this.sites_.length);
     this.metricsBrowserProxy_
         .recordSafetyCheckUnusedSitePermissionsModuleInteractionsHistogram(
             SafetyCheckUnusedSitePermissionsModuleInteractions.OPEN_REVIEW_UI);
+
+    this.eventTracker_.add(
+        document, 'keydown', (e: Event) => this.onKeyDown_(e as KeyboardEvent));
   }
 
   /** Show info that review is completed when there are no permissions left. */
@@ -316,7 +338,10 @@ export class SettingsUnusedSitePermissionsElement extends
 
   private onUndoClick_(e: Event) {
     e.stopPropagation();
+    this.undoLastAction_();
+  }
 
+  private undoLastAction_() {
     switch (this.lastUserAction_) {
       case Action.ALLOW_AGAIN:
         assert(this.lastUnusedSitePermissionsAllowedAgain_ !== null);
@@ -344,6 +369,17 @@ export class SettingsUnusedSitePermissionsElement extends
     this.lastUserAction_ = null;
     this.shouldRefocusExpandButton_ = true;
     this.$.undoToast.hide();
+  }
+
+  private onKeyDown_(e: KeyboardEvent) {
+    // Only allow undoing via ctrl+z when the undo toast is opened.
+    if (!this.$.undoToast.open) {
+      return;
+    }
+
+    if (isUndoKeyboardEvent(e)) {
+      this.undoLastAction_();
+    }
   }
 
   private showUndoToast_(text: string) {

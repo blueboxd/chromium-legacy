@@ -49,6 +49,7 @@ class NetworkStateHandler;
 class NetworkSmsHandler;
 class ProhibitedTechnologiesHandler;
 class StubCellularNetworksProvider;
+class TechnologyStateController;
 class UIProxyConfigService;
 class HiddenNetworkMetricsHelper;
 class VpnNetworkMetricsHelper;
@@ -127,6 +128,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   NetworkSmsHandler* network_sms_handler();
   GeolocationHandler* geolocation_handler();
   ProhibitedTechnologiesHandler* prohibited_technologies_handler();
+  TechnologyStateController* technology_state_controller();
 
  private:
   friend class ConnectionInfoMetricsLoggerTest;
@@ -144,6 +146,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<CellularESimProfileHandler> cellular_esim_profile_handler_;
   std::unique_ptr<StubCellularNetworksProvider>
       stub_cellular_networks_provider_;
+  std::unique_ptr<TechnologyStateController> technology_state_controller_;
   std::unique_ptr<CellularConnectionHandler> cellular_connection_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
@@ -160,8 +163,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkHandler {
   std::unique_ptr<HiddenNetworkHandler> hidden_network_handler_;
   std::unique_ptr<HotspotAllowedFlagHandler> hotspot_allowed_flag_handler_;
   std::unique_ptr<HotspotCapabilitiesProvider> hotspot_capabilities_provider_;
-  std::unique_ptr<HotspotController> hotspot_controller_;
   std::unique_ptr<HotspotStateHandler> hotspot_state_handler_;
+  std::unique_ptr<HotspotController> hotspot_controller_;
   std::unique_ptr<ESimPolicyLoginMetricsLogger>
       esim_policy_login_metrics_logger_;
   std::unique_ptr<HiddenNetworkMetricsHelper> hidden_network_metrics_helper_;

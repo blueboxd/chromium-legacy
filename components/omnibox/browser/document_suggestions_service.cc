@@ -43,21 +43,17 @@ constexpr int chromeOmniboxClientId = 6;
 //            searchApplicationId: "searchapplications/chrome",
 //            clientId: 6,
 //            languageCode: "|locale|",
-//            debugOptions: {
-//              optsParams: "enable_aso_search:|ASO enabled|"
-//            }
 //       }
 //     }
-std::string BuildDocumentSuggestionRequest(const std::u16string& query,
-                                           bool enable_aso_search) {
-  base::Value root(base::Value::Type::DICTIONARY);
+std::string BuildDocumentSuggestionRequest(const std::u16string& query) {
+  base::Value root(base::Value::Type::DICT);
   root.SetKey("query", base::Value(query));
   // The API supports pagination. We're always concerned with the first N
   // results on the first page.
   root.SetKey("start", base::Value(0));
   root.SetKey("pageSize", base::Value(10));
 
-  base::Value request_options(base::Value::Type::DICTIONARY);
+  base::Value request_options(base::Value::Type::DICT);
   request_options.SetKey("searchApplicationId",
                          base::Value("searchapplications/chrome"));
   // While the searchApplicationId is a specific config being used by a client
@@ -66,11 +62,6 @@ std::string BuildDocumentSuggestionRequest(const std::u16string& query,
   request_options.SetKey("clientId", base::Value(chromeOmniboxClientId));
   request_options.SetKey("languageCode",
                          base::Value(base::i18n::GetConfiguredLocale()));
-  base::Value debug_options(base::Value::Type::DICTIONARY);
-  debug_options.SetStringKey(
-      "optsParams", base::StringPrintf("enable_aso_search:%s",
-                                       enable_aso_search ? "true" : "false"));
-  request_options.SetKey("debugOptions", std::move(debug_options));
   root.SetKey("requestOptions", std::move(request_options));
 
   std::string result;
@@ -130,8 +121,7 @@ void DocumentSuggestionsService::CreateDocumentSuggestionsRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = suggest_url;
   request->method = "POST";
-  std::string request_body = BuildDocumentSuggestionRequest(
-      query, base::FeatureList::IsEnabled(omnibox::kDocumentProviderAso));
+  std::string request_body = BuildDocumentSuggestionRequest(query);
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   // It is expected that the user is signed in here. But we only care about
   // experiment IDs from the variations server, which do not require the

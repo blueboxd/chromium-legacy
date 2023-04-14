@@ -10,7 +10,6 @@
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/json/json_reader.h"
 #include "base/json/values_util.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind.h"
@@ -19,6 +18,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/test/test_file_util.h"
 #include "base/test/test_future.h"
+#include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -577,9 +577,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyReadAskForUrls) {
   auto* prefs = profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultFileSystemReadGuardSetting,
                         std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
-  prefs->SetManagedPref(prefs::kManagedFileSystemReadAskForUrls,
-                        base::JSONReader::ReadDeprecated(
-                            "[\"" + kTestOrigin.Serialize() + "\"]"));
+  prefs->SetManagedPref(
+      prefs::kManagedFileSystemReadAskForUrls,
+      base::test::ParseJsonList("[\"" + kTestOrigin.Serialize() + "\"]"));
 
   EXPECT_TRUE(permission_context()->CanObtainReadPermission(kTestOrigin));
   EXPECT_FALSE(permission_context()->CanObtainReadPermission(kTestOrigin2));
@@ -587,9 +587,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyReadAskForUrls) {
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyReadBlockedForUrls) {
   auto* prefs = profile()->GetTestingPrefService();
-  prefs->SetManagedPref(prefs::kManagedFileSystemReadBlockedForUrls,
-                        base::JSONReader::ReadDeprecated(
-                            "[\"" + kTestOrigin.Serialize() + "\"]"));
+  prefs->SetManagedPref(
+      prefs::kManagedFileSystemReadBlockedForUrls,
+      base::test::ParseJsonList("[\"" + kTestOrigin.Serialize() + "\"]"));
 
   EXPECT_FALSE(permission_context()->CanObtainReadPermission(kTestOrigin));
   EXPECT_TRUE(permission_context()->CanObtainReadPermission(kTestOrigin2));
@@ -600,9 +600,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyWriteAskForUrls) {
   auto* prefs = profile()->GetTestingPrefService();
   prefs->SetManagedPref(prefs::kManagedDefaultFileSystemWriteGuardSetting,
                         std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
-  prefs->SetManagedPref(prefs::kManagedFileSystemWriteAskForUrls,
-                        base::JSONReader::ReadDeprecated(
-                            "[\"" + kTestOrigin.Serialize() + "\"]"));
+  prefs->SetManagedPref(
+      prefs::kManagedFileSystemWriteAskForUrls,
+      base::test::ParseJsonList("[\"" + kTestOrigin.Serialize() + "\"]"));
 
   EXPECT_TRUE(permission_context()->CanObtainWritePermission(kTestOrigin));
   EXPECT_FALSE(permission_context()->CanObtainWritePermission(kTestOrigin2));
@@ -610,9 +610,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyWriteAskForUrls) {
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest, PolicyWriteBlockedForUrls) {
   auto* prefs = profile()->GetTestingPrefService();
-  prefs->SetManagedPref(prefs::kManagedFileSystemWriteBlockedForUrls,
-                        base::JSONReader::ReadDeprecated(
-                            "[\"" + kTestOrigin.Serialize() + "\"]"));
+  prefs->SetManagedPref(
+      prefs::kManagedFileSystemWriteBlockedForUrls,
+      base::test::ParseJsonList("[\"" + kTestOrigin.Serialize() + "\"]"));
 
   EXPECT_FALSE(permission_context()->CanObtainWritePermission(kTestOrigin));
   EXPECT_TRUE(permission_context()->CanObtainWritePermission(kTestOrigin2));
@@ -1380,6 +1380,38 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
+       PersistedPermission_RevokeGrantByFilePath) {
+  auto grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant->GetStatus());
+  // Revoke active grant by file path, but not persisted permission.
+  permission_context()->RevokeGrant(
+      kTestOrigin, kTestPath,
+      PersistedPermissionOptions::kDoNotUpdatePersistedPermission);
+  auto updated_grant = permission_context()->GetWritePermissionGrant(
+      kTestOrigin, kTestPath, HandleType::kFile, UserAction::kNone);
+  EXPECT_EQ(PermissionStatus::ASK, updated_grant->GetStatus());
+  EXPECT_TRUE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath, HandleType::kFile, GrantType::kWrite));
+
+  auto kTestPath2 = kTestPath.AppendASCII("foo");
+  auto grant2 = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kSave);
+  EXPECT_EQ(PermissionStatus::GRANTED, grant2->GetStatus());
+  // Revoke active grant by file path, and reset persisted permission.
+  permission_context()->RevokeGrant(
+      kTestOrigin, kTestPath2,
+      PersistedPermissionOptions::kUpdatePersistedPermission);
+  auto updated_grant2 = permission_context()->GetReadPermissionGrant(
+      kTestOrigin, kTestPath2, HandleType::kFile, UserAction::kNone);
+  EXPECT_EQ(PermissionStatus::ASK, updated_grant2->GetStatus());
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath2, HandleType::kFile, GrantType::kRead));
+  EXPECT_FALSE(permission_context()->HasPersistedPermissionForTesting(
+      kTestOrigin, kTestPath2, HandleType::kFile, GrantType::kWrite));
+}
+
+TEST_F(ChromeFileSystemAccessPermissionContextTest,
        PersistedPermission_NotAccessibleIfContentSettingBlock) {
   auto grant = permission_context()->GetWritePermissionGrant(
       kTestOrigin, kTestPath, HandleType::kFile, UserAction::kSave);
@@ -1421,7 +1453,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            advance_once);
 
   grant.reset();
 
@@ -1434,7 +1467,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            advance_once);
 
   // |grant| should now be expired, but not revokable until after grace period.
   Advance(ChromeFileSystemAccessPermissionContext::
@@ -1476,7 +1510,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            advance_once);
 
   grant.reset();
 
@@ -1489,7 +1524,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), advance_once);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            advance_once);
 
   // |grant| should now be expired, but not revokable until after grace period.
   Advance(ChromeFileSystemAccessPermissionContext::
@@ -1624,8 +1660,9 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   ASSERT_EQ(objects.size(), 2u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
   EXPECT_EQ(objects[1]->origin, kTestOrigin2.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
-  EXPECT_EQ(base::ValueToTime(objects[1]->value.FindKey("time")), Now());
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            initial_time);
+  EXPECT_EQ(base::ValueToTime(objects[1]->value.GetDict().Find("time")), Now());
 }
 
 TEST_F(ChromeFileSystemAccessPermissionContextTest,
@@ -1654,7 +1691,8 @@ TEST_F(ChromeFileSystemAccessPermissionContextTest,
   auto objects = permission_context()->GetAllGrantedOrExpiredObjects();
   ASSERT_EQ(objects.size(), 1u);
   EXPECT_EQ(objects[0]->origin, kTestOrigin.GetURL());
-  EXPECT_EQ(base::ValueToTime(objects[0]->value.FindKey("time")), initial_time);
+  EXPECT_EQ(base::ValueToTime(objects[0]->value.GetDict().Find("time")),
+            initial_time);
 
   // Permissions should now be expired and can be revoked.
   Advance(ChromeFileSystemAccessPermissionContext::

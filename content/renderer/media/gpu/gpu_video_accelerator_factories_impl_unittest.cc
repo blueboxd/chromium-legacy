@@ -55,7 +55,7 @@
 
 #if BUILDFLAG(IS_FUCHSIA)
 #include "content/renderer/media/codec_factory_fuchsia.h"
-#include "media/fuchsia/mojom/fuchsia_media.mojom.h"
+#include "media/mojo/mojom/fuchsia_media.mojom.h"
 #endif
 
 using ::testing::_;
@@ -225,7 +225,7 @@ class FakeMojoMediaClient : public media::MojoMediaClient {
 
   // MojoMediaClient implementation.
   std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      scoped_refptr<base::SequencedTaskRunner> task_runner,
       media::MediaLog* media_log,
       media::mojom::CommandBufferIdPtr command_buffer_id,
       media::RequestOverlayInfoCB request_overlay_info_cb,

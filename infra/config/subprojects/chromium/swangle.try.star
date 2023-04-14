@@ -27,7 +27,6 @@ try_.defaults.set(
     # Max. pending time for builds. CQ considers builds pending >2h as timed
     # out: http://shortn/_8PaHsdYmlq. Keep this in sync.
     expiration_timeout = 2 * time.hour,
-    goma_backend = goma.backend.RBE_PROD,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
     service_account = "chromium-try-gpu-builder@chops-service-accounts.iam.gserviceaccount.com",
@@ -64,7 +63,6 @@ swangle_linux_builder(
     ),
     pool = "luci.chromium.swangle.chromium.linux.x64.try",
     execution_timeout = 6 * time.hour,
-    goma_backend = None,
 )
 
 swangle_linux_builder(
@@ -76,7 +74,6 @@ swangle_linux_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.sws.linux.x64.try",
-    goma_backend = None,
 )
 
 swangle_linux_builder(
@@ -89,7 +86,6 @@ swangle_linux_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.deps.linux.x64.try",
-    goma_backend = None,
 )
 
 swangle_mac_builder(
@@ -103,6 +99,7 @@ swangle_mac_builder(
     ),
     pool = "luci.chromium.swangle.chromium.mac.x64.try",
     execution_timeout = 6 * time.hour,
+    goma_backend = goma.backend.RBE_PROD,
 )
 
 swangle_windows_builder(
@@ -116,7 +113,6 @@ swangle_windows_builder(
     ),
     pool = "luci.chromium.swangle.chromium.win.x86.try",
     execution_timeout = 6 * time.hour,
-    goma_backend = None,
 )
 
 swangle_windows_builder(
@@ -128,7 +124,6 @@ swangle_windows_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.win.x64.try",
-    goma_backend = None,
 )
 
 swangle_windows_builder(
@@ -140,7 +135,6 @@ swangle_windows_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.sws.win.x86.try",
-    goma_backend = None,
 )
 
 swangle_windows_builder(
@@ -153,7 +147,6 @@ swangle_windows_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.win.x64.try",
-    goma_backend = None,
 )
 
 swangle_windows_builder(
@@ -166,5 +159,4 @@ swangle_windows_builder(
         retry_failed_shards = False,
     ),
     pool = "luci.chromium.swangle.deps.win.x86.try",
-    goma_backend = None,
 )

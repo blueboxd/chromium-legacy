@@ -80,7 +80,18 @@ FencedFrameURLMapping::SharedStorageURNMappingResult::
 void FencedFrameURLMapping::ImportPendingAdComponents(
     const std::vector<std::pair<GURL, FencedFrameConfig>>& components) {
   for (const auto& component_ad : components) {
-    DCHECK(!IsMapped(component_ad.first));
+    // If this is called redundantly, do nothing.
+    // This happens in urn iframes, because the FencedFrameURLMapping is
+    // attached to the Page. In fenced frames, the Page is rooted at the fenced
+    // frame root, so a new FencedFrameURLMapping is created when the root is
+    // navigated. In urn iframes, the Page is rooted at the top-level frame, so
+    // the same FencedFrameURLMapping exists after "urn iframe root"
+    // navigations.
+    // TODO(crbug.com/1415475): Change this to a CHECK when we remove urn
+    // iframes.
+    if (IsMapped(component_ad.first)) {
+      return;
+    }
 
     UrnUuidToUrlMap::iterator it =
         urn_uuid_to_url_map_.emplace(component_ad.first, component_ad.second)
@@ -149,6 +160,8 @@ FencedFrameURLMapping::AssignFencedFrameURLAndInterestGroupInfo(
   config.urn_uuid_.emplace(urn_uuid);
   config.mapped_url_.emplace(url, VisibilityToEmbedder::kOpaque,
                              VisibilityToContent::kTransparent);
+  config.deprecated_should_freeze_initial_size_.emplace(
+      true, VisibilityToEmbedder::kTransparent, VisibilityToContent::kOpaque);
   config.ad_auction_data_.emplace(std::move(ad_auction_data),
                                   VisibilityToEmbedder::kOpaque,
                                   VisibilityToContent::kOpaque);
@@ -217,7 +230,8 @@ void FencedFrameURLMapping::RemoveObserverForURN(
   it->second.erase(observer_it);
 }
 
-void FencedFrameURLMapping::OnSharedStorageURNMappingResultDetermined(
+absl::optional<FencedFrameConfig>
+FencedFrameURLMapping::OnSharedStorageURNMappingResultDetermined(
     const GURL& urn_uuid,
     const SharedStorageURNMappingResult& mapping_result) {
   auto pending_it = pending_urn_uuid_to_url_map_.find(urn_uuid);
@@ -252,6 +266,8 @@ void FencedFrameURLMapping::OnSharedStorageURNMappingResultDetermined(
   }
 
   pending_urn_uuid_to_url_map_.erase(pending_it);
+
+  return config;
 }
 
 SharedStorageBudgetMetadata*

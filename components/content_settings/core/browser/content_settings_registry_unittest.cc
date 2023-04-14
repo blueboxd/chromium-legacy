@@ -221,6 +221,11 @@ TEST_F(ContentSettingsRegistryTest, GetInitialDefaultSetting) {
       registry()->Get(ContentSettingsType::FEDERATED_IDENTITY_API);
   EXPECT_EQ(CONTENT_SETTING_ALLOW,
             federated_identity->GetInitialDefaultSetting());
+
+  const ContentSettingsInfo* federated_identity_auto_reauthn = registry()->Get(
+      ContentSettingsType::FEDERATED_IDENTITY_AUTO_REAUTHN_PERMISSION);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            federated_identity_auto_reauthn->GetInitialDefaultSetting());
 }
 
 }  // namespace content_settings

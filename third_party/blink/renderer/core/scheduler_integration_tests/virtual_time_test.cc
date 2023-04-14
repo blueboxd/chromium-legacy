@@ -42,6 +42,7 @@ class VirtualTimeTest : public SimTest {
     return WebView().Scheduler()->GetVirtualTimeController();
   }
   void SetUp() override {
+    ThreadState::Current()->CollectAllGarbageForTesting();
     SimTest::SetUp();
     GetVirtualTimeController()->EnableVirtualTime(base::Time());
   }
@@ -50,7 +51,7 @@ class VirtualTimeTest : public SimTest {
     ScriptExecutionCallbackHelper callback_helper;
     WebScriptSource source(script_source);
     WebView().MainFrame()->ToWebLocalFrame()->RequestExecuteScript(
-        DOMWrapperWorld::kMainWorldId, base::make_span(&source, 1),
+        DOMWrapperWorld::kMainWorldId, base::make_span(&source, 1u),
         mojom::blink::UserActivationOption::kDoNotActivate,
         mojom::blink::EvaluationTiming::kSynchronous,
         mojom::blink::LoadEventBlockingOption::kDoNotBlock,
@@ -92,7 +93,7 @@ class VirtualTimeTest : public SimTest {
 };
 
 // http://crbug.com/633321
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 #define MAYBE_SetInterval DISABLED_SetInterval
 #else
 #define MAYBE_SetInterval SetInterval
@@ -120,7 +121,7 @@ TEST_F(VirtualTimeTest, MAYBE_SetInterval) {
 }
 
 // http://crbug.com/633321
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 #define MAYBE_AllowVirtualTimeToAdvance DISABLED_AllowVirtualTimeToAdvance
 #else
 #define MAYBE_AllowVirtualTimeToAdvance AllowVirtualTimeToAdvance
@@ -149,7 +150,7 @@ TEST_F(VirtualTimeTest, MAYBE_AllowVirtualTimeToAdvance) {
 }
 
 // http://crbug.com/633321
-#if BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 #define MAYBE_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading \
   DISABLED_VirtualTimeNotAllowedToAdvanceWhileResourcesLoading
 #else

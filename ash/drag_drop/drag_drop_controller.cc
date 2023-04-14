@@ -82,7 +82,7 @@ void DropIfAllowed(const ui::OSExchangeData* drag_data,
 
   if (ui::DataTransferPolicyController::HasInstance()) {
     ui::DataTransferPolicyController::Get()->DropIfAllowed(
-        drag_data->GetSource(), &drag_info.data_endpoint, std::move(drop_cb));
+        drag_data, &drag_info.data_endpoint, std::move(drop_cb));
   } else {
     std::move(drop_cb).Run();
   }
@@ -122,6 +122,10 @@ DragDropController::~DragDropController() {
   if (cancel_animation_)
     cancel_animation_->End();
   drag_image_widget_.reset();
+}
+
+bool DragDropController::IsDragDropCompleted() {
+  return drag_drop_completed_;
 }
 
 DragOperation DragDropController::StartDragAndDrop(
@@ -181,6 +185,7 @@ DragOperation DragDropController::StartDragAndDrop(
   if (drag_source_window_)
     drag_source_window_->AddObserver(this);
 
+  drag_drop_completed_ = false;
   drag_data_ = std::move(data);
   allowed_operations_ = allowed_operations;
   current_drag_info_ = aura::client::DragUpdateInfo();
@@ -794,7 +799,7 @@ void DragDropController::Cleanup() {
   if (drag_window_ && drag_window_ != drag_source_window_)
     drag_window_->RemoveObserver(this);
   drag_window_ = nullptr;
-
+  drag_drop_completed_ = true;
   drag_data_.reset();
   allowed_operations_ = 0;
   tab_drag_drop_delegate_.reset();

@@ -23,7 +23,7 @@
 
 namespace gfx {
 class Size;
-}
+}  // namespace gfx
 
 namespace display {
 
@@ -38,7 +38,7 @@ struct GammaRampRGBEntry;
 
 namespace test {
 class DisplayManagerTestApi;
-}
+}  // namespace test
 
 // This class interacts directly with the system display configurator.
 class DISPLAY_MANAGER_EXPORT DisplayConfigurator
@@ -294,6 +294,10 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
     return requested_power_state_;
   }
 
+  // Requests to enable or disable variable refresh rates across all capable
+  // displays, and schedules a configuration change as needed.
+  void SetVrrEnabled(bool enable_vrr);
+
  private:
   friend class test::DisplayManagerTestApi;
 
@@ -328,13 +332,14 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // configuration task.
   void RunPendingConfiguration();
 
-  // Callback for |configuration_taks_|. When the configuration process finishes
+  // Callback for |configuration_task_|. When the configuration process finishes
   // this is called with the result (|success|) and the updated display state.
   void OnConfigured(bool success,
                     const std::vector<DisplaySnapshot*>& displays,
                     const std::vector<DisplaySnapshot*>& unassociated_displays,
                     MultipleDisplayState new_display_state,
-                    chromeos::DisplayPowerState new_power_state);
+                    chromeos::DisplayPowerState new_power_state,
+                    bool new_vrr_state);
 
   // Updates the current and pending power state and notifies observers.
   void UpdatePowerState(chromeos::DisplayPowerState new_power_state);
@@ -374,6 +379,17 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // RelinquishDisplay().
   void SendRelinquishDisplayControl(DisplayControlCallback callback,
                                     bool success);
+
+  // Returns the requested VRR state, or the current state by default.
+  bool GetRequestedVrrState() const;
+
+  // Returns whether a configuration should occur on account of a pending VRR
+  // request.
+  bool ShouldConfigureVrr() const;
+
+  // Returns whether variable refresh rates are enabled on the internal display
+  // (if there is one).
+  bool IsVrrEnabledOnInternalDisplay() const;
 
   raw_ptr<StateController> state_controller_;
   raw_ptr<SoftwareMirroringController> mirroring_controller_;
@@ -454,6 +470,11 @@ class DISPLAY_MANAGER_EXPORT DisplayConfigurator
   // This can be caused by crtc shortage. When it is true, the corresponding
   // notification will be created to inform user.
   bool has_unassociated_display_;
+
+  // Stores the current variable refresh rate enabled state.
+  bool current_vrr_state_ = false;
+  // Stores the requested variable refresh rate enabled state.
+  absl::optional<bool> pending_vrr_state_ = absl::nullopt;
 
   // This must be the last variable.
   base::WeakPtrFactory<DisplayConfigurator> weak_ptr_factory_{this};

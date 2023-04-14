@@ -90,6 +90,8 @@ WaylandWindow::~WaylandWindow() {
   if (wayland_overlay_delegation_enabled_) {
     connection_->window_manager()->RemoveSubsurface(GetWidget(),
                                                     primary_subsurface_.get());
+    connection_->window_manager()->RecycleSubsurface(
+        std::move(primary_subsurface_));
   }
   for (const auto& widget_subsurface : wayland_subsurfaces()) {
     connection_->window_manager()->RemoveSubsurface(GetWidget(),
@@ -174,6 +176,17 @@ absl::optional<WaylandOutput::Id> WaylandWindow::GetPreferredEnteredOutputId() {
   // still a non toplevel window that doesn't have a parent (for example, a
   // wl_surface that is being dragged).
   if (root_surface_->entered_outputs().empty()) {
+    // The nullcheck is necessary because some tests create mock screen
+    // instead of emulating at wayland level.
+    if (IsScreenCoordinatesEnabled() &&
+        connection_->wayland_output_manager()->wayland_screen()) {
+      // If the surface hasn't entered any output yet, but the
+      // screen coordinates is enabled, try to find the screen that
+      // matches the window's bounds.
+      return connection_->wayland_output_manager()
+          ->wayland_screen()
+          ->GetOutputIdMatching(GetBoundsInDIP());
+    }
     return absl::nullopt;
   }
 
@@ -283,7 +296,6 @@ void WaylandWindow::Show(bool inactive) {
 void WaylandWindow::Hide() {
   received_configure_event_ = false;
 
-  // Mutter compositor crashes if we don't remove subsurface roles when hiding.
   if (primary_subsurface_) {
     primary_subsurface()->Hide();
   }
@@ -655,7 +667,7 @@ bool WaylandWindow::Initialize(PlatformWindowInitProperties properties) {
     return false;
   }
 
-  State state;
+  PlatformWindowDelegate::State state;
   state.bounds_dip = properties.bounds;
   // Properties contain DIP bounds but the buffer scale is initially 1 so it's
   // OK to assign.  The bounds will be recalculated when the buffer scale
@@ -988,6 +1000,9 @@ void WaylandWindow::ProcessPendingConfigureState(uint32_t serial) {
   if (pending_configure_state_.size_px.has_value()) {
     state.size_px = pending_configure_state_.size_px.value();
   }
+  if (pending_configure_state_.raster_scale.has_value()) {
+    state.raster_scale = pending_configure_state_.raster_scale.value();
+  }
 
   if (state.bounds_dip.IsEmpty() &&
       GetPlatformWindowState() == PlatformWindowState::kMinimized &&
@@ -1010,17 +1025,21 @@ void WaylandWindow::ProcessPendingConfigureState(uint32_t serial) {
   pending_configure_state_ = PendingConfigureState();
 }
 
-void WaylandWindow::RequestStateFromServer(State state, int64_t serial) {
+void WaylandWindow::RequestStateFromServer(PlatformWindowDelegate::State state,
+                                           int64_t serial) {
   RequestState(state, serial, /*force=*/false);
 }
 
-void WaylandWindow::RequestStateFromClient(State state) {
+void WaylandWindow::RequestStateFromClient(
+    PlatformWindowDelegate::State state) {
   // In general, client requested changes should not be throttled so force
   // apply this.
   RequestState(state, /*serial=*/-1, /*force=*/true);
 }
 
-void WaylandWindow::RequestState(State state, int64_t serial, bool force) {
+void WaylandWindow::RequestState(PlatformWindowDelegate::State state,
+                                 int64_t serial,
+                                 bool force) {
   LOG_IF(WARNING, in_flight_requests_.size() > 100u)
       << "The queue of configures is longer than 100!";
 
@@ -1087,8 +1106,8 @@ void WaylandWindow::ProcessSequencePoint(int64_t viz_seq) {
     // increase, since each request needs to produce a new sequence point. Any
     // requests that don't have a sequence id (-1) will be treated as done if
     // they have been applied. To latch a request, our sequence number must
-    // be larger than the request's sequence number.
-    if (i->viz_seq >= viz_seq && i->viz_seq != -1) {
+    // be greater than or equal to the request's sequence number.
+    if (i->viz_seq > viz_seq && i->viz_seq != -1) {
       break;
     }
     if (i->applied) {
@@ -1208,37 +1227,13 @@ void WaylandWindow::MaybeApplyLatestStateRequest(bool force) {
   auto old = applied_state_;
   applied_state_ = latest.state;
 
-  // Only set the sequence ID if this change will produce a frame.
-  // If it won't, we may wait indefinitely for a frame that will never come.
-  if (old.bounds_dip.size() != latest.state.bounds_dip.size() ||
-      old.size_px != latest.state.size_px ||
-      old.window_scale != latest.state.window_scale) {
-    latest.viz_seq = delegate()->InsertSequencePoint();
-  }
-
-  if (old.bounds_dip != latest.state.bounds_dip ||
-      old.size_px != latest.state.size_px ||
-      old.window_scale != latest.state.window_scale) {
-    bool origin_changed =
-        old.bounds_dip.origin() != latest.state.bounds_dip.origin();
-    delegate_->OnBoundsChanged({origin_changed});
-  }
+  latest.viz_seq = delegate()->OnStateUpdate(old, latest.state);
 
   // Latch in tests immediately if the test config is set.
   // Otherwise, such tests as interactive_ui_tests fail.
   if (UseTestConfigForPlatformWindows()) {
     ProcessSequencePoint(INT64_MAX);
   }
-}
-
-std::string WaylandWindow::State::ToString() const {
-  std::stringstream result;
-  result << "State {";
-  result << "bounds_dip = " << bounds_dip.ToString();
-  result << ", size_px = " << size_px.ToString();
-  result << ", window_scale = " << window_scale;
-  result << "}";
-  return result.str();
 }
 
 }  // namespace ui

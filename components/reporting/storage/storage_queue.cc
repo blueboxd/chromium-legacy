@@ -29,6 +29,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
@@ -40,9 +41,11 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/thread_annotations.h"
 #include "components/reporting/compression/compression_module.h"
 #include "components/reporting/encryption/encryption_module_interface.h"
 #include "components/reporting/proto/synced/record.pb.h"
+#include "components/reporting/resources/resource_managed_buffer.h"
 #include "components/reporting/resources/resource_manager.h"
 #include "components/reporting/storage/storage_configuration.h"
 #include "components/reporting/storage/storage_uploader_interface.h"
@@ -68,6 +71,10 @@ BASE_FEATURE(kReportingStorageDegradationFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 namespace {
+
+// Storage queue generation id reset UMA metric name.
+constexpr char kStorageQueueGenerationIdResetUma[] =
+    "Browser.ERP.StorageQueueGenerationIdReset";
 
 // Metadata file name prefix.
 const base::FilePath::CharType METADATA_NAME[] = FILE_PATH_LITERAL("META");
@@ -271,6 +278,7 @@ Status StorageQueue::Init() {
       // earlier.
       if (generation_id_ <= 0) {
         LOG(ERROR) << "Unable to retrieve generation id, performing full reset";
+        base::UmaHistogramBoolean(kStorageQueueGenerationIdResetUma, true);
         next_sequencing_id_ = 0;
         first_sequencing_id_ = 0;
         first_unconfirmed_sequencing_id_ = absl::nullopt;
@@ -280,7 +288,7 @@ Status StorageQueue::Init() {
       }
     }
   }
-  // In case of inavaliability default to a new generation id being a random
+  // In case of unavailability default to a new generation id being a random
   // number [1, max_int64].
   if (generation_id_ <= 0) {
     generation_id_ =
@@ -314,15 +322,15 @@ absl::optional<std::string> StorageQueue::GetLastRecordDigest() const {
   return last_record_digest_;
 }
 
-Status StorageQueue::SetGenerationId(const base::FilePath& full_name) {
+Status StorageQueue::SetOrConfirmGenerationId(const base::FilePath& full_name) {
   // Data file should have generation id as an extension too.
-  // For backwards compatibility we allow it to not be included.
   // TODO(b/195786943): Encapsulate file naming assumptions in objects.
   const auto generation_extension =
       full_name.RemoveFinalExtension().FinalExtension();
   if (generation_extension.empty()) {
-    // Backwards compatibility case - extension is absent.
-    return Status::StatusOK();
+    return Status(error::DATA_LOSS,
+                  base::StrCat({"Data file generation id not found in path: '",
+                                full_name.MaybeAsASCII()}));
   }
 
   int64_t file_generation_id = 0;
@@ -330,7 +338,7 @@ Status StorageQueue::SetGenerationId(const base::FilePath& full_name) {
       base::StringToInt64(generation_extension.substr(1), &file_generation_id);
   if (!success || file_generation_id <= 0) {
     return Status(error::DATA_LOSS,
-                  base::StrCat({"Data file generation corrupt: '",
+                  base::StrCat({"Data file generation id corrupt: '",
                                 full_name.MaybeAsASCII()}));
   }
 
@@ -339,7 +347,7 @@ Status StorageQueue::SetGenerationId(const base::FilePath& full_name) {
     // Generation was already set, data file must match.
     if (file_generation_id != generation_id_) {
       return Status(error::DATA_LOSS,
-                    base::StrCat({"Data file generation does not match: '",
+                    base::StrCat({"Data file generation id does not match: '",
                                   full_name.MaybeAsASCII(), "', expected=",
                                   base::NumberToString(generation_id_)}));
     }
@@ -376,7 +384,6 @@ StatusOr<int64_t> StorageQueue::AddDataFile(
     const base::FileEnumerator::FileInfo& file_info) {
   ASSIGN_OR_RETURN(int64_t file_sequence_id,
                    GetFileSequenceIdFromPath(full_name));
-  RETURN_IF_ERROR(SetGenerationId(full_name));
 
   auto file_or_status = SingleFile::Create(
       full_name, file_info.GetSize(), options_.memory_resource(),
@@ -403,8 +410,21 @@ Status StorageQueue::EnumerateDataFiles(
       options_.directory(),
       /*recursive=*/false, base::FileEnumerator::FILES,
       base::StrCat({options_.file_prefix(), FILE_PATH_LITERAL(".*")}));
+
+  bool found_files_in_directory = false;
+
   for (auto full_name = dir_enum.Next(); !full_name.empty();
        full_name = dir_enum.Next()) {
+    found_files_in_directory = true;
+    // Try to parse a generation id from `full_name` and either set
+    // `generation_id_` or confirm that the generation id matches
+    // `generation_id_`
+    if (auto status = SetOrConfirmGenerationId(full_name); !status.ok()) {
+      LOG(WARNING) << "Failed to add file " << full_name.MaybeAsASCII()
+                   << ", status=" << status;
+      continue;
+    }
+    // Add file to `files_` if the sequence id in the file path is valid
     const auto file_sequencing_id_result =
         AddDataFile(full_name, dir_enum.GetInfo());
     if (!file_sequencing_id_result.ok()) {
@@ -417,6 +437,16 @@ Status StorageQueue::EnumerateDataFiles(
         first_sequencing_id.value() > file_sequencing_id_result.ValueOrDie()) {
       first_sequencing_id = file_sequencing_id_result.ValueOrDie();
     }
+  }
+
+  // If there were files in the queue directory, but we haven't found a
+  // generation id in any of the file paths, then the data is corrupt and we
+  // shouldn't proceed.
+  if (found_files_in_directory && generation_id_ <= 0) {
+    return Status(
+        error::DATA_LOSS,
+        base::StrCat({"All file paths missing generation id in directory",
+                      options_.directory().MaybeAsASCII()}));
   }
   // first_sequencing_id.has_value() is true only if we found some files.
   // Otherwise it is false, the StorageQueue is being initialized for the
@@ -1405,9 +1435,8 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
       : TaskRunnerContext<Status>(std::move(write_callback),
                                   storage_queue->sequenced_task_runner_),
         storage_queue_(storage_queue),
-        record_(std::move(record)),
-        in_contexts_queue_(storage_queue->write_contexts_queue_.end()) {
-    DCHECK(storage_queue.get());
+        record_(std::move(record)) {
+    DCHECK(storage_queue_.get());
   }
 
  private:
@@ -1418,7 +1447,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
     // If still in queue, remove it (something went wrong).
     if (in_contexts_queue_ != storage_queue_->write_contexts_queue_.end()) {
-      DCHECK_EQ(storage_queue_->write_contexts_queue_.front(), this);
+      DCHECK_EQ(storage_queue_->write_contexts_queue_.front().get(), this);
       storage_queue_->write_contexts_queue_.erase(in_contexts_queue_);
     }
 
@@ -1428,7 +1457,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
         !storage_queue_->write_contexts_queue_.front()->buffer_.empty()) {
       storage_queue_->write_contexts_queue_.front()->Schedule(
           &WriteContext::ResumeWriteRecord,
-          base::Unretained(storage_queue_->write_contexts_queue_.front()));
+          storage_queue_->write_contexts_queue_.front());
     }
 
     // If uploads are not immediate, we are done.
@@ -1447,11 +1476,20 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     DCHECK_CALLED_ON_VALID_SEQUENCE(
         storage_queue_->storage_queue_sequence_checker_);
 
+    // Set iterator to `end` in case early exit is required.
+    in_contexts_queue_ = storage_queue_->write_contexts_queue_.end();
+
     // Make sure the record is valid.
     if (!record_.has_destination()) {
       Response(Status(error::FAILED_PRECONDITION,
                       "Malformed record: missing destination"));
       return;
+    }
+
+    // Prepare a copy of the original record, if `upload_settings` is present.
+    if (record_.needs_local_unencrypted_copy()) {
+      record_copy_ = record_;
+      record_.clear_needs_local_unencrypted_copy();
     }
 
     // If `record_` requires to uphold reserved space, check whether disk space
@@ -1514,7 +1552,8 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
     // Add context to the end of the queue.
     in_contexts_queue_ = storage_queue_->write_contexts_queue_.insert(
-        storage_queue_->write_contexts_queue_.end(), this);
+        storage_queue_->write_contexts_queue_.end(),
+        weak_ptr_factory_.GetWeakPtr());
 
     // Start processing wrapped record.
     PrepareProcessWrappedRecord(std::move(wrapped_record));
@@ -1570,6 +1609,8 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     // Log an error if the timestamp is larger than 2122-01-01T00:00:00Z. This
     // is the latest spot in the code before a record is compressed or
     // encrypted.
+    // TODO(b/254270304): Remove this log after M111 is released and no error is
+    // reported for 3 months.
     LOG_IF(ERROR, wrapped_record.record().timestamp_us() > kTime2122)
         << "Unusually large timestamp (in milliseconds): "
         << wrapped_record.record().timestamp_us();
@@ -1623,16 +1664,22 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
       Response(encrypted_record_result.status());
       return;
     }
+    auto encrypted_record = std::move(encrypted_record_result.ValueOrDie());
 
     // Add compression information to the encrypted record if it exists.
     if (compression_information.has_value()) {
-      *encrypted_record_result.ValueOrDie().mutable_compression_information() =
+      *encrypted_record.mutable_compression_information() =
           compression_information.value();
+    }
+
+    // Add original Record copy, if required.
+    if (record_copy_.has_value()) {
+      *encrypted_record.mutable_record_copy() = std::move(record_copy_.value());
     }
 
     // Proceed and serialize record.
     SerializeEncryptedRecord(std::move(compression_information),
-                             std::move(encrypted_record_result.ValueOrDie()));
+                             std::move(encrypted_record));
   }
 
   void SerializeEncryptedRecord(
@@ -1701,7 +1748,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     // If we are not at the head of the queue, delay write and expect to be
     // reactivated later.
     DCHECK(in_contexts_queue_ != storage_queue_->write_contexts_queue_.end());
-    if (storage_queue_->write_contexts_queue_.front() != this) {
+    if (storage_queue_->write_contexts_queue_.front().get() != this) {
       return;
     }
 
@@ -1830,11 +1877,6 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
   Record record_;
 
-  // Position in the |storage_queue_|->|write_contexts_queue_|.
-  // We use it in order to detect whether the context is in the queue
-  // and to remove it from the queue, when the time comes.
-  std::list<WriteContext*>::iterator in_contexts_queue_;
-
   // Digest of the current record.
   std::string current_record_digest_;
 
@@ -1845,6 +1887,19 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   // Atomic counter of insufficien memory retry attempts.
   // Accessed in serialized methods only.
   size_t remaining_attempts_ = 16u;
+
+  // Copy of the original record, if required.
+  absl::optional<Record> record_copy_;
+
+  // Position in the `storage_queue_`->`write_contexts_queue_`.
+  // We use it in order to detect whether the context is in the queue
+  // and to remove it from the queue, when the time comes.
+  std::list<base::WeakPtr<WriteContext>>::iterator in_contexts_queue_
+      GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_);
+
+  // Factory for the `context_queue_`.
+  base::WeakPtrFactory<WriteContext> weak_ptr_factory_
+      GUARDED_BY_CONTEXT(storage_queue_->storage_queue_sequence_checker_){this};
 };
 
 void StorageQueue::Write(Record record,
@@ -2173,7 +2228,8 @@ StorageQueue::SingleFile::SingleFile(
       filename_(filename),
       size_(size),
       memory_resource_(memory_resource),
-      disk_space_resource_(disk_space_resource) {
+      disk_space_resource_(disk_space_resource),
+      buffer_(memory_resource) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
@@ -2215,13 +2271,7 @@ Status StorageQueue::SingleFile::Open(bool read_only) {
 void StorageQueue::SingleFile::Close() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_readonly_ = absl::nullopt;
-  if (buffer_) {
-    buffer_.reset();
-  }
-  if (buffer_size_ > 0) {
-    memory_resource_->Discard(buffer_size_);
-    buffer_size_ = 0;
-  }
+  buffer_.Clear();
   if (!handle_) {
     // TODO(b/157943192): Restart auto-closing timer.
     return;
@@ -2262,17 +2312,13 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
   // If no buffer yet, allocate.
   // TODO(b/157943192): Add buffer management - consider adding an UMA for
   // tracking the average + peak memory the Storage module is consuming.
-  if (!buffer_) {
+  if (buffer_.empty()) {
     const auto buffer_size =
         std::min(max_buffer_size, RoundUpToFrameSize(size_));
-    // Register with resource management.
-    if (!memory_resource_->Reserve(buffer_size)) {
-      return Status(error::RESOURCE_EXHAUSTED,
-                    "Not enough memory for the read buffer");
+    auto alloc_status = buffer_.Allocate(buffer_size);
+    if (!alloc_status.ok()) {
+      return alloc_status;
     }
-    // Commit memory reservation.
-    buffer_size_ = buffer_size;
-    buffer_ = std::make_unique<char[]>(buffer_size_);
     data_start_ = data_end_ = 0;
     file_position_ = 0;
   }
@@ -2283,10 +2329,11 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
   }
   // If expected data size does not fit into the buffer, move what's left to the
   // start.
-  if (data_start_ + size > buffer_size_) {
+  if (data_start_ + size > buffer_.size()) {
     DCHECK_GT(data_start_, 0u);  // Cannot happen if 0.
-    memmove(buffer_.get(), buffer_.get() + data_start_,
-            data_end_ - data_start_);
+    if (data_end_ > data_start_) {
+      memmove(buffer_.at(0), buffer_.at(data_start_), data_end_ - data_start_);
+    }
     data_end_ -= data_start_;
     data_start_ = 0;
   }
@@ -2294,10 +2341,9 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
   pos += actual_size;
   while (actual_size < size) {
     // Read as much as possible.
-    DCHECK_LT(data_end_, buffer_size_);
+    DCHECK_LT(data_end_, buffer_.size());
     const int32_t result =
-        handle_->Read(pos, reinterpret_cast<char*>(buffer_.get() + data_end_),
-                      buffer_size_ - data_end_);
+        handle_->Read(pos, buffer_.at(data_end_), buffer_.size() - data_end_);
     if (result < 0) {
       return Status(
           error::DATA_LOSS,
@@ -2310,7 +2356,7 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
     }
     pos += result;
     data_end_ += result;
-    DCHECK_LE(data_end_, buffer_size_);
+    DCHECK_LE(data_end_, buffer_.size());
     actual_size += result;
   }
   if (actual_size > size) {
@@ -2321,7 +2367,7 @@ StatusOr<base::StringPiece> StorageQueue::SingleFile::Read(
     return Status(error::OUT_OF_RANGE, "End of file");
   }
   // Prepare reference to actually loaded data.
-  auto read_data = base::StringPiece(buffer_.get() + data_start_, actual_size);
+  auto read_data = base::StringPiece(buffer_.at(data_start_), actual_size);
   // Move start and file position to after that data.
   data_start_ += actual_size;
   file_position_ += actual_size;

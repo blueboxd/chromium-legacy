@@ -46,7 +46,7 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kDisableVideoOverlayIfMoving);
 GPU_EXPORT BASE_DECLARE_FEATURE(kNoUndamagedOverlayPromotion);
 #endif
 
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_IOS)
 GPU_EXPORT BASE_DECLARE_FEATURE(kMetal);
 #endif
 
@@ -89,6 +89,8 @@ GPU_EXPORT BASE_DECLARE_FEATURE(kWebGPUService);
 GPU_EXPORT BASE_DECLARE_FEATURE(kIncreasedCmdBufferParseSlice);
 
 GPU_EXPORT BASE_DECLARE_FEATURE(kPassthroughYuvRgbConversion);
+
+GPU_EXPORT BASE_DECLARE_FEATURE(kCmdDecoderAlwaysGetSizeFromSourceTexture);
 
 GPU_EXPORT bool UseGles2ForOopR();
 GPU_EXPORT bool IsUsingVulkan();

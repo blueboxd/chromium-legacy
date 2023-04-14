@@ -122,7 +122,7 @@ bool SetupPaintForSvgText(const NGTextPainter::SvgTextPaintState& state,
                                           ? *state.InlineText().Parent()
                                           : state.TextDecorationObject();
   if (!SVGObjectPainter(layout_parent)
-           .PreparePaint(context, state.IsRenderingClipPathAsMaskImage(), style,
+           .PreparePaint(state.IsRenderingClipPathAsMaskImage(), style,
                          resource_mode, flags, state.GetShaderTransform())) {
     return false;
   }
@@ -130,6 +130,9 @@ bool SetupPaintForSvgText(const NGTextPainter::SvgTextPaintState& state,
   flags.setAntiAlias(true);
 
   if (style.TextShadow() &&
+      // Text shadows are disabled for clip-paths, because they are not
+      // geometry.
+      !state.IsRenderingClipPathAsMaskImage() &&
       // Text shadows are disabled when printing. http://crbug.com/258321
       !layout_parent.GetDocument().Printing()) {
     flags.setLooper(TextPainterBase::CreateDrawLooper(

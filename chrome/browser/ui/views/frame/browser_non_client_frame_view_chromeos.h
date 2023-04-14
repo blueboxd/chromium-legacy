@@ -23,10 +23,6 @@
 #include "ui/display/display_observer.h"
 #include "ui/display/tablet_state.h"
 
-namespace {
-class WebAppNonClientFrameViewAshTest;
-}
-
 class ProfileIndicatorIcon;
 class TabIconView;
 
@@ -58,6 +54,10 @@ class BrowserNonClientFrameViewChromeOS
   // BrowserNonClientFrameView:
   gfx::Rect GetBoundsForTabStripRegion(
       const gfx::Size& tabstrip_minimum_size) const override;
+  gfx::Rect GetBoundsForWebAppFrameToolbar(
+      const gfx::Size& toolbar_preferred_size) const override;
+  void LayoutWebAppWindowTitle(const gfx::Rect& available_space,
+                               views::Label& window_title_label) const override;
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
@@ -130,49 +130,11 @@ class BrowserNonClientFrameViewChromeOS
   void AddedToWidget() override;
 
  private:
-  // TODO(pkasting): Test the public API or create a test helper class, don't
-  // add this many friends
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           NonImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           CaptionButtonsHiddenNonImmersiveFullscreen);
+  friend class BrowserNonClientFrameViewChromeOSTestApi;
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeBrowserViewTestNoWebUiTabStrip,
                            ImmersiveFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ToggleTabletModeRelayout);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTestNoWebUiTabStrip,
-                           AvatarDisplayOnTeleportedWindow);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           BrowserHeaderVisibilityInTabletModeTest);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ImmersiveModeTopViewInset);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           ToggleTabletModeOnMinimizedWindow);
-  FRIEND_TEST_ALL_PREFIXES(WebAppNonClientFrameViewAshTest,
-                           ActiveStateOfButtonMatchesWidget);
-  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewChromeOSTest,
-                           RestoreMinimizedBrowserUpdatesCaption);
-  FRIEND_TEST_ALL_PREFIXES(FloatBrowserNonClientFrameViewChromeOSTest,
-                           BrowserHeaderVisibilityInTabletModeTest);
-  FRIEND_TEST_ALL_PREFIXES(FloatBrowserNonClientFrameViewChromeOSTest,
-                           BrowserAppHeaderVisibilityInTabletModeTest);
-  FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerChromeosWebAppBrowserTest,
-                           FrameLayoutToggleTabletMode);
-  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           TabletModeBrowserCaptionButtonVisibility);
-  FRIEND_TEST_ALL_PREFIXES(
-      HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-      CaptionButtonVisibilityForBrowserLaunchedInTabletMode);
-  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           TabletModeAppCaptionButtonVisibility);
-  FRIEND_TEST_ALL_PREFIXES(NonHomeLauncherBrowserNonClientFrameViewChromeOSTest,
-                           HeaderHeightForSnappedBrowserInSplitView);
-  FRIEND_TEST_ALL_PREFIXES(TabSearchFrameCaptionButtonTest,
-                           TabSearchBubbleHostTest);
 
-  friend class WebAppNonClientFrameViewAshTest;
-
-  bool AppIsBorderlessPwa();
+  bool AppIsBorderlessPwa() const;
 
   // Returns true if `GetShowCaptionButtonsWhenNotInOverview()` returns true
   // and this browser window is not showing in overview.
@@ -202,6 +164,9 @@ class BrowserNonClientFrameViewChromeOS
 
   // Creates the frame header for the browser window.
   std::unique_ptr<chromeos::FrameHeader> CreateFrameHeader();
+
+  // Shows a dogfood feedpage page for the multitask menu.
+  void ShowFeedbackPageForMenu();
 
   // Triggers the web-app origin and icon animations, assumes the web-app UI
   // elements exist.

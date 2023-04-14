@@ -15,7 +15,7 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/raw_ref.h"
 #include "sandbox/win/src/interceptors.h"
 #include "sandbox/win/src/sandbox_types.h"
@@ -150,7 +150,9 @@ class InterceptionManager {
     std::wstring dll;                 // Name of dll to intercept.
     std::string function;             // Name of function to intercept.
     std::string interceptor;          // Name of interceptor function.
-    raw_ptr<const void> interceptor_address;  // Interceptor's entry point.
+    // Interceptor's entry point. Not a raw_ptr<> as it will always point at
+    // a function like `TargetNtOpenThread64`.
+    RAW_PTR_EXCLUSION const void* interceptor_address;
   };
 
   // Calculates the size of the required configuration buffer.
@@ -189,13 +191,6 @@ class InterceptionManager {
   // Returns true if this interception is to be performed by the child
   // as opposed to from the parent.
   bool IsInterceptionPerformedByChild(const InterceptionData& data) const;
-
-  // Allocates a buffer on the child's address space (returned on
-  // remote_buffer), and fills it with the contents of a local buffer.
-  // Returns SBOX_ALL_OK on success.
-  ResultCode CopyDataToChild(const void* local_buffer,
-                             size_t buffer_bytes,
-                             void** remote_buffer) const;
 
   // Performs the cold patch (from the parent) of ntdll.
   // Returns SBOX_ALL_OK on success.

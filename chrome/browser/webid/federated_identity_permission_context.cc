@@ -5,6 +5,7 @@
 #include "chrome/browser/webid/federated_identity_permission_context.h"
 
 #include "chrome/browser/webid/federated_identity_account_keyed_permission_context.h"
+#include "chrome/browser/webid/federated_identity_identity_provider_registration_context.h"
 #include "chrome/browser/webid/federated_identity_identity_provider_signin_status_context.h"
 #include "content/public/browser/browser_context.h"
 
@@ -27,10 +28,23 @@ FederatedIdentityPermissionContext::FederatedIdentityPermissionContext(
           kSharingIdpKey)),
       idp_signin_context_(
           new FederatedIdentityIdentityProviderSigninStatusContext(
+              browser_context)),
+      idp_registration_context_(
+          new FederatedIdentityIdentityProviderRegistrationContext(
               browser_context)) {}
 
 FederatedIdentityPermissionContext::~FederatedIdentityPermissionContext() =
     default;
+
+void FederatedIdentityPermissionContext::AddIdpSigninStatusObserver(
+    IdpSigninStatusObserver* observer) {
+  idp_signin_status_observer_list_.AddObserver(observer);
+}
+
+void FederatedIdentityPermissionContext::RemoveIdpSigninStatusObserver(
+    IdpSigninStatusObserver* observer) {
+  idp_signin_status_observer_list_.RemoveObserver(observer);
+}
 
 bool FederatedIdentityPermissionContext::HasActiveSession(
     const url::Origin& relying_party_requester,
@@ -87,11 +101,32 @@ absl::optional<bool> FederatedIdentityPermissionContext::GetIdpSigninStatus(
 void FederatedIdentityPermissionContext::SetIdpSigninStatus(
     const url::Origin& idp_origin,
     bool idp_signin_status) {
+  absl::optional<bool> old_idp_signin_status = GetIdpSigninStatus(idp_origin);
+  if (idp_signin_status == old_idp_signin_status) {
+    return;
+  }
+
   idp_signin_context_->SetSigninStatus(idp_origin, idp_signin_status);
+  for (IdpSigninStatusObserver& observer : idp_signin_status_observer_list_) {
+    observer.OnIdpSigninStatusChanged(idp_origin, idp_signin_status);
+  }
+}
+
+std::vector<GURL> FederatedIdentityPermissionContext::GetRegisteredIdPs() {
+  return idp_registration_context_->GetRegisteredIdPs();
+}
+
+void FederatedIdentityPermissionContext::RegisterIdP(const GURL& origin) {
+  idp_registration_context_->RegisterIdP(origin);
+}
+
+void FederatedIdentityPermissionContext::UnregisterIdP(const GURL& origin) {
+  idp_registration_context_->UnregisterIdP(origin);
 }
 
 void FederatedIdentityPermissionContext::FlushScheduledSaveSettingsCalls() {
   active_session_context_->FlushScheduledSaveSettingsCalls();
   sharing_context_->FlushScheduledSaveSettingsCalls();
   idp_signin_context_->FlushScheduledSaveSettingsCalls();
+  idp_registration_context_->FlushScheduledSaveSettingsCalls();
 }

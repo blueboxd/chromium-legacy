@@ -31,6 +31,7 @@
 #include "third_party/blink/public/mojom/frame/frame_replication_state.mojom-forward.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom-forward.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-forward.h"
 
 #include "base/time/time.h"
 #include "url/gurl.h"
@@ -501,7 +502,14 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
 
   // Helper for GetParentOrOuterDocument/GetParentOrOuterDocumentOrEmbedder.
   // Do not use directly.
-  RenderFrameHostImpl* GetParentOrOuterDocumentHelper(bool escape_guest_view);
+  // `escape_guest_view` determines whether to iterate out of guest views and is
+  // the behaviour distinction between GetParentOrOuterDocument and
+  // GetParentOrOuterDocumentOrEmbedder. See the comment on
+  // GetParentOrOuterDocumentOrEmbedder for details.
+  // `include_prospective` includes embedders which own our frame tree, but have
+  // not yet attached it to the outer frame tree.
+  RenderFrameHostImpl* GetParentOrOuterDocumentHelper(bool escape_guest_view,
+                                                      bool include_prospective);
 
   // Sets the unique_name and name fields on replication_state_. To be used in
   // prerender activation to make sure the FrameTreeNode replication state is
@@ -538,6 +546,13 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // variable attached to the fenced frame root FrameTreeNode, which may be
   // either this node or an ancestor of it.
   const absl::optional<FencedFrameProperties>& GetFencedFrameProperties();
+
+  // Called from the currently active document via the
+  // `Fence.setReportEventDataForAutomaticBeacons` JS API.
+  void SetFencedFrameAutomaticBeaconReportEventData(
+      const std::string& event_data,
+      const std::vector<blink::FencedFrame::ReportingDestination>& destination)
+      override;
 
   // Return the number of fenced frame boundaries above this frame. The
   // outermost main frame's frame tree has fenced frame depth 0, a topmost
@@ -613,6 +628,8 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
       blink::mojom::UserActivationUpdateType update_type,
       blink::mojom::UserActivationNotificationType notification_type) override;
 
+  void DidConsumeHistoryUserActivation() override;
+
   std::unique_ptr<NavigationRequest>
   CreateNavigationRequestForSynchronousRendererCommit(
       RenderFrameHostImpl* render_frame_host,
@@ -630,12 +647,16 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
       const std::vector<GURL>& redirects,
       const GURL& original_url,
       std::unique_ptr<CrossOriginEmbedderPolicyReporter> coep_reporter,
-      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info,
       std::unique_ptr<SubresourceWebBundleNavigationInfo>
           subresource_web_bundle_navigation_info,
       int http_response_code) override;
   void CancelNavigation() override;
   bool Credentialless() const override;
+#if !BUILDFLAG(IS_ANDROID)
+  void GetVirtualAuthenticatorManager(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver) override;
+#endif
 
  private:
   friend class CSPEmbeddedEnforcementUnitTest;
@@ -672,6 +693,8 @@ class CONTENT_EXPORT FrameTreeNode : public RenderFrameHostOwner {
   // should be allowed, this returns true and also clears corresponding pending
   // user activation state in the widget. Otherwise, this returns false.
   bool VerifyUserActivation();
+
+  absl::optional<FencedFrameProperties>& GetFencedFramePropertiesForEditing();
 
   // The next available browser-global FrameTreeNode ID.
   static int next_frame_tree_node_id_;

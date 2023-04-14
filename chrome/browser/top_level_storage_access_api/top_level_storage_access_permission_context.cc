@@ -28,6 +28,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "net/base/features.h"
+#include "net/base/schemeful_site.h"
 #include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/first_party_sets/same_party_context.h"
@@ -75,7 +76,7 @@ void TopLevelStorageAccessPermissionContext::DecidePermission(
     permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!user_gesture ||
-      !base::FeatureList::IsEnabled(net::features::kStorageAccessAPI) ||
+      !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
       !requesting_origin.is_valid() || !embedding_origin.is_valid()) {
     RecordOutcomeSample(CookieRequestOutcome::kDeniedByPrerequisites);
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
@@ -142,12 +143,33 @@ TopLevelStorageAccessPermissionContext::GetPermissionStatusInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-  if (!base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     return CONTENT_SETTING_BLOCK;
   }
 
-  return PermissionContextBase::GetPermissionStatusInternal(
+  if (render_frame_host && !render_frame_host->IsInPrimaryMainFrame()) {
+    // Note that portal and other main but non-outermost frames are
+    // currently disallowed from queries by the PermissionService. This check
+    // ensures that we do not assume that behavior, however.
+    net::SchemefulSite top_level_site(
+        render_frame_host->GetOutermostMainFrame()->GetLastCommittedURL());
+    net::SchemefulSite current_site(render_frame_host->GetLastCommittedURL());
+    if (top_level_site != current_site) {
+      // Cross-site frames cannot receive real answers.
+      return CONTENT_SETTING_ASK;
+    }
+  }
+
+  ContentSetting setting = PermissionContextBase::GetPermissionStatusInternal(
       render_frame_host, requesting_origin, embedding_origin);
+
+  // Although the current implementation does not persist rejected permissions,
+  // the spec calls for avoiding exposure of rejections to prevent any attempt
+  // at retaliating against users who would reject a prompt.
+  if (setting == CONTENT_SETTING_BLOCK) {
+    return CONTENT_SETTING_ASK;
+  }
+  return setting;
 }
 
 void TopLevelStorageAccessPermissionContext::NotifyPermissionSet(
@@ -180,7 +202,7 @@ void TopLevelStorageAccessPermissionContext::NotifyPermissionSetInternal(
     CookieRequestOutcome outcome) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!base::FeatureList::IsEnabled(net::features::kStorageAccessAPI)) {
+  if (!base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
     return;
   }
 

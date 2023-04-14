@@ -995,6 +995,20 @@ class MediaStreamManager::DeviceRequest {
       const DesktopMediaID& media_id,
       blink::mojom::MediaStreamStateChange new_state) {}
 
+  virtual void OnCaptureConfigurationChanged(
+      const std::string& label,
+      const blink::MediaStreamDevice& device) {}
+
+  base::RepeatingCallback<void(const std::string&,
+                               blink::mojom::MediaStreamType type,
+                               media::mojom::CaptureHandlePtr)>
+  OnCaptureHandleChangeCb() {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    return base::BindRepeating(&DeviceRequest::OnCaptureHandleChange,
+                               GetWeakPtr());
+  }
+
+  // Receives a new capture-handle from the CaptureHandleManager.
   virtual void OnCaptureHandleChange(
       const std::string& label,
       blink::mojom::MediaStreamType type,
@@ -1042,6 +1056,9 @@ class MediaStreamManager::DeviceRequest {
   PermissionController::SubscriptionId audio_subscription_id;
 
   PermissionController::SubscriptionId video_subscription_id;
+
+ protected:
+  virtual base::WeakPtr<DeviceRequest> GetWeakPtr() = 0;
 
  private:
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1131,6 +1148,8 @@ class MediaStreamManager::MediaAccessRequest
                       std::move(salt_and_origin)),
         media_access_request_cb_(std::move(media_access_request_cb)) {}
 
+  ~MediaAccessRequest() override { DCHECK_CURRENTLY_ON(BrowserThread::IO); }
+
   void FinalizeMediaAccessRequest(
       const std::string& label,
       const blink::mojom::StreamDevicesSet& stream_devices_set) override {
@@ -1153,9 +1172,14 @@ class MediaStreamManager::MediaAccessRequest
   }
 
  private:
+  base::WeakPtr<DeviceRequest> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // Callback to the requester which audio/video devices have been selected.
   // It can be null if the requester has no interest to know the result.
   MediaAccessRequestCallback media_access_request_cb_;
+  base::WeakPtrFactory<DeviceRequest> weak_factory_{this};
 };
 
 class MediaStreamManager::CreateDeviceRequest
@@ -1174,6 +1198,8 @@ class MediaStreamManager::CreateDeviceRequest
       DeviceStoppedCallback device_stopped_cb,
       DeviceChangedCallback device_changed_cb,
       DeviceRequestStateChangeCallback device_request_state_change_cb,
+      DeviceCaptureConfigurationChangeCallback
+          device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb)
       : DeviceRequest(requesting_process_id,
                       requesting_frame_id,
@@ -1188,6 +1214,8 @@ class MediaStreamManager::CreateDeviceRequest
         device_changed_cb_(std::move(device_changed_cb)),
         device_request_state_change_cb_(
             std::move(device_request_state_change_cb)),
+        device_capture_configuration_change_cb_(
+            std::move(device_capture_configuration_change_cb)),
         device_capture_handle_change_cb_(
             std::move(device_capture_handle_change_cb)) {}
 
@@ -1271,10 +1299,20 @@ class MediaStreamManager::CreateDeviceRequest
     }
   }
 
+  void OnCaptureConfigurationChanged(
+      const std::string& label,
+      const blink::MediaStreamDevice& device) override {
+    if (device_capture_configuration_change_cb_) {
+      device_capture_configuration_change_cb_.Run(label, device);
+    }
+  }
+
+  // Receive a new capture-handle from the CaptureHandleManager.
   void OnCaptureHandleChange(
       const std::string& label,
       blink::mojom::MediaStreamType type,
       media::mojom::CaptureHandlePtr capture_handle) override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK_EQ(1u, stream_devices_set.stream_devices.size());
     const blink::mojom::StreamDevices& devices =
         *stream_devices_set.stream_devices[0];
@@ -1308,6 +1346,8 @@ class MediaStreamManager::CreateDeviceRequest
  private:
   DeviceChangedCallback device_changed_cb_;
   DeviceRequestStateChangeCallback device_request_state_change_cb_;
+  DeviceCaptureConfigurationChangeCallback
+      device_capture_configuration_change_cb_;
   DeviceCaptureHandleChangeCallback device_capture_handle_change_cb_;
 };
 
@@ -1326,6 +1366,8 @@ class MediaStreamManager::GenerateStreamsRequest
       DeviceStoppedCallback device_stopped_cb,
       DeviceChangedCallback device_changed_cb,
       DeviceRequestStateChangeCallback device_request_state_change_cb,
+      DeviceCaptureConfigurationChangeCallback
+          device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
       GenerateStreamsCallback generate_streams_cb)
       : CreateDeviceRequest(requesting_process_id,
@@ -1340,12 +1382,14 @@ class MediaStreamManager::GenerateStreamsRequest
                             std::move(device_stopped_cb),
                             std::move(device_changed_cb),
                             std::move(device_request_state_change_cb),
+                            std::move(device_capture_configuration_change_cb),
                             std::move(device_capture_handle_change_cb)),
         generate_streams_cb_(std::move(generate_streams_cb)) {
     DCHECK(generate_streams_cb_);
   }
 
   ~GenerateStreamsRequest() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (generate_streams_cb_) {
       std::move(generate_streams_cb_)
           .Run(MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN,
@@ -1373,7 +1417,12 @@ class MediaStreamManager::GenerateStreamsRequest
   }
 
  private:
+  base::WeakPtr<DeviceRequest> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   GenerateStreamsCallback generate_streams_cb_;
+  base::WeakPtrFactory<DeviceRequest> weak_factory_{this};
 };
 
 class MediaStreamManager::GetOpenDeviceRequest
@@ -1388,6 +1437,8 @@ class MediaStreamManager::GetOpenDeviceRequest
       DeviceStoppedCallback device_stopped_cb,
       DeviceChangedCallback device_changed_cb,
       DeviceRequestStateChangeCallback device_request_state_change_cb,
+      DeviceCaptureConfigurationChangeCallback
+          device_capture_configuration_change_cb,
       DeviceCaptureHandleChangeCallback device_capture_handle_change_cb,
       GetOpenDeviceCallback get_open_device_cb)
       : CreateDeviceRequest(requesting_process_id,
@@ -1402,12 +1453,14 @@ class MediaStreamManager::GetOpenDeviceRequest
                             std::move(device_stopped_cb),
                             std::move(device_changed_cb),
                             std::move(device_request_state_change_cb),
+                            std::move(device_capture_configuration_change_cb),
                             std::move(device_capture_handle_change_cb)),
         get_open_device_cb_(std::move(get_open_device_cb)) {
     DCHECK(get_open_device_cb_);
   }
 
   ~GetOpenDeviceRequest() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (get_open_device_cb_) {
       std::move(get_open_device_cb_)
           .Run(MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN, nullptr);
@@ -1441,6 +1494,10 @@ class MediaStreamManager::GetOpenDeviceRequest
   }
 
  private:
+  base::WeakPtr<DeviceRequest> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // This callback is used by transferred MediaStreamTracks to access and clone
   // an existing open MediaStreamDevice (identified by its session_id). If the
   // device is found, it is returned to this callback along with a
@@ -1448,6 +1505,7 @@ class MediaStreamManager::GetOpenDeviceRequest
   // MediaStreamRequestResult::INVALID_STATE along with absl::nullopt instead of
   // a MediaStreamDevice.
   GetOpenDeviceCallback get_open_device_cb_;
+  base::WeakPtrFactory<DeviceRequest> weak_factory_{this};
 };
 
 class MediaStreamManager::OpenDeviceRequest
@@ -1477,6 +1535,7 @@ class MediaStreamManager::OpenDeviceRequest
   }
 
   ~OpenDeviceRequest() override {
+    DCHECK_CURRENTLY_ON(BrowserThread::IO);
     if (open_device_cb_) {
       std::move(open_device_cb_)
           .Run(/*success=*/false, std::string(), MediaStreamDevice());
@@ -1503,10 +1562,15 @@ class MediaStreamManager::OpenDeviceRequest
   }
 
  private:
+  base::WeakPtr<DeviceRequest> GetWeakPtr() override {
+    return weak_factory_.GetWeakPtr();
+  }
+
   // This callback is only used by pepper and tries to open the device
   // identified by device_id. If it is opened successfully, it returns this
   // device. Otherwise, returns an empty device.
   OpenDeviceCallback open_device_cb_;
+  base::WeakPtrFactory<DeviceRequest> weak_factory_{this};
 };
 
 // static
@@ -1707,6 +1771,8 @@ void MediaStreamManager::GenerateStreams(
     DeviceStoppedCallback device_stopped_cb,
     DeviceChangedCallback device_changed_cb,
     DeviceRequestStateChangeCallback device_request_state_change_cb,
+    DeviceCaptureConfigurationChangeCallback
+        device_capture_configuration_change_cb,
     DeviceCaptureHandleChangeCallback device_capture_handle_change_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   SendLogMessage(GetGenerateStreamsLogString(render_process_id, render_frame_id,
@@ -1718,6 +1784,7 @@ void MediaStreamManager::GenerateStreams(
           std::move(salt_and_origin), std::move(device_stopped_cb),
           std::move(device_changed_cb),
           std::move(device_request_state_change_cb),
+          std::move(device_capture_configuration_change_cb),
           std::move(device_capture_handle_change_cb),
           std::move(generate_streams_cb));
   DeviceRequests::const_iterator request_it = AddRequest(std::move(request));
@@ -1759,6 +1826,8 @@ void MediaStreamManager::GetOpenDevice(
     DeviceStoppedCallback device_stopped_cb,
     DeviceChangedCallback device_changed_cb,
     DeviceRequestStateChangeCallback device_request_state_change_cb,
+    DeviceCaptureConfigurationChangeCallback
+        device_capture_configuration_change_cb,
     DeviceCaptureHandleChangeCallback device_capture_handle_change_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer));
@@ -1769,6 +1838,7 @@ void MediaStreamManager::GetOpenDevice(
           std::move(salt_and_origin), std::move(device_stopped_cb),
           std::move(device_changed_cb),
           std::move(device_request_state_change_cb),
+          std::move(device_capture_configuration_change_cb),
           std::move(device_capture_handle_change_cb),
           std::move(get_open_device_cb));
 
@@ -1835,48 +1905,6 @@ void MediaStreamManager::CancelRequest(const std::string& label) {
   }
 
   CancelRequest(request_it);
-}
-
-void MediaStreamManager::CancelRequest(
-    DeviceRequests::const_iterator request_it) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (request_it == requests_.end()) {
-    return;
-  }
-  const std::string& label = request_it->first;
-  DeviceRequest* const request = request_it->second.get();
-
-  SendLogMessage(
-      base::StringPrintf("CancelRequest({label=%s})", label.c_str()));
-
-  // This is a request for closing one or more devices.
-  for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
-       request->stream_devices_set.stream_devices) {
-    const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
-    for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
-             &stream_devices.audio_device,
-             &stream_devices.video_device,
-         }) {
-      if (!device_ptr->has_value()) {
-        continue;
-      }
-      const blink::MediaStreamDevice& device = device_ptr->value();
-      const MediaRequestState state = request->state(device.type);
-      // If we have not yet requested the device to be opened - just ignore it.
-      if (state != MEDIA_REQUEST_STATE_OPENING &&
-          state != MEDIA_REQUEST_STATE_DONE) {
-        continue;
-      }
-      // Stop the opening/opened devices of the requests.
-      CloseDevice(device.type, device.session_id());
-    }
-  }
-
-  // Cancel the request if still pending at UI side.
-  request->SetState(MediaStreamType::NUM_MEDIA_TYPES,
-                    MEDIA_REQUEST_STATE_CLOSING);
-  DeleteRequest(request_it);  // Invalidates |label| and |request|.
 }
 
 void MediaStreamManager::CancelAllRequests(int render_process_id,
@@ -2442,6 +2470,48 @@ void MediaStreamManager::UpdateDeviceTransferStatus(
       request->ShouldStopInFuture(stream_type)) {
     StopDevice(stream_type, device->session_id());
   }
+}
+
+void MediaStreamManager::CancelRequest(
+    DeviceRequests::const_iterator request_it) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (request_it == requests_.end()) {
+    return;
+  }
+  const std::string& label = request_it->first;
+  DeviceRequest* const request = request_it->second.get();
+
+  SendLogMessage(
+      base::StringPrintf("CancelRequest({label=%s})", label.c_str()));
+
+  // This is a request for closing one or more devices.
+  for (const blink::mojom::StreamDevicesPtr& stream_devices_ptr :
+       request->stream_devices_set.stream_devices) {
+    const blink::mojom::StreamDevices& stream_devices = *stream_devices_ptr;
+    for (const absl::optional<blink::MediaStreamDevice>* device_ptr : {
+             &stream_devices.audio_device,
+             &stream_devices.video_device,
+         }) {
+      if (!device_ptr->has_value()) {
+        continue;
+      }
+      const blink::MediaStreamDevice& device = device_ptr->value();
+      const MediaRequestState state = request->state(device.type);
+      // If we have not yet requested the device to be opened - just ignore it.
+      if (state != MEDIA_REQUEST_STATE_OPENING &&
+          state != MEDIA_REQUEST_STATE_DONE) {
+        continue;
+      }
+      // Stop the opening/opened devices of the requests.
+      CloseDevice(device.type, device.session_id());
+    }
+  }
+
+  // Cancel the request if still pending at UI side.
+  request->SetState(MediaStreamType::NUM_MEDIA_TYPES,
+                    MEDIA_REQUEST_STATE_CLOSING);
+  DeleteRequest(request_it);  // Invalidates |label| and |request|.
 }
 
 void MediaStreamManager::DeleteRequest(
@@ -3024,10 +3094,8 @@ void MediaStreamManager::PanTiltZoomPermissionChecked(
   // while the current task was hopping between threads/queues, an event will
   // be fired by the CaptureHandleManager.
   if (video_device.has_value()) {
-    MaybeStartTrackingCaptureHandleConfig(
-        label, video_device.value(),
-        GlobalRenderFrameHostId(request->requesting_process_id,
-                                request->requesting_frame_id));
+    MaybeStartTrackingCaptureHandleConfig(label, video_device.value(),
+                                          *request);
   }
 }
 
@@ -3086,13 +3154,12 @@ void MediaStreamManager::FinalizeRequestFailed(
 void MediaStreamManager::FinalizeChangeDevice(const std::string& label,
                                               DeviceRequest* request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(request);
 
   request->FinalizeChangeDevice(label);
 
-  MaybeUpdateTrackedCaptureHandleConfigs(
-      label, request->stream_devices_set,
-      GlobalRenderFrameHostId(request->requesting_process_id,
-                              request->requesting_frame_id));
+  MaybeUpdateTrackedCaptureHandleConfigs(label, request->stream_devices_set,
+                                         *request);
 }
 
 void MediaStreamManager::FinalizeMediaAccessRequest(
@@ -4035,6 +4102,25 @@ void MediaStreamManager::OnStreamStarted(const std::string& label) {
   }
 }
 
+void MediaStreamManager::OnCaptureConfigurationChanged(
+    const base::UnguessableToken& session_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  for (LabeledDeviceRequest& labeled_request : requests_) {
+    const std::string& label = labeled_request.first;
+    DeviceRequest* request = labeled_request.second.get();
+    for (const auto& stream_devices_ptr :
+         request->stream_devices_set.stream_devices) {
+      const blink::MediaStreamDevice* const device_ptr =
+          GetStreamDevice(*stream_devices_ptr, session_id);
+      if (!device_ptr) {
+        continue;
+      }
+      request->OnCaptureConfigurationChanged(label, *device_ptr);
+    }
+  }
+}
+
 void MediaStreamManager::OnRegionCaptureRectChanged(
     const base::UnguessableToken& session_id,
     const absl::optional<gfx::Rect>& region_capture_rect) {
@@ -4287,7 +4373,7 @@ void MediaStreamManager::PermissionChangedCallback(
 void MediaStreamManager::MaybeStartTrackingCaptureHandleConfig(
     const std::string& label,
     const MediaStreamDevice& captured_device,
-    GlobalRenderFrameHostId capturer) {
+    DeviceRequest& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!blink::IsVideoInputMediaType(captured_device.type) ||
@@ -4295,20 +4381,20 @@ void MediaStreamManager::MaybeStartTrackingCaptureHandleConfig(
     return;
   }
 
+  const GlobalRenderFrameHostId capturer(request.requesting_process_id,
+                                         request.requesting_frame_id);
+
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
   // owned by BrowserMainLoop.
   // Since |capture_handle_manager_| is owned by |this|, it is also safe to
   // bind base::Unretained(&capture_handle_manager_).
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CaptureHandleManager::OnTabCaptureStarted,
-          base::Unretained(&capture_handle_manager_), label, captured_device,
-          capturer,
-          base::BindPostTask(
-              GetIOThreadTaskRunner({}),
-              base::BindRepeating(&MediaStreamManager::OnCaptureHandleChange,
-                                  base::Unretained(this)))));
+      base::BindOnce(&CaptureHandleManager::OnTabCaptureStarted,
+                     base::Unretained(&capture_handle_manager_), label,
+                     captured_device, capturer,
+                     base::BindPostTask(GetIOThreadTaskRunner({}),
+                                        request.OnCaptureHandleChangeCb())));
 }
 
 void MediaStreamManager::MaybeStopTrackingCaptureHandleConfig(
@@ -4333,9 +4419,12 @@ void MediaStreamManager::MaybeStopTrackingCaptureHandleConfig(
 void MediaStreamManager::MaybeUpdateTrackedCaptureHandleConfigs(
     const std::string& label,
     const blink::mojom::StreamDevicesSet& new_devices_set,
-    GlobalRenderFrameHostId capturer) {
+    DeviceRequest& request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(1u, new_devices_set.stream_devices.size());
+
+  const GlobalRenderFrameHostId capturer(request.requesting_process_id,
+                                         request.requesting_frame_id);
 
   const blink::mojom::StreamDevices& new_devices =
       *new_devices_set.stream_devices[0];
@@ -4355,29 +4444,11 @@ void MediaStreamManager::MaybeUpdateTrackedCaptureHandleConfigs(
   // BrowserMainLoop.
   GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,
-      base::BindOnce(
-          &CaptureHandleManager::OnTabCaptureDevicesUpdated,
-          base::Unretained(&capture_handle_manager_), label,
-          std::move(filtered_new_devices_set), capturer,
-          base::BindPostTask(
-              GetIOThreadTaskRunner({}),
-              base::BindRepeating(&MediaStreamManager::OnCaptureHandleChange,
-                                  base::Unretained(this)))));
-}
-
-void MediaStreamManager::OnCaptureHandleChange(
-    const std::string& label,
-    blink::mojom::MediaStreamType type,
-    media::mojom::CaptureHandlePtr capture_handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  DeviceRequest* const request = FindRequest(label);
-  if (!request) {
-    DVLOG(1) << "The request with label = " << label << " does not exist.";
-    return;
-  }
-
-  request->OnCaptureHandleChange(label, type, std::move(capture_handle));
+      base::BindOnce(&CaptureHandleManager::OnTabCaptureDevicesUpdated,
+                     base::Unretained(&capture_handle_manager_), label,
+                     std::move(filtered_new_devices_set), capturer,
+                     base::BindPostTask(GetIOThreadTaskRunner({}),
+                                        request.OnCaptureHandleChangeCb())));
 }
 
 bool MediaStreamManager::ShouldUseFakeUIProxy(

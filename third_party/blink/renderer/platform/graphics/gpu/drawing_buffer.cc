@@ -44,6 +44,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/common/resources/shared_bitmap.h"
+#include "components/viz/common/resources/shared_image_format.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -1113,7 +1114,7 @@ bool DrawingBuffer::CopyToPlatformMailbox(
       unpack_premultiply_alpha_needed = GL_TRUE;
     }
 
-    dst_raster_interface->CopySubTexture(
+    dst_raster_interface->CopySharedImage(
         src_mailbox.mailbox, dst_mailbox, dst_texture_target,
         dst_texture_offset.x(), dst_texture_offset.y(), src_sub_rectangle.x(),
         src_sub_rectangle.y(), src_sub_rectangle.width(),
@@ -1906,8 +1907,9 @@ scoped_refptr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
       }
 
       back_buffer_mailbox = sii->CreateSharedImage(
-          color_buffer_format_, size, color_space_, origin,
-          back_buffer_alpha_type, usage, gpu::kNullSurfaceHandle);
+          viz::SharedImageFormat::SinglePlane(color_buffer_format_), size,
+          color_space_, origin, back_buffer_alpha_type, usage,
+          gpu::kNullSurfaceHandle);
     }
   }
 

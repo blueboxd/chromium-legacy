@@ -79,8 +79,16 @@ void TabScrubberChromeOS::SetEnabled(bool enabled) {
   enabled_ = enabled;
 }
 
-void TabScrubberChromeOS::SynthesizedScrollEvent(float x_offset) {
-  ui::ScrollEvent event(ui::ET_SCROLL, gfx::PointF(), gfx::PointF(),
+void TabScrubberChromeOS::SynthesizedScrollEvent(float x_offset,
+                                                 bool is_fling_scroll_event) {
+  // ET_SCROLL_FLING_START and ET_SCROLL_FLING_CANCEL are both handled in the
+  // same way inside OnScrollEvent(), so we can set ET_SCROLL_FLING_START if
+  // `is_fling_scroll_event` is true.
+  // TODO(crbug.com/1277946): Instead of generating event here, use the real
+  // event passed from wayland.
+  ui::EventType event_type =
+      is_fling_scroll_event ? ui::ET_SCROLL_FLING_START : ui::ET_SCROLL;
+  ui::ScrollEvent event(event_type, gfx::PointF(), gfx::PointF(),
                         ui::EventTimeForNow(),
                         /*flags=*/0, x_offset,
                         /*y_offset=*/0.f, /*x_offset_ordinal=*/0.f,
@@ -113,8 +121,7 @@ void TabScrubberChromeOS::OnScrollEvent(ui::ScrollEvent* event) {
   if (!enabled_)
     return;
 
-  if (event->type() == ui::ET_SCROLL_FLING_CANCEL ||
-      event->type() == ui::ET_SCROLL_FLING_START) {
+  if (event->IsFlingScrollEvent()) {
     FinishScrub(true);
     immersive_reveal_lock_.reset();
     return;
@@ -370,16 +377,22 @@ bool TabScrubberChromeOS::MaybeDelegateHandlingToLacros(
     ui::ScrollEvent* event) {
   auto* active_window =
       ash::Shell::Get()->activation_client()->GetActiveWindow();
-  if (!active_window)
+  if (!active_window) {
     return false;
+  }
 
-  if (!crosapi::browser_util::IsLacrosWindow(active_window))
+  if (!crosapi::browser_util::IsLacrosWindow(active_window)) {
     return false;
+  }
 
-  if (event->finger_count() != kFingerCount)
+  // TODO(crbug.com/1414649): FlingScrollEvent should be sent to Lacros as well,
+  // but only sending event with kFingerCount for now as a quick fix for
+  // crbug.com/1414649.
+  if (event->finger_count() != kFingerCount) {
     return false;
+  }
 
-  crosapi::BrowserManager::Get()->HandleTabScrubbing(event->x_offset());
+  crosapi::BrowserManager::Get()->HandleTabScrubbing(event->x_offset(), false);
   return true;
 }
 #endif

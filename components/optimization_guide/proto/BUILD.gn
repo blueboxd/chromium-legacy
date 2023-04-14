@@ -16,11 +16,13 @@ proto_library("optimization_guide_proto") {
     "hints.proto",
     "loading_predictor_metadata.proto",
     "models.proto",
+    "on_device_tail_suggest_model_metadata.proto",
     "page_entities_metadata.proto",
     "page_entities_model_metadata.proto",
     "page_topics_model_metadata.proto",
     "page_topics_override_list.proto",
     "push_notification.proto",
+    "salient_image_metadata.proto",
   ]
 }
 

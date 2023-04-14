@@ -10,11 +10,8 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.components.background_task_scheduler.BackgroundTask;
 import org.chromium.components.background_task_scheduler.BackgroundTaskScheduler;
 import org.chromium.components.background_task_scheduler.TaskInfo;
-
-import java.util.Map;
 
 /**
  * This {@link BackgroundTaskScheduler} is the only one used in production code, and it is used to
@@ -159,43 +156,7 @@ class BackgroundTaskSchedulerImpl implements BackgroundTaskScheduler {
         try (TraceEvent te = TraceEvent.scoped("BackgroundTaskScheduler.checkForOSUpgrade")) {
             ThreadUtils.assertOnUiThread();
 
-            // Update tasks stored in the old format to the proto format at Chrome Startup, if
-            // tasks are found to be stored in the old format. This allows to keep only one
-            // implementation of the storage methods.
-            // This proto store was added in M78, and should be deleted when upgrades from that
-            // of Chrome is no longer considered a core user journey.
-            // TODO(crbug.com/1406114) Remove this migration and the underlying preferences.
-            BackgroundTaskSchedulerPrefs.migrateStoredTasksToProto();
-
             BackgroundTaskSchedulerUma.getInstance().flushStats();
-        }
-    }
-
-    @Override
-    public void reschedule(Context context) {
-        try (TraceEvent te = TraceEvent.scoped("BackgroundTaskScheduler.reschedule")) {
-            ThreadUtils.assertOnUiThread();
-            Map<Integer, ScheduledTaskProto.ScheduledTask> scheduledTasks =
-                    BackgroundTaskSchedulerPrefs.getScheduledTasks();
-            BackgroundTaskSchedulerPrefs.removeAllTasks();
-            for (Map.Entry<Integer, ScheduledTaskProto.ScheduledTask> entry :
-                    scheduledTasks.entrySet()) {
-                final BackgroundTask backgroundTask =
-                        BackgroundTaskSchedulerFactoryInternal.getBackgroundTaskFromTaskId(
-                                entry.getKey());
-                if (backgroundTask == null) {
-                    Log.w(TAG,
-                            "Cannot reschedule task for task id " + entry.getKey() + ". Could not "
-                                    + "instantiate BackgroundTask class.");
-                    // Cancel task if the BackgroundTask class is not found anymore. We assume this
-                    // means that the task has been deprecated.
-                    selectDelegateAndCancel(context, entry.getValue().getType(), entry.getKey());
-                    continue;
-                }
-
-                BackgroundTaskSchedulerUma.getInstance().reportTaskRescheduled();
-                backgroundTask.reschedule(context);
-            }
         }
     }
 

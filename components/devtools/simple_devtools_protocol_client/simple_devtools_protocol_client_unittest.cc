@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-#include "base/containers/span.h"
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted_memory.h"
@@ -22,8 +21,6 @@
 using testing::ElementsAre;
 
 namespace simple_devtools_protocol_client {
-
-namespace {
 
 class SimpleDevToolsProtocolClientTest : public SimpleDevToolsProtocolClient,
                                          public testing::Test {
@@ -347,33 +344,5 @@ TEST_F(SimpleDevToolsProtocolClientEventHandlerNestedRemoveTest,
   // only register the very first event.
   EXPECT_THAT(received_events_, ElementsAre("event"));
 }
-
-class SelfDestructingSimpleDevToolsProtocolClient
-    : public SimpleDevToolsProtocolClient {
- public:
-  void TryIt() {
-    std::string json_message = "{}";
-    SimpleDevToolsProtocolClient::DispatchProtocolMessage(
-        agent_host_.get(), base::as_bytes(base::make_span(json_message)));
-
-    // Delete self so that the task posted by the previous call has nowhere to
-    // go.
-    delete this;
-  }
-
-  void DispatchProtocolMessageTask(base::Value::Dict message) override {
-    CHECK(false) << "use-after-free";
-  }
-};
-
-TEST(SimpleDevToolsProtocolClientTest, DestoroyClientInFlight) {
-  content::BrowserTaskEnvironment task_environment;
-
-  (new SelfDestructingSimpleDevToolsProtocolClient)->TryIt();
-
-  task_environment.RunUntilIdle();
-}
-
-}  // namespace
 
 }  // namespace simple_devtools_protocol_client

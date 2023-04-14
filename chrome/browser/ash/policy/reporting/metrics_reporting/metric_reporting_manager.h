@@ -174,6 +174,9 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
 
   void InitDisplayCollectors();
 
+  // Initializes a periodic collector that collects device activity state.
+  void InitDeviceActivityCollector();
+
   base::TimeDelta GetUploadDelay() const;
 
   std::vector<CollectorBase*> GetTelemetryCollectorsFromSetting(
@@ -191,12 +194,6 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
   // instance.
   std::vector<std::unique_ptr<Sampler>> samplers_
       GUARDED_BY_CONTEXT(sequence_checker_);
-
-  std::vector<std::unique_ptr<CollectorBase>> info_collectors_
-      GUARDED_BY_CONTEXT(sequence_checker_);
-
-  std::vector<std::unique_ptr<MetricEventObserverManager>>
-      event_observer_managers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   std::unique_ptr<MetricReportQueue> info_report_queue_;
   std::unique_ptr<MetricReportQueue> telemetry_report_queue_;
@@ -223,6 +220,12 @@ class MetricReportingManager : public policy::ManagedSessionService::Observer,
 
   base::flat_map<std::string, std::unique_ptr<CollectorBase>>
       telemetry_collectors_ GUARDED_BY_CONTEXT(sequence_checker_);
+
+  std::vector<std::unique_ptr<CollectorBase>> info_collectors_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
+  std::vector<std::unique_ptr<MetricEventObserverManager>>
+      event_observer_managers_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   std::unique_ptr<Delegate> delegate_;
 };

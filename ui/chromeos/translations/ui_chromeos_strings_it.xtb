@@ -32,7 +32,6 @@
 <translation id="1254593899333212300">Connessione diretta a Internet</translation>
 <translation id="1272293450992660632">I valori PIN non corrispondono.</translation>
 <translation id="1280820357415527819">Ricerca di reti mobili in corso</translation>
-<translation id="1291603679744561561">SIM bloccata</translation>
 <translation id="1293556467332435079">File</translation>
 <translation id="1297922636971898492">Google Drive non è al momento disponibile. Il caricamento riprenderà automaticamente una volta che Google Drive sarà tornato operativo.</translation>
 <translation id="1307931752636661898">Impossibile visualizzare i file di Linux</translation>
@@ -51,6 +50,7 @@
 <translation id="1433628812591023318">Per trascinare file in Parallels Desktop, devi prima spostarli in File di Windows.</translation>
 <translation id="1435838927755162558">Condividi cartella con Parallels Desktop</translation>
 <translation id="1439919885608649279">Persona con fiori</translation>
+<translation id="1458457385801829801">Espelli <ph name="TARGET_NAME" /></translation>
 <translation id="1471718551822868769">Slovacco</translation>
 <translation id="1482884275703521657">Finlandese</translation>
 <translation id="148466539719134488">Svizzero</translation>
@@ -191,6 +191,7 @@
 <translation id="2574327434504608656">1 cartella condivisa con Bruschetta</translation>
 <translation id="2578394532502990878">Tamil fonetica</translation>
 <translation id="2579959351793446050">Odia</translation>
+<translation id="2587195714949534472">Preparazione alla sincronizzazione di <ph name="FILE_NAME" /> in corso…</translation>
 <translation id="2602810353103180630">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, intensità del segnale: <ph name="SIGNAL_STRENGTH" />%, bloccata dall'amministratore, dettagli</translation>
 <translation id="2614589611416690597">Video <ph name="VIDEO_TYPE" /></translation>
 <translation id="2620090360073999360">Al momento non è possibile raggiungere Google Drive.</translation>
@@ -292,6 +293,7 @@
 <translation id="3486821258960016770">Mongolo</translation>
 <translation id="3495304270784461826"><ph name="COUNT" /> errori.</translation>
 <translation id="3509680540198371098">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, dettagli</translation>
+<translation id="3511705761158917664">Preparazione alla sincronizzazione di <ph name="NUMBER_OF_ITEMS" /> elementi in corso…</translation>
 <translation id="3522708245912499433">Portoghese</translation>
 <translation id="3524311639100184459">Attenzione: questi file sono temporanei e potrebbero essere eliminati automaticamente per liberare spazio su disco.  <ph name="BEGIN_LINK" />Ulteriori informazioni<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Cartella</translation>
@@ -347,6 +349,7 @@
 <translation id="3924145049010392604">Meta</translation>
 <translation id="3943857333388298514">Incolla</translation>
 <translation id="3952872973865944257">Telugu fonetica</translation>
+<translation id="3954354850384043518">In corso</translation>
 <translation id="3958548648197196644">Kiwi</translation>
 <translation id="3971140002794351170">Scarica il profilo per dispositivi mobili, rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" /></translation>
 <translation id="3973925058222872294">Inglese (UK)</translation>
@@ -406,6 +409,7 @@
 <translation id="4462159676511157176">Assegna nomi personalizzati a server</translation>
 <translation id="4465725236958772856">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, gestita dall'amministratore, connetti</translation>
 <translation id="4470564870223067757">Hangul 2 Set</translation>
+<translation id="4474142134969976028">Nessun risultato corrispondente</translation>
 <translation id="4477002475007461989">Rumeno</translation>
 <translation id="4477219268485577442">Fonetica bulgara</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
@@ -477,6 +481,7 @@
 <translation id="4973523518332075481">Il nome deve contenere un massimo di <ph name="MAX_LENGTH" /> caratteri</translation>
 <translation id="4973970068702235170">Compressione non riuscita. Errore imprevisto: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Giapponese</translation>
+<translation id="4987699874727873250">Inglese (India)</translation>
 <translation id="4988205478593450158">Vuoi eliminare "<ph name="FILE_NAME" />"?</translation>
 <translation id="498902553138568924">Farfalla rossa</translation>
 <translation id="4992066212339426712">Riattiva audio</translation>
@@ -785,6 +790,7 @@
 <translation id="7458955835361612701">Nessuna immagine recente</translation>
 <translation id="7460898608667578234">Ucraino</translation>
 <translation id="7469894403370665791">Collegati automaticamente a questa rete</translation>
+<translation id="7481358317100446445">Pronta</translation>
 <translation id="7486315294984620427">Per trascinare file in Parallels Desktop, devi prima copiarli in File di Windows.</translation>
 <translation id="749452993132003881">Hiragana</translation>
 <translation id="7495372004724182530">Malayalam fonetica</translation>
@@ -810,6 +816,7 @@
 <translation id="7655441028674523381">Accedi facilmente a Google Foto</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7663224033570512922">Hindi</translation>
+<translation id="7665680517722058469">Prova a effettuare un'altra ricerca</translation>
 <translation id="7689532716264131859"><ph name="NUMBER_OF_ITEMS" /> elementi spostati nel cestino</translation>
 <translation id="7693909743393669729">La formattazione di un'unità causerà l'eliminazione di tutti i dati archiviati e la rimozione di tutte le partizioni esistenti, incluse quelle che potrebbero non essere visibili. L'operazione non potrà essere annullata.</translation>
 <translation id="7695430100978772476">Impossibile formattare <ph name="DRIVE_NAME" /></translation>
@@ -966,6 +973,7 @@
 <translation id="8866284467018526531">Traslitterazione arabo</translation>
 <translation id="8873014196523807561">Per ripristinare questi elementi, trascinali in una nuova cartella. Le cartelle originali di alcuni di questi elementi sono state eliminate.</translation>
 <translation id="8874184842967597500">Non connesso</translation>
+<translation id="8876368061475701452">In coda</translation>
 <translation id="8900820606136623064">Ungherese</translation>
 <translation id="8903931173357132290">Persona laureata</translation>
 <translation id="8912078710089354287">Cane che scodinzola</translation>

@@ -10,6 +10,9 @@
 
 module ash.cros_healthd.mojom;
 
+import "ash/system/diagnostics/mojom/input.mojom";
+import "chromeos/ash/services/cros_healthd/public/mojom/nullable_primitives.mojom";
+
 // Implemented by clients who desire Bluetooth notifications.
 //
 // NextMinVersion: 1, NextIndex: 6
@@ -120,6 +123,17 @@ interface CrosHealthdUsbObserver {
   OnAdd@0(UsbEventInfo info);
   // Fired when the USB plug out.
   OnRemove@1(UsbEventInfo info);
+};
+
+// Implemented by clients who desire SD Card notifications.
+//
+// NextMinVersion: 1, NextIndex: 2
+[Stable]
+interface CrosHealthdSdCardObserver {
+  // Fired when the SD Card plug in.
+  OnAdd@0();
+  // Fired when the SD Card plug out.
+  OnRemove@1();
 };
 
 // Thunderbolt event info.
@@ -246,6 +260,108 @@ struct AudioJackEventInfo {
   State state@0;
 };
 
+// SD Card event info.
+//
+// NextMinVersion: 1, NextIndex: 1
+[Stable]
+struct SdCardEventInfo {
+  [Stable, Extensible]
+  enum State {
+    // This is required for backwards compatibility, should not be used.
+    [Default] kUnmappedEnumField,
+    // SD Card added.
+    kAdd,
+    // SD Card removed.
+    kRemove,
+  };
+
+  State state@0;
+};
+
+// An enumeration of input touch buttons.
+//
+// NextMinVersion: 1, NextIndex: 4
+[Stable, Extensible]
+enum InputTouchButton {
+  // This is required for backwards compatibility, should not be used.
+  [Default] kUnmappedEnumField = 0,
+  // Left key.
+  kLeft = 1,
+  // Middle key.
+  kMiddle = 2,
+  // Right key.
+  kRight = 3,
+};
+
+// Emitted when some touchpad button is pressed or released.
+//
+// NextMinVersion: 1, NextIndex: 2
+[Stable]
+struct TouchpadButtonEvent {
+  // The button corresponds to this event.
+  InputTouchButton button@0;
+  // True when if the button is pressed. False if the button is released.
+  bool pressed@1;
+};
+
+// Touch point info.
+//
+// NextMinVersion: 1, NextIndex: 6
+[Stable]
+struct TouchPointInfo {
+  // An id to track an initiated contact throughout its life cycle.
+  uint32 tracking_id@0;
+  // The x position.
+  uint32 x@1;
+  // The y position.
+  uint32 y@2;
+  // The pressure applied to the touch contact.
+  NullableUint32? pressure@3;
+  // The length of the longer dimension of the touch contact.
+  NullableUint32? touch_major@4;
+  // The length of the shorter dimension of the touch contact.
+  NullableUint32? touch_minor@5;
+};
+
+// Emitted when new touch points are updated.
+//
+// NextMinVersion: 1, NextIndex: 1
+[Stable]
+struct TouchpadTouchEvent {
+  // The touch points reported by the touchpad.
+  array<TouchPointInfo> touch_points@0;
+};
+
+// Emitted once the observer get connected to the touchpad events. This will be
+// the first event from the touchpad.
+//
+// NextMinVersion: 1, NextIndex: 4
+[Stable]
+struct TouchpadConnectedEvent {
+  // The maximum possible x position of touch points.
+  uint32 max_x@0;
+  // The maximum possible y position of touch points.
+  uint32 max_y@1;
+  // The maximum possible pressure of touch points, or 0 if pressure is not
+  // supported.
+  uint32 max_pressure@2;
+  // The supported buttons;
+  array<InputTouchButton> buttons@3;
+};
+
+// Union of touchpad events.
+//
+// NextMinVersion: 1, NextIndex: 4
+[Stable, Extensible]
+union TouchpadEventInfo {
+  // The default value for forward compatibility. All the unknown type will be
+  // mapped to this.
+  [Default] uint8 default_type@0;
+  TouchpadButtonEvent button_event@1;
+  TouchpadTouchEvent touch_event@2;
+  TouchpadConnectedEvent connected_event@3;
+};
+
 // Implemented by clients who desire events.
 //
 // NextMinVersion: 1, NextIndex: 1
@@ -257,7 +373,7 @@ interface EventObserver {
 
 // Union of event info.
 //
-// NextMinVersion: 2, NextIndex: 8
+// NextMinVersion: 5, NextIndex: 11
 [Stable, Extensible]
 union EventInfo {
   // The default value for forward compatibility. All the unknown type will be
@@ -277,11 +393,19 @@ union EventInfo {
   AudioEventInfo audio_event_info@6;
   // Audio jack event info.
   [MinVersion=1] AudioJackEventInfo audio_jack_event_info@7;
+  // Sd Card event info.
+  [MinVersion=2] SdCardEventInfo sd_card_event_info@8;
+  // Keyboard diagnostics event info. It is fired when users completed a
+  // keyboard diagnostic in the Diagnostics App.
+  [MinVersion=3] ash.diagnostics.mojom.KeyboardDiagnosticEventInfo
+    keyboard_diagnostic_event_info@9;
+  // Touchpad event info.
+  [MinVersion=4] TouchpadEventInfo touchpad_event_info@10;
 };
 
 // An enumeration of event categories.
 //
-// NextMinVersion: 2, NextIndex: 8
+// NextMinVersion: 6, NextIndex: 12
 [Stable, Extensible]
 enum EventCategoryEnum {
   // This is required for backwards compatibility, should not be used.
@@ -293,4 +417,8 @@ enum EventCategoryEnum {
   kPower = 5,
   kAudio = 6,
   [MinVersion=1] kAudioJack = 7,
+  [MinVersion=2] kSdCard = 8,
+  [MinVersion=3] kNetwork = 9,
+  [MinVersion=4] kKeyboardDiagnostic = 10,
+  [MinVersion=5] kTouchpad = 11,
 };

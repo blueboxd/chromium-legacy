@@ -24,6 +24,8 @@ class ChromiumTrustedVaultClientBackend final
   // TrustedVaultClientBackend implementation.
   void AddObserver(Observer* observer) final;
   void RemoveObserver(Observer* observer) final;
+  void SetDeviceRegistrationPublicKeyVerifierForUMA(
+      VerifierCallback verifier) final;
   void FetchKeys(id<SystemIdentity> identity,
                  KeyFetchedCallback callback) final;
   void MarkLocalKeysAsStale(id<SystemIdentity> identity,
@@ -38,6 +40,10 @@ class ChromiumTrustedVaultClientBackend final
                                  UIViewController* presenting_view_controller,
                                  CompletionBlock callback) final;
   void CancelDialog(BOOL animated, ProceduralBlock callback) final;
+  void ClearLocalData(id<SystemIdentity> identity,
+                      base::OnceCallback<void(bool)> callback) final;
+  void GetPublicKeyForIdentity(id<SystemIdentity> identity,
+                               GetPublicKeyCallback callback) final;
 };
 
 void ChromiumTrustedVaultClientBackend::AddObserver(Observer* observer) {
@@ -45,6 +51,11 @@ void ChromiumTrustedVaultClientBackend::AddObserver(Observer* observer) {
 }
 
 void ChromiumTrustedVaultClientBackend::RemoveObserver(Observer* observer) {
+  // Do nothing.
+}
+
+void ChromiumTrustedVaultClientBackend::
+    SetDeviceRegistrationPublicKeyVerifierForUMA(VerifierCallback verifier) {
   // Do nothing.
 }
 
@@ -81,6 +92,18 @@ void ChromiumTrustedVaultClientBackend::FixDegradedRecoverability(
 
 void ChromiumTrustedVaultClientBackend::CancelDialog(BOOL animated,
                                                      ProceduralBlock callback) {
+  NOTREACHED();
+}
+
+void ChromiumTrustedVaultClientBackend::ClearLocalData(
+    id<SystemIdentity> identity,
+    base::OnceCallback<void(bool)> callback) {
+  NOTREACHED();
+}
+
+void ChromiumTrustedVaultClientBackend::GetPublicKeyForIdentity(
+    id<SystemIdentity> identity,
+    GetPublicKeyCallback callback) {
   NOTREACHED();
 }
 

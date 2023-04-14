@@ -18,7 +18,6 @@
 #include "chrome/browser/ash/login/test/wizard_controller_screen_exit_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ash/login/cryptohome_recovery_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/user_creation_screen_handler.h"
 #include "content/public/test/browser_test.h"
@@ -29,7 +28,7 @@ namespace ash {
 class CryptohomeRecoverySetupScreenTest : public OobeBaseTest {
  public:
   CryptohomeRecoverySetupScreenTest() {
-    feature_list_.InitAndEnableFeature(features::kCryptohomeRecoverySetup);
+    feature_list_.InitAndEnableFeature(features::kCryptohomeRecovery);
   }
 
   ~CryptohomeRecoverySetupScreenTest() override = default;
@@ -135,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(CryptohomeRecoverySetupScreenTest, SkippedOnOptOut) {
   ShowScreen();
 
   ContinueScreenExit();
-  EXPECT_EQ(result_.value(), CryptohomeRecoverySetupScreen::Result::SKIPPED);
+  EXPECT_EQ(result_.value(),
+            CryptohomeRecoverySetupScreen::Result::NOT_APPLICABLE);
   histogram_tester.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Cryptohome-recovery-setup.Done", 0);
   histogram_tester.ExpectTotalCount(

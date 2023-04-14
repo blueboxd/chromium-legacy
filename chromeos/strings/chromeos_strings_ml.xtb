@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">'ബാഹ്യ ഉപകരണങ്ങൾക്കുള്ള ഫേംവെയർ അപ്‌ഡേറ്റ് ചെയ്യുക' വിൻഡോ തുറന്നിരിക്കുന്നു. <ph name="NUM_UPDATES" /> അപ്ഡേറ്റുകൾ ലഭ്യമാണ്.</translation>
 <translation id="1145516343487477149">Chromebook-മായി ബന്ധപ്പെട്ട പൊതുവായ ചോദ്യങ്ങൾക്കുള്ള സഹായ ലേഖനങ്ങളും ഉത്തരങ്ങളും കണ്ടെത്തുക</translation>
+<translation id="1167755866710282443">കീകൾ ഇഷ്ടാനുസൃതമാക്കാൻ മെനു തുറക്കുക. നീക്കാൻ മെനു വലിച്ചിടുക.</translation>
 <translation id="1175697296044146566">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്.</translation>
 <translation id="1175951029573070619">ശരാശരി (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">നീക്കംചെയ്യൂ</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> ആൽബം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="4111761024568264522">USB ടച്ച്പാഡ്</translation>
 <translation id="4117637339509843559">ഡാർക്ക് മോഡ്</translation>
+<translation id="4130035430755296270">കൂടുതൽ ലേഔട്ട് ഓപ്ഷനുകൾക്ക് ഹോവർ ചെയ്യുന്നത് തുടരുക</translation>
 <translation id="4131410914670010031">കറുപ്പും വെള്ളയും</translation>
 <translation id="4145784616224233563">HTTP ഫയര്‍വാള്‍</translation>
 <translation id="4147897805161313378">Google Photos</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS റെസല്യൂഷൻ</translation>
 <translation id="4848429997038228357">റൺ ചെയ്യുന്നു</translation>
 <translation id="4854586501323951986">ബിൽറ്റ് ഇൻ ടച്ച്‌സ്‌ക്രീൻ</translation>
+<translation id="4855250849489639581">കൂടുതൽ ലേഔട്ട് ഓപ്ഷനുകൾക്ക് താഴേക്ക് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} ശ്രമം ശേഷിക്കുന്നു}other{<ph name="ERROR_MESSAGE" /> {0} ശ്രമങ്ങൾ ശേഷിക്കുന്നു}}</translation>
 <translation id="4873827928179867585">പരിശോധിച്ചുറപ്പിക്കൽ അൽഗോരിതം</translation>
 <translation id="4880328057631981605">ആ‌ക്‌സസ് പോയിന്‍റിന്‍റെ പേര്</translation>
@@ -517,6 +520,7 @@
 <translation id="576835345334454681">ഡിസ്‌പ്ലേ തെളിച്ചം കൂട്ടുക</translation>
 <translation id="57838592816432529">മ്യൂട്ട് ചെയ്യുക</translation>
 <translation id="5784136236926853061">ഉയർന്ന HTTP പ്രതികരണ സമയം</translation>
+<translation id="5826644637650799838">ആർട്ടിനെ കുറിച്ച്</translation>
 <translation id="5832805196449965646">വ്യക്തിയെ ചേർക്കുക</translation>
 <translation id="583281660410589416">അജ്ഞാതം</translation>
 <translation id="5843706793424741864">ഫാരൻഹീറ്റ്</translation>
@@ -673,6 +677,7 @@
 <translation id="7172721935181587524">ഒരു ചിത്രം</translation>
 <translation id="7177485034254901881">ഈ <ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്. അഡ്മിൻമാർ ഉപകരണം വിദൂരമായി കോൺഫിഗർ ചെയ്‌തേക്കാം.</translation>
 <translation id="7180611975245234373">റീഫ്രഷ് ചെയ്യുക</translation>
+<translation id="7180865173735832675">ഇച്ഛാനുസൃതമാക്കുക</translation>
 <translation id="7212734716605298123">ബാഹ്യ ഉപകരണങ്ങൾക്കുള്ള ഫേംവെയർ അപ്ഡേറ്റുകൾ</translation>
 <translation id="7216409898977639127">സെല്ലുലാര്‍‌ സേവനദാതാവ്</translation>
 <translation id="725133483556299729">ഇമെയിൽ തിരഞ്ഞെടുക്കുക</translation>

@@ -601,11 +601,6 @@ BASE_FEATURE(kGlobalMediaControlsAutoDismiss,
 BASE_FEATURE(kGlobalMediaControlsCrOSUpdatedUI,
              "GlobalMediaControlsCrOSUpdatedUI",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Show Cast sessions in Global Media Controls.
-BASE_FEATURE(kGlobalMediaControlsForCast,
-             "GlobalMediaControlsForCast",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -786,6 +781,12 @@ BASE_FEATURE(kKeepRvfcFrameAlive,
 BASE_FEATURE(kExternalClearKeyForTesting,
              "ExternalClearKeyForTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+#if BUILDFLAG(IS_WIN)
+// Specifies the path to the MediaFoundation Clear Key CDM for testing.
+const base::FeatureParam<std::string> kMediaFoundationClearKeyCdmPathForTesting{
+    &kExternalClearKeyForTesting, "media_foundation_cdm_path", ""};
+#endif  // BUILDFLAG(IS_WIN)
 
 // Enables the Live Caption feature on supported devices.
 BASE_FEATURE(kLiveCaption, "LiveCaption", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1036,6 +1037,11 @@ BASE_FEATURE(kLimitConcurrentDecoderInstances,
              "LimitConcurrentDecoderInstances",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Use SequencedTaskRunner for VideoEncodeAccelerator
+BASE_FEATURE(kUSeSequencedTaskRunnerForVEA,
+             "UseSequencedTaskRunnerForVEA",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if defined(ARCH_CPU_ARM_FAMILY)
 // Experimental support for GL based image processing. On some architectures,
 // the hardware accelerated video decoder outputs frames in a format not
@@ -1084,7 +1090,7 @@ BASE_FEATURE(kMediaFoundationVideoCapture,
 // please use IsMediaFoundationD3D11VideoCaptureEnabled() instead.
 BASE_FEATURE(kMediaFoundationD3D11VideoCapture,
              "MediaFoundationD3D11VideoCapture",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables VP8 decode acceleration for Windows.
 const base::Feature MEDIA_EXPORT kMediaFoundationVP8Decoding{
@@ -1114,6 +1120,11 @@ const base::Feature MEDIA_EXPORT kUseFakeAudioCaptureTimestamps{
 // Enable VP9 kSVC decoding with HW decoder for webrtc use case on Windows.
 BASE_FEATURE(kD3D11Vp9kSVCHWDecoding,
              "D3D11Vp9kSVCHWDecoding",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the DXVA video decoder is enabled on Windows.
+BASE_FEATURE(kDXVAVideoDecoding,
+             "DXVAVideoDecoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // The Media Foundation Rendering Strategy determines which presentation mode
@@ -1148,7 +1159,7 @@ constexpr base::FeatureParam<MediaFoundationClearRenderingStrategy>::Option
 const base::FeatureParam<MediaFoundationClearRenderingStrategy>
     kMediaFoundationClearRenderingStrategyParam{
         &kMediaFoundationClearRendering, "strategy",
-        MediaFoundationClearRenderingStrategy::kDirectComposition,
+        MediaFoundationClearRenderingStrategy::kDynamic,
         &kMediaFoundationClearRenderingStrategyOptions};
 
 BASE_FEATURE(kMediaFoundationBatchRead,
@@ -1198,7 +1209,17 @@ const base::Feature MEDIA_EXPORT kUseOutOfProcessVideoEncoding{
 // doesn't affect the PPB_VideoDecoder_Impl which will continue to use the
 // GpuVideoDecodeAcceleratorHost for the PPB_VideoDecoder_Dev interface.
 const base::Feature MEDIA_EXPORT kUseMojoVideoDecoderForPepper{
-    "UseMojoVideoDecoderForPepper", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseMojoVideoDecoderForPepper", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Use SequencedTaskRunner for MediaService.
+BASE_FEATURE(kUseSequencedTaskRunnerForMediaService,
+             "UseSequencedTaskRunnerForMediaService",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use SequencedTaskRunner for MojoVideoEncodeAcceleratorProvider.
+BASE_FEATURE(kUseSequencedTaskRunnerForMojoVEAProvider,
+             "UseSequencedTaskRunnerForMojoVEAProvider",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
   // Return the autoplay policy set in the command line, if any.

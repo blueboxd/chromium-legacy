@@ -150,13 +150,11 @@ const char kChromeUINewTabURL[] = "chrome://newtab/";
 const char kChromeUIProfileInternalsHost[] = "profile-internals";
 const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIOmniboxURL[] = "chrome://omnibox/";
-#if BUILDFLAG(IS_CHROMEOS)
-const char kChromeUIAppDisabledURL[] = "chrome://app-disabled";
-const char kChromeUIOsFlagsAppURL[] = "chrome://flags/";
-const char kChromeUIOsUrlAppURL[] = "chrome://internal/";
-#endif
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
+const char kChromeUIPasswordManagerURL[] = "chrome://password-manager";
+const char kChromeUIPasswordManagerCheckupURL[] =
+    "chrome://password-manager/checkup?start=true";
 const char kChromeUIPerformanceSettingsURL[] = "chrome://settings/performance";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIPolicyURL[] = "chrome://policy/";
@@ -270,6 +268,10 @@ const char kChromeUIReadAnythingSidePanelURL[] =
     "chrome://read-anything-side-panel.top-chrome/";
 const char kChromeUIReadLaterHost[] = "read-later.top-chrome";
 const char kChromeUIReadLaterURL[] = "chrome://read-later.top-chrome/";
+const char kChromeUISearchCompanionSidePanelHost[] =
+    "search-companion-side-panel.top-chrome";
+const char kChromeUISearchCompanionSidePanelURL[] =
+    "chrome://search-companion-side-panel.top-chrome/";
 const char kChromeUIUntrustedFeedURL[] = "chrome-untrusted://feed/";
 const char kChromeUIUserNotesSidePanelHost[] =
     "user-notes-side-panel.top-chrome";
@@ -277,6 +279,8 @@ const char kChromeUIUserNotesSidePanelURL[] =
     "chrome://user-notes-side-panel.top-chrome/";
 const char kChromeUIOmniboxPopupHost[] = "omnibox-popup.top-chrome";
 const char kChromeUIOmniboxPopupURL[] = "chrome://omnibox-popup.top-chrome/";
+const char kChromeUISuggestInternalsHost[] = "suggest-internals";
+const char kChromeUISuggestInternalsURL[] = "chrome://suggest-internals/";
 const char kChromeUIWebAppInternalsHost[] = "web-app-internals";
 const char kChromeUIWebUITestHost[] = "webui-test";
 #endif
@@ -329,6 +333,10 @@ const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUICryptohomeURL[] = "chrome://cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
 const char kChromeUIDiagnosticsAppURL[] = "chrome://diagnostics";
+const char kChromeUIEnterpriseReportingHost[] = "enterprise-reporting";
+const char kChromeUIEnterpriseReportingURL[] = "chrome://enterprise-reporting";
+const char kChromeUIHealthdInternalsHost[] = "healthd-internals";
+const char kChromeUIHealthdInternalsURL[] = "chrome://healthd-internals";
 const char kChromeUIInternetConfigDialogURL[] =
     "chrome://internet-config-dialog/";
 const char kChromeUIInternetDetailDialogURL[] =
@@ -481,7 +489,12 @@ bool IsSystemWebUIHost(base::StringPiece host) {
 
 #if BUILDFLAG(IS_CHROMEOS)
 const char kChromeUIAppDisabledHost[] = "app-disabled";
+const char kChromeUIAppDisabledURL[] = "chrome://app-disabled";
+const char kChromeUIKerberosInBrowserHost[] = "kerberos-in-browser";
+const char kChromeUIKerberosInBrowserURL[] = "chrome://kerberos-in-browser";
+const char kChromeUIOsFlagsAppURL[] = "chrome://flags/";
 const char kChromeUIOSSettingsHost[] = "os-settings";
+const char kChromeUIOsUrlAppURL[] = "chrome://internal/";
 const char kChromeUIOSSettingsURL[] = "chrome://os-settings/";
 const char kOsUIAboutURL[] = "os://about";
 const char kOsUIComponentsURL[] = "os://components";
@@ -816,10 +829,17 @@ const size_t kNumberOfChromeInternalsPathURLs =
     std::size(kChromeInternalsPathURLs);
 
 const char* const kChromeDebugURLs[] = {
+    // TODO(crbug/1407149): make this list comprehensive
     blink::kChromeUIBadCastCrashURL,
     blink::kChromeUIBrowserCrashURL,
     blink::kChromeUIBrowserDcheckURL,
     blink::kChromeUICrashURL,
+#if BUILDFLAG(BUILD_RUST_CRASH)
+    blink::kChromeUICrashRustURL,
+#if defined(ADDRESS_SANITIZER)
+    blink::kChromeUICrashRustOverflowURL,
+#endif
+#endif  // BUILDFLAG(BUILD_RUST_CRASH)
     blink::kChromeUIDumpURL,
     blink::kChromeUIKillURL,
     blink::kChromeUIHangURL,

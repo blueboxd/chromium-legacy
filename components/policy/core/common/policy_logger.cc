@@ -1,14 +1,20 @@
 // Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "components/policy/core/common/policy_logger.h"
+
 #include <utility>
+
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/strings/escape.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "components/policy/core/common/features.h"
 #include "components/version_info/version_info.h"
+
+namespace policy {
 
 namespace {
 
@@ -18,14 +24,34 @@ constexpr char kChromiumCSUrlFormat[] =
 
 // Gets the string value for the log source.
 std::string GetLogSourceValue(
-    const policy::PolicyLogger::Log::LogSource log_source) {
+    const PolicyLogger::Log::Source log_source) {
   switch (log_source) {
-    case policy::PolicyLogger::Log::LogSource::kCBCMEnrollment:
+    case PolicyLogger::Log::Source::kPolicyProcessing:
+      return "Policy Processing";
+    case PolicyLogger::Log::Source::kCBCMEnrollment:
       return "CBCM Enrollment";
-    case policy::PolicyLogger::Log::LogSource::kPlatformPolicy:
+    case PolicyLogger::Log::Source::kPlatformPolicy:
       return "Platform Policy";
-    case policy::PolicyLogger::Log::LogSource::kPolicyFetching:
+    case PolicyLogger::Log::Source::kPolicyFetching:
       return "Policy Fetching";
+    case PolicyLogger::Log::Source::kAuthentication:
+      return "Authentication";
+    default:
+      NOTREACHED();
+  }
+}
+
+std::string GetLogSeverity(
+    const PolicyLogger::Log::Severity log_severity) {
+  switch (log_severity) {
+    case PolicyLogger::Log::Severity::kInfo:
+      return "INFO";
+    case PolicyLogger::Log::Severity::kWarning:
+      return "WARNING";
+    case PolicyLogger::Log::Severity::kError:
+      return "ERROR";
+    case PolicyLogger::Log::Severity::kVerbose:
+      return "VERBOSE";
     default:
       NOTREACHED();
   }
@@ -45,12 +71,12 @@ std::string GetLineURL(const base::Location location) {
 
 }  // namespace
 
-namespace policy {
-
-PolicyLogger::Log::Log(const LogSource log_source,
+PolicyLogger::Log::Log(const Severity log_severity,
+                       const Source log_source,
                        const std::string& message,
                        const base::Location location)
-    : log_source_(log_source),
+    : log_severity_(log_severity),
+      log_source_(log_source),
       message_(message),
       location_(location),
       timestamp_(base::Time::Now()) {}
@@ -60,43 +86,106 @@ PolicyLogger* PolicyLogger::GetInstance() {
 }
 
 PolicyLogger::LogHelper::LogHelper(
-    const PolicyLogger::Log::LogSource log_source,
+    const LogType log_type,
+    const PolicyLogger::Log::Severity log_severity,
+    const int log_verbosity,
+    const PolicyLogger::Log::Source log_source,
     const base::Location location)
-    : log_source_(log_source), location_(location) {}
+    : log_type_(log_type),
+      log_severity_(log_severity),
+      log_verbosity_(log_verbosity),
+      log_source_(log_source),
+      location_(location) {}
 
 PolicyLogger::LogHelper::~LogHelper() {
-  DCHECK(PolicyLogger::GetInstance()->IsPolicyLoggingEnabled());
-  policy::PolicyLogger::GetInstance()->AddLog(PolicyLogger::Log(
-      this->log_source_, this->message_buffer_.str(), this->location_));
+  if (PolicyLogger::GetInstance()->IsPolicyLoggingEnabled()) {
+    policy::PolicyLogger::GetInstance()->AddLog(PolicyLogger::Log(
+        log_severity_, log_source_, message_buffer_.str(), location_));
+  }
+  StreamLog();
 }
 
-base::Value PolicyLogger::Log::GetAsValue() const {
-  base::Value log_value(base::Value::Type::DICT);
-  log_value.SetStringPath("message", message_);
-  log_value.SetStringPath("log_source", GetLogSourceValue(log_source_));
-  log_value.SetStringPath("location", GetLineURL(location_));
-  log_value.SetStringPath("timestamp", base::TimeFormatHTTP(timestamp_));
-  return log_value;
+void PolicyLogger::LogHelper::StreamLog() const {
+  base::StringPiece filename(location_.file_name());
+  std::ostringstream message;
+
+  // Create the message to be logged to the terminal.
+  // The `:` is needed as the location of the message logged to the terminal
+  // would be policy_logger.cc (from one the lines below), but we need to see
+  // the original location where xLOG_POLICY was called.
+  message << ":" << filename << "(" << location_.line_number() << ") "
+          << message_buffer_.str();
+
+  size_t last_slash_pos = filename.find_last_of("\\/");
+  if (last_slash_pos != base::StringPiece::npos) {
+    filename.remove_prefix(last_slash_pos + 1);
+  }
+
+  // Check for verbose logging.
+  if (log_verbosity_ != policy::PolicyLogger::LogHelper::kNoVerboseLog) {
+    if (log_type_ == LogHelper::LogType::kDLog) {
+      DVLOG(log_verbosity_) << message.str();
+      return;
+    }
+    VLOG(log_verbosity_) << message.str();
+    return;
+  }
+
+  // Non-verbose logging.
+  if (log_severity_ == PolicyLogger::Log::Severity::kInfo) {
+    if (log_type_ == PolicyLogger::LogHelper::LogType::kLog) {
+      LOG(INFO) << message.str();
+    } else if (log_type_ == PolicyLogger::LogHelper::LogType::kDLog) {
+      DLOG(INFO) << message.str();
+    }
+  } else if (log_severity_ == PolicyLogger::Log::Severity::kWarning) {
+    if (log_type_ == PolicyLogger::LogHelper::LogType::kLog) {
+      LOG(WARNING) << message.str();
+    } else if (log_type_ == PolicyLogger::LogHelper::LogType::kDLog) {
+      DLOG(WARNING) << message.str();
+    }
+  } else if (log_severity_ == PolicyLogger::Log::Severity::kError) {
+    if (log_type_ == PolicyLogger::LogHelper::LogType::kLog) {
+      LOG(ERROR) << message.str();
+    } else if (log_type_ == PolicyLogger::LogHelper::LogType::kDLog) {
+      DLOG(ERROR) << message.str();
+    }
+  }
+}
+
+base::Value::Dict PolicyLogger::Log::GetAsDict() const {
+  base::Value::Dict log_dict;
+  log_dict.Set("message", base::EscapeForHTML(message_));
+  log_dict.Set("log_severity", GetLogSeverity(log_severity_));
+  log_dict.Set("log_source", GetLogSourceValue(log_source_));
+  log_dict.Set("location", GetLineURL(location_));
+  log_dict.Set("timestamp", base::TimeFormatHTTP(timestamp_));
+  return log_dict;
 }
 
 PolicyLogger::PolicyLogger() = default;
-PolicyLogger::~PolicyLogger() = default;
+
+PolicyLogger::~PolicyLogger() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(logs_list_sequence_checker_);
+}
 
 void PolicyLogger::AddLog(PolicyLogger::Log&& new_log) {
   if (IsPolicyLoggingEnabled()) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(logs_list_sequence_checker_);
     logs_.emplace_back(std::move(new_log));
   }
 }
 
-base::Value PolicyLogger::GetAsValue() const {
-  base::Value all_logs_value(base::Value::Type::LIST);
+base::Value::List PolicyLogger::GetAsList() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(logs_list_sequence_checker_);
+  base::Value::List all_logs_list;
   for (const Log& log : logs_) {
-    all_logs_value.Append(log.GetAsValue());
+    all_logs_list.Append(log.GetAsDict());
   }
-  return all_logs_value;
+  return all_logs_list;
 }
 
-bool PolicyLogger::IsPolicyLoggingEnabled() {
+bool PolicyLogger::IsPolicyLoggingEnabled() const {
 #if BUILDFLAG(IS_ANDROID)
   return base::FeatureList::IsEnabled(policy::features::kPolicyLogsPageAndroid);
 #else
@@ -104,7 +193,8 @@ bool PolicyLogger::IsPolicyLoggingEnabled() {
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 
-int PolicyLogger::GetPolicyLogsSizeForTesting() {
+int PolicyLogger::GetPolicyLogsSizeForTesting() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(logs_list_sequence_checker_);
   return logs_.size();
 }
 

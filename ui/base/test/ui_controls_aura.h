@@ -20,42 +20,35 @@ class UIControlsAura {
   UIControlsAura();
   virtual ~UIControlsAura();
 
-  virtual bool SendKeyPress(gfx::NativeWindow window,
-                            ui::KeyboardCode key,
-                            bool control,
-                            bool shift,
-                            bool alt,
-                            bool command) = 0;
-  virtual bool SendKeyPressNotifyWhenDone(gfx::NativeWindow window,
-                                          ui::KeyboardCode key,
-                                          bool control,
-                                          bool shift,
-                                          bool alt,
-                                          bool command,
-                                          base::OnceClosure task) = 0;
+  // Sends a key press and/or release message.
+  virtual bool SendKeyEvents(gfx::NativeWindow window,
+                             ui::KeyboardCode key,
+                             int key_event_types,
+                             int accerelator_state) = 0;
+  virtual bool SendKeyEventsNotifyWhenDone(gfx::NativeWindow window,
+                                           ui::KeyboardCode key,
+                                           int key_event_types,
+                                           base::OnceClosure task,
+                                           int accelerator_state) = 0;
 
   // Simulate a mouse move. (x,y) are absolute screen coordinates.
-  virtual bool SendMouseMove(int x, int y, gfx::NativeWindow window_hint) = 0;
+  virtual bool SendMouseMove(int x, int y) = 0;
   virtual bool SendMouseMoveNotifyWhenDone(int x,
                                            int y,
-                                           base::OnceClosure task,
-                                           gfx::NativeWindow window_hint) = 0;
+                                           base::OnceClosure task) = 0;
 
   // Sends a mouse down and/or up message. The click will be sent to wherever
   // the cursor currently is, so be sure to move the cursor before calling this
   // (and be sure the cursor has arrived!).
   virtual bool SendMouseEvents(MouseButton type,
                                int button_state,
-                               int accelerator_state,
-                               gfx::NativeWindow window_hint) = 0;
+                               int accelerator_state) = 0;
   virtual bool SendMouseEventsNotifyWhenDone(MouseButton type,
                                              int button_state,
                                              base::OnceClosure task,
-                                             int accelerator_state,
-                                             gfx::NativeWindow window_hint) = 0;
+                                             int accelerator_state) = 0;
   // Same as SendMouseEvents with BUTTON_UP | BUTTON_DOWN.
-  virtual bool SendMouseClick(MouseButton type,
-                              gfx::NativeWindow window_hint) = 0;
+  virtual bool SendMouseClick(MouseButton type) = 0;
 
 #if BUILDFLAG(IS_WIN)
   virtual bool SendTouchEvents(int action, int num, int x, int y) = 0;

@@ -9,6 +9,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/cookies/cookie_setting_override.h"
 #include "net/cookies/site_for_cookies.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -17,7 +18,6 @@ namespace embedder_support {
 
 using StorageType =
     content_settings::mojom::ContentSettingsManager::StorageType;
-using QueryReason = content_settings::CookieSettings::QueryReason;
 
 namespace {
 bool AllowWorkerStorageAccess(
@@ -25,9 +25,11 @@ bool AllowWorkerStorageAccess(
     const GURL& url,
     const std::vector<content::GlobalRenderFrameHostId>& render_frames,
     const content_settings::CookieSettings* cookie_settings) {
+  // TODO(crbug.com/1386190): Consider whether the following check should
+  // somehow determine real CookieSettingOverrides rather than default to none.
   bool allow = cookie_settings->IsFullCookieAccessAllowed(
       url, net::SiteForCookies::FromUrl(url), url::Origin::Create(url),
-      net::CookieSettingOverrides(), QueryReason::kSiteStorage);
+      net::CookieSettingOverrides());
 
   for (const auto& it : render_frames) {
     content_settings::PageSpecificContentSettings::StorageAccessed(
@@ -56,10 +58,15 @@ content::AllowServiceWorkerResult AllowServiceWorker(
   ContentSetting setting = content_settings::ValueToContentSetting(value);
   bool allow_javascript = setting == CONTENT_SETTING_ALLOW;
 
-  // Check if cookies are allowed.
+  // Check if cookies are allowed. Storage Access API grants and Top-Level
+  // Storage Access API grants may only be considered if storage is partitioned
+  // (or if Storage Access API is intended to grant access to storage - which is
+  // a deviation from the spec, but at least one embedder wants that ability).
+  // TODO(crbug.com/1386190): Consider whether the following check should
+  // also consider the third-party cookie user bypass override.
   bool allow_cookies = cookie_settings->IsFullCookieAccessAllowed(
-      scope, site_for_cookies, top_frame_origin, net::CookieSettingOverrides(),
-      QueryReason::kSiteStorage);
+      scope, site_for_cookies, top_frame_origin,
+      cookie_settings->SettingOverridesForStorage());
 
   return content::AllowServiceWorkerResult::FromPolicy(!allow_javascript,
                                                        !allow_cookies);
@@ -76,7 +83,7 @@ bool AllowSharedWorker(
     const content_settings::CookieSettings* cookie_settings) {
   bool allow = cookie_settings->IsFullCookieAccessAllowed(
       worker_url, site_for_cookies, top_frame_origin,
-      net::CookieSettingOverrides(), QueryReason::kSiteStorage);
+      cookie_settings->SettingOverridesForStorage());
 
   content_settings::PageSpecificContentSettings::SharedWorkerAccessed(
       render_process_id, render_frame_id, worker_url, name, storage_key,

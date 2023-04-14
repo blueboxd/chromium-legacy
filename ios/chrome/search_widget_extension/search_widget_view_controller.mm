@@ -38,9 +38,7 @@
 
 + (void)initialize {
   if (self == [SearchWidgetViewController self]) {
-    if (crash_helper::common::CanUseCrashpad()) {
-      crash_helper::common::StartCrashpad();
-    }
+    crash_helper::common::StartCrashpad();
   }
 }
 
@@ -173,8 +171,7 @@
 #pragma mark - NCWidgetProviding
 
 - (void)widgetActiveDisplayModeDidChange:(NCWidgetDisplayMode)activeDisplayMode
-                         withMaximumSize:(CGSize)maxSize
-    API_AVAILABLE(ios(10.0)) {
+                         withMaximumSize:(CGSize)maxSize {
   switch (activeDisplayMode) {
     case NCWidgetDisplayModeCompact:
       self.preferredContentSize = maxSize;

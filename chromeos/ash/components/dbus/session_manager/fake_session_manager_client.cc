@@ -375,6 +375,9 @@ void FakeSessionManagerClient::StartDeviceWipe() {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(on_start_device_wipe_callback_));
   }
+  for (auto& observer : observers_) {
+    observer.PowerwashRequested(/*admin_requested*/ false);
+  }
 }
 
 void FakeSessionManagerClient::StartRemoteDeviceWipe(
@@ -384,6 +387,9 @@ void FakeSessionManagerClient::StartRemoteDeviceWipe(
   if (!on_start_device_wipe_callback_.is_null()) {
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE, std::move(on_start_device_wipe_callback_));
+  }
+  for (auto& observer : observers_) {
+    observer.PowerwashRequested(/*admin_requested*/ true);
   }
 }
 
@@ -806,7 +812,7 @@ bool FakeSessionManagerClient::GetFlagsForUser(
   }
 
   // Encode origin list values.
-  base::Value origin_list_dict(base::Value::Type::DICTIONARY);
+  base::Value origin_list_dict(base::Value::Type::DICT);
   for (const auto& entry : iter->second.origin_list_flags) {
     origin_list_dict.SetStringKey(entry.first, entry.second);
   }

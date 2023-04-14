@@ -71,7 +71,7 @@ ArcKeymasterBridge::~ArcKeymasterBridge() {
 void ArcKeymasterBridge::UpdatePlaceholderKeys(
     std::vector<keymaster::mojom::ChromeOsKeyPtr> keys,
     UpdatePlaceholderKeysCallback callback) {
-  if (cert_store_bridge_->is_proxy_bound()) {
+  if (cert_store_bridge_->IsProxyBound()) {
     cert_store_bridge_->UpdatePlaceholderKeysInKeymaster(std::move(keys),
                                                          std::move(callback));
   } else {
@@ -159,6 +159,11 @@ void ArcKeymasterBridge::BootstrapMojoConnection(
       channel.TakeRemoteEndpoint().TakePlatformHandle().TakeFD(),
       base::BindOnce(&ArcKeymasterBridge::OnBootstrapMojoConnection,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+// static
+void ArcKeymasterBridge::EnsureFactoryBuilt() {
+  ArcKeymasterBridgeFactory::GetInstance();
 }
 
 }  // namespace arc

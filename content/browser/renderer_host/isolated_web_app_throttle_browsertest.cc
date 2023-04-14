@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/memory/raw_ptr.h"
-#include "base/test/scoped_feature_list.h"
-#include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_content_browser_client.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
@@ -33,7 +32,8 @@ static constexpr RenderFrameHost::WebExposedIsolationLevel
 const char kAppHost[] = "app.com";
 const char kNonAppHost[] = "other.com";
 
-class IsolatedWebAppContentBrowserClient : public ContentBrowserClient {
+class IsolatedWebAppContentBrowserClient
+    : public ContentBrowserTestContentBrowserClient {
  public:
   explicit IsolatedWebAppContentBrowserClient(
       net::EmbeddedTestServer* embedded_https_server) {
@@ -41,12 +41,12 @@ class IsolatedWebAppContentBrowserClient : public ContentBrowserClient {
     app_origin_ = url::Origin::Create(app_url);
   }
 
-  bool ShouldUrlUseApplicationIsolationLevel(
-      BrowserContext* browser_context,
-      const GURL& url,
-      bool origin_matches_flag) override {
+  bool ShouldUrlUseApplicationIsolationLevel(BrowserContext* browser_context,
+                                             const GURL& url) override {
     return url.host() == kAppHost;
   }
+
+  bool AreIsolatedWebAppsEnabled(BrowserContext*) override { return true; }
 
  private:
   url::Origin app_origin_;
@@ -56,9 +56,7 @@ class IsolatedWebAppContentBrowserClient : public ContentBrowserClient {
 
 class HttpsBrowserTest : public ContentBrowserTest {
  public:
-  HttpsBrowserTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitAndEnableFeature(features::kIsolatedWebApps);
-  }
+  HttpsBrowserTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
@@ -88,8 +86,6 @@ class HttpsBrowserTest : public ContentBrowserTest {
  private:
   net::EmbeddedTestServer https_server_;
   ContentMockCertVerifier mock_cert_verifier_;
-
-  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class IsolatedWebAppThrottleBrowserTest : public HttpsBrowserTest {
@@ -99,12 +95,11 @@ class IsolatedWebAppThrottleBrowserTest : public HttpsBrowserTest {
 
     test_client_ =
         std::make_unique<IsolatedWebAppContentBrowserClient>(https_server());
-    old_client_ = SetBrowserClientForTesting(test_client_.get());
   }
 
   void TearDownOnMainThread() override {
     HttpsBrowserTest::TearDownOnMainThread();
-    SetBrowserClientForTesting(old_client_);
+    test_client_.reset();
   }
 
  protected:
@@ -169,7 +164,6 @@ class IsolatedWebAppThrottleBrowserTest : public HttpsBrowserTest {
 
  private:
   std::unique_ptr<IsolatedWebAppContentBrowserClient> test_client_;
-  raw_ptr<ContentBrowserClient> old_client_;
 };
 
 IN_PROC_BROWSER_TEST_F(IsolatedWebAppThrottleBrowserTest,

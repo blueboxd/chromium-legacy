@@ -20,10 +20,6 @@
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "url/gurl.h"
 
-namespace base {
-class Value;
-}  // namespace base
-
 namespace ash {
 
 class DeviceState;
@@ -79,13 +75,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // If you change this method, update GetProperties too.
   bool PropertyChanged(const std::string& key,
                        const base::Value& value) override;
-  bool InitialPropertiesReceived(const base::Value& properties) override;
+  bool InitialPropertiesReceived(const base::Value::Dict& properties) override;
   void GetStateProperties(base::Value* dictionary) const override;
   bool IsActive() const override;
 
   // Called when the IPConfig properties may have changed. |properties| is
   // expected to be of type DICTIONARY.
-  void IPConfigPropertiesChanged(const base::Value& properties);
+  void IPConfigPropertiesChanged(const base::Value::Dict& properties);
 
   // Returns true if the network requires a service activation.
   bool RequiresActivation() const;
@@ -126,6 +122,17 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::string GetIpAddress() const;
   std::string GetGateway() const;
   GURL GetWebProxyAutoDiscoveryUrl() const;
+
+  // Network service property accessors.
+  // Link speeds are set when service is connected or link speeds get updated
+  // during the connection. When link speeds are not set, absl::nullopt is
+  // returned.
+  const absl::optional<uint32_t> max_uplink_speed_kbps() const {
+    return max_uplink_speed_kbps_;
+  }
+  const absl::optional<uint32_t> max_downlink_speed_kbps() const {
+    return max_downlink_speed_kbps_;
+  }
 
   // Wireless property accessors
   bool connectable() const { return connectable_; }
@@ -296,14 +303,13 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   friend class NetworkStateHandler;
   friend class NetworkStateTest;
 
-  // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, which must
-  // be of type DICTIONARY, if the key exists, and validates |name_|. Returns
-  // true if |name_| changes.
-  bool UpdateName(const base::Value& properties);
+  // Updates |name_| from the 'WiFi.HexSSID' entry in |properties|, if the key
+  // exists, and validates |name_|. Returns true if |name_| changes.
+  bool UpdateName(const base::Value::Dict& properties);
 
   // Uses the Shill connection state and PortalDetectionFailedStatus to generate
   // |shill_portal_state_|.
-  void UpdateCaptivePortalState(const base::Value& properties);
+  void UpdateCaptivePortalState(const base::Value::Dict& properties);
 
   void SetVpnProvider(const std::string& id, const std::string& type);
 
@@ -329,6 +335,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
   int priority_ = 0;  // kPriority, used for organizing known networks.
   ::onc::ONCSource onc_source_ = ::onc::ONC_SOURCE_UNKNOWN;
+  absl::optional<uint32_t> max_uplink_speed_kbps_;
+  absl::optional<uint32_t> max_downlink_speed_kbps_;
 
   // Last non empty Service.Error property. Expected to be cleared via
   // ClearError() when a connection attempt is initiated and when an associated

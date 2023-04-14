@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/app_store_rating/app_store_rating_display_handler.h"
 
 #import "base/check.h"
+#import "components/feature_engagement/public/feature_constants.h"
 #import "components/prefs/pref_service.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/prefs/pref_names.h"
 #import "ios/chrome/browser/promos_manager/constants.h"
 #import "ios/chrome/browser/promos_manager/impression_limit.h"
+#import "ios/chrome/browser/promos_manager/promo_config.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -29,13 +31,11 @@
 
 #pragma mark - PromoProtocol
 
-- (promos_manager::Promo)identifier {
-  return promos_manager::Promo::AppStoreRating;
-}
-
-- (NSArray<ImpressionLimit*>*)impressionLimits {
-  return [NSArray arrayWithObject:[[ImpressionLimit alloc] initWithLimit:1
-                                                              forNumDays:365]];
+- (PromoConfig)config {
+  return PromoConfig(promos_manager::Promo::AppStoreRating,
+                     &feature_engagement::kIPHiOSAppStorePromoFeature,
+                     @[ [[ImpressionLimit alloc] initWithLimit:1
+                                                    forNumDays:365] ]);
 }
 
 @end

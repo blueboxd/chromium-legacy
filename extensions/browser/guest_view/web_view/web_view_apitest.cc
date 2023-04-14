@@ -584,10 +584,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultCancel) {
   RunTest("testDialogConfirmDefaultCancel", "web_view/dialog");
 }
 
-// This test is flaky and times out on all platforms.
-// https://crbug.com/937461.
-IN_PROC_BROWSER_TEST_F(WebViewAPITest,
-                       DISABLED_TestDialogConfirmDefaultGCCancel) {
+IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDialogConfirmDefaultGCCancel) {
   RunTest("testDialogConfirmDefaultGCCancel", "web_view/dialog");
 }
 
@@ -930,10 +927,8 @@ class WebViewAPITestUserAgentOverride
     : public WebViewAPITest {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {blink::features::kUserAgentOverrideExperiment,
-         blink::features::kUACHOverrideBlank},
-        {});
+    scoped_feature_list_.InitWithFeatures({blink::features::kUACHOverrideBlank},
+                                          {});
     WebViewAPITest::SetUp();
   }
 
@@ -959,13 +954,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITestUserAgentOverride, TestSetUserAgentOverride
   https_server.SetSSLConfig(
       net::test_server::EmbeddedTestServer::CERT_COMMON_NAME_IS_DOMAIN);
   ASSERT_TRUE(https_server.Start());
-  base::HistogramTester histogram;
   test_config_.SetByDottedPath(kTestServerPort, https_server.port());
   RunTest("testSetUserAgentOverride", "web_view/apitest");
-  content::FetchHistogramsFromChildProcesses();
-  histogram.ExpectBucketCount(
-      blink::UserAgentOverride::kUserAgentOverrideHistogram,
-      blink::UserAgentOverride::UserAgentOverriden, 1);
 }
 
 }  // namespace extensions

@@ -59,6 +59,8 @@
 # tags: [ oop-c no-oop-c ]
 # WebGPU Backend Validation
 # tags: [ dawn-backend-validation dawn-no-backend-validation ]
+# Clang coverage
+# tags: [ clang-coverage no-clang-coverage ]
 # results: [ Failure RetryOnFailure Skip Slow ]
 # END TAG HEADER
 
@@ -81,8 +83,6 @@
 ###################
 # Non-"Skip" expectations go here to suppress regular flakes/failures.
 
-# Incorrectly reporting SCALING instead of DIRECT on Win10 w/ UHD 630 GPUs.
-crbug.com/1079393 [ win intel-0x3e92 ] InfoCollection_direct_composition [ Failure ]
 
 # InfoCollection_basic is flaky on Fuchsia.
 crbug.com/1154597 [ angle-vulkan fuchsia fuchsia-chrome intel-gen-9 ] InfoCollection_basic [ RetryOnFailure ]

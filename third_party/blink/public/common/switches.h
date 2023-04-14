@@ -63,7 +63,6 @@ BLINK_COMMON_EXPORT extern const char kMaxUntiledLayerWidth[];
 BLINK_COMMON_EXPORT extern const char kMinHeightForGpuRasterTile[];
 BLINK_COMMON_EXPORT extern const char kNetworkQuietTimeout[];
 BLINK_COMMON_EXPORT extern const char kNumRasterThreads[];
-BLINK_COMMON_EXPORT extern const char kPrefixedStorageInfoEnabled[];
 BLINK_COMMON_EXPORT extern const char kUnthrottledNestedTimeoutPolicy[];
 BLINK_COMMON_EXPORT extern const char
     kUnthrottledNestedTimeoutPolicy_ForceDisable[];
@@ -78,7 +77,6 @@ BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy[];
 BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy_Character[];
 BLINK_COMMON_EXPORT extern const char kTouchTextSelectionStrategy_Direction[];
 BLINK_COMMON_EXPORT extern const char kWebSQLAccess[];
-BLINK_COMMON_EXPORT extern const char kWebSQLNonSecureContextEnabled[];
 
 }  // namespace switches
 }  // namespace blink

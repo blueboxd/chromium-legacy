@@ -197,8 +197,9 @@ void AddGooglePhotosPhotoIfValid(
     ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr&
         parsed_response,
     const base::Value::Dict* photo) {
-  if (!photo)
+  if (!photo) {
     return;
+  }
 
   const auto* id = photo->FindStringByDottedPath("itemId.mediaKey");
   const auto* dedup_key = photo->FindString("dedupKey");
@@ -235,19 +236,24 @@ void AddGooglePhotosPhotoIfValid(
 // Returns the `GooglePhotosApi` associated with the specified `url`.
 absl::optional<GooglePhotosApi> ToGooglePhotosApi(const GURL& url) {
   const std::string& spec = url.spec();
-  if (base::StartsWith(spec, kGooglePhotosEnabledUrl))
+  if (base::StartsWith(spec, kGooglePhotosEnabledUrl)) {
     return GooglePhotosApi::kGetEnabled;
-  if (base::StartsWith(spec, kGooglePhotosAlbumUrl))
+  }
+  if (base::StartsWith(spec, kGooglePhotosAlbumUrl)) {
     return GooglePhotosApi::kGetAlbum;
-  if (base::StartsWith(spec, kGooglePhotosAlbumsUrl))
-    return GooglePhotosApi::kGetAlbums;
-  if (base::StartsWith(spec, kGooglePhotosSharedAlbumsUrl)) {
+  }
+  if (base::StartsWith(spec, kGooglePhotosAlbumsUrl)) {
     return GooglePhotosApi::kGetAlbums;
   }
-  if (base::StartsWith(spec, kGooglePhotosPhotoUrl))
+  if (base::StartsWith(spec, kGooglePhotosSharedAlbumsUrl)) {
+    return GooglePhotosApi::kGetSharedAlbums;
+  }
+  if (base::StartsWith(spec, kGooglePhotosPhotoUrl)) {
     return GooglePhotosApi::kGetPhoto;
-  if (base::StartsWith(spec, kGooglePhotosPhotosUrl))
+  }
+  if (base::StartsWith(spec, kGooglePhotosPhotosUrl)) {
     return GooglePhotosApi::kGetPhotos;
+  }
   return absl::nullopt;
 }
 
@@ -497,8 +503,9 @@ void BackdropSurpriseMeImageFetcher::Start(OnSurpriseMeImageFetched callback) {
   if (ash::IsGoogleBrandedDevice()) {
     request.add_filtering_label(kGoogleDeviceFilteringLabel);
   }
-  if (!resume_token_.empty())
+  if (!resume_token_.empty()) {
     request.set_resume_token(resume_token_);
+  }
   std::string serialized_proto;
   request.SerializeToString(&serialized_proto);
 
@@ -576,8 +583,9 @@ void GooglePhotosFetcher<T>::AddRequestAndStartIfNecessary(
     const GURL& service_url,
     ClientCallback callback) {
   pending_client_callbacks_[service_url].push_back(std::move(callback));
-  if (pending_client_callbacks_[service_url].size() > 1)
+  if (pending_client_callbacks_[service_url].size() > 1) {
     return;
+  }
 
   signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kPhotosModuleOAuth2Scope);
@@ -718,15 +726,24 @@ GooglePhotosAlbumsFetcher::GooglePhotosAlbumsFetcher(Profile* profile)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-GooglePhotosAlbumsFetcher::~GooglePhotosAlbumsFetcher() = default;
+GooglePhotosAlbumsFetcher::~GooglePhotosAlbumsFetcher() {
+  // Records Ash.Wallpaper.GooglePhotos.Api.GetAlbums.RefreshCount metric
+  // at the end of the session.
+  RecordGooglePhotosApiRefreshCount(GooglePhotosApi::kGetAlbums,
+                                    albums_api_refresh_counter_);
+}
 
 void GooglePhotosAlbumsFetcher::AddRequestAndStartIfNecessary(
     const absl::optional<std::string>& resume_token,
     base::OnceCallback<void(GooglePhotosAlbumsCbkArgs)> callback) {
   GURL service_url = GURL(kGooglePhotosAlbumsUrl);
-  if (resume_token.has_value())
+  if (resume_token.has_value()) {
     service_url = net::AppendQueryParameter(service_url, "resume_token",
                                             resume_token.value());
+    // Increase the refresh counter every time the user scrolls down to the
+    // bottom of the page to fetch more albums with a valid refresh token.
+    albums_api_refresh_counter_++;
+  }
   GooglePhotosFetcher::AddRequestAndStartIfNecessary(service_url,
                                                      std::move(callback));
 }
@@ -735,16 +752,19 @@ GooglePhotosAlbumsCbkArgs GooglePhotosAlbumsFetcher::ParseResponse(
     const base::Value::Dict* response) {
   auto parsed_response =
       ash::personalization_app::mojom::FetchGooglePhotosAlbumsResponse::New();
-  if (!response)
+  if (!response) {
     return parsed_response;
+  }
 
   const auto* resume_token = response->FindString("resumeToken");
-  if (resume_token && !resume_token->empty())
+  if (resume_token && !resume_token->empty()) {
     parsed_response->resume_token = *resume_token;
+  }
 
   const auto* response_albums = response->FindList("collection");
-  if (!response_albums)
+  if (!response_albums) {
     return parsed_response;
+  }
 
   parsed_response->albums =
       std::vector<ash::personalization_app::mojom::GooglePhotosAlbumPtr>();
@@ -790,7 +810,12 @@ GooglePhotosSharedAlbumsFetcher::GooglePhotosSharedAlbumsFetcher(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-GooglePhotosSharedAlbumsFetcher::~GooglePhotosSharedAlbumsFetcher() = default;
+GooglePhotosSharedAlbumsFetcher::~GooglePhotosSharedAlbumsFetcher() {
+  // Records Ash.Wallpaper.GooglePhotos.Api.GetSharedAlbums.RefreshCount metric
+  // at the end of the session.
+  RecordGooglePhotosApiRefreshCount(GooglePhotosApi::kGetSharedAlbums,
+                                    shared_albums_api_refresh_counter_);
+}
 
 void GooglePhotosSharedAlbumsFetcher::AddRequestAndStartIfNecessary(
     const absl::optional<std::string>& resume_token,
@@ -799,6 +824,10 @@ void GooglePhotosSharedAlbumsFetcher::AddRequestAndStartIfNecessary(
   if (resume_token.has_value()) {
     service_url = net::AppendQueryParameter(service_url, "resume_token",
                                             resume_token.value());
+    // Increase the refresh counter every time the user scrolls down to the
+    // bottom of the page to fetch more shared albums with a valid refresh
+    // token.
+    shared_albums_api_refresh_counter_++;
   }
   GooglePhotosFetcher::AddRequestAndStartIfNecessary(service_url,
                                                      std::move(callback));
@@ -872,8 +901,9 @@ void GooglePhotosEnabledFetcher::AddRequestAndStartIfNecessary(
 
 GooglePhotosEnablementState GooglePhotosEnabledFetcher::ParseResponse(
     const base::Value::Dict* response) {
-  if (!response)
+  if (!response) {
     return GooglePhotosEnablementState::kError;
+  }
 
   const auto* state = response->FindStringByDottedPath("status.userState");
 
@@ -900,8 +930,12 @@ GooglePhotosPhotosFetcher::GooglePhotosPhotosFetcher(Profile* profile)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
-GooglePhotosPhotosFetcher::~GooglePhotosPhotosFetcher() = default;
-
+GooglePhotosPhotosFetcher::~GooglePhotosPhotosFetcher() {
+  // Records Ash.Wallpaper.GooglePhotos.Api.GetPhotos.RefreshCount metric
+  // at the end of the session.
+  RecordGooglePhotosApiRefreshCount(GooglePhotosApi::kGetPhotos,
+                                    photos_api_refresh_counter_);
+}
 void GooglePhotosPhotosFetcher::AddRequestAndStartIfNecessary(
     const absl::optional<std::string>& item_id,
     const absl::optional<std::string>& album_id,
@@ -928,6 +962,9 @@ void GooglePhotosPhotosFetcher::AddRequestAndStartIfNecessary(
   if (resume_token.has_value()) {
     service_url = net::AppendQueryParameter(service_url, "resume_token",
                                             resume_token.value());
+    // Increase the refresh counter every time the user scrolls down to the
+    // bottom of the page to fetch more photos with a valid refresh token.
+    photos_api_refresh_counter_++;
   }
   GooglePhotosFetcher::AddRequestAndStartIfNecessary(service_url,
                                                      std::move(callback));
@@ -950,17 +987,20 @@ GooglePhotosPhotosCbkArgs GooglePhotosPhotosFetcher::ParseResponse(
     const base::Value::Dict* response) {
   auto parsed_response =
       ash::personalization_app::mojom::FetchGooglePhotosPhotosResponse::New();
-  if (!response)
+  if (!response) {
     return parsed_response;
+  }
 
   const auto* resume_token = response->FindString("resumeToken");
-  if (resume_token && !resume_token->empty())
+  if (resume_token && !resume_token->empty()) {
     parsed_response->resume_token = *resume_token;
+  }
 
   // The `base::Value` at key "item" can be a single photos or a list of photos.
   const auto* photo_or_photos = response->Find("item");
-  if (!photo_or_photos)
+  if (!photo_or_photos) {
     return parsed_response;
+  }
 
   parsed_response->photos =
       std::vector<ash::personalization_app::mojom::GooglePhotosPhotoPtr>();

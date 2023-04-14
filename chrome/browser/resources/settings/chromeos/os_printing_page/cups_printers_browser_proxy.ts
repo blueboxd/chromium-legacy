@@ -39,14 +39,6 @@ export interface CupsPrintersList {
   printerList: CupsPrinterInfo[];
 }
 
-/**
- * Note: |ppd| is undefined in the case of a failed response.
- */
-export interface CupsPrinterPpdInfo {
-  printerName: string;
-  ppd: string;
-}
-
 export interface ManufacturersInfo {
   success: boolean;
   manufacturers: string[];
@@ -88,6 +80,10 @@ export enum PrinterSetupResult {
   INVALID_PPD = 11,
   PPD_NOT_FOUND = 12,
   PPD_UNRETRIEVABLE = 13,
+  IO_ERROR = 14,
+  MEMORY_ALLOCATION_ERROR = 15,
+  BAD_URI = 16,
+  MANUAL_SETUP_REQUIRED = 17,
   DBUS_NO_REPLY = 64,
   DBUS_TIMEOUT = 65,
 }
@@ -119,8 +115,8 @@ export interface CupsPrintersBrowserProxy {
 
   removeCupsPrinter(printerId: string, printerName: string): void;
 
-  retrieveCupsPrinterPpd(printerId: string, printerName: string):
-      Promise<CupsPrinterPpdInfo>;
+  retrieveCupsPrinterPpd(printerId: string, printerName: string, eula: string):
+      void;
 
   getCupsPrinterPpdPath(): Promise<string>;
 
@@ -197,9 +193,8 @@ export class CupsPrintersBrowserProxyImpl implements CupsPrintersBrowserProxy {
     chrome.send('removeCupsPrinter', [printerId, printerName]);
   }
 
-  retrieveCupsPrinterPpd(printerId: string, printerName: string):
-      Promise<CupsPrinterPpdInfo> {
-    return sendWithPromise('retrieveCupsPrinterPpd', printerId, printerName);
+  retrieveCupsPrinterPpd(printerId: string, printerName: string, eula: string) {
+    chrome.send('retrieveCupsPrinterPpd', [printerId, printerName, eula]);
   }
 
   addCupsPrinter(newPrinter: CupsPrinterInfo): Promise<PrinterSetupResult> {

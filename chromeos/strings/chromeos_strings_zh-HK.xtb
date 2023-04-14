@@ -16,6 +16,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">開咗更新外部裝置韌體嘅視窗。有 <ph name="NUM_UPDATES" /> 項可用嘅更新。</translation>
 <translation id="1145516343487477149">尋找說明文章，並回答 Chromebook 常見問題</translation>
+<translation id="1167755866710282443">開啟選單以自訂按鍵。拖曳選單以移動。</translation>
 <translation id="1175697296044146566">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。</translation>
 <translation id="1175951029573070619">一般 (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1181037720776840403">移除</translation>
@@ -326,6 +327,7 @@
 <translation id="4110686435123617899">揀相簿 <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB 觸控板</translation>
 <translation id="4117637339509843559">暗光模式</translation>
+<translation id="4130035430755296270">將滑鼠游標懸停在上方，即可查看更多版面配置選項</translation>
 <translation id="4131410914670010031">黑白</translation>
 <translation id="4145784616224233563">HTTP 防火牆</translation>
 <translation id="4147897805161313378">Google 相片</translation>
@@ -414,6 +416,7 @@
 <translation id="484790837831576105">(Android) DNS 解析</translation>
 <translation id="4848429997038228357">執行中</translation>
 <translation id="4854586501323951986">內置觸控螢幕</translation>
+<translation id="4855250849489639581">向下滑動以查看更多版面配置選項</translation>
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />剩餘嘗試次數：{0} 次}other{<ph name="ERROR_MESSAGE" />剩餘嘗試次數：{0} 次}}</translation>
 <translation id="4873827928179867585">驗證演算法</translation>
 <translation id="4880328057631981605">接入點名稱 (APN)</translation>
@@ -673,6 +676,7 @@
 <translation id="7172721935181587524">1 張圖片</translation>
 <translation id="7177485034254901881">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理。管理員可能會遠端設定裝置。</translation>
 <translation id="7180611975245234373">重新整理</translation>
+<translation id="7180865173735832675">自訂</translation>
 <translation id="7212734716605298123">外部裝置適用的韌體更新</translation>
 <translation id="7216409898977639127">流動服務供應商</translation>
 <translation id="725133483556299729">揀電郵地址</translation>

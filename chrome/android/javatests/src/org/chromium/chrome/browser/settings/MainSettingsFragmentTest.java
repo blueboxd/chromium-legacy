@@ -9,7 +9,6 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.PreferenceMatchers.withKey;
-import static androidx.test.espresso.matcher.RootMatchers.isDialog;
 import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.hasSibling;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -54,7 +53,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.MetricsUtils.HistogramDelta;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
@@ -181,6 +180,7 @@ public class MainSettingsFragmentTest {
                 SyncPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
         SharedPreferencesManager.getInstance().removeKey(
                 ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT);
+        SyncConsentActivityLauncherImpl.setLauncherForTest(null);
     }
 
     @Test
@@ -284,24 +284,6 @@ public class MainSettingsFragmentTest {
     }
 
     @Test
-    @MediumTest
-    @EnableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
-    public void testSigninRowLaunchesTangibleSignInFlowForSignedOutAccounts() {
-        // When there are no accounts, sync promo and the signin preference shows the same text.
-        mSyncTestRule.addTestAccount();
-        launchSettingsActivity();
-
-        onView(withText(R.string.sync_promo_turn_on_sync)).perform(click());
-
-        onView(withText(R.string.signin_account_picker_dialog_title))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-        onView(withText(R.string.signin_add_account_to_device))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-    }
-
-    @Test
     @SmallTest
     public void testSyncRowLaunchesSignInFlowForSignedInAccounts() {
         CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndSignInForTesting();
@@ -312,24 +294,6 @@ public class MainSettingsFragmentTest {
         verify(mMockSyncConsentActivityLauncher)
                 .launchActivityForPromoDefaultFlow(any(Activity.class),
                         eq(SigninAccessPoint.SETTINGS_SYNC_OFF_ROW), eq(accountInfo.getEmail()));
-    }
-
-    @Test
-    @MediumTest
-    @EnableFeatures(ChromeFeatureList.TANGIBLE_SYNC)
-    public void testSyncRowLaunchesTangibleSignInFlowForSignedInAccounts() {
-        CoreAccountInfo accountInfo = mSyncTestRule.setUpAccountAndSignInForTesting();
-        launchSettingsActivity();
-
-        onView(withText(R.string.sync_category_title)).perform(click());
-
-        onView(withText(R.string.signin_account_picker_dialog_title))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
-        onView(withText(accountInfo.getEmail())).inRoot(isDialog()).check(matches(isDisplayed()));
-        onView(withText(R.string.signin_add_account_to_device))
-                .inRoot(isDialog())
-                .check(matches(isDisplayed()));
     }
 
     @Test
@@ -506,8 +470,8 @@ public class MainSettingsFragmentTest {
     @Test
     @MediumTest
     public void testSyncPromoNotShownAfterBeingDismissed() throws Exception {
-        HistogramDelta dismissedHistogram =
-                new HistogramDelta("Signin.SyncPromo.Dismissed.Count.Settings", 1);
+        var dismissedCountHistogram = HistogramWatcher.newSingleRecordWatcher(
+                "Signin.SyncPromo.Dismissed.Count.Settings", 1);
         launchSettingsActivity();
         onViewWaiting(allOf(withId(R.id.signin_promo_view_container), isDisplayed()));
         onView(withId(R.id.sync_promo_close_button)).perform(click());
@@ -520,14 +484,14 @@ public class MainSettingsFragmentTest {
         // Launch settings activity again.
         mSettingsActivityTestRule.startSettingsActivity();
         onView(withId(R.id.signin_promo_view_container)).check(doesNotExist());
-        Assert.assertEquals(1, dismissedHistogram.getDelta());
+        dismissedCountHistogram.assertExpected();
     }
 
     @Test
     @MediumTest
     public void testSyncPromoShownIsNotOverCounted() {
-        HistogramDelta showCountHistogram =
-                new HistogramDelta("Signin.SyncPromo.Shown.Count.Settings", 1);
+        var showCountHistogram =
+                HistogramWatcher.newSingleRecordWatcher("Signin.SyncPromo.Shown.Count.Settings", 1);
         int promoShowCount = SharedPreferencesManager.getInstance().readInt(
                 SyncPromoController.getPromoShowCountPreferenceName(SigninAccessPoint.SETTINGS));
         Assert.assertEquals(0, promoShowCount);
@@ -543,7 +507,7 @@ public class MainSettingsFragmentTest {
         Assert.assertEquals(1,
                 SharedPreferencesManager.getInstance().readInt(
                         ChromePreferenceKeys.SYNC_PROMO_TOTAL_SHOW_COUNT));
-        Assert.assertEquals(1, showCountHistogram.getDelta());
+        showCountHistogram.assertExpected();
     }
 
     @Test

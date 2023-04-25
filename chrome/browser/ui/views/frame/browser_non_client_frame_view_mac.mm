@@ -153,7 +153,8 @@ gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForTabStripRegion(
 
 gfx::Rect BrowserNonClientFrameViewMac::GetBoundsForWebAppFrameToolbar(
     const gfx::Size& toolbar_preferred_size) const {
-  if (ShouldHideTopUIForFullscreen()) {
+  if (ShouldHideTopUIForFullscreen() ||
+      !(@available(macOS 10.10, *))) {
     return gfx::Rect();
   }
   gfx::Rect bounds(0, 0, width(),

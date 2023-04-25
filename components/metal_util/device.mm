@@ -15,11 +15,13 @@ MTLDevicePtr CreateDefaultDevice() {
   // First attempt to find a low power device to use.
   base::scoped_nsprotocol<id<MTLDevice>> device_to_use;
 #if BUILDFLAG(IS_MAC)
-  base::scoped_nsobject<NSArray<id<MTLDevice>>> devices(MTLCopyAllDevices());
-  for (id<MTLDevice> device in devices.get()) {
-    if ([device isLowPower]) {
-      device_to_use.reset(device, base::scoped_policy::RETAIN);
-      break;
+  if (@available(macOS 10.13, *)) {
+    base::scoped_nsobject<NSArray<id<MTLDevice>>> devices(MTLCopyAllDevices());
+    for (id<MTLDevice> device in devices.get()) {
+      if ([device isLowPower]) {
+        device_to_use.reset(device, base::scoped_policy::RETAIN);
+        break;
+      }
     }
   }
 #endif

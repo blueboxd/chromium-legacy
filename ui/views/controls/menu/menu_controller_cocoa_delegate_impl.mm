@@ -112,10 +112,13 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
       [badge_image lockFocus];
       NSRect badge_frame = NSInsetRect(
           dest_rect, views::BadgePainter::kBadgeHorizontalMargin, 0);
-      NSBezierPath* rounded_badge_rect = [NSBezierPath
-          bezierPathWithRoundedRect:badge_frame
-                            xRadius:views::BadgePainter::kBadgeCornerRadius
-                            yRadius:views::BadgePainter::kBadgeCornerRadius];
+      const int badge_radius =
+          views::LayoutProvider::Get()->GetCornerRadiusMetric(
+              views::ShapeContextTokens::kBadgeRadius);
+      NSBezierPath* rounded_badge_rect =
+          [NSBezierPath bezierPathWithRoundedRect:badge_frame
+                                          xRadius:badge_radius
+                                          yRadius:badge_radius];
       NSColor* badge_color = skia::SkColorToSRGBNSColor(
           color_provider->GetColor(ui::kColorButtonBackgroundProminent));
       [badge_color set];
@@ -134,20 +137,34 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
 NSImage* IPHDotImage(const ui::ColorProvider* color_provider) {
   // Embed horizontal centering space as NSMenuItem will otherwise left-align
   // it.
-  return [NSImage
-       imageWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)
-             flipped:NO
-      drawingHandler:^(NSRect dest_rect) {
-        NSBezierPath* dot_path = [NSBezierPath
-            bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
-                                                kIPHDotSize)];
-        NSColor* dot_color = skia::SkColorToSRGBNSColor(
-            color_provider->GetColor(ui::kColorButtonBackgroundProminent));
-        [dot_color set];
-        [dot_path fill];
+  if (@available(macOS 10.8, *)) {
+    return [NSImage
+         imageWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)
+               flipped:NO
+        drawingHandler:^(NSRect dest_rect) {
+          NSBezierPath* dot_path = [NSBezierPath
+              bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
+                                                  kIPHDotSize)];
+          NSColor* dot_color = skia::SkColorToSRGBNSColor(
+              color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+          [dot_color set];
+          [dot_path fill];
 
-        return YES;
-      }];
+          return YES;
+        }];
+  } else {
+    NSImage *dot_image = [[NSImage alloc] initWithSize:NSMakeSize(2 * kIPHDotSize, kIPHDotSize)];
+    [dot_image lockFocus];
+    NSBezierPath* dot_path = [NSBezierPath
+        bezierPathWithOvalInRect:NSMakeRect(kIPHDotSize / 2, 0, kIPHDotSize,
+                                            kIPHDotSize)];
+    NSColor* dot_color = skia::SkColorToSRGBNSColor(
+        color_provider->GetColor(ui::kColorButtonBackgroundProminent));
+    [dot_color set];
+    [dot_path fill];
+    [dot_image unlockFocus];
+    return [dot_image retain];
+  }
 }
 
 }  // namespace

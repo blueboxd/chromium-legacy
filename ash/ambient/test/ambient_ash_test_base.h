@@ -230,6 +230,10 @@ class AmbientAshTestBase : public AshTestBase {
                                SkColor color);
   void DisableBackupCacheDownloads();
 
+  void SetScreenSaverDuration(int minutes);
+
+  absl::optional<int> GetScreenSaverDuration();
+
  private:
   void SpinWaitForAmbientViewAvailable(
       const base::RepeatingClosure& quit_closure);

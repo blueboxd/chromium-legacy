@@ -798,6 +798,12 @@ class CONTENT_EXPORT NavigationRequest
   // Must only be called after ReadyToCommitNavigation().
   blink::mojom::PolicyContainerPtr CreatePolicyContainerForBlink();
 
+  // Returns a new refptr to this navigation's PolicyContainerHost.
+  //
+  // Must only be called after ReadyToCommitNavigation().
+  // It is invalid to call after `TakePolicyContainerHost()`.
+  scoped_refptr<PolicyContainerHost> GetPolicyContainerHost();
+
   // Moves this navigation's PolicyContainerHost out of this instance.
   //
   // Must only be called after ReadyToCommitNavigation().
@@ -1189,6 +1195,22 @@ class CONTENT_EXPORT NavigationRequest
     return std::move(web_ui_);
   }
 
+  enum ErrorPageProcess {
+    kNotErrorPage,
+    kPostCommitErrorPage,
+    kCurrentProcess,
+    kDestinationProcess,
+    kIsolatedProcess
+  };
+  // Helper to determine whether a navigation is committing an error page and
+  // should stay in the current process (kCurrentProcess), the destination
+  // URL's process (kDestinationProcess), an isolated process
+  // (kIsolatedProcess), or is a post-commit error page that does not have any
+  // specific process requirements and goes through the "normal navigation"
+  // path. Returns kNotErrorPage if the navigation is not anerror page
+  // navigation.
+  ErrorPageProcess ComputeErrorPageProcess();
+
  private:
   friend class NavigationRequestTest;
 
@@ -1329,15 +1351,6 @@ class CONTENT_EXPORT NavigationRequest
       bool skip_throttles,
       const absl::optional<std::string>& error_page_content,
       bool collapse_frame);
-
-  // Helper to determine whether an error page for the provided error code
-  // should stay in the current process.
-  enum ErrorPageProcess {
-    kCurrentProcess,
-    kDestinationProcess,
-    kIsolatedProcess
-  };
-  ErrorPageProcess ComputeErrorPageProcess(int net_error);
 
   // Called when the NavigationThrottles have been checked by the
   // NavigationHandle.

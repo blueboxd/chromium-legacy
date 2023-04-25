@@ -24,7 +24,6 @@ Ezinye izici kungenzeka zingabi khona futhi izinguquko kokuncamelayo ngeke zize 
 
 Izimvume ozinikezile kakade amawebhusayithi nama-app zingase zisebenze kule akhawunti. Ungakwazi nokuphatha ama-Google Account wakho kokuthi <ph name="SETTINGS_LINK_BEGIN" />Amasethingi<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Iyadawuniloda...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{I-Chromium ixhumeke kudivayisi ye-HID}=1{I-Chromium ixhumeke kudivayisi ye-HID}one{I-Chromium ixhumeke kumadivayisi we-HID}other{I-Chromium ixhumeke kumadivayisi we-HID}}</translation>
 <translation id="1708666629004767631">Kukhona inguqulo entsha, ephephile ye-Chromium etholakalayo.</translation>
 <translation id="17264556997921157">Ungabona futhi ususe izihloko zesayithi ongaba nentshisekelo kuzo ezisetshenziswa ukukubonisa izikhangiso. I-Chromium izolinganisa ongaba nentshisekelo kukho ngokusekelwe kumlando wakho wakamuva wokubhrawuza.</translation>
 <translation id="1733725117201708356">I-Chromium izosula idatha yokubhrawuza maduze</translation>
@@ -247,8 +246,10 @@ Izimvume ozinikezile kakade amawebhusayithi nama-app zingase zisebenze kule akha
 <translation id="6442900851116057561">Qalisa kabusha i-ChromiumOS</translation>
 <translation id="6455857529632101747">Siyakwamukela kumaphrofayela we-Chromium</translation>
 <translation id="6475912303565314141">Iphinde ilawule ukuthi iliphi ikhasi eliboniswa lapho uqala i-Chromium.</translation>
+<translation id="648319183876919572">Ukubhrawuza Ngokuphepha Okugqamile kwenza okuningi ukukuvikela kumawebhusayithi ayingozi nakokudawunilodiwe</translation>
 <translation id="6510925080656968729">Khipha i-Chromium</translation>
 <translation id="6542839706527980775">Iphrofayela ngalinye linolwazi lwalo lwe-Chromium njengamabhukhimakhi, umlando, amaphasiwedi, nokuningi</translation>
+<translation id="656935081669708576">Ungashintsha ukuze ubone amaphasiwedi kusuka kwenye iphrofayela ye-Chromium</translation>
 <translation id="6570579332384693436">Ukuze kulungiswe amaphutha okupeletwa, i-Chromium ithumela umbhalo owuthayiphayo kuzinkambu zombhalo ku-Google</translation>
 <translation id="6598877126913850652">Iya kuzilungiselelo zesaziso se-Chromium</translation>
 <translation id="6613594504749178791">Izinguquko zakho zizosebenza ngesikhathi esilandelayo uma uqalisa kabusha i-Chromium.</translation>

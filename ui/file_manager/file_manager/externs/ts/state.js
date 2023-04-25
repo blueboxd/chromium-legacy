@@ -244,7 +244,7 @@ export const SearchRecency = {
  * @typedef {{
  *   location: !SearchLocation,
  *   recency: SearchRecency,
- *   type:  chrome.fileManagerPrivate.FileCategory,
+ *   fileCategory:  chrome.fileManagerPrivate.FileCategory,
  * }}
  */
 export let SearchOptions;
@@ -379,7 +379,9 @@ export let VolumeMap;
  *   volumes: !Object<!VolumeId, !Volume>,
  *   uiEntries: !Array<!FileKey>,
  *   folderShortcuts: !Array<!FileKey>,
- *   androidApps: !Object<!string, !chrome.fileManagerPrivate.AndroidApp>
+ *   androidApps: !Object<!string, !chrome.fileManagerPrivate.AndroidApp>,
+ *   bulkPinning: (chrome.fileManagerPrivate.BulkPinProgress|undefined),
+ *   preferences: (chrome.fileManagerPrivate.Preferences|undefined),
  * }}
  */
 export let State;

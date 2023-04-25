@@ -22,7 +22,6 @@
 
 A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra is érvényesek lehetnek. Google-fiókjait a <ph name="SETTINGS_LINK_BEGIN" />Beállításokban<ph name="SETTINGS_LINK_END" /> kezelheti.</translation>
 <translation id="1640672724030957280">Letöltés...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{A Chromium HID-eszközhöz csatlakozott}=1{A Chromium HID-eszközhöz csatlakozik}other{A Chromium HID-eszközökhöz csatlakozik}}</translation>
 <translation id="1708666629004767631">Elérhető a Chromium új, biztonságosabb verziója.</translation>
 <translation id="17264556997921157">Megtekintheti és eltávolíthatja azokat a témaköröket, amelyeket a webhelyek hirdetések megjelenítésére használnak. A Chromium az Önt esetlegesen érdeklő témaköröket a legutóbbi böngészési előzményei alapján határozza meg.</translation>
 <translation id="1733725117201708356">A Chromium hamarosan törli a böngészési adatokat</translation>
@@ -245,8 +244,10 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="6442900851116057561">A ChromiumOS újraindítása</translation>
 <translation id="6455857529632101747">Üdvözöljük a Chromium-profilokban!</translation>
 <translation id="6475912303565314141">Továbbá azt is szabályozza, hogy melyik oldal jelenik meg a Chromium indításakor.</translation>
+<translation id="648319183876919572">A Biztonságos Böngészés fokozott védelemmel funkció többet tesz a veszélyes webhelyekkel és letöltésekkel szembeni védekezésért</translation>
 <translation id="6510925080656968729">Chromium eltávolítása</translation>
 <translation id="6542839706527980775">Minden profil saját Chromium-adatokat (például könyvjelzőket, előzményeket, jelszavakat és egyebeket) tárol.</translation>
+<translation id="656935081669708576">Átválthat másik Chromium-profilra, ha meg szeretné nézni annak jelszavait</translation>
 <translation id="6570579332384693436">A nyelvtani hibák javítása érdekében a Chromium elküldi a szövegmezőkbe gépelt szöveget a Google-nak</translation>
 <translation id="6598877126913850652">A Chromium értesítési beállításainak megnyitása</translation>
 <translation id="6613594504749178791">Módosításai a Chromium újraindítása után lépnek érvénybe.</translation>

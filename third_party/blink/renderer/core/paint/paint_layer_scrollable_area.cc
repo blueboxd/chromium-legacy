@@ -142,6 +142,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       is_scrollbar_freeze_root_(false),
       is_horizontal_scrollbar_frozen_(false),
       is_vertical_scrollbar_frozen_(false),
+      should_scroll_on_main_thread_(true),
       scrollbar_manager_(*this),
       has_last_committed_scroll_offset_(false),
       scroll_corner_(nullptr),
@@ -538,39 +539,45 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange() {
   auto* box = GetLayoutBox();
   auto* frame_view = box->GetFrameView();
   frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll(*box);
-
-  if (!box->BackgroundNeedsFullPaintInvalidation()) {
-    auto background_paint_location = box->GetBackgroundPaintLocation();
-    bool background_paint_in_border_box =
-        background_paint_location & kBackgroundPaintInBorderBoxSpace;
-    bool background_paint_in_scrolling_contents =
-        background_paint_location & kBackgroundPaintInContentsSpace;
-
-    // Invalidate background on scroll if needed.
-    // Fixed attachment background has been dealt with in
-    // frame_view->InvalidateBackgroundAttachmentFixedDescendantsOnScroll().
-    const auto& background_layers = box->StyleRef().BackgroundLayers();
-    if (background_layers.AnyLayerHasLocalAttachmentImage() &&
-        background_paint_in_border_box) {
-      // Local-attachment background image scrolls, so needs invalidation if it
-      // paints in non-scrolling space.
-      box->SetBackgroundNeedsFullPaintInvalidation();
-    } else if (background_layers.AnyLayerHasDefaultAttachmentImage() &&
-               background_paint_in_scrolling_contents) {
-      // Normal attachment background image doesn't scroll, so needs
-      // invalidation if it paints in scrolling contents.
-      box->SetBackgroundNeedsFullPaintInvalidation();
-    } else if (background_layers.AnyLayerHasLocalAttachment() &&
-               background_layers.AnyLayerUsesContentBox() &&
-               background_paint_in_border_box &&
-               (box->PaddingLeft() || box->PaddingTop() ||
-                box->PaddingRight() || box->PaddingBottom())) {
-      // Local attachment content box background needs invalidation if there is
-      // padding because the content area can change on scroll (e.g. the top
-      // padding can disappear when the box scrolls to the bottom).
-      box->SetBackgroundNeedsFullPaintInvalidation();
-    }
+  if (!box->BackgroundNeedsFullPaintInvalidation() &&
+      BackgroundNeedsRepaintOnScroll()) {
+    box->SetBackgroundNeedsFullPaintInvalidation();
   }
+}
+
+// See the comment in .h about background-attachment:fixed.
+bool PaintLayerScrollableArea::BackgroundNeedsRepaintOnScroll() const {
+  const auto* box = GetLayoutBox();
+  auto background_paint_location = box->GetBackgroundPaintLocation();
+  bool background_paint_in_border_box =
+      background_paint_location & kBackgroundPaintInBorderBoxSpace;
+  bool background_paint_in_scrolling_contents =
+      background_paint_location & kBackgroundPaintInContentsSpace;
+
+  const auto& background_layers = box->StyleRef().BackgroundLayers();
+  if (background_layers.AnyLayerHasLocalAttachmentImage() &&
+      background_paint_in_border_box) {
+    // Local-attachment background image scrolls, so needs invalidation if it
+    // paints in non-scrolling space.
+    return true;
+  }
+  if (background_layers.AnyLayerHasDefaultAttachmentImage() &&
+      background_paint_in_scrolling_contents) {
+    // Normal attachment background image doesn't scroll, so needs
+    // invalidation if it paints in scrolling contents.
+    return true;
+  }
+  if (background_layers.AnyLayerHasLocalAttachment() &&
+      background_layers.AnyLayerUsesContentBox() &&
+      background_paint_in_border_box &&
+      (box->PaddingLeft() || box->PaddingTop() || box->PaddingRight() ||
+       box->PaddingBottom())) {
+    // Local attachment content box background needs invalidation if there is
+    // padding because the content area can change on scroll (e.g. the top
+    // padding can disappear when the box scrolls to the bottom).
+    return true;
+  }
+  return false;
 }
 
 gfx::Vector2d PaintLayerScrollableArea::ScrollOffsetInt() const {
@@ -639,7 +646,7 @@ void PaintLayerScrollableArea::VisibleSizeChanged() {
 PhysicalRect PaintLayerScrollableArea::LayoutContentRect(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
   // LayoutContentRect is conceptually the same as the box's client rect.
-  LayoutSize layer_size(Layer()->Size());
+  LayoutSize layer_size = Size();
   LayoutUnit border_width = GetLayoutBox()->BorderWidth();
   LayoutUnit border_height = GetLayoutBox()->BorderHeight();
   NGPhysicalBoxStrut scrollbars;
@@ -668,14 +675,15 @@ PhysicalRect PaintLayerScrollableArea::VisibleScrollSnapportRect(
   const ComputedStyle* style = GetLayoutBox()->Style();
   PhysicalRect layout_content_rect(LayoutContentRect(scrollbar_inclusion));
   layout_content_rect.Move(PhysicalOffset(-ScrollOrigin().OffsetFromOrigin()));
-  LayoutRectOutsets padding(MinimumValueForLength(style->ScrollPaddingTop(),
-                                                  layout_content_rect.Height()),
-                            MinimumValueForLength(style->ScrollPaddingRight(),
-                                                  layout_content_rect.Width()),
-                            MinimumValueForLength(style->ScrollPaddingBottom(),
-                                                  layout_content_rect.Height()),
-                            MinimumValueForLength(style->ScrollPaddingLeft(),
-                                                  layout_content_rect.Width()));
+  NGPhysicalBoxStrut padding(
+      MinimumValueForLength(style->ScrollPaddingTop(),
+                            layout_content_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingRight(),
+                            layout_content_rect.Width()),
+      MinimumValueForLength(style->ScrollPaddingBottom(),
+                            layout_content_rect.Height()),
+      MinimumValueForLength(style->ScrollPaddingLeft(),
+                            layout_content_rect.Width()));
   layout_content_rect.Contract(padding);
   return layout_content_rect;
 }
@@ -874,6 +882,12 @@ LayoutBox* PaintLayerScrollableArea::GetLayoutBox() const {
 
 PaintLayer* PaintLayerScrollableArea::Layer() const {
   return layer_;
+}
+
+LayoutSize PaintLayerScrollableArea::Size() const {
+  return layer_->IsRootLayer()
+             ? LayoutSize(GetLayoutBox()->GetFrameView()->Size())
+             : GetLayoutBox()->Size();
 }
 
 LayoutUnit PaintLayerScrollableArea::ScrollWidth() const {
@@ -2406,23 +2420,29 @@ ScrollingCoordinator* PaintLayerScrollableArea::GetScrollingCoordinator()
 }
 
 bool PaintLayerScrollableArea::ShouldScrollOnMainThread() const {
-  if (HasBeenDisposed())
-    return true;
-
-  // Property tree state is not available until the PrePaint lifecycle stage.
-  // PaintPropertyTreeBuilder needs to get the old status during PrePaint.
   DCHECK_GE(GetDocument()->Lifecycle().GetState(),
-            DocumentLifecycle::kInPrePaint);
-  const auto* properties = GetLayoutBox()->FirstFragment().PaintProperties();
-  if (!properties || !properties->Scroll() ||
-      properties->Scroll()->GetMainThreadScrollingReasons())
-    return true;
+            RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()
+                ? DocumentLifecycle::kPaintClean
+                : DocumentLifecycle::kInPrePaint);
+  return HasBeenDisposed() || should_scroll_on_main_thread_;
+}
 
-  DCHECK(properties->ScrollTranslation());
-  return !properties->ScrollTranslation()->HasDirectCompositingReasons();
+void PaintLayerScrollableArea::SetShouldScrollOnMainThread(
+    bool scroll_on_main_thread) {
+  DCHECK_EQ(GetDocument()->Lifecycle().GetState(),
+            RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()
+                ? DocumentLifecycle::kPaintClean
+                : DocumentLifecycle::kInPrePaint);
+  if (scroll_on_main_thread != should_scroll_on_main_thread_) {
+    should_scroll_on_main_thread_ = scroll_on_main_thread;
+    MainThreadScrollingDidChange();
+  }
 }
 
 bool PaintLayerScrollableArea::PrefersNonCompositedScrolling() const {
+  if (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled()) {
+    return true;
+  }
   if (Node* node = GetLayoutBox()->GetNode()) {
     if (IsA<HTMLSelectElement>(node)) {
       return true;
@@ -2448,6 +2468,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
     if (!needs_composited_scrolling) {
       new_background_paint_location = kBackgroundPaintInBorderBoxSpace;
     }
+    DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
+             ~cc::MainThreadScrollingReason::kNonCompositedReasons));
   }
   box->GetMutableForPainting().SetBackgroundPaintLocation(
       new_background_paint_location);
@@ -2474,10 +2496,9 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
   if (force_prefer_compositing_to_lcd_text) {
     return true;
   }
-  if (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled()) {
-    return false;
-  }
   if (PrefersNonCompositedScrolling()) {
+    non_composited_main_thread_scrolling_reasons_ =
+        cc::MainThreadScrollingReason::kPreferNonCompositedScrolling;
     return false;
   }
 
@@ -2498,8 +2519,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
     }
   }
 
-  DCHECK(!(non_composited_main_thread_scrolling_reasons_ &
-           ~cc::MainThreadScrollingReason::kNonCompositedReasons));
   return needs_composited_scrolling;
 }
 
@@ -3085,7 +3104,7 @@ void PaintLayerScrollableArea::TraceComputeScrollbarExistence(
         ctx.AddDebugAnnotation("early_exit", early_exit);
         ctx.AddDebugAnnotation("h_mode", static_cast<int>(h_mode));
         ctx.AddDebugAnnotation("v_mode", static_cast<int>(v_mode));
-        ctx.AddDebugAnnotation("layer_size", Layer()->Size().ToString());
+        ctx.AddDebugAnnotation("layer_size", Size().ToString());
         ctx.AddDebugAnnotation("overflow_rect", overflow_rect_.ToString());
         ctx.AddDebugAnnotation("is_root", Layer()->IsRootLayer());
         ctx.AddDebugAnnotation("is_main_frame",

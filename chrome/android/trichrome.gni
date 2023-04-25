@@ -38,15 +38,15 @@ template("trichrome_library_apk_tmpl") {
        invoker.include_64_bit_webview) && android_64bit_target_cpu
   _include_32_bit_webview =
       !defined(invoker.include_32_bit_webview) || invoker.include_32_bit_webview
-  _include_primary_abi =
-      !android_64bit_target_cpu || _is_64_bit_browser || _include_64_bit_webview
-  _include_secondary_abi = android_64bit_target_cpu &&
-                           (!_is_64_bit_browser || _include_32_bit_webview)
-  if (_include_secondary_abi) {
+  _version_code = TRICHROME_VERSION_MAP["${android_64bit_target_cpu}_${_is_64_bit_browser}_${_include_64_bit_webview}_${_include_32_bit_webview}"]
+
+  # Include the ABI that is shared between webview & chrome.
+  _include_primary_abi = !android_64bit_target_cpu || _is_64_bit_browser
+
+  if (!_include_primary_abi) {
     _secondary_out_dir =
         get_label_info("X($android_secondary_abi_toolchain)", "root_out_dir")
   }
-  _version_code = TRICHROME_VERSION_MAP["${android_64bit_target_cpu}_${_is_64_bit_browser}_${_include_64_bit_webview}_${_include_32_bit_webview}"]
 
   if (defined(invoker.manifest_package)) {
     _manifest_package = invoker.manifest_package
@@ -101,8 +101,7 @@ template("trichrome_library_apk_tmpl") {
     ]
     if (_include_primary_abi) {
       deps += [ "//gin:v8_snapshot_assets" ]
-    }
-    if (_include_secondary_abi) {
+    } else {
       deps += [ "//gin:v8_snapshot_secondary_abi_assets" ]
     }
     if (defined(invoker.deps)) {
@@ -144,8 +143,7 @@ template("trichrome_library_apk_tmpl") {
         "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline",
       ]
       loadable_modules += [ "$root_out_dir/libcrashpad_handler_trampoline.so" ]
-    }
-    if (_include_secondary_abi) {
+    } else {
       deps += [ "//third_party/crashpad/crashpad/handler:crashpad_handler_trampoline($android_secondary_abi_toolchain)" ]
       secondary_abi_loadable_modules +=
           [ "$_secondary_out_dir/libcrashpad_handler_trampoline.so" ]
@@ -155,13 +153,13 @@ template("trichrome_library_apk_tmpl") {
       _arcore_target = "//third_party/arcore-android-sdk-client:com_google_ar_core_J__unpack_aar"
       _libarcore_dir = get_label_info(_arcore_target, "target_out_dir") +
                        "/com_google_ar_core_java/jni"
-      deps += [ "//third_party/arcore-android-sdk-client:com_google_ar_core_J__unpack_aar" ]
+      deps += [ _arcore_target ]
 
+      # Secondary ABI is stored in webview when enabled.
       if (_include_primary_abi) {
         loadable_modules +=
             [ "$_libarcore_dir/$android_app_abi/libarcore_sdk_c.so" ]
-      }
-      if (_include_secondary_abi) {
+      } else {
         secondary_abi_loadable_modules +=
             [ "$_libarcore_dir/$android_app_secondary_abi/libarcore_sdk_c.so" ]
       }

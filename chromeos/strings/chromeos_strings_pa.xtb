@@ -517,6 +517,7 @@
 <translation id="5423849171846380976">ਸਕਿਰਿਆ ਕੀਤਾ</translation>
 <translation id="5430931332414098647">ਤਤਕਾਲ ਟੈਦਰਿੰਗ</translation>
 <translation id="5431318178759467895">ਰੰਗ</translation>
+<translation id="5456936324019847994">ਚਾਲੂ ਕੀਤੇ ਵਿਉਂਤੇ APN ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ। ਹੋਰ ਜਾਣਕਾਰੀ ਲਈ ਆਪਣੇ ਮੋਬਾਈਲ ਕੈਰੀਅਰ ਨਾਲ ਸੰਪਰਕ ਕਰੋ।</translation>
 <translation id="5457599981699367932">ਮਹਿਮਾਨ ਵਜੋਂ ਬ੍ਰਾਊਜ਼ ਕਰੋ</translation>
 <translation id="54609108002486618">ਪ੍ਰਬੰਧਿਤ</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} ਕੋਸ਼ਿਸ਼ ਬਾਕੀ}one{{0} ਕੋਸ਼ਿਸ਼ ਬਾਕੀ}other{{0} ਕੋਸ਼ਿਸ਼ਾਂ ਬਾਕੀ}}</translation>
@@ -572,6 +573,7 @@
 <translation id="5931523347251946569">ਫ਼ਾਈਲ ਨਹੀਂ ਮਿਲੀ</translation>
 <translation id="5939518447894949180">ਰੀਸੈਟ ਕਰੋ</translation>
 <translation id="594552776027197022">ਬੇਤਰਤੀਬ ਕੁੰਜੀਆਂ ਦਾ ਜੋੜਾ ਸਿਰਜੋ</translation>
+<translation id="5946538341867151940">ਤੁਸੀਂ ਹਾਲੇ ਕਨੈਕਟ ਨਹੀਂ ਹੋ। ਜੇ ਤੁਹਾਡਾ ਮੋਬਾਈਲ ਕੈਰੀਅਰ ਵਿਉਂਤਬੱਧ APN ਦੀ ਸਿਫ਼ਾਰਸ਼ ਕਰਦਾ ਹੈ, ਤਾਂ "+ ਨਵਾਂ APN" ਨੂੰ ਚੁਣ ਕੇ APN ਜਾਣਕਾਰੀ ਦਾਖਲ ਕਰੋ</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">ਪੂਰਵ-ਨਿਰਧਾਰਿਤ ਵਾਲਪੇਪਰ</translation>
 <translation id="6017514345406065928">ਹਰਾ</translation>
@@ -727,6 +729,7 @@
 <translation id="7281657306185710294">ਹਵਾ ਨੂੰ ਮਹਿਸੂਸ ਕਰੋ</translation>
 <translation id="7287310195820267359">ਵਾਲਪੇਪਰ ਸੰਗ੍ਰਹਿ</translation>
 <translation id="7297226631177386107">ਫ਼ਾਇਰਵਾਲ ਰਾਹੀਂ HTTPS ਵੈੱਬਸਾਈਟਾਂ ਨਾਲ ਕਨੈਕਟ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
+<translation id="7297726121602187087">ਗੂੜ੍ਹਾ ਹਰਾ</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook ਮਦਦ ਫ਼ੋਰਮ ਵਿੱਚ ਮਾਹਰਾਂ ਤੋਂ ਸਵਾਲ ਪੁੱਛੋ</translation>
@@ -761,6 +764,7 @@
 <translation id="7570674786725311828">USB ਟੱਚਸਕ੍ਰੀਨ</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> ਬਾਕੀ</translation>
 <translation id="7613724632293948900">ਮਾਊਸ ਜਾਂ ਤੀਰ ਕੁੰਜੀਆਂ ਨਾਲ ਥਾਂ ਬਦਲੋ।</translation>
+<translation id="7618774594543487847">ਨਿਰਪੱਖ</translation>
 <translation id="7620771111601174153">ਮਦਦ ਕੇਂਦਰ ਵਿੱਚ ਹੋਰ ਜਾਣੋ</translation>
 <translation id="763165478673169849">ਪਿਛਲੀ ਵਾਰ ਰੀਸੈੱਟ ਕਰਨ ਦਾ ਸਮਾਂ</translation>
 <translation id="7648838807254605802">ਜ਼ਿਆਦਾ HTTPS ਵਿਲੰਬਤਾ</translation>

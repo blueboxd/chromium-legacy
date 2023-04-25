@@ -63,8 +63,6 @@ COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillDisableAddressImport);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillDisableShadowHeuristics);
 COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillEnableAccountWalletStorage);
-COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableBirthdateParsing);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableDependentLocalityParsing);
@@ -72,13 +70,6 @@ COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableDevtoolsIssues);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableImportWhenMultiplePhoneNumbers);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillEnableMultiStepImports);
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::FeatureParam<base::TimeDelta>
-    kAutofillMultiStepImportCandidateTTL;
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillEnableParsingEmptyPhoneNumberLabels);
 COMPONENT_EXPORT(AUTOFILL)
@@ -142,8 +133,6 @@ extern const base::FeatureParam<PrecedenceOverAutocompleteScope>
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillIgnoreUnmappableAutocompleteValues);
 COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillImprovedLabelForInference);
-COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillHighlightOnlyChangedValuesInPreviewMode);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillLabelAffixRemoval);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillPageLanguageDetection);
@@ -187,8 +176,6 @@ BASE_DECLARE_FEATURE(kAutofillSkipComparingInferredLabels);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillSplitCreditCardNumbersCautiously);
 COMPONENT_EXPORT(AUTOFILL) BASE_DECLARE_FEATURE(kAutofillTokenPrefixMatching);
-COMPONENT_EXPORT(AUTOFILL)
-BASE_DECLARE_FEATURE(kAutofillSupportPoorMansPlaceholder);
 COMPONENT_EXPORT(AUTOFILL)
 BASE_DECLARE_FEATURE(kAutofillUseAlternativeStateNameMap);
 COMPONENT_EXPORT(AUTOFILL)

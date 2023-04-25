@@ -38,7 +38,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/style/style_overflow_clip_margin.h"
-#include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/overlay_scrollbar_clip_behavior.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 
@@ -103,12 +102,10 @@ struct LayoutBoxRareData final : public GarbageCollected<LayoutBoxRareData> {
 
   bool has_override_containing_block_content_logical_width_ : 1;
   bool has_override_containing_block_content_logical_height_ : 1;
-  bool has_override_percentage_resolution_block_size_ : 1;
   bool has_previous_content_box_rect_ : 1;
 
   LayoutUnit override_containing_block_content_logical_width_;
   LayoutUnit override_containing_block_content_logical_height_;
-  LayoutUnit override_percentage_resolution_block_size_;
 
   // For snap area, the owning snap container.
   Member<LayoutBox> snap_container_;
@@ -246,16 +243,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutBox* FirstInFlowChildBox() const;
   LayoutBox* LastChildBox() const;
 
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  int PixelSnappedWidth() const {
-    NOT_DESTROYED();
-    return SnapSizeToPixel(Size().Width(), Location().X());
-  }
-  int PixelSnappedHeight() const {
-    NOT_DESTROYED();
-    return SnapSizeToPixel(Size().Height(), Location().Y());
-  }
-
   void SetWidth(LayoutUnit width) {
     NOT_DESTROYED();
     if (width == frame_size_.Width()) {
@@ -313,23 +300,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutUnit logical_height,
       LayoutUnit intrinsic_content_height) const;
 
-  // TODO(crbug.com/962299): This is incorrect in some cases.
-  int PixelSnappedLogicalHeight() const {
-    NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? PixelSnappedHeight()
-                                                : PixelSnappedWidth();
-  }
-  int PixelSnappedLogicalWidth() const {
-    NOT_DESTROYED();
-    return StyleRef().IsHorizontalWritingMode() ? PixelSnappedWidth()
-                                                : PixelSnappedHeight();
-  }
-
   LayoutUnit LogicalHeightForEmptyLine() const {
     NOT_DESTROYED();
-    return LineHeight(
-        true, IsHorizontalWritingMode() ? kHorizontalLine : kVerticalLine,
-        kPositionOfInteriorLineBoxes);
+    return FirstLineHeight();
   }
 
   void SetLogicalWidth(LayoutUnit size) {
@@ -624,21 +597,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void AddContentsVisualOverflow(const LayoutRect&);
 
   virtual void AddVisualEffectOverflow();
-  LayoutRectOutsets ComputeVisualEffectOverflowOutsets();
+  NGPhysicalBoxStrut ComputeVisualEffectOverflowOutsets();
   void AddVisualOverflowFromChild(const LayoutBox& child) {
     NOT_DESTROYED();
     AddVisualOverflowFromChild(child, child.LocationOffset());
   }
-  void AddLayoutOverflowFromChild(const LayoutBox& child) {
-    NOT_DESTROYED();
-    AddLayoutOverflowFromChild(child, child.LocationOffset());
-  }
   void AddVisualOverflowFromChild(const LayoutBox& child,
                                   const LayoutSize& delta);
-  void AddLayoutOverflowFromChild(const LayoutBox& child,
-                                  const LayoutSize& delta);
-  void SetLayoutClientAfterEdge(LayoutUnit client_after_edge);
-  LayoutUnit LayoutClientAfterEdge() const;
 
   void ClearLayoutOverflow();
   void ClearVisualOverflow();
@@ -828,36 +793,40 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int PixelSnappedScrollWidth() const;
   int PixelSnappedScrollHeight() const;
 
-  LayoutRectOutsets MarginBoxOutsets() const {
+  NGPhysicalBoxStrut MarginBoxOutsets() const {
     NOT_DESTROYED();
     return margin_box_outsets_;
   }
   LayoutUnit MarginTop() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.Top();
+    return margin_box_outsets_.top;
   }
   LayoutUnit MarginBottom() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.Bottom();
+    return margin_box_outsets_.bottom;
   }
   LayoutUnit MarginLeft() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.Left();
+    return margin_box_outsets_.left;
   }
   LayoutUnit MarginRight() const override {
     NOT_DESTROYED();
-    return margin_box_outsets_.Right();
+    return margin_box_outsets_.right;
   }
   void SetMargin(const NGPhysicalBoxStrut&);
-  void SetMarginBefore(LayoutUnit value,
-                       const ComputedStyle* override_style = nullptr) {
+  void SetMarginBefore(LayoutUnit value, const ComputedStyle& override_style) {
     NOT_DESTROYED();
-    LogicalMarginToPhysicalSetter(override_style).SetBefore(value);
+    WritingDirectionMode mode = override_style.GetWritingDirection();
+    NGBoxStrut logical_margin = margin_box_outsets_.ConvertToLogical(mode);
+    logical_margin.block_start = value;
+    margin_box_outsets_ = logical_margin.ConvertToPhysical(mode);
   }
-  void SetMarginAfter(LayoutUnit value,
-                      const ComputedStyle* override_style = nullptr) {
+  void SetMarginAfter(LayoutUnit value, const ComputedStyle& override_style) {
     NOT_DESTROYED();
-    LogicalMarginToPhysicalSetter(override_style).SetAfter(value);
+    WritingDirectionMode mode = override_style.GetWritingDirection();
+    NGBoxStrut logical_margin = margin_box_outsets_.ConvertToLogical(mode);
+    logical_margin.block_end = value;
+    margin_box_outsets_ = logical_margin.ConvertToPhysical(mode);
   }
 
   void AbsoluteQuads(Vector<gfx::QuadF>&,
@@ -874,6 +843,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   void LayoutSubtreeRoot();
+  void LayoutSubtreeRootOld();
 
   void UpdateLayout() override;
   void Paint(const PaintInfo&) const override;
@@ -917,10 +887,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit OverrideContentLogicalWidth() const;
   LayoutUnit OverrideContentLogicalHeight() const;
 
-  LayoutUnit OverrideContainingBlockContentWidth() const override;
-  LayoutUnit OverrideContainingBlockContentHeight() const override;
-  bool HasOverrideContainingBlockContentWidth() const override;
-  bool HasOverrideContainingBlockContentHeight() const override;
   LayoutUnit OverrideContainingBlockContentLogicalWidth() const;
   LayoutUnit OverrideContainingBlockContentLogicalHeight() const;
   bool HasOverrideContainingBlockContentLogicalWidth() const;
@@ -928,14 +894,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void SetOverrideContainingBlockContentLogicalWidth(LayoutUnit);
   void SetOverrideContainingBlockContentLogicalHeight(LayoutUnit);
   void ClearOverrideContainingBlockContentSize();
-
-  // When a percentage resolution block size override has been set, we'll use
-  // that size to resolve block-size percentages on this box, rather than
-  // deducing it from the containing block.
-  LayoutUnit OverridePercentageResolutionBlockSize() const;
-  bool HasOverridePercentageResolutionBlockSize() const;
-  void SetOverridePercentageResolutionBlockSize(LayoutUnit);
-  void ClearOverridePercentageResolutionBlockSize();
 
   // When an available inline size override has been set, we'll use that to fill
   // available inline size, rather than deducing it from the containing block
@@ -1398,8 +1356,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void RemoveFloatingOrPositionedChildFromBlockLists();
 
-  PaintLayer* EnclosingFloatPaintingLayer() const;
-
   bool ShrinkToAvoidFloats() const;
   virtual bool CreatesNewFormattingContext() const {
     NOT_DESTROYED();
@@ -1448,10 +1404,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return Parent() && Parent()->IsMathML();
   }
 
-  LayoutUnit LineHeight(
-      bool first_line,
-      LineDirectionMode,
-      LinePositionMode = kPositionOnContainingLine) const override;
+  LayoutUnit FirstLineHeight() const override;
 
   PhysicalOffset OffsetPoint(const Element* parent) const;
   LayoutUnit OffsetLeft(const Element*) const final;
@@ -1497,7 +1450,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // direction, for parent to accumulate layout or visual overflow.
   LayoutRect RectForOverflowPropagation(const LayoutRect&) const;
 
-  LayoutRect LogicalVisualOverflowRectForPropagation() const;
   LayoutRect VisualOverflowRectForPropagation() const {
     NOT_DESTROYED();
     return RectForOverflowPropagation(VisualOverflowRect());
@@ -1585,7 +1537,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                                 VisualRectFlags,
                                 TransformState&) const;
 
-  bool HasRelativeLogicalWidth() const;
   bool HasRelativeLogicalHeight() const;
 
   virtual LayoutBox* CreateAnonymousBoxWithSameTypeAs(
@@ -1601,12 +1552,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   ShapeOutsideInfo* GetShapeOutsideInfo() const;
-
-  void MarkShapeOutsideDependentsForLayout() {
-    NOT_DESTROYED();
-    if (IsFloating())
-      RemoveFloatingOrPositionedChildFromBlockLists();
-  }
 
   bool CanRenderBorderImage() const;
 
@@ -1842,6 +1787,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const PhysicalRect& local_rect,
       unsigned max_depth_to_test) const;
   virtual bool ComputeBackgroundIsKnownToBeObscured() const;
+  bool ComputeCanCompositeBackgroundAttachmentFixed() const override;
 
   LayoutUnit ComputeIntrinsicLogicalContentHeightUsing(
       SizeType height_type,
@@ -1884,12 +1830,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const LayoutBoxModelObject* container_block,
       LayoutUnit container_logical_width,
       const NGBoxFragmentBuilder* = nullptr);
-  static void ComputeLogicalLeftPositionedOffset(
-      LayoutUnit& logical_left_pos,
-      const LayoutBox* child,
-      LayoutUnit logical_width_value,
-      const LayoutBoxModelObject* container_block,
-      LayoutUnit container_logical_width);
   static void ComputeLogicalTopPositionedOffset(
       LayoutUnit& logical_top_pos,
       const LayoutBox* child,
@@ -1932,9 +1872,9 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // The outsets from this box's border-box that the element's content should be
   // clipped to, including overflow-clip-margin.
-  LayoutRectOutsets BorderBoxOutsetsForClipping() const;
+  NGPhysicalBoxStrut BorderBoxOutsetsForClipping() const;
 
-  void UpdateHasSubpixelVisualEffectOutsets(const LayoutRectOutsets&);
+  void UpdateHasSubpixelVisualEffectOutsets(const NGPhysicalBoxStrut&);
   void SetVisualOverflow(const PhysicalRect& self,
                          const PhysicalRect& contents);
   void CopyVisualOverflowFromFragmentsWithoutInvalidations();
@@ -1945,9 +1885,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   void UpdateScrollSnapMappingAfterStyleChange(const ComputedStyle& old_style);
   void ClearScrollSnapMapping();
   void AddScrollSnapMapping();
-
-  LayoutUnit ShrinkToFitLogicalWidth(LayoutUnit available_logical_width,
-                                     LayoutUnit borders_plus_padding) const;
 
   bool StretchesToViewportInQuirksMode() const;
 
@@ -1992,15 +1929,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void LocationChanged();
 
-  void UpdateBackgroundAttachmentFixedStatusAfterStyleChange();
-
   void InflateVisualRectForFilter(TransformState&) const;
   void InflateVisualRectForFilterUnderContainer(
       TransformState&,
       const LayoutObject& container,
       const LayoutBoxModelObject* ancestor_to_stop_at) const;
 
-  LayoutRectOutsets margin_box_outsets_;
+  NGPhysicalBoxStrut margin_box_outsets_;
 
   void AddSnapArea(LayoutBox&);
   void RemoveSnapArea(const LayoutBox&);
@@ -2086,16 +2021,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   friend class LayoutBoxTest;
 
  private:
-  LogicalToPhysicalSetter<LayoutUnit, LayoutRectOutsets>
-  LogicalMarginToPhysicalSetter(const ComputedStyle* override_style) {
-    NOT_DESTROYED();
-    const auto& style = override_style ? *override_style : StyleRef();
-    return LogicalToPhysicalSetter<LayoutUnit, LayoutRectOutsets>(
-        style.GetWritingDirection(), this->margin_box_outsets_,
-        &LayoutRectOutsets::SetTop, &LayoutRectOutsets::SetRight,
-        &LayoutRectOutsets::SetBottom, &LayoutRectOutsets::SetLeft);
-  }
-
   std::unique_ptr<BoxOverflowModel> overflow_;
 
   // Extra layout input data. This one may be set during layout, and cleared

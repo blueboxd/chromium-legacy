@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
+import("//ui/webui/resources/tools/build_webui.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -293,6 +294,7 @@ source_set("shopping_service_unit_tests") {
     ":shopping_service_test_support",
     "subscriptions:test_support",
     "webui:unit_tests",
+    "//components/search",
   ]
 }
 
@@ -368,5 +370,12 @@ source_set("account_checker_unittests") {
     "//testing/gmock",
     "//testing/gtest",
     "//url:url",
+  ]
+}
+
+source_set("commerce_constants") {
+  sources = [
+    "commerce_constants.cc",
+    "commerce_constants.h",
   ]
 }

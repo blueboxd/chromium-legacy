@@ -24,7 +24,6 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 
 Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekening van toepassing wees. Jy kan jou Google-rekeninge in <ph name="SETTINGS_LINK_BEGIN" />Instellings<ph name="SETTINGS_LINK_END" /> bestuur.</translation>
 <translation id="1640672724030957280">Laai tans af …</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium was aan ’n HID-toestel gekoppel}=1{Chromium is aan ’n HID-toestel gekoppel}other{Chromium is aan HID-toestelle gekoppel}}</translation>
 <translation id="1708666629004767631">Daar is 'n nuwe, veiliger weergawe van Chromium beskikbaar.</translation>
 <translation id="17264556997921157">Jy kan onderwerpe van belangstelling wat werwe gebruik om vir jou advertensies te wys, sien en verwyder. Chromium skat jou belangstellings op grond van jou onlangse blaaigeskiedenis.</translation>
 <translation id="1733725117201708356">Chromium gaan blaaierdata binnekort uitvee</translation>
@@ -247,8 +246,10 @@ Toestemmings wat jy reeds aan webwerwe en apps gegee het, kan op hierdie rekenin
 <translation id="6442900851116057561">Herbegin Chromium-bedryfstelsel</translation>
 <translation id="6455857529632101747">Welkom by Chromium-profiele</translation>
 <translation id="6475912303565314141">Dit beheer ook watter bladsy gewys word wanneer jy Chromium begin.</translation>
+<translation id="648319183876919572">Verbeterde Veiligblaai doen meer om jou teen gevaarlike webwerwe en aflaaie te beskerm</translation>
 <translation id="6510925080656968729">Deïnstalleer Chromium</translation>
 <translation id="6542839706527980775">Elke profiel hou sy eie Chromium-inligting soos boekmerke, geskiedenis, wagwoorde en meer</translation>
+<translation id="656935081669708576">Jy kan oorskakel om wagwoorde van ’n ander Chromium-profiel af te sien</translation>
 <translation id="6570579332384693436">Chromium stuur die teks wat jy in teksvelde intik na Google toe om spelfoute reg te maak</translation>
 <translation id="6598877126913850652">Gaan na Chromium se kennisgewinginstellings</translation>
 <translation id="6613594504749178791">Jou veranderinge sal in werking tree wanneer jy Chromium weer herbegin.</translation>

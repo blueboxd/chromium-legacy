@@ -14,11 +14,11 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -38,7 +38,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -137,7 +136,7 @@ class MockSelectFileDialogListener : public ui::SelectFileDialog::Listener {
   bool file_selected_;
   bool canceled_;
   base::FilePath path_;
-  void* params_;
+  raw_ptr<void, ExperimentalAsh> params_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 };
 
@@ -349,8 +348,6 @@ class BaseSelectFileDialogExtensionBrowserTest
   scoped_refptr<SelectFileDialogExtension> second_dialog_;
 
   bool use_file_type_filter_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests FileDialog with and without file filter.
@@ -698,13 +695,8 @@ INSTANTIATE_TEST_SUITE_P(SystemWebApp,
                          SelectFileDialogExtensionFlagTest,
                          TestMode::SystemWebAppValues());
 
-class SelectFileDialogExtensionDarkLightModeEnabledTest
-    : public BaseSelectFileDialogExtensionBrowserTest {
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    feature_list_.InitWithFeatures({chromeos::features::kDarkLightMode}, {});
-    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-  }
-};
+using SelectFileDialogExtensionDarkLightModeEnabledTest =
+    BaseSelectFileDialogExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionDarkLightModeEnabledTest,
                        ColorModeChange) {
@@ -793,9 +785,11 @@ class SelectFileDialogExtensionPolicyTest
         .WillByDefault(testing::Return(mock_files_controller_.get()));
   }
 
-  policy::MockDlpRulesManager* rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> rules_manager_ =
+      nullptr;
   std::unique_ptr<MockFilesController> mock_files_controller_ = nullptr;
-  storage::ExternalMountPoints* mount_points_ = nullptr;
+  raw_ptr<storage::ExternalMountPoints, ExperimentalAsh> mount_points_ =
+      nullptr;
 };
 
 IN_PROC_BROWSER_TEST_P(SelectFileDialogExtensionPolicyTest, DlpDownloadAllow) {

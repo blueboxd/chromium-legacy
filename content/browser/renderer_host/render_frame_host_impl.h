@@ -767,6 +767,17 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // when the navigation commits. See also `GetLastCommittedURL`.
   void SetLastCommittedUrl(const GURL& url);
 
+  // RenderFrameHost represents a document in a frame. It is either:
+  // 1. The initial empty document,
+  // 2. A document created by a navigation.
+  //
+  // In case of (2), this returns the ID of the navigation who created this
+  // document.
+  //
+  // Note 1: This is updated after receiving DidCommitNavigation IPC.
+  // Note 2: Same-document navigation are not updating this field.
+  int64_t navigation_id() const { return navigation_id_; }
+
   // The most recent non-net-error URL to commit in this frame.  In almost all
   // cases, use GetLastCommittedURL instead.
   const GURL& last_successful_url() const { return last_successful_url_; }
@@ -2899,6 +2910,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void SetResourceCacheRemote(
       mojo::PendingRemote<blink::mojom::ResourceCache> pending_remote);
 
+  // Records metrics on sudden termination handlers found in this frame and
+  // subframes.
+  void RecordNavigationSuddenTerminationHandlers();
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -3105,6 +3120,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            EvictionInBFCache);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplPrerenderBrowserTest,
                            KeepPrerenderRFHOwnerAfterActivation);
+  FRIEND_TEST_ALL_PREFIXES(NavigationSuddenTerminationDisablerTypeBrowserTest,
+                           RecordUma);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationBrowserTest,
+      NavigationSuddenTerminationDisablerTypeRecordUmaSameOrigin);
+  FRIEND_TEST_ALL_PREFIXES(
+      NavigationBrowserTest,
+      NavigationSuddenTerminationDisablerTypeRecordUmaActivation);
+
   class SubresourceLoaderFactoriesConfig;
 
   FrameTreeNode* GetSibling(int relative_offset) const;
@@ -3615,6 +3639,23 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // report to be routed to the Reporting API.
   void MaybeGenerateCrashReport(base::TerminationStatus status, int exit_code);
 
+  // Bitfield values for recording navigation frame-type (main or subframe)
+  // combined with whether a sudden termination disabler is present. Currently
+  // it only covers unload.
+  enum NavigationSuddenTerminationDisablerType : uint32_t {
+    kMainFrame = 1 << 0,
+    kUnload = 1 << 1,
+    kMaxValue = kUnload,
+  };
+  // Returns information to be recoreded in UMA about sudden termination
+  // disablers presence.
+  // The return value is ORed values from
+  // `NavigationSuddenTerminationDisablerType`.
+  // If `same_origin` is true, the tree traversal will only recurse into frames
+  // that are the same origin as `this`. E.g. a(b(a)) will not find the second
+  // a.
+  uint32_t FindSuddenTerminationHandlers(bool same_origin);
+
   // The reason for calling StartPendingDeletionOnSubtree() / what is causing
   // the RenderFrameHost to enter the "pending deletion" stage.
   enum class PendingDeletionReason {
@@ -4043,6 +4084,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Track this frame's last committed origin.
   url::Origin last_committed_origin_;
+
+  // Tracks the id of the navigation that created the document. It is updated
+  // after receiving DidCommitNavigation IPC. Same-document navigation are not
+  // updating this field. It will be empty `0` for the initial empty document.
+  int64_t navigation_id_ = 0;
 
   // For about:blank and about:srcdoc documents, this tracks the inherited base
   // URL, snapshotted from the initiator's FrameLoadRequest. This is an empty

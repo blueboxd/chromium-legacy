@@ -1577,6 +1577,10 @@ test("content_browsertests") {
     "../test/url_loader_interceptor_browsertest.cc",
   ]
 
+  if (is_linux) {
+    sources += [ "../browser/network/address_map_linux_browsertest.cc" ]
+  }
+
   if (is_mac) {
     sources +=
         [ "../app_shim_remote_cocoa/window_occlusion_browsertest_mac.mm" ]
@@ -2444,6 +2448,7 @@ test("content_unittests") {
     "../browser/private_aggregation/private_aggregation_budgeter_unittest.cc",
     "../browser/private_aggregation/private_aggregation_host_unittest.cc",
     "../browser/private_aggregation/private_aggregation_manager_impl_unittest.cc",
+    "../browser/private_aggregation/private_aggregation_report_golden_unittest.cc",
     "../browser/quota/quota_change_dispatcher_unittest.cc",
     "../browser/reduce_accept_language/reduce_accept_language_utils_unittest.cc",
     "../browser/renderer_host/ancestor_throttle_unittest.cc",
@@ -2676,7 +2681,6 @@ test("content_unittests") {
     "../renderer/skia_benchmarking_extension_unittest.cc",
     "../renderer/v8_value_converter_impl_unittest.cc",
     "../renderer/worker/worker_thread_registry_unittest.cc",
-    "../services/shared_storage_worklet/shared_storage_worklet_global_scope_unittest.cc",
     "navigation_simulator_unittest.cc",
     "test_aggregation_service_impl_unittest.cc",
     "test_page_unittest.cc",
@@ -2835,7 +2839,6 @@ test("content_unittests") {
     "//content/renderer:for_content_tests",
     "//content/services/auction_worklet:tests",
     "//content/services/auction_worklet/public/mojom:for_content_tests",
-    "//content/services/shared_storage_worklet:for_content_tests",
     "//crypto",
     "//device/bluetooth",
     "//device/bluetooth:mocks",

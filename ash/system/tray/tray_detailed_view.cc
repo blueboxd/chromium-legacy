@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
+#include "ash/style/typography.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -23,6 +24,8 @@
 #include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -237,7 +240,7 @@ class ScrollContentsView : public views::View {
     if (!details.is_add && details.parent == this) {
       headers_.erase(std::remove_if(headers_.begin(), headers_.end(),
                                     [details](const Header& header) {
-                                      return header.view == details.child;
+                                      return header.view.get() == details.child;
                                     }),
                      headers_.end());
     } else if (details.is_add && details.parent == this &&
@@ -266,7 +269,7 @@ class ScrollContentsView : public views::View {
         : view(view), natural_offset(view->y()), draw_separator_below(false) {}
 
     // A header View that can be decorated as sticky.
-    views::View* view;
+    raw_ptr<views::View, ExperimentalAsh> view;
 
     // Offset from the top of ScrollContentsView to |view|'s original vertical
     // position.
@@ -365,7 +368,7 @@ class ScrollContentsView : public views::View {
     canvas->DrawRect(shadowed_area, flags);
   }
 
-  views::BoxLayout* box_layout_ = nullptr;
+  raw_ptr<views::BoxLayout, ExperimentalAsh> box_layout_ = nullptr;
 
   // Header child views that stick to the top of visible viewport when scrolled.
   std::vector<Header> headers_;
@@ -707,8 +710,15 @@ void TrayDetailedView::OnThemeChanged() {
   views::View::OnThemeChanged();
   auto* color_provider = AshColorProvider::Get();
   if (title_label_) {
-    title_label_->SetEnabledColor(color_provider->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kTextColorPrimary));
+    title_label_->SetEnabledColor(
+        features::IsQsRevampEnabled()
+            ? GetColorProvider()->GetColor(cros_tokens::kCrosSysOnSurface)
+            : color_provider->GetContentLayerColor(
+                  AshColorProvider::ContentLayerType::kTextColorPrimary));
+    if (chromeos::features::IsJellyEnabled()) {
+      TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
+                                            *title_label_);
+    }
   }
   if (sub_header_label_) {
     sub_header_label_->SetEnabledColor(color_provider->GetContentLayerColor(

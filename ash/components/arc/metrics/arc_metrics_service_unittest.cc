@@ -17,6 +17,7 @@
 #include "ash/components/arc/test/test_browser_context.h"
 #include "ash/constants/app_types.h"
 #include "base/command_line.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
@@ -154,7 +155,7 @@ class ArcMetricsServiceTest : public testing::Test {
 
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestBrowserContext> context_;
-  ArcMetricsService* service_;
+  raw_ptr<ArcMetricsService, ExperimentalAsh> service_;
 
   std::unique_ptr<aura::Window> fake_arc_window_;
   std::unique_ptr<aura::Window> fake_non_arc_window_;
@@ -462,6 +463,23 @@ TEST_F(ArcMetricsServiceTest, ReportWebViewProcessStarted_SomeUsageReported) {
                            static_cast<base::HistogramBase::Sample>(0), 1);
   tester.ExpectBucketCount("Arc.Session.HasWebViewUsage",
                            static_cast<base::HistogramBase::Sample>(1), 2);
+}
+
+TEST_F(ArcMetricsServiceTest, ReportVpnServiceBuilderCompatApiUsage) {
+  base::HistogramTester tester;
+
+  service()->ReportVpnServiceBuilderCompatApiUsage(
+      mojom::VpnServiceBuilderCompatApiId::kVpnExcludeRoute);
+  service()->ReportVpnServiceBuilderCompatApiUsage(
+      mojom::VpnServiceBuilderCompatApiId::kVpnAddRoute);
+
+  tester.ExpectBucketCount(
+      "Arc.VpnServiceBuilderCompatApisCounter",
+      static_cast<int>(mojom::VpnServiceBuilderCompatApiId::kVpnExcludeRoute),
+      1);
+  tester.ExpectBucketCount(
+      "Arc.VpnServiceBuilderCompatApisCounter",
+      static_cast<int>(mojom::VpnServiceBuilderCompatApiId::kVpnAddRoute), 1);
 }
 
 class ArcVmArcMetricsServiceTest

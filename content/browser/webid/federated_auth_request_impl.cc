@@ -146,22 +146,28 @@ RequestTokenStatus FederatedAuthRequestResultToRequestTokenStatus(
     case FederatedAuthRequestResult::kErrorFetchingWellKnownNoResponse:
     case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidResponse:
     case FederatedAuthRequestResult::kErrorFetchingWellKnownListEmpty:
+    case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidContentType:
     case FederatedAuthRequestResult::kErrorConfigNotInWellKnown:
     case FederatedAuthRequestResult::kErrorWellKnownTooBig:
     case FederatedAuthRequestResult::kErrorFetchingConfigHttpNotFound:
     case FederatedAuthRequestResult::kErrorFetchingConfigNoResponse:
     case FederatedAuthRequestResult::kErrorFetchingConfigInvalidResponse:
+    case FederatedAuthRequestResult::kErrorFetchingConfigInvalidContentType:
     case FederatedAuthRequestResult::kErrorFetchingClientMetadataHttpNotFound:
     case FederatedAuthRequestResult::kErrorFetchingClientMetadataNoResponse:
     case FederatedAuthRequestResult::
         kErrorFetchingClientMetadataInvalidResponse:
+    case FederatedAuthRequestResult::
+        kErrorFetchingClientMetadataInvalidContentType:
     case FederatedAuthRequestResult::kErrorFetchingAccountsHttpNotFound:
     case FederatedAuthRequestResult::kErrorFetchingAccountsNoResponse:
     case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse:
     case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty:
+    case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidContentType:
     case FederatedAuthRequestResult::kErrorFetchingIdTokenHttpNotFound:
     case FederatedAuthRequestResult::kErrorFetchingIdTokenNoResponse:
     case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse:
+    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType:
     case FederatedAuthRequestResult::kErrorRpPageNotVisible:
     case FederatedAuthRequestResult::kError: {
       return RequestTokenStatus::kError;
@@ -181,11 +187,13 @@ FederatedAuthRequestResultToMetricsEndpointErrorCode(
       return IdpNetworkRequestManager::MetricsEndpointErrorCode::kRpFailure;
     }
     case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidResponse:
-    case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty: {
+    case FederatedAuthRequestResult::kErrorFetchingAccountsListEmpty:
+    case FederatedAuthRequestResult::kErrorFetchingAccountsInvalidContentType: {
       return IdpNetworkRequestManager::MetricsEndpointErrorCode::
           kAccountsEndpointInvalidResponse;
     }
-    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse: {
+    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse:
+    case FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType: {
       return IdpNetworkRequestManager::MetricsEndpointErrorCode::
           kTokenEndpointInvalidResponse;
     }
@@ -215,7 +223,11 @@ FederatedAuthRequestResultToMetricsEndpointErrorCode(
     case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidResponse:
     case FederatedAuthRequestResult::kErrorFetchingConfigInvalidResponse:
     case FederatedAuthRequestResult::
-        kErrorFetchingClientMetadataInvalidResponse: {
+        kErrorFetchingClientMetadataInvalidResponse:
+    case FederatedAuthRequestResult::kErrorFetchingWellKnownInvalidContentType:
+    case FederatedAuthRequestResult::kErrorFetchingConfigInvalidContentType:
+    case FederatedAuthRequestResult::
+        kErrorFetchingClientMetadataInvalidContentType: {
       return IdpNetworkRequestManager::MetricsEndpointErrorCode::
           kIdpServerInvalidResponse;
     }
@@ -268,10 +280,9 @@ FederatedAuthRequestPageData* GetPageData(RenderFrameHost* render_frame_host) {
 }
 
 void FilterAccountsWithLoginHint(
-    const blink::mojom::IdentityProviderLoginHintPtr& login_hint,
+    const std::string& login_hint,
     IdpNetworkRequestManager::AccountList& accounts) {
-  // Do not filter if both email and id are empty.
-  if (login_hint->email.empty() && login_hint->id.empty()) {
+  if (login_hint.empty()) {
     return;
   }
 
@@ -280,26 +291,11 @@ void FilterAccountsWithLoginHint(
   // account afterwards, in which case the multiple account chooser would be
   // shown.
   auto Filter = [&login_hint](const IdentityRequestAccount& account) {
-    if (!login_hint->email.empty() && !login_hint->id.empty()) {
-      return account.id != login_hint->id && account.email != login_hint->email;
-    } else if (!login_hint->email.empty()) {
-      return account.email != login_hint->email;
-    } else {
-      return account.id != login_hint->id;
-    }
+    return std::find(account.hints.begin(), account.hints.end(), login_hint) ==
+           account.hints.end();
   };
-  bool should_filter = true;
-  if (!login_hint->is_required) {
-    // If |is_required| is false, do not use the filter if all elements would be
-    // removed.
-    size_t num_filtered_out =
-        std::count_if(accounts.begin(), accounts.end(), Filter);
-    should_filter = num_filtered_out != accounts.size();
-  }
-  if (should_filter) {
-    accounts.erase(std::remove_if(accounts.begin(), accounts.end(), Filter),
-                   accounts.end());
-  }
+  accounts.erase(std::remove_if(accounts.begin(), accounts.end(), Filter),
+                 accounts.end());
 }
 
 std::unique_ptr<FedCmMetrics> CreateFedCmMetrics(
@@ -922,6 +918,24 @@ void FederatedAuthRequestImpl::OnClientMetadataResponseReceived(
   OnFetchDataForIdpSucceeded(std::move(idp_info), accounts, client_metadata);
 }
 
+bool HasScope(const std::vector<std::string>& scope, std::string name) {
+  auto it = std::find(std::begin(scope), std::end(scope), name);
+  if (it == std::end(scope)) {
+    return false;
+  }
+  return true;
+}
+
+bool ShouldRequestPermission(const std::vector<std::string>& scope) {
+  if (scope.size() == 0) {
+    // If "scope" is not passed, defaults the parameter to
+    // ["sub", "name", "email" and "picture"].
+    return true;
+  }
+  return HasScope(scope, "sub") && HasScope(scope, "name") &&
+         HasScope(scope, "email") && HasScope(scope, "picture");
+}
+
 void FederatedAuthRequestImpl::OnFetchDataForIdpSucceeded(
     std::unique_ptr<IdentityProviderInfo> idp_info,
     const IdpNetworkRequestManager::AccountList& accounts,
@@ -929,12 +943,19 @@ void FederatedAuthRequestImpl::OnFetchDataForIdpSucceeded(
   fetch_data_.did_succeed_for_at_least_one_idp = true;
 
   const GURL& idp_config_url = idp_info->provider->config_url;
+
+  bool request_permission = true;
+
+  if (IsFedCmAuthzEnabled()) {
+    request_permission = ShouldRequestPermission(idp_info->provider->scope);
+  }
+
   const std::string idp_for_display = FormatUrlForDisplay(idp_config_url);
-  idp_info->data =
-      IdentityProviderData(idp_for_display, accounts, idp_info->metadata,
-                           ClientMetadata{client_metadata.terms_of_service_url,
-                                          client_metadata.privacy_policy_url},
-                           idp_info->rp_context);
+  idp_info->data = IdentityProviderData(
+      idp_for_display, accounts, idp_info->metadata,
+      ClientMetadata{client_metadata.terms_of_service_url,
+                     client_metadata.privacy_policy_url},
+      idp_info->rp_context, /* request_permission */ request_permission);
   idp_infos_[idp_config_url] = std::move(idp_info);
 
   fetch_data_.pending_idps.erase(idp_config_url);
@@ -1234,6 +1255,14 @@ void FederatedAuthRequestImpl::OnAccountsResponseReceived(
           TokenStatus::kAccountsListEmpty);
       return;
     }
+    case IdpNetworkRequestManager::ParseStatus::kInvalidContentTypeError: {
+      MaybeAddResponseCodeToConsole(kAccountsUrl, status.response_code);
+      HandleAccountsFetchFailure(
+          std::move(idp_info), old_idp_signin_status,
+          FederatedAuthRequestResult::kErrorFetchingAccountsInvalidContentType,
+          TokenStatus::kAccountsInvalidContentType);
+      return;
+    }
     case IdpNetworkRequestManager::ParseStatus::kSuccess: {
       if (IsFedCmLoginHintEnabled()) {
         FilterAccountsWithLoginHint(idp_info->provider->login_hint, accounts);
@@ -1498,6 +1527,14 @@ void FederatedAuthRequestImpl::CompleteTokenRequest(
       CompleteRequestWithError(
           FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
           TokenStatus::kIdTokenInvalidResponse,
+          /*should_delay_callback=*/true);
+      return;
+    }
+    case IdpNetworkRequestManager::ParseStatus::kInvalidContentTypeError: {
+      MaybeAddResponseCodeToConsole(kIdAssertionUrl, status.response_code);
+      CompleteRequestWithError(
+          FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidContentType,
+          TokenStatus::kIdTokenInvalidContentType,
           /*should_delay_callback=*/true);
       return;
     }

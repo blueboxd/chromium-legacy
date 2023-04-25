@@ -34,6 +34,7 @@
 <translation id="1148499908455722006">打开“<ph name="USER_NAME" />”的信息对话框</translation>
 <translation id="1150989369772528668">日历</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
+<translation id="1160215328209699296">开启且正在使用中</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />，<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">您的 USB-C 数据线可能没有正确连接到显示屏</translation>
 <translation id="1175572348579024023">滚动</translation>
@@ -225,6 +226,7 @@
 <translation id="1978498689038657292">文字输入</translation>
 <translation id="1980808257969311265">加入<ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">显示上一周的活动</translation>
+<translation id="1986150224850161328">请确保您的手机和 Chromebook 已连接到同一网络，然后重试。<ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">无法截取/录制内容</translation>
 <translation id="1990046457226896323">实时字幕文件已下载完毕</translation>
 <translation id="1993072747612765854">详细了解最新的 <ph name="SYSTEM_APP_NAME" />更新</translation>
@@ -238,9 +240,9 @@
 <translation id="2023558322300866873">您可随时停止捕获数据包</translation>
 <translation id="2034971124472263449">仍然保存</translation>
 <translation id="2049240716062114887">桌面名称已更改为“<ph name="DESK_NAME" />”</translation>
-<translation id="2050339315714019657">纵向</translation>
 <translation id="2064048859448024834">已显示相机预览画面</translation>
 <translation id="2067602449040652523">键盘亮度</translation>
+<translation id="2075520525463668108">开启/关闭<ph name="CAPTURE_MEDIUM" />。<ph name="CAPTURE_MEDIUM" />已<ph name="CAPTURE_STATE" /></translation>
 <translation id="2078034614700056995">若要切换到下一个桌面，请用四根手指向右滑动</translation>
 <translation id="2079545284768500474">撤消</translation>
 <translation id="2083190527011054446"><ph name="GIVEN_NAME" />，晚安！</translation>
@@ -325,6 +327,7 @@
 <translation id="2487915095798731898">加入</translation>
 <translation id="2501920221385095727">粘滞键</translation>
 <translation id="2509468283778169019">CAPS LOCK 已打开</translation>
+<translation id="2514415433888497495">停用<ph name="CAPTURE_MEDIUM" />。<ph name="CAPTURE_MEDIUM" />已<ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">解锁窗口</translation>
 <translation id="2530896289327917474">开启或关闭光标浏览模式</translation>
@@ -374,6 +377,7 @@
 <translation id="2761723519669354964">打开任务栏中的突出显示项</translation>
 <translation id="2778650143428714839">此 <ph name="DEVICE_TYPE" /> 由 <ph name="MANAGER" /> 管理</translation>
 <translation id="2782591952652094792">退出截屏/录屏模式</translation>
+<translation id="2785499565474703580">已连接 1 部设备</translation>
 <translation id="2791421900609674576">系统会显示建议项目，以便您继续使用上次打开的内容。您可以通过轻触并按住建议项目将其移除。</translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2797741504905337289">Shelf Party 模式</translation>
@@ -1278,6 +1282,7 @@
 <translation id="6941333068993625698">提交反馈</translation>
 <translation id="6942518653766415536">录制格式菜单</translation>
 <translation id="6945221475159498467">选择</translation>
+<translation id="6945922087561257829">手机使用的是移动网络。请确保您的手机和 Chromebook 已连接到同一 Wi-Fi 网络，然后重试。<ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">未激活。请联系您的运营商。</translation>
 <translation id="6961121602502368900">工作资料不支持“将手机设为静音”功能</translation>
 <translation id="6961840794482373852">键盘快捷键“Alt + 向上键”已更改。若要使用 Page Up 键，请按<ph name="LAUNCHER_KEY_NAME" />键 + 向上键。</translation>
@@ -1332,6 +1337,7 @@
 <translation id="7188494361780961876">菜单已移至屏幕的左上角。</translation>
 <translation id="7189412385142492784">金星有多远</translation>
 <translation id="7198435252016571249">相机已对准右下角。与系统界面冲突。</translation>
+<translation id="7219573373513695352">未连接任何设备</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />。此 Chromebook 需要重新启动才能让更新生效。此过程最多可能需要 1 分钟的时间。</translation>
 <translation id="7256634071279256947">后置麦克风</translation>
 <translation id="7258828758145722155">昨天修改过</translation>
@@ -1479,6 +1485,7 @@
 <translation id="7902625623987030061">请轻触指纹传感器</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422">已连接 <ph name="DEVICECOUNT" /> 部设备</translation>
 <translation id="7930731167419639574">现在，语音均在本地处理，语音输入内容可离线使用</translation>
 <translation id="7932451802722951285">在 Google 日历中打开</translation>
 <translation id="7933084174919150729">Google 助理仅适用于主要个人资料。</translation>
@@ -1513,6 +1520,7 @@
 <translation id="8051716679295756675">名为“<ph name="DESK_TEMPLATE_NAME" />”的模板已存在</translation>
 <translation id="8052898407431791827">已复制到剪贴板</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
+<translation id="8079538659226626406">屏幕共享</translation>
 <translation id="8083540854303889870">已保存供日后使用</translation>
 <translation id="8091153018031979607">开始时间：<ph name="START_TIME" /><ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">自动更新</translation>
@@ -1769,7 +1777,6 @@
 <translation id="954052413789300507">空间不足，无法下载“<ph name="FILENAME" />”。请先释放空间。</translation>
 <translation id="974545358917229949">显示了 <ph name="RESULT_COUNT" /> 条与“<ph name="QUERY" />”相符的结果</translation>
 <translation id="98120814841227350">转到文档末尾</translation>
-<translation id="98515147261107953">横向</translation>
 <translation id="989374776391122812">摄像头和音频控件</translation>
 <translation id="990277280839877440">已关闭窗口“<ph name="WINDOW_TITILE" />”。</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />，<ph name="SUBTEXT" /></translation>

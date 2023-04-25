@@ -136,11 +136,15 @@ void TestSyncService::FireSyncCycleCompleted() {
     observer.OnSyncCycleCompleted(this);
 }
 
-SyncUserSettings* TestSyncService::GetUserSettings() {
+void TestSyncService::SetSyncFeatureRequested() {
+  disable_reasons_.Remove(SyncService::DISABLE_REASON_USER_CHOICE);
+}
+
+TestSyncUserSettings* TestSyncService::GetUserSettings() {
   return &user_settings_;
 }
 
-const SyncUserSettings* TestSyncService::GetUserSettings() const {
+const TestSyncUserSettings* TestSyncService::GetUserSettings() const {
   return &user_settings_;
 }
 

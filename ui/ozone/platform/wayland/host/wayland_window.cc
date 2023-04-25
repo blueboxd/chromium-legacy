@@ -37,7 +37,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/overlay_priority_hint.h"
 #include "ui/ozone/common/bitmap_cursor.h"
-#include "ui/ozone/common/features.h"
 #include "ui/ozone/platform/wayland/common/wayland_overlay_config.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
@@ -74,8 +73,8 @@ WaylandWindow::WaylandWindow(PlatformWindowDelegate* delegate,
     : delegate_(delegate),
       connection_(connection),
       frame_manager_(std::make_unique<WaylandFrameManager>(this, connection)),
-      wayland_overlay_delegation_enabled_(connection->viewporter() &&
-                                          IsWaylandOverlayDelegationEnabled()),
+      wayland_overlay_delegation_enabled_(
+          connection->viewporter() && connection->ShouldUseOverlayDelegation()),
       accelerated_widget_(
           connection->window_manager()->AllocateAcceleratedWidget()),
       ui_task_runner_(base::SingleThreadTaskRunner::GetCurrentDefault()) {
@@ -330,6 +329,10 @@ void WaylandWindow::OnChannelDestroyed() {
                                      std::move(subsurfaces_to_overlays)));
 }
 
+bool WaylandWindow::SupportsConfigureMinimizedState() const {
+  return false;
+}
+
 void WaylandWindow::SetAuraSurface(zaura_surface* aura_surface) {
   DCHECK(connection()->zaura_shell());
   DCHECK_NE(aura_surface_.get(), aura_surface);
@@ -466,11 +469,11 @@ void WaylandWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {
 }
 
 void WaylandWindow::SetRestoredBoundsInDIP(const gfx::Rect& bounds) {
-  restored_size_dip_ = bounds.size();
+  restored_bounds_dip_ = bounds;
 }
 
 gfx::Rect WaylandWindow::GetRestoredBoundsInDIP() const {
-  return gfx::Rect(restored_size_dip_);
+  return restored_bounds_dip_;
 }
 
 bool WaylandWindow::ShouldWindowContentsBeTransparent() const {

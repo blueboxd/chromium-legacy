@@ -37,7 +37,6 @@
 <translation id="10614374240317010">Jamais enregistré</translation>
 <translation id="1064054731605354900">A3 x 5</translation>
 <translation id="106701514854093668">Favoris d'ordinateur de bureau</translation>
-<translation id="1067561478268651872">La politique <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> n'est utilisée que si la politique <ph name="SECURE_DNS_SALT" /> est définie.</translation>
 <translation id="1068672505746868501">Ne jamais traduire les pages en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Véhicules hybrides et alternatifs</translation>
 <translation id="1070901266639972381">Nuit</translation>
@@ -510,6 +509,7 @@
 <translation id="2166049586286450108">Accès administrateur complet</translation>
 <translation id="2166378884831602661">Ce site ne fournit pas de connexion sécurisée</translation>
 <translation id="2168151236314517198">La politique définie par l'administrateur empêche l'impression de ce contenu</translation>
+<translation id="2176974405772725904">Enregistrer l'adresse dans le compte</translation>
 <translation id="2181821976797666341">Règles</translation>
 <translation id="2183608646556468874">Numéro de téléphone</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 adresse}one{# adresse}other{# adresses}}</translation>
@@ -523,7 +523,6 @@
 <translation id="2204482073374652408">Mise à jour terminée!</translation>
 <translation id="22081806969704220">Bac 3</translation>
 <translation id="2210794033760923560">Téléverser le rapport</translation>
-<translation id="2212579473415663542">Cette adresse est enregistrée dans votre compte Google (<ph name="ACCOUNT" />). Vous pouvez l'utiliser dans tous les produits Google, sur n'importe quel appareil.</translation>
 <translation id="2212735316055980242">Règle introuvable</translation>
 <translation id="2213606439339815911">Récupération des entrées...</translation>
 <translation id="2213612003795704869">La page est imprimée</translation>
@@ -1224,6 +1223,7 @@
 <translation id="4031179711345676612">Le microphone est autorisé</translation>
 <translation id="4040350669425716613">Collèges et universités</translation>
 <translation id="4047351652147966654">18 po x 24 po</translation>
+<translation id="4047620889508350431">Vous pouvez maintenant utiliser les adresses de votre compte Google.</translation>
 <translation id="405399507749852140">Obtenez des alertes si le prix est réduit sur un site</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4063063121357725926">Laissez Google vous aider à trouver des rabais pour vos paniers</translation>
@@ -1736,6 +1736,7 @@
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">Fermer</translation>
+<translation id="5238301240406177137">Enregistrer dans le compte</translation>
 <translation id="5239623327352565343">Accès à la position autorisé</translation>
 <translation id="5242889659037569123">Bagages et accessoires de voyage</translation>
 <translation id="5244732203286792411">Chargement en cours…
@@ -1754,7 +1755,6 @@
 <translation id="5273881944177595304">Applications Web et outils en ligne</translation>
 <translation id="5274025349362408263">Livres et littérature</translation>
 <translation id="5279286380302340275">Gérer les téléchargements</translation>
-<translation id="5279453600310613955">Non merci</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Propriétés du document</translation>
 <translation id="528468243742722775">Fin</translation>
@@ -1793,6 +1793,7 @@
 <translation id="5344579389779391559">L'accès à cette page peut engendrer des frais</translation>
 <translation id="5347645913823149105">Bouton Personnaliser les polices dans Chrome, appuyez sur la touche Entrée pour personnaliser la taille des polices et les caractères dans Chrome</translation>
 <translation id="5355557959165512791">Vous ne pouvez pas consulter le site <ph name="SITE" /> pour le moment, car son certificat a été révoqué. Les erreurs réseau et les attaques sont généralement temporaires, ce qui signifie que cette page devrait fonctionner de nouveau plus tard.</translation>
+<translation id="5356345925629253198">Vous pouvez utiliser les adresses enregistrées avec tous les produits Google. Cette adresse sera enregistrée dans votre compte Google (<ph name="ACCOUNT" />).</translation>
 <translation id="5357848622083956825">Art visuel et design</translation>
 <translation id="536296301121032821">Échec de stockage des paramètres de la règle</translation>
 <translation id="5363309033720083897">Port série autorisé par votre administrateur</translation>
@@ -1918,7 +1919,6 @@
 <translation id="5695542892312572833">Utiliser Windows Hello pour vérifier et finaliser votre achat?</translation>
 <translation id="5701381305118179107">Centrer</translation>
 <translation id="570530837424789914">Gérer...</translation>
-<translation id="5706906618852913030">Enregistrer dans le compte?</translation>
 <translation id="5707154300732650394">Reprendre votre exploration</translation>
 <translation id="57094364128775171">Suggérer un mot de passe fort…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2105,6 +2105,7 @@
 <translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6167577165590485365">Dernière tentative de récupération :</translation>
 <translation id="6169916984152623906">Vous pouvez maintenant naviguer de façon privée, et les autres personnes qui utilisent cet appareil ne verront pas votre activité. Cependant, les téléchargements et les favoris seront sauvegardés.</translation>
+<translation id="617256461084925519">Google Chrome essaie de vérifier qu'il s'agit bien de vous afin de pouvoir remplir vos informations de paiement.</translation>
 <translation id="6177128806592000436">Votre connexion à ce site n'est pas sécurisée</translation>
 <translation id="6177531123306197852">Enveloppe C2</translation>
 <translation id="6180316780098470077">Intervalle entre les nouveaux essais</translation>
@@ -2152,7 +2153,6 @@
 <translation id="6301104306974789820">Recevoir les notifications de suivi de prix</translation>
 <translation id="6305205051461490394">Impossible d'accéder à <ph name="URL" />.</translation>
 <translation id="6306713302480826305">Cette adresse sera supprimée de cet appareil et des autres appareils sur lesquels vous êtes connecté</translation>
-<translation id="6311165245110979290">Carte virtuelle disponible</translation>
 <translation id="6312113039770857350">La page Web n'est pas disponible</translation>
 <translation id="6316226860534107313">Scouteurs et cyclomoteurs</translation>
 <translation id="63172326633386613">Gérer les paramètres d'accessibilité</translation>
@@ -2252,6 +2252,7 @@
 <translation id="6545864417968258051">Recherche d'appareils Bluetooth</translation>
 <translation id="6547208576736763147">Double perforation à gauche</translation>
 <translation id="6549443526281184652">Costumes</translation>
+<translation id="6551873053534932690">Enregistrer l'adresse dans le compte?</translation>
 <translation id="6554732001434021288">Dernière visite il y a <ph name="NUM_DAYS" /> jours</translation>
 <translation id="6556866813142980365">Rétablir</translation>
 <translation id="6557715786897013164">14 po x 17 po</translation>
@@ -2656,6 +2657,7 @@ Détails supplémentaires :
 <translation id="7518003948725431193">Aucune page Web trouvée à l'adresse : <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7521825010239864438">Section « <ph name="SECTION" /> » masquée</translation>
+<translation id="752189128961566325">Vous pouvez l'utiliser dans tous les produits Google</translation>
 <translation id="7523408071729642236">Fabrication</translation>
 <translation id="7526934274050461096">Votre connexion à ce site n'est pas privée</translation>
 <translation id="7529884293139707752">Enseignement à domicile</translation>
@@ -2883,6 +2885,7 @@ Détails supplémentaires :
 <translation id="8057711352706143257">« <ph name="SOFTWARE_NAME" /> » n'est pas correctement configuré. La désinstallation de « <ph name="SOFTWARE_NAME" /> » résout généralement le problème. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8058009102480785916">Production alimentaire</translation>
 <translation id="8058603697124206642">Non requis</translation>
+<translation id="8064892030280197386">vérifiez qu'il s'agit bien de vous afin qu'il puisse remplir vos informations de paiement.</translation>
 <translation id="8066225060526005217">Géré par les paramètres des témoins</translation>
 <translation id="8067872629359326442">Vous venez d'entrer votre mot de passe sur un site trompeur. Chromium peut vous aider. Pour modifier votre mot de passe et avertir Google que votre compte pourrait être en danger, cliquez sur Protéger le compte.</translation>
 <translation id="8070439594494267500">Icône de l'application</translation>
@@ -3214,7 +3217,6 @@ Détails supplémentaires :
 <translation id="8913778647360618320">Bouton de gestion des modes de paiement, appuyez sur la touche Entrée pour gérer vos données de paiement et vos cartes de crédit dans les paramètres de Chrome</translation>
 <translation id="8922013791253848639">Toujours autoriser les annonces sur ce site</translation>
 <translation id="892588693504540538">Perforation en haut à droite</translation>
-<translation id="8930098617363288380">La valeur <ph name="SECURE_DNS_SALT" /> n'est pas pertinente et ne sera pas utilisée, sauf si la politique <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> est définie.</translation>
 <translation id="8930330541574156305">Immobilier</translation>
 <translation id="8931333241327730545">Voulez-vous enregistrer cette carte sur votre compte Google?</translation>
 <translation id="8932102934695377596">Votre horloge retarde</translation>

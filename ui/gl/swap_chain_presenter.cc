@@ -208,10 +208,9 @@ struct IntelVpeExt {
   raw_ptr<void> param;
 };
 
-// Return true if VpSuperResolution has been set successfully.
-bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
-                                  ID3D11VideoProcessor* video_processor,
-                                  bool enable) {
+HRESULT ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
+                                     ID3D11VideoProcessor* video_processor,
+                                     bool enable) {
   TRACE_EVENT1("gpu", "ToggleIntelVpSuperResolution", "on", enable);
 
   IntelVpeExt ext = {};
@@ -229,7 +228,7 @@ bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
   if (FAILED(hr)) {
     DLOG(ERROR) << "VideoProcessorSetOutputExtension failed with error 0x"
                 << std::hex << hr;
-    return false;
+    return hr;
   }
 
   ext.function = kIntelVpeFnMode;
@@ -242,7 +241,7 @@ bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
   if (FAILED(hr)) {
     DLOG(ERROR) << "VideoProcessorSetOutputExtension failed with error 0x"
                 << std::hex << hr;
-    return false;
+    return hr;
   }
 
   ext.function = kIntelVpeFnScaling;
@@ -257,15 +256,14 @@ bool ToggleIntelVpSuperResolution(ID3D11VideoContext* video_context,
   if (FAILED(hr)) {
     DLOG(ERROR) << "VideoProcessorSetStreamExtension failed with error 0x"
                 << std::hex << hr;
-    return false;
   }
-  return enable;
+
+  return hr;
 }
 
-// Return true if VpSuperResolution has been set successfully.
-bool ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
-                                   ID3D11VideoProcessor* video_processor,
-                                   bool enable) {
+HRESULT ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
+                                      ID3D11VideoProcessor* video_processor,
+                                      bool enable) {
   TRACE_EVENT1("gpu", "ToggleNvidiaVpSuperResolution", "on", enable);
 
   constexpr GUID kNvidiaPPEInterfaceGUID = {
@@ -295,44 +293,32 @@ bool ToggleNvidiaVpSuperResolution(ID3D11VideoContext* video_context,
   if (FAILED(hr)) {
     DLOG(ERROR) << "VideoProcessorSetStreamExtension failed with error 0x"
                 << std::hex << hr;
-    return false;
   }
-  return enable;
+
+  return hr;
 }
 
-bool ToggleVpSuperResolution(UINT gpu_vendor_id,
-                             ID3D11VideoContext* video_context,
-                             ID3D11VideoProcessor* video_processor,
-                             bool enable) {
+HRESULT ToggleVpSuperResolution(UINT gpu_vendor_id,
+                                ID3D11VideoContext* video_context,
+                                ID3D11VideoProcessor* video_processor,
+                                bool enable) {
   if (gpu_vendor_id == 0x8086 &&
       base::FeatureList::IsEnabled(features::kIntelVpSuperResolution)) {
     return ToggleIntelVpSuperResolution(video_context, video_processor, enable);
   }
+
   if (gpu_vendor_id == 0x10de &&
       base::FeatureList::IsEnabled(features::kNvidiaVpSuperResolution)) {
     return ToggleNvidiaVpSuperResolution(video_context, video_processor,
                                          enable);
   }
-  return false;
+
+  return E_NOTIMPL;
 }
 
 bool IsWithinMargin(int i, int j) {
   constexpr int kFullScreenMargin = 10;
   return (std::abs(i - j) < kFullScreenMargin);
-}
-
-// TODO(sunnyps): Move to DCLayerOverlayType header and make consistent with the
-// type names after changing trace tests which depend on this.
-std::string OverlayTypeToString(DCLayerOverlayType overlay_type) {
-  std::string overlay_type_str;
-  if (overlay_type == gl::DCLayerOverlayType::kDCompVisualContent) {
-    overlay_type_str = "swap chain";
-  } else if (overlay_type == gl::DCLayerOverlayType::kNV12Texture) {
-    overlay_type_str = "hardware video frame";
-  } else {
-    overlay_type_str = "software video frame";
-  }
-  return overlay_type_str;
 }
 
 }  // namespace
@@ -605,10 +591,10 @@ bool SwapChainPresenter::AdjustTargetToFullScreenSizeIfNeeded(
   if (params.clip_rect.has_value())
     clipped_onscreen_rect.Intersect(*visual_clip_rect);
 
-  // Restore after test
-  // if (clipped_onscreen_rect == gfx::Rect(monitor_size)) {
-  //  return true;
-  //}
+  // Skip adjustment if the current swap chain size is already correct.
+  if (clipped_onscreen_rect == gfx::Rect(monitor_size)) {
+    return true;
+  }
 
   // Because of the rounding when converting between pixels and DIPs, a
   // fullscreen video can become slightly larger than the monitor - e.g. on
@@ -825,10 +811,10 @@ void SwapChainPresenter::AdjustTargetForFullScreenLetterboxing(
     }
   }
 
-  // Restore after test
-  // if (new_onscreen_rect == clipped_onscreen_rect) {
-  //  return true;
-  //}
+  // Skip adjustment if the current swap chain size is already correct.
+  if (new_onscreen_rect == clipped_onscreen_rect) {
+    return;
+  }
 
   //
   // Adjust the clip rect.
@@ -1168,6 +1154,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
                                             gfx::Transform* visual_transform,
                                             gfx::Rect* visual_clip_rect) {
   DCHECK(params.overlay_image);
+  DCHECK_NE(params.overlay_image->type(),
+            gl::DCLayerOverlayType::kDCompVisualContent);
 
   gl::DCLayerOverlayType overlay_type = params.overlay_image->type();
 
@@ -1185,35 +1173,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   // content is shown again.
   ReleaseDCOMPSurfaceResourcesIfNeeded();
 
-  gfx::Size content_size;
-  gfx::Size swap_chain_size;
-  if (overlay_type == gl::DCLayerOverlayType::kDCompVisualContent) {
-    content_size = params.overlay_image->size();
-    // |visual_transform| now scales from |content_size| to on screen bounds.
-    UpdateSwapChainTransform(params.quad_rect.size(), content_size,
-                             visual_transform);
-  } else {
-    swap_chain_size =
-        CalculateSwapChainSize(params, visual_transform, visual_clip_rect);
-    content_size = swap_chain_size;
-  }
-
-  TRACE_EVENT2("gpu", "SwapChainPresenter::PresentToSwapChain", "image_type",
-               OverlayTypeToString(overlay_type), "size",
-               content_size.ToString());
-
-  // Swap chain image already has a swap chain that's presented by the client
-  // e.g. for webgl/canvas low-latency/desynchronized mode.
-  if (overlay_type == gl::DCLayerOverlayType::kDCompVisualContent) {
-    DCHECK(params.overlay_image->dcomp_visual_content());
-    if (last_overlay_image_ != params.overlay_image) {
-      ReleaseSwapChainResources();
-      content_ = params.overlay_image->dcomp_visual_content();
-      content_size_ = content_size;
-      last_overlay_image_ = std::move(params.overlay_image);
-    }
-    return true;
-  }
+  gfx::Size swap_chain_size =
+      CalculateSwapChainSize(params, visual_transform, visual_clip_rect);
 
   if (overlay_type == gl::DCLayerOverlayType::kNV12Texture &&
       !params.overlay_image->nv12_texture()) {
@@ -1583,6 +1544,7 @@ bool SwapChainPresenter::VideoProcessorBlt(
     video_context->VideoProcessorSetOutputColorSpace(video_processor.Get(),
                                                      &output_d3d11_color_space);
   }
+
   Microsoft::WRL::ComPtr<ID3D11VideoContext2> context2;
   absl::optional<DXGI_HDR_METADATA_HDR10> display_metadata =
       layer_tree_->GetHDRMetadataHelper()->GetDisplayMetadata();
@@ -1673,9 +1635,13 @@ bool SwapChainPresenter::VideoProcessorBlt(
     bool use_vp_super_resolution = false;
     if (!layer_tree_->disable_vp_super_resolution() &&
         !force_vp_super_resolution_off_) {
-      use_vp_super_resolution =
+      hr =
           ToggleVpSuperResolution(gpu_vendor_id_, video_context.Get(),
                                   video_processor.Get(), !is_on_battery_power_);
+      if (FAILED(hr)) {
+        force_vp_super_resolution_off_ = true;
+      }
+      use_vp_super_resolution = !is_on_battery_power_ && SUCCEEDED(hr);
     }
 
     hr = video_context->VideoProcessorBlt(video_processor.Get(),

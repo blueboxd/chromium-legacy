@@ -14,9 +14,9 @@
 #include "ash/style/style_util.h"
 #include "ash/wallpaper/wallpaper_base_view.h"
 #include "ash/wm/desks/desk.h"
+#include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_name_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/float/float_controller.h"
@@ -32,6 +32,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/wm/features.h"
@@ -191,7 +192,7 @@ void MirrorLayerTree(
 
     // Define what to use for layer ordering.
     struct LayerOrderData {
-      ui::Layer* layer;
+      raw_ptr<ui::Layer, ExperimentalAsh> layer;
       // z-order in target desk.
       size_t primary_key;
       // z-order in active desk.
@@ -357,7 +358,7 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   wallpaper_preview_layer->SetFillsBoundsOpaquely(false);
   wallpaper_preview_layer->SetRoundedCornerRadius(GetRoundedCorner());
   wallpaper_preview_layer->SetIsFastRoundedCorner(true);
-  AddChildView(wallpaper_preview_);
+  AddChildView(wallpaper_preview_.get());
 
   if (!chromeos::features::IsJellyrollEnabled()) {
     shadow_ = SystemShadow::CreateShadowOnNinePatchLayerForView(
@@ -371,7 +372,7 @@ DeskPreviewView::DeskPreviewView(PressedCallback callback,
   contents_view_layer->SetName("Desk mirrored contents view");
   contents_view_layer->SetRoundedCornerRadius(GetRoundedCorner());
   contents_view_layer->SetIsFastRoundedCorner(true);
-  AddChildView(desk_mirrored_contents_view_);
+  AddChildView(desk_mirrored_contents_view_.get());
 
   highlight_overlay_ = AddChildView(std::make_unique<views::View>());
   highlight_overlay_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
@@ -523,7 +524,7 @@ void DeskPreviewView::OnMouseReleased(const ui::MouseEvent& event) {
 }
 
 void DeskPreviewView::OnGestureEvent(ui::GestureEvent* event) {
-  DesksBarView* owner_bar = mini_view_->owner_bar();
+  DeskBarViewBase* owner_bar = mini_view_->owner_bar();
 
   switch (event->type()) {
     // Only long press can trigger drag & drop.

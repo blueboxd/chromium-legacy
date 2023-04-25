@@ -3102,7 +3102,6 @@ interface GPUSupportedLimits
     getter maxComputeWorkgroupsPerDimension
     getter maxDynamicStorageBuffersPerPipelineLayout
     getter maxDynamicUniformBuffersPerPipelineLayout
-    getter maxFragmentCombinedOutputResources
     getter maxInterStageShaderComponents
     getter maxInterStageShaderVariables
     getter maxSampledTexturesPerShaderStage
@@ -5524,6 +5523,7 @@ interface MLGraphBuilder
     method conv2d
     method convTranspose2d
     method div
+    method elu
     method gemm
     method hardSwish
     method input
@@ -7155,7 +7155,6 @@ interface PressureObserver
     method unobserve
 interface PressureRecord
     attribute @@toStringTag
-    getter factors
     getter source
     getter state
     getter time

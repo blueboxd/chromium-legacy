@@ -117,11 +117,6 @@ namespace {
 constexpr int kTestPrinterCapabilitiesMaxCopies = 99;
 const int kDefaultDocumentCookie = PrintSettings::NewCookie();
 
-const PrinterSemanticCapsAndDefaults::Paper kTestPaper{
-    /*display_name=*/"Letter", /*vendor_id=*/"45",
-    /*size_um=*/gfx::Size(215900, 279400),
-    /*printable_area_um=*/gfx::Rect(0, 0, 215900, 279400)};
-
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 constexpr char kFakeDmToken[] = "fake-dm-token";
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
@@ -600,7 +595,8 @@ void PrintBrowserTest::AddPrinter(const std::string& printer_name) {
   default_caps->copies_max = kTestPrinterCapabilitiesMaxCopies;
   default_caps->dpis = kTestPrinterCapabilitiesDefaultDpis;
   default_caps->default_dpi = kTestPrinterCapabilitiesDpi;
-  default_caps->papers.push_back(kTestPaper);
+  default_caps->papers.push_back(kTestPaperLetter);
+  default_caps->papers.push_back(kTestPaperLegal);
   test_print_backend_->AddValidPrinter(
       printer_name, std::move(default_caps),
       std::make_unique<PrinterBasicInfo>(printer_info));

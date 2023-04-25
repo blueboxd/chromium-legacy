@@ -215,6 +215,10 @@ bool IsLacrosColorManagementEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kChromeRefresh2023);
 COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeRefresh2023();
 
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+BASE_DECLARE_FEATURE(kChromeWebuiRefresh2023);
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsChromeWebuiRefresh2023();
+
 // If you are not Omnibox developer, you don't need to query CR2023 level.
 // Otherwise, please ensure that Omnibox features are guarded by an OR; enabling
 // either CR2023 Level2 or the feature-specific features should enable them
@@ -234,7 +238,9 @@ enum class ChromeRefresh2023Level {
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 ChromeRefresh2023Level GetChromeRefresh2023Level();
 
+#if !BUILDFLAG(IS_LINUX)
 COMPONENT_EXPORT(UI_BASE_FEATURES) BASE_DECLARE_FEATURE(kWebUiSystemFont);
+#endif
 
 #if BUILDFLAG(IS_APPLE)
 // Font Smoothing, a CoreText technique, simulates optical sizes to enhance text

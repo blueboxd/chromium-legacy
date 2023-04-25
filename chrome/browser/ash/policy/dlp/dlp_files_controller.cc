@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "ash/public/cpp/new_window_delegate.h"
+#include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
@@ -22,6 +23,8 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/strcat.h"
 #include "base/task/bind_post_task.h"
@@ -33,6 +36,8 @@
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_event_storage.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/dlp_warn_dialog.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/dlp_warn_notifier.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
@@ -40,12 +45,12 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_warn_notifier.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "chromeos/dbus/dlp/dlp_service.pb.h"
 #include "chromeos/ui/base/file_icon_util.h"
@@ -60,6 +65,7 @@
 #include "storage/browser/file_system/recursive_operation_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
@@ -244,7 +250,7 @@ class FolderRecursionDelegate : public storage::RecursiveOperationDelegate {
   void Run() override { NOTREACHED(); }
   void RunRecursively() override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    StartRecursiveOperation(root_,
+    StartRecursiveOperation(*root_,
                             storage::FileSystemOperation::ERROR_BEHAVIOR_SKIP,
                             base::BindOnce(&FolderRecursionDelegate::Completed,
                                            weak_ptr_factory_.GetWeakPtr()));
@@ -287,7 +293,7 @@ class FolderRecursionDelegate : public storage::RecursiveOperationDelegate {
     std::move(callback_).Run(std::move(files_urls_));
   }
 
-  const storage::FileSystemURL& root_;
+  const raw_ref<const storage::FileSystemURL, ExperimentalAsh> root_;
   FileURLsCallback callback_;
   std::vector<storage::FileSystemURL> files_urls_;
 
@@ -340,7 +346,8 @@ class RootsRecursionDelegate {
  private:
   // counts the number of |roots| processed.
   uint counter_ = 0;
-  storage::FileSystemContext* file_system_context_ = nullptr;
+  raw_ptr<storage::FileSystemContext, ExperimentalAsh> file_system_context_ =
+      nullptr;
   const std::vector<storage::FileSystemURL> roots_;
   FolderRecursionDelegate::FileURLsCallback callback_;
   std::vector<storage::FileSystemURL> files_urls_;
@@ -811,7 +818,7 @@ bool DlpFilesController::ShouldPromptBeforeDownload(
     return false;
   }
 
-  DlpRulesManager::Level level = rules_manager_.IsRestrictedComponent(
+  DlpRulesManager::Level level = rules_manager_->IsRestrictedComponent(
       GURL(download_src.url_or_path().value()), dst_component.value(),
       DlpRulesManager::Restriction::kFiles, /*out_source_pattern=*/nullptr,
       /*out_rule_metadata=*/nullptr);
@@ -873,7 +880,7 @@ bool DlpFilesController::IsLaunchBlocked(const apps::AppUpdate& app_update,
       continue;
     }
     if (destination->url_or_path().has_value()) {
-      DlpRulesManager::Level level = rules_manager_.IsRestrictedDestination(
+      DlpRulesManager::Level level = rules_manager_->IsRestrictedDestination(
           GURL(file->dlp_source_url.value()),
           GURL(destination->url_or_path().value()),
           DlpRulesManager::Restriction::kFiles, /*out_source_pattern=*/nullptr,
@@ -882,7 +889,7 @@ bool DlpFilesController::IsLaunchBlocked(const apps::AppUpdate& app_update,
         return true;
       }
     } else if (destination->component().has_value()) {
-      DlpRulesManager::Level level = rules_manager_.IsRestrictedComponent(
+      DlpRulesManager::Level level = rules_manager_->IsRestrictedComponent(
           GURL(file->dlp_source_url.value()), destination->component().value(),
           DlpRulesManager::Restriction::kFiles, /*out_source_pattern=*/nullptr,
           /*out_rule_metadata=*/nullptr);
@@ -918,7 +925,7 @@ void DlpFilesController::IsFilesTransferRestricted(
     std::string source_pattern;
     DlpRulesManager::RuleMetadata rule_metadata;
     if (dst_component.has_value()) {
-      level = rules_manager_.IsRestrictedComponent(
+      level = rules_manager_->IsRestrictedComponent(
           GURL(file.source_url), dst_component.value(),
           DlpRulesManager::Restriction::kFiles, &source_pattern,
           &rule_metadata);
@@ -930,7 +937,7 @@ void DlpFilesController::IsFilesTransferRestricted(
       // make sense.
       DCHECK(destination.url_or_path().has_value());
       destination_pattern = std::string();
-      level = rules_manager_.IsRestrictedDestination(
+      level = rules_manager_->IsRestrictedDestination(
           GURL(file.source_url), GURL(*destination.url_or_path()),
           DlpRulesManager::Restriction::kFiles, &source_pattern,
           &destination_pattern.value(), &rule_metadata);
@@ -976,6 +983,13 @@ void DlpFilesController::IsFilesTransferRestricted(
         views::Widget::ClosedReason::kUnspecified);
   }
 
+  // Get the last active Files app window to use as parent.
+  // TODO(b/277032725): Pass the Files app window.
+  Browser* browser =
+      FindSystemWebAppBrowser(profile, ash::SystemWebAppType::FILE_MANAGER);
+  gfx::NativeWindow modal_parent =
+      browser ? browser->window()->GetNativeWindow() : nullptr;
+
   warn_dialog_widget_ = warn_notifier_->ShowDlpFilesWarningDialog(
       base::BindOnce(&DlpFilesController::OnDlpWarnDialogReply,
                      weak_ptr_factory_.GetWeakPtr(), std::move(files_levels),
@@ -983,17 +997,17 @@ void DlpFilesController::IsFilesTransferRestricted(
                      std::move(warned_rules_metadata), actual_dst,
                      destination_pattern, files_action,
                      std::move(result_callback)),
-      std::move(dialog_files), actual_dst, files_action);
+      std::move(dialog_files), actual_dst, files_action, modal_parent);
 }
 
 std::vector<DlpFilesController::DlpFileRestrictionDetails>
 DlpFilesController::GetDlpRestrictionDetails(const std::string& source_url) {
   const GURL source(source_url);
   const DlpRulesManager::AggregatedDestinations aggregated_destinations =
-      rules_manager_.GetAggregatedDestinations(
+      rules_manager_->GetAggregatedDestinations(
           source, DlpRulesManager::Restriction::kFiles);
   const DlpRulesManager::AggregatedComponents aggregated_components =
-      rules_manager_.GetAggregatedComponents(
+      rules_manager_->GetAggregatedComponents(
           source, DlpRulesManager::Restriction::kFiles);
 
   std::vector<DlpFilesController::DlpFileRestrictionDetails> result;
@@ -1033,7 +1047,7 @@ std::vector<DlpRulesManager::Component>
 DlpFilesController::GetBlockedComponents(const std::string& source_url) {
   const GURL source(source_url);
   const DlpRulesManager::AggregatedComponents aggregated_components =
-      rules_manager_.GetAggregatedComponents(
+      rules_manager_->GetAggregatedComponents(
           source, DlpRulesManager::Restriction::kFiles);
 
   std::vector<DlpRulesManager::Component> result;
@@ -1050,7 +1064,7 @@ bool DlpFilesController::IsDlpPolicyMatched(const FileDaemonInfo& file) {
 
   std::string src_pattern;
   DlpRulesManager::RuleMetadata rule_metadata;
-  policy::DlpRulesManager::Level level = rules_manager_.IsRestrictedByAnyRule(
+  policy::DlpRulesManager::Level level = rules_manager_->IsRestrictedByAnyRule(
       GURL(file.source_url.spec()),
       policy::DlpRulesManager::Restriction::kFiles, &src_pattern,
       &rule_metadata);
@@ -1237,7 +1251,7 @@ void DlpFilesController::ReturnDlpMetadata(
 
   base::flat_map<ino64_t, DlpFileMetadata> metadata_map;
   for (const auto& metadata : response.files_metadata()) {
-    DlpRulesManager::Level level = rules_manager_.IsRestrictedByAnyRule(
+    DlpRulesManager::Level level = rules_manager_->IsRestrictedByAnyRule(
         GURL(metadata.source_url()), DlpRulesManager::Restriction::kFiles,
         nullptr, nullptr);
     bool is_dlp_restricted = level != DlpRulesManager::Level::kNotSet &&
@@ -1251,15 +1265,16 @@ void DlpFilesController::ReturnDlpMetadata(
       absl::optional<DlpRulesManager::Component> dst_component =
           MaybeGetComponent(profile, destination.value());
       if (dst_component.has_value()) {
-        DlpRulesManager::Level dst_level = rules_manager_.IsRestrictedComponent(
-            GURL(metadata.source_url()), dst_component.value(),
-            DlpRulesManager::Restriction::kFiles, nullptr, nullptr);
+        DlpRulesManager::Level dst_level =
+            rules_manager_->IsRestrictedComponent(
+                GURL(metadata.source_url()), dst_component.value(),
+                DlpRulesManager::Restriction::kFiles, nullptr, nullptr);
         is_restricted_for_destination =
             dst_level == DlpRulesManager::Level::kBlock;
       } else {
         DCHECK(destination->url_or_path().has_value());
         DlpRulesManager::Level dst_level =
-            rules_manager_.IsRestrictedDestination(
+            rules_manager_->IsRestrictedDestination(
                 GURL(metadata.source_url()),
                 GURL(destination->url_or_path().value()),
                 DlpRulesManager::Restriction::kFiles, nullptr, nullptr,
@@ -1344,7 +1359,8 @@ void DlpFilesController::MaybeReportEvent(
     return;
   }
 
-  DlpReportingManager* reporting_manager = rules_manager_.GetReportingManager();
+  DlpReportingManager* reporting_manager =
+      rules_manager_->GetReportingManager();
   if (!reporting_manager) {
     return;
   }

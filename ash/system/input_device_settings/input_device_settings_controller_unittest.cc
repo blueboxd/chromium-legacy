@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/input_device_settings.mojom.h"
@@ -21,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/ranges/functional.h"
@@ -266,7 +268,8 @@ class InputDeviceSettingsControllerTest : public NoSessionAshTestBase {
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   std::unique_ptr<InputDeviceSettingsController::ScopedResetterForTest>
       scoped_resetter_;
-  FakeKeyboardPrefHandler* keyboard_pref_handler_ = nullptr;
+  raw_ptr<FakeKeyboardPrefHandler, ExperimentalAsh> keyboard_pref_handler_ =
+      nullptr;
 };
 
 TEST_F(InputDeviceSettingsControllerTest, KeyboardAddingOne) {
@@ -599,6 +602,53 @@ TEST_F(InputDeviceSettingsControllerTest, GetGeneralizedTopRowAreFKeys) {
   controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardUsb.id,
                                    settings.Clone());
   EXPECT_EQ(false, controller_->GetGeneralizedTopRowAreFKeys());
+}
+
+TEST_F(InputDeviceSettingsControllerTest,
+       KeyboardSettingsAreValidWithEnterprisePolicy) {
+  // Test when top_row_are_fkeys_policy doesn't exist.
+  ui::DeviceDataManagerTestApi().SetKeyboardDevices({kSampleKeyboardInternal});
+  EXPECT_EQ(observer_->num_keyboards_connected(), 1u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_initialized(), 1u);
+  const mojom::KeyboardSettingsPtr settings = mojom::KeyboardSettings::New();
+  settings->top_row_are_fkeys = !kDefaultTopRowAreFKeys;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 1u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 1u);
+
+  // Test when policy status is kRecommended.
+  std::unique_ptr<TestingPrefServiceSimple> pref_service =
+      std::make_unique<TestingPrefServiceSimple>();
+  ash::RegisterUserProfilePrefs(pref_service->registry(), /*for_test=*/true);
+  controller_->OnActiveUserPrefServiceChanged(pref_service.get());
+  pref_service->SetRecommendedPref(prefs::kSendFunctionKeys,
+                                   base::Value(kDefaultTopRowAreFKeys));
+  settings->top_row_are_fkeys = !kDefaultTopRowAreFKeys;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 2u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 2u);
+
+  // Test when policy status is kManaged and the settings are valid.
+  pref_service->SetManagedPref(prefs::kSendFunctionKeys,
+                               base::Value(kDefaultTopRowAreFKeys));
+  settings->top_row_are_fkeys = kDefaultTopRowAreFKeys;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 3u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 3u);
+
+  // Test when policy status is kManaged and the settings are invalid.
+  pref_service->SetManagedPref(prefs::kSendFunctionKeys,
+                               base::Value(!kDefaultTopRowAreFKeys));
+  settings->top_row_are_fkeys = kDefaultTopRowAreFKeys;
+  controller_->SetKeyboardSettings((DeviceId)kSampleKeyboardInternal.id,
+                                   settings.Clone());
+  EXPECT_EQ(observer_->num_keyboards_settings_updated(), 3u);
+  EXPECT_EQ(keyboard_pref_handler_->num_keyboard_settings_updated(), 3u);
+  controller_->OnActiveUserPrefServiceChanged(
+      Shell::Get()->session_controller()->GetActivePrefService());
 }
 
 }  // namespace ash

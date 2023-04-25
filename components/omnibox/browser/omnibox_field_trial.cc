@@ -23,6 +23,7 @@
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/omnibox/common/omnibox_features.h"
+#include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "components/search/search.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/hashing.h"
@@ -447,7 +448,7 @@ int OmniboxFieldTrial::MaxNumHQPUrlsIndexedAtStartup() {
   constexpr int kDefaultOnNonLowEndDevices = 20000;
 #endif
 
-  if (base::SysInfo::IsLowEndDevice()) {
+  if (base::SysInfo::IsLowEndDeviceOrPartialLowEndModeEnabled()) {
     return kDefaultOnLowEndDevices;
   } else {
     return kDefaultOnNonLowEndDevices;
@@ -1088,20 +1089,36 @@ const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring(
 
 // ---------------------------------------------------------
 // ML Relevance Scoring ->
-const base::FeatureParam<bool> kMlRelevanceScoringIncreaseNumCandidates(
-    &omnibox::kMlRelevanceScoring,
-    "MlRelevanceScoringIncreaseNumCandidates",
+
+// If true, enables scoring signal annotators for logging Omnibox scoring
+// signals to OmniboxEventProto.
+const base::FeatureParam<bool> kEnableScoringSignalsAnnotators(
+    &omnibox::kLogUrlScoringSignals,
+    "enable_scoring_signals_annotators",
+    false);
+
+// If true, runs the ML scoring model but does not assign new relevance scores
+// to the URL suggestions and does not rerank them.
+const base::FeatureParam<bool> kMlUrlScoringCounterfactual(
+    &omnibox::kMlUrlScoring,
+    "MlUrlScoringCounterfactual",
+    false);
+
+// If true, increases the number of candidates the URL autocomplete providers
+// pass to the controller beyond `provider_max_matches`.
+const base::FeatureParam<bool> kMlUrlScoringIncreaseNumCandidates(
+    &omnibox::kMlUrlScoring,
+    "MlUrlScoringIncreaseNumCandidates",
     false);
 
 MLConfig::MLConfig() {
   log_url_scoring_signals =
       base::FeatureList::IsEnabled(omnibox::kLogUrlScoringSignals);
-  enable_scoring_signals_annotators = base::GetFieldTrialParamByFeatureAsBool(
-      omnibox::kLogUrlScoringSignals, "enable_scoring_signals_annotators",
-      /*default_value=*/false);
-  ml_relevance_scoring =
-      base::FeatureList::IsEnabled(omnibox::kMlRelevanceScoring);
-  increase_num_candidates = kMlRelevanceScoringIncreaseNumCandidates.Get();
+  enable_scoring_signals_annotators = kEnableScoringSignalsAnnotators.Get();
+  ml_url_scoring = base::FeatureList::IsEnabled(omnibox::kMlUrlScoring);
+  ml_url_scoring_counterfactual = kMlUrlScoringCounterfactual.Get();
+  ml_url_scoring_increase_num_candidates =
+      kMlUrlScoringIncreaseNumCandidates.Get();
   url_scoring_model = base::FeatureList::IsEnabled(omnibox::kUrlScoringModel);
 }
 
@@ -1123,19 +1140,23 @@ const MLConfig& GetMLConfig() {
 bool IsLogUrlScoringSignalsEnabled() {
   return GetMLConfig().log_url_scoring_signals;
 }
-
 bool AreScoringSignalsAnnotatorsEnabled() {
   return GetMLConfig().enable_scoring_signals_annotators;
 }
-
-bool IsMlRelevanceScoringEnabled() {
-  return GetMLConfig().ml_relevance_scoring && IsUrlScoringModelEnabled();
+bool IsMlUrlScoringEnabled() {
+#if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  return IsUrlScoringModelEnabled() && GetMLConfig().ml_url_scoring;
+#else
+  return false;
+#endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 }
-
-bool IsMlRelevanceScoringIncreaseNumCandidatesEnabled() {
-  return GetMLConfig().increase_num_candidates;
+bool IsMlUrlScoringCounterfactual() {
+  return IsMlUrlScoringEnabled() && GetMLConfig().ml_url_scoring_counterfactual;
 }
-
+bool IsMlUrlScoringIncreaseNumCandidatesEnabled() {
+  return IsMlUrlScoringEnabled() &&
+         GetMLConfig().ml_url_scoring_increase_num_candidates;
+}
 bool IsUrlScoringModelEnabled() {
   return GetMLConfig().url_scoring_model;
 }
@@ -1148,6 +1169,11 @@ const base::FeatureParam<int> kRealboxMaxPreviousSearchRelatedSuggestions(
     &omnibox::kRealboxSecondaryZeroSuggest,
     "RealboxMaxPreviousSearchRelatedSuggestions",
     3);
+
+const base::FeatureParam<bool> kRealboxSecondaryZeroSuggestCounterfactual(
+    &omnibox::kRealboxSecondaryZeroSuggest,
+    "RealboxSecondaryZeroSuggestCounterfactual",
+    false);
 
 // <- Two-column realbox
 // ---------------------------------------------------------

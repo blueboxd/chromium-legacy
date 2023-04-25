@@ -1389,13 +1389,14 @@ QuicStreamFactory::QuicStreamFactory(
       connectivity_monitor_(default_network_),
       ssl_config_service_(ssl_config_service),
       use_network_anonymization_key_for_crypto_configs_(
-          base::FeatureList::IsEnabled(
-              features::kPartitionHttpServerPropertiesByNetworkIsolationKey)) {
+          NetworkAnonymizationKey::IsPartitioningEnabled()) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
   if (params_.disable_tls_zero_rtt)
     SetQuicFlag(quic_disable_client_tls_zero_rtt, true);
   InitializeMigrationOptions();
+  cert_verifier_->AddObserver(this);
+  CertDatabase::GetInstance()->AddObserver(this);
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -1414,6 +1415,8 @@ QuicStreamFactory::~QuicStreamFactory() {
   // QuicCryptoClientConfigs were deleted, in the above lines.
   DCHECK(active_crypto_config_map_.empty());
 
+  CertDatabase::GetInstance()->RemoveObserver(this);
+  cert_verifier_->RemoveObserver(this);
   if (params_.close_sessions_on_ip_change ||
       params_.goaway_sessions_on_ip_change) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
@@ -1957,6 +1960,11 @@ void QuicStreamFactory::OnCertDBChanged() {
   // kind of change it is, we have to flush the socket
   // pools to be safe.
   MarkAllActiveSessionsGoingAway(kCertDBChanged);
+}
+
+void QuicStreamFactory::OnCertVerifierChanged() {
+  // Flush sessions if the CertCerifier configuration has changed.
+  MarkAllActiveSessionsGoingAway(kCertVerifierChanged);
 }
 
 void QuicStreamFactory::set_is_quic_known_to_work_on_current_network(

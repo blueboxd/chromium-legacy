@@ -11,11 +11,9 @@
 
 namespace blink {
 
-NGInlineItemResult::NGInlineItemResult() : item(nullptr), item_index(0) {}
-
 NGInlineItemResult::NGInlineItemResult(const NGInlineItem* item,
                                        unsigned index,
-                                       const NGTextOffset& text_offset,
+                                       const NGTextOffsetRange& text_offset,
                                        bool break_anywhere_if_overflow,
                                        bool should_create_line_box,
                                        bool has_unpositioned_floats)

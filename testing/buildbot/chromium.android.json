@@ -1577,8 +1577,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -2032,8 +2031,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -2328,9 +2326,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--remove-system-package=com.google.ar.core",
-          "--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -4151,6 +4147,66 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
         ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "4",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android30",
+              "path": ".android_emulator/generic_android30"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android30"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -4796,6 +4852,66 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android30.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "4",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android30",
+              "path": ".android_emulator/generic_android30"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android30"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
       },
       {
         "args": [
@@ -6509,7 +6625,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6572,7 +6688,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6600,7 +6716,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -6634,7 +6750,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6695,7 +6811,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6748,7 +6864,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6800,7 +6916,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6860,7 +6976,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6920,7 +7036,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -6980,7 +7096,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7041,7 +7157,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7102,7 +7218,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7162,7 +7278,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7223,7 +7339,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7283,7 +7399,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7344,7 +7460,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7404,7 +7520,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7475,7 +7591,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7515,8 +7631,7 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android31.textpb",
-          "--git-revision=${got_revision}",
-          "--avd-config=../../tools/android/avd/proto/generic_playstore_android31.textpb"
+          "--git-revision=${got_revision}"
         ],
         "merge": {
           "args": [
@@ -7545,20 +7660,20 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
           "named_caches": [
             {
-              "name": "generic_playstore_android31",
-              "path": ".android_emulator/generic_playstore_android31"
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
             }
           ],
           "optional_dimensions": {
             "60": [
               {
-                "caches": "generic_playstore_android31"
+                "caches": "generic_android31"
               }
             ]
           },
@@ -7613,7 +7728,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7674,7 +7789,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7738,7 +7853,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7799,7 +7914,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7863,7 +7978,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7891,7 +8006,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 25
+          "shards": 40
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -7926,7 +8041,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -7988,7 +8103,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8053,7 +8168,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8115,7 +8230,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8175,7 +8290,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8236,7 +8351,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8296,7 +8411,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8335,6 +8450,67 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
+      },
+      {
+        "args": [
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -8356,7 +8532,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8416,7 +8592,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8476,7 +8652,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8536,7 +8712,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8599,7 +8775,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8660,7 +8836,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8720,7 +8896,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8780,7 +8956,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8840,7 +9016,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8900,7 +9076,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8960,7 +9136,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -8999,6 +9175,67 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
         ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-22.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android31",
+              "path": ".android_emulator/generic_android31"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android31"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
+      },
+      {
+        "args": [
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -9020,7 +9257,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9080,7 +9317,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9141,7 +9378,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9201,7 +9438,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9261,7 +9498,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9321,7 +9558,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9381,7 +9618,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9444,7 +9681,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9504,7 +9741,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9565,7 +9802,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9626,7 +9863,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9686,7 +9923,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9746,7 +9983,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9806,7 +10043,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9866,7 +10103,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9926,7 +10163,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -9986,7 +10223,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10046,7 +10283,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10106,7 +10343,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10166,7 +10403,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10227,7 +10464,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10287,7 +10524,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10348,7 +10585,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10409,7 +10646,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10469,7 +10706,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10498,7 +10735,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 10
+          "shards": 11
         },
         "test": "webview_instrumentation_test_apk",
         "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"
@@ -10535,7 +10772,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10604,7 +10841,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10677,7 +10914,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10739,7 +10976,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10799,7 +11036,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10859,7 +11096,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -10915,7 +11152,7 @@
               "cpu": "x86-64",
               "device_os": null,
               "device_type": null,
-              "os": "Ubuntu-18.04",
+              "os": "Ubuntu-22.04",
               "pool": "chromium.tests.avd"
             }
           ],
@@ -11055,7 +11292,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -12252,7 +12489,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 25
+          "shards": 40
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -12615,6 +12852,66 @@
         },
         "test": "display_unittests",
         "test_id_prefix": "ninja://ui/display:display_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android32_foldable",
+              "path": ".android_emulator/generic_android32_foldable"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android32_foldable"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
       },
       {
         "args": [
@@ -13267,6 +13564,66 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android32_foldable",
+              "path": ".android_emulator/generic_android32_foldable"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android32_foldable"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
       },
       {
         "args": [
@@ -15045,7 +15402,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 4
         },
         "test": "android_browsertests",
         "test_id_prefix": "ninja://chrome/test:android_browsertests/"
@@ -15871,7 +16228,8 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android33.textpb",
-          "--git-revision=${got_revision}"
+          "--git-revision=${got_revision}",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_test_apk.filter"
         ],
         "merge": {
           "args": [
@@ -16241,7 +16599,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 25
+          "shards": 40
         },
         "test": "content_browsertests",
         "test_id_prefix": "ninja://content/test:content_browsertests/"
@@ -16604,6 +16962,66 @@
         },
         "test": "display_unittests",
         "test_id_prefix": "ninja://ui/display:display_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android33.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android33",
+              "path": ".android_emulator/generic_android33"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android33"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
       },
       {
         "args": [
@@ -17256,6 +17674,66 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android33.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "8",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android33",
+              "path": ".android_emulator/generic_android33"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android33"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
       },
       {
         "args": [
@@ -20305,6 +20783,51 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -20786,6 +21309,51 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
+              "device_os_type": "userdebug",
+              "device_type": "walleye",
+              "os": "Android"
+            }
+          ],
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
       },
       {
         "args": [
@@ -27989,6 +28557,68 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
         ],
+        "ci_only": true,
+        "isolate_profile_data": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "4",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android24",
+              "path": ".android_emulator/generic_android24"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android24"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
+      },
+      {
+        "args": [
+          "--use-persistent-shell",
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android24.textpb"
+        ],
         "isolate_profile_data": true,
         "merge": {
           "args": [
@@ -30627,7 +31257,6 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.nougat-x86-rel.chrome_junit_tests.filter",
           "--use-persistent-shell"
         ],
         "isolate_name": "chrome_junit_tests",
@@ -31746,9 +32375,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--remove-system-package=com.google.ar.core",
-          "--additional-apk=//third_party/arcore-android-sdk/test-apks/arcore/arcore_current.apk"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -34501,6 +35128,66 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
         ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "env_chromium_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "4",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android28",
+              "path": ".android_emulator/generic_android28"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android28"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "env_chromium_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:env_chromium_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+        ],
         "merge": {
           "args": [
             "--bucket",
@@ -35146,6 +35833,66 @@
         },
         "test": "latency_unittests",
         "test_id_prefix": "ninja://ui/latency:latency_unittests/"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices",
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+        ],
+        "ci_only": true,
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "leveldb_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cores": "4",
+              "cpu": "x86-64",
+              "device_os": null,
+              "device_type": null,
+              "os": "Ubuntu-18.04",
+              "pool": "chromium.tests.avd"
+            }
+          ],
+          "named_caches": [
+            {
+              "name": "generic_android28",
+              "path": ".android_emulator/generic_android28"
+            }
+          ],
+          "optional_dimensions": {
+            "60": [
+              {
+                "caches": "generic_android28"
+              }
+            ]
+          },
+          "output_links": [
+            {
+              "link": [
+                "https://luci-logdog.appspot.com/v/?s",
+                "=android%2Fswarming%2Flogcats%2F",
+                "${TASK_ID}%2F%2B%2Funified_logcats"
+              ],
+              "name": "shard #${SHARD_INDEX} logcats"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "leveldb_unittests",
+        "test_id_prefix": "ninja://third_party/leveldatabase:leveldb_unittests/"
       },
       {
         "args": [

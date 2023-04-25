@@ -150,13 +150,25 @@ void SetEphemeralKioskPreferencesListForTesting(
 
 bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
                               PrefService* local_state) {
+  // We shouldn't auto launch kiosk app if a designated command line switch was
+  // used.
+  //
+  // For example, in Tast tests command line switch is used to prevent kiosk
+  // autolaunch configured by policy from a previous test. This way ChromeOS
+  // will stay on the login screen and Tast can perform policies cleanup.
+  if (command_line.HasSwitch(switches::kPreventKioskAutolaunchForTesting)) {
+    return false;
+  }
+
+  // We shouldn't auto launch kiosk app if powerwash screen should be shown.
+  if (local_state->GetBoolean(prefs::kFactoryResetRequested)) {
+    return false;
+  }
+
   KioskAppManager* app_manager = KioskAppManager::Get();
   WebKioskAppManager* web_app_manager = WebKioskAppManager::Get();
   ArcKioskAppManager* arc_app_manager = ArcKioskAppManager::Get();
 
-  // We shouldn't auto launch kiosk app if powerwash screen should be shown.
-  bool prevent_autolaunch =
-      local_state->GetBoolean(prefs::kFactoryResetRequested);
   return command_line.HasSwitch(switches::kLoginManager) &&
          (app_manager->IsAutoLaunchEnabled() ||
           web_app_manager->GetAutoLaunchAccountId().is_valid() ||
@@ -165,7 +177,7 @@ bool ShouldAutoLaunchKioskApp(const base::CommandLine& command_line,
          // IsOobeCompleted() is needed to prevent kiosk session start in case
          // of enterprise rollback, when keeping the enrollment, policy, not
          // clearing TPM, but wiping stateful partition.
-         StartupUtils::IsOobeCompleted() && !prevent_autolaunch;
+         StartupUtils::IsOobeCompleted();
 }
 
 void CreateAppSession(const KioskAppId& kiosk_app_id,

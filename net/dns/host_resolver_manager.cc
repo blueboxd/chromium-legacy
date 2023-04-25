@@ -632,8 +632,7 @@ class HostResolverManager::RequestImpl
       : source_net_log_(std::move(source_net_log)),
         request_host_(std::move(request_host)),
         network_anonymization_key_(
-            base::FeatureList::IsEnabled(
-                features::kSplitHostCacheByNetworkIsolationKey)
+            NetworkAnonymizationKey::IsPartitioningEnabled()
                 ? std::move(network_anonymization_key)
                 : NetworkAnonymizationKey()),
         parameters_(optional_parameters ? std::move(optional_parameters).value()
@@ -3926,10 +3925,11 @@ void HostResolverManager::FinishIPv6ReachabilityCheck(
   SetLastIPv6ProbeResult((rv == OK) ? true : false);
   std::move(callback).Run(OK);
   if (!ipv6_request_callbacks_.empty()) {
-    for (auto& request_callback : ipv6_request_callbacks_) {
+    std::vector<CompletionOnceCallback> tmp_request_callbacks;
+    ipv6_request_callbacks_.swap(tmp_request_callbacks);
+    for (auto& request_callback : tmp_request_callbacks) {
       std::move(request_callback).Run(OK);
     }
-    ipv6_request_callbacks_.clear();
   }
 }
 

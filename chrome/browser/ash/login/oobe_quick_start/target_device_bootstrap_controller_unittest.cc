@@ -29,6 +29,8 @@ using Observer = TargetDeviceBootstrapController::Observer;
 using Status = TargetDeviceBootstrapController::Status;
 using Step = TargetDeviceBootstrapController::Step;
 using ErrorCode = TargetDeviceBootstrapController::ErrorCode;
+using ConnectionClosedReason =
+    TargetDeviceConnectionBroker::ConnectionClosedReason;
 
 class FakeObserver : public Observer {
  public:
@@ -192,7 +194,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, RejectConnection) {
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
   connection_broker()->InitiateConnection(kSourceDeviceId);
 
-  connection_broker()->RejectConnection(kSourceDeviceId);
+  connection_broker()->RejectConnection();
 
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   ASSERT_TRUE(
@@ -206,7 +208,7 @@ TEST_F(TargetDeviceBootstrapControllerTest, CloseConnection) {
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
   connection_broker()->InitiateConnection(kSourceDeviceId);
 
-  connection_broker()->CloseConnection(kSourceDeviceId);
+  connection_broker()->CloseConnection(ConnectionClosedReason::kConnectionLost);
 
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   ASSERT_TRUE(
@@ -224,6 +226,9 @@ TEST_F(TargetDeviceBootstrapControllerTest, GetPhoneInstanceId) {
 TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate_NotConnected) {
   ASSERT_FALSE(
       GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  ASSERT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
 
   // PrepareForUpdate() shouldn't do anything if the connection is not
   // established.
@@ -234,11 +239,17 @@ TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate_NotConnected) {
   bootstrap_controller_->PrepareForUpdate();
   EXPECT_FALSE(
       GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  EXPECT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate) {
   ASSERT_FALSE(
       GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  ASSERT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
 
   bootstrap_controller_->StartAdvertising();
   connection_broker()->on_start_advertising_callback().Run(/*success=*/true);
@@ -250,10 +261,17 @@ TEST_F(TargetDeviceBootstrapControllerTest, PrepareForUpdate) {
   // Pref shouldn't change until the connection is closed.
   EXPECT_FALSE(
       GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
-  connection_broker()->CloseConnection(kSourceDeviceId);
+  EXPECT_TRUE(GetLocalState()
+                  ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                  .empty());
+  connection_broker()->CloseConnection(ConnectionClosedReason::kConnectionLost);
   EXPECT_TRUE(
       GetLocalState()->GetBoolean(prefs::kShouldResumeQuickStartAfterReboot));
+  EXPECT_FALSE(GetLocalState()
+                   ->GetDict(prefs::kResumeQuickStartAfterRebootInfo)
+                   .empty());
   GetLocalState()->ClearPref(prefs::kShouldResumeQuickStartAfterReboot);
+  GetLocalState()->ClearPref(prefs::kResumeQuickStartAfterRebootInfo);
 }
 
 }  // namespace ash::quick_start

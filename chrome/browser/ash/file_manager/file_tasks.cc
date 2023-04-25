@@ -109,7 +109,6 @@ const char kActionIdWebDriveOfficePowerPoint[] =
     "open-web-drive-office-powerpoint";
 const char kActionIdOpenInOffice[] = "open-in-office";
 const char kActionIdOpenWeb[] = "OPEN_WEB";
-const char kODFSExtensionId[] = "gnnndjlaomemikopnjhhnoombakkkkdg";
 
 // Searches for the installed extension in order of preference.
 std::string GetODFSExtensionId(Profile* profile) {
@@ -124,8 +123,8 @@ std::string GetODFSExtensionId(Profile* profile) {
     const auto& extension_id = provider_id.GetExtensionId();
 
     // App from official internal build.
-    if (extension_id == kODFSExtensionId) {
-      return kODFSExtensionId;
+    if (extension_id == extension_misc::kODFSExtensionId) {
+      return extension_misc::kODFSExtensionId;
     }
 
     // App built manually from internal repo.
@@ -497,8 +496,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(
       prefs::kOfficeSetupComplete, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
-  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMove, false);
-  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShown, false);
+  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMoveToDrive, false);
+  registry->RegisterBooleanPref(prefs::kOfficeFilesAlwaysMoveToOneDrive, false);
+  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShownForDrive,
+                                false);
+  registry->RegisterBooleanPref(prefs::kOfficeMoveConfirmationShownForOneDrive,
+                                false);
   registry->RegisterTimePref(prefs::kOfficeFileMovedToOneDrive, base::Time());
   registry->RegisterTimePref(prefs::kOfficeFileMovedToGoogleDrive,
                              base::Time());
@@ -1217,21 +1220,44 @@ bool OfficeSetupComplete(Profile* profile) {
   return profile->GetPrefs()->GetBoolean(prefs::kOfficeSetupComplete);
 }
 
-void SetAlwaysMoveOfficeFiles(Profile* profile, bool always_move) {
-  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMove, always_move);
+void SetAlwaysMoveOfficeFilesToDrive(Profile* profile, bool always_move) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMoveToDrive,
+                                  always_move);
 }
 
-bool AlwaysMoveOfficeFiles(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMove);
+bool AlwaysMoveOfficeFilesToDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(prefs::kOfficeFilesAlwaysMoveToDrive);
 }
 
-void SetOfficeMoveConfirmationShown(Profile* profile, bool complete) {
-  profile->GetPrefs()->SetBoolean(prefs::kOfficeMoveConfirmationShown,
+void SetAlwaysMoveOfficeFilesToOneDrive(Profile* profile, bool always_move) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeFilesAlwaysMoveToOneDrive,
+                                  always_move);
+}
+
+bool AlwaysMoveOfficeFilesToOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeFilesAlwaysMoveToOneDrive);
+}
+
+void SetOfficeMoveConfirmationShownForDrive(Profile* profile, bool complete) {
+  profile->GetPrefs()->SetBoolean(prefs::kOfficeMoveConfirmationShownForDrive,
                                   complete);
 }
 
-bool OfficeMoveConfirmationShown(Profile* profile) {
-  return profile->GetPrefs()->GetBoolean(prefs::kOfficeMoveConfirmationShown);
+bool GetOfficeMoveConfirmationShownForDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForDrive);
+}
+
+void SetOfficeMoveConfirmationShownForOneDrive(Profile* profile,
+                                               bool complete) {
+  profile->GetPrefs()->SetBoolean(
+      prefs::kOfficeMoveConfirmationShownForOneDrive, complete);
+}
+
+bool GetOfficeMoveConfirmationShownForOneDrive(Profile* profile) {
+  return profile->GetPrefs()->GetBoolean(
+      prefs::kOfficeMoveConfirmationShownForOneDrive);
 }
 
 void SetOfficeFileMovedToOneDrive(Profile* profile, base::Time moved) {

@@ -12,6 +12,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
 #include "ash/shelf/shelf_locking_manager.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 
 namespace aura {
@@ -91,13 +92,17 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
     explicit ScopedAutoHideLock(Shelf* shelf) : shelf_(shelf) {
       ++shelf_->auto_hide_lock_;
     }
+
+    ScopedAutoHideLock(const ScopedAutoHideLock&) = delete;
+    ScopedAutoHideLock& operator=(const ScopedAutoHideLock&) = delete;
+
     ~ScopedAutoHideLock() {
       --shelf_->auto_hide_lock_;
       DCHECK_GE(shelf_->auto_hide_lock_, 0);
     }
 
    private:
-    Shelf* shelf_;
+    raw_ptr<Shelf, ExperimentalAsh> shelf_;
   };
 
   // Used to disable auto-hide shelf behavior while in scope. Note that
@@ -113,6 +118,9 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
       }
     }
 
+    ScopedDisableAutoHide(const ScopedDisableAutoHide&) = delete;
+    ScopedDisableAutoHide& operator=(const ScopedDisableAutoHide&) = delete;
+
     ~ScopedDisableAutoHide() {
       --shelf_->disable_auto_hide_;
       CHECK_GE(shelf_->disable_auto_hide_, 0);
@@ -121,8 +129,10 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
       }
     }
 
+    Shelf* shelf() { return shelf_; }
+
    private:
-    Shelf* const shelf_;
+    const raw_ptr<Shelf, ExperimentalAsh> shelf_;
   };
 
   Shelf();
@@ -307,7 +317,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
-  void WillChangeVisibilityState(ShelfVisibilityState new_state) override;
+  void OnShelfVisibilityStateChanged(ShelfVisibilityState new_state) override;
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
   void OnBackgroundUpdated(ShelfBackgroundType background_type,
                            AnimationChangeType change_type) override;
@@ -331,7 +341,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
-  ShelfLayoutManager* shelf_layout_manager_ = nullptr;
+  raw_ptr<ShelfLayoutManager, ExperimentalAsh> shelf_layout_manager_ = nullptr;
 
   // Pointers to shelf components.
   std::unique_ptr<ShelfNavigationWidget> navigation_widget_;

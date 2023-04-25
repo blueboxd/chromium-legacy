@@ -45,7 +45,7 @@ HidPinnedNotification::CreateNotification(Profile* profile) {
                     HidConnectionTrackerFactory::GetForProfile(
                         profile, /*create=*/false);
                 DCHECK(hid_connection_tracker);
-                hid_connection_tracker->ShowHidContentSettingsExceptions();
+                hid_connection_tracker->ShowContentSettingsExceptions();
               },
               profile));
   auto notification_id = GetNotificationId(profile);
@@ -54,7 +54,7 @@ HidPinnedNotification::CreateNotification(Profile* profile) {
   DCHECK(hid_connection_tracker);
   auto notification = std::make_unique<message_center::Notification>(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
-      GetTooltipLabel(hid_connection_tracker->connection_count()),
+      GetTitleLabel(hid_connection_tracker->total_connection_count()),
       /*message=*/std::u16string(), /*icon=*/ui::ImageModel(),
       /*display_source=*/std::u16string(), /*origin_url=*/GURL(),
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -78,19 +78,14 @@ void HidPinnedNotification::DisplayNotification(
   SystemNotificationHelper::GetInstance()->Display(*notification);
 }
 
-void HidPinnedNotification::AddProfile(Profile* profile) {
-  DCHECK(!base::Contains(profiles_, profile));
-  profiles_.emplace(profile);
+void HidPinnedNotification::ProfileAdded(Profile* profile) {
   DisplayNotification(CreateNotification(profile));
 }
 
-void HidPinnedNotification::RemoveProfile(Profile* profile) {
-  DCHECK(base::Contains(profiles_, profile));
-  profiles_.erase(profile);
+void HidPinnedNotification::ProfileRemoved(Profile* profile) {
   SystemNotificationHelper::GetInstance()->Close(GetNotificationId(profile));
 }
 
 void HidPinnedNotification::NotifyConnectionCountUpdated(Profile* profile) {
-  DCHECK(base::Contains(profiles_, profile));
   DisplayNotification(CreateNotification(profile));
 }

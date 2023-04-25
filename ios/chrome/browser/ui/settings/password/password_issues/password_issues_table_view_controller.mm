@@ -129,9 +129,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
           [model addItem:[self passwordIssueItem:passwordIssue]
               toSectionWithIdentifier:nextPasswordIssueSectionIdentifier];
 
-          // Add change password button below password issue.
-          [model addItem:[self changePasswordItem]
-              toSectionWithIdentifier:nextPasswordIssueSectionIdentifier];
+          if (passwordIssue.changePasswordURL.has_value()) {
+            // Add change password button below password issue.
+            [model addItem:[self changePasswordItem]
+                toSectionWithIdentifier:nextPasswordIssueSectionIdentifier];
+          }
 
           // Increment section identifier for next password issue.
           nextPasswordIssueSectionIdentifier++;
@@ -214,7 +216,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-// Creates the item acting as a buton for presenting dismissed compromised
+// Creates the item acting as a button for presenting dismissed compromised
 // credential warnings. Returns nil when `_dismissedWarningsButtonText` is nil.
 - (TableViewTextItem*)dismissedWarningsItem {
   // The button is not visible either because there aren't dismissed compromised
@@ -259,7 +261,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
 
     case ItemTypeChangePassword:
-      // TODO(crbug.com/1406540): Handle change password taps.
+      CrURL* changePasswordURL =
+          [self changePasswordURLForPasswordInSection:indexPath.section];
+      [self.presenter dismissAndOpenURL:changePasswordURL];
       break;
   }
 
@@ -410,6 +414,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   _passwordGroups = passwordGroups;
   _dismissedWarningsButtonText = buttonText;
   [self reloadData];
+
+  // User removed/resolved all issues, dismiss the vc and go back to the
+  // previous screen.
+  if (IsPasswordCheckupEnabled() && passwordGroups.count == 0 &&
+      buttonText == nullptr) {
+    [self.presenter dismissAfterAllIssuesGone];
+  }
 }
 
 - (void)setNavigationBarTitle:(NSString*)title {
@@ -427,6 +438,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)view:(TableViewLinkHeaderFooterView*)view didTapLinkURL:(CrURL*)URL {
   [self.presenter dismissAndOpenURL:URL];
+}
+
+#pragma mark - Private
+
+// Helper for getting the url for changing the password of the password issue
+// item in the given tableView section.
+- (CrURL*)changePasswordURLForPasswordInSection:(NSInteger)section {
+  PasswordIssueContentItem* passwordIssueItem =
+      base::mac::ObjCCastStrict<PasswordIssueContentItem>([self.tableViewModel
+          itemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:section]]);
+
+  CHECK(passwordIssueItem.password.changePasswordURL.has_value());
+  return passwordIssueItem.password.changePasswordURL.value();
 }
 
 @end

@@ -26,8 +26,8 @@ import org.chromium.url.GURL;
 public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
     private GURL mUrl;
     private RoundedIconGenerator mIconGenerator;
-    private final int mMinIconSize;
-    private final int mDisplayedIconSize;
+    private int mMinIconSize;
+    private int mDisplayedIconSize;
     private boolean mFaviconCancelled;
 
     /**
@@ -38,31 +38,28 @@ public class BookmarkItemRow extends BookmarkRow implements LargeIconCallback {
     public static BookmarkItemRow buildView(Context context, boolean isVisualRefreshEnabled) {
         BookmarkItemRow row = new BookmarkItemRow(context, null);
         BookmarkRow.buildView(row, context, isVisualRefreshEnabled);
+        row.setupIconProperties(isVisualRefreshEnabled);
         return row;
     }
 
     /** Constructor for inflating from XML. */
     public BookmarkItemRow(Context context, AttributeSet attrs) {
         super(context, attrs);
+    }
 
-        boolean isVisualRefreshEnabled = BookmarkFeatures.isBookmarksVisualRefreshEnabled();
-        mMinIconSize = isVisualRefreshEnabled
-                ? getResources().getDimensionPixelSize(R.dimen.bookmark_refresh_min_start_icon_size)
-                : getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
+    void setupIconProperties(boolean isVisualRefreshEnabled) {
+        mMinIconSize = getResources().getDimensionPixelSize(R.dimen.default_favicon_min_size);
+        mDisplayedIconSize = getResources().getDimensionPixelSize(isVisualRefreshEnabled
+                        ? R.dimen.bookmark_refresh_preferred_start_icon_size
+                        : R.dimen.default_favicon_size);
 
-        mDisplayedIconSize = isVisualRefreshEnabled
-                ? getResources().getDimensionPixelSize(
-                        R.dimen.bookmark_refresh_preferred_start_icon_size)
-                : getResources().getDimensionPixelSize(R.dimen.default_favicon_size);
-        if (isVisualRefreshEnabled) {
-            mIconGenerator = new RoundedIconGenerator(mDisplayedIconSize, mDisplayedIconSize,
-                    mDisplayedIconSize / 2,
-                    getContext().getColor(R.color.default_favicon_background_color),
-                    getResources().getDimensionPixelSize(
-                            R.dimen.bookmark_refresh_circular_monogram_text_size));
-        } else {
-            mIconGenerator = FaviconUtils.createCircularIconGenerator(context);
-        }
+        mIconGenerator = isVisualRefreshEnabled
+                ? new RoundedIconGenerator(mDisplayedIconSize, mDisplayedIconSize,
+                        mDisplayedIconSize / 2,
+                        getContext().getColor(R.color.default_favicon_background_color),
+                        getResources().getDimensionPixelSize(
+                                R.dimen.bookmark_refresh_circular_monogram_text_size))
+                : FaviconUtils.createCircularIconGenerator(getContext());
     }
 
     // BookmarkRow implementation.

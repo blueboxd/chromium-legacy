@@ -22,7 +22,6 @@
 
 As permissões que você já concedeu a sites e apps podem ser aplicadas a essa conta. É possível gerenciar suas Contas do Google nas <ph name="SETTINGS_LINK_BEGIN" />Configurações<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Fazendo download...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{O Chromium estava conectado a um dispositivo HID}=1{O Chromium está conectado a um dispositivo HID}one{O Chromium está conectado a um dispositivo HID}other{O Chromium está conectado a dispositivos HID}}</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="17264556997921157">É possível ver e remover os assuntos de interesse que os sites usam para mostrar anúncios a você. O Chromium faz uma estimativa dos seus interesses com base no seu histórico de navegação recente.</translation>
 <translation id="1733725117201708356">O Chromium vai excluir os dados de navegação em breve</translation>
@@ -243,8 +242,10 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 <translation id="6442900851116057561">Reiniciar o ChromiumOS</translation>
 <translation id="6455857529632101747">Conheça os perfis do Chromium</translation>
 <translation id="6475912303565314141">Controla também qual página deve ser exibida quando você inicia o Chromium.</translation>
+<translation id="648319183876919572">O recurso "Navegação segura com maior proteção" protege você ainda mais contra sites e downloads perigosos</translation>
 <translation id="6510925080656968729">Desinstalar Chromium</translation>
 <translation id="6542839706527980775">Cada perfil armazena as próprias informações do Chromium, como favoritos, histórico, senhas, entre outras</translation>
+<translation id="656935081669708576">Mude para outro perfil do Chromium para conferir as senhas dele</translation>
 <translation id="6570579332384693436">Para corrigir erros de ortografia, o Chromium envia ao Google o texto que você digita nos campos de texto</translation>
 <translation id="6598877126913850652">Acessar as configurações de notificação do Chromium</translation>
 <translation id="6613594504749178791">As alterações entrarão em vigor na próxima vez que você reiniciar o Chromium.</translation>

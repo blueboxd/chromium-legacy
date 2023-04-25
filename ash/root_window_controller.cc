@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/root_window_controller.h"
+#include "base/memory/raw_ptr.h"
 
 #include <algorithm>
 #include <memory>
@@ -497,7 +498,7 @@ class FillLayoutManager : public aura::LayoutManager {
     }
   }
 
-  aura::Window* container_;
+  raw_ptr<aura::Window, ExperimentalAsh> container_;
 };
 
 }  // namespace
@@ -1095,14 +1096,14 @@ void RootWindowController::InitLayoutManagers(
       lock_action_handler_container);
   lock_action_handler_container->SetLayoutManager(
       std::make_unique<LockActionHandlerLayoutManager>(
-          lock_action_handler_container, shelf_.get(),
+          lock_action_handler_container,
           lock_screen_action_background_controller_.get()));
 
   aura::Window* lock_container =
       GetContainer(kShellWindowId_LockScreenContainer);
   DCHECK(lock_container);
   lock_container->SetLayoutManager(
-      std::make_unique<LockLayoutManager>(lock_container, shelf_.get()));
+      std::make_unique<LockLayoutManager>(lock_container));
 
   aura::Window* always_on_top_container =
       GetContainer(kShellWindowId_AlwaysOnTopContainer);

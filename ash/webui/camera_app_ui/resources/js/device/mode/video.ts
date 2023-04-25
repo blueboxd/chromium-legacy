@@ -88,6 +88,10 @@ const GRAB_GIF_FRAME_RATIO = 2;
  */
 const TIME_LAPSE_INITIAL_SPEED = 5;
 
+/**
+ * Minimum bitrate multiplier for time lapse recording.
+ */
+const TIME_LAPSE_MIN_BITRATE_MULTIPLIER = 6;
 
 /**
  * Sets avc1 parameter used in video recording.
@@ -512,7 +516,10 @@ export class Video extends ModeBase {
     }
     const preference = encoderPreference.get(loadTimeData.getBoard()) ??
         {profile: h264.Profile.HIGH, multiplier: 2};
-    const {profile, multiplier} = preference;
+    let {profile, multiplier} = preference;
+    if (this.recordingType === RecordType.TIME_LAPSE) {
+      multiplier = Math.max(multiplier, TIME_LAPSE_MIN_BITRATE_MULTIPLIER);
+    }
     const {width, height, frameRate} =
         getVideoTrackSettings(this.getVideoTrack());
     const resolution = new Resolution(width, height);
@@ -550,6 +557,7 @@ export class Video extends ModeBase {
     this.autoStopped = false;
     this.stopped = false;
 
+    this.recordingType = this.getToggledRecordOption();
     if (this.recordingType === RecordType.NORMAL ||
         this.recordingType === RecordType.TIME_LAPSE) {
       const canStart = await this.startMonitorStorage();
@@ -595,7 +603,6 @@ export class Video extends ModeBase {
       throw new CanceledError('Recording stopped');
     }
 
-    this.recordingType = this.getToggledRecordOption();
     // TODO(b/191950622): Remove complex state logic bind with this enable flag
     // after GIF recording move outside of expert mode and replace it with
     // |RECORD_TYPE_GIF|.
@@ -636,9 +643,15 @@ export class Video extends ModeBase {
         assert(param !== null);
         timeLapseSaver = await this.captureTimeLapse(param);
       } finally {
-        // TODO(b/236800499): Handle video too short.
         state.set(state.State.RECORDING, false);
         this.recordTime.stop({pause: false});
+      }
+
+      if (this.recordTime.inMilliseconds() <
+          (MINIMUM_VIDEO_DURATION_IN_MILLISECONDS * TIME_LAPSE_INITIAL_SPEED)) {
+        toast.show(I18nString.ERROR_MSG_VIDEO_TOO_SHORT);
+        timeLapseSaver.cancel();
+        return [Promise.resolve()];
       }
 
       return [this.handler.onTimeLapseCaptureDone({

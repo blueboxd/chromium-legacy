@@ -18,7 +18,6 @@
 #include "chrome/browser/ash/arc/input_overlay/actions/position.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
-#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
@@ -36,7 +35,7 @@ class DisplayOverlayController;
 class TouchInjector;
 
 // Parse position from Json.
-std::unique_ptr<Position> ParsePosition(const base::Value& value);
+std::unique_ptr<Position> ParsePosition(const base::Value::Dict& dict);
 // Log events for debugging.
 void LogEvent(const ui::Event& event);
 void LogTouchEvents(const std::list<ui::TouchEvent>& events);

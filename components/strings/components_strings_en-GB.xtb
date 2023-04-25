@@ -37,7 +37,6 @@
 <translation id="10614374240317010">Never saved</translation>
 <translation id="1064054731605354900">A3 x 5</translation>
 <translation id="106701514854093668">Desktop Bookmarks</translation>
-<translation id="1067561478268651872">The <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> policy is not used unless the <ph name="SECURE_DNS_SALT" /> policy is set.</translation>
 <translation id="1068672505746868501">Never translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Hybrid and alternative vehicles</translation>
 <translation id="1070901266639972381">Night</translation>
@@ -307,6 +306,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1658918301167915956">bluetooth devices</translation>
 <translation id="1662550410081243962">Save and fill payment methods</translation>
 <translation id="1663943134801823270">Cards and addresses are from Chrome. You can manage them in <ph name="BEGIN_LINK" />Settings<ph name="END_LINK" />.</translation>
+<translation id="1668071460721346172">Get an email</translation>
 <translation id="1671391448414634642">Pages in <ph name="SOURCE_LANGUAGE" /> will be translated to <ph name="TARGET_LANGUAGE" /> from now on.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Short edge first</translation>
@@ -367,6 +367,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="1806174020048213474">This app is requesting permission to install Wi-Fi credentials. After setup, your <ph name="DEVICE_TYPE" /> will automatically connect to participating Wi-Fi networks. To remove these credentials, uninstall the app.</translation>
 <translation id="1807246157184219062">Light</translation>
 <translation id="1807528111851433570">Start sheet</translation>
+<translation id="180757923930449935">(64-bit emulated)</translation>
 <translation id="180991881384371158">Your CVC is on the back of your card. It’s the last three digits at the top right of the signature box.</translation>
 <translation id="181000283860817563">Track prices across multiple sites</translation>
 <translation id="1810391395243432441">Protect passwords with your screen lock</translation>
@@ -437,6 +438,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2003775180883135320">Quad punch top</translation>
 <translation id="201174227998721785">Manage permissions and data stored across sites in Chrome settings</translation>
 <translation id="2019607688127825327">Manage accessibility settings button; press Enter to personalise your accessibility tools in Chrome settings</translation>
+<translation id="2021333772895814435">This policy automatically disables syncing across devices for: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">12 in x 19 in</translation>
 <translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2025186561304664664">Proxy is set to auto-configured.</translation>
@@ -510,6 +512,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2166049586286450108">Full Admin Access</translation>
 <translation id="2166378884831602661">This site can’t provide a secure connection</translation>
 <translation id="2168151236314517198">Printing this content is blocked by administrator policy</translation>
+<translation id="2176974405772725904">Save address in Account</translation>
 <translation id="2181821976797666341">Policies</translation>
 <translation id="2183608646556468874">Phone Number</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 address}other{# addresses}}</translation>
@@ -523,7 +526,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2204482073374652408">Finished updating!</translation>
 <translation id="22081806969704220">Tray 3</translation>
 <translation id="2210794033760923560">Upload report</translation>
-<translation id="2212579473415663542">This address is saved in your Google Account (<ph name="ACCOUNT" />). You can use this address across Google products on any device.</translation>
 <translation id="2212735316055980242">Policy not found</translation>
 <translation id="2213606439339815911">Fetching entries...</translation>
 <translation id="2213612003795704869">Page is printed</translation>
@@ -539,7 +541,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2239100178324503013">Send now</translation>
 <translation id="2241693394036365668">File is downloaded</translation>
 <translation id="2246264294482514010">10 in x 12 in</translation>
-<translation id="2246480341630108201">Your parent hasn't said it's OK yet</translation>
+<translation id="2246480341630108201">Your parent hasn't said that it's OK yet</translation>
 <translation id="2247789808226901522">Card expired</translation>
 <translation id="2248949050832152960">Use WebAuthn</translation>
 <translation id="2250931979407627383">Edge stitch left</translation>
@@ -638,6 +640,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="2521736961081452453">Create form</translation>
 <translation id="2523886232349826891">Saved on this device only</translation>
 <translation id="2524461107774643265">Add More Information</translation>
+<translation id="2526280916094749336">You can use saved addresses across Google products. This address will be saved in your Google Account, <ph name="ACCOUNT" />.</translation>
 <translation id="2527451058878391043">Your CVC is on the front of your card. It’s the four-digit code at the top right above your card number.</translation>
 <translation id="2529899080962247600">This field should not have more than <ph name="MAX_ITEMS_LIMIT" /> entries. All further entries will be ignored.</translation>
 <translation id="253493526287553278">See promo code details</translation>
@@ -1224,6 +1227,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="4031179711345676612">Microphone allowed</translation>
 <translation id="4040350669425716613">Colleges and universities</translation>
 <translation id="4047351652147966654">18 in x 24 in</translation>
+<translation id="4047620889508350431">You can now use addresses from your Google Account.</translation>
 <translation id="405399507749852140">Get alerts if the price drops on any site</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4063063121357725926">Let Google help you find discounts for your baskets</translation>
@@ -1736,6 +1740,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">Dismiss</translation>
+<translation id="5238301240406177137">Save in Account</translation>
 <translation id="5239623327352565343">Location allowed</translation>
 <translation id="5242889659037569123">Luggage and travel accessories</translation>
 <translation id="5244732203286792411">Loading…
@@ -1754,7 +1759,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5273881944177595304">Web apps and online tools</translation>
 <translation id="5274025349362408263">Books and literature</translation>
 <translation id="5279286380302340275">Manage downloads</translation>
-<translation id="5279453600310613955">No thanks</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Document properties</translation>
 <translation id="528468243742722775">End</translation>
@@ -1793,6 +1797,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5344579389779391559">This page may try to charge you money</translation>
 <translation id="5347645913823149105">Customise fonts in Chrome button, press Enter to customise font sizes and typefaces in Chrome</translation>
 <translation id="5355557959165512791">You cannot visit <ph name="SITE" /> right now because its certificate has been revoked. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
+<translation id="5356345925629253198">You can use saved addresses across Google products. This address will be saved in your Google Account (<ph name="ACCOUNT" />).</translation>
 <translation id="5357848622083956825">Visual art and design</translation>
 <translation id="536296301121032821">Failed to store policy settings</translation>
 <translation id="5363309033720083897">Serial port allowed by your administrator</translation>
@@ -1918,7 +1923,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="5695542892312572833">Use Windows Hello to verify and complete your purchase?</translation>
 <translation id="5701381305118179107">Centre</translation>
 <translation id="570530837424789914">Manage...</translation>
-<translation id="5706906618852913030">Save in Account?</translation>
 <translation id="5707154300732650394">Resume your journey</translation>
 <translation id="57094364128775171">Suggest strong password…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2065,6 +2069,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6051221802930200923">You cannot visit <ph name="SITE" /> right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.</translation>
 <translation id="6051898664905071243">Page count:</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6053584886670442526">You can use saved addresses across Google products. This address is saved in your Google Account, <ph name="ACCOUNT" />.</translation>
 <translation id="6053735090575989697">Learn more about how Google protects your data in our privacy policy.</translation>
 <translation id="6055888660316801977">Secure payment credential no matching credential sheet</translation>
 <translation id="6058977677006700226">Use your cards on all your devices?</translation>
@@ -2144,6 +2149,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6279183038361895380">Press |<ph name="ACCELERATOR" />| to show your cursor</translation>
 <translation id="6280223929691119688">Can’t deliver to this address. Select a different address.</translation>
 <translation id="6284292079994426700">26 in x 38 in</translation>
+<translation id="6284517535531159884">Variations Seed Type</translation>
 <translation id="6285507000506177184">Manage downloads in Chrome button; press Enter to manage files that you have downloaded in Chrome</translation>
 <translation id="6289939620939689042">Page colour</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -2153,7 +2159,6 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6301104306974789820">Get price tracking notifications</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is unreachable.</translation>
 <translation id="6306713302480826305">This address will be deleted from this and your other signed-in devices</translation>
-<translation id="6311165245110979290">Virtual card available</translation>
 <translation id="6312113039770857350">Web page not available</translation>
 <translation id="6316226860534107313">Scooters and mopeds</translation>
 <translation id="63172326633386613">Manage accessibility settings</translation>
@@ -2244,6 +2249,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6513005815064132016">Can ask to track your camera position</translation>
 <translation id="6517596291481585650">Warning: This policy was not merged as a list as specified by policy because it is not a list.</translation>
 <translation id="6518133107902771759">Verify</translation>
+<translation id="65203098586853226">Translating <ph name="SOURCE" /> to <ph name="TARGET" /></translation>
 <translation id="6521745193039995384">Not active</translation>
 <translation id="6529173248185917884">Seventh roll</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
@@ -2253,6 +2259,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6545864417968258051">Bluetooth scanning</translation>
 <translation id="6547208576736763147">Dual punch left</translation>
 <translation id="6549443526281184652">Costumes</translation>
+<translation id="6551873053534932690">Save address in Account?</translation>
 <translation id="6554732001434021288">Last visited <ph name="NUM_DAYS" /> days ago</translation>
 <translation id="6556866813142980365">Redo</translation>
 <translation id="6557715786897013164">14 in x 17 in</translation>
@@ -2317,6 +2324,7 @@ This will otherwise be blocked by your privacy settings. This will allow the con
 <translation id="6716672519412350405"><ph name="URL" /> wants to create a 3D map of your surroundings and track camera position</translation>
 <translation id="6718612893943028815">Use camera?</translation>
 <translation id="6721678857435001674">See the make and model of your Security Key</translation>
+<translation id="6726832600570791992">(32-bit emulated)</translation>
 <translation id="6727094998759448074">SRA4</translation>
 <translation id="6732087373923685049">camera</translation>
 <translation id="6738516213925468394">Your data was encrypted with your <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /> on <ph name="TIME" />. Enter it to start sync.</translation>
@@ -3217,7 +3225,6 @@ Additional details:
 <translation id="8913778647360618320">Manage payment methods button; press enter to manage your payments and credit card info in Chrome settings</translation>
 <translation id="8922013791253848639">Always allow ads on this site</translation>
 <translation id="892588693504540538">Punch top right</translation>
-<translation id="8930098617363288380">The <ph name="SECURE_DNS_SALT" /> value is not relevant, and will not be used unless the <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> policy is set.</translation>
 <translation id="8930330541574156305">Property</translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>

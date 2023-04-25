@@ -20,7 +20,6 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/i18n/message_formatter.h"
 #include "base/i18n/number_formatting.h"
 #include "base/json/json_reader.h"
@@ -658,7 +657,7 @@ void GaiaScreenHandler::InitAfterJavascriptAllowed() {
   }
 }
 
-void GaiaScreenHandler::RegisterMessages() {
+void GaiaScreenHandler::DeclareJSCallbacks() {
   AddCallback("webviewLoadAborted",
               &GaiaScreenHandler::HandleWebviewLoadAborted);
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
@@ -685,8 +684,6 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("passwordEntered", &GaiaScreenHandler::HandlePasswordEntered);
   AddCallback("showLoadingTimeoutError",
               &GaiaScreenHandler::HandleShowLoadingTimeoutError);
-
-  BaseScreenHandler::RegisterMessages();
 }
 
 void GaiaScreenHandler::HandleIdentifierEntered(const std::string& user_email) {

@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/common/accessibility/read_anything_constants.h"
+#include "read_anything_constants.h"
 
 namespace string_constants {
 
-const char kReadAnythingDefaultFontName[] = "Standard font";
-const char kReadAnythingDefaultFontSyle[] = ", Sans-serif, 15px";
+// The default Read Anything font that will be used before a selection is made.
+// This will also be used as a backup font if another Read Anything font is
+// unavailable by the system.
+const char kReadAnythingDefaultFontName[] = "Sans-serif";
 
 const char kLetterSpacingHistogramName[] =
     "Accessibility.ReadAnything.LetterSpacing";

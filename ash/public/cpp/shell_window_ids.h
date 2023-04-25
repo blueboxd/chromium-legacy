@@ -90,7 +90,6 @@ enum ShellWindowId {
   kShellWindowId_AlwaysOnTopContainer,
 
   // The container for the floating window.
-  // Experimental feature, please don't use this container.
   kShellWindowId_FloatContainer,
 
   // The container for the app list.
@@ -150,8 +149,8 @@ enum ShellWindowId {
   // The container for menus.
   kShellWindowId_MenuContainer,
 
-  // The container for drag/drop images, tooltips, and widgets that are tagged
-  // with ui::ZOrderLevel::kSecuritySurface.
+  // The container for drag/drop images, tooltips, toasts and widgets that are
+  // tagged with ui::ZOrderLevel::kSecuritySurface.
   kShellWindowId_DragImageAndTooltipContainer,
 
   // The container for the fullscreen power button menu.

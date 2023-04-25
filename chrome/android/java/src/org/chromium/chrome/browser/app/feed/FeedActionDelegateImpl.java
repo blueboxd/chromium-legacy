@@ -150,7 +150,7 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
             SigninMetricsUtils.logSigninUserActionForAccessPoint(signinAccessPoint);
             SigninBottomSheetCoordinator signinCoordinator =
                     new SigninBottomSheetCoordinator(windowAndroid, bottomSheetController,
-                            Profile.getLastUsedRegularProfile(), null);
+                            Profile.getLastUsedRegularProfile(), null, signinAccessPoint);
             signinCoordinator.show();
         }
     }
@@ -160,11 +160,9 @@ public class FeedActionDelegateImpl implements FeedActionDelegate {
      * interactions. Calls reportPageLoaded when navigation completes.
      */
     private class FeedTabNavigationObserver extends EmptyTabObserver {
-        private final boolean mInNewTab;
         private final Runnable mCallback;
 
         FeedTabNavigationObserver(boolean inNewTab, Runnable callback) {
-            mInNewTab = inNewTab;
             mCallback = callback;
         }
 

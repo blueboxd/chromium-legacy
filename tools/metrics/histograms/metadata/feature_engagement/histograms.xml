@@ -52,6 +52,9 @@ chromium-metrics-reviews@google.com.
   <variant name="IPH_AutoDarkUserEducationMessageOptIn"
       summary="message educating users about enabling auto dark web contents
                feature globally"/>
+  <variant name="IPH_AutofillExternalAccountProfileSuggestion"
+      summary="message shown along with the externally created (e.g. in
+               Google Pay) profile suggestion option in the Autofill dropdown"/>
   <variant name="IPH_AutofillVirtualCardSuggestion"
       summary="message shown along with the virtual card suggestion option in
                the Autofill dropdown to educate users virtual cards come with
@@ -498,7 +501,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="InProductHelp.TextBubble.ShownTime" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>haileywang@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <summary>

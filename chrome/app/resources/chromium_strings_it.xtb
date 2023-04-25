@@ -22,7 +22,6 @@
 
 A questo account potrebbero essere applicate le autorizzazioni già concesse a siti web e app. Puoi gestire i tuoi Account Google nelle <ph name="SETTINGS_LINK_BEGIN" />Impostazioni<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Download in corso...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium non è connesso ad alcun dispositivo HID}=1{Chromium è connesso a un dispositivo HID}other{Chromium è connesso ai dispositivi HID}}</translation>
 <translation id="1708666629004767631">È disponibile una nuova versione più sicura di Chromium.</translation>
 <translation id="17264556997921157">Puoi visualizzare e rimuovere argomenti di interesse usati dai siti per mostrarti annunci. Chromium stima i tuoi interessi in base alla tua recente cronologia di navigazione.</translation>
 <translation id="1733725117201708356">A breve Chromium eliminerà i dati di navigazione</translation>
@@ -245,8 +244,10 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="6442900851116057561">Riavvia Chromium OS</translation>
 <translation id="6455857529632101747">Ti diamo il benvenuto nei profili Chromium</translation>
 <translation id="6475912303565314141">Controlla anche la pagina visualizzata all'avvio di Chromium.</translation>
+<translation id="648319183876919572">Navigazione sicura avanzata fa di più per proteggerti da download e siti web pericolosi</translation>
 <translation id="6510925080656968729">Disinstalla Chromium</translation>
 <translation id="6542839706527980775">Ogni profilo dispone delle proprie informazioni di Chromium, come preferiti, cronologia, password e altro</translation>
+<translation id="656935081669708576">Puoi cambiare per vedere le password di un altro profilo Chromium</translation>
 <translation id="6570579332384693436">Per correggere gli errori ortografici, Chromium invia a Google il testo digitato nei campi di testo</translation>
 <translation id="6598877126913850652">Vai alle impostazioni di notifica di Chromium</translation>
 <translation id="6613594504749178791">Le modifiche verranno applicate al prossimo riavvio di Chromium.</translation>

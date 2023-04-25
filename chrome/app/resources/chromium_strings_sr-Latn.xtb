@@ -24,7 +24,6 @@ Neke funkcije su možda nedostupne i promene podešavanja neće biti sačuvane.
 
 Dozvole koje ste već dali veb-sajtovima i aplikacijama mogu da važe za ovaj nalog. Google nalozima možete da upravljate u <ph name="SETTINGS_LINK_BEGIN" />Podešavanjima<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Preuzimanje...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium je bio povezan sa HID uređajem}=1{Chromium je povezan sa HID uređajem}one{Chromium je povezan sa HID uređajima}few{Chromium je povezan sa HID uređajima}other{Chromium je povezan sa HID uređajima}}</translation>
 <translation id="1708666629004767631">Dostupna je nova, bezbednija verzija Chromium-a.</translation>
 <translation id="17264556997921157">Možete da vidite i uklonite teme interesovanja koje sajtovi koriste da bi vam prikazivali oglase. Chromium procenjuje vaša interesovanja na osnovu nedavne istorije pregledanja.</translation>
 <translation id="1733725117201708356">Chromium će uskoro izbrisati podatke pregledanja</translation>
@@ -247,8 +246,10 @@ Dozvole koje ste već dali veb-sajtovima i aplikacijama mogu da važe za ovaj n
 <translation id="6442900851116057561">Restartujte Chromium OS</translation>
 <translation id="6455857529632101747">Dobro došli u Chromium profile</translation>
 <translation id="6475912303565314141">Kontroliše i stranicu koja se prikazuje kada pokrenete Chromium.</translation>
+<translation id="648319183876919572">Poboljšano bezbedno pregledanje doprinosi zaštiti od opasnih veb-sajtova i preuzimanja</translation>
 <translation id="6510925080656968729">Deinstaliraj Chromium</translation>
 <translation id="6542839706527980775">Svaki profil zadržava sopstvene Chromium podatke, poput obeleživača, istorije, lozinki i drugog sadržaja</translation>
+<translation id="656935081669708576">Možete da se prebacite da biste videli lozinke sa drugog Chromium profila</translation>
 <translation id="6570579332384693436">Da bi ispravio pravopisne greške, Chromium šalje Google-ovim serverima tekst koji unosite u polja za tekst.</translation>
 <translation id="6598877126913850652">Idi na podešavanja obaveštenja za Chromium</translation>
 <translation id="6613594504749178791">Promene će stupiti na snagu kada sledeći put ponovo pokrenete Chromium.</translation>

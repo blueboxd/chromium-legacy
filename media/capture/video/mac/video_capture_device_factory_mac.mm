@@ -4,9 +4,7 @@
 
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 
-#import <IOKit/audio/IOAudioTypes.h>
 #include <stddef.h>
-
 #include <memory>
 #include <utility>
 
@@ -15,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "media/base/mac/video_capture_device_avfoundation_helpers.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_utils_mac.h"
 #import "media/capture/video/mac/video_capture_device_decklink_mac.h"
@@ -38,30 +37,8 @@ media::VideoCaptureFormats GetDeviceSupportedFormats(
     const media::VideoCaptureDeviceDescriptor& descriptor) {
   media::VideoCaptureFormats formats;
 
-  NSArray<AVCaptureDevice*>* devices = nil;
-  // The awkward repeated if statements are required for the compiler to
-  // recognise that the contained code is protected by an API version check.
-  if (@available(macOS 10.15, *)) {
-    if (base::FeatureList::IsEnabled(
-            media::kUseAVCaptureDeviceDiscoverySession)) {
-      // Query for all camera device types available on macOS. The others in the
-      // enum are only supported on iOS/iPadOS.
-      NSArray* captureDeviceType = @[
-        AVCaptureDeviceTypeBuiltInWideAngleCamera,
-        AVCaptureDeviceTypeExternalUnknown
-      ];
-      AVCaptureDeviceDiscoverySession* deviceDescoverySession =
-          [AVCaptureDeviceDiscoverySession
-              discoverySessionWithDeviceTypes:captureDeviceType
-                                    mediaType:AVMediaTypeVideo
-                                     position:
-                                         AVCaptureDevicePositionUnspecified];
-      devices = deviceDescoverySession.devices;
-    }
-  }
-  if (!devices) {
-    devices = [AVCaptureDevice devices];
-  }
+  NSArray<AVCaptureDevice*>* devices = media::GetVideoCaptureDevices(
+      base::FeatureList::IsEnabled(media::kUseAVCaptureDeviceDiscoverySession));
 
   AVCaptureDevice* device = nil;
   for (device in devices) {
@@ -160,13 +137,8 @@ void VideoCaptureDeviceFactoryMac::GetDevicesInfo(
   for (NSString* key in capture_devices.get()) {
     const std::string device_id = [key UTF8String];
     const VideoCaptureApi capture_api = VideoCaptureApi::MACOSX_AVFOUNDATION;
-    int transport_type = [[capture_devices valueForKey:key] transportType];
-    // Transport types are defined for Audio devices and reused for video.
     VideoCaptureTransportType device_transport_type =
-        (transport_type == kIOAudioDeviceTransportTypeBuiltIn ||
-         transport_type == kIOAudioDeviceTransportTypeUSB)
-            ? VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN
-            : VideoCaptureTransportType::OTHER_TRANSPORT;
+        [[capture_devices valueForKey:key] deviceTransportType];
     const std::string model_id = VideoCaptureDeviceMac::GetDeviceModelId(
         device_id, capture_api, device_transport_type);
     const VideoCaptureControlSupport control_support =

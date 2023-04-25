@@ -24,12 +24,12 @@ source_set("web_applications") {
     "commands/install_app_locally_command.h",
     "commands/install_from_info_command.cc",
     "commands/install_from_info_command.h",
-    "commands/install_from_manifest_command.cc",
-    "commands/install_from_manifest_command.h",
     "commands/install_from_sync_command.cc",
     "commands/install_from_sync_command.h",
     "commands/install_placeholder_command.cc",
     "commands/install_placeholder_command.h",
+    "commands/install_preloaded_verified_app_command.cc",
+    "commands/install_preloaded_verified_app_command.h",
     "commands/manifest_update_check_command.cc",
     "commands/manifest_update_check_command.h",
     "commands/manifest_update_finalize_command.cc",
@@ -522,6 +522,8 @@ source_set("web_applications_test_support") {
     "test/fake_web_app_provider.h",
     "test/fake_web_app_ui_manager.cc",
     "test/fake_web_app_ui_manager.h",
+    "test/fake_web_contents_manager.cc",
+    "test/fake_web_contents_manager.h",
     "test/mock_data_retriever.cc",
     "test/mock_data_retriever.h",
     "test/mock_file_utils_wrapper.cc",
@@ -785,8 +787,8 @@ source_set("web_applications_browser_tests") {
     "commands/externally_managed_install_command_browsertest.cc",
     "commands/fetch_manifest_and_install_command_browsertest.cc",
     "commands/install_from_info_command_browsertest.cc",
-    "commands/install_from_manifest_command_browsertest.cc",
     "commands/install_from_sync_command_browsertest.cc",
+    "commands/install_preloaded_verified_app_command_browsertest.cc",
     "commands/update_protocol_handler_approval_command_browsertest.cc",
     "externally_installed_web_app_prefs_browsertest.cc",
     "externally_managed_app_manager_impl_browsertest.cc",
@@ -889,15 +891,25 @@ source_set("app_service_browser_tests") {
     "//chrome/test:test_support_ui",
   ]
 
+  if (is_chromeos) {
+    deps += [ "//chromeos/constants:constants" ]
+  }
+
   if (is_chromeos_lacros) {
-    deps += [ "//chromeos/lacros:lacros" ]
+    deps += [
+      "//chromeos/lacros:lacros",
+      "//chromeos/startup",
+    ]
   }
 }
 
 source_set("interactive_ui_tests") {
   testonly = true
 
-  sources = [ "web_app_notifications_interactive_uitest.cc" ]
+  sources = [
+    "isolated_web_apps/isolated_web_app_interactive_uitest.cc",
+    "web_app_notifications_interactive_uitest.cc",
+  ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -923,6 +935,7 @@ source_set("interactive_ui_tests") {
       "//chrome/browser/web_applications/app_service:test_support",
       "//components/services/app_service/public/cpp:intents",
       "//components/services/app_service/public/cpp:preferred_apps",
+      "//components/user_manager",
     ]
   }
 }

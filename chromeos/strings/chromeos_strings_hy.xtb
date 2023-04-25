@@ -123,6 +123,7 @@
 <translation id="1904932688895783618">Ահա մի քանի այլ օգտակար ռեսուրսներ՝</translation>
 <translation id="1905710495812624430">Փորձերի առավելագույն թույլատրելի քանակը սպառվել է:</translation>
 <translation id="1908234395526491708">Ձախողված UDP հարցումներ</translation>
+<translation id="1923388006036088459">Ակցենտային գույներ</translation>
 <translation id="1947737735496445907">Տպված է</translation>
 <translation id="1951012854035635156">Օգնական</translation>
 <translation id="1962550982027027473">Պահանջվում է կանխադրված APN</translation>
@@ -332,6 +333,7 @@
 <translation id="3967822245660637423">Ներբեռնումն ավարտվեց</translation>
 <translation id="3969602104473960991">ChromeOS-ի գաղտնաբառը փոխվել է</translation>
 <translation id="397105322502079400">Հաշվարկում…</translation>
+<translation id="3974175076798940554">Բացառիկ բովանդակություն Chromebook Plus-ի համար</translation>
 <translation id="39823212440917567">Տպման առաջադրանքները, որոնք <ph name="NUMBER_OF_DAYS" /> օրից հին են, կհեռացվեն</translation>
 <translation id="3993704782688964914">Ձեր <ph name="DEVICE_NAME" /> սարքն այժմ թարմացված է</translation>
 <translation id="4003384961948020559">Չհաջողվեց տպել – Ելքը լցված է</translation>
@@ -515,6 +517,7 @@
 <translation id="5423849171846380976">Ակտիվացված է</translation>
 <translation id="5430931332414098647">Անկթարթային մուտքի կետ</translation>
 <translation id="5431318178759467895">Գունավոր</translation>
+<translation id="5456936324019847994">Չի հաջողվում միանալ որևէ միացված հատուկ APN-ի։ Լրացուցիչ տեղեկությունների համար կապվեք ձեր բջջային օպերատորի հետ։</translation>
 <translation id="5457599981699367932">Մտնել հյուրի ռեժիմ</translation>
 <translation id="54609108002486618">Կառավարվող</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Մնացած փորձերի քանակը՝ {0}}one{Մնացած փորձերի քանակը՝ {0}}other{Մնացած փորձերի քանակը՝ {0}}}</translation>
@@ -570,6 +573,7 @@
 <translation id="5931523347251946569">Ֆայլը չի գտնվել</translation>
 <translation id="5939518447894949180">Վերակայել</translation>
 <translation id="594552776027197022">Ստեղծել պատահական բանալիների զույգ</translation>
+<translation id="5946538341867151940">Դուք դեռ չեք միացել։ Եթե ձեր բջջային օպերատորը որոշակի APN է խորհուրդ տալիս, մուտքագրեք այդ APN-ի տվյալները՝ ընտրելով «+ Նոր APN»</translation>
 <translation id="5972388717451707488">UpdateEngine</translation>
 <translation id="5984145644188835034">Կանխադրված պաստառ</translation>
 <translation id="6017514345406065928">Կանաչ</translation>
@@ -725,6 +729,7 @@
 <translation id="7281657306185710294">Զեփյուռ</translation>
 <translation id="7287310195820267359">Պաստառների հավաքածուներ</translation>
 <translation id="7297226631177386107">Չհաջողվեց միանալ HTTPS կայքերին հրապատի միջոցով։</translation>
+<translation id="7297726121602187087">Մուգ կանաչ</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Հարցրեք փորձագետներին Chromebook-ի օգնության ֆորումում</translation>
@@ -759,6 +764,7 @@
 <translation id="7570674786725311828">USB հպէկրան</translation>
 <translation id="7595982850646262331">Մնացել է <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Փոխեք դիրքը մկնիկի կամ սլաքի ստեղների միջոցով։</translation>
+<translation id="7618774594543487847">Չեզոք</translation>
 <translation id="7620771111601174153">Մանրամասն Օգնության կենտրոնի մասին</translation>
 <translation id="763165478673169849">Վերջին զրոյացման ժամանակը</translation>
 <translation id="7648838807254605802">HTTPS-ի բարձր հապաղում</translation>
@@ -845,6 +851,7 @@
 <translation id="8352772353338965963">Ավելացնել հաշիվ բազմակի մուտքի համակարգում: Բոլոր մուտք գործած հաշիվները մատչելի են առանց գաղտնաբառի մուտքագրման, ուստի այս գործառույթը պետք է միայն օգտագործվի վստահելի հաշիվների հետ:</translation>
 <translation id="8364946094152050673">DNS սերվերները դատարկ են</translation>
 <translation id="8372477600026034341">Լրացուցիչ հանգույցներ</translation>
+<translation id="8373046809163484087">Օգտագործեք գունային հավաքածուներ, որոնք համապատասխանում են ձեր պաստառին</translation>
 <translation id="8380114448424469341">Ամրացնել պատուհանը էկրանի <ph name="DIRECTION" />ի կեսում</translation>
 <translation id="8395584934117017006">Այս <ph name="DEVICE_TYPE" /> սարքը կառավարվում է կազմակերպության կողմից</translation>
 <translation id="8398927464629426868">Սարքի ընթացիկ լիցքավորման կամ լիցքաթափման արագությունը</translation>
@@ -864,6 +871,7 @@
 <translation id="8503813439785031346">Օգտանուն</translation>
 <translation id="8503836310948963452">Սպասեք ևս մի քանի րոպե…</translation>
 <translation id="8508640263392900755">APN-ի մանրամասներ</translation>
+<translation id="8522687886059337719">Այժմ ձեզ հասանելի են նոր <ph name="BEGIN_LINK_WALLPAPER_SUBPAGE" />պաստառներ<ph name="END_LINK_WALLPAPER_SUBPAGE" /> և <ph name="BEGIN_LINK_SCREENSAVER_SUBPAGE" />էկրանապահ<ph name="END_LINK_SCREENSAVER_SUBPAGE" /></translation>
 <translation id="8528615187455571738">CrosVm</translation>
 <translation id="8557447961879934694">WPA2</translation>
 <translation id="8575298406870537639">Ձեր օպերատորի ցանցին միանալու համար կարող է պահանջվել, որ միացնեք այս կարգավորումը։ Մանրամասների համար դիմեք ձեր օպերատորին։</translation>

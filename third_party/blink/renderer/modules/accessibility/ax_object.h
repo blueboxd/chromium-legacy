@@ -70,11 +70,11 @@ struct AXRelativeBounds;
 namespace blink {
 
 class AccessibleNodeList;
-class AbstractInlineTextBox;
 class AXObject;
 class AXObjectCacheImpl;
 class LayoutObject;
 class LocalFrameView;
+class NGAbstractInlineTextBox;
 class Node;
 class ScrollableArea;
 
@@ -329,7 +329,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool HasAOMPropertyOrARIAAttribute(AOMStringProperty,
                                      AtomicString& result) const;
   virtual AccessibleNode* GetAccessibleNode() const;
-  virtual AbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
+  virtual NGAbstractInlineTextBox* GetInlineTextBox() const { return nullptr; }
 
   static void TokenVectorFromAttribute(Element* element,
                                        Vector<String>&,
@@ -1286,6 +1286,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   // event listeners. These all return true if handled.
   virtual bool OnNativeDecrementAction();
   virtual bool OnNativeClickAction();
+  virtual bool OnNativeBlurAction();
   virtual bool OnNativeFocusAction();
   virtual bool OnNativeIncrementAction();
   bool OnNativeScrollToGlobalPointAction(const gfx::Point&) const;

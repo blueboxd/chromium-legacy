@@ -10,6 +10,7 @@
 #include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -57,6 +58,11 @@ constexpr size_t kEndpointInfoAdvertisingIdLength = 10;
 
 // Base64 padding character
 constexpr char kBase64PaddingChar = '=';
+
+// The keys used for the dict returned in PrepareForUpdate().
+constexpr char kPrepareForUpdateRandomSessionIdKey[] = "random_session_id";
+constexpr char kPrepareForUpdateSecondarySharedSecretKey[] =
+    "secondary_shared_secret";
 
 // The display name must:
 // - Be a variable-length string of utf-8 bytes
@@ -122,10 +128,13 @@ TargetDeviceConnectionBrokerImpl::BluetoothAdapterFactoryWrapper*
 
 TargetDeviceConnectionBrokerImpl::TargetDeviceConnectionBrokerImpl(
     RandomSessionId session_id,
-    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager)
+    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
+    std::unique_ptr<Connection::Factory> connection_factory)
     : random_session_id_(session_id),
-      nearby_connections_manager_(nearby_connections_manager) {
+      nearby_connections_manager_(nearby_connections_manager),
+      connection_factory_(std::move(connection_factory)) {
   crypto::RandBytes(shared_secret_);
+  crypto::RandBytes(secondary_shared_secret_);
   GetBluetoothAdapter();
 }
 
@@ -254,6 +263,24 @@ void TargetDeviceConnectionBrokerImpl::StopAdvertising(
   fast_pair_advertiser_->StopAdvertising(base::BindOnce(
       &TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising,
       weak_ptr_factory_.GetWeakPtr(), std::move(on_stop_advertising_callback)));
+}
+
+base::Value::Dict TargetDeviceConnectionBrokerImpl::GetPrepareForUpdateInfo() {
+  base::Value::Dict prepare_for_update_info;
+  prepare_for_update_info.Set(kPrepareForUpdateRandomSessionIdKey,
+                              random_session_id_.ToString());
+  std::string secondary_shared_secret_bytes(secondary_shared_secret_.begin(),
+                                            secondary_shared_secret_.end());
+  std::string secondary_shared_secret_base64;
+  // The secondary_shared_secret_bytes string likely contains non-UTF-8
+  // characters, which are disallowed in pref values. Base64Encode the string
+  // for compatibility with prefs.
+  base::Base64Encode(secondary_shared_secret_bytes,
+                     &secondary_shared_secret_base64);
+  prepare_for_update_info.Set(kPrepareForUpdateSecondarySharedSecretKey,
+                              secondary_shared_secret_base64);
+
+  return prepare_for_update_info;
 }
 
 void TargetDeviceConnectionBrokerImpl::OnStopFastPairAdvertising(
@@ -401,13 +428,26 @@ void TargetDeviceConnectionBrokerImpl::OnIncomingConnectionAccepted(
   QS_LOG(INFO) << "Incoming Nearby Connection Accepted: endpoint_id="
                << endpoint_id;
 
-  connection_ = std::make_unique<Connection>(
-      nearby_connection, random_session_id_, shared_secret_);
+  // TODO(b/234655072): Handle Connection Closed in the Connection Broker
+  connection_ = connection_factory_->Create(
+      nearby_connection, random_session_id_, shared_secret_,
+      secondary_shared_secret_, base::DoNothing(),
+      base::BindOnce(
+          &TargetDeviceConnectionBrokerImpl::OnConnectionAuthenticated,
+          weak_ptr_factory_.GetWeakPtr()));
 
-  // TODO(b/234655072): Mark the connection_ authenticated if
-  // |use_pin_authentication_| is true. For pin verification, if the source
-  // device has accepted the Nearby Connection, then the connection is
-  // authenticated.
+  if (use_pin_authentication_) {
+    QS_LOG(INFO) << "Pin authentication completed!";
+    connection_->MarkConnectionAuthenticated();
+  } else {
+    QS_LOG(INFO) << "Initiating cryptographic handshake.";
+    absl::optional<std::string> auth_token =
+        nearby_connections_manager_->GetAuthenticationToken(endpoint_id);
+    CHECK(auth_token);
+    // TODO(b/234655072): Handle the handshake callback once the handshake is
+    // fully implemented.
+    connection_->InitiateHandshake(*auth_token, base::DoNothing());
+  }
 }
 
 }  // namespace ash::quick_start

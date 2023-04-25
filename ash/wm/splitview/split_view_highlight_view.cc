@@ -9,6 +9,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
@@ -53,7 +54,7 @@ class ClippingObserver : public ui::ImplicitAnimationObserver,
   }
 
  private:
-  views::View* const view_;
+  const raw_ptr<views::View, ExperimentalAsh> view_;
   absl::optional<gfx::Rect> bounds_;
 };
 
@@ -69,8 +70,7 @@ SplitViewHighlightView::SplitViewHighlightView(bool is_right_or_bottom)
 
   SetBorder(std::make_unique<views::HighlightBorder>(
       kHighlightScreenRoundRectRadius,
-      views::HighlightBorder::Type::kHighlightBorderNoShadow,
-      /*use_light_colors=*/false));
+      views::HighlightBorder::Type::kHighlightBorderNoShadow));
 }
 
 SplitViewHighlightView::~SplitViewHighlightView() = default;

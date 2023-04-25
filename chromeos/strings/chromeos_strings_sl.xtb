@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Snemanje videoposnetka</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Prisotnost razreševalnika DNS</translation>
+<translation id="1708602061922134366">Googlova modra</translation>
 <translation id="1710499924611012470">Premikanje po funkcijah za ljudi s posebnimi potrebami</translation>
 <translation id="1715359911173058521">Pri komuniciranju z optičnim bralnikom je prišlo do težave. Preverite omrežje ali povezavo USB in poskusite znova.</translation>
 <translation id="1717874160321062422">Napravo upravljata <ph name="FIRST_MANAGER" /> in <ph name="SECOND_MANAGER" />.</translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Vrsta preverjanja pristnosti</translation>
+<translation id="1776228893584526149">Ton zaslonskega ozadja</translation>
 <translation id="1782199038061388045">prevod</translation>
 <translation id="1790209694022261219">Okna in namizja</translation>
 <translation id="1792647875738159689">Preklic optičnega branja</translation>
@@ -483,6 +485,7 @@
 <translation id="5166918508782100047">Nastavitve hitrih odgovorov</translation>
 <translation id="5168185087976003268">Stanje baterije</translation>
 <translation id="5170568018924773124">Prikaži v mapi</translation>
+<translation id="5180712487038406644">Ekspresivna</translation>
 <translation id="5190187232518914472">Podoživite svoje najlepše spomine. Če želite dodati ali urediti albume, odprite <ph name="LINK_BEGIN" />Google Foto<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">Odjava</translation>
@@ -517,6 +520,7 @@
 <translation id="5423849171846380976">Aktivirano</translation>
 <translation id="5430931332414098647">Takojšnji internet prek mobilnega telefona</translation>
 <translation id="5431318178759467895">Barvno</translation>
+<translation id="5456936324019847994">Povezave z omogočenimi APN-ji po meri ni mogoče vzpostaviti. Če želite več informacij, se obrnite na mobilnega operaterja.</translation>
 <translation id="5457599981699367932">Brskajte kot gost</translation>
 <translation id="54609108002486618">Upravljan</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Na voljo imate še {0} poskus}one{Na voljo imate še {0} poskus}two{Na voljo imate še {0} poskusa}few{Na voljo imate še {0} poskuse}other{Na voljo imate še {0} poskusov}}</translation>
@@ -572,6 +576,7 @@
 <translation id="5931523347251946569">Datoteke ni bilo mogoče najti</translation>
 <translation id="5939518447894949180">Ponastavi</translation>
 <translation id="594552776027197022">Ustvarjanje naključnega para ključev</translation>
+<translation id="5946538341867151940">Niste še povezani. Če mobilni operater priporoča APN po meri, vnesite informacije o APN-ju tako, da izberete »+ Nov APN«.</translation>
 <translation id="5972388717451707488">Posodobitev mehanizma</translation>
 <translation id="5984145644188835034">Privzeto ozadje</translation>
 <translation id="6017514345406065928">Zelena</translation>
@@ -646,6 +651,7 @@
 <translation id="6527081081771465939">Neznani varnostni protokol za Wi-Fi</translation>
 <translation id="6535178685492749208">Niste povezani v internet. Povratne informacije bodo poslane pozneje.</translation>
 <translation id="65587193855025101">Plosko</translation>
+<translation id="6560196641871357166">Živahna</translation>
 <translation id="6564646048574748301">Napaka – tiskalnik je nedosegljiv</translation>
 <translation id="6566314079205407217">Optično branje več strani</translation>
 <translation id="6574762126505704998">Zapolnitev</translation>
@@ -727,6 +733,7 @@
 <translation id="7281657306185710294">Začutite vetrič</translation>
 <translation id="7287310195820267359">Zbirke zaslonskih ozadij</translation>
 <translation id="7297226631177386107">Ni mogoče vzpostaviti povezave s spletnimi mesti HTTPS prek požarnega zidu.</translation>
+<translation id="7297726121602187087">Temno zelena</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Vprašajte strokovnjake v forumu s pomočjo za Chromebook.</translation>
@@ -761,6 +768,7 @@
 <translation id="7570674786725311828">Zaslon na dotik USB</translation>
 <translation id="7595982850646262331">Še <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Prestavljanje z miško ali puščičnimi tipkami.</translation>
+<translation id="7618774594543487847">Nevtralna</translation>
 <translation id="7620771111601174153">Preberite več v centru za pomoč</translation>
 <translation id="763165478673169849">Čas zadnje ponastavitve</translation>
 <translation id="7648838807254605802">Velika zakasnitev HTTPS</translation>
@@ -873,6 +881,7 @@
 <translation id="8575298406870537639">Operater lahko zahteva to možnost za povezovanje z njegovim omrežjem. Za podrobnejše informacije se obrnite na operaterja.</translation>
 <translation id="8576249514688522074">Neinicializirano</translation>
 <translation id="8620617069779373398">Stanje gostovanja</translation>
+<translation id="86356131183441916">Svetlo vijolična</translation>
 <translation id="8655295600908251630">Kanal</translation>
 <translation id="8655828773034788261">Deljenje URL-ja:</translation>
 <translation id="8660881923941176839">funti</translation>
@@ -957,6 +966,7 @@
 <translation id="945522503751344254">Pošiljanje povratnih informacij</translation>
 <translation id="952992212772159698">Ni aktivirano</translation>
 <translation id="960719561871045870">Koda operaterja</translation>
+<translation id="979450713603643090">Svetlo rožnata</translation>
 <translation id="982713511914535780">Zaženi preizkus praznjenja</translation>
 <translation id="987264212798334818">Splošno</translation>
 </translationbundle>

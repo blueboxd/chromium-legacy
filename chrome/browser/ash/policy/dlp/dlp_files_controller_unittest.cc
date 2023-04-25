@@ -21,6 +21,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
@@ -44,6 +45,8 @@
 #include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_event_storage.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/dlp_warn_dialog.h"
+#include "chrome/browser/chromeos/policy/dlp/dialogs/mock_dlp_warn_notifier.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_histogram_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_event.pb.h"
@@ -51,9 +54,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_reporting_manager_test_helper.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_warn_dialog.h"
 #include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_warn_notifier.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_profile.h"
@@ -199,7 +200,7 @@ class DlpFilesControllerTest : public testing::Test {
       : profile_(std::make_unique<TestingProfile>()),
         user_manager_(new ash::FakeChromeUserManager()),
         scoped_user_manager_(std::make_unique<user_manager::ScopedUserManager>(
-            base::WrapUnique(user_manager_))) {}
+            base::WrapUnique(user_manager_.get()))) {}
 
   ~DlpFilesControllerTest() override = default;
 
@@ -300,14 +301,14 @@ class DlpFilesControllerTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
-  ash::FakeChromeUserManager* user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
 
-  MockDlpRulesManager* rules_manager_ = nullptr;
+  raw_ptr<MockDlpRulesManager, ExperimentalAsh> rules_manager_ = nullptr;
   std::unique_ptr<DlpFilesController> files_controller_;
   std::unique_ptr<DlpReportingManager> reporting_manager_;
   std::vector<DlpPolicyEvent> events;
-  DlpFilesEventStorage* event_storage_ = nullptr;
+  raw_ptr<DlpFilesEventStorage, ExperimentalAsh> event_storage_ = nullptr;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   scoped_refptr<storage::FileSystemContext> file_system_context_;
@@ -476,8 +477,9 @@ TEST_F(DlpFilesControllerTest, GetDisallowedTransfers_ErrorResponse) {
 
   base::test::TestFuture<std::vector<storage::FileSystemURL>> future;
   ASSERT_TRUE(files_controller_);
-  files_controller_->GetDisallowedTransfers(
-      transferred_files, dst_url, /*is_move=*/false, future.GetCallback());
+  files_controller_->GetDisallowedTransfers(transferred_files, dst_url,
+                                            /*is_move=*/false,
+                                            future.GetCallback());
 
   ASSERT_EQ(3u, future.Get().size());
   EXPECT_EQ(transferred_files, future.Take());
@@ -1780,7 +1782,8 @@ class DlpFilesTestWithMounts : public DlpFilesControllerTest {
     storage::ExternalMountPoints::GetSystemInstance()->RevokeAllFileSystems();
   }
 
-  storage::ExternalMountPoints* mount_points_ = nullptr;
+  raw_ptr<storage::ExternalMountPoints, ExperimentalAsh> mount_points_ =
+      nullptr;
 };
 
 TEST_F(DlpFilesTestWithMounts, FileCopyFromExternalTest) {
@@ -2372,7 +2375,7 @@ TEST_P(DlpFilesWarningDialogContentTest,
       .Times(::testing::AnyNumber());
 
   EXPECT_CALL(*mock_dlp_warn_notifier,
-              ShowDlpWarningDialog(_, expected_dialog_options))
+              ShowDlpWarningDialog(_, expected_dialog_options, _))
       .Times(1);
 
   MockIsFilesTransferRestrictedCallback cb;
@@ -2434,7 +2437,7 @@ class DlpFilesAppServiceTest : public DlpFilesControllerTest {
         std::move(fake_apps), app_type, /*should_notify_initialized=*/false);
   }
 
-  apps::AppServiceProxy* app_service_proxy_ = nullptr;
+  raw_ptr<apps::AppServiceProxy, ExperimentalAsh> app_service_proxy_ = nullptr;
   apps::AppServiceTest app_service_test_;
 };
 

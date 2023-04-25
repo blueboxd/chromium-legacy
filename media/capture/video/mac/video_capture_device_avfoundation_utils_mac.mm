@@ -4,10 +4,13 @@
 
 #include "media/capture/video/mac/video_capture_device_avfoundation_utils_mac.h"
 
+#import <IOKit/audio/IOAudioTypes.h>
+
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "media/base/mac/video_capture_device_avfoundation_helpers.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
@@ -104,32 +107,8 @@ base::scoped_nsobject<NSDictionary> GetDeviceNames() {
   // library is loaded and initialised, by the device monitoring.
   NSMutableDictionary* deviceNames = [[NSMutableDictionary alloc] init];
 
-  NSArray<AVCaptureDevice*>* devices = nil;
-  // The awkward repeated if statements are required for the compiler to
-  // recognise that the contained code is protected by an API version check.
-  if (@available(macOS 10.15, *)) {
-    if (base::FeatureList::IsEnabled(
-            media::kUseAVCaptureDeviceDiscoverySession)) {
-      // Query for all camera device types available on macOS. The others in the
-      // enum are only supported on iOS/iPadOS.
-      NSArray* captureDeviceType = @[
-        AVCaptureDeviceTypeBuiltInWideAngleCamera,
-        AVCaptureDeviceTypeExternalUnknown
-      ];
-
-      AVCaptureDeviceDiscoverySession* deviceDescoverySession =
-          [AVCaptureDeviceDiscoverySession
-              discoverySessionWithDeviceTypes:captureDeviceType
-                                    mediaType:AVMediaTypeVideo
-                                     position:
-                                         AVCaptureDevicePositionUnspecified];
-      devices = deviceDescoverySession.devices;
-    }
-  }
-
-  if (!devices) {
-    devices = [AVCaptureDevice devices];
-  }
+  NSArray<AVCaptureDevice*>* devices = GetVideoCaptureDevices(
+      base::FeatureList::IsEnabled(media::kUseAVCaptureDeviceDiscoverySession));
 
   int number_of_suspended_devices = 0;
   for (AVCaptureDevice* device in devices) {
@@ -139,10 +118,18 @@ base::scoped_nsobject<NSDictionary> GetDeviceNames() {
         ++number_of_suspended_devices;
         continue;
       }
+
+      // Transport types are defined for Audio devices and reused for video.
+      int transport_type = [device transportType];
+      VideoCaptureTransportType device_transport_type =
+          (transport_type == kIOAudioDeviceTransportTypeBuiltIn ||
+           transport_type == kIOAudioDeviceTransportTypeUSB)
+              ? VideoCaptureTransportType::MACOSX_USB_OR_BUILT_IN
+              : VideoCaptureTransportType::OTHER_TRANSPORT;
       DeviceNameAndTransportType* nameAndTransportType =
           [[[DeviceNameAndTransportType alloc]
                initWithName:[device localizedName]
-              transportType:[device transportType]] autorelease];
+              transportType:device_transport_type] autorelease];
       deviceNames[[device uniqueID]] = nameAndTransportType;
     }
   }

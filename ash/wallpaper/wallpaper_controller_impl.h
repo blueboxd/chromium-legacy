@@ -25,12 +25,12 @@
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "ash/wallpaper/online_wallpaper_variant_info_fetcher.h"
 #include "ash/wallpaper/wallpaper_utils/wallpaper_calculated_colors.h"
-#include "ash/wallpaper/wallpaper_utils/wallpaper_resizer_observer.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom-forward.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
 #include "base/time/time.h"
@@ -79,7 +79,6 @@ class ASH_EXPORT WallpaperControllerImpl
     : public WallpaperController,
       public WindowTreeHostManager::Observer,
       public ShellObserver,
-      public WallpaperResizerObserver,
       public SessionObserver,
       public TabletModeObserver,
       public OverviewObserver,
@@ -112,12 +111,6 @@ class ASH_EXPORT WallpaperControllerImpl
   WallpaperControllerImpl& operator=(const WallpaperControllerImpl&) = delete;
 
   ~WallpaperControllerImpl() override;
-
-  // Returns the maximum size of all displays combined in native
-  // resolutions.  Note that this isn't the bounds of the display who
-  // has maximum resolutions. Instead, this returns the size of the
-  // maximum width of all displays, and the maximum height of all displays.
-  static gfx::Size GetMaxDisplaySizeInNative();
 
   // Returns custom wallpaper path. Appends |sub_dir|, |wallpaper_files_id| and
   // |file_name| to custom wallpaper directory.
@@ -227,6 +220,7 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // A wrapper of |ReadAndDecodeWallpaper| used in |SetWallpaperFromPath|.
   void StartDecodeFromPath(const AccountId& account_id,
+                           const user_manager::UserType user_type,
                            const WallpaperInfo& info,
                            bool show_wallpaper,
                            const base::FilePath& wallpaper_path);
@@ -237,6 +231,9 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // WallpaperController:
   void SetClient(WallpaperControllerClient* client) override;
+  WallpaperDragDropDelegate* GetDragDropDelegate() override;
+  void SetDragDropDelegate(
+      std::unique_ptr<WallpaperDragDropDelegate> delegate) override;
   void SetDriveFsDelegate(
       std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate) override;
   void Init(const base::FilePath& user_data,
@@ -294,7 +291,7 @@ class ASH_EXPORT WallpaperControllerImpl
                                     WallpaperLayout layout) override;
   void ShowUserWallpaper(const AccountId& account_id) override;
   void ShowUserWallpaper(const AccountId& account_id,
-                         user_manager::UserType user_type) override;
+                         const user_manager::UserType user_type) override;
   void ShowSigninWallpaper() override;
   void ShowOneShotWallpaper(const gfx::ImageSkia& image) override;
   void ShowOverrideWallpaper(const base::FilePath& image_path,
@@ -332,9 +329,6 @@ class ASH_EXPORT WallpaperControllerImpl
   void OnRootWindowAdded(aura::Window* root_window) override;
   void OnShellInitialized() override;
   void OnShellDestroying() override;
-
-  // WallpaperResizerObserver:
-  void OnWallpaperResized() override;
 
   // SessionObserver:
   void OnSessionStateChanged(session_manager::SessionState state) override;
@@ -411,6 +405,10 @@ class ASH_EXPORT WallpaperControllerImpl
     gfx::ImageSkia image;
     base::FilePath file_path;
   };
+
+  // Callback after `WallpaperResizer` is done scaling the current wallpaper to
+  // the current display size.
+  void OnWallpaperResized();
 
   // Gets wallpaper info of |account_id| from local state, or memory if the user
   // is ephemeral. Returns false if wallpaper info is not found.
@@ -781,7 +779,8 @@ class ASH_EXPORT WallpaperControllerImpl
   WallpaperMode wallpaper_mode_ = WALLPAPER_NONE;
 
   // Client interface in chrome browser.
-  WallpaperControllerClient* wallpaper_controller_client_ = nullptr;
+  raw_ptr<WallpaperControllerClient, ExperimentalAsh>
+      wallpaper_controller_client_ = nullptr;
 
   base::ObserverList<WallpaperControllerObserver>::Unchecked observers_;
 
@@ -791,6 +790,10 @@ class ASH_EXPORT WallpaperControllerImpl
 
   // Manages interactions with relevant preferences.
   std::unique_ptr<WallpaperPrefManager> pref_manager_;
+
+  // The delegate for drag-and-drop events over the wallpaper.
+  // NOTE: May be `nullptr` when drag-and-drop related features are disabled.
+  std::unique_ptr<WallpaperDragDropDelegate> drag_drop_delegate_;
 
   std::unique_ptr<WallpaperDriveFsDelegate> drivefs_delegate_;
 

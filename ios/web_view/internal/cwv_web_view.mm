@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
 #include "base/mac/foundation_util.h"
+#import "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
 #include "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
@@ -537,9 +538,15 @@ BOOL gChromeContextMenuEnabled = NO;
 
   NSURLRequest* request =
       [[NSURLRequest alloc] initWithURL:net::NSURLWithGURL(URL)];
+
+  // The current implemention can't get the real navigation type for the
+  // navigation action which causes a new web view be created. So uses
+  // `CWVNavigationTypeNewWindow` before the real navigation type can be gotten
+  // here.
   CWVNavigationAction* navigationAction =
       [[CWVNavigationAction alloc] initWithRequest:request
-                                     userInitiated:initiatedByUser];
+                                     userInitiated:initiatedByUser
+                                    navigationType:CWVNavigationTypeNewWindow];
   CWVWebView* webView = [_UIDelegate webView:self
               createWebViewWithConfiguration:_configuration
                          forNavigationAction:navigationAction];
@@ -573,6 +580,52 @@ BOOL gChromeContextMenuEnabled = NO;
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:
     (web::WebState*)webState {
   return _javaScriptDialogPresenter.get();
+}
+
+- (void)webState:(web::WebState*)webState
+    handlePermissions:(NSArray<NSNumber*>*)permissions
+      decisionHandler:(web::WebStatePermissionDecisionHandler)decisionHandler
+    API_AVAILABLE(ios(15.0)) {
+  DCHECK(decisionHandler);
+  CWVMediaCaptureType mediaCaptureType;
+  BOOL cameraPermissionRequested =
+      [permissions containsObject:@(web::PermissionCamera)];
+  BOOL micPermissionRequested =
+      [permissions containsObject:@(web::PermissionMicrophone)];
+  if (cameraPermissionRequested && micPermissionRequested) {
+    mediaCaptureType = CWVMediaCaptureTypeCameraAndMicrophone;
+  } else if (cameraPermissionRequested) {
+    mediaCaptureType = CWVMediaCaptureTypeCamera;
+  } else if (micPermissionRequested) {
+    mediaCaptureType = CWVMediaCaptureTypeMicrophone;
+  } else {
+    NOTREACHED() << "Unknown media permissions";
+  }
+
+  SEL selector = @selector(webView:
+      requestMediaCapturePermissionForType:decisionHandler:);
+  if ([_UIDelegate respondsToSelector:selector]) {
+    [_UIDelegate webView:self
+        requestMediaCapturePermissionForType:mediaCaptureType
+                             decisionHandler:^(CWVPermissionDecision decision) {
+                               switch (decision) {
+                                 case CWVPermissionDecisionPrompt:
+                                   decisionHandler(
+                                       web::
+                                           PermissionDecisionShowDefaultPrompt);
+                                   break;
+                                 case CWVPermissionDecisionGrant:
+                                   decisionHandler(
+                                       web::PermissionDecisionGrant);
+                                   break;
+                                 case CWVPermissionDecisionDeny:
+                                   decisionHandler(web::PermissionDecisionDeny);
+                                   break;
+                               }
+                             }];
+  } else {
+    decisionHandler(web::PermissionDecisionShowDefaultPrompt);
+  }
 }
 
 - (void)webState:(web::WebState*)webState

@@ -245,6 +245,15 @@ Se questo criterio viene disattivato, la protezione contro il phishing lato clie
       L'impostazione predefinita è RollbackDisabled.</translation>
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1221955019309484560">Attiva gli aggiornamenti per tutti i componenti</translation>
+<translation id="1222694988453895594">Consente di impostare un elenco di protocolli, e per ogni protocollo un elenco associato di pattern di origini consentite, che possono lanciare un'applicazione esterna senza chiedere conferma all'utente. Il separatore finale non deve essere incluso nell'elenco di protocolli, quindi usa "skype" anziché "skype:" o "skype://".
+
+Se questo criterio viene impostato, un protocollo sarà autorizzato a lanciare un'applicazione esterna senza chiedere conferma in base al criterio soltanto se il protocollo è nell'elenco e se l'origine del sito che prova a lanciare il protocollo corrisponde a uno dei pattern di origini nell'elenco allowed_origins del protocollo. Se una delle condizioni è falsa, la richiesta di lancio di un protocollo esterno non sarà omessa, in base al criterio.
+
+Se questo criterio non viene impostato, per impostazione predefinita nessun protocollo può essere lanciato senza chiedere conferma. Gli utenti possono disattivare le richieste di conferma per ogni singolo protocollo/sito, a meno che il criterio <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> sia impostato su Disattivato. Questo criterio non influisce sulle esenzioni delle richieste di conferma per ogni singolo protocollo/sito impostate dagli utenti.
+
+Per i pattern corrispondenti alle origini viene usato un formato simile a quello usato per i pattern del criterio "<ph name="URL_BLOCKLIST_POLICY_NAME" />", documentati all'indirizzo https://support.google.com/chrome/a?p=url_blocklist_filter_format.
+
+I pattern corrispondenti alle origini di questo criterio non possono però contenere elementi "/path" o "@query". I pattern contenenti un elemento "/path" o "@query" verranno ignorati.</translation>
 <translation id="1223789468190631420">Stato attivazione Navigazione sicura per origini attendibili</translation>
 <translation id="123018742985150697">Richiede la corrispondenza tra utente locale e proprietario dell'host di accesso remoto</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
@@ -534,15 +543,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 
       Questo criterio è stato rimosso dalla versione M94.</translation>
 <translation id="1507373253059695424">Attiva sempre la Schermata privata nella schermata di accesso</translation>
-<translation id="150857982247452081">Consente di impostare un elenco di protocolli, e per ogni protocollo un elenco associato di pattern di origini consentite, che possono lanciare un'applicazione esterna senza chiedere conferma all'utente. Il separatore finale non deve essere incluso nell'elenco di protocolli, quindi usa "skype" anziché "skype:" o "skype://".
-
-      Se questo criterio viene impostato, un protocollo sarà autorizzato a lanciare un'applicazione esterna senza chiedere conferma in base al criterio soltanto se il protocollo è nell'elenco e se l'origine del sito che prova a lanciare il protocollo corrisponde a uno dei pattern di origini nell'elenco allowed_origins del protocollo. Se una delle condizioni è falsa, la richiesta di lancio di un protocollo esterno non sarà omessa, in base al criterio.
-
-      Se questo criterio non viene impostato, per impostazione predefinita nessun protocollo può essere lanciato senza chiedere conferma. Gli utenti possono disattivare le richieste di conferma per ogni singolo protocollo/sito, a meno che il criterio <ph name="EXTERNAL_PROTOCOL_DIALOG_SHOW_ALWAYS_OPEN_CHECKBOX_POLICY_NAME" /> sia impostato su Disattivato. Questo criterio non influisce sulle esenzioni delle richieste di conferma per ogni singolo protocollo/sito impostate dagli utenti.
-
-      Per i pattern corrispondenti alle origini viene usato un formato simile a quello usato per i pattern del criterio "<ph name="URL_BLOCKLIST_POLICY_NAME" />", documentati all'indirizzo http://www.chromium.org/administrators/url-blocklist-filter-format.
-
-      I pattern corrispondenti alle origini di questo criterio non possono però contenere elementi "/path" o "@query". I pattern contenenti un elemento "/path" o "@query" verranno ignorati.</translation>
 <translation id="1508588104835702000">Disattiva reporting su cloud tramite browser gestito</translation>
 <translation id="1509377996969000672">La configurazione del criterio consente di specificare le configurazioni delle stampanti aziendali associate ai dispositivi. Il formato corrisponde a quello del dizionario <ph name="NATIVE_PRINTERS_POLICY_NAME" />, con un campo "id" o "guid" aggiuntivo obbligatorio per ogni stampante ai fini dell'inserimento in una lista consentita o in una lista bloccata. Le dimensioni del file non possono superare i 5 MB e il formato deve essere JSON. Un file con circa 21.000 stampanti viene codificato come file di 5 MB. L'hash di crittografia consente di verificare l'integrità del download. Il file viene scaricato, memorizzato nella cache e riscaricato ogni volta che l'URL o l'hash cambiano. <ph name="PRODUCT_OS_NAME" /> scarica il file per le configurazioni delle stampanti e rende disponibili le stampanti in base ai criteri <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" />, <ph name="DEVICE_PRINTERS_ALLOWLIST_POLICY_NAME" /> e <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" />.
 
@@ -823,14 +823,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1770071413238151235">Formato dell'orologio di 12 ore</translation>
 <translation id="1771024053220392089">Disattiva Supporto dei browser precedenti</translation>
 <translation id="1781356041596378058">Questa norma controlla anche l'accesso alle Opzioni sviluppatore di Android. Se la norma viene impostata su true, gli utenti non possono accedere alle Opzioni sviluppatore. Se la norma viene impostata su false o non viene impostata, gli utenti possono accedere alle Opzioni sviluppatore toccando sette volte il numero di build nell'app Impostazioni di Android.</translation>
-<translation id="178336693831133290">Se questo criterio viene impostato su Attivato, <ph name="PRODUCT_NAME" /> eseguirà la verifica dei certificati dei server mediante lo strumento di verifica dei certificati integrato con Chrome Root Store usato come fonte di attendibilità pubblica.
-
-Se questo criterio viene impostato su Disattivato, <ph name="PRODUCT_NAME" /> userà lo strumento di verifica dei certificati di sistema e i certificati radice di sistema.
-
-Se questo criterio non viene impostato, potrebbero essere utilizzati
-Chrome Root Store o i certificati radice forniti dal sistema.
-
-Questo criterio è stato rimosso in <ph name="PRODUCT_NAME" /> per <ph name="MS_WIN_NAME" /> e <ph name="MAC_OS_NAME" /> versione 113, in concomitanza con la rimozione del supporto per l'utilizzo dello strumento di verifica dei certificati radice forniti dalla piattaforma.</translation>
 <translation id="1787790976045065845">Questo criterio viene applicato soltanto se il criterio <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_POLICY_NAME" /> è impostato su <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOCK" /> o <ph name="SECURITY_TOKEN_SESSION_BEHAVIOR_LOGOUT" /> e un utente che effettua l'autenticazione tramite smart card rimuove quest'ultima. Consente inoltre di specificare per quanti secondi viene visualizzata una notifica che informa l'utente dell'azione imminente. Questa notifica blocca lo schermo. L'azione viene compiuta soltanto allo scadere della notifica. L'utente può impedire l'azione inserendo di nuovo la smart card prima della scadenza della notifica. Se questo criterio viene impostato su 0, non viene visualizzata alcuna notifica e l'azione viene compiuta immediatamente.</translation>
 <translation id="1793346220873697538">Disattiva la stampa PIN per impostazione predefinita</translation>
 <translation id="1794457906032475749">Se questo criterio viene attivato, l'opzione per mantenere i dati di navigazione esistenti durante la creazione di un profilo aziendale sarà selezionata per impostazione predefinita.
@@ -2017,7 +2009,6 @@ Il criterio <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> potrebbe eseguire l'
           |created_time_millis| è il timestamp UTC per la creazione dell'override che viene inviato sotto forma di stringa perché non si adatta a un numero intero. Viene usato per stabilire se applicare ancora l'override o meno. Se la funzione del limite di tempo attivo corrente (limite di tempo di utilizzo o limite della finestra temporale) è iniziata dopo la creazione dell'override, non dovrebbe essere applicata. Inoltre, se l'override è stato creato prima dell'ultima modifica dei valori time_window_limit o time_usage_window attivi, non dovrebbe essere applicato.
 
           È possibile inviare più override; viene applicata la voce valida più recente.</translation>
-<translation id="290041922664761002">Specifica un valore di salt da usare nel criterio <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" /> durante la valutazione delle informazioni sull'identità</translation>
 <translation id="2901725272378498025">Attiva gli avvisi sulla sicurezza per i flag della riga di comando</translation>
 <translation id="2905984450136807296">Durata dei dati di autenticazione nella cache</translation>
 <translation id="2906874737073861391">Elenco di estensioni AppPack</translation>
@@ -2280,6 +2271,17 @@ Questo criterio è stato pensato per essere temporaneo e verrà rimosso in futur
 <translation id="3125472566440502628">Disattiva Seleziona per ascoltare</translation>
 <translation id="3126748868885248792">Il pulsante destro è il principale</translation>
 <translation id="3128072319047570212">Impostazioni keygen</translation>
+<translation id="3129155711165832367">I certificati X.509 possono codificare i vincoli, ad esempio i vincoli relativi ai nomi, nelle estensioni dei certificati. RFC 5280 specifica che l'applicazione forzata di questi vincoli sui certificati per trust anchor è facoltativa. A partire dalla versione 112 di <ph name="PRODUCT_NAME" />, questi vincoli nei certificati caricati dall'archivio certificati della piattaforma verranno applicati.
+
+Questo criterio è una soluzione di disattivazione temporanea nel caso in cui un'azienda riscontri problemi con i vincoli codificati nei propri certificati root privati. In questo caso è possibile usare questo criterio per disattivare temporaneamente l'applicazione forzata dei vincoli durante la risoluzione dei problemi dei certificati.
+
+Se questo criterio non viene configurato o se viene attivato, <ph name="PRODUCT_NAME" /> forzerà l'applicazione dei vincoli codificati nei trust anchor caricati dall'archivio di attendibilità della piattaforma.
+
+Se questo criterio viene disattivato, <ph name="PRODUCT_NAME" /> non forzerà l'applicazione dei vincoli codificati nei trust anchor caricati dall'archivio di attendibilità della piattaforma.
+
+Nella versione 112 di <ph name="PRODUCT_NAME" />, questo criterio non ha effetto se il criterio <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" /> viene disattivato.
+
+È prevista la rimozione di questo criterio nella versione 115 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3131703464330936425">Non consentire il roaming dei dati mobili</translation>
 <translation id="3135820765957090754">Se questa impostazione viene attivata, gli utenti potranno sincronizzare le configurazioni di reti Wi-Fi tra i loro dispositivi <ph name="PRODUCT_OS_NAME" /> e un telefono Android collegato. Per poter sincronizzare le configurazioni di reti Wi-Fi, gli utenti devono attivare esplicitamente questa funzionalità svolgendo una procedura di configurazione.
 
@@ -2357,13 +2359,6 @@ Se viene impostato su Disabled, la promozione di valutazione dell'App Store non 
       Questo criterio può essere utilizzato dagli amministratori che hanno bisogno di più tempo per aggiornare i siti web interni interessati da questa nuova limitazione. Questo criterio aziendale è temporaneo ed è destinato a essere rimosso dopo la versione 117 di <ph name="PRODUCT_NAME" />.
       </translation>
 <translation id="3185009703220253572">a partire dalla versione <ph name="SINCE_VERSION" /></translation>
-<translation id="3185895671618336039">Consente di configurare le impostazioni del periodo di validità dei dati di navigazione per <ph name="PRODUCT_NAME" />. Questo criterio consente agli amministratori di configurare (per tipo di dati) quando il browser dovrà eliminare i dati. Questa funzionalità è utile per i clienti che gestiscono dati cliente sensibili. Il criterio ha effetto soltanto se il criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> è impostato su vero.
-
-      I tipi di dati disponibili sono i seguenti: <ph name="DATA_TYPE_BROWSING_HISTORY" />, <ph name="DATA_TYPE_DOWNLOAD_HISTORY" />, <ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />, <ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, <ph name="DATA_TYPE_PASSWORD" />, <ph name="DATA_TYPE_AUTOFILL" />, <ph name="DATA_TYPE_SITE_SETTINGS" /> e <ph name="DATA_TYPE_HOSTED_APP_DATA" />.
-
-      Il browser rimuoverà automaticamente i dati dei tipi selezionati che sono antecedenti al periodo indicato (<ph name="TIME_TO_LIVE_IN_HOURS" />). Il valore minimo impostabile è 1 ora.
-
-      I dati scaduti vengono eliminati 15 secondi dopo l'avvio del browser, dopodiché ogni ora mentre il browser è in esecuzione.</translation>
 <translation id="3192902750888034827">Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> è attivo, l'assegnazione di un valore al criterio <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> specifica l'URL utilizzato dal motore di ricerca per fornire una pagina Nuova scheda.
 
       Se il criterio <ph name="DEFAULT_SEARCH_PROVIDER_NEW_TAB_URL_POLICY_NAME" /> non viene configurato, non è fornita alcuna pagina Nuova scheda.</translation>
@@ -2415,10 +2410,6 @@ Se non viene configurato, verrà utilizzato il nuovo comportamento, esattamente 
 <translation id="3220624000494482595">Se l'app kiosk è un'app Android, non avrà controllo sulla versione di <ph name="PRODUCT_OS_NAME" />, anche se la norma viene impostata su <ph name="TRUE" />.</translation>
 <translation id="3222088741899353813">Il pulsante sinistro è il principale nella schermata di accesso</translation>
 <translation id="322359555555487980">Determina la disponibilità delle varianti su <ph name="PRODUCT_OS_NAME" /></translation>
-<translation id="3224310002911688376">Questo criterio consente a un amministratore di specificare le impostazioni relative alle app web installate. Questo criterio mappa un ID app web alla relativa impostazione specifica. È possibile impostare con l'ID speciale <ph name="DEFAULT_SCOPE" /> una configurazione predefinita che verrà applicata a tutte le app web senza una configurazione personalizzata in questo criterio.
-
-Il campo <ph name="MANIFEST_ID_FIELD" /> è l'ID manifest dell'app web. Visita la pagina <ph name="WEB_APP_ID_REFERENCE_URL" /> per avere istruzioni su come stabilire l'ID manifest di un'app web installata.
-Il campo <ph name="RUN_ON_OS_LOGIN_FIELD" /> consente di specificare se un'app web può essere eseguita durante l'accesso al sistema operativo. Se questo campo viene impostato su <ph name="BLOCKED" />, l'app web non verrà eseguita durante l'accesso al sistema operativo e l'utente non potrà attivare questa funzionalità in un secondo momento. Se questo campo viene impostato su <ph name="RUN_WINDOWED" />, l'app web verrà eseguita durante l'accesso al sistema operativo e l'utente non potrà disattivare questa funzionalità in un secondo momento. Se questo campo viene impostato su <ph name="ALLOWED" />, l'utente potrà configurare l'esecuzione dell'app web al momento dell'accesso al sistema operativo. Per la configurazione predefinita sono consentiti soltanto i valori <ph name="ALLOWED" /> e <ph name="BLOCKED" />.      "</translation>
 <translation id="3229163415739929305">Se il criterio viene impostato su Attivato o se non viene configurato, viene attivato il recupero dei metadati di caricamento delle pagine e dei modelli di machine learning che migliorano l'esperienza di navigazione.
       Se il criterio viene impostato su Disattivato, il comportamento di alcune funzionalità potrebbe non essere corretto.</translation>
 <translation id="3231311173895401135">Lascia che sia il browser a decidere in merito al supporto</translation>
@@ -2501,11 +2492,6 @@ Se un'estensione specificata in questo criterio non viene installata, la navigaz
 <translation id="3261592499545947104">Il numero di secondi prima della scadenza di un certificato in cui attivare il rinnovo.</translation>
 <translation id="3262080895269946462">Consenti la disattivazione per impostazione predefinita di WebSQL nei contesti di terze parti.</translation>
 <translation id="3263892501786842604">Consenti la visualizzazione del pulsante <ph name="GOOGLE_LENS_PRODUCT_NAME" /> nella casella di ricerca della pagina Nuova scheda, se supportato.</translation>
-<translation id="3264706118366247207">Consente di configurare un elenco dei tipi di dati di navigazione che dovrebbero essere eliminati alla chiusura di tutte le finestre del browser da parte dell'utente. Tra i tipi di dati disponibili ci sono: cronologia di navigazione (<ph name="DATA_TYPE_BROWSING_HISTORY" />), cronologia dei download (<ph name="DATA_TYPE_DOWNLOAD_HISTORY" />), cookie (<ph name="DATA_TYPE_COOKIES_AND_OTHER_SITE_DATA" />), cache<ph name="DATA_TYPE_CACHED_IMAGES_AND_FILES" />, compilazione automatica (<ph name="DATA_TYPE_AUTOFILL" />), password (<ph name="DATA_TYPE_PASSWORD" />), impostazioni sito (<ph name="DATA_TYPE_SITE_SETTINGS" />) e dati di app ospitate (<ph name="DATA_TYPE_HOSTED_APP_DATA" />). Questo criterio non ha la precedenza su <ph name="ALLOW_DELETING_BROWSER_HISTORY_POLICY_NAME" />.
-
-      Questo criterio richiede l'impostazione del criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> su Vero, altrimenti sarà ignorato. Se questo criterio viene impostato a livello di piattaforma, la sincronizzazione dovrebbe essere disattivata a livello di piattaforma. Se questo criterio viene impostato a livello di utente, la sincronizzazione dovrebbe essere disattivata per quell'utente affinché il criterio venga applicato.
-
-      Se <ph name="PRODUCT_NAME" /> non si chiude correttamente (ad esempio, in caso di arresto anomalo del browser o del sistema operativo), i dati di navigazione verranno cancellati al successivo caricamento del profilo.</translation>
 <translation id="3264793472749429012">Codifiche del provider di ricerca predefinito</translation>
 <translation id="3269198556438453775">Impedisci le connessioni di assistenza da remoto da parte degli amministratori aziendali a questa macchina</translation>
 <translation id="3273221114520206906">Impostazione JavaScript predefinita</translation>
@@ -3970,6 +3956,7 @@ Se il criterio non è configurato, gli utenti possono modificare l'elenco di app
 <translation id="4693779768620889402">Destinazioni basate su estensioni</translation>
 <translation id="4694138212536142867">Attiva i report sullo stato dell'hardware del dispositivo</translation>
 <translation id="4697581738794063407">Controlla la funzionalità di filtro del parametro URL</translation>
+<translation id="4698895924806859508">Non segnalare eventi di rete</translation>
 <translation id="4699172675775169585">Immagini e file memorizzati nella cache</translation>
 <translation id="4699592681017489215">Questo criterio consente di configurare un'opzione locale che permette di disattivare i controlli dell'intercettazione DNS. Lo scopo dei controlli è cercare di scoprire se il browser è protetto da un proxy che reindirizza i nomi host sconosciuti.
 
@@ -4117,25 +4104,6 @@ Se il criterio viene disattivato, <ph name="PRODUCT_OS_NAME" /> disattiva il Blu
 <translation id="4860900625632464759">Consenti agli utenti di sincronizzare i messaggi SMS tra il telefono e Chromebook</translation>
 <translation id="486146220825734683">Non consentire agli utenti di memorizzare le password Kerberos</translation>
 <translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
-<translation id="4870120523614402392">Elenco di azioni da eseguire quando viene raggiunto il timeout del criterio <ph name="IDLE_TIMEOUT_POLICY_NAME" />.
-
-      Se il criterio <ph name="IDLE_TIMEOUT_POLICY_NAME" /> non viene configurato, questo criterio non ha alcun effetto.
-
-      Quando viene raggiunto il timeout del criterio <ph name="IDLE_TIMEOUT_POLICY_NAME" />, <ph name="PRODUCT_NAME" /> esegue le azioni configurate in questo criterio.
-
-      Se questo criterio è vuoto o se non viene configurato, il criterio <ph name="IDLE_TIMEOUT_POLICY_NAME" /> non ha alcun effetto.
-
-      Le azioni supportate sono le seguenti.
-
-      "<ph name="CLOSE_BROWSERS_ACTION" />": vengono chiuse tutte le finestre del browser e le PWA di questo profilo. Azione non supportata su Android.
-
-      "<ph name="SHOW_PROFILE_PICKER_ACTION" />": viene mostrata la finestra Selettore profilo. Azione non supportata su Android.
-
-      "<ph name="CLEAR_BROWSING_HISTORY_ACTION" />", "<ph name="CLEAR_DOWNLOAD_HISTORY_ACTION" />", "<ph name="CLEAR_COOKIES_AND_OTHER_SITE_DATA_ACTION" />", "<ph name="CLEAR_CACHED_IMAGES_AND_FILES_ACTION" />", "<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />", "<ph name="CLEAR_AUTOFILL_ACTION" />", "<ph name="CLEAR_SITE_SETTINGS_ACTION" />", "<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />": vengono cancellati i dati di navigazione corrispondenti. Per maggiori informazioni, vedi il criterio <ph name="CLEAR_BROWSING_DATA_ON_EXIT_LIST_POLICY_NAME" />.
-
-      "<ph name="RELOAD_PAGES_ACTION" />": vengono ricaricate tutte le pagine web. Per alcune pagine, all'utente potrebbe essere chiesto di confermare prima.
-
-      Per le azioni "<ph name="CLEAR_BROWSING_HISTORY_ACTION" />", "<ph name="CLEAR_PASSWORD_SIGNIN_ACTION" />", "<ph name="CLEAR_AUTOFILL_ACTION" />" e "<ph name="CLEAR_HOSTED_APP_DATA_ACTION" />" è necessario impostare il criterio <ph name="SYNC_DISABLED_POLICY_NAME" /> su true.</translation>
 <translation id="4873380469296842901">Se questa impostazione viene attivata, gli utenti che hanno già attivato Phone Hub possono inviare e ricevere notifiche del loro telefono su ChromeOS.
 
       Se viene disattivata, gli utenti non possono usare questa funzionalità. Gli utenti non possono usare questa funzionalità anche se viene disattivato il criterio PhoneHubAllowed.
@@ -4776,13 +4744,6 @@ Nota: questo criterio non viene applicato agli upgrade a HSTS.</translation>
 <translation id="5448022937220253000">Scegli cosa fare con i dati utente dopo la disattivazione di <ph name="LACROS_NAME" /></translation>
 <translation id="5449690328792750354">L'API Event.path sarà disponibile.</translation>
 <translation id="5452024130413254050">Consente di stabilire se le VM che utilizzano questa configurazione hanno accesso a un vTPM; il valore predefinito è false e, se il criterio non viene configurato, viene usato il valore <ph name="FORCE_SHUTDOWN_IF_MORE_RESTRICTED" />.</translation>
-<translation id="5452167809842762761">Questo criterio è stato rimosso nella versione M114. Serviva per disattivare CECPQ2, ma CECPQ2 è stato disattivato per impostazione predefinita e verrà sostituito da Kyber, un meccanismo di incapsulamento della chiave (KEM) post-quantistico selezionato dal NIST, nuovamente associato al nostro accordo chiave classico standard, X25519.
-
-Se questo criterio non viene configurato o se viene attivato, <ph name="PRODUCT_NAME" /> seguirà la procedura di implementazione predefinita di CECPQ2, un algoritmo di accordo chiave post-quantistico in TLS.
-
-      CECPQ2 comporta la generazione di messaggi TLS di dimensioni maggiori che, in rarissimi casi, potrebbero attivare bug in alcuni componenti hardware di rete. Questo criterio può essere impostato su False per disattivare ECPQ2 durante la risoluzione dei problemi di rete.
-
-      Questo criterio è una misura temporanea e verrà rimosso nelle future versioni di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5454128917282602937">Quando un utente passa da un dispositivo <ph name="PRODUCT_OS_NAME" /> a un altro dello stesso tipo, il servizio <ph name="PRODUCT_NAME" /> V2 avvia le finestre del browser e delle app del dispositivo precedente su quello nuovo.
 Se il criterio viene impostato su Enabled, le finestre del browser e delle app verranno avviate automaticamente al momento dell'accesso dall'ultimo dispositivo <ph name="PRODUCT_OS_NAME" /> utilizzato dall'utente corrente.
 Se il criterio viene impostato su Disabled o se non viene configurato, gli elementi da avviare al momento dell'accesso verranno determinati in base alle impostazioni di ripristino totale.</translation>
@@ -6668,6 +6629,13 @@ Se il criterio viene impostato, l'elenco dei valori predefiniti viene esteso con
 
       Se il criterio viene disattivato o se non viene configurato, WebDriver non potrà sostituire i criteri non compatibili.</translation>
 <translation id="7145335384492396213">Modalità di stampa PIN predefinita</translation>
+<translation id="7145764791559889135">Questo criterio impedisce la copia dei dati negli appunti per URL specifici.
+
+      Gli elenchi di URL<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> consentono di controllare a quali siti è consentito scrivere negli appunti. La scrittura negli appunti viene bloccata se l'URL corrisponde a un pattern in "enable" e non corrisponde a un pattern in "disable". La copia non viene bloccata se l'URL non corrisponde ad alcun pattern.
+
+Per i pattern corrispondenti alle origini viene usato un formato simile a quello usato per i pattern del criterio "<ph name="URL_BLOCKLIST_POLICY_NAME" />", documentati all'indirizzo https://support.google.com/chrome/a?p=url_blocklist_filter_format.
+
+La dimensione <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indica la quantità minima di dati in byte che attiva il controllo dei pattern. Ciò significa che la scrittura negli appunti da un URL bloccato sarebbe consentita se la dimensione dei dati copiati fosse inferiore al valore specificato in questo campo. Se il campo non viene impostato, il valore predefinito è 100 byte.</translation>
 <translation id="7146198347561863646">Se il criterio viene impostato su Attivato o se non viene configurato, sono consentiti wakelock per la gestione dell'alimentazione. Le estensioni possono richiedere wakelock tramite l'API dell'estensione di gestione dell'alimentazione e le app ARC.
 
       Se il criterio viene impostato su Disattivato, le richieste di wakelock vengono ignorate.</translation>
@@ -6964,6 +6932,7 @@ Questo sostituisce il criterio <ph name="WINDOW_PLACEMENT_BLOCKED_FOR_URLS_POLIC
       Nota: se l'azione è la sospensione, è possibile configurare separatamente <ph name="PRODUCT_OS_NAME" /> in modo che blocchi o meno lo schermo prima della sospensione.</translation>
 <translation id="7477149584454865826">Un flag booleano che indica se deve essere usato o meno IPP Everywhere per configurare la stampante.</translation>
 <translation id="7477231245051133709">Attiva la funzione di accessibilità di audio in formato mono</translation>
+<translation id="7479408102162550711">Segnala eventi di rete</translation>
 <translation id="7480826412572122600">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_FILE_DOWNLOADED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene scaricato in Chrome.
 
       I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare un file per l'analisi quando viene scaricato da una pagina specifica e quali tag includere nella richiesta di analisi di questo file. Un tag che corrisponde a un pattern "attivato" viene incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a questo tag, purché nessun pattern "disattivato" con lo stesso tag corrisponda all'URL della pagina. L'analisi viene eseguita se almeno 1 tag deve essere incluso nella richiesta.
@@ -7333,6 +7302,10 @@ Per informazioni dettagliate sui pattern <ph name="URL_LABEL" /> validi, visita 
       Se il criterio viene impostato su Falso o se non viene configurato, i contenuti <ph name="FLASH_PLUGIN_NAME" /> di altre origini o i contenuti ridotti potrebbero essere bloccati.
 
       Nota: per stabilire quali siti web possono eseguire <ph name="FLASH_PLUGIN_NAME" />, controlla questi criteri: <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" />, <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" /> e <ph name="PLUGINS_BLOCKED_FOR_URLS_POLICY_NAME" />.</translation>
+<translation id="7804859754080118507">Segnala gli eventi di intensità del segnale e di connessione di rete sui dispositivi registrati.
+
+      Se il criterio viene impostato su Falso o se non viene configurato, le informazioni non vengono segnalate.
+      Se è impostato su Vero, gli eventi di rete del dispositivo verranno segnalati.</translation>
 <translation id="780629758750905699">Consenti l'aggiunta di account Family Link al dispositivo</translation>
 <translation id="7807120658089613760">Configura la videocamera, le impostazioni del browser, le impostazioni del sistema operativo, nonché le funzionalità di scansione, Web Store, canvas, Esplora e Crosh da disattivare</translation>
 <translation id="7807139251387225825">Elenco di tipi di dati che dovrebbero essere esclusi dalla sincronizzazione</translation>
@@ -7570,14 +7543,6 @@ In questo tipo di scenari non è garantita la corretta migrazione dei dati.
 <translation id="802776363472387903">L'hash SHA-256 dell'immagine <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="8028814157747157754">Attiva il provider di ricerca predefinito e consenti agli utenti di modificare l'elenco dei provider di ricerca</translation>
 <translation id="8029201909194194377">Durata massima della sessione consentita per le connessioni di accesso remoto</translation>
-<translation id="8032201191311129122">Questo criterio impedisce la copia dei dati negli appunti per URL specifici.
-
-      Gli elenchi di URL<ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> consentono di controllare a quali siti è consentito scrivere negli appunti. La scrittura negli appunti viene bloccata se l'URL corrisponde a un pattern in "enable" e non corrisponde a un pattern in "disable". La copia non viene bloccata se l'URL non corrisponde ad alcun pattern.
-
-      Per i pattern corrispondenti alle origini viene usato un formato simile a quello usato per i pattern del criterio "<ph name="URL_BLOCKLIST_POLICY_NAME" />", documentati all'indirizzo http://www.chromium.org/administrators/url-blocklist-filter-format.
-
-      La dimensione <ph name="ENTERPRISE_CONNECTOR_MINIMUM_DATA_SIZE" /> indica la quantità minima di dati in byte che attiva il controllo dei pattern. Ciò significa che la scrittura negli appunti da un URL bloccato sarebbe consentita se la dimensione dei dati copiati fosse inferiore al valore specificato in questo campo. Se il campo non viene impostato, il valore predefinito è 100 byte.
-      </translation>
 <translation id="8033908599068513676">URL dell'immagine del firmware da scaricare.</translation>
 <translation id="8035570672225663428">Consenti al modello di ricarica adattiva di sospendere la procedura di ricarica per prolungare la durata della batteria</translation>
 <translation id="8044493735196713914">Indicazione modalità di avvio dispositivo</translation>
@@ -7916,17 +7881,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8316940611391250886">Non consentire i certificati privi di un'estensione subjectAlternativeName</translation>
 <translation id="8319678975002906774">Imposta valori Managed Configuration per siti web corrispondenti a origini specifiche</translation>
 <translation id="8320149248919453401">Modalità di carica della batteria</translation>
-<translation id="8327201984026238850">Il modello URI del resolver DNS over HTTPS desiderato. Per specificare diversi resolver DNS over HTTPS, separa i modelli URI corrispondenti con gli spazi. Questo criterio è molto simile a <ph name="DOH_TEMPLATES_POLICY_NAME" /> e lo sostituirà se verrà specificato. Al contrario di quel criterio, supporta la specifica di informazioni sull'identità.
-
-  Se il criterio <ph name="DOH_MODE_POLICY_NAME" /> viene impostato su <ph name="SECURE_DNS_MODE_SECURE" />, è necessario configurare questo criterio o il criterio <ph name="DOH_TEMPLATES_POLICY_NAME" />.
-
-  Se il criterio <ph name="DOH_MODE_POLICY_NAME" /> viene impostato su <ph name="SECURE_DNS_MODE_AUTOMATIC" /> e questo criterio viene configurato, verranno usati i modelli URI specificati; se questo criterio non viene configurato, verranno usate le mappature impostate come hardcoded per cercare di eseguire l'upgrade del resolver DNS attuale dell'utente a un resolver DoH gestito dallo stesso fornitore.
-
-  Se il modello URI contiene una variabile <ph name="HTTP_VARIABLE_DNS" />, per le richieste al resolver verrà usato il metodo <ph name="HTTP_METHOD_GET" />; in caso contrario verrà usato il metodo <ph name="HTTP_METHOD_POST" /> per le richieste.
-
-  Se il criterio viene configurato, è necessario configurare anche il criterio <ph name="DOH_SALT_POLICY_NAME" />.
-
-  I modelli con formato errato verranno ignorati.</translation>
 <translation id="8327651196906278510">Consenti acquisizione schede in base a queste origini</translation>
 <translation id="8329434144708110">Vengono attivati i flussi di autenticazione per la sincronizzazione delle password con fornitori di servizi SSO</translation>
 <translation id="8329984337216493753">Questa norma è attiva soltanto in modalità retail.
@@ -8402,8 +8356,6 @@ Se il criterio non viene configurato, alla prima esecuzione non vengono importat
 
           e non ha alcun effetto se non viene configurato. In questo caso, le connessioni di accesso remoto non hanno alcuna durata massima su questa macchina.</translation>
 <translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
-<translation id="880110452941793016">Questo salt viene utilizzato come valore di salt quando viene eseguito l'hashing delle informazioni sull'identità incluse nella stringa <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" />.
-   Se viene utilizzato il criterio <ph name="DOH_TEMPLATES_WITH_IDENTIFIERS_POLICY_NAME" />, è necessario configurare questo criterio e impostare una stringa con una lunghezza compresa tra 8 e 32 caratteri.</translation>
 <translation id="8801680448782904838">Invia a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo
 </translation>
 <translation id="8804685015028424497">Viene disattivata la modalità di navigazione in incognito</translation>
@@ -8453,17 +8405,6 @@ Se il criterio non viene configurato, alla prima esecuzione non vengono importat
 <translation id="8854571659927427063">Se il criterio viene impostato su Attivato, i preferiti del precedente browser predefinito verranno importati alla prima esecuzione. Se il criterio viene impostato su Disattivato o se non viene configurato, i preferiti non verranno importati alla prima esecuzione.
 
       Gli utenti possono attivare una finestra di dialogo per l'importazione e la casella di controllo dei preferiti verrà selezionata o deselezionata in modo che corrisponda al valore del criterio.</translation>
-<translation id="8854703425882848037">I certificati X.509 possono codificare i vincoli, ad esempio i vincoli relativi ai nomi, nelle estensioni dei certificati. RFC 5280 specifica che l'applicazione forzata di questi vincoli sui certificati per trust anchor è facoltativa. A partire dalla versione 112 di <ph name="PRODUCT_NAME" />, questi vincoli nei certificati caricati dall'archivio certificati della piattaforma verranno applicati.
-
-Questo criterio è una soluzione di disattivazione temporanea nel caso in cui un'azienda riscontri problemi con i vincoli codificati nei propri certificati root privati. In questo caso è possibile usare questo criterio per disattivare temporaneamente l'applicazione forzata dei vincoli durante la risoluzione dei problemi dei certificati.
-
-Se questo criterio non viene configurato o se viene impostato su enabled, <ph name="PRODUCT_NAME" /> forzerà l'applicazione dei vincoli codificati nei trust anchor caricati dall'archivio di attendibilità della piattaforma.
-
-Se questo criterio viene impostato su disabled, <ph name="PRODUCT_NAME" /> non forzerà l'applicazione dei vincoli codificati nei trust anchor caricati dall'archivio di attendibilità della piattaforma.
-
-Questo criterio non ha effetto se il criterio <ph name="CHROME_ROOT_STORE_ENABLED_POLICY_NAME" /> viene disattivato.
-
-È prevista la rimozione di questo criterio nella versione 115 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8858642179038618439">Forza la Modalità di protezione di YouTube</translation>
 <translation id="8860342862142842017">Disattiva l'applicazione di Certificate Transparency per un elenco di hash subjectPublicKeyInfo</translation>
 <translation id="8860894781631833477">Gli utenti possono configurare il canale di rilascio di <ph name="PRODUCT_OS_NAME" /></translation>

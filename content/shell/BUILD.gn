@@ -478,6 +478,8 @@ repack("pak") {
     "$root_gen_dir/content/browser/webrtc/resources/webrtc_internals_resources.pak",
     "$root_gen_dir/content/content_resources.pak",
     "$root_gen_dir/content/dev_ui_content_resources.pak",
+    "$root_gen_dir/content/gpu_resources.pak",
+    "$root_gen_dir/content/histograms_resources.pak",
     "$root_gen_dir/content/quota_internals_resources.pak",
     "$root_gen_dir/content/shell/shell_resources.pak",
     "$root_gen_dir/content/test/web_ui_mojo_test_resources.pak",
@@ -699,6 +701,10 @@ if (is_apple) {
     if (is_mac && icu_use_data_file) {
       sources += [ "$root_out_dir/icudtl.dat" ]
       deps = [ "//third_party/icu:icudata" ]
+    }
+
+    if (is_mac) {
+      sources += [ "//ui/gl/resources/angle-metal/gpu_shader_cache.bin" ]
     }
 
     if (v8_use_external_startup_data) {

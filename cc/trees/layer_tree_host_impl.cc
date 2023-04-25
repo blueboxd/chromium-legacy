@@ -374,6 +374,10 @@ void LayerTreeHostImpl::UpdateBrowserControlsState(
       constraints, current, animate);
 }
 
+bool LayerTreeHostImpl::HasScrollLinkedAnimation(ElementId for_scroller) const {
+  return mutator_host_->HasScrollLinkedAnimation(for_scroller);
+}
+
 bool LayerTreeHostImpl::IsInHighLatencyMode() const {
   return impl_thread_phase_ == ImplThreadPhase::IDLE;
 }
@@ -4679,7 +4683,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage,
+          kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(bitmap.GetPixels(), bitmap.SizeInBytes()));
     } else {
       DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
@@ -4744,7 +4748,7 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
       auto* sii = context_provider->SharedImageInterface();
       mailbox = sii->CreateSharedImage(
           format, upload_size, color_space, kTopLeft_GrSurfaceOrigin,
-          kPremul_SkAlphaType, shared_image_usage,
+          kPremul_SkAlphaType, shared_image_usage, "LayerTreeHostUIResource",
           base::span<const uint8_t>(
               reinterpret_cast<const uint8_t*>(pixmap.addr()),
               pixmap.computeByteSize()));

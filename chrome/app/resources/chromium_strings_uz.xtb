@@ -22,7 +22,6 @@
 
 Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google hisoblarini <ph name="SETTINGS_LINK_BEGIN" />Sozlamalar<ph name="SETTINGS_LINK_END" /> orqali boshqarish mumkin.</translation>
 <translation id="1640672724030957280">Yuklab olinmoqda...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium HID qurilmasiga ulangan}=1{Chromium HID qurilmasiga ulangan}other{Chromium HID qurilmalariga ulangan}}</translation>
 <translation id="1708666629004767631">Chromium brauzerining yangi, yanada xavfsiz versiyasi chiqdi.</translation>
 <translation id="17264556997921157">Saytlar reklamani chiqarish uchun ishlatadigan sizga qiziq mavzularni koʻrishingiz va olib tashlashingiz mumkin. Chromium siz ochgan saytlar asosida sizga qiziq boʻlishi mumkin mavzularni taxmin qiladi.</translation>
 <translation id="1733725117201708356">Chromium tez orada brauzer maʼlumotlarini oʻchirib tashlaydi</translation>
@@ -243,8 +242,10 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="6442900851116057561">ChromiumOS tizimini ishga tushirish</translation>
 <translation id="6455857529632101747">Chromium profillariga xush kelibsiz</translation>
 <translation id="6475912303565314141">Bundan tashqari, kengaytma Chromium bosh sahifasini o‘zgarib qo‘ydi.</translation>
+<translation id="648319183876919572">Saytlarni kuchaytirilgan rejimda xavfsiz kezish yordamida zararli saytlar va yuklanmalardan himoyalanish mumkin</translation>
 <translation id="6510925080656968729">Chromium’ni o‘chirib tashlash</translation>
 <translation id="6542839706527980775">Har bir profilda bukmark, tarix va parol kabi Chromium axboroti saqlanadi</translation>
+<translation id="656935081669708576">Profilni almashtirib, boshqa Chromium profili parollarini koʻrish mumkin</translation>
 <translation id="6570579332384693436">Imloni tekshirish uchun Chromium siz kiritgan matnni Google serverlariga yuboradi</translation>
 <translation id="6598877126913850652">Chromium bildirishnomalar sozlamalarini ochish</translation>
 <translation id="6613594504749178791">O‘zgartirishlar Chromium qaytadan ishga tushirilganda kuchga kiradi.</translation>

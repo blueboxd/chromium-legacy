@@ -182,11 +182,6 @@ class SupervisedUserService
   // Updates the set of approved extensions to remove approval for |extension|.
   void RemoveExtensionApproval(const extensions::Extension& extension);
 
-  // Wraps UpdateApprovedExtension() for testing. Use this to simulate adding or
-  // removing custodian approval for an extension via sync.
-  void UpdateApprovedExtensionForTesting(const std::string& extension_id,
-                                         ApprovedExtensionChange type);
-
   bool GetSupervisedUserExtensionsMayRequestPermissionsPref() const;
 
   bool CanInstallExtensions() const;
@@ -201,6 +196,12 @@ class SupervisedUserService
   // Reports FamilyUser.WebFilterType and FamilyUser.ManagedSiteList
   // metrics. Ignores reporting when AreWebFilterPrefsDefault() is true.
   void ReportNonDefaultWebFilterValue() const;
+
+  // Returns true if both: the user is a type of Family Link supervised account
+  // and the platform supports Family Link supervision features.
+  // This method should be prefered on gating child-specific features if there
+  // is no dedicated method for the feature (e.g IsURLFilteringEnabled).
+  bool IsSubjectToParentalControls() const;
 
  private:
   friend class SupervisedUserServiceExtensionTestBase;
@@ -226,10 +227,6 @@ class SupervisedUserService
           url_filter_delegate);
 
   void SetActive(bool active);
-
-  // Returns true if the user is a type of Family Link supervised account, this
-  // includes Unicorn, Geller, and Griffin accounts.
-  bool IsChild() const;
 
   void OnCustodianInfoChanged();
 

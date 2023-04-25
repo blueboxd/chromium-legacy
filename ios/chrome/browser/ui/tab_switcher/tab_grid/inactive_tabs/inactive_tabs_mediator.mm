@@ -7,7 +7,6 @@
 #import "base/notreached.h"
 #import "base/scoped_multi_source_observation.h"
 #import "base/scoped_observation.h"
-#import "components/favicon/ios/web_favicon_driver.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_change_registrar.h"
 #import "components/prefs/pref_service.h"
@@ -109,8 +108,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   PrefChangeRegistrar _prefChangeRegistrar;
-  // The short-term cache for grid thumbnails.
-  NSMutableDictionary<NSString*, UIImage*>* _appearanceCache;
   // The saved session window just before close all tabs from regular tab grid
   // is called.
   SessionWindowIOS* _closedSessionWindow;
@@ -181,14 +178,11 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
     // Push the tabs to the consumer.
     PopulateConsumerItems(_consumer, _webStateList);
     // Push the info to the consumer.
-    NSInteger daysThreshold =
-        _prefService->GetInteger(prefs::kInactiveTabsTimeThreshold);
+    NSInteger daysThreshold = InactiveTabsTimeThreshold().InDays();
     [_consumer updateInactiveTabsDaysThreshold:daysThreshold];
 
     _snapshotCache = snapshotAgent->snapshot_cache();
     [_snapshotCache addObserver:self];
-
-    _appearanceCache = [[NSMutableDictionary alloc] init];
 
     _sessionRestorationAgent = sessionRestorationAgent;
     _snapshotAgent = snapshotAgent;
@@ -216,8 +210,7 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   _prefObserverBridge.reset();
   _prefService = nullptr;
   [_snapshotCache removeObserver:self];
-  _snapshotCache = nullptr;
-  _appearanceCache = nullptr;
+  _snapshotCache = nil;
   _sessionRestorationAgent = nullptr;
   [self discardSavedClosedItems];
   _snapshotAgent = nullptr;
@@ -243,86 +236,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   [_consumer replaceItemID:webState->GetStableIdentifier() withItem:item];
 }
 
-#pragma mark - GridImageDataSource
-
-- (void)snapshotForIdentifier:(NSString*)identifier
-                   completion:(void (^)(UIImage*))completion {
-  if (_appearanceCache[identifier]) {
-    completion(_appearanceCache[identifier]);
-    return;
-  }
-  web::WebState* webState =
-      GetWebState(_webStateList, WebStateSearchCriteria{
-                                     .identifier = identifier,
-                                 });
-  if (webState) {
-    SnapshotTabHelper::FromWebState(webState)->RetrieveColorSnapshot(
-        ^(UIImage* image) {
-          completion(image);
-        });
-  }
-}
-
-- (void)faviconForIdentifier:(NSString*)identifier
-                  completion:(void (^)(UIImage*))completion {
-  web::WebState* webState =
-      GetWebState(_webStateList, WebStateSearchCriteria{
-                                     .identifier = identifier,
-                                 });
-  if (!webState) {
-    completion(nil);
-    return;
-  }
-
-  // NTP tabs get no favicon.
-  if (IsUrlNtp(webState->GetVisibleURL())) {
-    completion(nil);
-    return;
-  }
-
-  // Use the page favicon if available.
-  favicon::FaviconDriver* faviconDriver =
-      favicon::WebFaviconDriver::FromWebState(webState);
-  if (faviconDriver) {
-    gfx::Image favicon = faviconDriver->GetFavicon();
-    if (!favicon.IsEmpty()) {
-      completion(favicon.ToUIImage());
-      return;
-    }
-  }
-
-  // Otherwise, set a default favicon.
-  UIImage* defaultFavicon =
-      webState->GetBrowserState()->IsOffTheRecord()
-          ? [UIImage imageNamed:@"default_world_favicon_incognito"]
-          : [UIImage imageNamed:@"default_world_favicon_regular"];
-  completion(defaultFavicon);
-}
-
-- (void)preloadSnapshotsForVisibleGridItems:
-    (NSSet<NSString*>*)visibleGridItems {
-  for (int i = 0; i <= _webStateList->count() - 1; i++) {
-    web::WebState* web_state = _webStateList->GetWebStateAt(i);
-    NSString* identifier = web_state->GetStableIdentifier();
-
-    BOOL isWebStateHidden = ![visibleGridItems containsObject:identifier];
-    if (isWebStateHidden) {
-      continue;
-    }
-
-    __weak __typeof(_appearanceCache) weakAppearanceCache = _appearanceCache;
-    auto cacheImage = ^(UIImage* image) {
-      weakAppearanceCache[identifier] = image;
-    };
-
-    [self snapshotForIdentifier:identifier completion:cacheImage];
-  }
-}
-
-- (void)clearPreloadedSnapshots {
-  [_appearanceCache removeAllObjects];
-}
-
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -341,7 +254,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
 
 - (void)snapshotCache:(SnapshotCache*)snapshotCache
     didUpdateSnapshotForIdentifier:(NSString*)identifier {
-  [_appearanceCache removeObjectForKey:identifier];
   web::WebState* webState =
       GetWebState(_webStateList, WebStateSearchCriteria{
                                      .identifier = identifier,

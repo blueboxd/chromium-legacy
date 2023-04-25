@@ -17,7 +17,7 @@ try_.defaults.set(
     cores = 8,
     os = os.WINDOWS_DEFAULT,
     compilator_cores = 16,
-    compilator_reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
+    compilator_reclient_jobs = reclient.jobs.MID_JOBS_FOR_CQ,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     orchestrator_cores = 2,
     reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
@@ -156,7 +156,7 @@ try_.builder(
 
 try_.builder(
     name = "win_upload_clang",
-    executable = "recipe:chromium_upload_clang",
+    executable = "recipe:chromium_toolchain/package_clang",
     builderless = False,
     cores = 32,
     os = os.WINDOWS_ANY,
@@ -166,7 +166,7 @@ try_.builder(
 
 try_.builder(
     name = "win_upload_rust",
-    executable = "recipe:chromium_upload_rust",
+    executable = "recipe:chromium_toolchain/package_rust",
     builderless = False,
     cores = 32,
     os = os.WINDOWS_ANY,

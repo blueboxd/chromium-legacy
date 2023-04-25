@@ -220,12 +220,45 @@ void PropertyTreeManager::DirectlySetScrollOffset(
   }
 }
 
-void PropertyTreeManager::EnsureCompositorScrollTranslationNodes(
-    const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
-  DCHECK(base::FeatureList::IsEnabled(features::kScrollUnification));
+static uint32_t NonCompositedMainThreadScrollingReasons(
+    const ScrollPaintPropertyNode& scroll) {
+  DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
+  // TODO(crbug.com/1414885): We can't distinguish kNotOpaqueForTextAndLCDText
+  // and kCantPaintScrollingBackgroundAndLCDText here. We should probably
+  // merge the two reasons for CompositeScrollAfterPaint.
+  return scroll.GetCompositedScrollingPreference() ==
+                 CompositedScrollingPreference::kNotPreferred
+             ? cc::MainThreadScrollingReason::kPreferNonCompositedScrolling
+             : cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
+}
 
-  for (auto* node : scroll_translation_nodes)
-    EnsureCompositorScrollAndTransformNode(*node);
+uint32_t PropertyTreeManager::GetMainThreadScrollingReasons(
+    const cc::LayerTreeHost& host,
+    const ScrollPaintPropertyNode& scroll) {
+  DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
+  const auto* property_trees = host.property_trees();
+  const auto* cc_scroll = property_trees->scroll_tree().Node(
+      scroll.CcNodeId(property_trees->sequence_number()));
+  if (!cc_scroll) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
+    return scroll.GetMainThreadScrollingReasons() |
+           NonCompositedMainThreadScrollingReasons(scroll);
+  }
+  return cc_scroll->main_thread_scrolling_reasons;
+}
+
+bool PropertyTreeManager::UsesCompositedScrolling(
+    const cc::LayerTreeHost& host,
+    const ScrollPaintPropertyNode& scroll) {
+  DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
+  const auto* property_trees = host.property_trees();
+  const auto* cc_scroll = property_trees->scroll_tree().Node(
+      scroll.CcNodeId(property_trees->sequence_number()));
+  if (!cc_scroll) {
+    DCHECK(!base::FeatureList::IsEnabled(features::kScrollUnification));
+    return false;
+  }
+  return cc_scroll->is_composited;
 }
 
 void PropertyTreeManager::SetupRootTransformNode() {
@@ -601,8 +634,6 @@ void PropertyTreeManager::EnsureCompositorScrollNode(
 
   compositor_node.max_scroll_offset_affected_by_page_scale =
       scroll_node.MaxScrollOffsetAffectedByPageScale();
-  compositor_node.main_thread_scrolling_reasons =
-      scroll_node.GetMainThreadScrollingReasons();
   compositor_node.overscroll_behavior =
       cc::OverscrollBehavior(static_cast<cc::OverscrollBehavior::Type>(
                                  scroll_node.OverscrollBehaviorX()),
@@ -620,16 +651,12 @@ void PropertyTreeManager::EnsureCompositorScrollNode(
       scroll_translation_node.CcNodeId(new_sequence_number_);
   compositor_node.is_composited =
       client_.NeedsCompositedScrolling(scroll_translation_node);
+  compositor_node.main_thread_scrolling_reasons =
+      scroll_node.GetMainThreadScrollingReasons();
   if (RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled() &&
-      !RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled() &&
-      !compositor_node.is_composited &&
-      compositor_node.main_thread_scrolling_reasons ==
-          cc::MainThreadScrollingReason::kNotScrollingOnMain) {
-    // TODO(crbug.com/1414885): We can't distinguish kNotOpaqueForTextAndLCDText
-    // and kCantPaintScrollingBackgroundAndLCDText here. We should probably
-    // merge the two reasons for CompositeScrollAfterPaint.
-    compositor_node.main_thread_scrolling_reasons =
-        cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
+      !compositor_node.is_composited) {
+    compositor_node.main_thread_scrolling_reasons |=
+        NonCompositedMainThreadScrollingReasons(scroll_node);
   }
 
   scroll_node.SetCcNodeId(new_sequence_number_, id);

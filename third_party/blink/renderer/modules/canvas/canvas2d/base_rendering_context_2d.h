@@ -30,7 +30,7 @@
 
 namespace blink {
 
-MODULES_EXPORT BASE_DECLARE_FEATURE(kCanvasOverdrawOptimization);
+MODULES_EXPORT BASE_DECLARE_FEATURE(kDisableCanvasOverdrawOptimization);
 
 class CanvasColorCache;
 class CanvasImageSource;
@@ -740,7 +740,8 @@ ALWAYS_INLINE void BaseRenderingContext2D::CheckOverdraw(
     const cc::PaintFlags* flags,
     CanvasRenderingContext2DState::ImageType image_type,
     BaseRenderingContext2D::OverdrawOp overdraw_op) {
-  if (UNLIKELY(!base::FeatureList::IsEnabled(kCanvasOverdrawOptimization))) {
+  if (UNLIKELY(
+          base::FeatureList::IsEnabled(kDisableCanvasOverdrawOptimization))) {
     return;
   }
 
@@ -850,8 +851,9 @@ void BaseRenderingContext2D::Draw(
     CanvasRenderingContext2DState::PaintType paint_type,
     CanvasRenderingContext2DState::ImageType image_type,
     CanvasPerformanceMonitor::DrawType draw_type) {
-  if (!IsTransformInvertible())
+  if (UNLIKELY(!IsTransformInvertible())) {
     return;
+  }
 
   SkIRect clip_bounds;
   cc::PaintCanvas* paint_canvas = GetOrCreatePaintCanvas();

@@ -637,7 +637,7 @@ template("single_apple_toolchain") {
             "rm -rf {{output}} && cp -fRc {{source}} {{output}} 2>/dev/null " +
             "|| (rm -rf {{output}} && cp -fR {{source}} {{output}})"
       } else {
-        command = "rm -rf {{output}} && /bin/cp -Rl {{source}} {{output}}"
+        command = "rm -rf {{output}} && /bin/cp -Rld {{source}} {{output}}"
       }
       description = "COPY_BUNDLE_DATA {{source}} {{output}}"
       pool = "//build/toolchain/apple:bundle_pool($default_toolchain)"

@@ -24,7 +24,6 @@
 
 Дозволе које сте већ дали веб-сајтовима и апликацијама могу да важе за овај налог. Google налозима можете да управљате у <ph name="SETTINGS_LINK_BEGIN" />Подешавањима<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Преузимање...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium је био повезан са HID уређајем}=1{Chromium је повезан са HID уређајем}one{Chromium је повезан са HID уређајима}few{Chromium је повезан са HID уређајима}other{Chromium је повезан са HID уређајима}}</translation>
 <translation id="1708666629004767631">Доступна је нова, безбеднија верзија Chromium-а.</translation>
 <translation id="17264556997921157">Можете да видите и уклоните теме интересовања које сајтови користе да би вам приказивали огласе. Chromium процењује ваша интересовања на основу недавне историје прегледања.</translation>
 <translation id="1733725117201708356">Chromium ће ускоро избрисати податке прегледања</translation>
@@ -247,8 +246,10 @@
 <translation id="6442900851116057561">Рестартујте Chromium ОС</translation>
 <translation id="6455857529632101747">Добро дошли у Chromium профиле</translation>
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
+<translation id="648319183876919572">Побољшано безбедно прегледање доприноси заштити од опасних веб-сајтова и преузимања</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>
 <translation id="6542839706527980775">Сваки профил задржава сопствене Chromium податке, попут обележивача, историје, лозинки и другог садржаја</translation>
+<translation id="656935081669708576">Можете да се пребаците да бисте видели лозинке са другог Chromium профила</translation>
 <translation id="6570579332384693436">Да би исправио правописне грешке, Chromium шаље Google-овим серверима текст који уносите у поља за текст.</translation>
 <translation id="6598877126913850652">Иди на подешавања обавештења за Chromium</translation>
 <translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>

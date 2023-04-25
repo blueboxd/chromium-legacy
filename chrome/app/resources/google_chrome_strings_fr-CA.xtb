@@ -19,12 +19,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="1278833599417554002">Relancer &amp;Chrome pour le mettre à jour</translation>
 <translation id="1302523850133262269">Veuillez patienter pendant que Chrome installe les dernières mises à jour système.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> exige que vous lisiez et acceptiez les conditions d'utilisation suivantes pour utiliser cet appareil. Ces dernières n'étendent pas, ne modifient pas, ni ne restreignent les conditions d'utilisation de Google Chrome OS Flex.</translation>
+<translation id="1341711321000856656">Vous pouvez passer à un autre profil Chrome pour voir les mots de passe</translation>
 <translation id="1363996462118479832">Chrome OS n'a pas pu synchroniser vos données parce qu'une erreur s'est produite lors de la connexion.</translation>
 <translation id="137466361146087520">Google Chrome bêta</translation>
 <translation id="1399397803214730675">Une version plus récente de Google Chrome est déjà installée sur cet ordinateur. Si celle-ci ne fonctionne pas, désinstallez Google Chrome, puis réessayez.</translation>
 <translation id="139993653570221430">Vous pouvez changer d'avis à tout moment dans les paramètres de Chrome. Comme les essais se déroulent parallèlement à la méthode de diffusion actuelle des annonces, vous ne verrez pas de changements dans l'immédiat.</translation>
 <translation id="1434626383986940139">Applications Google Chrome Canary</translation>
-<translation id="1496905273983707119">{NUM_DEVICES,plural, =0{Google Chrome était connecté à un appareil HID}=1{Google Chrome est connecté à un appareil HID}one{Google Chrome est connecté à un appareil HID}other{Google Chrome est connecté à des appareils HID}}</translation>
 <translation id="1507198376417198979">Personnaliser votre nouveau profil Chrome</translation>
 <translation id="1516530951338665275">Google Chrome nécessite l'accès au Bluetooth pour continuer l'association. <ph name="IDS_BLUETOOTH_DEVICE_CHOOSER_AUTHORIZE_BLUETOOTH_LINK" /></translation>
 <translation id="1547295885616600893">Chrome OS fonctionne grâce à d'autres <ph name="BEGIN_LINK_CROS_OSS" />logiciels libres<ph name="END_LINK_CROS_OSS" />.</translation>
@@ -91,7 +91,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles et les modificat
 <translation id="2586406160782125153">Cette action entraînera la suppression de vos données de navigation sur cet appareil. Pour récupérer vos données plus tard, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2597976513418770460">Profitez de vos données du navigateur Chrome associées au compte <ph name="ACCOUNT_EMAIL" /></translation>
 <translation id="2622559029861875898">Chrome ne peut pas vérifier la présence de mises à jour. Essayez de vérifier votre connexion Internet.</translation>
-<translation id="2645435784669275700">Chrome OS</translation>
+<translation id="2645435784669275700">ChromeOS</translation>
 <translation id="2652691236519827073">Ouvrir le lien dans un nouvel ongle&amp;t Chrome</translation>
 <translation id="2665296953892887393">Aidez-nous à améliorer Google Chrome en nous envoyant des rapports d'erreur et des <ph name="UMA_LINK" />.</translation>
 <translation id="2689103672227170538">Cette extension a modifié la page qui s'affiche au démarrage de Chrome.</translation>

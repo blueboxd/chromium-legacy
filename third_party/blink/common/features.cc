@@ -26,12 +26,6 @@ BASE_FEATURE(kAnonymousIframeOriginTrial,
              "AnonymousIframeOriginTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Gate access to Attribution Reporting cross app and web APIs that allow
-// registering with a native attribution API.
-BASE_FEATURE(kAttributionReportingCrossAppWeb,
-             "AttributionReportingCrossAppWeb",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // If enabled, whenever form controls are removed from the DOM, the ChromeClient
 // is informed about this. This enables Autofill to trigger a reparsing of
 // forms.
@@ -355,15 +349,6 @@ const base::FeatureParam<int>
     kSharedStorageMaxAllowedFencedFrameDepthForSelectURL = {
         &kSharedStorageAPI,
         "SharedStorageMaxAllowedFencedFrameDepthForSelectURL", 1};
-const base::FeatureParam<SharedStorageWorkletImplementationType>::Option
-    shared_storage_worklet_implementation_types[] = {
-        {SharedStorageWorkletImplementationType::kLegacy, "legacy"},
-        {SharedStorageWorkletImplementationType::kBlinkStyle, "blink_style"}};
-const base::FeatureParam<SharedStorageWorkletImplementationType>
-    kSharedStorageWorkletImplementationType = {
-        &kSharedStorageAPI, "SharedStorageWorkletImplementationType",
-        SharedStorageWorkletImplementationType::kLegacy,
-        &shared_storage_worklet_implementation_types};
 
 BASE_FEATURE(kSharedStorageSelectURLLimit,
              "SharedStorageSelectURLLimit",
@@ -757,7 +742,7 @@ BASE_FEATURE(kCanvasCompressHibernatedImage,
 // Whether to aggressively free resources for canvases in background pages.
 BASE_FEATURE(kCanvasFreeMemoryWhenHidden,
              "CanvasFreeMemoryWhenHidden",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, add a new option, {imageOrientation: 'none'}, to
 // createImageBitmap, which ignores the image orientation metadata of the source
@@ -847,6 +832,10 @@ BASE_FEATURE(kKalmanHeuristics,
 BASE_FEATURE(kKalmanDirectionCutOff,
              "KalmanDirectionCutOff",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAcceleratedStaticBitmapImageSerialization,
+             "AcceleratedStaticBitmapImageSerialization",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kSkipTouchEventFilterTypeParamName[] = "type";
 const char kSkipTouchEventFilterTypeParamValueDiscrete[] = "discrete";
@@ -1231,6 +1220,11 @@ BASE_FEATURE(kLCPVideoFirstFrame,
              "LCPVideoFirstFrame",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables reporting Event Timing with matching presentation promise index only.
+BASE_FEATURE(kEventTimingMatchPresentationIndex,
+             "EventTimingMatchPresentationIndex",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOriginAgentClusterDefaultEnabled,
              "OriginAgentClusterDefaultEnable",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1258,10 +1252,6 @@ const base::FeatureParam<bool> kAllExceptLegacyWindowsPlatform = {
     &kReduceUserAgentPlatformOsCpu, "all_except_legacy_windows_platform", true};
 const base::FeatureParam<bool> kLegacyWindowsPlatform = {
     &kReduceUserAgentPlatformOsCpu, "legacy_windows_platform", true};
-
-BASE_FEATURE(kReportFCPOnlyOnSuccessfulCommit,
-             "ReportFCPOnlyOnSuccessfulCommit",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Source Location blocking BFCache is captured
 // to send it to the browser.
@@ -1437,6 +1427,24 @@ BASE_FEATURE(kImageLoadingPrioritizationFix,
              "ImageLoadingPrioritizationFix",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Boost the priority of the first N not-small images.
+// crbug.com/1431169
+BASE_FEATURE(kBoostImagePriority,
+             "BoostImagePriority",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// The number of images to bopost the priority of before returning
+// to the default (low) priority.
+const base::FeatureParam<int> kBoostImagePriorityImageCount{
+    &kBoostImagePriority, "image_count", 5};
+// Maximum size of an image (in px^2) to be considered "small".
+// Small images, where dimensions are specified in the markup, are not boosted.
+const base::FeatureParam<int> kBoostImagePriorityImageSize{&kBoostImagePriority,
+                                                           "image_size", 10000};
+// Number of medium-priority requests to allow in tight-mode independent of the
+// total number of outstanding requests.
+const base::FeatureParam<int> kBoostImagePriorityTightMediumLimit{
+    &kBoostImagePriority, "tight_medium_limit", 1};
+
 BASE_FEATURE(kAllowSourceSwitchOnPausedVideoMediaStream,
              "AllowSourceSwitchOnPausedVideoMediaStream",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1471,12 +1479,7 @@ BASE_FEATURE(kPrecompileInlineScripts,
 
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
-#if BUILDFLAG(IS_WIN)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
              "SerializeAccessibilityPostLifeycle",
@@ -1484,6 +1487,10 @@ BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
 
 BASE_FEATURE(kThreadedPreloadScanner,
              "ThreadedPreloadScanner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kEnableMachineLearningNeuralNetworkService,
+             "MachineLearningNeuralNetworkService",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFileSystemUrlNavigation,
@@ -1656,10 +1663,6 @@ BASE_FEATURE(kSSVTrailerEnforceExposureAssertion,
              "SSVTrailerEnforceExposureAssertion",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAbortSignalHandleBasedRemoval,
-             "AbortSignalHandleBasedRemoval",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kForceHighPerformanceGPUForWebGL,
              "ForceHighPerformanceGPUForWebGL",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1776,12 +1779,20 @@ BASE_FEATURE(kMemoryCacheStrongReferenceFilterImages,
              "MemoryCacheStrongReferenceFilterImages",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kMemoryCacheStrongReferenceFilterScripts,
+             "MemoryCacheStrongReferenceFilterScripts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kRemoteResourceCache,
              "RemoteResourceCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kKeepAliveInBrowserMigration,
              "KeepAliveInBrowserMigration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kGainmapHdrImages,
+             "GainmapHdrImages",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

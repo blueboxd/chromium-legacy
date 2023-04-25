@@ -52,6 +52,7 @@
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/web_applications/chromeos_web_app_experiments.h"
 #include "chrome/common/chrome_features.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -419,8 +420,7 @@ absl::optional<SkColor> WebAppBrowserController::GetThemeColor() const {
     return web_theme_color;
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          features::kMicrosoftOfficeWebAppExperiment)) {
+  if (chromeos::features::IsUploadOfficeToCloudEnabled()) {
     if (absl::optional<SkColor> fallback_page_theme_color =
             ChromeOsWebAppExperiments::GetFallbackPageThemeColor(
                 app_id(),
@@ -531,8 +531,7 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (base::FeatureList::IsEnabled(
-          features::kMicrosoftOfficeWebAppExperiment)) {
+  if (chromeos::features::IsUploadOfficeToCloudEnabled()) {
     size_t extended_scope_score =
         ChromeOsWebAppExperiments::GetExtendedScopeScore(app_id(), url.spec());
     if (extended_scope_score > 0)
@@ -785,8 +784,7 @@ absl::optional<RE2::Set> WebAppBrowserController::GetTabbedHomeTabScope()
   TabStrip tab_strip = web_app->tab_strip().value();
   if (const auto* params =
           absl::get_if<blink::Manifest::HomeTabParams>(&tab_strip.home_tab)) {
-    std::vector<blink::Manifest::UrlPattern> scope_patterns =
-        params->scope_patterns;
+    std::vector<blink::UrlPattern> scope_patterns = params->scope_patterns;
 
     RE2::Set scope_set = RE2::Set(RE2::Options(), RE2::Anchor::UNANCHORED);
     for (auto& scope : scope_patterns) {

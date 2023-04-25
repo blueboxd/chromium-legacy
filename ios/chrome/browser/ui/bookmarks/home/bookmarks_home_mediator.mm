@@ -35,9 +35,9 @@
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_home_node_item.h"
+#import "ios/chrome/browser/ui/bookmarks/home/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_consumer.h"
 #import "ios/chrome/browser/ui/bookmarks/home/bookmarks_home_shared_state.h"
 #import "ios/chrome/browser/ui/bookmarks/synced_bookmarks_bridge.h"
@@ -188,15 +188,20 @@ const int kMaxBookmarksSearchResults = 50;
   if (!self.sharedState.tableViewDisplayedRootNode) {
     return;
   }
+  bookmarks::BookmarkModel* currentModel =
+      bookmark_utils_ios::GetBookmarkModelForNode(
+          self.sharedState.tableViewDisplayedRootNode,
+          self.sharedState.profileBookmarkModel,
+          self.sharedState.accountBookmarkModel);
+  BOOL shouldDisplayCloudSlashIcon =
+      [self shouldDisplayCloudSlashIconWithBookmarkModel:currentModel];
   // Add all bookmarks and folders of the currently displayed node to the table.
   for (const auto& child :
        self.sharedState.tableViewDisplayedRootNode->children()) {
     BookmarksHomeNodeItem* nodeItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark
         bookmarkNode:child.get()];
-    nodeItem.shouldDisplayCloudSlashIcon =
-        bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-            _syncSetupService);
+    nodeItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
     [self.sharedState.tableViewModel
                         addItem:nodeItem
         toSectionWithIdentifier:BookmarksHomeSectionIdentifierBookmarks];
@@ -213,7 +218,8 @@ const int kMaxBookmarksSearchResults = 50;
   [self
       generateTableViewDataForModel:self.sharedState.profileBookmarkModel
                           inSection:BookmarksHomeSectionIdentifierRootProfile];
-  if (![self accountBookmarkModelAvailable]) {
+  if (!bookmark_utils_ios::IsAccountBookmarkModelAvailable(
+          _authenticationService)) {
     return;
   }
   [self updateHeaderForProfileRootNode];
@@ -226,14 +232,14 @@ const int kMaxBookmarksSearchResults = 50;
 - (void)generateTableViewDataForModel:(bookmarks::BookmarkModel*)model
                             inSection:(BookmarksHomeSectionIdentifier)
                                           sectionIdentifier {
+  BOOL shouldDisplayCloudSlashIcon =
+      [self shouldDisplayCloudSlashIconWithBookmarkModel:model];
   // Add "Mobile Bookmarks" to the table.
   const BookmarkNode* mobileNode = model->mobile_node();
   BookmarksHomeNodeItem* mobileItem =
       [[BookmarksHomeNodeItem alloc] initWithType:BookmarksHomeItemTypeBookmark
                                      bookmarkNode:mobileNode];
-  mobileItem.shouldDisplayCloudSlashIcon =
-      bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-          _syncSetupService);
+  mobileItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
   [self.sharedState.tableViewModel addItem:mobileItem
                    toSectionWithIdentifier:sectionIdentifier];
 
@@ -243,9 +249,7 @@ const int kMaxBookmarksSearchResults = 50;
     BookmarksHomeNodeItem* barItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark
         bookmarkNode:bookmarkBar];
-    barItem.shouldDisplayCloudSlashIcon =
-        bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-            _syncSetupService);
+    barItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
     [self.sharedState.tableViewModel addItem:barItem
                      toSectionWithIdentifier:sectionIdentifier];
   }
@@ -255,9 +259,7 @@ const int kMaxBookmarksSearchResults = 50;
     BookmarksHomeNodeItem* otherItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark
         bookmarkNode:otherBookmarks];
-    otherItem.shouldDisplayCloudSlashIcon =
-        bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-            _syncSetupService);
+    otherItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
     [self.sharedState.tableViewModel addItem:otherItem
                      toSectionWithIdentifier:sectionIdentifier];
   }
@@ -271,9 +273,7 @@ const int kMaxBookmarksSearchResults = 50;
     BookmarksHomeNodeItem* managedItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark
         bookmarkNode:managedNode];
-    managedItem.shouldDisplayCloudSlashIcon =
-        bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-            _syncSetupService);
+    managedItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
     [self.sharedState.tableViewModel addItem:managedItem
                      toSectionWithIdentifier:sectionIdentifier];
   }
@@ -287,6 +287,9 @@ const int kMaxBookmarksSearchResults = 50;
   bookmarks::QueryFields query;
   query.word_phrase_query.reset(new std::u16string);
   *query.word_phrase_query = base::SysNSStringToUTF16(searchText);
+  BOOL shouldDisplayCloudSlashIcon = [self
+      shouldDisplayCloudSlashIconWithBookmarkModel:self.sharedState
+                                                       .profileBookmarkModel];
   GetBookmarksMatchingProperties(self.sharedState.profileBookmarkModel, query,
                                  kMaxBookmarksSearchResults, &nodes);
 
@@ -295,9 +298,7 @@ const int kMaxBookmarksSearchResults = 50;
     BookmarksHomeNodeItem* nodeItem = [[BookmarksHomeNodeItem alloc]
         initWithType:BookmarksHomeItemTypeBookmark
         bookmarkNode:node];
-    nodeItem.shouldDisplayCloudSlashIcon =
-        bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
-            _syncSetupService);
+    nodeItem.shouldDisplayCloudSlashIcon = shouldDisplayCloudSlashIcon;
     [self.sharedState.tableViewModel
                         addItem:nodeItem
         toSectionWithIdentifier:BookmarksHomeSectionIdentifierBookmarks];
@@ -440,7 +441,7 @@ const int kMaxBookmarksSearchResults = 50;
   // (When adding new folder, table is already been updated. So no need to
   // reload here.)
   if (bookmarkNode == self.sharedState.tableViewDisplayedRootNode &&
-      !self.sharedState.addingNewFolder) {
+      !self.addingNewFolder) {
     if (self.sharedState.currentlyInEditMode && ![self hasBookmarksOrFolders]) {
       [self.consumer setTableViewEditing:NO];
     }
@@ -662,18 +663,19 @@ const int kMaxBookmarksSearchResults = 50;
   return syncDisabledPolicy || syncTypesDisabledPolicy;
 }
 
-// Returns YES if the account storage should be visible.
-- (BOOL)accountBookmarkModelAvailable {
-  if (!base::FeatureList::IsEnabled(
-          bookmarks::kEnableBookmarksAccountStorage)) {
-    return NO;
+// Returns weather the slashed cloud icon should be displayed for
+// `bookmarkModel`.
+- (BOOL)shouldDisplayCloudSlashIconWithBookmarkModel:
+    (bookmarks::BookmarkModel*)bookmarkModel {
+  if (bookmarkModel == self.sharedState.profileBookmarkModel) {
+    return bookmark_utils_ios::ShouldDisplayCloudSlashIconForProfileModel(
+        _syncSetupService);
   }
-  // TODO (crbug.com/1430453): Needs to use better signal to know if
-  // the account is enabled or not.
-  return _authenticationService->HasPrimaryIdentity(
-             signin::ConsentLevel::kSignin) &&
-         !_authenticationService->HasPrimaryIdentity(
-             signin::ConsentLevel::kSync);
+  CHECK_EQ(bookmarkModel, self.sharedState.accountBookmarkModel)
+      << "bookmarkModel: " << bookmarkModel
+      << ", profileBookmarkModel: " << self.sharedState.profileBookmarkModel
+      << ", accountBookmarkModel: " << self.sharedState.accountBookmarkModel;
+  return NO;
 }
 
 @end

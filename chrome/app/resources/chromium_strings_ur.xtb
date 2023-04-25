@@ -24,7 +24,6 @@
 
 ویب سائٹس اور ایپس کو پہلے سے آپ کی دی گئی اجازتیں اس اکاؤنٹ پر لاگو ہو سکتی ہیں۔ آپ <ph name="SETTINGS_LINK_BEGIN" />ترتیبات<ph name="SETTINGS_LINK_END" /> میں اپنے Google اکاؤنٹس کا نظم کر سکتے ہیں۔</translation>
 <translation id="1640672724030957280">ڈاؤن لوڈ ہو رہی ہے…</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{‏Chromium ایک HID آلے سے منسلک تھا}=1{‏Chromium ایک HID آلے سے منسلک ہے}other{‏Chromium ‏HID آلات سے منسلک ہے}}</translation>
 <translation id="1708666629004767631">‏Chromium کا ایک نیا، محفوظ تر ورژن دستیاب ہے۔</translation>
 <translation id="17264556997921157">‏آپ دلچسپی کے ان موضوعات کو دیکھ اور ہٹا سکتے ہیں جنہیں سائٹس آپ کو اشتہارات دکھانے کے لیے استعمال کرتی ہیں۔ Chromium آپ کی حالیہ براؤزنگ کی سرگزشت کی بنیاد پر آپ کی دلچسپیوں کا تخمینہ لگاتا ہے۔</translation>
 <translation id="1733725117201708356">‏Chromium جلد ہی براؤزنگ ڈیٹا کو حذف کر دے گا</translation>
@@ -247,8 +246,10 @@
 <translation id="6442900851116057561">‏ChromiumOS کو ری سٹارٹ کریں</translation>
 <translation id="6455857529632101747">‏Chromium کی پروفائلز میں خوش آمدید</translation>
 <translation id="6475912303565314141">‏یہ اس کو بھی کنٹرول کرتا ہے جب آپ Chromium کو اسٹارٹ کرتے ہیں تو کون سا صفحہ دکھایا جاتا ہے۔</translation>
+<translation id="648319183876919572">بہتر کردہ محفوظ براؤزنگ آپ کو خطرناک ویب سائٹس اور ڈاؤن لوڈز سے بچانے کے لیے بہت کچھ کرتی ہے</translation>
 <translation id="6510925080656968729">‏Chromium اَن انسٹال کریں</translation>
 <translation id="6542839706527980775">‏ہر پروفائل میں بُک مارکس، سرگزشت اور پاس ورڈز وغیرہ جیسی Chromium کی اپنی ذاتی معلومات ہوتی ہے</translation>
+<translation id="656935081669708576">‏آپ دوسرے Chromium پروفائل سے پاس ورڈز دیکھنے کے لیے سوئچ کر سکتے ہیں</translation>
 <translation id="6570579332384693436">‏ہجے کی غلطیاں ٹھیک کرنے کے لیے آپ ٹیکسٹ فیلڈز میں جو ٹیکسٹ ٹائپ کرتے ہیں Chromium اسے Google کو بھیجتا ہے</translation>
 <translation id="6598877126913850652">‏Chromium کی اطلاع کی ترتیبات پر جائیں</translation>
 <translation id="6613594504749178791">‏آپ کی تبدیلیاں Chromium کو اگلی بار آپ کے دوبارہ شروع کرنے کے وقت نافذ ہوں گی۔</translation>

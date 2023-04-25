@@ -24,6 +24,7 @@
 #include "chrome/browser/lifetime/browser_shutdown.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "components/browsing_data/core/browsing_data_policies_utils.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
@@ -207,13 +208,13 @@ std::vector<ScheduledRemovalSettings> ConvertToScheduledRemovalSettings(
   std::vector<ScheduledRemovalSettings> scheduled_removals_settings;
   for (const auto& setting : browsing_data_settings) {
     const auto* data_types =
-        setting.FindListKey(browsing_data::policy_fields::kDataTypes);
-    const auto time_to_live_in_hours =
-        setting.FindIntKey(browsing_data::policy_fields::kTimeToLiveInHours);
-
-    scheduled_removals_settings.push_back(
-        {GetRemoveMask(data_types->GetList()),
-         GetOriginTypeMask(data_types->GetList()), *time_to_live_in_hours});
+        setting.GetDict().FindList(browsing_data::policy_fields::kDataTypes);
+    const auto time_to_live_in_hours = setting.GetDict().FindInt(
+        browsing_data::policy_fields::kTimeToLiveInHours);
+    DCHECK(data_types);
+    scheduled_removals_settings.push_back({GetRemoveMask(*data_types),
+                                           GetOriginTypeMask(*data_types),
+                                           *time_to_live_in_hours});
   }
   return scheduled_removals_settings;
 }
@@ -245,19 +246,6 @@ base::flat_set<GURL> GetOpenedUrls(Profile* profile) {
 }  // namespace
 
 namespace browsing_data {
-
-namespace policy_data_types {
-
-const char kBrowsingHistory[] = "browsing_history";
-const char kDownloadHistory[] = "download_history";
-const char kCookiesAndOtherSiteData[] = "cookies_and_other_site_data";
-const char kCachedImagesAndFiles[] = "cached_images_and_files";
-const char kPasswordSignin[] = "password_signin";
-const char kAutofill[] = "autofill";
-const char kSiteSettings[] = "site_settings";
-const char kHostedAppData[] = "hosted_app_data";
-
-}  // namespace policy_data_types
 
 namespace policy_fields {
 

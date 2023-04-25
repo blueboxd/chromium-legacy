@@ -573,6 +573,7 @@
 <translation id="5931523347251946569">未找到文件</translation>
 <translation id="5939518447894949180">重置</translation>
 <translation id="594552776027197022">生成随机密钥对</translation>
+<translation id="5946538341867151940">您尚未连接网络。如果您的移动运营商推荐使用自定义 APN，请选择“+ 新建 APN”，然后输入 APN 信息</translation>
 <translation id="5972388717451707488">更新引擎</translation>
 <translation id="5984145644188835034">默认壁纸</translation>
 <translation id="6017514345406065928">绿色</translation>
@@ -728,6 +729,7 @@
 <translation id="7281657306185710294">微风拂面</translation>
 <translation id="7287310195820267359">壁纸集</translation>
 <translation id="7297226631177386107">无法通过防火墙连接到 HTTPS 网站</translation>
+<translation id="7297726121602187087">深绿色</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">在 Chromebook 帮助论坛中向专家提问</translation>
@@ -762,6 +764,7 @@
 <translation id="7570674786725311828">USB 触摸屏</translation>
 <translation id="7595982850646262331">电池续航时间还剩 <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">使用鼠标或箭头键调整位置。</translation>
+<translation id="7618774594543487847">中性</translation>
 <translation id="7620771111601174153">在帮助中心内了解详情</translation>
 <translation id="763165478673169849">上次重置时间</translation>
 <translation id="7648838807254605802">HTTPS 延迟较高</translation>

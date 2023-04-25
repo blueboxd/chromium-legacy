@@ -662,8 +662,6 @@ class StartupBrowserCreatorChromeAppShortcutTest
             : GURL(chrome::kChromeUIAppsWithDeprecationDialogURL + app_id);
     EXPECT_EQ(expected_url,
               other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
-    EXPECT_EQ(expected_url,
-              other_tab_strip->GetWebContentsAt(0)->GetVisibleURL());
 
     // Verify that the Deprecated Apps Dialog View also shows up.
     EXPECT_TRUE(waiter.WaitIfNeededAndGet() != nullptr);
@@ -4290,10 +4288,10 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorLacrosNoWindowTest, SingleProfile) {
 
   // Checks that it's possible to open a profile after startup.
   // Regression test for https://crbug.com/1278549
-  base::test::TestFuture<Profile*> future;
+  base::test::TestFuture<Browser*> future;
   profiles::SwitchToProfile(GetDefaultProfileDir(),
                             /*always_create=*/false, future.GetCallback());
-  Profile* profile = future.Get<0>();
+  Profile* profile = future.Get()->profile();
   EXPECT_NE(profile, nullptr);
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 

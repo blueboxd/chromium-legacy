@@ -302,6 +302,10 @@ class MockMojomPrivateAggregationHost
        blink::mojom::blink::AggregationServiceMode,
        blink::mojom::blink::DebugModeDetailsPtr),
       (override));
+  MOCK_METHOD(void,
+              SetDebugModeDetailsOnNullReport,
+              (blink::mojom::blink::DebugModeDetailsPtr),
+              (override));
 
  private:
   mojo::ReceiverSet<blink::mojom::blink::PrivateAggregationHost> receiver_set_;
@@ -415,7 +419,10 @@ class SharedStorageWorkletTest : public testing::Test {
         shared_storage_worklet_service_.BindNewPipeAndPassReceiver();
 
     messaging_proxy_ = MakeGarbageCollected<SharedStorageWorkletMessagingProxy>(
-        base::SingleThreadTaskRunner::GetCurrentDefault(), std::move(receiver),
+        base::SingleThreadTaskRunner::GetCurrentDefault(),
+        CrossVariantMojoReceiver<
+            mojom::blink::SharedStorageWorkletServiceInterfaceBase>(
+            std::move(receiver)),
         worklet_terminated_future_.GetCallback());
 
     mojo::PendingAssociatedRemote<mojom::SharedStorageWorkletServiceClient>

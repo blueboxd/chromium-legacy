@@ -22,7 +22,6 @@
 
 De tilladelser, du har givet til websites og apps, gælder muligvis for denne konto. Du kan administrere dine Google-konti under <ph name="SETTINGS_LINK_BEGIN" />Indstillinger<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Downloader...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium har ikke forbindelse til nogen HID-enhed}=1{Chromium har forbindelse til en HID-enhed}one{Chromium har forbindelse til en HID-enhed}other{Chromium har forbindelse til HID-enheder}}</translation>
 <translation id="1708666629004767631">Der findes en ny og mere sikker version af Chromium.</translation>
 <translation id="17264556997921157">Du kan se og fjerne interesseområder, som websites bruger til at vise annoncer. Chromium estimerer dine interesser på baggrund af din seneste browserhistorik.</translation>
 <translation id="1733725117201708356">Chromium sletter snart browserdataene</translation>
@@ -245,8 +244,10 @@ De tilladelser, du har givet til websites og apps, gælder muligvis for denne ko
 <translation id="6442900851116057561">Genstart Chromium OS</translation>
 <translation id="6455857529632101747">Velkommen til Chromium-profiler</translation>
 <translation id="6475912303565314141">Den styrer også, hvilken side der vises, når du åbner Chromium.</translation>
+<translation id="648319183876919572">Udvidet beskyttet browsing gør mere for at beskytte dig mod skadelige websites og downloads</translation>
 <translation id="6510925080656968729">Afinstaller Chromium</translation>
 <translation id="6542839706527980775">Hver profil har sine egne Chromium-oplysninger som f.eks. bogmærker, historik, adgangskoder m.m.</translation>
+<translation id="656935081669708576">Du kan skifte for at se adgangskoder fra en anden Chromium-profil</translation>
 <translation id="6570579332384693436">Chromium sender den tekst, du skriver i tekstfelter, til Google for at rette stavefejl</translation>
 <translation id="6598877126913850652">Gå til indstillinger for Chromium-notifikationer</translation>
 <translation id="6613594504749178791">Dine ændringer træder i kraft, næste gang du genstarter Chromium.</translation>

@@ -673,7 +673,6 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     return false;
   }
 
-  LayoutState layout_state(root);
   if (scroll_anchoring_scrollable_areas_) {
     for (auto& scrollable_area : *scroll_anchoring_scrollable_areas_) {
       if (scrollable_area->GetScrollAnchor() &&
@@ -682,7 +681,11 @@ bool LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     }
   }
 
-  To<LayoutBox>(root).LayoutSubtreeRoot();
+  if (RuntimeEnabledFeatures::LayoutNewSubtreeRootEnabled()) {
+    To<LayoutBox>(root).LayoutSubtreeRoot();
+  } else {
+    To<LayoutBox>(root).LayoutSubtreeRootOld();
+  }
   return true;
 }
 
@@ -727,14 +730,8 @@ void LocalFrameView::PerformLayout() {
   if (!in_subtree_layout) {
     ClearLayoutSubtreeRootsAndMarkContainingBlocks();
     Node* body = document->body();
-    if (body && body->GetLayoutObject()) {
-      if (IsA<HTMLFrameSetElement>(*body)) {
-        body->GetLayoutObject()->SetChildNeedsLayout();
-      } else if (IsA<HTMLBodyElement>(*body)) {
-        if (!first_layout_ && size_.Height() != GetLayoutSize().height() &&
-            body->GetLayoutObject()->EnclosingBox()->StretchesToViewport())
-          body->GetLayoutObject()->SetChildNeedsLayout();
-      }
+    if (IsA<HTMLFrameSetElement>(body) && body->GetLayoutObject()) {
+      body->GetLayoutObject()->SetChildNeedsLayout();
     }
 
     first_layout_ = false;
@@ -750,23 +747,7 @@ void LocalFrameView::PerformLayout() {
       }
     }
 
-    LayoutSize old_size = size_;
-
     size_ = LayoutSize(GetLayoutSize());
-
-    if (old_size != size_) {
-      LayoutBox* root_layout_object =
-          document->documentElement()
-              ? document->documentElement()->GetLayoutBox()
-              : nullptr;
-      LayoutBox* body_layout_object = root_layout_object && document->body()
-                                          ? document->body()->GetLayoutBox()
-                                          : nullptr;
-      if (body_layout_object && body_layout_object->StretchesToViewport())
-        body_layout_object->SetChildNeedsLayout();
-      else if (root_layout_object && root_layout_object->StretchesToViewport())
-        root_layout_object->SetChildNeedsLayout();
-    }
   }
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID(
@@ -1222,23 +1203,27 @@ void LocalFrameView::RemoveBackgroundAttachmentFixedObject(
   SetNeedsPaintPropertyUpdate();
 }
 
+static bool BackgroundAttachmentFixedNeedsRepaintOnScroll(
+    const LayoutObject& object) {
+  // We should not add such object in the background_attachment_fixed_objects_.
+  DCHECK(!To<LayoutBoxModelObject>(object).BackgroundTransfersToView());
+  // The background doesn't need repaint if it's the viewport background and it
+  // paints onto the border box space only.
+  if (IsA<LayoutView>(object) &&
+      object.GetBackgroundPaintLocation() == kBackgroundPaintInBorderBoxSpace) {
+    return false;
+  }
+  return !object.CanCompositeBackgroundAttachmentFixed();
+}
+
 bool LocalFrameView::RequiresMainThreadScrollingForBackgroundAttachmentFixed()
     const {
-  if (background_attachment_fixed_objects_.empty())
-    return false;
-  if (background_attachment_fixed_objects_.size() > 1)
-    return true;
-
-  const auto* object = To<LayoutBoxModelObject>(
-      background_attachment_fixed_objects_.begin()->Get());
-  // We should not add such object in the set.
-  DCHECK(!object->BackgroundTransfersToView());
-  // If the background is viewport background and it paints onto the border box
-  // space only, then it doesn't need main thread scrolling.
-  if (IsA<LayoutView>(object) &&
-      object->GetBackgroundPaintLocation() == kBackgroundPaintInBorderBoxSpace)
-    return false;
-  return true;
+  for (const auto& object : background_attachment_fixed_objects_) {
+    if (BackgroundAttachmentFixedNeedsRepaintOnScroll(*object)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 void LocalFrameView::AddFixedPositionObject(LayoutObject& object) {
@@ -1336,19 +1321,15 @@ bool LocalFrameView::ShouldSetCursor() const {
 }
 
 void LocalFrameView::InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
-    const LayoutObject& scrolled_object) {
+    const LayoutBox& scroller) {
   for (const auto& layout_object : background_attachment_fixed_objects_) {
-    if (scrolled_object != GetLayoutView() &&
-        !layout_object->IsDescendantOf(&scrolled_object))
+    if (scroller != GetLayoutView() &&
+        !layout_object->IsDescendantOf(&scroller)) {
       continue;
-    // An object needs to repaint the background on scroll when it has
-    // background-attachment:fixed unless the object is the LayoutView and the
-    // background is not painted on the scrolling contents.
-    if (layout_object == GetLayoutView() &&
-        !(GetLayoutView()->GetBackgroundPaintLocation() &
-          kBackgroundPaintInContentsSpace))
-      continue;
-    layout_object->SetBackgroundNeedsFullPaintInvalidation();
+    }
+    if (BackgroundAttachmentFixedNeedsRepaintOnScroll(*layout_object)) {
+      layout_object->SetBackgroundNeedsFullPaintInvalidation();
+    }
   }
 }
 
@@ -2764,8 +2745,21 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
 
   size_t total_animations_count = 0;
   ForAllNonThrottledLocalFrameViews(
-      [this, &needed_update,
+      [this, needed_update,
        &total_animations_count](LocalFrameView& frame_view) {
+        if (RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled() &&
+            needed_update && paint_artifact_compositor_ &&
+            frame_view.UserScrollableAreas()) {
+          for (auto& scrollable_area : *frame_view.UserScrollableAreas()) {
+            const auto* properties = scrollable_area->GetLayoutBox()
+                                         ->FirstFragment()
+                                         .PaintProperties();
+            scrollable_area->SetShouldScrollOnMainThread(
+                !properties || !properties->Scroll() ||
+                paint_artifact_compositor_->GetMainThreadScrollingReasons(
+                    *properties->Scroll()));
+          }
+        }
         if (auto* scrollable_area = frame_view.GetScrollableArea())
           scrollable_area->UpdateCompositorScrollAnimations();
         if (const auto* animating_scrollable_areas =
@@ -3082,12 +3076,21 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
         });
   }
 
+  Vector<const TransformPaintPropertyNode*> anchor_scroll_container_nodes;
+  if (!base::FeatureList::IsEnabled(::features::kScrollUnification)) {
+    ForAllNonThrottledLocalFrameViews([&anchor_scroll_container_nodes](
+                                          LocalFrameView& frame_view) {
+      frame_view.GetAnchorScrollContainerNodes(anchor_scroll_container_nodes);
+    });
+  }
+
   WTF::Vector<std::unique_ptr<ViewTransitionRequest>> view_transition_requests;
   AppendViewTransitionRequests(view_transition_requests);
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      scroll_translation_nodes, std::move(view_transition_requests));
+      scroll_translation_nodes, anchor_scroll_container_nodes,
+      std::move(view_transition_requests));
 
   CreatePaintTimelineEvents();
 }
@@ -4600,10 +4603,14 @@ bool LocalFrameView::WillDoPaintHoldingForFCP() const {
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
   MainThreadScrollingReasons reasons = 0;
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
+  DCHECK_GE(Lifecycle().GetState(), DocumentLifecycle::kPaintClean);
   const auto* properties = GetLayoutView()->FirstFragment().PaintProperties();
-  if (properties && properties->Scroll())
-    reasons = properties->Scroll()->GetMainThreadScrollingReasons();
+  if (properties && properties->Scroll()) {
+    const auto* compositor =
+        GetFrame().LocalFrameRoot().View()->paint_artifact_compositor_.get();
+    CHECK(compositor);
+    reasons = compositor->GetMainThreadScrollingReasons(*properties->Scroll());
+  }
   return String(cc::MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
@@ -4773,6 +4780,46 @@ void LocalFrameView::GetUserScrollTranslationNodes(
         area->GetLayoutBox()->FirstFragment().PaintProperties();
     if (paint_properties && paint_properties->Scroll()) {
       scroll_translation_nodes.push_back(paint_properties->ScrollTranslation());
+    }
+  }
+}
+
+void LocalFrameView::GetAnchorScrollContainerNodes(
+    Vector<const TransformPaintPropertyNode*>& anchor_scroll_container_nodes) {
+  const auto* scrollable_areas = UserScrollableAreas();
+  if (!scrollable_areas) {
+    return;
+  }
+
+  // Ideally, we should collect the ids into a hash set, but defining a
+  // WTF::HashSet<cc::ElementId> requires introducing a magic deleted value to
+  // cc::ElementId. To prevent complicating the class for just one client in
+  // Blink that will soon be removed (when ScrollUnification is fully enabled,
+  // see crbug.com/1378021) and is not performance-sensitive, we choose to just
+  // use vector and binary search.
+  Vector<cc::ElementId> scroll_container_ids;
+  GetFrame().CollectAnchorScrollContainerIds(&scroll_container_ids);
+  std::sort(scroll_container_ids.begin(), scroll_container_ids.end());
+  scroll_container_ids.erase(
+      std::unique(scroll_container_ids.begin(), scroll_container_ids.end()),
+      scroll_container_ids.end());
+
+  if (scroll_container_ids.empty()) {
+    return;
+  }
+
+  for (const auto& area : *scrollable_areas) {
+    const auto* paint_properties =
+        area->GetLayoutBox()->FirstFragment().PaintProperties();
+    if (paint_properties && paint_properties->Scroll()) {
+      cc::ElementId element_id = area->GetScrollElementId();
+      if (cc::ElementId* iter =
+              std::lower_bound(scroll_container_ids.begin(),
+                               scroll_container_ids.end(), element_id);
+          iter != scroll_container_ids.end() && *iter == element_id) {
+        anchor_scroll_container_nodes.push_back(
+            paint_properties->ScrollTranslation());
+      }
     }
   }
 }

@@ -17,6 +17,7 @@ import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
+import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
@@ -38,6 +39,7 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
     private final SelectionDelegate mSelectionDelegate;
     private final BookmarkModel mBookmarkModel;
     private final BookmarkOpener mBookmarkOpener;
+    private final BookmarkUiPrefs mBookmarkUiPrefs;
 
     // TODO(crbug.com/1413463): Remove reference to BookmarkDelegate if possible.
     private @Nullable BookmarkDelegate mBookmarkDelegate;
@@ -48,7 +50,7 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
             DragReorderableRecyclerViewAdapter dragReorderableRecyclerViewAdapter,
             OneshotSupplier<BookmarkDelegate> bookmarkDelegateSupplier,
             SelectionDelegate selectionDelegate, BookmarkModel bookmarkModel,
-            BookmarkOpener bookmarkOpener) {
+            BookmarkOpener bookmarkOpener, BookmarkUiPrefs bookmarkUiPrefs) {
         mContext = context;
         mModel = model;
 
@@ -59,7 +61,13 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
         mSelectionDelegate.addObserver(this);
         mBookmarkModel = bookmarkModel;
         mBookmarkOpener = bookmarkOpener;
+        mBookmarkUiPrefs = bookmarkUiPrefs;
 
+        final @BookmarkRowDisplayPref int pref = mBookmarkUiPrefs.getBookmarkRowDisplayPref();
+        if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
+            mModel.set(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID,
+                    pref == BookmarkRowDisplayPref.COMPACT ? R.id.compact_view : R.id.visual_view);
+        }
         bookmarkDelegateSupplier.onAvailable((bookmarkDelegate) -> {
             mBookmarkDelegate = bookmarkDelegate;
             mModel.set(BookmarkToolbarProperties.OPEN_SEARCH_UI_RUNNABLE,
@@ -91,9 +99,11 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
             mModel.set(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID, id);
             return true;
         } else if (id == R.id.visual_view) {
+            mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.VISUAL);
             mModel.set(BookmarkToolbarProperties.CHECKED_VIEW_MENU_ID, id);
             return true;
         } else if (id == R.id.compact_view) {
+            mBookmarkUiPrefs.setBookmarkRowDisplayPref(BookmarkRowDisplayPref.COMPACT);
             mModel.set(BookmarkToolbarProperties.CHECKED_VIEW_MENU_ID, id);
             return true;
         } else if (id == R.id.edit_menu_id) {
@@ -199,6 +209,12 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
+        // If we're in the middle of a selection, do not override things.
+        // TODO(https://crbug.com/1435024): Rework logic to not be more robust.
+        if (mSelectionDelegate.isSelectionEnabled()) {
+            return;
+        }
+
         mCurrentFolder = folder;
         mModel.set(BookmarkToolbarProperties.CURRENT_FOLDER, mCurrentFolder);
 
@@ -219,7 +235,7 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
         } else if (folder.equals(BookmarkId.SHOPPING_FOLDER)) {
             title = res.getString(R.string.price_tracking_bookmarks_filter_title);
             navigationButton = NavigationButton.BACK;
-        } else if (mBookmarkModel.getTopLevelFolderParentIDs().contains(folderItem.getParentId())
+        } else if (mBookmarkModel.getTopLevelFolderParentIds().contains(folderItem.getParentId())
                 && TextUtils.isEmpty(folderItem.getTitle())) {
             title = res.getString(R.string.bookmarks);
             navigationButton = NavigationButton.BACK;

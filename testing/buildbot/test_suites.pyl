@@ -727,6 +727,13 @@
       },
     },
 
+    'chromeos_js_code_coverage_browser_tests' : {
+      'chromeos_js_code_coverage_browser_tests': {
+        'args': [],
+        'test': 'browser_tests',
+      }
+    },
+
     'chromeos_remote_device_isolated_tests': {
       'telemetry_perf_unittests': {
         'args': [
@@ -1021,6 +1028,9 @@
       },
       'crashpad_tests': {},
       'crypto_unittests': {},
+      'env_chromium_unittests': {
+        'ci_only': True,
+      },
       'events_unittests': {},
       'gcm_unit_tests': {},
       'gin_unittests': {},
@@ -1029,6 +1039,9 @@
       'gwp_asan_unittests': {},
       'ipc_tests': {},
       'latency_unittests': {},
+      'leveldb_unittests': {
+        'ci_only': True,
+      },
       'libjingle_xmpp_unittests': {},
       'liburlpattern_unittests': {},
       'media_unittests': {},
@@ -1263,9 +1276,6 @@
         'use_isolated_scripts_api': True,
       },
       'chrome_junit_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.nougat-x86-rel.chrome_junit_tests.filter',
-        ],
         'mixins': [
           'x86-64',
           'linux-bionic',
@@ -2238,24 +2248,6 @@
       },
     },
 
-    'fuchsia_chrome_large_gtests': {
-      'browser_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
-          '--test-arg=--test-launcher-timeout=60000',
-        ],
-        'swarming': {
-          'shards': 40,
-        },
-      },
-      'sync_integration_tests': {},
-      'unit_tests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.unit_tests.filter',
-        ],
-      },
-    },
-
     'fuchsia_chrome_small_gtests': {
       'courgette_unittests': {},
       'extensions_unittests': {},
@@ -3134,6 +3126,43 @@
       },
     },
 
+    'gpu_pixel_passthrough_telemetry_tests': {
+      'maps_passthrough': {
+        'name': 'maps_pixel_passthrough_test',
+        'telemetry_test_name': 'maps',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'mixins': [
+          'skia_gold_test',
+          'has_native_resultdb_integration',
+        ],
+      },
+      'pixel_skia_passthrough': {
+        'name': 'pixel_skia_gold_passthrough_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--use-cmd-decoder=passthrough --use-gl=angle',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'mixins': [
+          'skia_gold_test',
+          'has_native_resultdb_integration',
+        ],
+        'telemetry_test_name': 'pixel',
+      },
+    },
+
     'gpu_skia_renderer_vulkan_passthrough_telemetry_tests': {
       'vulkan_pixel_skia': {
         'name': 'vulkan_pixel_skia_gold_test',
@@ -3420,6 +3449,32 @@
       },
     },
 
+    'gpu_webgl2_conformance_gles_passthrough_representative_telemetry_tests': {
+      'webgl2_conformance_gles_passthrough_tests': {
+        'telemetry_test_name': 'webgl2_conformance',
+        'args': [
+          '--webgl-conformance-version=2.0.1',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json',
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          '--test-filter=conformance/rendering/*::conformance2/rendering/*',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 1,
+        },
+      },
+    },
+
     'gpu_webgl2_conformance_gles_passthrough_telemetry_tests': {
       'webgl2_conformance_gles_passthrough_tests': {
         'telemetry_test_name': 'webgl2_conformance',
@@ -3581,6 +3636,31 @@
         ],
         'swarming': {
           'shards': 2,
+        },
+      },
+    },
+
+    'gpu_webgl_conformance_gles_passthrough_representative_telemetry_tests': {
+      'webgl_conformance_gles_passthrough': {
+        'telemetry_test_name': 'webgl1_conformance',
+        'args': [
+          # On dual-GPU devices we want the high-performance GPU to be active
+          '--extra-browser-args=--use-gl=angle --use-angle=gles --use-cmd-decoder=passthrough --force_high_performance_gpu',
+          # The current working directory when run via isolate is
+          # out/Debug or out/Release. Reference this file relatively to
+          # it.
+          '--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl_conformance_tests_output.json',
+          '--test-filter=conformance/rendering/*',
+          '$$MAGIC_SUBSTITUTION_GPUParallelJobs',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+        'mixins': [
+          'has_native_resultdb_integration',
+        ],
+        'swarming': {
+          'shards': 1,
         },
       },
     },
@@ -3783,6 +3863,7 @@
       'cast_unittests': {},
       'cc_unittests': {},
       'color_unittests': {},
+      'components_browsertests': {},
       'components_unittests': {},
       'content_unittests': {},
       'crashpad_tests': {},
@@ -3997,7 +4078,6 @@
           '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
           '--gtest_filter="VaapiTest.*"',
         ],
-	'ci_only': True, # https://crbug.com/1425489
       },
     },
 
@@ -6810,14 +6890,59 @@
     },
 
     'gpu_fyi_lacros_device_release_telemetry_tests': {
-      'gpu_passthrough_telemetry_tests': {
+      'gpu_pixel_passthrough_telemetry_tests': {
         'variants': [
           'LACROS_ASH_TOT',
         ],
       },
-      'gpu_webgl2_conformance_gles_passthrough_telemetry_tests': {
+      'gpu_webgl_conformance_gles_passthrough_representative_telemetry_tests': {
         'variants': [
           'LACROS_ASH_TOT',
+        ],
+      },
+      'gpu_webgl2_conformance_gles_passthrough_representative_telemetry_tests': {
+        'variants': [
+          'LACROS_ASH_TOT',
+          ],
+      },
+    },
+
+    'ios15_sdk_simulator_tests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_8_16_2',
+        ],
+      },
+      'ios_eg2_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          'SIM_IPHONE_7_15_5',
+          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPHONE_X_15_5',
+          'SIM_IPHONE_X_16_2',
+          'SIM_IPHONE_8_16_2',
+        ]
+      },
+      'ios_eg2_cq_tests': {
+        'mixins': ['xcode_parallelization'],
+        'variants': [
+          'SIM_IPHONE_7_15_5',
+          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPHONE_X_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
+          'SIM_IPHONE_8_PLUS_16_2',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_PLUS_15_5',
+          'SIM_IPHONE_6S_15_5',
+          'SIM_IPHONE_SE_1ST_GEN_15_5',
+          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPHONE_8_PLUS_16_2',
+          'SIM_IPHONE_SE_3RD_GEN_16_2',
+          'SIM_IPAD_PRO_3RD_GEN_16_2',
         ],
       },
     },
@@ -7383,6 +7508,9 @@
       'lacros_skylab_tests': {
         'variants': [
           'CROS_EVE_PUBLIC_LKGM',
+          'CROS_EVE_PUBLIC_DEV',
+          'CROS_EVE_PUBLIC_BETA',
+          'CROS_EVE_PUBLIC_STABLE',
         ]
       },
     },
@@ -7500,60 +7628,52 @@
       'gpu_common_and_optional_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_mediapipe_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webcodecs_telemetry_test': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1375306.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
         ],
       },
     },
@@ -7562,24 +7682,21 @@
       'gpu_fyi_and_optional_non_linux_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_fyi_mac_specific_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
       'gpu_gles2_conform_gtests': {
         'variants': [
           'MAC_MINI_INTEL_GPU_STABLE',
-          # Not enough capacity on Mac AMD https://crbug.com/1380184.
-          # 'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
           'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },

@@ -56,6 +56,7 @@
 #import "ios/chrome/browser/ui/gestures/view_controller_trait_collection_observer.h"
 #import "ios/chrome/browser/ui/gestures/view_revealing_vertical_pan_handler.h"
 #import "ios/chrome/browser/ui/history/history_coordinator.h"
+#import "ios/chrome/browser/ui/history/history_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
@@ -102,6 +103,7 @@
                                   InactiveTabsCoordinatorDelegate,
                                   SceneStateObserver,
                                   SnackbarCoordinatorDelegate,
+                                  HistoryCoordinatorDelegate,
                                   TabContextMenuDelegate,
                                   TabGridMediatorDelegate,
                                   TabPresentationDelegate,
@@ -326,12 +328,14 @@
 
   [self dismissPopovers];
 
+  [self.inactiveTabsCoordinator hide];
+
   if (_bookmarksCoordinator) {
     [_bookmarksCoordinator dismissBookmarkModalControllerAnimated:YES];
   }
   // History may be presented on top of the tab grid.
   if (self.historyCoordinator) {
-    [self.historyCoordinator stopWithCompletion:completion];
+    [self closeHistoryWithCompletion:completion];
   } else if (completion) {
     completion();
   }
@@ -753,7 +757,6 @@
         initWithConsumer:baseViewController.pinnedTabsConsumer];
     self.pinnedTabsMediator.browser = _regularBrowser;
     baseViewController.pinnedTabsDelegate = self.pinnedTabsMediator;
-    baseViewController.pinnedTabsImageDataSource = self.pinnedTabsMediator;
   }
 
   if (IsInactiveTabsEnabled()) {
@@ -936,6 +939,9 @@
   self.inactiveTabsButtonMediator = nil;
   [self.inactiveTabsCoordinator stop];
   self.inactiveTabsCoordinator = nil;
+
+  [self.historyCoordinator stop];
+  self.historyCoordinator = nil;
 }
 
 #pragma mark - TabPresentationDelegate
@@ -1127,6 +1133,7 @@
   self.historyCoordinator.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
+  self.historyCoordinator.delegate = self;
   [self.historyCoordinator start];
 }
 
@@ -1210,6 +1217,19 @@
       self.baseViewController.remoteTabsViewController.loadStrategy);
 
   [self showActiveRegularTabFromRecentTabs];
+}
+
+#pragma mark - HistoryCoordinatorDelegate
+
+- (void)closeHistoryWithCompletion:(ProceduralBlock)completion {
+  __weak __typeof(self) weakSelf = self;
+  [self.historyCoordinator dismissWithCompletion:^{
+    if (completion) {
+      completion();
+    }
+    [weakSelf.historyCoordinator stop];
+    weakSelf.historyCoordinator = nil;
+  }];
 }
 
 #pragma mark - TabContextMenuDelegate
@@ -1324,6 +1344,11 @@
           self.baseViewController.traitCollection) !=
       [self isThumbStripEnabled]) {
     [self updateThumbstripIfNeededOnViewController:self.baseViewController];
+  }
+
+  if (level == SceneActivationLevelBackground) {
+    // When going in the background, hide the Inactive Tabs UI.
+    [self.inactiveTabsCoordinator hide];
   }
 }
 

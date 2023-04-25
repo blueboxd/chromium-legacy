@@ -394,7 +394,8 @@ ui::ime::AssistiveWindowButton CreateHighlightedUndoButton(
 ui::ime::AssistiveWindowButton CreateHighlightedLearnMoreButton() {
   ui::ime::AssistiveWindowButton button = ui::ime::AssistiveWindowButton();
   button.id = ui::ime::ButtonId::kLearnMore;
-  button.announce_string = l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+  button.announce_string =
+      l10n_util::GetStringUTF16(IDS_SUGGESTION_AUTOCORRECT_LEARN_MORE);
   button.window_type = ash::ime::AssistiveWindowType::kLearnMore;
   return button;
 }
@@ -797,6 +798,32 @@ TEST_F(AutocorrectManagerTest, MovingCursorOutsideRangeHidesAssistiveWindow) {
 }
 
 TEST_F(AutocorrectManagerTest,
+       MovingCursorInsideRangeAndRemovingCharactersHidesAssistiveWindow) {
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
+  manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
+
+  AssistiveWindowProperties properties =
+      CreateVisibleUndoWindowWithLearnMoreButtonProperties(u"teh", u"the");
+
+  {
+    ::testing::InSequence seq;
+
+    AssistiveWindowProperties shown_properties =
+        CreateVisibleUndoWindowWithLearnMoreButtonProperties(u"teh", u"the");
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, shown_properties, _));
+
+    AssistiveWindowProperties hidden_properties =
+        CreateHiddenUndoWindowProperties();
+    EXPECT_CALL(mock_suggestion_handler_,
+                SetAssistiveWindowProperties(_, hidden_properties, _));
+  }
+
+  manager_.OnSurroundingTextChanged(u"the ", gfx::Range(2));
+  manager_.OnSurroundingTextChanged(u"te ", gfx::Range(1));
+}
+
+TEST_F(AutocorrectManagerTest,
        MovingCursorRetriesPrevFailedUndoWindowHide) {
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
   manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
@@ -996,8 +1023,9 @@ TEST_F(AutocorrectManagerTest,
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::TAB));
 }
 
-TEST_F(AutocorrectManagerTest,
-       PressingTabKeyTogglesHighlightedButtonWhenUndoWindowIsVisible) {
+TEST_F(
+    AutocorrectManagerTest,
+    PressingRightArrowKeyHighlightsLearnMoreButtonWhenUndoButtonIsHighlighted) {
   manager_.OnSurroundingTextChanged(u"the ", gfx::Range(4));
   manager_.HandleAutocorrect(gfx::Range(0, 3), u"teh", u"the");
 
@@ -1027,7 +1055,8 @@ TEST_F(AutocorrectManagerTest,
 
   manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::TAB));
-  manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::TAB));
+  manager_.OnKeyEvent(
+      CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_RIGHT));
 }
 
 TEST_F(AutocorrectManagerTest,
@@ -1102,7 +1131,8 @@ TEST_F(AutocorrectManagerTest,
 
   manager_.OnSurroundingTextChanged(u"the ", gfx::Range(1));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_UP));
-  manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::TAB));
+  manager_.OnKeyEvent(
+      CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ARROW_RIGHT));
   manager_.OnKeyEvent(CreateKeyEvent(ui::DomKey::NONE, ui::DomCode::ENTER));
 }
 
@@ -1118,26 +1148,6 @@ TEST_F(AutocorrectManagerTest, LearnMoreButtonOnlyShown10Times) {
     AssistiveWindowProperties hidden_properties =
         CreateHiddenUndoWindowProperties();
 
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, shown_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, hidden_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, shown_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, hidden_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, shown_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, hidden_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, shown_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, hidden_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, shown_properties, _));
-    EXPECT_CALL(mock_suggestion_handler_,
-                SetAssistiveWindowProperties(_, hidden_properties, _));
     EXPECT_CALL(mock_suggestion_handler_,
                 SetAssistiveWindowProperties(_, shown_properties, _));
     EXPECT_CALL(mock_suggestion_handler_,
@@ -1186,36 +1196,6 @@ TEST_F(AutocorrectManagerTest, LearnMoreButtonOnlyShown10Times) {
   manager_.HandleAutocorrect(gfx::Range(20, 23), u"teh", u"the");
   manager_.OnSurroundingTextChanged(u"the the the the the the ",
                                     gfx::Range(21));
-
-  manager_.OnSurroundingTextChanged(u"the the the the the the the ",
-                                    gfx::Range(28));
-  manager_.HandleAutocorrect(gfx::Range(24, 27), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the the the the the the the ",
-                                    gfx::Range(25));
-
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the ",
-                                    gfx::Range(32));
-  manager_.HandleAutocorrect(gfx::Range(28, 31), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the ",
-                                    gfx::Range(29));
-
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the the ",
-                                    gfx::Range(36));
-  manager_.HandleAutocorrect(gfx::Range(32, 35), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the the ",
-                                    gfx::Range(33));
-
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the the the ",
-                                    gfx::Range(40));
-  manager_.HandleAutocorrect(gfx::Range(36, 39), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(u"the the the the the the the the the the ",
-                                    gfx::Range(37));
-
-  manager_.OnSurroundingTextChanged(
-      u"the the the the the the the the the the the ", gfx::Range(44));
-  manager_.HandleAutocorrect(gfx::Range(40, 43), u"teh", u"the");
-  manager_.OnSurroundingTextChanged(
-      u"the the the the the the the the the the the ", gfx::Range(41));
 }
 
 TEST_F(AutocorrectManagerTest, UndoAutocorrectSingleWordInComposition) {

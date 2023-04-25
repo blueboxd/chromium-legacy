@@ -6,7 +6,6 @@
 
 #include <numeric>
 
-#include "ash/constants/ash_features.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
@@ -25,6 +24,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/memory/raw_ptr.h"
 #include "media/base/media_switches.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -84,7 +84,7 @@ class AccessibilityFocusHelperView : public views::View {
   }
 
  private:
-  UnifiedSystemTrayController* controller_;
+  raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> controller_;
 };
 
 }  // namespace
@@ -172,7 +172,7 @@ class UnifiedSystemTrayView::SystemTrayContainer : public views::View {
   const char* GetClassName() const override { return "SystemTrayContainer"; }
 
  private:
-  views::BoxLayout* const layout_manager_;
+  const raw_ptr<views::BoxLayout, ExperimentalAsh> layout_manager_;
 };
 
 UnifiedSystemTrayView::UnifiedSystemTrayView(
@@ -197,12 +197,6 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
 
   auto add_layered_child = [](views::View* parent, views::View* child) {
     parent->AddChildView(child);
-    // In dark light mode, we switch TrayBubbleView to use a textured layer
-    // instead of solid color layer, so no need to create an extra layer here.
-    if (!features::IsDarkLightModeEnabled()) {
-      child->SetPaintToLayer();
-      child->layer()->SetFillsBoundsOpaquely(false);
-    }
   };
 
   SessionControllerImpl* session_controller =
@@ -214,19 +208,19 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       !AshMessageCenterLockScreenController::IsEnabled());
   add_layered_child(system_tray_container_, notification_hidden_view_);
 
-  AddChildView(system_tray_container_);
+  AddChildView(system_tray_container_.get());
 
   add_layered_child(system_tray_container_, top_shortcuts_view_);
-  system_tray_container_->AddChildView(feature_pods_container_);
-  system_tray_container_->AddChildView(page_indicator_view_);
+  system_tray_container_->AddChildView(feature_pods_container_.get());
+  system_tray_container_->AddChildView(page_indicator_view_.get());
 
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControlsForChromeOS)) {
     media_controls_container_ = new UnifiedMediaControlsContainer();
-    system_tray_container_->AddChildView(media_controls_container_);
+    system_tray_container_->AddChildView(media_controls_container_.get());
     media_controls_container_->SetExpandedAmount(expanded_amount_);
   }
 
-  system_tray_container_->AddChildView(sliders_container_);
+  system_tray_container_->AddChildView(sliders_container_.get());
 
   add_layered_child(system_tray_container_, system_info_view_);
 

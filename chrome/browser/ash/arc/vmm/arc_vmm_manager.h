@@ -18,6 +18,12 @@ namespace arc {
 
 class ArcBridgeService;
 
+enum class SwapState {
+  ENABLE,
+  ENABLE_WITH_SWAPOUT,
+  DISABLE,
+};
+
 // ARCVM vmm features manager.
 class ArcVmmManager : public KeyedService {
  public:
@@ -37,17 +43,13 @@ class ArcVmmManager : public KeyedService {
   // SetSwapState change the ARCVM vmm swap state in crosvm. When swap enabled,
   // the crosvm process will be STOP and guest memory will be moved to the
   // staging memory.
-  void SetSwapState(bool enable);
+  void SetSwapState(SwapState state);
 
   void set_user_id_hash(const std::string& user_id_hash) {
     user_id_hash_ = user_id_hash;
   }
 
   static void EnsureFactoryBuilt();
-
-  ArcSystemStateObservation* system_state_observation_for_testing() {
-    return arc_system_state_observation_.get();
-  }
 
  private:
   // Accelerator target for experimental usage. Ctrl + Alt + Shift + O / P for
@@ -69,8 +71,6 @@ class ArcVmmManager : public KeyedService {
   // Swap request scheduler for experimental usage. Always behind the feature
   // flag and parameters.
   std::unique_ptr<ArcVmmSwapScheduler> scheduler_;
-
-  std::unique_ptr<ArcSystemStateObservation> arc_system_state_observation_;
 
   std::string user_id_hash_;
 

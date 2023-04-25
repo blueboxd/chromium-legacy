@@ -41,7 +41,7 @@ default_chrome_public_jinja_variables = [
   "channel=$android_channel",
   "enable_cardboard=$enable_cardboard",
   "enable_vr=$enable_vr",
-  "include_arcore_manifest_flag=false",
+  "enable_arcore=$enable_arcore",
   "zygote_preload_class=org.chromium.content_public.app.ZygotePreload",
 ]
 
@@ -132,6 +132,8 @@ template("chrome_common_apk_or_module_tmpl") {
   _is_trichrome = defined(invoker.is_trichrome) && invoker.is_trichrome
   _is_bundle = _target_type == "android_app_bundle_module"
   _is_test = _target_type == "instrumentation_test_apk"
+  assert(!(_is_test && _is_monochrome), "Unsupported configuration")
+  assert(!(_is_test && _is_trichrome), "Unsupported configuration")
 
   if (_is_test) {
     testonly = true
@@ -174,7 +176,7 @@ template("chrome_common_apk_or_module_tmpl") {
 
   if (defined(invoker.manifest_package)) {
     _manifest_package = invoker.manifest_package
-  } else if (_is_test && !_is_monochrome) {
+  } else if (_is_test) {
     _manifest_package = chrome_public_test_manifest_package
   } else {
     _manifest_package = chrome_public_manifest_package
@@ -215,19 +217,11 @@ template("chrome_common_apk_or_module_tmpl") {
     if (_is_monochrome || _is_trichrome) {
       _force_32_bit = _include_32_bit_webview && _include_64_bit_webview &&
                       !_is_64_bit_browser
-      variables += [
-        "force_32_bit=$_force_32_bit",
-        "include_arcore_manifest_flag=$enable_arcore",
-      ]
+      variables += [ "force_32_bit=$_force_32_bit" ]
     }
     if (_is_test) {
       includes += [ input ]
       input = "//chrome/android/javatests/AndroidManifest.xml"
-      if (_is_monochrome) {
-        includes += [ input ]
-        input = "//chrome/android/javatests/AndroidManifest_monochrome.xml"
-        variables += [ "test_manifest_package=$_manifest_package" ]
-      }
     }
     if (defined(invoker.jinja_input)) {
       includes += [ input ]
@@ -387,7 +381,7 @@ template("chrome_common_apk_or_module_tmpl") {
       "//chrome/android:chrome_public_non_pak_assets",
     ]
 
-    # TODO(agrieve): Make uncondtional when moving to trampoline.
+    # TODO(agrieve): Make unconditional when moving to trampoline.
     if (_is_monochrome || _is_trichrome) {
       deps += [ "//components/crash/android:handler_java" ]
     }
@@ -579,20 +573,19 @@ template("chrome_common_apk_or_module_tmpl") {
       shared_libraries += [ "//chrome/android:libchrome" ]
     }
 
-    # TODO(agrieve): Enable for chrome_public_apk as well.
-    if (enable_arcore && (_is_monochrome || _is_trichrome)) {
+    if (enable_arcore) {
       # The arcore manifest needs to be merged into the base module because
       # the Play Store verifies the com.google.ar.core.min_apk_version
       # meta-data tag is in the base manifest.
       deps += [
-        "//third_party/arcore-android-sdk-client:com_google_ar_core_java",
-        "//third_party/arcore-android-sdk-client:com_google_ar_core_java__ignored_manifest",
+        "//third_party/arcore-android-sdk-client:arcore_base_manifest_java",
       ]
 
-      # For Trichrome, the native library is added to TrichromeLibrary.apk so
-      # it's not needed here.
+      # For Trichrome, the primary abi arcore library is added to
+      # TrichromeLibrary.apk, so it's not needed here.
       if (!_is_trichrome) {
         _arcore_target = "//third_party/arcore-android-sdk-client:com_google_ar_core_J__unpack_aar"
+        deps += [ _arcore_target ]
         _libarcore_dir = get_label_info(_arcore_target, "target_out_dir") +
                          "/com_google_ar_core_java/jni"
 

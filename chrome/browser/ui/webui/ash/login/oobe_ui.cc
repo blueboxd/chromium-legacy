@@ -25,7 +25,6 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
-#include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
@@ -59,6 +58,8 @@
 #include "chrome/browser/ui/webui/ash/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/device_disabled_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/display_size_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/drive_pinning_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/enable_adb_sideloading_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/enable_debugging_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/encryption_migration_screen_handler.h"
@@ -295,12 +296,18 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
       base::FeatureList::IsEnabled(arc::kEnableArcVmDataMigration));
 
   source->AddBoolean("isTouchpadScrollEnabled",
-                     (features::IsOobeChoobeEnabled() &&
-                      features::IsOobeTouchpadScrollEnabled()));
+                     features::IsOobeTouchpadScrollEnabled());
+
+  source->AddBoolean("isDrivePinningEnabled",
+                     features::IsOobeDrivePinningEnabled());
+
   // Whether the timings in oobe_trace.js will be output to the console.
   source->AddBoolean(
       "printFrontendTimings",
       command_line->HasSwitch(switches::kOobePrintFrontendLoadTimings));
+
+  source->AddBoolean("isDisplaySizeEnabled",
+                     features::IsOobeDisplaySizeEnabled());
 
   // Configure shared resources
   AddProductLogoResources(source);
@@ -346,6 +353,11 @@ struct DisplayScaleFactor {
 
 const DisplayScaleFactor k4KDisplay = {3840, 1.5f},
                          kMediumDisplay = {1440, 4.f / 3};
+
+bool OobeUIConfig::IsWebUIEnabled(content::BrowserContext* browser_context) {
+  return ash::ProfileHelper::IsSigninProfile(
+      Profile::FromBrowserContext(browser_context));
+}
 
 // static
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
@@ -490,9 +502,16 @@ void OobeUI::ConfigureOobeDisplay() {
     AddScreenHandler(std::make_unique<ChoobeScreenHandler>());
   }
 
-  if (features::IsOobeChoobeEnabled() &&
-      features::IsOobeTouchpadScrollEnabled()) {
+  if (features::IsOobeTouchpadScrollEnabled()) {
     AddScreenHandler(std::make_unique<TouchpadScrollScreenHandler>());
+  }
+
+  if (features::IsOobeDisplaySizeEnabled()) {
+    AddScreenHandler(std::make_unique<DisplaySizeScreenHandler>());
+  }
+
+  if (features::IsOobeDrivePinningEnabled()) {
+    AddScreenHandler(std::make_unique<DrivePinningScreenHandler>());
   }
 
   AddScreenHandler(std::make_unique<LocalStateErrorScreenHandler>());
@@ -511,12 +530,9 @@ void OobeUI::ConfigureOobeDisplay() {
   // Set up the chrome://userimage/ source.
   content::URLDataSource::Add(profile, std::make_unique<UserImageSource>());
 
-  content::WebContents* contents = web_ui()->GetWebContents();
-
   // TabHelper is required for OOBE webui to make webview working on it.
+  content::WebContents* contents = web_ui()->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
-
-  BootTimesRecorderTabHelper::MaybeCreateForWebContents(contents);
 
   if (ShouldUpScaleOobe())
     UpScaleOobe();

@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">भिडियो खिचिँदै छ</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">DNS रिजल्भर प्रिजेन्ट</translation>
+<translation id="1708602061922134366">Google जस्तो निलो रङ</translation>
 <translation id="1710499924611012470">एक्सेसिबिलिटी नेभिगेसन</translation>
 <translation id="1715359911173058521">स्क्यानरसँग कनेक्ट गर्ने क्रममा कुनै समस्या आयो। नेटवर्क वा USB कनेक्सन जाँच्नुहोस् र फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" /> र <ph name="SECOND_MANAGER" /> ले व्यवस्थापन गरेका</translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">प्रमाणीकरणको प्रकार</translation>
+<translation id="1776228893584526149">वालपेपरको टोन</translation>
 <translation id="1782199038061388045">अनुवाद</translation>
 <translation id="1790209694022261219">विन्डो तथा डेस्कहरू</translation>
 <translation id="1792647875738159689">स्क्यान गर्ने कार्य रद्द गरिँदै छ</translation>
@@ -483,6 +485,7 @@
 <translation id="5166918508782100047">द्रुत जवाफसम्बन्धी सेटिङ</translation>
 <translation id="5168185087976003268">ब्याट्रीको अवस्था</translation>
 <translation id="5170568018924773124">फोल्डरमा देखाउनुहोस्</translation>
+<translation id="5180712487038406644">एक्स्प्रेसिभ</translation>
 <translation id="5190187232518914472">आफूलाई स्मरणीय पलहरूको आनन्द लिनुहोस्। एल्बमहरू हाल्न वा परिवर्तन गर्न <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" /> मा जानुहोस्।</translation>
 <translation id="5212593641110061691">ट्याब्लोइड</translation>
 <translation id="5222676887888702881">साइन आउट गर्नुहोस्</translation>
@@ -517,6 +520,7 @@
 <translation id="5423849171846380976">सक्रिय भयो</translation>
 <translation id="5430931332414098647">तात्कालिक टेदरिङ</translation>
 <translation id="5431318178759467895">रङ्ग</translation>
+<translation id="5456936324019847994">अन गरिएको कुनै पनि कस्टम APN सँग कनेक्ट गर्न सकिएन। तपाईं यस सम्बन्धमा थप जानकारी प्राप्त गर्न चाहनुहुन्छ भने आफ्नो मोबाइलको सेवा प्रदायकलाई सम्पर्क गर्नुहोस्।</translation>
 <translation id="5457599981699367932">पाहुनाको रूपमा ब्राउज गर्नुहोस्</translation>
 <translation id="54609108002486618">व्यवस्थापन गरिएको</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{अब {0} पटक प्रयास गर्न मिल्छ}other{अब {0} पटक प्रयास गर्न मिल्छ}}</translation>
@@ -572,6 +576,7 @@
 <translation id="5931523347251946569">फाइल भेट्टिएन</translation>
 <translation id="5939518447894949180">रिसेट गर्नुहोस्</translation>
 <translation id="594552776027197022">क्रमरहित किपेयर सिर्जना गर्नुहोस्</translation>
+<translation id="5946538341867151940">तपाईंले अझै नेटवर्क कनेक्ट गर्नुभएको छैन। तपाईंको मोबाइलको सेवा प्रदायकले कस्टम APN प्रयोग गर्न सिफारिस गरेका खण्डमा "+ नयाँ APN" चयन गरी APN सम्बन्धी जानकारी हाल्नुहोस्</translation>
 <translation id="5972388717451707488">अपडेट इन्जिन</translation>
 <translation id="5984145644188835034">डिफल्ट वालपेपर</translation>
 <translation id="6017514345406065928">हरियो</translation>
@@ -646,6 +651,7 @@
 <translation id="6527081081771465939">अज्ञात WiFi सेक्युरिटी प्रोटोकोल</translation>
 <translation id="6535178685492749208">तपाईं अफलाइन हुनुहुन्छ। प्रतिक्रिया पछि पठाइने छ।</translation>
 <translation id="65587193855025101">फ्याल्टबेड</translation>
+<translation id="6560196641871357166">भाइब्रेन्ट</translation>
 <translation id="6564646048574748301">प्रिन्ट गर्न सकिएन - प्रिन्टरमा कनेक्ट भइरहेको छैन</translation>
 <translation id="6566314079205407217">एकभन्दा बढी पेज स्क्यान गर्नुहोस्</translation>
 <translation id="6574762126505704998">भर्नुहोस्</translation>
@@ -727,6 +733,7 @@
 <translation id="7281657306185710294">Feel the breeze</translation>
 <translation id="7287310195820267359">वालपेपरका सङ्ग्रहहरू</translation>
 <translation id="7297226631177386107">फायरवाल पार गरेर HTTPS वेबसाइटहरूमा कनेक्ट गर्न सकिएन</translation>
+<translation id="7297726121602187087">गाढा हरियो</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook को मद्दतसम्बन्धी फोरममा विशेषज्ञसँग मद्दत माग्नुहोस्</translation>
@@ -761,6 +768,7 @@
 <translation id="7570674786725311828">USB टचस्क्रिन</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> बाँकी</translation>
 <translation id="7613724632293948900">माउस वा एरो कीहरू प्रयोग गरेर यताउता सार्नुहोस्।</translation>
+<translation id="7618774594543487847">तटस्थ</translation>
 <translation id="7620771111601174153">मद्दत केन्द्रमा गई थप जान्नुहोस्</translation>
 <translation id="763165478673169849">पछिल्लो पटक रिसेट गरिएको मिति र समय</translation>
 <translation id="7648838807254605802">HTTPS को विलम्बता धेरै छ</translation>
@@ -873,6 +881,7 @@
 <translation id="8575298406870537639">तपाईंको मोबाइल सेवा प्रदायकले सो सेवा प्रदायकको नेटवर्कमा कनेक्ट गर्न सकोस् भन्नाका लागि तपाईंले यो विकल्प अन गर्नु पर्ने हुन सक्छ। यससम्बन्धी थप जानकारी प्राप्त गर्न आफ्नो मोबाइल सेवा प्रदायकलाई सम्पर्क गर्नुहोस्।</translation>
 <translation id="8576249514688522074">सुरु गरिएको छैन</translation>
 <translation id="8620617069779373398">रोमिङको स्थिति</translation>
+<translation id="86356131183441916">हल्का बैजनी रङ</translation>
 <translation id="8655295600908251630">च्यानल</translation>
 <translation id="8655828773034788261">URL सेयर गर्नुहोस्:</translation>
 <translation id="8660881923941176839">पाउन्ड</translation>
@@ -957,6 +966,7 @@
 <translation id="945522503751344254">पृष्ठपोषण पठाउनुहोस्</translation>
 <translation id="952992212772159698">सक्रिय छैन</translation>
 <translation id="960719561871045870">अपरेटरको कोड</translation>
+<translation id="979450713603643090">हल्का गुलाबी रङ</translation>
 <translation id="982713511914535780">ब्याट्रीको डिस्चार्जसम्बन्धी परीक्षण गर्नुहोस्</translation>
 <translation id="987264212798334818">सामान्य</translation>
 </translationbundle>

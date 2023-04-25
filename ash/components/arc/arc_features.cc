@@ -80,6 +80,12 @@ BASE_FEATURE(kEnablePerVmCoreScheduling,
              "ArcEnablePerVmCoreScheduling",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Controls whether app permissions are read-only in the App Management page.
+// Only applies on Android T+.
+BASE_FEATURE(kEnableReadOnlyPermissions,
+             "ArcEnableReadOnlyPermissions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether we should delegate audio focus requests from ARC to Chrome.
 BASE_FEATURE(kEnableUnifiedAudioFocusFeature,
              "ArcEnableUnifiedAudioFocus",
@@ -100,6 +106,12 @@ BASE_FEATURE(kEnableUsap, "ArcEnableUsap", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kEnableVirtioBlkForData,
              "ArcEnableVirtioBlkForData",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether to allow Android apps to access external storage devices
+// like USB flash drives and SD cards.
+BASE_FEATURE(kExternalStorageAccess,
+             "ArcExternalStorageAccess",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to pop up ghost window for ARC app before fixup finishes.
 BASE_FEATURE(kFixupWindowFeature,

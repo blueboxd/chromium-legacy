@@ -57,6 +57,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_writer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
 #include "base/test/bind.h"
@@ -429,9 +430,10 @@ class AcceleratorControllerTest : public AshTestBase {
     return true;
   }
 
-  AcceleratorControllerImpl* controller_ = nullptr;  // Not owned.
+  raw_ptr<AcceleratorControllerImpl, ExperimentalAsh> controller_ =
+      nullptr;  // Not owned.
   std::unique_ptr<AcceleratorControllerImpl::TestApi> test_api_;
-  MockNewWindowDelegate* new_window_delegate_;
+  raw_ptr<MockNewWindowDelegate, ExperimentalAsh> new_window_delegate_;
   std::unique_ptr<TestNewWindowDelegateProvider> delegate_provider_;
 };
 
@@ -652,8 +654,17 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
     EXPECT_FALSE(window_state->IsFullscreen());
   }
   {
+    // Tests that window snap doesn't work while the window is minimized.
     controller_->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
     EXPECT_TRUE(window_state->IsMinimized());
+    controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
+    EXPECT_TRUE(window_state->IsMinimized());
+
+    // Unminimize the window. Now window snap should work.
+    controller_->PerformActionIfEnabled(WINDOW_MINIMIZE, {});
+    EXPECT_FALSE(window_state->IsMinimized());
+    controller_->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT, {});
+    EXPECT_TRUE(window_state->IsSnapped());
   }
 }
 
@@ -2305,19 +2316,22 @@ class AcceleratorControllerImprovedKeyboardShortcutsTest
     input_method::InputMethodManager::Initialize(input_method_manager_);
 
     AcceleratorControllerTest::SetUp();
-    EXPECT_TRUE(input_method_manager_->observers_.HasObserver(controller_));
+    EXPECT_TRUE(
+        input_method_manager_->observers_.HasObserver(controller_.get()));
   }
 
   void TearDown() override {
     AcceleratorControllerTest::TearDown();
-    EXPECT_FALSE(input_method_manager_->observers_.HasObserver(controller_));
+    EXPECT_FALSE(
+        input_method_manager_->observers_.HasObserver(controller_.get()));
 
     input_method::InputMethodManager::Shutdown();
     input_method_manager_ = nullptr;
   }
 
  protected:
-  TestInputMethodManager* input_method_manager_ = nullptr;  // Not owned.
+  raw_ptr<TestInputMethodManager, ExperimentalAsh> input_method_manager_ =
+      nullptr;  // Not owned.
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2370,7 +2384,8 @@ class AcceleratorControllerInputMethodTest : public AcceleratorControllerTest {
   }
 
  protected:
-  AcceleratorMockInputMethod* mock_input_ = nullptr;  // Not owned.
+  raw_ptr<AcceleratorMockInputMethod, ExperimentalAsh> mock_input_ =
+      nullptr;  // Not owned.
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -2595,7 +2610,7 @@ class FakeMagnificationManager {
 
  private:
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  PrefService* prefs_;
+  raw_ptr<PrefService, ExperimentalAsh> prefs_;
 };
 
 TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {

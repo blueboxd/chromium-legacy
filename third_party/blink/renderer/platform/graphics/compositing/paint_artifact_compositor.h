@@ -162,10 +162,17 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // noncomposited nodes, and is used for Scroll Unification to generate scroll
   // nodes for noncomposited scrollers to complete the compositor's scroll
   // property tree.
+  //
+  // |anchor_scroll_container_nodes| is the set of scroll nodes whose scroll
+  // offset contributes to any anchor-scroll translation (namely, whose id is
+  // snapshotted in an AnchorScrollData). This is needed only when
+  // ScrollUnification is disabled.
   void Update(
       scoped_refptr<const PaintArtifact> artifact,
       const ViewportProperties& viewport_properties,
       const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+      const Vector<const TransformPaintPropertyNode*>&
+          anchor_scroll_container_nodes,
       Vector<std::unique_ptr<cc::ViewTransitionRequest>> requests);
 
   // Fast-path update where the painting of existing composited layers changed,
@@ -197,6 +204,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // transform node in DirectlyUpdateScrollOffsetTransform() or Update()).
   bool DirectlySetScrollOffset(CompositorElementId,
                                const gfx::PointF& scroll_offset);
+
+  uint32_t GetMainThreadScrollingReasons(const ScrollPaintPropertyNode&) const;
+  // Returns true if the scroll node is currently composited in cc.
+  bool UsesCompositedScrolling(const ScrollPaintPropertyNode&) const;
 
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }

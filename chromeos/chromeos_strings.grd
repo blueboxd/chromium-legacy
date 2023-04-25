@@ -352,10 +352,6 @@
       <message name="IDS_TABLET_MULTITASK_MENU_NUDGE_TEXT" desc="Text that is shown when the tablet multitask menu nudge is displayed.">
         Swipe down for more layout options
       </message>
-      <message name="IDS_MULTITASK_MENU_FEEDBACK_BUTTON_NAME" desc="Button text of the dogfood feedback button on the multitask menu.">
-        Send feedback
-      </message>
-
       <if expr="chromeos_ash">
         <!-- The following strings are located here for accessibility from both //ash and //chrome -->
         <message name="IDS_ENABLE_BLUETOOTH" desc="The message to display in the network list when Tether is enabled but Bluetooth is disabled.">
@@ -2373,6 +2369,30 @@
         <message name="IDS_PERSONALIZATION_APP_THEME_DYNAMIC_COLOR_DESCRIPTION" desc="Description for dynamic color theme element in personalization hub">
           Use color sets that match your wallpaper
         </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_TONAL_SPOT" desc="Label for dynamic color tonal spot scheme in personalization hub">
+          Wallpaper tone
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_NEUTRAL" desc="Label for dynamic color neutral scheme in personalization hub">
+          Neutral
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_VIBRANT" desc="Label for dynamic color vibrant scheme in personalization hub">
+          Vibrant
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_COLOR_SCHEME_EXPRESSIVE" desc="Label for dynamic color expressive scheme in personalization hub">
+          Expressive
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_GOOGLE_BLUE" desc="Label for static color google blue in personalization hub">
+          Google blue
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_LIGHT_PINK" desc="Label for static color light pink in personalization hub">
+          Light pink
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_DARK_GREEN" desc="Label for static color dark green in personalization hub">
+          Dark green
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_THEME_STATIC_COLOR_LIGHT_PURPLE" desc="Label for static color light purple in personalization hub">
+          Light purple
+        </message>
         <message name="IDS_PERSONALIZATION_APP_THEME_DARK_COLOR_MODE" desc="Label for dark color mode setting">
           Dark
         </message>
@@ -2586,6 +2606,9 @@
         </message>
         <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_TITLE" desc="Title for the keyboard backlight section of personalization hub.">
           Keyboard backlight
+        </message>
+        <message name="IDS_PERSONALIZATION_APP_KEYBOARD_ZONES_TITLE" desc="Title for the keyboard zones in zone customization section of personalization hub.">
+          Keyboard zones
         </message>
         <message name="IDS_PERSONALIZATION_APP_KEYBOARD_BACKLIGHT_WALLPAPER_COLOR_LABEL" desc="Label for the wallpaper extracted color in the keyboard backlight section of personalization hub.">
           Wallpaper color
@@ -3849,6 +3872,9 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_ACCELERATOR_TEXT_DIVIDER" desc="The text shown between multiple shortcut keys in search results." translateable="false">
           or
         </message>
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED" desc="ChromeVox alert to indicate the position number of a selected result in a list of search results and the selected result text itself, and that the user can press enter to navigate to section described by the search result." translateable="false">
+          Search result <ph name="LIST_POSITION">$1<ex>1</ex></ph> of <ph name="LIST_SIZE">$2<ex>2</ex></ph>: <ph name="SEARCH_RESULT_TEXT">$3<ex>Open new tab, ctrl T</ex></ph>. Press Enter to navigate to shortcut.
+        </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_CATEGORY_GENERAL" desc="Category named 'General' shown on the navigation sidebar">
           General
         </message>
@@ -3927,94 +3953,94 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_SUBCATEGORY_ACCESSIBILITY_NAVIGATION" desc="Subcategory named 'AccessibilityNavigation' shown within main shortcuts section">
           Accessibility navigation
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow down'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow down'.">
           arrow down
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_LEFT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow left'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_LEFT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow left'.">
           arrow left
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_RIGHT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow right'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_RIGHT" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow right'.">
           arrow right
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow up'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ARROW_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'arrow up'.">
           arrow up
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'volume down'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'volume down'.">
           volume down
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_MUTE" desc="The text read aloud by the screen reader describing the keyboard icon 'volume mute'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_MUTE" desc="The text read aloud by the screen reader describing the keyboard icon 'volume mute'.">
           volume mute
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'volume up'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_AUDIO_VOLUME_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'volume up'.">
           volume up
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness down'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness down'.">
           brightness down
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness up'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'brightness up'.">
           brightness up
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK" desc="The text read aloud by the screen reader describing the keyboard icon 'back'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK" desc="The text read aloud by the screen reader describing the keyboard icon 'back'.">
           back
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'forward'." translateable="false">
           forward
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH" desc="The text read aloud by the screen reader describing the keyboard icon 'refresh'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH" desc="The text read aloud by the screen reader describing the keyboard icon 'refresh'.">
           refresh
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_SEARCH" desc="The text read aloud by the screen reader describing the keyboard icon 'search'." translateable="false">
           search
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_TOGGLE_DICTATION" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle dictation'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_TOGGLE_DICTATION" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle dictation'.">
           toggle dictation
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_EMOJI_PICKER" desc="The text read aloud by the screen reader describing the keyboard icon 'emoji picker'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_EMOJI_PICKER" desc="The text read aloud by the screen reader describing the keyboard icon 'emoji picker'.">
           emoji picker
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BACKLIGHT_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle keyboard backlight'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BACKLIGHT_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle keyboard backlight'.">
           toggle keyboard backlight
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness up'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_UP" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness up'.">
           keyboard brightness up
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness down'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_KEYBOARD_BRIGHTNESS_DOWN" desc="The text read aloud by the screen reader describing the keyboard icon 'keyboard brightness down'.">
           keyboard brightness down
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION1" desc="The text read aloud by the screen reader describing the keyboard icon 'overview'." translateable="false">
-          overview
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION1" desc="The text read aloud by the screen reader describing the keyboard icon 'show windows'.">
+          show windows
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION2" desc="The text read aloud by the screen reader describing the keyboard icon 'open calculator'." translateable="false">
-          open calculator
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION2" desc="The text read aloud by the screen reader describing the keyboard icon 'calculator app'.">
+          calculator app
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT" desc="The text read aloud by the screen reader describing the keyboard icon 'assistant'." translateable="false">
-          assistant
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT" desc="The text read aloud by the screen reader describing the keyboard icon 'Google Assistant'.">
+          Google Assistant
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_FAST_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'fast forward media'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_FAST_FORWARD" desc="The text read aloud by the screen reader describing the keyboard icon 'fast forward media'.">
           fast forward media
         </message>
-         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'pause media'." translateable="false">
+         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'pause media'.">
           pause media
         </message>
-         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY" desc="The text read aloud by the screen reader describing the keyboard icon 'play media'." translateable="false">
+         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY" desc="The text read aloud by the screen reader describing the keyboard icon 'play media'.">
           play media
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'play pause'." translateable="false">
-          play pause
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_PLAY_PAUSE" desc="The text read aloud by the screen reader describing the keyboard icon 'play or pause media'.">
+          play or pause media
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_NEXT" desc="The text read aloud by the screen reader describing the keyboard icon 'next track'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_NEXT" desc="The text read aloud by the screen reader describing the keyboard icon 'next track'.">
           next track
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_PREVIOUS" desc="The text read aloud by the screen reader describing the keyboard icon 'previous track'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_TRACK_PREVIOUS" desc="The text read aloud by the screen reader describing the keyboard icon 'previous track'.">
           previous track
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MENU" desc="The text read aloud by the screen reader describing the keyboard icon 'menu." translateable="false">
           menu
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MICROPHONE_MUTE_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle microphone mute'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MICROPHONE_MUTE_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle microphone mute'.">
           toggle microphone mute
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MODE_CHANGE" desc="The text read aloud by the screen reader describing the keyboard icon 'mode change'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MODE_CHANGE" desc="The text read aloud by the screen reader describing the keyboard icon 'mode change'.">
           mode change
         </message>
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_OPEN_LAUNCHER" desc="The text read aloud by the screen reader describing the keyboard icon 'launcher'." translateable="false">
@@ -4023,16 +4049,16 @@
         <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_POWER" desc="The text read aloud by the screen reader describing the keyboard icon 'power'." translateable="false">
           power
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRINT_SCREEN" desc="The text read aloud by the screen reader describing the keyboard icon 'screenshot'." translateable="false">
-          screenshot
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRINT_SCREEN" desc="The text read aloud by the screen reader describing the keyboard icon 'take screenshot'.">
+          take screenshot
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRIVACY_SCREEN_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle privacy screen'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_PRIVACY_SCREEN_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'toggle privacy screen'.">
           toggle privacy screen
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_SETTINGS" desc="The text read aloud by the screen reader describing the keyboard icon 'settings'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_SETTINGS" desc="The text read aloud by the screen reader describing the keyboard icon 'settings'.">
           settings
         </message>
-        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ZOOM_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'full screen'." translateable="false">
+        <message name="IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ZOOM_TOGGLE" desc="The text read aloud by the screen reader describing the keyboard icon 'full screen'.">
           full screen
         </message>
         <!-- End of Shortcut Customization -->

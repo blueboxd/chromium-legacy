@@ -11,6 +11,7 @@
 import 'chrome://resources/cr_components/localized_link/localized_link.js';
 import 'chrome://resources/cr_elements/cr_shared_vars.css.js';
 import '../../settings_shared.css.js';
+import './bluetooth_braille_display_ui.js';
 
 import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
@@ -60,7 +61,7 @@ interface TtsHandlerVoice {
   extensionId: string;
 }
 
-interface SettingsChromeVoxSubpageElement {
+export interface SettingsChromeVoxSubpageElement {
   $: {
     capitalStrategyDropdown: SettingsDropdownMenuElement,
   };
@@ -69,7 +70,7 @@ interface SettingsChromeVoxSubpageElement {
 const SettingsChromeVoxSubpageElementBase = DeepLinkingMixin(RouteOriginMixin(
     PrefsMixin(WebUiListenerMixin(I18nMixin(PolymerElement)))));
 
-class SettingsChromeVoxSubpageElement extends
+export class SettingsChromeVoxSubpageElement extends
     SettingsChromeVoxSubpageElementBase {
   static get is() {
     return 'settings-chromevox-subpage' as const;

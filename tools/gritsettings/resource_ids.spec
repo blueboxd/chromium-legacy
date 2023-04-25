@@ -258,7 +258,7 @@
     "META": {"sizes": {"includes": [40]}},
     "includes": [1740],
   },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_share/nearby_share_dialog_resources.grd": {
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/nearby_share/resources.grd": {
     "META": {"sizes": {"includes": [100]}},
     "includes": [1760],
   },
@@ -427,6 +427,10 @@
     "META": {"sizes": {"includes": [20]}},
     "includes": [2300],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/components/commerce/core/internals/resources/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [2305],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/components/history_clusters/history_clusters_internals/resources/resources.grd": {
     "META": {"sizes": {"includes": [10]}},
     "includes": [2310],
@@ -509,6 +513,14 @@
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/attribution_reporting/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [2565],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/gpu/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [2566],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/histograms/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2568],
   },
   "<(SHARED_INTERMEDIATE_DIR)/content/browser/resources/indexed_db/resources.grd": {
     "META": {"sizes": {"includes": [20]}},

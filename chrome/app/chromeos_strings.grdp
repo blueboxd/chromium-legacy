@@ -6368,6 +6368,9 @@ You can manage this account’s settings by installing the Family Link app on yo
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_TEXT" desc="Label for autocorrect undo button in undo window.">
     Undo
   </message>
+  <message name="IDS_SUGGESTION_AUTOCORRECT_LEARN_MORE" desc="String announced by screenreader when a button to learn more about autocorrect is highlighted.">
+    Autocorrect learn more button. Go to autocorrection settings page. Press enter to activate, escape to dismiss.
+  </message>
   <message name="IDS_SUGGESTION_AUTOCORRECT_UNDO_BUTTON" desc="String announced by screenreader when a button to undo an autocorrect is highlighted. Example, user types 'hllo', system autocorrects to 'hello', user then prepares to revert the autocorrect.">
     Undo autocorrect button. Revert to <ph name="TYPED_WORD">$1<ex>hllo</ex></ph>.  Press enter to activate, escape to dismiss.
   </message>
@@ -6493,6 +6496,9 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   </message>
 
   <!-- Strings for multi-capture -->
+  <message name="IDS_MULTI_CAPTURE_NOTIFICATION_TITLE" desc="This is the title of the notification when an application starts capturing multiple surfaces.">
+    <ph name="APP_ORIGIN">$1</ph> is recording your screen
+  </message>
   <message name="IDS_MULTI_CAPTURE_NOTIFICATION_MESSAGE" desc="This is the message of the notification when an application starts capturing multiple surfaces.">
     Your system administrator has allowed <ph name="APP_ORIGIN">$1</ph> to record your screen
   </message>
@@ -6579,18 +6585,41 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
     Scroll with two fingers on your touchpad in this area
   </message>
 
-  <!-- Drive Offline-->
-  <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
-  <message name="IDS_OOBE_DRIVE_OFFLINE_TITLE" desc="Title of the drive offline screen." translateable="false">
-    Keep your files available when you're offline
+  <!-- Display Size -->
+  <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_DISPLAY_SIZE_TITLE" desc="Title of the display size screen." translateable="false">
+    Change text size
   </message>
-  <message name="IDS_OOBE_DRIVE_OFFLIBE_SUBTITLE" desc="Description of the drive offline screen." translateable="false">
-    Automatically download files in your My Drive so you can access and edit them without an internet connection.
+  <message name="IDS_OOBE_DISPLAY_SIZE_DESCRIPTION" desc="Description of the display size screen." translateable="false">
+    Adjust the display size to make items on your screen, including text, larger or smaller.
   </message>
-  <message name="IDS_OOBE_DRIVE_OFFLIBE_ADDITIONAL_SUBTITLE" desc="Additional description of the drive offline screen." translateable="false">
-    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph> leaving <ph name="FREE_SPACE">$2<ex>96.8 GB</ex></ph> available
+   <message name="IDS_OOBE_DISPLAY_SIZE_DESCRIPTION_ADDITIONAL" desc="Additional description of the display size screen." translateable="false">
+    You can also find this later in Settings &gt; Device &gt; Displays.
+  </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_SLIDER_TITLE" desc="Title of the zoom levels slider in the display size screen." translateable="false">
+    Display Size
+  </message>
+  <message name="IDS_OOBE_DISPLAY_SIZE_SLIDER_DESCRIPTION" desc="Description of the zoom levels slider in the display size screen." translateable="false">
+    Make everything bigger or smaller
   </message>
 
+  <!-- Drive Offline-->
+  <!-- TODO(b/278024582): Remove translateable tags when strings are finalized. -->
+  <message name="IDS_OOBE_DRIVE_PINNING_TITLE" desc="Title of the drive pinning screen." translateable="false">
+    Keep your files available when you're offline
+  </message>
+  <message name="IDS_OOBE_DRIVE_PINNING_SUBTITLE" desc="Description of the drive pinning screen." translateable="false">
+    Automatically download files in your My Drive so you can access and edit them without an internet connection.
+  </message>
+  <message name="IDS_OOBE_DRIVE_PINNING_ADDITIONAL_SUBTITLE" desc="Additional description of the drive pinning screen." translateable="false">
+    This will use about <ph name="REQUIRED_SPACE">$1<ex>12.2 GB</ex></ph> leaving <ph name="FREE_SPACE">$2<ex>96.8 GB</ex></ph> available
+  </message>
+  <message name="IDS_OOBE_DRIVE_PINNING_ACCEPT_BUTTON" desc="Label for button to accept sync drive files pinning." translateable="false">
+    Turn on sync
+  </message>
+  <message name="IDS_OOBE_DRIVE_PINNING_DECLINE_BUTTON" desc="Label for button to decline sync drive files pinning." translateable="false">
+    Skip
+  </message>
 
   <!-- Strings for the locale switch notification inside the OOBE. -->
   <message name="IDS_LOCALE_SWITCH_NOTIFICATION_TITLE" desc="Title of the notification that is displayed at the bottom-right corner of the screen.">
@@ -6622,6 +6651,12 @@ Your <ph name="DEVICE_TYPE">{0}<ex>Chromebook</ex></ph> will be locked now.
   <!-- TODO(b/258503542): Remove translateable tags when strings are finalized. -->
   <message name="IDS_OOBE_CHOOBE_THEME_SELECTION_TILE_TITLE" desc="Title of the theme selection tile in the CHOOBE screen." translateable="false">
     Select dark/light theme
+  </message>
+  <message name="IDS_OOBE_CHOOBE_TOUCHPAD_SCROLL_TILE_TITLE" desc="Title of the touchpad scroll tile in the CHOOBE screen." translateable="false">
+    Change touchpad scrolling direction
+  </message>
+  <message name="IDS_OOBE_CHOOBE_DISPLAY_SIZE_TILE_TITLE" desc="Title of the display size tile in the CHOOBE screen." translateable="false">
+    Display size
   </message>
 
   <!-- Strings for the office fallback dialog -->

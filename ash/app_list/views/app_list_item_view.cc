@@ -33,6 +33,7 @@
 #include "base/auto_reset.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -420,12 +421,12 @@ class AppListItemView::FolderIconView : public views::View,
   }
 
   // The folder item this icon view paints.
-  AppListFolderItem* folder_item_;
+  raw_ptr<AppListFolderItem, ExperimentalAsh> folder_item_;
 
   // Whether Jelly style feature is enabled.
   const bool jelly_style_;
 
-  const AppListConfig* config_;
+  raw_ptr<const AppListConfig, ExperimentalAsh> config_;
 
   // The scaling factor used for cardified states in tablet mode.
   float icon_scale_;
@@ -1210,6 +1211,9 @@ void AppListItemView::OnMouseReleased(const ui::MouseEvent& event) {
   }
 
   if (app_list_features::IsDragAndDropRefactorEnabled()) {
+    // Cancel drag timer set when the mouse was pressed, to prevent the app
+    // item from entering dragged state.
+    mouse_drag_timer_.Stop();
     return;
   }
 
@@ -1482,8 +1486,13 @@ bool AppListItemView::HasNotificationBadge() {
   return item_weak_->has_notification_badge();
 }
 
-void AppListItemView::FireMouseDragTimerForTest() {
+bool AppListItemView::FireMouseDragTimerForTest() {
+  if (!mouse_drag_timer_.IsRunning()) {
+    return false;
+  }
+
   mouse_drag_timer_.FireNow();
+  return true;
 }
 
 bool AppListItemView::FireTouchDragTimerForTest() {

@@ -583,7 +583,7 @@ TEST_F(AuthenticationServiceTest, ManagedAccountSignOut) {
   EXPECT_EQ(identity_manager()->GetAccountsWithRefreshTokens().size(), 3UL);
   EXPECT_TRUE(authentication_service()->HasPrimaryIdentityManaged(
       signin::ConsentLevel::kSignin));
-  ON_CALL(*mock_sync_service()->GetMockUserSettings(), IsFirstSetupComplete())
+  ON_CALL(*sync_setup_service_mock(), IsFirstSetupComplete())
       .WillByDefault(Return(true));
 
   SetCachedMDMInfo(identity(2), CreateRefreshAccessTokenError(identity(0)));
@@ -735,7 +735,7 @@ TEST_F(AuthenticationServiceTest, SigninAndSyncDecoupled) {
 
   // Grant Sync consent.
   EXPECT_CALL(*sync_setup_service_mock(), PrepareForFirstSyncSetup).Times(1);
-  EXPECT_CALL(*mock_sync_service()->GetMockUserSettings(), SetSyncRequested());
+  EXPECT_CALL(*mock_sync_service(), SetSyncFeatureRequested());
   authentication_service()->GrantSyncConsent(identity(0));
 
   EXPECT_NSEQ(identity(0), authentication_service()->GetPrimaryIdentity(

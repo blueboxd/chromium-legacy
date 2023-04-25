@@ -39,10 +39,8 @@
 #include "base/types/optional_util.h"
 #include "base/types/pass_key.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "components/attribution_reporting/os_registration.h"
-#include "components/attribution_reporting/os_support.mojom.h"
-#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/browsing_topics/header_util.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -193,6 +191,8 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/attribution_manager.h"
+#include "services/network/public/cpp/attribution_utils.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #endif
@@ -235,25 +235,6 @@ const char kIsolatedAppCSP[] =
     "media-src 'self' https: blob: data:;"
     "font-src 'self' blob: data:;"
     "require-trusted-types-for 'script';";
-
-// Corresponds to the "NavigationURLScheme" histogram enumeration type in
-// src/tools/metrics/histograms/enums.xml.
-//
-// DO NOT REORDER OR CHANGE THE MEANING OF THESE VALUES.
-enum class NavigationURLScheme {
-  UNKNOWN = 0,
-  ABOUT = 1,
-  BLOB = 2,
-  CONTENT = 3,
-  CONTENT_ID = 4,
-  DATA = 5,
-  FILE = 6,
-  FILE_SYSTEM = 7,
-  FTP = 8,
-  HTTP = 9,
-  HTTPS = 10,
-  kMaxValue = HTTPS
-};
 
 // Denotes the type of user agent string value sent in the User-Agent request
 // header.
@@ -462,15 +443,12 @@ void AddAdditionalRequestHeaders(
     headers->SetHeader("Purpose", "prefetch");
   }
 
-  if (has_attribution_src_token) {
+  if (has_attribution_src_token
+#if BUILDFLAG(IS_ANDROID)
+      && network::HasAttributionSupport(AttributionManager::GetSupport())
+#endif
+  ) {
     headers->SetHeader("Attribution-Reporting-Eligible", "navigation-source");
-
-    if (base::FeatureList::IsEnabled(
-            blink::features::kAttributionReportingCrossAppWeb)) {
-      headers->SetHeader("Attribution-Reporting-Support",
-                         attribution_reporting::GetSupportHeader(
-                             AttributionManager::GetOsSupport()));
-    }
   }
 }
 
@@ -642,25 +620,6 @@ void RecordReadyToCommitMetrics(
       UMA_HISTOGRAM_BOOLEAN(
           "Navigation.RequiresDedicatedProcess.HTTPOrHTTPS",
           new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
-    }
-  }
-
-  // Navigation.IsSameProcess
-  {
-    ui::PageTransition transition =
-        ui::PageTransitionFromInt(common_params.transition);
-    UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess", is_same_process);
-    if (transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
-      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",
-                            is_same_process);
-    } else if (ui::PageTransitionCoreTypeIs(transition,
-                                            ui::PAGE_TRANSITION_RELOAD)) {
-      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.Reload", is_same_process);
-    } else if (ui::PageTransitionIsNewNavigation(transition)) {
-      UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.NewNavigation",
-                            is_same_process);
-    } else {
-      NOTREACHED() << "Invalid page transition: " << transition;
     }
   }
 
@@ -3038,6 +2997,12 @@ NavigationRequest::CreatePolicyContainerForBlink() {
 
   return policy_container_builder_->CreatePolicyContainerForBlink();
 }
+scoped_refptr<PolicyContainerHost> NavigationRequest::GetPolicyContainerHost() {
+  DCHECK_GE(state_, READY_TO_COMMIT);
+  // It is invalid calling this method after `TakePolicyContainerHost()`.
+  CHECK(policy_container_builder_);
+  return policy_container_builder_->GetPolicyContainerHost();
+}
 
 scoped_refptr<PolicyContainerHost>
 NavigationRequest::TakePolicyContainerHost() {
@@ -4600,15 +4565,13 @@ void NavigationRequest::OnRequestFailedInternal(
       policy_container_builder_->FinalPolicies().cross_origin_opener_policy,
       url::Origin(), net::NetworkAnonymizationKey::CreateTransient());
 
-  RenderFrameHostImpl* render_frame_host = nullptr;
-  switch (ComputeErrorPageProcess(status.error_code)) {
+  switch (ComputeErrorPageProcess()) {
     case ErrorPageProcess::kCurrentProcess:
       // There's no way to get here with a same-document navigation, it would
       // need to be on a document that was not blocked but became blocked, but
       // same document navigations don't go to the network so it wouldn't know
       // about the change.
       CHECK(!IsSameDocument());
-      render_frame_host = frame_tree_node_->current_frame_host();
       break;
     case ErrorPageProcess::kIsolatedProcess:
       // In this case we are isolating the error page from the source and
@@ -4627,26 +4590,33 @@ void NavigationRequest::OnRequestFailedInternal(
       // https://crbug.com/1125106.
       common_params_->navigation_type =
           ConvertToCrossDocumentType(common_params_->navigation_type);
-      if (auto result =
-              frame_tree_node_->render_manager()->GetFrameHostForNavigation(
-                  this, &browsing_context_group_swap_);
-          result.has_value()) {
-        render_frame_host = result.value();
-      } else {
-        switch (result.error()) {
-          case GetFrameHostForNavigationFailed::kCouldNotReinitializeMainFrame:
-            // TODO(https://crbug.com/1400535): This was unhandled
-            // before and remains explicitly unhandled. This branch may be
-            // removed in the future.
-            break;
-          case GetFrameHostForNavigationFailed::kBlockedByPendingCommit:
-            // TODO(https://crbug.com/1220337): Split OnRequestFailedInternal()
-            // so the process selection logic is at the top of its own method.
-            break;
-        }
-      }
+      break;
+    case ErrorPageProcess::kNotErrorPage:
+    case ErrorPageProcess::kPostCommitErrorPage:
+      NOTREACHED();
       break;
   }
+
+  RenderFrameHostImpl* render_frame_host = nullptr;
+  if (auto result =
+          frame_tree_node_->render_manager()->GetFrameHostForNavigation(
+              this, &browsing_context_group_swap_);
+      result.has_value()) {
+    render_frame_host = result.value();
+  } else {
+    switch (result.error()) {
+      case GetFrameHostForNavigationFailed::kCouldNotReinitializeMainFrame:
+        // TODO(https://crbug.com/1400535): This was unhandled
+        // before and remains explicitly unhandled. This branch may be
+        // removed in the future.
+        break;
+      case GetFrameHostForNavigationFailed::kBlockedByPendingCommit:
+        // TODO(https://crbug.com/1220337): Split OnRequestFailedInternal()
+        // so the process selection logic is at the top of its own method.
+        break;
+    }
+  }
+
   // Sanity check that we haven't changed the RenderFrameHost picked for the
   // error page in OnRequestFailedInternal when running the WillFailRequest
   // checks.
@@ -4691,8 +4661,19 @@ void NavigationRequest::OnRequestFailedInternal(
   }
 }
 
-NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
-    int net_error) {
+NavigationRequest::ErrorPageProcess
+NavigationRequest::ComputeErrorPageProcess() {
+  if (net_error_ == net::OK) {
+    return ErrorPageProcess::kNotErrorPage;
+  }
+
+  if (state_ < NavigationRequest::CANCELING) {
+    CHECK(!post_commit_error_page_html_.empty());
+    // Post-commit error page normally goes through the "non-error page"
+    // navigation path, so treat them specially here too.
+    return ErrorPageProcess::kPostCommitErrorPage;
+  }
+
   // By policy we can isolate all error pages from both the current and
   // destination processes.
   if (frame_tree_node_->IsErrorPageIsolationEnabled())
@@ -4702,7 +4683,7 @@ NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
   // an unknown URL scheme (such as when navigating a guest to an external
   // protocol) in the process computed for the destination URL. Therefore,
   // leave such cases in the original process. See https://crbug.com/1366450.
-  if (net_error == net::ERR_UNKNOWN_URL_SCHEME &&
+  if (net_error_ == net::ERR_UNKNOWN_URL_SCHEME &&
       frame_tree_node_->current_frame_host()->GetSiteInstance()->IsGuest()) {
     return ErrorPageProcess::kCurrentProcess;
   }
@@ -4723,8 +4704,9 @@ NavigationRequest::ErrorPageProcess NavigationRequest::ComputeErrorPageProcess(
   //   URLs should be allowed to transfer away from the current process, which
   //   didn't request the navigation and may have a higher privilege level
   //   than the blocked destination.
-  if (net::IsRequestBlockedError(net_error) && !browser_initiated())
+  if (net::IsRequestBlockedError(net_error_) && !browser_initiated()) {
     return ErrorPageProcess::kCurrentProcess;
+  }
   return ErrorPageProcess::kDestinationProcess;
 }
 
@@ -4942,7 +4924,7 @@ void NavigationRequest::OnStartChecksComplete(
           frame_tree_node_->current_frame_host()->devtools_frame_token(),
           std::move(cors_exempt_headers), std::move(client_security_state),
           devtools_accepted_stream_types, is_pdf_, initiator_document_,
-          allow_cookies_from_browser_),
+          GetPreviousRenderFrameHostId(), allow_cookies_from_browser_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
       CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),
@@ -5212,6 +5194,7 @@ void NavigationRequest::OnFailureChecksComplete(
   // The throttle may have changed the net_error_code, so we set the
   // `net_error_` again, overriding what OnRequestFailedInternal() set.
   net::Error old_net_error = net_error_;
+  ErrorPageProcess old_error_page_process = ComputeErrorPageProcess();
   net_error_ = result.net_error_code();
 
   // FIXME: Should we clear out |extended_error_code_| here?
@@ -5219,8 +5202,7 @@ void NavigationRequest::OnFailureChecksComplete(
   // Ensure that WillFailRequest() isn't changing the error code in a way that
   // switches the destination process for the error page - see
   // https://crbug.com/817881.
-  CHECK_EQ(ComputeErrorPageProcess(old_net_error),
-           ComputeErrorPageProcess(net_error_))
+  CHECK_EQ(old_error_page_process, ComputeErrorPageProcess())
       << " Unsupported error code change in WillFailRequest(): from "
       << old_net_error << " to " << net_error_;
 
@@ -5581,6 +5563,12 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
+  if (!NavigationTypeUtils::IsSameDocument(common_params_->navigation_type)) {
+    // We want to record this for the frame that we are navigating away from.
+    frame_tree_node_->render_manager()
+        ->current_frame_host()
+        ->RecordNavigationSuddenTerminationHandlers();
+  }
   if (IsServedFromBackForwardCache() || IsPrerenderedPageActivation()) {
     CommitPageActivation();
     return;
@@ -7479,23 +7467,6 @@ void NavigationRequest::RestartCommitTimeout() {
 
 void NavigationRequest::OnCommitTimeout() {
   DCHECK_EQ(READY_TO_COMMIT, state_);
-  PingNetworkService(base::BindOnce(
-      [](base::Time start_time) {
-        UMA_HISTOGRAM_MEDIUM_TIMES(
-            "Navigation.CommitTimeout.NetworkServicePingTime",
-            base::Time::Now() - start_time);
-      },
-      base::Time::Now()));
-  UMA_HISTOGRAM_ENUMERATION(
-      "Navigation.CommitTimeout.NetworkServiceAvailability",
-      GetNetworkServiceAvailability());
-  base::TimeDelta last_crash_time = GetTimeSinceLastNetworkServiceCrash();
-  if (!last_crash_time.is_zero()) {
-    UMA_HISTOGRAM_LONG_TIMES(
-        "Navigation.CommitTimeout.NetworkServiceLastCrashTime",
-        last_crash_time);
-  }
-  base::UmaHistogramSparse("Navigation.CommitTimeout.ErrorCode", -net_error_);
   render_process_blocked_state_changed_subscription_ = {};
   GetRenderFrameHost()->GetRenderWidgetHost()->RendererIsUnresponsive(
       base::BindRepeating(&NavigationRequest::RestartCommitTimeout,

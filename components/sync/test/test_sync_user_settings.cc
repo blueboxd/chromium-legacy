@@ -45,22 +45,6 @@ TestSyncUserSettings::TestSyncUserSettings(TestSyncService* service)
 
 TestSyncUserSettings::~TestSyncUserSettings() = default;
 
-bool TestSyncUserSettings::IsSyncRequested() const {
-  return !service_->HasDisableReason(SyncService::DISABLE_REASON_USER_CHOICE);
-}
-
-void TestSyncUserSettings::SetSyncRequested() {
-  SyncService::DisableReasonSet disable_reasons = service_->GetDisableReasons();
-  disable_reasons.Remove(SyncService::DISABLE_REASON_USER_CHOICE);
-  service_->SetDisableReasons(disable_reasons);
-}
-
-void TestSyncUserSettings::ClearSyncRequested() {
-  SyncService::DisableReasonSet disable_reasons = service_->GetDisableReasons();
-  disable_reasons.Put(SyncService::DISABLE_REASON_USER_CHOICE);
-  service_->SetDisableReasons(disable_reasons);
-}
-
 bool TestSyncUserSettings::IsFirstSetupComplete() const {
   return first_setup_complete_;
 }

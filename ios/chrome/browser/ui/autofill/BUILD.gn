@@ -121,6 +121,7 @@ source_set("autofill_shared_ui") {
     "//base:base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common:features",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/shared/public/features",
@@ -132,6 +133,7 @@ source_set("autofill_shared_ui") {
     "//ios/chrome/browser/ui/autofill/cells",
     "//ios/chrome/browser/ui/settings/autofill:constants",
     "//ios/chrome/common/ui/colors",
+    "//ios/chrome/common/ui/table_view:cells_constants",
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
@@ -271,6 +273,7 @@ source_set("unit_tests") {
     "//components/autofill/core/browser",
     "//components/autofill/core/browser:test_support",
     "//components/prefs:test_support",
+    "//ios/chrome/browser/application_context",
     "//ios/chrome/browser/autofill",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/shared/ui/list_model",

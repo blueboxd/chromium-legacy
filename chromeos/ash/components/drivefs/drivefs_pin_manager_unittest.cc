@@ -1778,40 +1778,10 @@ TEST_F(DriveFsPinManagerTest, CannotGetFreeSpace2) {
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
-// Tests what happens when PinManager cannot enable Docs offline during initial
-// setup.
-TEST_F(DriveFsPinManagerTest, CannotEnableDocsOffline) {
-  CompletionCallback completion_callback;
-  RunLoop run_loop;
-
-  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
-      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_SERVICE_UNAVAILABLE));
-  EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(0);
-  EXPECT_CALL(completion_callback, Run(Stage::kCannotEnableDocsOffline))
-      .WillOnce(RunClosure(run_loop.QuitClosure()));
-  EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
-      .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
-
-  PinManager manager(temp_dir_.GetPath(), &drivefs_);
-  manager.SetSpaceGetter(GetSpaceGetter());
-  manager.SetCompletionCallback(completion_callback.Get());
-  manager.Start();
-  run_loop.Run();
-
-  const Progress progress = manager.GetProgress();
-  EXPECT_EQ(progress.stage, Stage::kCannotEnableDocsOffline);
-  EXPECT_EQ(progress.free_space, 1 << 30);
-  EXPECT_EQ(progress.required_space, 0);
-  EXPECT_EQ(progress.pinned_bytes, 0);
-  EXPECT_EQ(progress.pinned_files, 0);
-}
-
 TEST_F(DriveFsPinManagerTest, CannotListFiles) {
   CompletionCallback completion_callback;
   RunLoop run_loop;
 
-  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
-      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_OK));
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       .WillOnce(Return(FileError::FILE_ERROR_FAILED));
@@ -1834,6 +1804,40 @@ TEST_F(DriveFsPinManagerTest, CannotListFiles) {
   EXPECT_EQ(progress.pinned_files, 0);
 }
 
+// Tests what happens when PinManager cannot enable Docs offline during initial
+// setup.
+TEST_F(DriveFsPinManagerTest, CannotEnableDocsOffline) {
+  CompletionCallback completion_callback;
+  RunLoop run_loop;
+
+  // Mock Drive search to return 1 unpinned files that total to 256 MB.
+  const vector<DriveItem> items = {{.size = 256 << 20}};
+
+  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
+      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_SERVICE_UNAVAILABLE));
+  EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
+  EXPECT_CALL(drivefs_, OnGetNextPage(_))
+      .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
+      .WillOnce(DoAll(PopulateNoSearchItems(), Return(kFileOk)));
+  EXPECT_CALL(space_getter_, GetFreeSpace(gcache_dir_, _))
+      .WillOnce(RunOnceCallback<1>(1 << 30));  // 1 GB.
+  EXPECT_CALL(completion_callback, Run(Stage::kCannotEnableDocsOffline))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  PinManager manager(temp_dir_.GetPath(), &drivefs_);
+  manager.SetSpaceGetter(GetSpaceGetter());
+  manager.SetCompletionCallback(completion_callback.Get());
+  manager.Start();
+  run_loop.Run();
+
+  const Progress progress = manager.GetProgress();
+  EXPECT_EQ(progress.stage, Stage::kCannotEnableDocsOffline);
+  EXPECT_EQ(progress.free_space, 1 << 30);
+  EXPECT_EQ(progress.required_space, 256 << 20);
+  EXPECT_EQ(progress.pinned_bytes, 0);
+  EXPECT_EQ(progress.pinned_files, 0);
+}
+
 // Tests what happens when PinManager cannot get enough free space during
 // the initial setup.
 TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
@@ -1846,8 +1850,6 @@ TEST_F(DriveFsPinManagerTest, NotEnoughSpace) {
   const vector<DriveItem> items = {
       {.size = 300 << 20}, {.size = 212 << 20}, {.size = 1}};
 
-  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
-      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_OK));
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
@@ -1965,8 +1967,6 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   // margin.
   const vector<DriveItem> items = {{.size = 300 << 20}, {.size = 212 << 20}};
 
-  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
-      .WillOnce(RunOnceCallback<1>(drive::FILE_ERROR_OK));
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   EXPECT_CALL(drivefs_, OnGetNextPage(_))
       .WillOnce(DoAll(PopulateSearchItems(items), Return(kFileOk)))
@@ -2144,19 +2144,21 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
   ASSERT_NE(target_id, stable_id);
   md.shortcut_details->target_lookup_status = LookupStatus::kOk;
   md.type = FileMetadata::Type::kFile;
+  md.size = 10000;
   manager.HandleQueryItem(dir_id, dir_path, std::as_const(item));
+  EXPECT_FALSE(md.shortcut_details);
+  EXPECT_EQ(Id(md.stable_id), target_id);
   EXPECT_EQ(manager.progress_.skipped_items, 0);
   EXPECT_EQ(manager.progress_.listed_shortcuts, 1);
   EXPECT_EQ(manager.progress_.listed_dirs, 0);
   EXPECT_EQ(manager.progress_.listed_files, 1);
   EXPECT_EQ(manager.progress_.listed_docs, 0);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
   EXPECT_THAT(manager.listed_items_, SizeIs(1));
   EXPECT_THAT(manager.listed_items_,
               UnorderedElementsAre<PinManager::ListedItems::value_type>(
                   {target_id, dir_id}));
   EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(target_id));
-  EXPECT_FALSE(md.shortcut_details);
-  EXPECT_EQ(Id(md.stable_id), target_id);
   reset();
 
   // Valid shortcut to hosted doc.
@@ -2165,19 +2167,21 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
   md.shortcut_details->target_stable_id = static_cast<int64_t>(target_id);
   md.stable_id = static_cast<int64_t>(stable_id);
   md.type = FileMetadata::Type::kHosted;
+  md.size = 0;
   manager.HandleQueryItem(dir_id, dir_path, std::as_const(item));
+  EXPECT_FALSE(md.shortcut_details);
+  EXPECT_EQ(Id(md.stable_id), target_id);
   EXPECT_EQ(manager.progress_.skipped_items, 0);
   EXPECT_EQ(manager.progress_.listed_shortcuts, 1);
   EXPECT_EQ(manager.progress_.listed_dirs, 0);
   EXPECT_EQ(manager.progress_.listed_files, 0);
   EXPECT_EQ(manager.progress_.listed_docs, 1);
+  EXPECT_EQ(manager.progress_.pinned_bytes, 0);
   EXPECT_THAT(manager.listed_items_, SizeIs(1));
   EXPECT_THAT(manager.listed_items_,
               UnorderedElementsAre<PinManager::ListedItems::value_type>(
                   {target_id, dir_id}));
   EXPECT_THAT(manager.files_to_pin_, UnorderedElementsAre(target_id));
-  EXPECT_FALSE(md.shortcut_details);
-  EXPECT_EQ(Id(md.stable_id), target_id);
   reset();
 
   // Valid shortcut to directory.
@@ -2186,6 +2190,7 @@ TEST_F(DriveFsPinManagerTest, HandleQueryItem) {
   md.shortcut_details->target_stable_id = static_cast<int64_t>(target_id);
   md.stable_id = static_cast<int64_t>(stable_id);
   md.type = FileMetadata::Type::kDirectory;
+  md.size = 0;
   EXPECT_CALL(drivefs_, OnStartSearchQuery(_)).Times(1);
   manager.HandleQueryItem(dir_id, dir_path, std::as_const(item));
   EXPECT_EQ(manager.progress_.skipped_items, 0);
@@ -2426,6 +2431,9 @@ TEST_F(DriveFsPinManagerTest, StartWhenInProgress) {
 // Tests PinManager::StartPinning().
 TEST_F(DriveFsPinManagerTest, StartPinning) {
   PinManager manager(temp_dir_.GetPath(), &drivefs_);
+
+  EXPECT_CALL(drivefs_, SetDocsOfflineEnabled(true, _))
+      .WillRepeatedly(RunOnceCallback<1>(drive::FILE_ERROR_OK));
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(manager.sequence_checker_);
   manager.progress_.stage = Stage::kListingFiles;

@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/files/file_path.h"
-#include "base/guid.h"
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
@@ -45,15 +44,15 @@ enum class RateLimitResult : int;
 class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
  public:
   // Version number of the database.
-  static constexpr int kCurrentVersionNumber = 49;
+  static constexpr int kCurrentVersionNumber = 51;
 
   // Earliest version which can use a `kCurrentVersionNumber` database
   // without failing.
-  static constexpr int kCompatibleVersionNumber = 49;
+  static constexpr int kCompatibleVersionNumber = 51;
 
   // Latest version of the database that cannot be upgraded to
   // `kCurrentVersionNumber` without razing the database.
-  static constexpr int kDeprecatedVersionNumber = 48;
+  static constexpr int kDeprecatedVersionNumber = 50;
 
   static_assert(kCompatibleVersionNumber <= kCurrentVersionNumber);
   static_assert(kDeprecatedVersionNumber < kCompatibleVersionNumber);
@@ -231,6 +230,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
 
   AttributionTrigger::EventLevelResult MaybeCreateEventLevelReport(
       const AttributionInfo& attribution_info,
+      const StoredSource&,
       const AttributionTrigger& trigger,
       absl::optional<AttributionReport>& report,
       absl::optional<uint64_t>& dedup_key,
@@ -305,14 +305,18 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   AttributionTrigger::AggregatableResult
   MaybeCreateAggregatableAttributionReport(
       const AttributionInfo& attribution_info,
+      const StoredSource&,
       const AttributionTrigger& trigger,
       absl::optional<AttributionReport>& report,
       absl::optional<uint64_t>& dedup_key,
       absl::optional<int>& max_aggregatable_reports_per_destination)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
+  // Stores the data associated with the aggregatable report, e.g. budget
+  // consumed and dedup keys. The report itself will be stored in
+  // `GenerateNullAggregatableReportsAndStoreReports()`.
   AttributionTrigger::AggregatableResult
-  MaybeStoreAggregatableAttributionReport(
+  MaybeStoreAggregatableAttributionReportData(
       AttributionReport& report,
       int64_t aggregatable_budget_consumed,
       absl::optional<uint64_t> dedup_key,
@@ -320,6 +324,21 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   [[nodiscard]] bool StoreAttributionReport(AttributionReport& report)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  // Generates null aggregatable reports for the given trigger, assigns
+  // attestation data to null aggregatable reports and the real aggregatable
+  // report if created, and stores all those reports.
+  [[nodiscard]] bool GenerateNullAggregatableReportsAndStoreReports(
+      const AttributionTrigger&,
+      const AttributionInfo&,
+      absl::optional<AttributionReport>& new_aggregatable_report,
+      absl::optional<base::Time>& min_null_aggregatable_report_time)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  // Randomly assigns trigger attestation data to the given reports.
+  void AssignTriggerAttestationData(std::vector<AttributionReport>&,
+                                    const AttributionTrigger&)
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   // If set, database errors will not crash the client when run in debug mode.

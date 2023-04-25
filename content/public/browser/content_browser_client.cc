@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback_helpers.h"
-#include "base/guid.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
@@ -18,7 +17,9 @@
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
+#include "content/browser/webid/mdocs/mdoc_provider.h"
 #include "content/public/browser/anchor_element_preconnect_delegate.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/browser_accessibility_state.h"
@@ -515,6 +516,12 @@ bool ContentBrowserClient::IsAttributionReportingOperationAllowed(
     const url::Origin* reporting_origin) {
   return true;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+bool ContentBrowserClient::IsWebAttributionReportingAllowed() {
+  return true;
+}
+#endif
 
 bool ContentBrowserClient::IsSharedStorageAllowed(
     content::BrowserContext* browser_context,
@@ -1427,11 +1434,9 @@ bool ContentBrowserClient::IsFileSystemURLNavigationAllowed(
 }
 
 #if BUILDFLAG(IS_MAC)
-base::FilePath ContentBrowserClient::GetChildProcessPath(
-    int child_flags,
-    const base::FilePath& helpers_path) {
+std::string ContentBrowserClient::GetChildProcessSuffix(int child_flags) {
   NOTIMPLEMENTED();
-  return base::FilePath();
+  return std::string();
 }
 #endif
 

@@ -2839,8 +2839,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_AccessibilityPortal) 
   RunHtmlTest(FILE_PATH_LITERAL("portal.html"));
 }
 
+// TODO(crbug.com/1367886): Flaky on multiple platforms
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       AccessibilityPortalNameFromText) {
+                       DISABLED_AccessibilityPortalNameFromText) {
   RunHtmlTest(FILE_PATH_LITERAL("portal-name-from-text.html"));
 }
 
@@ -3416,6 +3417,12 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
       FILE_PATH_LITERAL("clear-children-while-computing-name.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       FrozenAncestorCannotChangeDescendants) {
+  RunRegressionTest(
+      FILE_PATH_LITERAL("frozen-ancestor-cannot-change-descendants.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, HiddenTable) {
   RunRegressionTest(FILE_PATH_LITERAL("hidden-table.html"));
 }
@@ -3535,6 +3542,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLSpace) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MathMLUnknown) {
   RunMathMLTest(FILE_PATH_LITERAL("unknown.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, MalformedMap) {
+  RunHtmlTest(FILE_PATH_LITERAL("malformed-map.html"));
 }
 
 //

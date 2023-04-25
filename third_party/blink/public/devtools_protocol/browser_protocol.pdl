@@ -716,6 +716,7 @@ experimental domain Audits
       InvalidRegisterOsSourceHeader
       InvalidRegisterOsTriggerHeader
       WebAndOsHeaders
+      NoWebOrOsSupport
 
   # Details for issues around "Attribution Reporting API" usage.
   # Explainer: https://github.com/WICG/attribution-reporting-api
@@ -777,8 +778,8 @@ experimental domain Audits
 
   # This issue warns about sites in the redirect chain of a finished navigation
   # that may be flagged as trackers and have their state cleared if they don't
-  # receive a user interaction. Note that in this context 'site' means eTLD+1. 
-  # For example, if the URL `https://example.test:80/bounce` was in the 
+  # receive a user interaction. Note that in this context 'site' means eTLD+1.
+  # For example, if the URL `https://example.test:80/bounce` was in the
   # redirect chain, the site reported would be `example.test`.
   type BounceTrackingIssueDetails extends object
     properties
@@ -809,14 +810,17 @@ experimental domain Audits
       WellKnownNoResponse
       WellKnownInvalidResponse
       WellKnownListEmpty
+      WellKnownInvalidContentType
       ConfigNotInWellKnown
       WellKnownTooBig
       ConfigHttpNotFound
       ConfigNoResponse
       ConfigInvalidResponse
+      ConfigInvalidContentType
       ClientMetadataHttpNotFound
       ClientMetadataNoResponse
       ClientMetadataInvalidResponse
+      ClientMetadataInvalidContentType
       DisabledInSettings
       ErrorFetchingSignin
       InvalidSigninResponse
@@ -824,10 +828,12 @@ experimental domain Audits
       AccountsNoResponse
       AccountsInvalidResponse
       AccountsListEmpty
+      AccountsInvalidContentType
       IdTokenHttpNotFound
       IdTokenNoResponse
       IdTokenInvalidResponse
       IdTokenInvalidRequest
+      IdTokenInvalidContentType
       ErrorIdToken
       Canceled
       RpPageNotVisible
@@ -1412,6 +1418,8 @@ experimental domain CSS
       number endLine
       # Column offset of the end of the stylesheet within the resource (zero based).
       number endColumn
+      # If the style sheet was loaded from a network resource, this indicates when the resource failed to load
+      experimental optional boolean loadingFailed
 
   # CSS rule representation.
   type CSSRule extends object
@@ -7220,6 +7228,7 @@ domain Page
       payment
       picture-in-picture
       private-aggregation
+      private-state-token-redemption
       publickey-credentials-get
       run-ad-auction
       screen-wake-lock
@@ -7230,7 +7239,6 @@ domain Page
       smart-card
       storage-access
       sync-xhr
-      trust-token-redemption
       unload
       usb
       vertical-scroll
@@ -10943,6 +10951,8 @@ experimental domain Preload
       CrossSiteNavigationInMainFrameNavigation
       SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation
       SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation
+      MemoryPressureOnTrigger
+      MemoryPressureAfterTriggered
 
   # Fired when a prerender attempt is completed.
   event prerenderAttemptCompleted
@@ -10955,6 +10965,20 @@ experimental domain Preload
       # This is used to give users more information about the name of the API call
       # that is incompatible with prerender and has caused the cancellation of the attempt
       optional string disallowedApiMethod
+
+  type PreloadEnabledState extends string
+    enum
+      Enabled
+      DisabledByDataSaver
+      DisabledByBatterySaver
+      DisabledByPreference
+      # Service not available.
+      NotSupported
+
+  # Fired when a preload enabled state is updated.
+  event preloadEnabledStateUpdated
+    parameters
+      PreloadEnabledState state
 
   # Preloading status values, see also PreloadingTriggeringOutcome. This
   # status is shared by prefetchStatusUpdated and prerenderStatusUpdated.

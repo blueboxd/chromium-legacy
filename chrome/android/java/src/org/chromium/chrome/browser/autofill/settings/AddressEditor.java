@@ -44,8 +44,6 @@ import java.util.UUID;
  * An address editor. Can be used for either shipping or billing address editing.
  */
 public class AddressEditor extends EditorBase<AutofillAddress> {
-    private static final Set<String> SANCTIONED_CONTRIES = Set.of("CU", "IR", "KP", "SD", "SY");
-
     private final Handler mHandler = new Handler();
     private final Map<Integer, EditorFieldModel> mAddressFields = new HashMap<>();
     private final Set<CharSequence> mPhoneNumbers = new HashSet<>();
@@ -108,13 +106,15 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
         return addressFields;
     }
 
-    // TODO(crbug.com/1432505): remove temporary sanctioned countries filtering.
+    // TODO(crbug.com/1432505): remove temporary unsupported countries filtering.
     private static List<EditorFieldModel.DropdownKeyValue> getSupportedCountries(
-            boolean filterOutSanctionedCountries) {
+            boolean filterOutUnsupportedCountries) {
         List<EditorFieldModel.DropdownKeyValue> supportedCountries =
                 AutofillProfileBridge.getSupportedCountries();
-        if (filterOutSanctionedCountries) {
-            supportedCountries.removeIf(entry -> SANCTIONED_CONTRIES.contains(entry.getKey()));
+        if (filterOutUnsupportedCountries) {
+            PersonalDataManager personalDataManager = PersonalDataManager.getInstance();
+            supportedCountries.removeIf(entry
+                    -> !personalDataManager.isCountryEligibleForAccountStorage(entry.getKey()));
         }
 
         return supportedCountries;
@@ -329,7 +329,8 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
     /** Saves the edited profile on disk. */
     private void commitChanges(AutofillProfile profile) {
         String country = mCountryField.getValue().toString();
-        if (willBeSavedInAccount() && !SANCTIONED_CONTRIES.contains(country)) {
+        if (willBeSavedInAccount() && mIsProfileNew
+                && PersonalDataManager.getInstance().isCountryEligibleForAccountStorage(country)) {
             profile.setSource(Source.ACCOUNT);
         }
         // Country code and phone number are always required and are always collected from the
@@ -448,10 +449,7 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
                     .replace("$1", email);
         }
 
-        return mContext
-                .getString(mIsMigrationToAccount
-                                ? R.string.autofill_address_will_be_migrated_to_account_source_notice
-                                : R.string.autofill_address_will_be_saved_in_account_source_notice)
+        return mContext.getString(R.string.autofill_address_will_be_saved_in_account_source_notice)
                 .replace("$1", email);
     }
 

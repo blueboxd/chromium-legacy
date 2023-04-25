@@ -222,7 +222,8 @@ AutofillProfile::AutofillProfile(const std::string& guid,
 
 // TODO(crbug.com/1177366): Remove this constructor.
 AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
-    : AutofillDataModel(base::GenerateUuid(), std::string()),
+    : AutofillDataModel(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                        std::string()),
       company_(this),
       phone_number_(this),
       server_id_(server_id),
@@ -233,7 +234,9 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
 }
 
 AutofillProfile::AutofillProfile(Source source)
-    : AutofillProfile(base::GenerateUuid(), std::string(), source) {}
+    : AutofillProfile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
+                      std::string(),
+                      source) {}
 
 AutofillProfile::AutofillProfile()
     : AutofillProfile(Source::kLocalOrSyncable) {}
@@ -494,11 +497,18 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
   return !operator==(profile);
 }
 
+bool AutofillProfile::IsSubsetOf(const AutofillProfileComparator& comparator,
+                                 const AutofillProfile& profile) const {
+  ServerFieldTypeSet supported_types;
+  GetSupportedTypes(&supported_types);
+  return IsSubsetOfForFieldSet(comparator, profile, supported_types);
+}
+
 bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfileComparator& comparator,
     const AutofillProfile& profile,
-    const std::string& app_locale,
     const ServerFieldTypeSet& types) const {
+  const std::string& app_locale = comparator.app_locale();
   for (ServerFieldType type : types) {
     // Prefer GetInfo over GetRawInfo so that a reasonable value is retrieved
     // when the raw data is empty or unnormalized. For example, suppose a
@@ -507,9 +517,9 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     // however, GetRawInfo returns an empty string.
     const std::u16string value = GetInfo(type, app_locale);
 
-    if (value.empty() || type == ADDRESS_HOME_STREET_ADDRESS ||
-        type == ADDRESS_HOME_LINE1 || type == ADDRESS_HOME_LINE2 ||
-        type == ADDRESS_HOME_LINE3) {
+    if (value.empty() || type == ADDRESS_HOME_ADDRESS ||
+        type == ADDRESS_HOME_STREET_ADDRESS || type == ADDRESS_HOME_LINE1 ||
+        type == ADDRESS_HOME_LINE2 || type == ADDRESS_HOME_LINE3) {
       // Ignore street addresses because comparing addresses such as 200 Elm St
       // and 200 Elm Street could cause |profile| to not be seen as a subset of
       // |this|. If the form includes a street address, then it is likely it
@@ -549,6 +559,13 @@ bool AutofillProfile::IsSubsetOfForFieldSet(
     }
   }
   return true;
+}
+
+bool AutofillProfile::IsStrictSupersetOf(
+    const AutofillProfileComparator& comparator,
+    const AutofillProfile& profile) const {
+  return profile.IsSubsetOf(comparator, *this) &&
+         !IsSubsetOf(comparator, profile);
 }
 
 void AutofillProfile::OverwriteDataFrom(const AutofillProfile& profile) {
@@ -1164,7 +1181,7 @@ AutofillProfile AutofillProfile::ConvertToAccountProfile() const {
   AutofillProfile account_profile = *this;
   // Since GUIDs are assumed to be unique across all profile sources, a new GUID
   // is assigned.
-  account_profile.set_guid(base::GenerateUuid());
+  account_profile.set_guid(base::Uuid::GenerateRandomV4().AsLowercaseString());
   account_profile.source_ = Source::kAccount;
   // Initial creator and last modifier are unused for kLocalOrSyncable profiles.
   account_profile.initial_creator_id_ = kInitialCreatorOrModifierChrome;

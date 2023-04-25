@@ -466,15 +466,6 @@ var CrSettingsPerformanceMenuTest = class extends CrSettingsBrowserTest {
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/settings_performance_menu_test.js';
   }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'performance_manager::features::kBatterySaverModeAvailable',
-      ],
-    };
-  }
 };
 
 TEST_F('CrSettingsPerformanceMenuTest', 'All', function() {
@@ -496,15 +487,6 @@ var CrSettingsBatteryPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
     return 'chrome://settings/test_loader.html?module=settings/battery_page_test.js';
-  }
-
-  /** @override */
-  get featureListInternal() {
-    return {
-      enabled: [
-        'performance_manager::features::kBatterySaverModeAvailable',
-      ],
-    };
   }
 };
 
@@ -614,6 +596,12 @@ TEST_F(
     });
 GEN('#endif');
 
+TEST_F(
+    'CrSettingsPrivacyPageTest', 'enableWebBluetoothNewPermissionsBackendTests',
+    function() {
+      runMochaSuite('enableWebBluetoothNewPermissionsBackend');
+    });
+
 var CrSettingsPrivacySandboxPageTest = class extends CrSettingsBrowserTest {
   /** @override */
   get browsePreload() {
@@ -633,6 +621,12 @@ var CrSettingsPrivacySandboxPageTest = class extends CrSettingsBrowserTest {
 TEST_F(
     'CrSettingsPrivacySandboxPageTest', 'PrivacySandboxPageTests', function() {
       runMochaSuite('PrivacySandboxPageTests');
+    });
+
+TEST_F(
+    'CrSettingsPrivacySandboxPageTest',
+    'PrivacySandboxNoticeRestrictedEnabledTests', function() {
+      runMochaSuite('PrivacySandboxNoticeRestrictedEnabledTests');
     });
 
 TEST_F('CrSettingsPrivacySandboxPageTest', 'TopicsSubpageTests', function() {

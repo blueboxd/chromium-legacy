@@ -31,7 +31,6 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -54,6 +53,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
+#include "net/base/network_change_notifier.h"
 #include "net/first_party_sets/global_first_party_sets.h"
 #include "net/log/net_log_util.h"
 #include "sandbox/policy/features.h"
@@ -65,6 +65,7 @@
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "services/network/public/mojom/network_interface_change_listener.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/socket_broker.mojom.h"
@@ -80,6 +81,12 @@
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 #include "content/browser/system_dns_resolution/system_dns_resolver.h"
 #include "services/network/public/mojom/system_dns_resolution.mojom-forward.h"
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+#include "net/base/address_map_linux.h"
+#include "net/base/address_tracker_linux.h"
+#include "services/network/public/mojom/network_interface_change_listener.mojom.h"
 #endif
 
 namespace content {
@@ -373,6 +380,20 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
       g_client->BindURLLoaderNetworkServiceObserver();
   network_service_params->first_party_sets_enabled =
       GetContentClient()->browser()->IsFirstPartySetsEnabled();
+
+#if BUILDFLAG(IS_LINUX)
+  if (base::FeatureList::IsEnabled(
+          net::features::kAddressTrackerLinuxIsProxied) &&
+      IsOutOfProcessNetworkService()) {
+    auto [address_map, online_links] =
+        net::NetworkChangeNotifier::GetAddressMapOwner()
+            ->GetAddressTrackerLinux()
+            ->GetInitialDataAndStartRecordingDiffs();
+    network_service_params->initial_address_map =
+        network::mojom::InitialAddressMap::New(std::move(address_map),
+                                               std::move(online_links));
+  }
+#endif  // BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_POSIX)
   // Send Kerberos environment variables to the network service.
@@ -730,36 +751,6 @@ void ShutDownNetworkService() {
     g_in_process_instance = nullptr;
   }
   GetNetworkTaskRunnerStorage().reset();
-}
-
-NetworkServiceAvailability GetNetworkServiceAvailability() {
-  if (!g_network_service_remote)
-    return NetworkServiceAvailability::NOT_CREATED;
-  else if (!g_network_service_remote->is_bound())
-    return NetworkServiceAvailability::NOT_BOUND;
-  else if (!g_network_service_remote->is_connected())
-    return NetworkServiceAvailability::ENCOUNTERED_ERROR;
-  else if (!g_network_service_is_responding)
-    return NetworkServiceAvailability::NOT_RESPONDING;
-  else
-    return NetworkServiceAvailability::AVAILABLE;
-}
-
-base::TimeDelta GetTimeSinceLastNetworkServiceCrash() {
-  if (g_last_network_service_crash.is_null())
-    return base::TimeDelta();
-  return base::Time::Now() - g_last_network_service_crash;
-}
-
-void PingNetworkService(base::OnceClosure closure) {
-  GetNetworkService();
-  // Unfortunately, QueryVersion requires a RepeatingCallback.
-  g_network_service_remote->QueryVersion(base::BindOnce(
-      [](base::OnceClosure closure, uint32_t) {
-        if (closure)
-          std::move(closure).Run();
-      },
-      std::move(closure)));
 }
 
 namespace {

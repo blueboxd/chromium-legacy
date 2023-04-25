@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_keyed_service_delegate.h"
 #include "chrome/browser/ui/ash/holding_space/holding_space_util.h"
 
@@ -64,11 +65,12 @@ class HoldingSpacePersistenceDelegate
   // Restores the holding space model from persistent storage.
   void RestoreModelFromPersistence();
 
-  // Removes the persisted suggestions if the suggestion feature is disabled.
-  void MaybeRemoveSuggestionsFromPersistence();
+  // Removes items from persistent storage that should not be restored to the
+  // in-memory holding space model.
+  void MaybeRemoveItemsFromPersistence();
 
   // Owned by `HoldingSpaceKeyedService`.
-  ThumbnailLoader* const thumbnail_loader_;
+  const raw_ptr<ThumbnailLoader, ExperimentalAsh> thumbnail_loader_;
 
   // Callback to invoke when holding space persistence has been restored.
   PersistenceRestoredCallback persistence_restored_callback_;

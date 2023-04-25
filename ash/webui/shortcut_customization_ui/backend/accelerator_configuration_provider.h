@@ -11,11 +11,13 @@
 #include "ash/accelerators/accelerator_alias_converter.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/public/cpp/accelerator_configuration.h"
+#include "ash/public/cpp/input_device_settings_controller.h"
 #include "ash/public/mojom/accelerator_configuration.mojom-forward.h"
 #include "ash/public/mojom/accelerator_info.mojom-forward.h"
 #include "ash/webui/shortcut_customization_ui/backend/accelerator_layout_table.h"
 #include "ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -35,7 +37,8 @@ class AcceleratorConfigurationProvider
     : public shortcut_customization::mojom::AcceleratorConfigurationProvider,
       public ui::InputDeviceEventObserver,
       public input_method::InputMethodManager::Observer,
-      public ui::KeyboardCapability::Observer {
+      public ui::KeyboardCapability::Observer,
+      public InputDeviceSettingsController::Observer {
  public:
   using ActionIdToAcceleratorsInfoMap =
       base::flat_map<AcceleratorActionId,
@@ -105,6 +108,11 @@ class AcceleratorConfigurationProvider
 
   // ui::KeyboardCapability::Observer:
   void OnTopRowKeysAreFKeysChanged() override;
+
+  // InputDeviceSettingsController::Observer:
+  void OnKeyboardConnected(const mojom::Keyboard& keyboard) override;
+  void OnKeyboardDisconnected(const mojom::Keyboard& keyboard) override;
+  void OnKeyboardSettingsUpdated(const mojom::Keyboard& keyboard) override;
 
   AcceleratorConfigurationMap GetAcceleratorConfig();
   std::vector<mojom::AcceleratorLayoutInfoPtr> GetAcceleratorLayoutInfos()
@@ -204,7 +212,8 @@ class AcceleratorConfigurationProvider
       shortcut_customization::mojom::AcceleratorConfigurationProvider>
       receiver_{this};
 
-  AshAcceleratorConfiguration* ash_accelerator_configuration_;
+  raw_ptr<AshAcceleratorConfiguration, ExperimentalAsh>
+      ash_accelerator_configuration_;
 
   // One accelerator action ID can potentially have multiple accelerators
   // associated with it.

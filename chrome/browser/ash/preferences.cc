@@ -30,7 +30,6 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
-#include "chrome/browser/ash/login/consolidated_consent_field_trial.h"
 #include "chrome/browser/ash/login/hid_detection_revamp_field_trial.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
@@ -165,7 +164,6 @@ void Preferences::RegisterPrefs(PrefRegistrySimple* registry) {
                                 false);
 
   RegisterLocalStatePrefs(registry);
-  ash::consolidated_consent_field_trial::RegisterLocalStatePrefs(registry);
   ash::hid_detection_revamp_field_trial::RegisterLocalStatePrefs(registry);
 }
 
@@ -465,6 +463,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsBluetoothRevampIsSelected, false);
 
+  registry->RegisterInt64Pref(::prefs::kHatsBatteryLifeCycleEndTs, 0);
+
+  registry->RegisterBooleanPref(::prefs::kHatsBatteryLifeIsSelected, false);
+
   registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
                                 false);
 
@@ -651,6 +653,7 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
                                          callback);
 
   pref_change_registrar_.Init(prefs);
+  pref_change_registrar_.Add(ash::prefs::kUserGeolocationAllowed, callback);
   pref_change_registrar_.Add(::prefs::kUserTimezone, callback);
   pref_change_registrar_.Add(::prefs::kResolveTimezoneByGeolocationMethod,
                              callback);
@@ -1097,6 +1100,35 @@ void Preferences::ApplyPreferences(ApplyReason reason,
     system::InputDeviceSettings::Get()->UpdateMouseSettings(mouse_settings);
     system::InputDeviceSettings::Get()->UpdatePointingStickSettings(
         pointing_stick_settings);
+  }
+
+  // TODO(b/277061508): Move this logic inside
+  // GeolocationPrivacySwitchController.
+  if (pref_name == ash::prefs::kUserGeolocationAllowed &&
+      reason != REASON_ACTIVE_USER_CHANGED) {
+    const bool user_disabled_geolocation =
+        !prefs_->GetBoolean(ash::prefs::kUserGeolocationAllowed);
+    const system::TimeZoneResolverManager::TimeZoneResolveMethod
+        automatic_timezone_setting =
+            system::TimeZoneResolverManager::TimeZoneResolveMethodFromInt(
+                prefs_->GetInteger(
+                    ::prefs::kResolveTimezoneByGeolocationMethod));
+    const bool precise_timezone_resolution_selected =
+        automatic_timezone_setting ==
+            system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                SEND_WIFI_ACCESS_POINTS ||
+        automatic_timezone_setting ==
+            system::TimeZoneResolverManager::TimeZoneResolveMethod::
+                SEND_ALL_LOCATION_INFO;
+    // `kUserGeolocationAllowed` pref controls the precise location access. If
+    // the user had Wi-Fi based timezone resolving active, we silently fall it
+    // back to the IP-based resolution.
+    if (user_disabled_geolocation && precise_timezone_resolution_selected) {
+      prefs_->SetInteger(
+          ::prefs::kResolveTimezoneByGeolocationMethod,
+          static_cast<int>(
+              system::TimeZoneResolverManager::TimeZoneResolveMethod::IP_ONLY));
+    }
   }
 
   if (pref_name == ::prefs::kUserTimezone &&

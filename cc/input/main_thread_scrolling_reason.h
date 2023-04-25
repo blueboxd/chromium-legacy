@@ -40,6 +40,8 @@ struct CC_EXPORT MainThreadScrollingReason {
     kHasBackgroundAttachmentFixedObjects = 1 << 2,
     kThreadedScrollingDisabled = 1 << 3,
     kPopupNoThreadedInput = 1 << 4,
+    kPreferNonCompositedScrolling = 1 << 15,
+    kBackgroundNeedsRepaintOnScroll = 1 << 16,
 
     // Style-related scrolling on main reasons. Subpixel (LCD) text rendering
     // requires blending glyphs with the background at a specific screen
@@ -62,19 +64,27 @@ struct CC_EXPORT MainThreadScrollingReason {
     kWheelEventHandlerRegion = 1 << 13,
     kTouchEventHandlerRegion = 1 << 14,
 
+    // The following reasons are listed above so they are grouped with other
+    // non-transient scrolling reasons:
+    // kPreferNonCompositedScrolling = 1 << 15,
+    // kBackgroundNeedsRepaintOnScroll = 1 << 16,
+
     // For blink::RecordScrollReasonsMetric() to know the number of used bits.
-    kMainThreadScrollingReasonLast = 14,
+    kMainThreadScrollingReasonLast = 16,
   };
 
   static const uint32_t kNonCompositedReasons =
-      kNotOpaqueForTextAndLCDText | kCantPaintScrollingBackgroundAndLCDText;
+      kPreferNonCompositedScrolling | kNotOpaqueForTextAndLCDText |
+      kCantPaintScrollingBackgroundAndLCDText;
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
   // thread.
   static bool MainThreadCanSetScrollReasons(uint32_t reasons) {
     constexpr uint32_t reasons_set_by_main_thread =
         kHasBackgroundAttachmentFixedObjects | kThreadedScrollingDisabled |
-        kPopupNoThreadedInput | kNonCompositedReasons;
+        kPopupNoThreadedInput | kPreferNonCompositedScrolling |
+        kBackgroundNeedsRepaintOnScroll | kNotOpaqueForTextAndLCDText |
+        kCantPaintScrollingBackgroundAndLCDText;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 

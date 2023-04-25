@@ -663,6 +663,33 @@ TEST_P(WaylandWindowTest, OnSequencePointClearsPreviousUnackedConfigures) {
   AdvanceFrameToCurrent(window_.get(), delegate_);
 }
 
+// This test is specifically to guard against origin being set to (0, 0)
+// thus lacros can be restored to correct display (crbug.com/1423690)
+TEST_P(WaylandWindowTest, RestoredBoundsSetWithCorrectOrigin) {
+  constexpr gfx::Rect kNormalBounds{1376, 10, 500, 300};
+  constexpr gfx::Rect kMaximizedBounds{1366, 0, 800, 600};
+
+  // Make sure the window has normal state initially.
+  window_->SetBoundsInDIP(kNormalBounds);
+  EXPECT_EQ(PlatformWindowState::kNormal, window_->GetPlatformWindowState());
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+  VerifyAndClearExpectations();
+
+  // Deactivate the surface.
+  auto empty_state = MakeStateArray({});
+  SendConfigureEvent(surface_id_, {0, 0}, empty_state);
+  AdvanceFrameToCurrent(window_.get(), delegate_);
+
+  WaylandWindow::WindowStates window_states{.is_maximized = true,
+                                            .is_activated = true};
+
+  window_->HandleToplevelConfigure(kMaximizedBounds.width(),
+                                   kMaximizedBounds.height(), window_states);
+
+  EXPECT_EQ(PlatformWindowState::kMaximized, window_->GetPlatformWindowState());
+  EXPECT_EQ(window_->GetRestoredBoundsInDIP(), kNormalBounds);
+}
+
 TEST_P(WaylandWindowTest, MaximizeAndRestore) {
   constexpr gfx::Rect kNormalBounds{500, 300};
   constexpr gfx::Rect kMaximizedBounds{800, 600};
@@ -877,8 +904,7 @@ TEST_P(WaylandWindowTest, ServerInitiatedRestoreFromMinimizedState) {
   window_->HandleSurfaceConfigure(3);
   EXPECT_EQ(PlatformWindowState::kMinimized, window_->GetPlatformWindowState());
 
-  if (window_->IsSupportedOnAuraSurface(
-          ZAURA_TOPLEVEL_STATE_MINIMIZED_SINCE_VERSION)) {
+  if (window_->SupportsConfigureMinimizedState()) {
     // If the minimized state is supported via the zaura extension, while
     // minimized a restore event from the server should return the window to the
     // normal state.
@@ -3322,8 +3348,12 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
-                                  false, kAugmentedSurfaceNotSupportedVersion);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                  /*supports_dma_buf=*/false,
+                                  /*supports_viewporter=*/true,
+                                  /*supports_acquire_fence=*/false,
+                                  /*supports_overlays=*/true,
+                                  kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id1 = 1;
@@ -4060,8 +4090,12 @@ TEST_P(WaylandWindowTest, NoDuplicateViewporterRequests) {
   EXPECT_TRUE(connection_->buffer_manager_host());
 
   auto interface_ptr = connection_->buffer_manager_host()->BindInterface();
-  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false, true,
-                                  false, kAugmentedSurfaceNotSupportedVersion);
+  buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                  /*supports_dma_buf=*/false,
+                                  /*supports_viewporter=*/true,
+                                  /*supports_acquire_fence=*/false,
+                                  /*supports_overlays=*/true,
+                                  kAugmentedSurfaceNotSupportedVersion);
 
   // Setup wl_buffers.
   constexpr uint32_t buffer_id = 1;

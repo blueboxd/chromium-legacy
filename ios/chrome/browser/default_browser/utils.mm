@@ -132,10 +132,6 @@ constexpr base::TimeDelta kPromosShortCoolDown = base::Days(3);
 constexpr base::TimeDelta kMaximumTimeBetweenFirstPartyAppLaunches =
     base::Days(7);
 
-// Maximum time representing one user session.
-const base::TimeDelta kMaximumTimeOneUserSession =
-    base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
-
 // Maximum time range between valid user URL pastes to notify the FET.
 constexpr base::TimeDelta kMaximumTimeBetweenValidURLPastes = base::Days(7);
 
@@ -451,6 +447,16 @@ bool IsDefaultBrowserInPromoManagerEnabled() {
   return base::FeatureList::IsEnabled(kDefaultBrowserRefactoringPromoManager);
 }
 
+bool IsDefaultBrowserVideoPromoEnabled() {
+  return base::FeatureList::IsEnabled(kDefaultBrowserVideoPromo);
+}
+
+bool IsDefaultBrowserVideoPromoFullscreenEnabled() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      kDefaultBrowserVideoPromo, "default_browser_video_promo_halfscreen",
+      false);
+}
+
 bool NonModalPromosEnabled() {
   // Default browser isn't enabled until iOS 14.0.1, regardless of flag state.
   return base::ios::IsRunningOnOrLater(14, 0, 1);
@@ -527,12 +533,14 @@ void LogUserInteractionWithFirstRunPromo(BOOL openedSettings) {
 }
 
 bool HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch() {
+  const base::TimeDelta max_session_time =
+      base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
+
   if (HasRecordedEventForKeyLessThanDelay(
           kTimestampAppLastOpenedViaFirstPartyIntent,
           kMaximumTimeBetweenFirstPartyAppLaunches)) {
     if (HasRecordedEventForKeyMoreThanDelay(
-            kTimestampAppLastOpenedViaFirstPartyIntent,
-            kMaximumTimeOneUserSession)) {
+            kTimestampAppLastOpenedViaFirstPartyIntent, max_session_time)) {
       SetObjectIntoStorageForKey(kTimestampAppLastOpenedViaFirstPartyIntent,
                                  [NSDate date]);
       return YES;
@@ -558,8 +566,10 @@ bool HasRecentValidURLPastesAndRecordsCurrentPaste() {
 }
 
 bool HasRecentTimestampForKey(NSString* eventKey) {
-  if (HasRecordedEventForKeyLessThanDelay(eventKey,
-                                          kMaximumTimeOneUserSession)) {
+  const base::TimeDelta max_session_time =
+      base::Seconds(GetFeedUnseenRefreshThresholdInSeconds());
+
+  if (HasRecordedEventForKeyLessThanDelay(eventKey, max_session_time)) {
     return YES;
   }
 

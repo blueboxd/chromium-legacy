@@ -163,10 +163,6 @@ extern const char kAppleCalendarExperienceKitDescription[];
 extern const char kEmailName[];
 extern const char kEmailDescription[];
 
-// Title and description for the flag to fix the PDF snapshot.
-extern const char kPDFSnapshotName[];
-extern const char kPDFSnapshotDescription[];
-
 // Title and description for the flag to enable phone numbers detection and
 // processing.
 extern const char kPhoneNumberName[];
@@ -194,11 +190,6 @@ extern const char kLongPressSurroundingTextDescription[];
 extern const char kMapsExperienceKitName[];
 extern const char kMapsExperienceKitDescription[];
 
-// Title and description for the flag that updates the Content Suggestions to a
-// new module design.
-extern const char kContentSuggestionsUIModuleRefreshName[];
-extern const char kContentSuggestionsUIModuleRefreshDescription[];
-
 // Title and description for the flag to enable the Credential
 // Provider Extension promo.
 extern const char kCredentialProviderExtensionPromoName[];
@@ -224,6 +215,10 @@ extern const char kDefaultBrowserIntentsShowSettingsDescription[];
 // promos to be added to the promo manager.
 extern const char kDefaultBrowserRefactoringPromoManagerName[];
 extern const char kDefaultBrowserRefactoringPromoManagerDescription[];
+
+// Title and description for the flag to enable the default browser video promo.
+extern const char kDefaultBrowserVideoPromoName[];
+extern const char kDefaultBrowserVideoPromoDescription[];
 
 // Title and description for the flag to control if a crash report is generated
 // on main thread freeze.
@@ -473,6 +468,14 @@ extern const char kIOSCustomBrowserEditMenuDescription[];
 extern const char kIOSEditMenuPartialTranslateName[];
 extern const char kIOSEditMenuPartialTranslateDescription[];
 
+// Title and description for the flag to enable Search With edit menu entry.
+extern const char kIOSEditMenuSearchWithName[];
+extern const char kIOSEditMenuSearchWithDescription[];
+
+// Title and description for the flag to hide Search Web edit menu entry.
+extern const char kIOSEditMenuHideSearchWebName[];
+extern const char kIOSEditMenuHideSearchWebDescription[];
+
 // Title and description for the flag to enable force translate when language
 // detection failed.
 extern const char kIOSForceTranslateEnabledName[];
@@ -496,11 +499,6 @@ extern const char kIOSPasswordUISplitDescription[];
 // Title and description for the flag to display the Set Up List.
 extern const char kIOSSetUpListName[];
 extern const char kIOSSetUpListDescription[];
-
-// Title and description for the flag to enable password saving and
-// filling in cross-origin iframes on IOS.
-extern const char kIOSPasswordManagerCrossOriginIframeSupportName[];
-extern const char kIOSPasswordManagerCrossOriginIframeSupportDescription[];
 
 // Title and description for the flag to enable password bottom sheet on IOS.
 extern const char kIOSPasswordBottomSheetName[];
@@ -823,11 +821,6 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kShowInactiveTabsCountName[];
 extern const char kShowInactiveTabsCountDescription[];
 
-// Title and description for the flag to enable smart sorting the new overflow
-// menu.
-extern const char kSmartSortingNewOverflowMenuName[];
-extern const char kSmartSortingNewOverflowMenuDescription[];
-
 // Title and description for the flag to add the Price Tracking destination
 // (with Smart Sorting) to the new overflow menu.
 extern const char kSmartSortingPriceTrackingDestinationName[];
@@ -886,10 +879,6 @@ extern const char kTFLiteLanguageDetectionIgnoreDescription[];
 // implementation.
 extern const char kToolbarContainerName[];
 extern const char kToolbarContainerDescription[];
-
-// Title and Description for the flag to enable the trending queries module.
-extern const char kTrendingQueriesModuleName[];
-extern const char kTrendingQueriesModuleDescription[];
 
 // Title and description for the flag to enable using Lens to search for an
 // image from the long press context menu.

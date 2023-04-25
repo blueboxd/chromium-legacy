@@ -398,9 +398,12 @@ void ShoppingService::GetMerchantInfoForUrl(const GURL& url,
 
 bool ShoppingService::IsProductInfoApiEnabled() {
   return IsRegionLockedFeatureEnabled(
-      kCommerceProductInfoApiEnabled,
-      kCommerceProductInfoApiEnabledRegionLaunched, country_on_startup_,
-      locale_on_startup_);
+             kShoppingList, kShoppingListRegionLaunched, country_on_startup_,
+             locale_on_startup_) ||
+         (base::FeatureList::IsEnabled(ntp_features::kNtpChromeCartModule) &&
+          IsEnabledForCountryAndLocale(ntp_features::kNtpChromeCartModule,
+                                       country_on_startup_,
+                                       locale_on_startup_));
 }
 
 bool ShoppingService::IsPDPMetricsRecordingEnabled() {
@@ -412,6 +415,12 @@ bool ShoppingService::IsPDPMetricsRecordingEnabled() {
 bool ShoppingService::IsMerchantViewerEnabled() {
   return IsRegionLockedFeatureEnabled(kCommerceMerchantViewer,
                                       kCommerceMerchantViewerRegionLaunched,
+                                      country_on_startup_, locale_on_startup_);
+}
+
+bool ShoppingService::IsCommercePriceTrackingEnabled() {
+  return IsRegionLockedFeatureEnabled(kCommercePriceTracking,
+                                      kCommercePriceTrackingRegionLaunched,
                                       country_on_startup_, locale_on_startup_);
 }
 

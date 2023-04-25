@@ -24,6 +24,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -192,7 +193,7 @@ class SavedDeskLibraryWindowTargeter : public aura::WindowTargeter {
   }
 
  private:
-  SavedDeskLibraryView* const owner_;
+  const raw_ptr<SavedDeskLibraryView, ExperimentalAsh> owner_;
 };
 
 // -----------------------------------------------------------------------------
@@ -220,7 +221,7 @@ class SavedDeskLibraryEventHandler : public ui::EventHandler {
   void OnKeyEvent(ui::KeyEvent* event) override { owner_->OnKeyEvent(event); }
 
  private:
-  SavedDeskLibraryView* const owner_;
+  const raw_ptr<SavedDeskLibraryView, ExperimentalAsh> owner_;
 };
 
 // -----------------------------------------------------------------------------
@@ -340,7 +341,7 @@ SavedDeskLibraryView::~SavedDeskLibraryView() {
 }
 
 SavedDeskItemView* SavedDeskLibraryView::GetItemForUUID(
-    const base::GUID& uuid) {
+    const base::Uuid& uuid) {
   for (auto* grid_view : grid_views()) {
     if (auto* item = grid_view->GetItemForUUID(uuid))
       return item;
@@ -350,7 +351,7 @@ SavedDeskItemView* SavedDeskLibraryView::GetItemForUUID(
 
 void SavedDeskLibraryView::AddOrUpdateEntries(
     const std::vector<const DeskTemplate*>& entries,
-    const base::GUID& order_first_uuid,
+    const base::Uuid& order_first_uuid,
     bool animate) {
   SavedDesks grouped = Group(entries);
   if (desk_template_grid_view_ && !grouped.desk_templates.empty()) {
@@ -365,7 +366,7 @@ void SavedDeskLibraryView::AddOrUpdateEntries(
   Layout();
 }
 
-void SavedDeskLibraryView::DeleteEntries(const std::vector<base::GUID>& uuids,
+void SavedDeskLibraryView::DeleteEntries(const std::vector<base::Uuid>& uuids,
                                          bool delete_animation) {
   if (desk_template_grid_view_)
     desk_template_grid_view_->DeleteEntries(uuids, delete_animation);
@@ -375,7 +376,7 @@ void SavedDeskLibraryView::DeleteEntries(const std::vector<base::GUID>& uuids,
   Layout();
 }
 
-void SavedDeskLibraryView::AnimateDeskLaunch(const base::GUID& uuid,
+void SavedDeskLibraryView::AnimateDeskLaunch(const base::Uuid& uuid,
                                              DeskMiniView* mini_view) {
   SavedDeskItemView* grid_item = GetItemForUUID(uuid);
   DCHECK(grid_item);

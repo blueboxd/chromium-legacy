@@ -4,12 +4,18 @@
 
 #import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 
+#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/feature_engagement/tracker_util.h"
+#import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/browser_view/tab_consumer.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
+#import "ios/chrome/browser/ui/tabs/switch_to_tab_animation_view.h"
 #import "ios/chrome/browser/url_loading/new_tab_animation_tab_helper.h"
+#import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
+#import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
 #import "ios/chrome/browser/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
@@ -21,7 +27,9 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabEventsMediator () <CRWWebStateObserver, WebStateListObserving>
+@interface TabEventsMediator () <CRWWebStateObserver,
+                                 WebStateListObserving,
+                                 URLLoadingObserver>
 
 @end
 
@@ -37,21 +45,30 @@
   std::unique_ptr<AllWebStateObservationForwarder>
       _allWebStateObservationForwarder;
 
+  // Bridges C++ UrlLoadingObserver methods to TabEventsMediator.
+  std::unique_ptr<UrlLoadingObserverBridge> _loadingObserverBridge;
+
   WebStateList* _webStateList;
   __weak NewTabPageCoordinator* _ntpCoordinator;
   SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
+  UrlLoadingNotifierBrowserAgent* _loadingNotifier;
+  ChromeBrowserState* _browserState;
 }
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
                       ntpCoordinator:(NewTabPageCoordinator*)ntpCoordinator
                     restorationAgent:(SessionRestorationBrowserAgent*)
-                                         sessionRestorationBrowserAgent {
+                                         sessionRestorationBrowserAgent
+                        browserState:(ChromeBrowserState*)browserState
+                     loadingNotifier:
+                         (UrlLoadingNotifierBrowserAgent*)urlLoadingNotifier {
   if (self = [super init]) {
     _webStateList = webStateList;
     // TODO(crbug.com/1348459): Stop lazy loading in NTPCoordinator and remove
     // this dependency.
     _ntpCoordinator = ntpCoordinator;
     _sessionRestorationBrowserAgent = sessionRestorationBrowserAgent;
+    _browserState = browserState;
 
     _webStateObserverBridge =
         std::make_unique<web::WebStateObserverBridge>(self);
@@ -61,6 +78,9 @@
     _allWebStateObservationForwarder =
         std::make_unique<AllWebStateObservationForwarder>(
             _webStateList, _webStateObserverBridge.get());
+    _loadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
+    _loadingNotifier = urlLoadingNotifier;
+    _loadingNotifier->AddObserver(_loadingObserverBridge.get());
   }
   return self;
 }
@@ -69,11 +89,15 @@
   _allWebStateObservationForwarder = nullptr;
   _webStateObserverBridge = nullptr;
 
+  _loadingNotifier->RemoveObserver(_loadingObserverBridge.get());
+  _loadingObserverBridge.reset();
+
   _webStateList->RemoveObserver(_webStateListObserverBridge.get());
   _webStateListObserverBridge.reset();
 
   _webStateList = nullptr;
   _ntpCoordinator = nil;
+  _browserState = nil;
   self.consumer = nil;
 }
 
@@ -111,6 +135,16 @@
 }
 
 - (void)webStateList:(WebStateList*)webStateList
+    didDetachWebState:(web::WebState*)webState
+              atIndex:(int)atIndex {
+  NewTabPageTabHelper* NTPTabHelper =
+      NewTabPageTabHelper::FromWebState(webState);
+  if (NTPTabHelper->IsActive()) {
+    [self stopNTPIfNeeded];
+  }
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     didInsertWebState:(web::WebState*)webState
               atIndex:(int)index
            activating:(BOOL)activating {
@@ -123,32 +157,10 @@
 }
 
 - (void)webStateList:(WebStateList*)webStateList
-    willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex
-           userAction:(BOOL)userAction {
-  // When an NTP web state is closed, check if the coordinator should be
-  // stopped.
-  NewTabPageTabHelper* NTPTabHelper =
-      NewTabPageTabHelper::FromWebState(webState);
-  if (NTPTabHelper->IsActive()) {
-    [self stopNTPIfNeeded];
-  }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
     didChangeActiveWebState:(web::WebState*)newWebState
                 oldWebState:(web::WebState*)oldWebState
                     atIndex:(int)atIndex
                      reason:(ActiveWebStateChangeReason)reason {
-  // If the user is leaving an NTP web state, trigger a visibility change.
-  if (oldWebState && _ntpCoordinator.started) {
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(oldWebState);
-    if (NTPHelper->IsActive()) {
-      [_ntpCoordinator didNavigateAwayFromNTP];
-    }
-  }
-
   if (reason == ActiveWebStateChangeReason::Inserted) {
     [self didInsertActiveWebState:newWebState];
   }
@@ -162,14 +174,6 @@
     // WebState is showing the NTP. BrowserCoordinator's -setActive: only starts
     // the NTP if it is the active view.
     [self startNTPIfNeededForActiveWebState:newWebState];
-
-    // If the user is entering an NTP web state, trigger a visibility change.
-    NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(newWebState);
-    if (NTPHelper->IsActive()) {
-      [_ntpCoordinator didNavigateToNTPInWebState:newWebState];
-    }
-
     [self.consumer webStateSelected];
   }
 }
@@ -228,10 +232,16 @@
     // Remove the helper because it isn't needed anymore.
     NewTabAnimationTabHelper::RemoveFromWebState(newWebState);
   }
+  // Since we share the NTP coordinator across web states, the feed type could
+  // be different from default, so we reset it.
   NewTabPageTabHelper* NTPHelper =
       NewTabPageTabHelper::FromWebState(newWebState);
-  if (NTPHelper->IsActive()) {
+  if (NTPHelper && NTPHelper->IsActive()) {
     [_ntpCoordinator start];
+    FeedType defaultFeedType = NTPHelper->DefaultFeedType();
+    if (_ntpCoordinator.selectedFeed != defaultFeedType) {
+      [_ntpCoordinator selectFeedType:defaultFeedType];
+    }
   }
   BOOL inBackground =
       (NTPHelper && NTPHelper->ShouldShowStartSurface()) || !animated;
@@ -240,6 +250,34 @@
   } else {
     [self.consumer initiateNewTabForegroundAnimationForWebState:newWebState];
   }
+}
+
+#pragma mark - URLLoadingObserver
+
+- (void)newTabWillLoadURL:(GURL)URL isUserInitiated:(BOOL)isUserInitiated {
+  if (isUserInitiated) {
+    // Send either the "New Tab Opened" or "New Incognito Tab" opened to the
+    // feature_engagement::Tracker based on `inIncognito`.
+    feature_engagement::NotifyNewTabEvent(_browserState,
+                                          _browserState->IsOffTheRecord());
+  }
+}
+
+- (void)tabWillLoadURL:(GURL)URL
+        transitionType:(ui::PageTransition)transitionType {
+  [self.consumer dismissBookmarkModalController];
+
+  web::WebState* currentWebState = _webStateList->GetActiveWebState();
+  if (currentWebState &&
+      (transitionType & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
+    new_tab_page_uma::RecordActionFromOmnibox(
+        _browserState->IsOffTheRecord(), currentWebState, URL, transitionType);
+  }
+}
+
+- (void)willSwitchToTabWithURL:(GURL)URL
+              newWebStateIndex:(NSInteger)newWebStateIndex {
+  [self.consumer switchtoTabWithNewWebStateIndex:newWebStateIndex];
 }
 
 @end

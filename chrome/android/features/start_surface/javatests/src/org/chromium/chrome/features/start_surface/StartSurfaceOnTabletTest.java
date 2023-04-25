@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.INSTANT_START_TEST_BASE_PARAMS;
+import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_ON_TABLET_TEST_PARAMS;
 
 import android.text.TextUtils;
 
@@ -55,7 +55,7 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
+    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     @DisableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
     public void testStartSurfaceOnTabletDisabled() throws IOException {
         StartSurfaceTestUtils.prepareTabStateMetadataFile(new int[] {0}, new String[] {TAB_URL}, 0);
@@ -63,13 +63,13 @@ public class StartSurfaceOnTabletTest {
         StartSurfaceTestUtils.waitForTabModel(mActivityTestRule.getActivity());
 
         verifyTabCountAndActiveTabUrl(
-                mActivityTestRule.getActivity(), 1, TAB_URL, false /* expectHomeSurfaceUiShown */);
+                mActivityTestRule.getActivity(), 1, TAB_URL, null /* expectHomeSurfaceUiShown */);
     }
 
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
+    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     public void testStartSurfaceOnTablet() throws IOException {
         StartSurfaceTestUtils.prepareTabStateMetadataFile(new int[] {0}, new String[] {TAB_URL}, 0);
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -83,7 +83,7 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
+    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     @DisabledTest(message = "https://crbug.com/1431467")
     public void testStartSurfaceOnTabletWithNtpExist() throws IOException {
         // The existing NTP isn't the last active Tab.
@@ -103,7 +103,7 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
+    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     public void testStartSurfaceOnTabletWithActiveNtpExist() throws IOException {
         // The existing NTP is set as the last active Tab.
         String modifiedNtpUrl = UrlConstants.NTP_URL + "/1";
@@ -116,17 +116,17 @@ public class StartSurfaceOnTabletTest {
         // Verifies that no new NTP is created, and the existing NTP is reused and set as the
         // current Tab.
         verifyTabCountAndActiveTabUrl(mActivityTestRule.getActivity(), 2, modifiedNtpUrl,
-                true /* expectHomeSurfaceUiShown */);
+                false /* expectHomeSurfaceUiShown */);
     }
 
     private void verifyTabCountAndActiveTabUrl(
-            ChromeTabbedActivity cta, int tabCount, String url, boolean expectHomeSurfaceUiShown) {
+            ChromeTabbedActivity cta, int tabCount, String url, Boolean expectHomeSurfaceUiShown) {
         Assert.assertEquals(tabCount, cta.getCurrentTabModel().getCount());
         Tab tab = StartSurfaceTestUtils.getCurrentTabFromUIThread(cta);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { Assert.assertTrue(TextUtils.equals(url, tab.getUrl().getSpec())); });
-        if (expectHomeSurfaceUiShown) {
-            Assert.assertTrue(
+        if (expectHomeSurfaceUiShown != null) {
+            Assert.assertEquals(expectHomeSurfaceUiShown,
                     ((NewTabPage) tab.getNativePage()).isSingleTabCardVisibleForTesting());
         }
     }

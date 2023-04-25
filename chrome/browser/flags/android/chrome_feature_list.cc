@@ -69,6 +69,7 @@
 #include "content/public/common/content_features.h"
 #include "device/fido/features.h"
 #include "media/base/media_switches.h"
+#include "services/audio/public/cpp/audio_features.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
@@ -117,6 +118,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kAsyncSensorCalls,
     &features::kBackForwardCache,
     &features::kBackForwardTransitions,
+    &features::kBlockMidiByDefault,
     &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
@@ -168,6 +170,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAddEduAccountFromAccountSettingsForSupervisedUsers,
     &kAddToHomescreenIPH,
     &kAllowNewIncognitoTabIntents,
+    &kAndroidAppIntegration,
     &kAndroidScrollOptimizations,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidWidgetFullscreenToast,
@@ -186,6 +189,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCastDeviceFilter,
     &kClearOmniboxFocusAfterNavigation,
     &kCloseTabSuggestions,
+    &kCloseTabSaveTabList,
     &kCriticalPersistedTabData,
     &kCCTAllowCrossUidActivitySwitchFromBelow,
     &kCCTBackgroundTab,
@@ -198,7 +202,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTIntentFeatureOverrides,
     &kCCTNewDownloadTab,
     &kCCTPostMessageAPI,
-    &kCCTPostMessageOrigin,
     &kCCTPrefetchDelayShowOnStart,
     &kCCTRealTimeEngagementSignals,
     &kCCTRealTimeEngagementSignalsAlternativeImpl,
@@ -212,6 +215,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableSideSheetForThirdParties,
     &kCCTRetainingStateInMemory,
     &kCCTResourcePrefetch,
+    &kCCTTextFragmentLookupApiEnabled,
     &kCCTToolbarCustomizations,
     &kDontAutoHideBrowserControls,
     &kCacheDeprecatedSystemLocationSetting,
@@ -270,6 +274,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kReachedCodeProfiler,
     &kReaderModeInCCT,
     &kRecordSuppressionMetrics,
+    &kReduceToolbarUpdatesForSameDocNavigations,
     &kReengagementNotification,
     &kRelatedSearches,
     &kReportParentalControlSitesChild,
@@ -321,6 +326,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTrustedWebActivityQualityEnforcementForced,
     &kTrustedWebActivityQualityEnforcementWarning,
     &kResizeOnlyActiveTab,
+    &kSpareTab,
     &kStartSurfaceAndroid,
     &kStartSurfaceOnTablet,
     &kStartSurfaceReturnTime,
@@ -365,7 +371,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &optimization_guide::features::kPushNotifications,
     &page_info::kPageInfoAboutThisSiteEn,
     &page_info::kPageInfoAboutThisSiteImprovedBottomSheet,
-    &page_info::kPageInfoAboutThisSiteMoreInfo,
     &page_info::kPageInfoAboutThisSiteNewIcon,
     &page_info::kPageInfoAboutThisSiteNonEn,
     &password_manager::features::kBiometricTouchToFill,
@@ -456,7 +461,7 @@ BASE_FEATURE(kAdaptiveButtonInTopToolbarCustomizationV2,
 
 BASE_FEATURE(kAddEduAccountFromAccountSettingsForSupervisedUsers,
              "AddEduAccountFromAccountSettingsForSupervisedUsers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAddToHomescreenIPH,
              "AddToHomescreenIPH",
@@ -469,6 +474,10 @@ BASE_FEATURE(kAllowNewIncognitoTabIntents,
 BASE_FEATURE(kFocusOmniboxInIncognitoTabIntents,
              "FocusOmniboxInIncognitoTabIntents",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAndroidAppIntegration,
+             "AndroidAppIntegration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAndroidScrollOptimizations,
              "AndroidScrollOptimizations",
@@ -534,6 +543,10 @@ BASE_FEATURE(kCloseTabSuggestions,
              "CloseTabSuggestions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCloseTabSaveTabList,
+             "CloseTabSaveTabList",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCriticalPersistedTabData,
              "CriticalPersistedTabData",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -579,10 +592,6 @@ BASE_FEATURE(kCCTIntentFeatureOverrides,
 BASE_FEATURE(kCCTPostMessageAPI,
              "CCTPostMessageAPI",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCCTPostMessageOrigin,
-             "CCTPostMessageOrigin",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTPrefetchDelayShowOnStart,
              "CCTPrefetchDelayShowOnStart",
@@ -634,6 +643,10 @@ BASE_FEATURE(kCCTResourcePrefetch,
 
 BASE_FEATURE(kCCTRetainingStateInMemory,
              "CCTRetainingStateInMemory",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTTextFragmentLookupApiEnabled,
+             "CCTTextFragmentLookupApiEnabled",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTToolbarCustomizations,
@@ -880,6 +893,10 @@ BASE_FEATURE(kRecordSuppressionMetrics,
              "RecordSuppressionMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kReduceToolbarUpdatesForSameDocNavigations,
+             "ReduceToolbarUpdatesForSameDocNavigations",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kReengagementNotification,
              "ReengagementNotification",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -970,7 +987,7 @@ BASE_FEATURE(kShowScrollableMVTOnNTPAndroid,
 
 BASE_FEATURE(kShareSheetCustomActionsPolish,
              "ShareSheetCustomActionsPolish",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShareSheetMigrationAndroid,
              "ShareSheetMigrationAndroid",
@@ -1076,6 +1093,11 @@ BASE_FEATURE(kTrustedWebActivityQualityEnforcementWarning,
 BASE_FEATURE(kResizeOnlyActiveTab,
              "ResizeOnlyActiveTab",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// SpareTab is enabled by default for configuring renderer initialization
+// through field trial. Users of spareTab should declare their own field trial
+// feature.
+BASE_FEATURE(kSpareTab, "SpareTab", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStartSurfaceAndroid,
              "StartSurfaceAndroid",

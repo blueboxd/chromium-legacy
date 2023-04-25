@@ -6,6 +6,7 @@
 #define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SKIA_OUTPUT_SURFACE_IMPL_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/containers/circular_deque.h"
@@ -159,6 +160,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                                  const gfx::Size& size,
                                  const gfx::ColorSpace& color_space,
                                  uint32_t usage,
+                                 base::StringPiece debug_label,
                                  gpu::SurfaceHandle surface_handle) override;
   gpu::Mailbox CreateSolidColorSharedImage(
       const SkColor4f& color,
@@ -266,7 +268,9 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   gfx::Size size_;
   gfx::BufferFormat format_;
   int sample_count_ = 1;
-  SkSurfaceCharacterization characterization_;
+  SkColorType color_type_ = kUnknown_SkColorType;
+  SkAlphaType alpha_type_ = kUnknown_SkAlphaType;
+  sk_sp<SkColorSpace> sk_color_space_;
   bool reset_ddl_recorder_on_swap_ = false;
   absl::optional<SkDeferredDisplayListRecorder> root_ddl_recorder_;
 

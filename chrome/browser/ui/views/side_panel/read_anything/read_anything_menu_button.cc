@@ -34,9 +34,15 @@ ReadAnythingMenuButton::ReadAnythingMenuButton(
 
 ReadAnythingMenuButton::~ReadAnythingMenuButton() = default;
 
+bool ReadAnythingMenuButton::IsGroupFocusTraversable() const {
+  // Only the first item in the toolbar should be reachable with tab
+  return false;
+}
+
 void ReadAnythingMenuButton::ButtonPressed() {
   menu_runner_ = std::make_unique<views::MenuRunner>(
-      menu_model_.get(), views::MenuRunner::HAS_MNEMONICS);
+      menu_model_.get(),
+      views::MenuRunner::COMBOBOX | views::MenuRunner::HAS_MNEMONICS);
 
   gfx::Point screen_loc;
   views::View::ConvertPointToScreen(this, &screen_loc);
@@ -77,6 +83,10 @@ void ReadAnythingMenuButton::SetDropdownColorIds(ui::ColorId background_color,
   menu_model_->SetSubmenuBackgroundColorId(background_color);
   menu_model_->SetForegroundColorId(foreground_color);
   menu_model_->SetSelectedBackgroundColorId(selected_color);
+}
+
+void ReadAnythingMenuButton::SetFont(const std::string& font_name) {
+  menu_model_->SetLabelFontList(font_name);
 }
 
 BEGIN_METADATA(ReadAnythingMenuButton, MenuButton)

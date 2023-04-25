@@ -156,7 +156,6 @@ class MockAutofillClient : public TestAutofillClient {
               (const override));
   MOCK_METHOD(void, HideAutofillPopup, (PopupHidingReason reason), (override));
   MOCK_METHOD(bool, IsPasswordManagerEnabled, (), (override));
-  MOCK_METHOD(void, HideFastCheckout, (bool), (override));
   MOCK_METHOD(void,
               DidFillOrPreviewForm,
               (mojom::RendererFormDataAction action,
@@ -250,10 +249,14 @@ class MockFastCheckoutDelegate : public FastCheckoutDelegate {
 
   MOCK_METHOD(bool,
               TryToShowFastCheckout,
-              (const FormData& form,
-               const FormFieldData& field,
-               base::WeakPtr<AutofillManager> autofill_manager),
+              (const FormData&,
+               const FormFieldData&,
+               base::WeakPtr<AutofillManager>),
               (override));
+  MOCK_METHOD(bool,
+              IntendsToShowFastCheckout,
+              (AutofillManager&, FormGlobalId, FieldGlobalId),
+              (const, override));
   MOCK_METHOD(bool, IsShowingFastCheckoutUI, (), (const, override));
   MOCK_METHOD(void, HideFastCheckout, (bool), (override));
 };

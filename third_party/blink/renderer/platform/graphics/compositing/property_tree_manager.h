@@ -153,10 +153,10 @@ class PropertyTreeManager {
                                       CompositorElementId,
                                       const gfx::PointF&);
 
-  // Ensures cc::ScrollNodes and cc::TransformNodes for all scroll translations.
-  void EnsureCompositorScrollTranslationNodes(
-      const Vector<const TransformPaintPropertyNode*>&
-          scroll_translation_nodes);
+  static uint32_t GetMainThreadScrollingReasons(const cc::LayerTreeHost&,
+                                                const ScrollPaintPropertyNode&);
+  static bool UsesCompositedScrolling(const cc::LayerTreeHost&,
+                                      const ScrollPaintPropertyNode&);
 
   // Ensures a cc::ScrollNode for a scroll translation transform node.
   void EnsureCompositorScrollNode(const ScrollPaintPropertyNode&,

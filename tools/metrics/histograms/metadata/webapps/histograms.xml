@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="AppBanners.BeforeInstallEvent"
-    enum="AppBannersBeforeInstallEvent" expires_after="2023-08-13">
+    enum="AppBannersBeforeInstallEvent" expires_after="2023-10-15">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -88,7 +88,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="AppBanners.UserResponse" enum="AppBannersUserResponse"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>dominickn@chromium.org</owner>
   <owner>pjmclachlan@google.com</owner>
   <summary>
@@ -213,7 +213,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.AddToHomescreenMediator.AppTypeToMenuEntry"
-    enum="AppTypeToMenuEntry" expires_after="2023-08-20">
+    enum="AppTypeToMenuEntry" expires_after="2023-10-22">
   <owner>finnur@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -255,18 +255,6 @@ chromium-metrics-reviews@google.com.
     application related to the current website when the site meets all install
     criteria. When an ambient badge was shown, record the type of the app
     (native app or web app).
-  </summary>
-</histogram>
-
-<histogram name="Webapp.AmbientBadge.Messages.DismissReason"
-    enum="MessageDismissReason" expires_after="2023-12-01">
-  <owner>eirage@chromium.org</owner>
-  <owner>src/chrome/android/webapk/OWNERS</owner>
-  <summary>
-    On mobile, an install ambient badge may automatically shows to promote an
-    application related to the current website when the site meets all install
-    criteria. When a message UI style ambient badge was dismissed for any
-    reason, record the dismiss reason.
   </summary>
 </histogram>
 
@@ -363,7 +351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.CheckServiceWorker.Status"
-    enum="ServiceWorkerOfflineCapability" expires_after="2023-07-17">
+    enum="ServiceWorkerOfflineCapability" expires_after="2023-10-22">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
   <summary>
@@ -485,7 +473,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.ExternalPrefs.PlaceholderMigrationState"
-    enum="PlaceholderMigrationState" expires_after="2023-07-15">
+    enum="PlaceholderMigrationState" expires_after="2023-10-22">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -497,7 +485,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.ExternalPrefs.PrefDataAbsentDBDataAbsent" units="bool"
-    expires_after="2023-07-15">
+    expires_after="2023-10-22">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -509,7 +497,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.ExternalPrefs.PrefDataAbsentDBDataPresent" units="bool"
-    expires_after="2023-07-15">
+    expires_after="2023-10-22">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -534,7 +522,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.ExternalPrefs.PrefDataPresentDBDataPresent"
-    units="bool" expires_after="2023-07-15">
+    units="bool" expires_after="2023-10-22">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -778,7 +766,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Install.InstallBounce" enum="WebappInstallSource"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>alancutter@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <summary>
@@ -789,7 +777,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.Install.InstallEvent" enum="WebappInstallSource"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>alancutter@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
@@ -862,7 +850,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Webapp.InstallResult" enum="WebAppInstallResultCode"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
 <!-- Name completed by histogram_suffixes name="WebAppType" -->
 
   <owner>ortuno@chromium.org</owner>
@@ -944,7 +932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.LaunchContainer" enum="AppLaunchContainer"
-    expires_after="2023-08-14">
+    expires_after="2023-10-15">
   <owner>phillis@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1349,7 +1337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebApp.Shortcuts.Creation.Result"
-    enum="ShortcutsCreationResult" expires_after="2023-08-20">
+    enum="ShortcutsCreationResult" expires_after="2023-10-22">
   <owner>phillis@chromium.org</owner>
   <owner>dmurph@chromium.org</owner>
   <summary>Records the result of shortcut creation for PWA.</summary>

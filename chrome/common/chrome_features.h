@@ -190,6 +190,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kDesktopPWAsPreventClose);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kDesktopPWAsKeepAlive);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kDesktopPWAsTabStripSettings);
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kDesktopPWAsWebBundles);
@@ -330,6 +333,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingSystemBluetoothRevamp);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kHappinessTrackingSystemBatteryLife);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kHappinessTrackingSystemEnt);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -417,8 +423,6 @@ COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kIncognitoNtpRevamp);
 
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kIsolatedWebAppDevMode);
 
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kMaskedDomainList);
-
 #if BUILDFLAG(IS_CHROMEOS)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kKioskEnableAppService);
 #endif
@@ -471,11 +475,6 @@ BASE_DECLARE_FEATURE(kShowHiddenNetworkToggle);
 
 #if BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kMetricsSettingsAndroid);
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS)
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kMicrosoftOfficeWebAppExperiment);
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -611,6 +610,9 @@ COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kTPMFirmwareUpdate);
 #if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kSupportTool);
 
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kSupportToolCopyTokenButton);
+
 COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kSupportToolScreenshot);
 #endif
 
@@ -626,6 +628,7 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kBlockInsecureDownloads);
 
 // TrustSafetySentimentSurvey
+#if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kTrustSafetySentimentSurvey);
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -727,8 +730,10 @@ extern const base::FeatureParam<base::TimeDelta>
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kTrustSafetySentimentSurveyTransactionsPasswordManagerTime;
+#endif
 
 // TrustSafetySentimentSurveyV2
+#if !BUILDFLAG(IS_ANDROID)
 COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kTrustSafetySentimentSurveyV2);
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -809,10 +814,7 @@ extern const base::FeatureParam<std::string>
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<base::TimeDelta>
     kTrustSafetySentimentSurveyV2TrustedSurfaceTime;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-COMPONENT_EXPORT(CHROME_FEATURES) BASE_DECLARE_FEATURE(kUploadZippedSystemLogs);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif
 
 #if BUILDFLAG(IS_MAC)
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -849,7 +851,13 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 BASE_DECLARE_FEATURE(kWebAppManifestImmediateUpdating);
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kWebAppSyncGeneratedIconFix);
+BASE_DECLARE_FEATURE(kWebAppSyncGeneratedIconBackgroundFix);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kWebAppSyncGeneratedIconRetroactiveFix);
+
+COMPONENT_EXPORT(CHROME_FEATURES)
+BASE_DECLARE_FEATURE(kWebAppSyncGeneratedIconUpdateFix);
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 COMPONENT_EXPORT(CHROME_FEATURES)
@@ -893,49 +901,6 @@ BASE_DECLARE_FEATURE(kWriteBasicSystemProfileToPersistentHistogramsFile);
 COMPONENT_EXPORT(CHROME_FEATURES)
 bool IsParentAccessCodeForOnlineLoginEnabled();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// This flag is used for enabling Omnibox triggered prerendering. See
-// crbug.com/1166085 for more details of Omnibox triggered prerendering.
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kOmniboxTriggerForPrerender2);
-
-// This flag is used for enabling Bookmark triggered prerendering. See
-// crbug.com/1422819 for more details of Bookmark triggered prerendering.
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kBookmarkTriggerForPrerender2);
-
-// This flag controls whether to trigger prerendering when the default search
-// engine suggests to prerender a search result. It also enables
-// Prerender2-related features on the blink side. This flag takes effect only
-// when blink::features::Prerender2 is enabled.
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kSupportSearchSuggestionForPrerender2);
-enum class SearchSuggestionPrerenderImplementationType {
-  kUsePrefetch,
-  kIgnorePrefetch,
-};
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<SearchSuggestionPrerenderImplementationType>
-    kSearchSuggestionPrerenderImplementationTypeParam;
-// Indicates whether to make search prefetch response shareable to prerender.
-// When allowing this, prerender can only copy the cache but cannot take over
-// the ownership.
-enum class SearchPreloadShareableCacheType {
-  kEnabled,
-  kDisabled,
-};
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::FeatureParam<SearchPreloadShareableCacheType>
-    kSearchPreloadShareableCacheTypeParam;
-
-// This is used to enable an experiment for modifying confidence cutoff of
-// prerender and preconnect for autocomplete action predictor.
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kAutocompleteActionPredictorConfidenceCutoff);
-
-COMPONENT_EXPORT(CHROME_FEATURES)
-BASE_DECLARE_FEATURE(kOmniboxTriggerForNoStatePrefetch);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 COMPONENT_EXPORT(CHROME_FEATURES)

@@ -565,6 +565,9 @@ void PaintLayer::UpdateLayerPosition() {
   // their size.
   if (GetLayoutObject().IsLayoutInline())
     UpdateSize();
+  if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
+    return;
+  }
   PhysicalOffset local_point;
   if (LayoutBox* box = GetLayoutBox()) {
     local_point += box->PhysicalLocation();
@@ -950,6 +953,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
 
 void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
                                       PhysicalOffset& location) const {
+  DCHECK(!RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled());
   if (ancestor_layer == this)
     return;
 
@@ -957,6 +961,14 @@ void PaintLayer::ConvertToLayerCoords(const PaintLayer* ancestor_layer,
   while (curr_layer && curr_layer != ancestor_layer)
     curr_layer =
         AccumulateOffsetTowardsAncestor(curr_layer, ancestor_layer, location);
+}
+
+const PhysicalOffset& PaintLayer::LocationWithoutPositionOffset() const {
+  DCHECK(!RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled());
+#if DCHECK_IS_ON()
+  DCHECK(!needs_position_update_);
+#endif
+  return location_without_position_offset_;
 }
 
 void PaintLayer::DidUpdateScrollsOverflow() {
@@ -1045,7 +1057,7 @@ void PaintLayer::AppendSingleFragmentForHitTesting(
   ClipRectsContext clip_rects_context(this, fragment.fragment_data,
                                       kExcludeOverlayScrollbarSizeForHitTesting,
                                       respect_overflow_clip);
-  Clipper().CalculateRects(clip_rects_context, fragment.fragment_data,
+  Clipper().CalculateRects(clip_rects_context, *fragment.fragment_data,
                            fragment.layer_offset, fragment.background_rect,
                            fragment.foreground_rect);
 
@@ -1114,7 +1126,7 @@ void PaintLayer::CollectFragments(
         kExcludeOverlayScrollbarSizeForHitTesting, respect_overflow_clip,
         PhysicalOffset());
 
-    Clipper().CalculateRects(clip_rects_context, fragment_data,
+    Clipper().CalculateRects(clip_rects_context, *fragment_data,
                              fragment.layer_offset, fragment.background_rect,
                              fragment.foreground_rect);
 
@@ -1514,9 +1526,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   if (local_transform_state &&
       layout_object.StyleRef().BackfaceVisibility() ==
           EBackfaceVisibility::kHidden &&
-      local_transform_state->AccumulatedTransform()
-          .InverseOrIdentity()
-          .IsBackFaceVisible()) {
+      local_transform_state->AccumulatedTransform().IsBackFaceVisible()) {
     return nullptr;
   }
 
@@ -2101,7 +2111,12 @@ void PaintLayer::ExpandRectForSelfPaintingDescendants(
     }
 
     PhysicalOffset delta;
-    child_layer->ConvertToLayerCoords(this, delta);
+    if (RuntimeEnabledFeatures::RemoveConvertToLayerCoordsEnabled()) {
+      delta = child_layer->GetLayoutObject().LocalToAncestorPoint(
+          delta, &GetLayoutObject(), kIgnoreTransforms);
+    } else {
+      child_layer->ConvertToLayerCoords(this, delta);
+    }
     added_rect.Move(delta);
 
     result.Unite(added_rect);

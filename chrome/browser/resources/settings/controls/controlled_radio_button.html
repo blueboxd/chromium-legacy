@@ -1,4 +1,11 @@
-<style include="settings-shared cr-radio-button-style">
+<style
+<if expr="not chromeos_ash">
+  include="cr-radio-button-style"
+</if>
+<if expr="chromeos_ash">
+  include="cr-radio-button-style cros-color-overrides"
+</if>
+>
   :host([disabled]) {
     opacity: 1;
   }
@@ -10,7 +17,7 @@
   }
 
   cr-policy-pref-indicator {
-    margin-inline-start: var(--settings-controlled-by-spacing);
+    margin-inline-start: var(--cr-controlled-by-spacing);
     /* Enable pointer events for the indicator so :hover works. Disable
      * clicks/taps via onIndicatorClick_ so outer on-tap doesn't trigger. */
     pointer-events: all;

@@ -29,11 +29,13 @@
 <translation id="1104084341931202936">പ്രവേശനക്ഷമത ക്രമീകരണം കാണിക്കുക</translation>
 <translation id="1104621072296271835">നിങ്ങളുടെ ഉപകരണങ്ങൾ 'ഒരുമിച്ചും' നന്നായി പ്രവർത്തിക്കും</translation>
 <translation id="1111021433905331574">ക്രമീകരണം &gt; <ph name="APP_TITLE" /> എന്നതിൽ നിങ്ങൾക്ക് കീബോർഡ് ബാക്ക്‌ലൈറ്റിന്റെ നിറം മാറ്റാനാകും</translation>
+<translation id="1112998165730922436">കാസ്റ്റ് ചെയ്യുന്നത് താൽക്കാലികമായി നിർത്തി</translation>
 <translation id="112308213915226829">ഷെൽഫ് സ്വയമേവ മറയ്‌ക്കുക</translation>
 <translation id="1142002900084379065">പുതിയ ഫോട്ടോകൾ</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> എന്നതിനുള്ള വിവരങ്ങളുടെ ഡയലോഗ് തുറക്കുക</translation>
 <translation id="1150989369772528668">കലണ്ടർ</translation>
 <translation id="1153356358378277386">ജോടിയാക്കിയ ഉപകരണങ്ങൾ</translation>
+<translation id="1160215328209699296">ഓണാണ്, ഉപയോഗത്തിലുമാണ്</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">നിങ്ങളുടെ USB-C കേബിൾ, ഡിസ്‌പ്ലേകളിലേക്ക് ശരിയായി കണക്റ്റ് ആയേക്കില്ല</translation>
 <translation id="1175572348579024023">സ്‌ക്രോൾ ചെയ്യുക</translation>
@@ -225,6 +227,7 @@
 <translation id="1978498689038657292">ടെക്‌സ്‌റ്റ് ഇൻപുട്ട്</translation>
 <translation id="1980808257969311265"><ph name="EVENT_SUMMARY" /> എന്നതിൽ ചേരുക</translation>
 <translation id="1982717156487272186">മുമ്പത്തെ ആഴ്ച കാണിക്കുക</translation>
+<translation id="1986150224850161328">നിങ്ങളുടെ ഫോണും Chromebook-ഉം ഒരേ നെറ്റ്‌വർക്കിലാണുള്ളതെന്ന് ഉറപ്പാക്കി വീണ്ടും ശ്രമിക്കുക. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">ഉള്ളടക്കം ക്യാപ്‌ചർ ചെയ്യാനാകില്ല</translation>
 <translation id="1990046457226896323">സംഭാഷണ ഫയലുകൾ ഡൗൺലോഡ് ചെയ്‌തു</translation>
 <translation id="1993072747612765854">ഏറ്റവും പുതിയ <ph name="SYSTEM_APP_NAME" /> അപ്‌ഡേറ്റിനെ കുറിച്ച് കൂടുതലറിയുക</translation>
@@ -238,9 +241,9 @@
 <translation id="2023558322300866873">നിങ്ങൾക്ക് ഏതുസമയത്തും പാക്കറ്റ് ക്യാപ്ചർ അവസാനിപ്പിക്കാം</translation>
 <translation id="2034971124472263449">എന്തായാലും സംരക്ഷിക്കുക</translation>
 <translation id="2049240716062114887">ഡെസ്‌കിന്റെ പേര് <ph name="DESK_NAME" /> എന്നാക്കി മാറ്റി</translation>
-<translation id="2050339315714019657">പോർട്രെയ്റ്റ്</translation>
 <translation id="2064048859448024834">ക്യാമറാ പ്രിവ്യു ഓണാണ്</translation>
 <translation id="2067602449040652523">കീബോർഡ് തെളിച്ചം</translation>
+<translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> മാറ്റുക. <ph name="CAPTURE_MEDIUM" />, <ph name="CAPTURE_STATE" /></translation>
 <translation id="2078034614700056995">അടുത്ത ഡെസ്‌ക്കിലേക്ക് മാറാൻ, നാല് വിരലുകൾ ഉപയോഗിച്ച് വലത്തേക്ക് സ്വൈപ്പ് ചെയ്യുക</translation>
 <translation id="2079545284768500474">പഴയപടിയാക്കുക</translation>
 <translation id="2083190527011054446">ഗുഡ്‌നെെറ്റ് <ph name="GIVEN_NAME" />,</translation>
@@ -325,6 +328,7 @@
 <translation id="2487915095798731898">ചേരുക</translation>
 <translation id="2501920221385095727">സ്‌റ്റിക്കി കീകൾ</translation>
 <translation id="2509468283778169019">CAPS LOCK ഓൺ ആണ്</translation>
+<translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> നിർത്തുക. <ph name="CAPTURE_MEDIUM" />, <ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">വിൻഡോകൾ അൺലോക്ക് ചെയ്യുക</translation>
 <translation id="2530896289327917474">ക്രമീകരണത്തിൽ കാരറ്റ് ബ്രൗസ് ചെയ്യൽ ഓണാക്കാനോ ഓഫാക്കാനോ കഴിയും</translation>
@@ -374,6 +378,7 @@
 <translation id="2761723519669354964">ഷെൽഫിൽ നിന്ന് ഹൈലൈറ്റ് ചെയ്‌ത ഇനം തുറക്കുക</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> മാനേജ് ചെയ്യുന്നത് <ph name="MANAGER" /> ആണ്</translation>
 <translation id="2782591952652094792">ക്യാപ്‌ചർ മോഡിൽ നിന്ന് പുറത്തുകടക്കുക</translation>
+<translation id="2785499565474703580">ഒരു ഉപകരണം കണക്‌റ്റ് ചെയ്‌തു</translation>
 <translation id="2791421900609674576">നിർത്തിയ ഇടത്ത് നിന്ന് തുടരാനാകുന്ന തരത്തിൽ നിങ്ങൾക്ക് നിർദ്ദേശങ്ങൾ കാണാം.  നിർദ്ദേശങ്ങൾ നീക്കം ചെയ്യാൻ സ്പർശിച്ച് പിടിക്കുക.</translation>
 <translation id="2792498699870441125">Alt+തിരയൽ</translation>
 <translation id="2797741504905337289">ഷെൽഫ് പാർട്ടി</translation>
@@ -1278,6 +1283,7 @@
 <translation id="6941333068993625698">ഫീഡ്‌ബാക്ക് സമർപ്പിക്കുക</translation>
 <translation id="6942518653766415536">റെക്കോർഡിംഗ് ഫോർമാറ്റ് മെനു</translation>
 <translation id="6945221475159498467">തിരഞ്ഞെടുക്കുക</translation>
+<translation id="6945922087561257829">നിങ്ങളുടെ ഫോൺ ഉപയോഗിക്കുന്നത് ഒരു മൊബൈൽ നെറ്റ്‌വർക്കാണ്. നിങ്ങളുടെ ഫോണും Chromebook-ഉം ഒരേ വൈഫൈ നെറ്റ്‌വർക്കിലാണുള്ളതെന്ന് ഉറപ്പാക്കി വീണ്ടും ശ്രമിക്കുക. <ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">സജീവമാക്കിയിട്ടില്ല. നിങ്ങളുടെ സേവനദാതാവിനെ ബന്ധപ്പെടുക.</translation>
 <translation id="6961121602502368900">ഔദ്യോഗിക പ്രൊഫൈലിൽ ഫോൺ നിശബ്‌ദമാക്കൽ ലഭ്യമല്ല</translation>
 <translation id="6961840794482373852">'Alt + മുകളിലേയ്ക്കുള്ള അമ്പടയാളം' കീബോഡ് കുറുക്കുവഴി മാമാറിയിട്ടുണ്ട്. Page Up കീ ഉപയോഗിക്കാൻ, <ph name="LAUNCHER_KEY_NAME" /> കീ+ മുകളിലേയ്ക്കുള്ള അമ്പടയാളം അമർത്തുക.</translation>
@@ -1332,6 +1338,7 @@
 <translation id="7188494361780961876">സ്‌ക്രീനിന്റെ മുകളിൽ ഇടത് കോണിലേക്ക് മെനു നീക്കിയിരിക്കുന്നു.</translation>
 <translation id="7189412385142492784">ശുക്രനിലേക്ക് എത്ര ദൂരമുണ്ട്</translation>
 <translation id="7198435252016571249">താഴെ വലത് കോണിലേക്ക് ക്യാമറ സ്‌നാപ്പ് ചെയ്തു. സിസ്റ്റം സർഫേസിനെ ഓവർലാപ്പ് ചെയ്യുന്നു.</translation>
+<translation id="7219573373513695352">ഉപകരണങ്ങളൊന്നും ബന്ധിപ്പിച്ചിട്ടില്ല</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. അപ്‌ഡേറ്റ് നടപ്പിലാക്കാൻ ഈ Chromebook റീസ്‌റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്. ഇതിന് ഒരു മിനിറ്റ് വരെ സമയമെടുത്തേക്കാം.</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="7258828758145722155">ഇന്നലെ എഡിറ്റ് ചെയ്‌തത്</translation>
@@ -1482,6 +1489,7 @@
 <translation id="7902625623987030061">ഫിംഗർപ്രിന്റ് സെൻസർ സ്‌പർശിക്കുക</translation>
 <translation id="7904094684485781019">ഈ അക്കൗണ്ടിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഒന്നിലധികം സൈൻ-ഇൻ അനുവദിക്കുന്നില്ല.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> ഉപകരണങ്ങൾ കണക്‌റ്റ് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="7930731167419639574">സംഭാഷണം ഇപ്പോൾ ലോക്കലായി പ്രോസസ് ചെയ്‌ത് കേട്ടെഴുത്ത് ഓഫ്‌ലൈനിൽ പ്രവർത്തിക്കുന്നു</translation>
 <translation id="7932451802722951285">Google Calendar-ൽ തുറക്കുക</translation>
 <translation id="7933084174919150729">പ്രാഥമിക പ്രൊഫൈലിന് മാത്രമേ Google അസിസ്റ്റന്‍റ് ലഭ്യമാകൂ.</translation>
@@ -1516,6 +1524,7 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> എന്ന പേരിലുള്ള ടെംപ്ലേറ്റ് ഇതിനകം നിലവിലുണ്ട്</translation>
 <translation id="8052898407431791827">ക്ലിപ്പ്ബോർഡിലേക്ക് പകർത്തി</translation>
 <translation id="8054466585765276473">ബാറ്ററി സമയം കണക്കാക്കുന്നു.</translation>
+<translation id="8079538659226626406">സ്ക്രീൻ പങ്കിടൽ</translation>
 <translation id="8083540854303889870">പിന്നീട് കാണാൻ സംരക്ഷിച്ചവ</translation>
 <translation id="8091153018031979607"><ph name="START_TIME" />-ന് <ph name="DAYS_ELAPSED" /> ആരംഭിക്കുന്നു</translation>
 <translation id="8091387634532529612">സ്വയമേവയുള്ള അപ്‌ഡേറ്റുകൾ</translation>
@@ -1772,7 +1781,6 @@
 <translation id="954052413789300507"><ph name="FILENAME" /> എന്നതിനാവശ്യമായ ഇടം ലഭ്യമല്ല. ഇടം സൃഷ്ടിക്കുക.</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> എന്നതിനുള്ള <ph name="RESULT_COUNT" /> ഫലങ്ങൾ കാണിക്കുന്നു</translation>
 <translation id="98120814841227350">ഡോക്യുമെന്റിന്റെ താഴേക്ക് പോവുക</translation>
-<translation id="98515147261107953">ലാന്‍ഡ്‌സ്‌കേപ്പ്</translation>
 <translation id="989374776391122812">ക്യാമറ, ഓഡിയോ നിയന്ത്രണങ്ങൾ</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> വിൻഡോ അടച്ചു.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

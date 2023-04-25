@@ -195,7 +195,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
 #include "chrome/browser/ui/ash/google_one_offer_iph_tab_helper.h"
 #endif
 
@@ -230,12 +229,14 @@
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/tab_helper.h"
+#include "chrome/browser/ui/extensions/extension_side_panel_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/ui/web_applications/web_app_metrics_tab_helper.h"
 #include "chrome/browser/web_applications/policy/pre_redirection_url_observer.h"
 #include "chrome/browser/web_applications/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "extensions/browser/view_type_utils.h"
+#include "extensions/common/extension_features.h"
 #include "extensions/common/mojom/view_type.mojom.h"
 #endif
 
@@ -526,7 +527,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   GoogleOneOfferIphTabHelper::CreateForWebContents(web_contents);
-  ash::BootTimesRecorderTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -611,6 +611,13 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                           extensions::mojom::ViewType::kTabContents);
 
   extensions::TabHelper::CreateForWebContents(web_contents);
+
+  if (base::FeatureList::IsEnabled(
+          extensions_features::kExtensionSidePanelIntegration)) {
+    extensions::side_panel_util::CreateSidePanelManagerForWebContents(
+        profile, web_contents);
+  }
+
   extensions::WebNavigationTabObserver::CreateForWebContents(web_contents);
   if (web_app::AreWebAppsEnabled(profile))
     web_app::WebAppTabHelper::CreateForWebContents(web_contents);

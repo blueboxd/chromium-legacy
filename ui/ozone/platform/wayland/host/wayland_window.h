@@ -332,6 +332,9 @@ class WaylandWindow : public PlatformWindow,
   // Returns true if the window's bounds is in screen coordinates.
   virtual bool IsScreenCoordinatesEnabled() const;
 
+  // Returns true if this window's configure state supports the minimized state.
+  virtual bool SupportsConfigureMinimizedState() const;
+
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner() {
     return ui_task_runner_;
   }
@@ -384,7 +387,7 @@ class WaylandWindow : public PlatformWindow,
   // fixes them so they don't.
   gfx::Rect AdjustBoundsToConstraintsDIP(const gfx::Rect& bounds_dip);
 
-  const gfx::Size& restored_size_dip() const { return restored_size_dip_; }
+  const gfx::Rect& restored_bounds_dip() const { return restored_bounds_dip_; }
 
   // Configure related:
 
@@ -547,9 +550,9 @@ class WaylandWindow : public PlatformWindow,
   // Set when the window enters in shutdown process.
   bool shutting_down_ = false;
 
-  // The size of the platform window before it went maximized or fullscreen in
+  // The bounds of the platform window before it went maximized or fullscreen in
   // dip.
-  gfx::Size restored_size_dip_;
+  gfx::Rect restored_bounds_dip_;
 
   // This holds the currently applied state. When in doubt, use this as the
   // source of truth for this window's state. Whenever applied_state_ is

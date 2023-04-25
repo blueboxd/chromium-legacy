@@ -1534,6 +1534,7 @@
       // Setting zoom affects the _EffectiveZoom_, which in turns affects every px value
       // stored on ComputedStyle; see CSSToLengthConversionData::ZoomedComputedPixels.
       supports_incremental_style: false,
+      runtime_flag: "CSSZoom",
     },
     {
       name: "accent-color",
@@ -2691,7 +2692,8 @@
         "table-row-group", "table-header-group", "table-footer-group",
         "table-row", "table-column-group", "table-column", "table-cell",
         "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
-        "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
+        "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
+        "flow", "math"
       ],
       typedom_types: ["Keyword"],
       style_builder_custom_functions: ["initial", "inherit", "value"],
@@ -6558,24 +6560,6 @@
       is_property: false,
     },
     {
-      name: "source",
-      is_descriptor: true,
-      is_property: false,
-      runtime_flag: "CSSScrollTimeline",
-    },
-    {
-      name: "start",
-      is_descriptor: true,
-      is_property: false,
-      runtime_flag: "CSSScrollTimeline",
-    },
-    {
-      name: "end",
-      is_descriptor: true,
-      is_property: false,
-      runtime_flag: "CSSScrollTimeline",
-    },
-    {
       name: "ascent-override",
       is_descriptor: true,
       is_property: false,
@@ -7745,7 +7729,17 @@
       name_for_methods: "AlignSelfBlockCenter",
       converter: "ConvertInternalAlignSelfBlock",
     },
-
+    {
+      name: "-internal-align-content-block",
+      property_methods: ["ParseSingleValue"],
+      inherited: false,
+      field_group: "*",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      name_for_methods: "AlignContentBlockCenter",
+      converter: "ConvertInternalAlignContentBlock",
+    },
     // Aliases; these map to the same CSSPropertyID
     {
       name: "-epub-caption-side",

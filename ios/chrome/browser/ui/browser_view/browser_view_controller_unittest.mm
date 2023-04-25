@@ -48,6 +48,7 @@
 #import "ios/chrome/browser/ui/browser_view/tab_events_mediator.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_coordinator.h"
@@ -225,8 +226,14 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     toolbar_coordinator_adaptor_ =
         [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:dispatcher];
 
+    location_bar_coordinator_ =
+        [[LocationBarCoordinator alloc] initWithBrowser:browser_.get()];
+    [location_bar_coordinator_ start];
+
     primary_toolbar_coordinator_ =
         [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser_.get()];
+    primary_toolbar_coordinator_.locationBarCoordinator =
+        location_bar_coordinator_;
     [primary_toolbar_coordinator_ start];
 
     secondary_toolbar_coordinator_ =
@@ -287,10 +294,10 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     dependencies.safeAreaProvider = safe_area_provider_;
     dependencies.pagePlaceholderBrowserAgent = page_placeholder_browser_agent_;
 
-    bvc_ = [[BrowserViewController alloc] initWithBrowser:browser_.get()
-                           browserContainerViewController:container_
-                                      keyCommandsProvider:key_commands_provider_
-                                             dependencies:dependencies];
+    bvc_ = [[BrowserViewController alloc]
+        initWithBrowserContainerViewController:container_
+                           keyCommandsProvider:key_commands_provider_
+                                  dependencies:dependencies];
     bvc_.webUsageEnabled = YES;
 
     id NTPCoordinator_ = [[NewTabPageCoordinator alloc]
@@ -300,10 +307,15 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     SessionRestorationBrowserAgent* sessionRestorationBrowserAgent_ =
         SessionRestorationBrowserAgent::FromBrowser(browser_.get());
 
+    UrlLoadingNotifierBrowserAgent* urlLoadingNotifier_ =
+        UrlLoadingNotifierBrowserAgent::FromBrowser(browser_.get());
+
     tab_events_mediator_ = [[TabEventsMediator alloc]
         initWithWebStateList:browser_.get()->GetWebStateList()
               ntpCoordinator:NTPCoordinator_
-            restorationAgent:sessionRestorationBrowserAgent_];
+            restorationAgent:sessionRestorationBrowserAgent_
+                browserState:chrome_browser_state_.get()
+             loadingNotifier:urlLoadingNotifier_];
     tab_events_mediator_.consumer = bvc_;
 
     // Force the view to load.
@@ -313,6 +325,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   }
 
   void TearDown() override {
+    [location_bar_coordinator_ stop];
     [tab_events_mediator_ disconnect];
     [[bvc_ view] removeFromSuperview];
     [bvc_ shutdown];
@@ -370,6 +383,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
   UIWindow* window_;
   SceneState* scene_state_;
   PopupMenuCoordinator* popup_menu_coordinator_;
+  LocationBarCoordinator* location_bar_coordinator_;
   ToolbarCoordinatorAdaptor* toolbar_coordinator_adaptor_;
   PrimaryToolbarCoordinator* primary_toolbar_coordinator_;
   SecondaryToolbarCoordinator* secondary_toolbar_coordinator_;

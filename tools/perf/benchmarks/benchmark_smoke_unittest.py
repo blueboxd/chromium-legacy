@@ -25,12 +25,10 @@ from telemetry.testing import progress_reporter
 from py_utils import discover
 from py_utils import tempfile_ext
 
-from benchmarks import jetstream
 from benchmarks import jetstream2
-from benchmarks import kraken
 from benchmarks import octane
 from benchmarks import rasterize_and_record_micro
-from benchmarks import speedometer
+from benchmarks import speedometer1
 from benchmarks import v8_browsing
 
 
@@ -102,11 +100,9 @@ def SmokeTestGenerator(benchmark_class, num_pages=1, story_tag_filter=None):
 _BLOCK_LIST_TEST_MODULES = {
     octane,  # Often fails & take long time to timeout on cq bot.
     rasterize_and_record_micro,  # Always fails on cq bot.
-    speedometer,  # Takes 101 seconds.
-    jetstream,  # Take 206 seconds.
-    jetstream2, # Causes CQ shard to timeout, crbug.com/992837
-    v8_browsing, # Flaky on Android, crbug.com/628368.
-    kraken, # Crashes on CQ blocking LKGM, b/243415984
+    speedometer1,  # Takes 101 seconds.
+    jetstream2,  # Causes CQ shard to timeout, crbug.com/992837
+    v8_browsing,  # Flaky on Android, crbug.com/628368.
 }
 
 # The list of benchmark names to be excluded from our smoke tests.

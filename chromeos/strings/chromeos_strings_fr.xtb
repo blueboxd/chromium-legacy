@@ -517,6 +517,7 @@
 <translation id="5423849171846380976">Activé</translation>
 <translation id="5430931332414098647">Partage de connexion instantané</translation>
 <translation id="5431318178759467895">Couleur</translation>
+<translation id="5456936324019847994">Impossible de se connecter à un APN personnalisé activé. Pour en savoir plus, contactez votre opérateur mobile.</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} tentative restante}one{{0} tentative restante}other{{0} tentatives restantes}}</translation>
@@ -572,6 +573,7 @@
 <translation id="5931523347251946569">Fichier introuvable</translation>
 <translation id="5939518447894949180">Réinitialiser</translation>
 <translation id="594552776027197022">Générer une paire de clés aléatoire</translation>
+<translation id="5946538341867151940">Vous n'êtes pas encore connecté. Si votre opérateur mobile vous recommande un APN personnalisé, saisissez les informations de l'APN en sélectionnant "Nouvel APN".</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Fond d'écran par défaut</translation>
 <translation id="6017514345406065928">Vert</translation>
@@ -727,6 +729,7 @@
 <translation id="7281657306185710294">Brise légère</translation>
 <translation id="7287310195820267359">Collections de fonds d'écran</translation>
 <translation id="7297226631177386107">Impossible de se connecter aux sites HTTPS via le pare-feu</translation>
+<translation id="7297726121602187087">Vert foncé</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Posez vos questions aux experts sur le forum d'aide Chromebook</translation>
@@ -761,6 +764,7 @@
 <translation id="7570674786725311828">Écran tactile USB</translation>
 <translation id="7595982850646262331">Il reste <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Repositionnez la touche à l'aide de la souris ou des flèches.</translation>
+<translation id="7618774594543487847">Neutre</translation>
 <translation id="7620771111601174153">En savoir plus sur le centre d'aide</translation>
 <translation id="763165478673169849">Heure de la dernière réinitialisation</translation>
 <translation id="7648838807254605802">Latence élevée des requêtes HTTPS</translation>

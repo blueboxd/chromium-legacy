@@ -66,6 +66,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
@@ -4624,6 +4625,50 @@ TEST_F(CaptureModeTest, InstantScreenshotForkWindow) {
   EXPECT_EQ(image.Size(), window_bounds.size());
 }
 
+// Tests the capture mode behavior in the default capture mode session and
+// during video recording.
+TEST_F(CaptureModeTest, CaptureModeDefaultBehavior) {
+  CaptureModeController* controller = StartCaptureSession(
+      CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  ASSERT_TRUE(controller->IsActive());
+  CaptureModeSession* session = controller->capture_mode_session();
+  CaptureModeBehavior* active_behavior = session->active_behavior();
+  ASSERT_TRUE(active_behavior);
+
+  auto expected_behavior = [&]() {
+    EXPECT_TRUE(active_behavior->ShouldImageCaptureTypeBeAllowed());
+    EXPECT_TRUE(active_behavior->ShouldVideoCaptureTypeBeAllowed());
+    EXPECT_TRUE(active_behavior->ShouldFulscreenCaptureSourceBeAllowed());
+    EXPECT_TRUE(active_behavior->ShouldRegionCaptureSourceBeAllowed());
+    EXPECT_TRUE(active_behavior->ShouldWindowCaptureSourceBeAllowed());
+    EXPECT_TRUE(active_behavior->ShouldAudioInputSettingsBeIncluded());
+    EXPECT_TRUE(active_behavior->ShouldCameraSelectionSettingsBeIncluded());
+    EXPECT_TRUE(active_behavior->ShouldDemoToolsSettingsBeIncluded());
+    EXPECT_TRUE(active_behavior->ShouldSaveToSettingsBeIncluded());
+    EXPECT_TRUE(active_behavior->ShouldGifBeSupported());
+    EXPECT_TRUE(active_behavior->ShouldShowPreviewNotification());
+    EXPECT_FALSE(active_behavior->ShouldSkipVideoRecordingCountDown());
+    EXPECT_FALSE(active_behavior->ShouldCreateRecordingOverlayController());
+    EXPECT_TRUE(active_behavior->ShouldShowUserNudge());
+    EXPECT_FALSE(active_behavior->ShouldAutoSelectFirstCamera());
+  };
+
+  expected_behavior();
+  views::Widget* bar_widget = GetCaptureModeBarWidget();
+  ASSERT_TRUE(bar_widget);
+
+  EXPECT_TRUE(GetImageToggleButton());
+  EXPECT_TRUE(GetVideoToggleButton());
+  EXPECT_TRUE(GetFullscreenToggleButton());
+  EXPECT_TRUE(GetRegionToggleButton());
+  EXPECT_TRUE(GetWindowToggleButton());
+  EXPECT_TRUE(GetSettingsButton());
+  EXPECT_TRUE(GetCloseButton());
+
+  StartVideoRecordingImmediately();
+  expected_behavior();
+}
+
 namespace {
 
 // -----------------------------------------------------------------------------
@@ -5639,6 +5684,65 @@ TEST_P(ProjectorCaptureModeIntegrationTests,
   VerifyOverlayWindow(overlay_window, capture_source);
 }
 
+// Tests the projector behavior in the projector-initiated capture mode session
+// and during video recording.
+TEST_P(ProjectorCaptureModeIntegrationTests, ProjectorBehavior) {
+  CaptureModeController* controller = CaptureModeController::Get();
+  EXPECT_FALSE(controller->GetAudioRecordingEnabled());
+  EXPECT_TRUE(projector_helper_.CanStartProjectorSession());
+  StartProjectorModeSession();
+  ASSERT_TRUE(controller->IsActive());
+  CaptureModeSession* session = controller->capture_mode_session();
+  ASSERT_TRUE(session->is_in_projector_mode());
+  CaptureModeBehavior* projector_active_behavior = session->active_behavior();
+  ASSERT_TRUE(projector_active_behavior);
+
+  auto expected_behavior = [&]() {
+    EXPECT_FALSE(projector_active_behavior->ShouldImageCaptureTypeBeAllowed());
+    EXPECT_TRUE(projector_active_behavior->ShouldVideoCaptureTypeBeAllowed());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldFulscreenCaptureSourceBeAllowed());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldRegionCaptureSourceBeAllowed());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldWindowCaptureSourceBeAllowed());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldAudioInputSettingsBeIncluded());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldCameraSelectionSettingsBeIncluded());
+    EXPECT_TRUE(projector_active_behavior->ShouldDemoToolsSettingsBeIncluded());
+    EXPECT_FALSE(projector_active_behavior->ShouldSaveToSettingsBeIncluded());
+    EXPECT_FALSE(projector_active_behavior->ShouldGifBeSupported());
+    EXPECT_FALSE(projector_active_behavior->ShouldShowPreviewNotification());
+    EXPECT_FALSE(
+        projector_active_behavior->ShouldSkipVideoRecordingCountDown());
+    EXPECT_TRUE(
+        projector_active_behavior->ShouldCreateRecordingOverlayController());
+    EXPECT_FALSE(projector_active_behavior->ShouldShowUserNudge());
+    EXPECT_TRUE(projector_active_behavior->ShouldAutoSelectFirstCamera());
+  };
+
+  expected_behavior();
+  views::Widget* bar_widget = GetCaptureModeBarWidget();
+  ASSERT_TRUE(bar_widget);
+
+  EXPECT_FALSE(GetImageToggleButton());
+  EXPECT_TRUE(GetVideoToggleButton());
+  EXPECT_TRUE(GetFullscreenToggleButton());
+  EXPECT_TRUE(GetRegionToggleButton());
+  EXPECT_TRUE(GetWindowToggleButton());
+  EXPECT_TRUE(GetSettingsButton());
+  EXPECT_TRUE(GetCloseButton());
+
+  ProjectorControllerImpl* projector_controller =
+      ProjectorControllerImpl::Get();
+  projector_controller->EnableAnnotatorTool();
+  PressAndReleaseKey(ui::VKEY_RETURN);
+  WaitForRecordingToStart();
+  expected_behavior();
+  CaptureModeTestApi().StopVideoRecording();
+}
+
 namespace {
 
 // Defines a class that intercepts the events at the post-target handling phase
@@ -5663,7 +5767,7 @@ class EventTargetCatcher : public ui::EventHandler {
   }
 
  private:
-  ui::EventTarget* last_event_target_ = nullptr;
+  raw_ptr<ui::EventTarget, ExperimentalAsh> last_event_target_ = nullptr;
 };
 
 }  // namespace

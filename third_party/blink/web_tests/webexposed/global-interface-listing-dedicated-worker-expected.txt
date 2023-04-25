@@ -881,7 +881,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter maxComputeWorkgroupsPerDimension
 [Worker]     getter maxDynamicStorageBuffersPerPipelineLayout
 [Worker]     getter maxDynamicUniformBuffersPerPipelineLayout
-[Worker]     getter maxFragmentCombinedOutputResources
 [Worker]     getter maxInterStageShaderComponents
 [Worker]     getter maxInterStageShaderVariables
 [Worker]     getter maxSampledTexturesPerShaderStage
@@ -1171,6 +1170,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method conv2d
 [Worker]     method convTranspose2d
 [Worker]     method div
+[Worker]     method elu
 [Worker]     method gemm
 [Worker]     method hardSwish
 [Worker]     method input
@@ -1597,7 +1597,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method unobserve
 [Worker] interface PressureRecord
 [Worker]     attribute @@toStringTag
-[Worker]     getter factors
 [Worker]     getter source
 [Worker]     getter state
 [Worker]     getter time

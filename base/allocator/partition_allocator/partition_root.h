@@ -290,6 +290,9 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 #endif  // PA_CONFIG(ENABLE_MAC11_MALLOC_SIZE_HACK)
 #endif  // BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     bool use_configurable_pool;
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+    bool memory_tagging_enabled_;
+#endif
 
 #if BUILDFLAG(ENABLE_PKEYS)
     int pkey;
@@ -436,11 +439,6 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   PA_ALWAYS_INLINE static PartitionRoot* FromAddrInFirstSuperpage(
       uintptr_t address);
 
-  PA_ALWAYS_INLINE void DecreaseTotalSizeOfAllocatedBytes(SlotSpan* slot_span)
-      PA_EXCLUSIVE_LOCKS_REQUIRED(lock_);
-  PA_ALWAYS_INLINE void IncreaseTotalSizeOfAllocatedBytes(SlotSpan* slot_span,
-                                                          size_t raw_size)
-      PA_EXCLUSIVE_LOCKS_REQUIRED(lock_);
   PA_ALWAYS_INLINE void DecreaseTotalSizeOfAllocatedBytes(uintptr_t addr,
                                                           size_t len)
       PA_EXCLUSIVE_LOCKS_REQUIRED(lock_);
@@ -553,8 +551,6 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
   AllocationCapacityFromSlotStart(uintptr_t slot_start) const;
   PA_ALWAYS_INLINE size_t
   AllocationCapacityFromRequestedSize(size_t size) const;
-
-  PA_ALWAYS_INLINE bool IsMemoryTaggingEnabled() const;
 
   // Frees memory from this partition, if possible, by decommitting pages or
   // even entire slot spans. |flags| is an OR of base::PartitionPurgeFlags.
@@ -681,7 +677,7 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
     // If quarantine is enabled and the tag overflows, move the containing slot
     // to quarantine, to prevent the attacker from exploiting a pointer that has
     // an old tag.
-    if (PA_LIKELY(IsMemoryTaggingEnabled())) {
+    if (PA_LIKELY(memory_tagging_enabled())) {
       return internal::HasOverflowTag(object);
     }
     // Default behaviour if MTE is not enabled for this PartitionRoot.
@@ -813,6 +809,19 @@ struct PA_ALIGNAS(64) PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionRoot {
 
   PA_ALWAYS_INLINE bool uses_configurable_pool() const {
     return flags.use_configurable_pool;
+  }
+
+  // Returns whether MTE is supported for this partition root. Because MTE
+  // stores tagging information in the high bits of the pointer, it causes
+  // issues with components like V8's ArrayBuffers which use custom pointer
+  // representations. All custom representations encountered so far rely on an
+  // "is in configurable pool?" check, so we use that as a proxy.
+  bool memory_tagging_enabled() const {
+#if PA_CONFIG(HAS_MEMORY_TAGGING)
+    return flags.memory_tagging_enabled_;
+#else
+    return false;
+#endif
   }
 
   // To make tests deterministic, it is necessary to uncap the amount of memory
@@ -1063,8 +1072,18 @@ PA_ALWAYS_INLINE void PartitionAllocFreeForRefCounting(uintptr_t slot_start) {
   // supports reference counts.
   PA_DCHECK(root->brp_enabled());
 
-  // memset() can be really expensive.
+  // Iterating over the entire slot can be really expensive.
 #if BUILDFLAG(PA_EXPENSIVE_DCHECKS_ARE_ON)
+  auto hook = PartitionAllocHooks::GetQuarantineOverrideHook();
+  // If we have a hook the object segment is not necessarily filled
+  // with |kQuarantinedByte|.
+  if (PA_LIKELY(!hook)) {
+    unsigned char* object =
+        static_cast<unsigned char*>(root->SlotStartToObject(slot_start));
+    for (size_t i = 0; i < slot_span->GetUsableSize(root); ++i) {
+      PA_DCHECK(object[i] == kQuarantinedByte);
+    }
+  }
   DebugMemset(SlotStartAddr2Ptr(slot_start), kFreedByte,
               slot_span->GetUtilizedSlotSize()
 #if BUILDFLAG(PUT_REF_COUNT_IN_PREVIOUS_SLOT)
@@ -1145,7 +1164,8 @@ PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
     *usable_size = slot_span->GetUsableSize(this);
   }
   PA_DCHECK(slot_span->GetUtilizedSlotSize() <= slot_span->bucket->slot_size);
-  IncreaseTotalSizeOfAllocatedBytes(slot_span, raw_size);
+  IncreaseTotalSizeOfAllocatedBytes(
+      slot_start, slot_span->GetSlotSizeForBookkeeping(), raw_size);
 
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
   if (!slot_span->bucket->is_direct_mapped()) {
@@ -1187,21 +1207,6 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeWithFlags(
   }
 
   FreeNoHooks(object);
-}
-
-// Returns whether MTE is supported for this partition root. Because MTE stores
-// tagging information in the high bits of the pointer, it causes issues with
-// components like V8's ArrayBuffers which use custom pointer representations.
-// All custom representations encountered so far rely on an "is in configurable
-// pool?" check, so we use that as a proxy.
-template <bool thread_safe>
-PA_ALWAYS_INLINE bool PartitionRoot<thread_safe>::IsMemoryTaggingEnabled()
-    const {
-#if PA_CONFIG(HAS_MEMORY_TAGGING)
-  return !flags.use_configurable_pool;
-#else
-  return false;
-#endif
 }
 
 // static
@@ -1248,7 +1253,7 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeNoHooks(void* object) {
   PA_DCHECK(slot_span == SlotSpan::FromSlotStart(slot_start));
 
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
-  if (PA_LIKELY(root->IsMemoryTaggingEnabled())) {
+  if (PA_LIKELY(root->memory_tagging_enabled())) {
     const size_t slot_size = slot_span->bucket->slot_size;
     if (PA_LIKELY(slot_size <= internal::kMaxMemoryTaggingSize)) {
       // slot_span is untagged at this point, so we have to recover its tag
@@ -1414,12 +1419,15 @@ template <bool thread_safe>
 PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::FreeInSlotSpan(
     uintptr_t slot_start,
     SlotSpan* slot_span) {
-  DecreaseTotalSizeOfAllocatedBytes(slot_span);
+  DecreaseTotalSizeOfAllocatedBytes(slot_start,
+                                    slot_span->GetSlotSizeForBookkeeping());
+
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
   if (!slot_span->bucket->is_direct_mapped()) {
     internal::FreeSlotBitmapMarkSlotAsFree(slot_start);
   }
 #endif
+
   return slot_span->Free(slot_start);
 }
 
@@ -1498,7 +1506,11 @@ PA_ALWAYS_INLINE void PartitionRoot<thread_safe>::RawFreeBatch(
   // corresponding pages were faulted in (without acquiring the lock). So there
   // is no need to touch pages manually here before the lock.
   ::partition_alloc::internal::ScopedGuard guard{lock_};
-  DecreaseTotalSizeOfAllocatedBytes(slot_span);
+  // TODO(thiabaud): Fix the accounting here. The size is correct, but the
+  // pointer is not. This only affects local tools that record each allocation,
+  // not our metrics.
+  DecreaseTotalSizeOfAllocatedBytes(
+      0u, slot_span->GetSlotSizeForBookkeeping() * size);
   slot_span->AppendFreeList(head, tail, size);
 }
 
@@ -1582,24 +1594,6 @@ PartitionRoot<thread_safe>::FromAddrInFirstSuperpage(uintptr_t address) {
   uintptr_t super_page = address & internal::kSuperPageBaseMask;
   PA_DCHECK(internal::IsReservationStart(super_page));
   return FromFirstSuperPage(super_page);
-}
-
-template <bool thread_safe>
-PA_ALWAYS_INLINE void
-PartitionRoot<thread_safe>::IncreaseTotalSizeOfAllocatedBytes(
-    SlotSpan* slot_span,
-    size_t raw_size) {
-  IncreaseTotalSizeOfAllocatedBytes(reinterpret_cast<uintptr_t>(slot_span),
-                                    slot_span->GetSlotSizeForBookkeeping(),
-                                    raw_size);
-}
-
-template <bool thread_safe>
-PA_ALWAYS_INLINE void
-PartitionRoot<thread_safe>::DecreaseTotalSizeOfAllocatedBytes(
-    SlotSpan* slot_span) {
-  DecreaseTotalSizeOfAllocatedBytes(reinterpret_cast<uintptr_t>(slot_span),
-                                    slot_span->GetSlotSizeForBookkeeping());
 }
 
 template <bool thread_safe>
@@ -1765,7 +1759,7 @@ PartitionRoot<thread_safe>::GetPageAccessibility() const {
   PageAccessibilityConfiguration::Permissions permissions =
       PageAccessibilityConfiguration::kReadWrite;
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
-  if (IsMemoryTaggingEnabled()) {
+  if (memory_tagging_enabled()) {
     permissions = PageAccessibilityConfiguration::kReadWriteTagged;
   }
 #endif

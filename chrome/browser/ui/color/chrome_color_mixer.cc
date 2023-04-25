@@ -325,19 +325,6 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       PickGoogleColor(ui::kColorAccent, kColorToolbar,
                       color_utils::kMinimumVisibleContrastRatio);
   mixer[kColorMediaRouterIconWarning] = {ui::kColorAlertMediumSeverityIcon};
-  mixer[kColorNewTabButtonBackgroundFrameActive] = {
-      kColorTabBackgroundInactiveFrameActive};
-  mixer[kColorNewTabButtonBackgroundFrameInactive] = {
-      kColorTabBackgroundInactiveFrameInactive};
-  mixer[kColorNewTabButtonFocusRing] = ui::PickGoogleColorTwoBackgrounds(
-      ui::kColorFocusableBorderFocused,
-      ui::GetResultingPaintColor(kColorNewTabButtonBackgroundFrameActive,
-                                 ui::kColorFrameActive),
-      ui::kColorFrameActive, color_utils::kMinimumVisibleContrastRatio);
-  mixer[kColorNewTabButtonInkDropFrameActive] =
-      ui::GetColorWithMaxContrast(kColorNewTabButtonBackgroundFrameActive);
-  mixer[kColorNewTabButtonInkDropFrameInactive] =
-      ui::GetColorWithMaxContrast(kColorNewTabButtonBackgroundFrameInactive);
   mixer[kColorOmniboxAnswerIconBackground] = {
       ui::kColorButtonBackgroundProminent};
   mixer[kColorOmniboxAnswerIconForeground] = {
@@ -687,6 +674,14 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
       ui::PickGoogleColor(ui::kColorAccent, kColorToolbar,
                           color_utils::kMinimumVisibleContrastRatio);
   mixer[kColorToolbarInkDrop] = ui::GetColorWithMaxContrast(kColorToolbar);
+  mixer[kColorToolbarInkDropHover] =
+      ui::SetAlpha(kColorToolbarInkDrop, kToolbarInkDropHighlightVisibleAlpha);
+  mixer[kColorToolbarInkDropRipple] =
+      ui::SetAlpha(kColorToolbarInkDrop, std::ceil(0.06f * 255.0f));
+  mixer[kColorToolbarExtensionSeparatorEnabled] = {
+      kColorTabBackgroundInactiveFrameActive};
+  mixer[kColorToolbarExtensionSeparatorDisabled] = {
+      kColorToolbarButtonIconInactive};
   mixer[kColorToolbarSeparator] = {kColorToolbarSeparatorDefault};
   mixer[kColorToolbarSeparatorDefault] =
       ui::SetAlpha(kColorToolbarButtonIcon, 0x4D);

@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -192,7 +193,8 @@ class DriveFsHost::MountState : public DriveFsSession,
         // Currently, download syncing (AKA downsync) events are not reliably
         // delivered by DriveFs. Therefore, let's not show inline sync status
         // indicators for them until this is fixed on DriveFs/Cello.
-        if (event->is_download) {
+        // Also filter out invalid stable_ids (with value 0).
+        if (event->is_download || event->stable_id == 0) {
           continue;
         }
 
@@ -327,11 +329,6 @@ class DriveFsHost::MountState : public DriveFsSession,
       std::move(callback).Run(mojom::DialogResult::kNotDisplayed);
       return;
     }
-    if (error->type == mojom::DialogReason::Type::kEnableDocsOffline &&
-        host_->ShouldAlwaysEnableDocsOffline()) {
-      std::move(callback).Run(mojom::DialogResult::kAccept);
-      return;
-    }
     host_->dialog_handler_.Run(
         *error, mojo::WrapCallbackWithDefaultInvokeIfNotRun(
                     std::move(callback), mojom::DialogResult::kNotDisplayed));
@@ -381,7 +378,7 @@ class DriveFsHost::MountState : public DriveFsSession,
   }
 
   // Owns |this|.
-  DriveFsHost* const host_;
+  const raw_ptr<DriveFsHost, ExperimentalAsh> host_;
 
   std::unique_ptr<DriveFsSearch> search_;
   std::unique_ptr<DriveFsHttpClient> http_client_;

@@ -456,8 +456,10 @@ void PictureInPictureBrowserFrameView::UpdateWindowIcon() {
   window_title_->SetText(location_bar_model_->GetURLForDisplay());
 }
 
+// Minimum size refers to the minimum size for the window inner bounds.
 gfx::Size PictureInPictureBrowserFrameView::GetMinimumSize() const {
-  return PictureInPictureWindowManager::GetMinimumWindowSize();
+  return PictureInPictureWindowManager::GetMinimumInnerWindowSize() +
+         GetNonClientViewAreaSize();
 }
 
 gfx::Size PictureInPictureBrowserFrameView::GetMaximumSize() const {
@@ -879,6 +881,14 @@ int PictureInPictureBrowserFrameView::GetTopAreaHeight() const {
   return FrameBorderInsets().top() + kTopControlsHeight;
 }
 
+gfx::Size PictureInPictureBrowserFrameView::GetNonClientViewAreaSize() const {
+  const auto border_thickness = FrameBorderInsets();
+  const int top_height = GetTopAreaHeight();
+
+  return gfx::Size(border_thickness.width(),
+                   top_height + border_thickness.bottom());
+}
+
 #if BUILDFLAG(IS_LINUX)
 void PictureInPictureBrowserFrameView::SetWindowFrameProvider(
     ui::WindowFrameProvider* window_frame_provider) {
@@ -924,6 +934,10 @@ views::View* PictureInPictureBrowserFrameView::GetBackToTabButtonForTesting() {
 
 views::View* PictureInPictureBrowserFrameView::GetCloseButtonForTesting() {
   return close_image_button_;
+}
+
+views::Label* PictureInPictureBrowserFrameView::GetWindowTitleForTesting() {
+  return window_title_;
 }
 
 void PictureInPictureBrowserFrameView::OnMouseEnteredOrExitedWindow(

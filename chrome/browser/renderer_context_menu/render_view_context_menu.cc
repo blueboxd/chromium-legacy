@@ -638,8 +638,13 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-void OnProfileCreated(const GURL& link_url, Profile* profile) {
-  Browser* browser = chrome::FindLastActiveWithProfile(profile);
+void OnBrowserCreated(const GURL& link_url, Browser* browser) {
+  if (!browser) {
+    // TODO(crbug.com/1374315): Make sure we do something or log an error if
+    // opening a browser window was not possible.
+    return;
+  }
+
   NavigateParams nav_params(
       browser, link_url,
       /* |ui::PAGE_TRANSITION_TYPED| is used rather than
@@ -2968,7 +2973,11 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
         ExecSearchWebInCompanionSidePanel(selection_navigation_url_);
         break;
       }
+      // Searching in this side panel is dependent on the companion feature
+      // being disabled.
       if (side_search::IsSearchWebInSidePanelSupported(
+              chrome::FindBrowserWithWebContents(embedder_web_contents_)) &&
+          !companion::IsSearchInCompanionSidePanelSupported(
               chrome::FindBrowserWithWebContents(embedder_web_contents_))) {
         ExecSearchWebInSidePanel(selection_navigation_url_);
         break;
@@ -3609,7 +3618,7 @@ void RenderViewContextMenu::ExecOpenLinkInProfile(int profile_index) {
   base::FilePath profile_path = profile_link_paths_[profile_index];
   profiles::SwitchToProfile(
       profile_path, false,
-      base::BindRepeating(OnProfileCreated, params_.link_url));
+      base::BindRepeating(OnBrowserCreated, params_.link_url));
 }
 
 void RenderViewContextMenu::ExecInspectElement() {
@@ -3771,16 +3780,24 @@ void RenderViewContextMenu::ExecRegionSearch(
   // PDF reader.
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
-
-  if (!lens_region_search_controller_) {
-    lens_region_search_controller_ =
-        std::make_unique<lens::LensRegionSearchController>(browser);
-  }
   // If Lens fullscreen search is enabled, we want to send every region search
   // as a fullscreen capture.
   bool use_fullscreen_capture =
       GetMenuSourceType(event_flags) == ui::MENU_SOURCE_KEYBOARD ||
       lens::features::IsLensFullscreenSearchEnabled();
+
+  auto* companion_helper =
+      companion::CompanionTabHelper::FromWebContents(embedder_web_contents_);
+  if (companion_helper &&
+      companion::IsSearchImageInCompanionSidePanelSupported(browser)) {
+    companion_helper->StartRegionSearch(web_contents, use_fullscreen_capture);
+    return;
+  }
+
+  if (!lens_region_search_controller_) {
+    lens_region_search_controller_ =
+        std::make_unique<lens::LensRegionSearchController>(browser);
+  }
   lens_region_search_controller_->Start(web_contents, use_fullscreen_capture,
                                         is_google_default_search_provider);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -3806,7 +3823,7 @@ void RenderViewContextMenu::ExecSearchWebInCompanionSidePanel(const GURL& url) {
   if (!companion_helper) {
     return;
   }
-  companion_helper->ShowCompanionSidePanel(url);
+  companion_helper->ShowCompanionSidePanelForSearchURL(url);
 }
 
 void RenderViewContextMenu::ExecSearchWebInSidePanel(const GURL& url) {

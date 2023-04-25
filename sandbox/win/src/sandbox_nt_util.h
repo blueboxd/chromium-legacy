@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/memory/raw_ptr_exclusion.h"
 #include "sandbox/win/src/nt_internals.h"
 #include "sandbox/win/src/sandbox_nt_types.h"
 
@@ -99,7 +100,7 @@ struct NtAllocDeleter {
 void* GetGlobalIPCMemory();
 
 // Returns a pointer to the Policy shared memory.
-void* GetGlobalPolicyMemory();
+void* GetGlobalPolicyMemoryForTesting();
 
 // Returns a reference to imported NT functions.
 const NtExports* GetNtExports();
@@ -201,7 +202,9 @@ class AutoProtectMemory {
 
  private:
   bool changed_;
-  void* address_;
+  // This field is not a raw_ptr<> because it was filtered by the rewriter for:
+  // #addr-of
+  RAW_PTR_EXCLUSION void* address_;
   size_t bytes_;
   ULONG old_protect_;
 };

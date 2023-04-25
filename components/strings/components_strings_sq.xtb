@@ -37,7 +37,6 @@
 <translation id="10614374240317010">Nuk u ruaj asnjëherë</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Faqeshënuesit e desktopit</translation>
-<translation id="1067561478268651872">Politika <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> nuk përdoret, përveçse nëse është caktuar politika <ph name="SECURE_DNS_SALT" />.</translation>
 <translation id="1068672505746868501">Mos përkthe asnjëherë faqet që janë në <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="1070853536588271387">Automjetet hibride dhe alternative</translation>
 <translation id="1070901266639972381">Natë</translation>
@@ -307,6 +306,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="1658918301167915956">Pajisjet me Bluetooth</translation>
 <translation id="1662550410081243962">Ruaj dhe plotëso mënyrat e pagesës</translation>
 <translation id="1663943134801823270">Kartat dhe adresat janë nga Chrome. Ato mund t'i menaxhosh te <ph name="BEGIN_LINK" />Cilësimet<ph name="END_LINK" />.</translation>
+<translation id="1668071460721346172">Merr një email</translation>
 <translation id="1671391448414634642">Faqet në <ph name="SOURCE_LANGUAGE" /> do të përkthehen në <ph name="TARGET_LANGUAGE" /> nga tani e në vazhdim.</translation>
 <translation id="1674504678466460478">Nga <ph name="SOURCE_LANGUAGE" /> në <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Ana e shkurtër në fillim</translation>
@@ -367,6 +367,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="1806174020048213474">Ky aplikacion po kërkon leje për të instaluar kredencialet e Wi-Fi. Pas konfigurimit, pajisja jote <ph name="DEVICE_TYPE" /> do të lidhet automatikisht me rrjetet pjesëmarrëse Wi-Fi. Për t'i hequr këto kredenciale, çinstalo aplikacionin.</translation>
 <translation id="1807246157184219062">I lehtë</translation>
 <translation id="1807528111851433570">Fleta e fillimit</translation>
+<translation id="180757923930449935">(me imitimin për 64 bitë)</translation>
 <translation id="180991881384371158">Numri CVC është në pjesën e pasme të kartës sate. Ai përfshin 3 shifrat e fundit në krye djathtas të kutisë së nënshkrimit.</translation>
 <translation id="181000283860817563">Monitoro çmimet nëpër disa sajte</translation>
 <translation id="1810391395243432441">Mbroji fjalëkalimet me kyçjen e ekranit</translation>
@@ -510,6 +511,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2166049586286450108">Qasja e plotë e administratorit</translation>
 <translation id="2166378884831602661">Ky sajt nuk mund të ofrojë një lidhje të sigurt</translation>
 <translation id="2168151236314517198">Printimi i kësaj përmbajtjeje është bllokuar nga politika e administratorit</translation>
+<translation id="2176974405772725904">Ruaje adresën te llogaria</translation>
 <translation id="2181821976797666341">Politikat</translation>
 <translation id="2183608646556468874">Numri i telefonit</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 adresë}other{# adresa}}</translation>
@@ -523,7 +525,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2204482073374652408">Përditësimi përfundoi!</translation>
 <translation id="22081806969704220">Tabakaja 3</translation>
 <translation id="2210794033760923560">Ngarko raportin</translation>
-<translation id="2212579473415663542">Kjo adresë është ruajtur në "Llogarinë tënde të Google" (<ph name="ACCOUNT" />). Mund ta përdorësh adresën nëpër produktet e Google në çdo pajisje.</translation>
 <translation id="2212735316055980242">Politika nuk u gjet</translation>
 <translation id="2213606439339815911">Po merr hyrjet...</translation>
 <translation id="2213612003795704869">Faqja u printua</translation>
@@ -1224,6 +1225,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4031179711345676612">Mikrofoni lejohet</translation>
 <translation id="4040350669425716613">Kolegjet dhe universitetet</translation>
 <translation id="4047351652147966654">18 x 24 inç</translation>
+<translation id="4047620889508350431">Tani mund të përdorësh adresat nga "Llogaria jote e Google".</translation>
 <translation id="405399507749852140">Merr sinjalizime nëse ulet çmimi në ndonjë sajt</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4063063121357725926">Lejo që Google të të ndihmojë të gjesh ulje për karrocat e tua</translation>
@@ -1736,6 +1738,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">Hiq</translation>
+<translation id="5238301240406177137">Ruaje te llogaria</translation>
 <translation id="5239623327352565343">Vendndodhja lejohet</translation>
 <translation id="5242889659037569123">Aksesorët për bagazhe dhe udhëtime</translation>
 <translation id="5244732203286792411">Po ngarkohet...
@@ -1754,7 +1757,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5273881944177595304">Aplikacionet e uebit dhe veglat në linjë</translation>
 <translation id="5274025349362408263">Librat dhe letërsia</translation>
 <translation id="5279286380302340275">Menaxho shkarkimet</translation>
-<translation id="5279453600310613955">Jo, faleminderit</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Karakteristikat e dokumentit</translation>
 <translation id="528468243742722775">Fundi</translation>
@@ -1793,6 +1795,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5344579389779391559">Kjo faqe mund të përpiqet të të tarifojë në para</translation>
 <translation id="5347645913823149105">Butoni "Personalizo fontet në Chrome". Shtyp "Enter" për të personalizuar madhësitë e fonteve dhe llojin e karaktereve në Chrome</translation>
 <translation id="5355557959165512791">Nuk mund ta vizitosh <ph name="SITE" /> tani, sepse certifikata e tij është revokuar. Gabimet dhe sulmet në rrjet zakonisht janë të përkohshme, prandaj kjo faqe ndoshta do të punojë më vonë.</translation>
+<translation id="5356345925629253198">Adresat e ruajtura mund t'i përdorësh nëpër produktet e Google. Kjo adresë do të ruhet në "Llogarinë tënde të Google" (<ph name="ACCOUNT" />).</translation>
 <translation id="5357848622083956825">Artet pamore dhe dizajni</translation>
 <translation id="536296301121032821">Dështoi në ruajtjen e cilësimeve të politikës.</translation>
 <translation id="5363309033720083897">Porta seriale e lejuar nga administratori yt</translation>
@@ -1918,7 +1921,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5695542892312572833">Dëshiron të përdorësh Windows Hello për të verifikuar dhe përfunduar blerjen?</translation>
 <translation id="5701381305118179107">Qendër</translation>
 <translation id="570530837424789914">Menaxho...</translation>
-<translation id="5706906618852913030">Të ruhet te llogaria?</translation>
 <translation id="5707154300732650394">Vazhdo udhëtimin tënd</translation>
 <translation id="57094364128775171">Sugjero fjalëkalim të fortë…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2104,6 +2106,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6165508094623778733">Mëso më shumë</translation>
 <translation id="6167577165590485365">Përpjekja e fundit për nxjerrje:</translation>
 <translation id="6169916984152623906">Tani mund të shfletosh në mënyrë private dhe personat e tjerë që përdorin këtë pajisje nuk do të shikojnë aktivitetin tënd. Sidoqoftë, shkarkimet dhe faqeshënuesit do të ruhen.</translation>
+<translation id="617256461084925519">Google Chrome po përpiqet të verifikojë që je ti që të mund të plotësojë informacionet e tua të pagesës.</translation>
 <translation id="6177128806592000436">Lidhja jote me këtë sajt nuk është e sigurt</translation>
 <translation id="6177531123306197852">Zarf C2</translation>
 <translation id="6180316780098470077">Intervali i ripërpjekjes</translation>
@@ -2142,6 +2145,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6279183038361895380">Shtyp |<ph name="ACCELERATOR" />| për të shfaqur kursorin</translation>
 <translation id="6280223929691119688">Nuk mund të dorëzohet në këtë adresë. Zgjidh një adresë tjetër.</translation>
 <translation id="6284292079994426700">26 x 38 inç</translation>
+<translation id="6284517535531159884">Lloji i burimit të varianteve</translation>
 <translation id="6285507000506177184">Butoni "Menaxho shkarkimet në Chrome". Shtyp "Enter" për të menaxhuar skedarët që ke shkarkuar në Chrome</translation>
 <translation id="6289939620939689042">Ngjyra e faqes</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -2151,7 +2155,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6301104306974789820">Merr njoftime për monitorimin e çmimeve</translation>
 <translation id="6305205051461490394"><ph name="URL" /> është i paarritshëm.</translation>
 <translation id="6306713302480826305">Kjo adresë do të fshihet nga kjo pajisje dhe nga pajisjet e tjera ku je identifikuar</translation>
-<translation id="6311165245110979290">Karta virtuale është e disponueshme</translation>
 <translation id="6312113039770857350">Faqja e uebit nuk është e disponueshme</translation>
 <translation id="6316226860534107313">Motoçikletat dhe skuterat elektrikë</translation>
 <translation id="63172326633386613">Menaxho cilësimet e qasshmërisë</translation>
@@ -2251,6 +2254,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6545864417968258051">Skanimi për Bluetooth</translation>
 <translation id="6547208576736763147">Dy shpime majtas</translation>
 <translation id="6549443526281184652">Kostumet</translation>
+<translation id="6551873053534932690">Të ruhet adresa te llogaria?</translation>
 <translation id="6554732001434021288">Vizituar së fundi <ph name="NUM_DAYS" /> ditë më parë</translation>
 <translation id="6556866813142980365">Ribëje</translation>
 <translation id="6557715786897013164">14 x 17 inç</translation>
@@ -2315,6 +2319,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6716672519412350405"><ph name="URL" /> kërkon të krijojë një hartë 3D të ambientit tënd rrethues dhe të gjurmojë pozicionin e kamerës</translation>
 <translation id="6718612893943028815">Të përdoret kamera?</translation>
 <translation id="6721678857435001674">Shikojë markën dhe modelin e çelësit tënd të sigurisë</translation>
+<translation id="6726832600570791992">(me imitimin për 32 bitë)</translation>
 <translation id="6727094998759448074">SRA4</translation>
 <translation id="6732087373923685049">kamera</translation>
 <translation id="6738516213925468394">Të dhënat e tua u enkriptuan me <ph name="BEGIN_LINK" />frazën e kalimit për sinkronizimin<ph name="END_LINK" /> më <ph name="TIME" />. Fute atë për të nisur sinkronizmin.</translation>
@@ -2655,6 +2660,7 @@ Detaje shtesë:
 <translation id="7518003948725431193">Nuk u gjet asnjë faqe interneti për adresën: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7521825010239864438">Seksioni "<ph name="SECTION" />" është i fshehur</translation>
+<translation id="752189128961566325">Mund ta përdorësh atë nëpër produktet e Google</translation>
 <translation id="7523408071729642236">Prodhimtaria</translation>
 <translation id="7526934274050461096">Lidhja jote me këtë faqe nuk është private</translation>
 <translation id="7529884293139707752">Edukimi në shtëpi</translation>
@@ -2882,6 +2888,7 @@ Detaje shtesë:
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" nuk është konfiguruar mirë. Zakonisht këtë problem e zgjidh çinstalimi i "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8058009102480785916">Prodhimi ushqimor</translation>
 <translation id="8058603697124206642">Nuk kërkohet</translation>
+<translation id="8064892030280197386">të verifikojë që je ti që të mund të plotësojë informacionet e tua të pagesës.</translation>
 <translation id="8066225060526005217">Menaxhohen nga cilësimet e kukive</translation>
 <translation id="8067872629359326442">Sapo fute fjalëkalimin tënd në një sajt mashtrues. Chromium mund të të ndihmojë. Për të ndryshuar fjalëkalimin dhe për të njoftuar Google se llogaria jote mund të jetë në rrezik, kliko te "Mbroje llogarinë".</translation>
 <translation id="8070439594494267500">Ikona e aplikacionit</translation>
@@ -3213,7 +3220,6 @@ Detaje shtesë:
 <translation id="8913778647360618320">Butoni "Menaxho mënyrat e pagesës", shtyp "Enter" për të menaxhuar informacionet e pagesave dhe të kartës së kreditit te cilësimet e Chrome</translation>
 <translation id="8922013791253848639">Lejo gjithmonë reklamat në këtë sajt</translation>
 <translation id="892588693504540538">Shpim lart djathtas</translation>
-<translation id="8930098617363288380">Vlera <ph name="SECURE_DNS_SALT" /> nuk është e përshtatshme dhe nuk do të përdoret, përveçse nëse është caktuar politika <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />.</translation>
 <translation id="8930330541574156305">Pasuritë e patundshme</translation>
 <translation id="8931333241327730545">Dëshiron që ta ruash këtë kartë te llogaria jote e Google?</translation>
 <translation id="8932102934695377596">Ora ka mbetur prapa</translation>

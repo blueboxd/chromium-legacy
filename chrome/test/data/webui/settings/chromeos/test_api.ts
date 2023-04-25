@@ -306,6 +306,19 @@ export class LockScreenSettings implements LockScreenSettingsInterface {
     return toggle;
   }
 
+  async assertRecoveryControlAvailability(isAvailable: boolean): Promise<void> {
+    const property = () => {
+      const toggle = this.recoveryToggle();
+      if (toggle === null) {
+        return !isAvailable;
+      }
+      return toggle.outerHTML.includes('not supported') === !isAvailable;
+    };
+
+    await assertAsync(property);
+    await assertForDuration(property);
+  }
+
   async assertRecoveryControlVisibility(isVisible: boolean): Promise<void> {
     const property = () => {
       const toggle = this.recoveryToggle();
@@ -771,6 +784,34 @@ export class GoogleDriveSettings implements GoogleDriveSettingsInterface {
       Promise<void> {
     this.assertRequiredSpace(requiredSpace);
     this.assertRemainingSpace(remainingSpace);
+  }
+
+  async assertBulkPinningPinnedSize(expectedPinnedSize: string): Promise<void> {
+    assertTrue(
+        this.googleDriveSubpage_?.totalPinnedSize === expectedPinnedSize);
+  }
+
+  async clickClearOfflineFilesAndAssertNewSize(newSize: string): Promise<void> {
+    const offlineStorageButton =
+        this.googleDriveSubpage_.shadowRoot!.querySelector<CrButtonElement>(
+            '#drive-offline-storage-row cr-button')!;
+    offlineStorageButton.click();
+
+    // Click the confirm button on the confirmation dialog.
+    const getConfirmationButton = () =>
+        querySelectorShadow(
+            this.googleDriveSubpage_.shadowRoot!,
+            [
+              'settings-drive-confirmation-dialog',
+              '.action-button',
+            ])! as CrButtonElement |
+        null;
+    await assertAsync(() => getConfirmationButton() !== null, 10000000);
+    getConfirmationButton()!.click();
+
+    // Wait for the total pinned size to be updated.
+    await assertAsync(
+        () => this.googleDriveSubpage_?.totalPinnedSize === newSize);
   }
 }
 

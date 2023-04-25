@@ -64,7 +64,7 @@ bool TextSequenceHasEmoji(base::StringPiece16 text) {
 }  // namespace
 
 std::vector<Font> GetFallbackFonts(const Font& font) {
-  DCHECK(font.GetNativeFont());
+  DCHECK(font.GetCTFont());
   // On Mac "There is a system default cascade list (which is polymorphic, based
   // on the user's language setting and current font)" - CoreText Programming
   // Guide.
@@ -86,8 +86,9 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
             CFArrayGetValueAtIndex(cascade_list, i));
     base::ScopedCFTypeRef<CTFontRef> fallback_font(
         CTFontCreateWithFontDescriptor(descriptor, 0.0, nullptr));
-    if (fallback_font.get())
-      fallback_fonts.push_back(Font(static_cast<NSFont*>(fallback_font.get())));
+    if (fallback_font.get()) {
+      fallback_fonts.emplace_back(fallback_font.get());
+    }
   }
 
   if (fallback_fonts.empty())

@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">വീഡിയോ എടുക്കുന്നു</translation>
 <translation id="1703835215927279855">ലെറ്റർ</translation>
 <translation id="1706391837335750954">DNS റിസോൾവർ അവതരണം</translation>
+<translation id="1708602061922134366">Google നീല</translation>
 <translation id="1710499924611012470">ഉപയോഗസഹായി നാവിഗേഷൻ</translation>
 <translation id="1715359911173058521">സ്‌കാനറുമായി ബന്ധപ്പെടുന്നതിൽ പ്രശ്‌നമുണ്ട്. നെറ്റ്‌വർക്കോ USB കണക്ഷനോ പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക.</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" />, <ph name="SECOND_MANAGER" /> എന്നിവ മാനേജ് ചെയ്യുന്നത്</translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">പരിശോധിച്ചുറപ്പിക്കൽ തരം</translation>
+<translation id="1776228893584526149">വാൾപേപ്പർ ടോൺ</translation>
 <translation id="1782199038061388045">വിവർത്തനം</translation>
 <translation id="1790209694022261219">വിൻഡോകളും ഡെസ്ക്കുകളും</translation>
 <translation id="1792647875738159689">സ്കാൻ ചെയ്യൽ റദ്ദാക്കുന്നു</translation>
@@ -483,6 +485,7 @@
 <translation id="5166918508782100047">'വേഗത്തിലുള്ള ഉത്തരങ്ങൾ' ക്രമീകരണം</translation>
 <translation id="5168185087976003268">ബാറ്ററിയുടെ പ്രവർത്തനക്ഷമത</translation>
 <translation id="5170568018924773124">ഫോള്‍ഡറില്‍ കാണിക്കുക</translation>
+<translation id="5180712487038406644">എക്‌സ്പ്രസീവ്</translation>
 <translation id="5190187232518914472">നിങ്ങളുടെ പ്രിയപ്പെട്ട ഓർമ്മകളെ പുനരുജ്ജീവിപ്പിക്കുക. ആൽബങ്ങൾ ചേർക്കാനോ എഡിറ്റ് ചെയ്യാനോ <ph name="LINK_BEGIN" />Google Photos-ലേക്ക്<ph name="LINK_END" /> പോകുക.</translation>
 <translation id="5212593641110061691">ടാബ്ലോയ്‌ഡ്</translation>
 <translation id="5222676887888702881">സൈൻ ഔട്ട് ചെയ്യുക</translation>
@@ -517,6 +520,7 @@
 <translation id="5423849171846380976">സജീവമാക്കി</translation>
 <translation id="5430931332414098647">തൽക്ഷണ ടെതറിംഗ്</translation>
 <translation id="5431318178759467895">വര്‍ണ്ണം</translation>
+<translation id="5456936324019847994">പ്രവർത്തനക്ഷമമാക്കിയ ഇഷ്ടാനുസൃത APN-കളിലേക്കൊന്നും കണക്റ്റ് ചെയ്യാനാകുന്നില്ല. കൂടുതൽ വിവരങ്ങൾക്ക് നിങ്ങളുടെ മൊബൈൽ സേവനദാതാവിനെ ബന്ധപ്പെടുക.</translation>
 <translation id="5457599981699367932">അതിഥിയായി ബ്രൗസ് ചെയ്യുക</translation>
 <translation id="54609108002486618">നിയന്ത്രിതം</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} ശ്രമം ശേഷിക്കുന്നു}other{{0} ശ്രമങ്ങൾ ശേഷിക്കുന്നു}}</translation>
@@ -572,6 +576,7 @@
 <translation id="5931523347251946569">ഫയൽ കണ്ടെത്തിയില്ല</translation>
 <translation id="5939518447894949180">റീസെറ്റ് ചെയ്യുക</translation>
 <translation id="594552776027197022">ക്രമരഹിതമായ കീ ജോടി സൃഷ്‌ടിക്കുക</translation>
+<translation id="5946538341867151940">നിങ്ങൾ ഇതുവരെ കണക്റ്റ് ചെയ്‌തിട്ടില്ല. നിങ്ങളുടെ മൊബൈൽ സേവനദാതാവ് ഒരു ഇഷ്‌ടാനുസൃത APN നിർദ്ദേശിക്കുന്നുവെങ്കിൽ, "+ പുതിയ APN" തിരഞ്ഞെടുത്ത് APN വിവരങ്ങൾ നൽകുക</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">ഡിഫോൾട്ട് വാൾപേപ്പർ</translation>
 <translation id="6017514345406065928">പച്ച</translation>
@@ -646,6 +651,7 @@
 <translation id="6527081081771465939">അജ്ഞാതമായ വെെഫെെ സുരക്ഷാ പ്രോട്ടോക്കോൾ</translation>
 <translation id="6535178685492749208">നിങ്ങൾ ഓഫ്‌ലൈനാണ്. ഫീഡ്‌ബാക്ക് പിന്നീട് അയയ്ക്കും.</translation>
 <translation id="65587193855025101">ഫ്ലാറ്റ്ബെഡ്</translation>
+<translation id="6560196641871357166">വൈബ്രന്റ്</translation>
 <translation id="6564646048574748301">പ്രിന്റ് ചെയ്യാനായില്ല - പ്രിന്റർ ലഭ്യമല്ല</translation>
 <translation id="6566314079205407217">ഒന്നിലധികം പേജുകൾ സ്‌കാൻ ചെയ്യൽ</translation>
 <translation id="6574762126505704998">ഫിൽ</translation>
@@ -727,6 +733,7 @@
 <translation id="7281657306185710294">ഇളം കാറ്റ് അനുഭവിക്കൂ</translation>
 <translation id="7287310195820267359">വാൾപേപ്പർ ശേഖരങ്ങൾ</translation>
 <translation id="7297226631177386107">HTTPS വെബ്സൈറ്റുകളിലേക്ക് ഫയര്‍വാള്‍ മുഖേന കണക്റ്റ് ചെയ്യാനാകുന്നില്ല</translation>
+<translation id="7297726121602187087">ഇരുണ്ട പച്ച</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook സഹായ ഫോറത്തിലെ വിദഗ്ദ്ധരോട് സംസാരിക്കുക</translation>
@@ -761,6 +768,7 @@
 <translation id="7570674786725311828">USB ടച്ച്സ്ക്രീൻ</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> ശേഷിക്കുന്നു</translation>
 <translation id="7613724632293948900">മൗസ് അല്ലെങ്കിൽ അമ്പടയാള കീകൾ ഉപയോഗിച്ച് സ്ഥാനം മാറ്റുക.</translation>
+<translation id="7618774594543487847">ന്യൂട്രൽ</translation>
 <translation id="7620771111601174153">സഹായകേന്ദ്രത്തിൽ കൂടുതലറിയുക</translation>
 <translation id="763165478673169849">അവസാനം റീസെറ്റ് ചെയ്‌ത സമയം</translation>
 <translation id="7648838807254605802">ഉയർന്ന HTTPS പ്രതികരണ സമയം</translation>
@@ -873,6 +881,7 @@
 <translation id="8575298406870537639">നിങ്ങളുടെ സേവനദാതാവിന് അവരുടെ നെറ്റ്‌വർക്കിലേക്ക് കണക്റ്റ് ചെയ്യാൻ ഈ ഓപ്‌ഷൻ ആവശ്യമായി വന്നേക്കാം. വിശദാംശങ്ങൾക്ക് നിങ്ങളുടെ സേവനദാതാവുമായി ബന്ധപ്പെടുക.</translation>
 <translation id="8576249514688522074">പ്രവർത്തനമാരംഭിച്ചിട്ടില്ല</translation>
 <translation id="8620617069779373398">റോമിംഗ് നില</translation>
+<translation id="86356131183441916">ഇളം പർപ്പിൾ</translation>
 <translation id="8655295600908251630">ചാനല്‍</translation>
 <translation id="8655828773034788261">URL പങ്കിടുക:</translation>
 <translation id="8660881923941176839">പൗണ്ട്</translation>
@@ -957,6 +966,7 @@
 <translation id="945522503751344254">ഫീഡ്‌ബാക്ക് അയയ്‌ക്കുക</translation>
 <translation id="952992212772159698">സജീവമാക്കിയില്ല</translation>
 <translation id="960719561871045870">ഓപ്പറേറ്റർ കോഡ്</translation>
+<translation id="979450713603643090">ഇളം പിങ്ക്</translation>
 <translation id="982713511914535780">ഡിസ്‌ചാർജ്ജ് ടെസ്‌റ്റ് റൺ ചെയ്യുക</translation>
 <translation id="987264212798334818">പൊതുവായ</translation>
 </translationbundle>

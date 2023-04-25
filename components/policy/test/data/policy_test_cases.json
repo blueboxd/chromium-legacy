@@ -22607,9 +22607,6 @@
   },
   "RealTimeDownloadProtectionRequestAllowed": {
     "os": [
-      "win",
-      "linux",
-      "mac",
       "chromeos_ash",
       "chromeos_lacros"
     ],
@@ -22720,13 +22717,8 @@
   },
   "ClientSidePhishingProtectionAllowed": {
     "os": [
-      "win",
-      "linux",
-      "mac",
       "chromeos_ash",
-      "chromeos_lacros",
-      "android",
-      "fuchsia"
+      "chromeos_lacros"
     ],
     "policy_pref_mapping_tests": [
       {
@@ -22992,6 +22984,42 @@
           "ash.device.geolocation_allowed": {
             "location": "local_state",
             "value": 0
+          }
+        }
+      }
+    ]
+  },
+  "SafeBrowsingExtensionProtectionAllowed": {
+    "os": [
+      "chromeos_ash",
+      "chromeos_lacros"
+    ],
+    "policy_pref_mapping_tests": [
+      {
+        "policies": {},
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "default_value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SafeBrowsingExtensionProtectionAllowed": true
+        },
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {
+          "SafeBrowsingExtensionProtectionAllowed": false
+        },
+        "prefs": {
+          "safebrowsing.extension_protection_allowed_by_policy": {
+            "value": false
           }
         }
       }

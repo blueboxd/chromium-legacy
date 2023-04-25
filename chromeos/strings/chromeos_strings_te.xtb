@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">వీడియో తీస్తోంది</translation>
 <translation id="1703835215927279855">లెటర్</translation>
 <translation id="1706391837335750954">DNS రిసాల్వర్ అందుబాటులో ఉంది</translation>
+<translation id="1708602061922134366">నీలం రంగు Google</translation>
 <translation id="1710499924611012470">యాక్సెసిబిలిటీ నావిగేషన్</translation>
 <translation id="1715359911173058521">స్కానర్‌తో కమ్యూనికేట్ చేయడంలో ఎదో సమస్య ఉంది. నెట్‌వర్క్ లేదా USB కనెక్షన్‌ను చెక్ చేసి, మళ్లీ ట్రై చేయండి.</translation>
 <translation id="1717874160321062422"><ph name="FIRST_MANAGER" />, అలాగే <ph name="SECOND_MANAGER" /> ద్వారా మేనేజ్ చేయబడుతుంది</translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">ప్రామాణీకరణ రకం</translation>
+<translation id="1776228893584526149">వాల్‌పేపర్ రంగు</translation>
 <translation id="1782199038061388045">అనువాదం</translation>
 <translation id="1790209694022261219">విండోలు, డెస్క్‌లు</translation>
 <translation id="1792647875738159689">స్కానింగ్ రద్దు అవుతోంది</translation>
@@ -483,6 +485,7 @@
 <translation id="5166918508782100047">క్విక్ ఆన్సర్స్‌కు సంబంధించిన సెట్టింగ్‌లు</translation>
 <translation id="5168185087976003268">బ్యాటరీ సామర్థ్యం</translation>
 <translation id="5170568018924773124">ఫోల్డర్‌లో చూపించు</translation>
+<translation id="5180712487038406644">స్పష్టంగా ఉండే రంగు</translation>
 <translation id="5190187232518914472">మీకు ఇష్టమైన మధుర జ్ఞాపకాలను మళ్లీ ఆస్వాదించండి. ఆల్బమ్‌లను జోడించడానికి లేదా ఎడిట్ చేయడానికి, <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />కు వెళ్లండి.</translation>
 <translation id="5212593641110061691">టాబ్లాయిడ్</translation>
 <translation id="5222676887888702881">సైన్ ఔట్</translation>
@@ -517,6 +520,7 @@
 <translation id="5423849171846380976">సక్రియం చేయబడింది</translation>
 <translation id="5430931332414098647">తక్షణ టెథెరింగ్</translation>
 <translation id="5431318178759467895">రంగు</translation>
+<translation id="5456936324019847994">ఎనేబుల్ చేసి ఉన్న ఏ అనుకూల APNలకు కనెక్ట్ అవ్వడమూ సాధ్యం కాదు. మరింత సమాచారం కోసం మీ మొబైల్ క్యారియర్‌ను సంప్రదించండి.</translation>
 <translation id="5457599981699367932">అతిథి లాగా బ్రౌజ్ చేయండి</translation>
 <translation id="54609108002486618">నిర్వహించబడింది</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} ప్రయత్నం మిగిలి ఉంది}other{{0} ప్రయత్నాలు మిగిలి ఉన్నాయి}}</translation>
@@ -572,6 +576,7 @@
 <translation id="5931523347251946569">ఫైల్ కనుగొనబడలేదు</translation>
 <translation id="5939518447894949180">రీసెట్ చేయి</translation>
 <translation id="594552776027197022">ర్యాండమ్ కీపెయిర్‌ను జెనరేట్ చేయండి</translation>
+<translation id="5946538341867151940">మీ పరికరం ఇంకా నెట్‌వర్క్‌కు కనెక్ట్ చేయబడలేదు. మీ మొబైల్ క్యారియర్ అనుకూల APNను సిఫార్సు చేస్తే, "+ కొత్త APN"ను ఎంచుకోవడం ద్వారా APN సమాచారాన్ని ఎంటర్ చేయండి</translation>
 <translation id="5972388717451707488">ఇంజిన్‌ను అప్‌డేట్ చేయండి</translation>
 <translation id="5984145644188835034">ఆటోమేటిక్ వాల్‌పేపర్</translation>
 <translation id="6017514345406065928">ఆకుపచ్చ</translation>
@@ -646,6 +651,7 @@
 <translation id="6527081081771465939">తెలియని WiFi భద్రతా ప్రోటోకాల్</translation>
 <translation id="6535178685492749208">మీరు ఆఫ్‌లైన్‌లో ఉన్నారు. ఫీడ్‌బ్యాక్ తర్వాత పంపబడుతుంది.</translation>
 <translation id="65587193855025101">ఫ్లాట్‌బెడ్</translation>
+<translation id="6560196641871357166">శక్తివంతమైన రంగు</translation>
 <translation id="6564646048574748301">విఫలమైంది - ప్రింటర్‌ను చేరుకోవడం సాధ్యపడలేదు</translation>
 <translation id="6566314079205407217">మల్టీ-పేజీ స్కాన్</translation>
 <translation id="6574762126505704998">నింపండి</translation>
@@ -727,6 +733,7 @@
 <translation id="7281657306185710294">చక్కని గాలిని ఆస్వాదించండి</translation>
 <translation id="7287310195820267359">వాల్‌పేపర్ కలెక్షన్‌లు</translation>
 <translation id="7297226631177386107">HTTPS వెబ్‌సైట్‌లకు ఫైర్‌వాల్ ద్వారా కనెక్ట్ చేయడం సాధ్యపడదు</translation>
+<translation id="7297726121602187087">ముదురు ఆకుపచ్చ రంగు</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook సహాయ ఫోరమ్‌లో నిపుణులను సహాయం అడగండి</translation>
@@ -761,6 +768,7 @@
 <translation id="7570674786725311828">USB టచ్‌స్క్రీన్</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> మిగిలి ఉంది</translation>
 <translation id="7613724632293948900">మౌస్ లేదా బాణం కీలతో స్థానాన్ని మార్చండి.</translation>
+<translation id="7618774594543487847">తటస్థం</translation>
 <translation id="7620771111601174153">సహాయ కేంద్రంలో మరింత తెలుసుకోండి</translation>
 <translation id="763165478673169849">చివరిగా రీసెట్ చేసిన సమయం</translation>
 <translation id="7648838807254605802">అధిక HTTPS ప్రతిస్పందన సమయం</translation>
@@ -873,6 +881,7 @@
 <translation id="8575298406870537639">వారి నెట్‌వర్క్‌కు కనెక్ట్ అవ్వడానికి మీ క్యారియర్‌కు ఈ ఆప్షన్ అవసరం పడవచ్చు. వివరాల కోసం మీ క్యారియర్‌ను సంప్రదించండి.</translation>
 <translation id="8576249514688522074">ప్రారంభం కాలేదు</translation>
 <translation id="8620617069779373398">రోమింగ్ స్థితి</translation>
+<translation id="86356131183441916">లేత ఊదా రంగు</translation>
 <translation id="8655295600908251630">ఛానల్</translation>
 <translation id="8655828773034788261">URLను షేర్ చేయండి:</translation>
 <translation id="8660881923941176839">పౌండ్‌లు</translation>
@@ -957,6 +966,7 @@
 <translation id="945522503751344254">ఫీడ్‌బ్యాక్ పంపండి</translation>
 <translation id="952992212772159698">సక్రియం చేయబడలేదు</translation>
 <translation id="960719561871045870">ఆపరేటర్ కోడ్</translation>
+<translation id="979450713603643090">లేత గులాబీ రంగు</translation>
 <translation id="982713511914535780">డిస్‌ఛార్జ్ పరీక్షను రన్ చేయండి</translation>
 <translation id="987264212798334818">సాధారణం</translation>
 </translationbundle>

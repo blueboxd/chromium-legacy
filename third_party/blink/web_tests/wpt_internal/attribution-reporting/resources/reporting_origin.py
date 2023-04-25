@@ -34,6 +34,7 @@ def has_source(stash: Stash, source_id: str) -> bool:
         if not sources_set:
             return False
         if source_id not in sources_set:
+            stash.put(SOURCES, sources_set)
             return False
 
         sources_set.remove(source_id)
@@ -84,7 +85,13 @@ def main(request, response):
     If a `check-source-id` param is set, it will look for the source id in the
     stash. If it is not available it will return a 404. Otherwise, it returns a
     200.
+
+    If a `clear-stash` param is set, it will clear the stash.
     """
+    if request.GET.get(b"clear-stash"):
+        request.stash.take(SOURCES)
+        return
+
     # We dont want to redirect preflight requests. The cors headers are piped
     # so we can simply return a 200 and redirect the following request
     if request.method == "OPTIONS":

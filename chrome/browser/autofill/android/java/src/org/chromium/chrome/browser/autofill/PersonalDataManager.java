@@ -1185,6 +1185,16 @@ public class PersonalDataManager {
     }
 
     /**
+     * Users based in unsupported countries and profiles with a country value set
+     * to an unsupported country are not eligible for account storage. This
+     * function determines if the `country_code` is eligible.
+     */
+    public boolean isCountryEligibleForAccountStorage(String countryCode) {
+        return PersonalDataManagerJni.get().isCountryEligibleForAccountStorage(
+                mPersonalDataManagerAndroid, PersonalDataManager.this, countryCode);
+    }
+
+    /**
      * Starts loading the address validation rules for the specified {@code regionCode}.
      *
      * @param regionCode The code of the region for which to load the rules.
@@ -1432,6 +1442,8 @@ public class PersonalDataManager {
             // If the image fetching was unsuccessful, silently return.
             if (bitmap == null) return;
 
+            // When adding new sizes for card icons, check if the corner radius needs to be added as
+            // a suffix for caching (crbug.com/1431283).
             mCreditCardArtImages.put(urlWithParams.getSpec(),
                     AutofillUiUtils.resizeAndAddRoundedCornersAndGreyBorder(bitmap, width, height,
                             cornerRadius,
@@ -1474,6 +1486,8 @@ public class PersonalDataManager {
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller, String guid);
         boolean isEligibleForAddressAccountStorage(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller);
+        boolean isCountryEligibleForAccountStorage(long nativePersonalDataManagerAndroid,
+                PersonalDataManager caller, String countryCode);
         String setProfile(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
                 AutofillProfile profile);
         String setProfileToLocal(long nativePersonalDataManagerAndroid, PersonalDataManager caller,

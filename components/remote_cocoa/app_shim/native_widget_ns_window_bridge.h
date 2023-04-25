@@ -262,7 +262,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
                           bool is_maximizable) override;
   void SetOpacity(float opacity) override;
   void SetWindowLevel(int32_t level) override;
-  void SetAspectRatio(const gfx::SizeF& aspect_ratio) override;
+  void SetAspectRatio(const gfx::SizeF& aspect_ratio,
+                      const gfx::Size& excluded_margin) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
   void SetWindowTitle(const std::u16string& title) override;
   void SetIgnoresMouseEvents(bool ignores_mouse_events) override;
@@ -297,13 +298,6 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // Compute the window and content size, and forward them to |host_|. This will
   // update widget and compositor size.
   void UpdateWindowGeometry();
-
-  // Move `child_windows_` to `target`.
-  // Optionally set `anchored_only` to true, which will only move children that
-  // are anchored to the target window. Currently only BubbleWidgets with a
-  // BubbleDialogDelegate are supported.
-  void MoveChildrenTo(NativeWidgetNSWindowBridge* target,
-                      bool anchored_only = false);
 
   // Is immersive fullscreen enabled. True will be returned at the start of the
   // fullscreen transition.

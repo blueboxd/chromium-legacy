@@ -322,7 +322,7 @@ class CORE_EXPORT LocalFrameView final
     return background_attachment_fixed_objects_;
   }
   void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
-      const LayoutObject& scrolled_object);
+      const LayoutBox& scroller);
 
   void HandleLoadCompleted();
 
@@ -1000,6 +1000,9 @@ class CORE_EXPORT LocalFrameView final
 
   void GetUserScrollTranslationNodes(
       Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes);
+
+  void GetAnchorScrollContainerNodes(
+      Vector<const TransformPaintPropertyNode*>& anchor_scroll_container_nodes);
 
   // Return the sticky-ad detector for this frame, creating it if necessary.
   StickyAdDetector& EnsureStickyAdDetector();

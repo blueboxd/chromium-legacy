@@ -37,7 +37,6 @@
 <translation id="10614374240317010">هرگز ذخیره نمی‌شود</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">نشانک‌های دسک‌تاپ</translation>
-<translation id="1067561478268651872">خط‌مشی <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> استفاده نمی‌شود مگراینکه خط‌مشی <ph name="SECURE_DNS_SALT" /> تنظیم شده باشد.</translation>
 <translation id="1068672505746868501">هرگز صفحه‌های <ph name="SOURCE_LANGUAGE" /> ترجمه نشوند</translation>
 <translation id="1070853536588271387">وسیله نقلیه دوگانه‌سوز و با سوخت جایگزین</translation>
 <translation id="1070901266639972381">شب</translation>
@@ -307,6 +306,7 @@
 <translation id="1658918301167915956">دستگاه‌های بلوتوث</translation>
 <translation id="1662550410081243962">ذخیره و تکمیل روش‌های پرداخت</translation>
 <translation id="1663943134801823270">‏کارت‌ها و نشانی‌ها از Chrome‌ هستند. می‌توانید آن‌ها را در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> مدیریت کنید.</translation>
+<translation id="1668071460721346172">دریافت ایمیل</translation>
 <translation id="1671391448414634642">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> به<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">ابتدا لبه کوتاه</translation>
@@ -367,6 +367,7 @@
 <translation id="1806174020048213474">‏این برنامه برای نصب اطلاعات اعتباری Wi-Fi اجازه می‌خواهد. پس‌از راه‌اندازی، <ph name="DEVICE_TYPE" /> به‌طور خودکار به شبکه‌های Wi-Fi شرکت‌کننده متصل خواهد شد. برای حذف این اطلاعات اعتباری، برنامه را حذف نصب کنید.</translation>
 <translation id="1807246157184219062">روشن</translation>
 <translation id="1807528111851433570">صفحه شروع</translation>
+<translation id="180757923930449935">(۶۴ بیتی شبیه‌سازی‌شده)</translation>
 <translation id="180991881384371158">‏کد تأیید کارت (CVC) پشت کارتتان درج شده است. این کد همان ۳ رقم آخر درج‌شده در بالا سمت راست چارگوش امضا است.</translation>
 <translation id="181000283860817563">پیگیری قیمت‌ها در چندین سایت</translation>
 <translation id="1810391395243432441">با قفل صفحه از گذرواژه‌ها محافظت کنید</translation>
@@ -437,6 +438,7 @@
 <translation id="2003775180883135320">چهار سوراخ در بالا</translation>
 <translation id="201174227998721785">‏مدیریت اجازه‌ها و داده‌های ذخیره‌شده در سایت‌ها در تنظیمات Chrome</translation>
 <translation id="2019607688127825327">‏دکمه «مدیریت تنظیمات دسترس‌پذیری»؛ برای شخصی کردن ابزارهای دسترس‌پذیری در تنظیمات Chrome، کلید «ورود» را فشار دهید</translation>
+<translation id="2021333772895814435">این خط‌مشی همگام‌سازی را در همه دستگاه‌ها برای این موارد به‌طور خودکار غیرفعال می‌کند: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">۱۹ × ۱۲ اینچ</translation>
 <translation id="2025115093177348061">واقعیت افزوده</translation>
 <translation id="2025186561304664664">پروکسی بر روی پیکربندی خودکار تنظیم شده است.</translation>
@@ -510,6 +512,7 @@
 <translation id="2166049586286450108">دسترسی کامل سرپرست</translation>
 <translation id="2166378884831602661">این سایت نمی‌تواند اتصالی ایمن ارائه دهد</translation>
 <translation id="2168151236314517198">خط‌مشی سرپرست چاپ این محتوا را مسدود کرده است</translation>
+<translation id="2176974405772725904">ذخیره نشانی در حساب</translation>
 <translation id="2181821976797666341">خط‌ مشی‌ها</translation>
 <translation id="2183608646556468874">شماره تلفن</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{۱ نشانی}one{# نشانی}other{# نشانی}}</translation>
@@ -523,7 +526,6 @@
 <translation id="2204482073374652408">به‌روزرسانی تکمیل شد!</translation>
 <translation id="22081806969704220">سینی ۳</translation>
 <translation id="2210794033760923560">بارگذاری گزارش</translation>
-<translation id="2212579473415663542">‏این نشانی در «حساب Google» شما (<ph name="ACCOUNT" />) ذخیره می‌شود. می‌توانید در هر دستگاهی در محصولات Google از این نشانی استفاده کنید.</translation>
 <translation id="2212735316055980242">خط‌مشی یافت نشد</translation>
 <translation id="2213606439339815911">در حال واکشی موارد...</translation>
 <translation id="2213612003795704869">صفحه چاپ شد</translation>
@@ -638,6 +640,7 @@
 <translation id="2521736961081452453">ایجاد فرم</translation>
 <translation id="2523886232349826891">فقط در این دستگاه ذخیره شد</translation>
 <translation id="2524461107774643265">افزودن اطلاعات بیشتر</translation>
+<translation id="2526280916094749336">‏می‌توانید از نشانی‌های ذخیره‌شده در محصولات Google استفاده کنید. این نشانی در «حساب Google» شما (<ph name="ACCOUNT" />) ذخیره خواهد شد.</translation>
 <translation id="2527451058878391043">‏کد تأیید کارت (CVC) روی کارتتان درج شده است. این کد ۴ رقمی در بالا سمت راست شماره کارت قرار دارد.</translation>
 <translation id="2529899080962247600">این فیلد نباید بیشتر از <ph name="MAX_ITEMS_LIMIT" /> ورودی داشته باشد. همه ورودی‌های بعدی نادیده گرفته خواهند شد.</translation>
 <translation id="253493526287553278">دیدن جزئیات کد تبلیغاتی</translation>
@@ -1224,6 +1227,7 @@
 <translation id="4031179711345676612">میکروفون مجاز است</translation>
 <translation id="4040350669425716613">دانشکده و دانشگاه</translation>
 <translation id="4047351652147966654">۲۴ × ۱۸ اینچ</translation>
+<translation id="4047620889508350431">‏اکنون می‌توانید از نشانی‌های ذخیره‌شده در «حساب Google» خود استفاده کنید.</translation>
 <translation id="405399507749852140">اگر قیمت در هر سایتی کاهش پیدا کرد، هشدار دریافت می‌کنید</translation>
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4063063121357725926">‏به Google اجازه دهید در پیدا کردن تخفیف‌های مربوط به سبدهای خریدتان به شما کمک کند</translation>
@@ -1736,6 +1740,7 @@
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">رد کردن</translation>
+<translation id="5238301240406177137">ذخیره در حساب</translation>
 <translation id="5239623327352565343">مکان مجاز است</translation>
 <translation id="5242889659037569123">لوازم سفر و چمدان</translation>
 <translation id="5244732203286792411">درحال بار کردن…
@@ -1754,7 +1759,6 @@
 <translation id="5273881944177595304">برنامه‌های وب و ابزارهای آنلاین</translation>
 <translation id="5274025349362408263">کتاب و ادبیات</translation>
 <translation id="5279286380302340275">مدیریت بارگیری‌ها</translation>
-<translation id="5279453600310613955">نه متشکرم</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">مشخصات سند</translation>
 <translation id="528468243742722775">پایان</translation>
@@ -1919,7 +1923,6 @@
 <translation id="5695542892312572833">‏برای تأیید و تکمیل خریدتان از Windows Hello استفاده شود؟</translation>
 <translation id="5701381305118179107">مرکز</translation>
 <translation id="570530837424789914">مدیریت…</translation>
-<translation id="5706906618852913030">در حساب ذخیره شود؟</translation>
 <translation id="5707154300732650394">ازسرگیری سفر جستجو</translation>
 <translation id="57094364128775171">پیشنهاد گذرواژه قوی…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2066,6 +2069,7 @@
 <translation id="6051221802930200923">درحال‌حاضر نمی‌توانید از <ph name="SITE" /> دیدن کنید، زیرا وب‌سایت از سنجاق کردن گواهینامه استفاده می‌کند. خطاهای شبکه و حمله‌ها موقتی هستند، بنابراین احتمالاً این صفحه بعداً کار خواهد کرد.</translation>
 <translation id="6051898664905071243">تعداد صفحه:</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6053584886670442526">‏می‌توانید از نشانی‌های ذخیره‌شده در محصولات Google استفاده کنید. این نشانی در «حساب Google» شما (<ph name="ACCOUNT" />) ذخیره شده است.</translation>
 <translation id="6053735090575989697">‏در «خط‌مشی رازداری» ما، اطلاعات بیشتری درباره اینکه Google چگونه از داده‌هایتان محافظت می‌کند کسب کنید.</translation>
 <translation id="6055888660316801977">برگ «اطلاعات کاربری مطابقت ندارد» در روند وارد کردن اطلاعات کاربری پرداخت امن</translation>
 <translation id="6058977677006700226">از کارت‌ها در همه دستگاه‌هایتان استفاده شود؟</translation>
@@ -2106,6 +2110,7 @@
 <translation id="6165508094623778733">بیشتر بدانید</translation>
 <translation id="6167577165590485365">آخرین تلاش برای واکشی:</translation>
 <translation id="6169916984152623906">اکنون می‌توانید به‌طور خصوصی مرور کنید و سایر افرادی که از این دستگاه استفاده می‌کنند فعالیت شما را نخواهند دید. بااین‌وجود بارگیری‌ها و نشانک‌ها ذخیره خواهند شد.</translation>
+<translation id="617256461084925519">‏Google Chrome سعی دارد هویت شما را تأیید کند تا بتواند اطلاعات پرداخت شما را تکمیل کند.</translation>
 <translation id="6177128806592000436">اتصال شما به این سایت امن نیست</translation>
 <translation id="6177531123306197852">پاکت سی۲</translation>
 <translation id="6180316780098470077">فاصله زمانی امتحان مجدد</translation>
@@ -2144,6 +2149,7 @@
 <translation id="6279183038361895380">برای نمایش نشان‌گر |<ph name="ACCELERATOR" />| را فشار دهید</translation>
 <translation id="6280223929691119688">تحویل به این نشانی ممکن نیست. نشانی دیگری را انتخاب کنید.</translation>
 <translation id="6284292079994426700">۳۸ × ۲۶ اینچ</translation>
+<translation id="6284517535531159884">نوع پیگردی گونه‌ها</translation>
 <translation id="6285507000506177184">‏دکمه «مدیریت بارگیری‌ها در Chrome»؛ برای مدیریت فایل‌هایی که در Chrome بارگیری کرده‌اید، کلید «ورود» را فشار دهید</translation>
 <translation id="6289939620939689042">رنگ صفحه</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -2153,7 +2159,6 @@
 <translation id="6301104306974789820">دریافت اعلان‌های پیگیری قیمت</translation>
 <translation id="6305205051461490394">دسترسی به <ph name="URL" /> امکان‌پذیر نیست.</translation>
 <translation id="6306713302480826305">این نشانی از این دستگاه و دیگر دستگاه‌های وارد‌شده به حسابتان حذف خواهد شد</translation>
-<translation id="6311165245110979290">کارت مجازی دردسترس است</translation>
 <translation id="6312113039770857350">صفحه وب در دسترس نیست</translation>
 <translation id="6316226860534107313">اسکوتر و موتورسیکلت گازی</translation>
 <translation id="63172326633386613">مدیریت تنظیمات دسترس‌پذیری</translation>
@@ -2244,6 +2249,7 @@
 <translation id="6513005815064132016">می‌تواند ردیابی موقعیت دوربین را درخواست دهد</translation>
 <translation id="6517596291481585650">این خط‌مشی به‌عنوان فهرستی که خط‌مشی مشخص کرده است ادغام نشد، زیرا فهرست نیست.</translation>
 <translation id="6518133107902771759">تأیید</translation>
+<translation id="65203098586853226">ترجمه <ph name="SOURCE" /> به <ph name="TARGET" /></translation>
 <translation id="6521745193039995384">غیرفعال</translation>
 <translation id="6529173248185917884">رول هفتم</translation>
 <translation id="6529602333819889595">&amp;انجام مجدد حذف</translation>
@@ -2253,6 +2259,7 @@
 <translation id="6545864417968258051">اسکن کردن بلوتوث</translation>
 <translation id="6547208576736763147">دو سوراخ در چپ</translation>
 <translation id="6549443526281184652">لباس مناسبتی</translation>
+<translation id="6551873053534932690">نشانی در حساب ذخیره شود؟</translation>
 <translation id="6554732001434021288">آخرین بازدید: <ph name="NUM_DAYS" /> روز پیش</translation>
 <translation id="6556866813142980365">انجام مجدد</translation>
 <translation id="6557715786897013164">۱۷ × ۱۴ اینچ</translation>
@@ -2317,6 +2324,7 @@
 <translation id="6716672519412350405"><ph name="URL" /> می‌خواهد نقشه‌ای سه‌بعدی از محیط ایجاد کند و موقعیت دوربین را ردیابی کند</translation>
 <translation id="6718612893943028815">از دوربین استفاده شود؟</translation>
 <translation id="6721678857435001674">ساخت و مدل «کلید امنیتی» خود را ببینید</translation>
+<translation id="6726832600570791992">(۳۲ بیتی شبیه‌سازی‌شده)</translation>
 <translation id="6727094998759448074">SRA4</translation>
 <translation id="6732087373923685049">دوربین</translation>
 <translation id="6738516213925468394">داده‌ها با  <ph name="BEGIN_LINK" />گذرعبارت همگام‌سازی<ph name="END_LINK" /> شما در <ph name="TIME" /> رمز می‌شود. برای شروع همگام‌سازی، آن را وارد کنید.</translation>
@@ -2657,6 +2665,7 @@
 <translation id="7518003948725431193">صفحه وبی با این آدرس وب یافت نشد: <ph name="URL" /></translation>
 <translation id="7521387064766892559">جاوا اسکریپت</translation>
 <translation id="7521825010239864438">بخش «<ph name="SECTION" />» پنهان شد</translation>
+<translation id="752189128961566325">‏می‌توانید از آن در محصولات Google استفاده کنید</translation>
 <translation id="7523408071729642236">تولید</translation>
 <translation id="7526934274050461096">اتصال شما به این سایت خصوصی نیست</translation>
 <translation id="7529884293139707752">آموزش در خانه</translation>
@@ -2884,6 +2893,7 @@
 <translation id="8057711352706143257">«<ph name="SOFTWARE_NAME" />» درست پیکربندی نمی‌شود. معمولاً حذف‌ نصب «<ph name="SOFTWARE_NAME" />» مشکل را برطرف می‌کند. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8058009102480785916">تولید موادغذایی</translation>
 <translation id="8058603697124206642">الزامی نیست</translation>
+<translation id="8064892030280197386">هویتتان را به‌تأیید برسانید تا مرورگر بتواند اطلاعات پرداخت شما را تکمیل کند.</translation>
 <translation id="8066225060526005217">تحت‌مدیریت تنظیمات کوکی</translation>
 <translation id="8067872629359326442">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium می‌تواند کمک کند. برای اینکه گذرواژه‌تان را تغییر دهید و به Google اطلاع دهید که شاید حسابتان درمعرض خطر باشد، روی «محافظت از حساب» کلیک کنید.</translation>
 <translation id="8070439594494267500">نماد برنامه</translation>
@@ -3215,7 +3225,6 @@
 <translation id="8913778647360618320">‏دکمه «مدیریت روش‌های پرداخت»، برای مدیریت اطلاعات کارت اعتباری و پرداخت‌ها در تنظیمات Chrome، کلید Enter (ورود) را فشار دهید</translation>
 <translation id="8922013791253848639">آگهی‌ها همیشه در این سایت مجاز باشند</translation>
 <translation id="892588693504540538">سوراخ در بالا سمت راست</translation>
-<translation id="8930098617363288380">مقدار <ph name="SECURE_DNS_SALT" /> مرتبط نیست و استفاده نخواهد شد، مگراینکه خط‌مشی <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> تنظیم شده باشد.</translation>
 <translation id="8930330541574156305">املاک و مستغلات</translation>
 <translation id="8931333241327730545">‏می‌خواهید این کارت را در حساب Google خود ذخیره کنید؟</translation>
 <translation id="8932102934695377596">ساعت شما عقب است</translation>

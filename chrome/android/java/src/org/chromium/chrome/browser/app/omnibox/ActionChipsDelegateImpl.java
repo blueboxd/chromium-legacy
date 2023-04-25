@@ -15,24 +15,18 @@ import androidx.annotation.NonNull;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.browserservices.intents.WebappConstants;
-import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history_clusters.HistoryClustersCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.ActionChipsDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionsMetrics;
 import org.chromium.chrome.browser.password_manager.ManagePasswordsReferrer;
 import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
-import org.chromium.chrome.browser.safety_check.SafetyCheckSettingsFragment;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
-import org.chromium.components.browser_ui.accessibility.AccessibilitySettings;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
-import org.chromium.components.browser_ui.site_settings.SiteSettings;
+import org.chromium.components.browser_ui.settings.SettingsLauncher.SettingsFragment;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.omnibox.action.HistoryClustersAction;
 import org.chromium.components.omnibox.action.OmniboxAction;
@@ -41,7 +35,6 @@ import org.chromium.components.omnibox.action.OmniboxActionType;
 import org.chromium.components.omnibox.action.OmniboxPedal;
 import org.chromium.components.omnibox.action.OmniboxPedalType;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 
 import java.net.URISyntaxException;
@@ -54,79 +47,58 @@ public class ActionChipsDelegateImpl implements ActionChipsDelegate {
     private final @NonNull SettingsLauncher mSettingsLauncher;
     private final @NonNull Supplier<HistoryClustersCoordinator> mHistoryClustersCoordinatorSupplier;
     private final @NonNull ObservableSupplier<ModalDialogManager> mModalDialogManagerSupplier;
+    private final @NonNull Supplier<Tab> mTabSupplier;
 
     public ActionChipsDelegateImpl(@NonNull Activity activity,
             @NonNull Supplier<HistoryClustersCoordinator> historyClustersCoordinatorSupplier,
-            @NonNull ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier) {
+            @NonNull ObservableSupplier<ModalDialogManager> modalDialogManagerSupplier,
+            @NonNull Supplier<Tab> tabSupplier) {
         mActivity = activity;
         mSettingsLauncher = new SettingsLauncherImpl();
         mHistoryClustersCoordinatorSupplier = historyClustersCoordinatorSupplier;
         mModalDialogManagerSupplier = modalDialogManagerSupplier;
+        mTabSupplier = tabSupplier;
     }
 
     private void executePedalAction(OmniboxPedal pedal) {
         @OmniboxPedalType
         int pedalId = pedal.pedalId;
         switch (pedalId) {
+            case OmniboxPedalType.MANAGE_CHROME_SETTINGS:
+                mSettingsLauncher.launchSettingsActivity(mActivity, SettingsFragment.MAIN);
+                break;
             case OmniboxPedalType.CLEAR_BROWSING_DATA:
                 mSettingsLauncher.launchSettingsActivity(
-                        mActivity, ClearBrowsingDataTabsFragment.class);
+                        mActivity, SettingsFragment.CLEAR_BROWSING_DATA);
                 break;
+            case OmniboxPedalType.UPDATE_CREDIT_CARD:
+                mSettingsLauncher.launchSettingsActivity(
+                        mActivity, SettingsFragment.PAYMENT_METHODS);
+                break;
+            case OmniboxPedalType.RUN_CHROME_SAFETY_CHECK:
+                mSettingsLauncher.launchSettingsActivity(mActivity, SettingsFragment.SAFETY_CHECK);
+                break;
+            case OmniboxPedalType.MANAGE_SITE_SETTINGS:
+                mSettingsLauncher.launchSettingsActivity(mActivity, SettingsFragment.SITE);
+                break;
+            case OmniboxPedalType.MANAGE_CHROME_ACCESSIBILITY:
+                mSettingsLauncher.launchSettingsActivity(mActivity, SettingsFragment.ACCESSIBILITY);
+                break;
+            case OmniboxPedalType.VIEW_CHROME_HISTORY:
+                loadPageInCurrentTab(UrlConstants.HISTORY_URL);
+                break;
+            case OmniboxPedalType.PLAY_CHROME_DINO_GAME:
+                loadPageInCurrentTab(UrlConstants.CHROME_DINO_URL);
+                break;
+
             case OmniboxPedalType.MANAGE_PASSWORDS:
                 PasswordManagerLauncher.showPasswordSettings(mActivity,
                         ManagePasswordsReferrer.CHROME_SETTINGS, mModalDialogManagerSupplier,
                         /*managePasskeys=*/false);
                 break;
-            case OmniboxPedalType.UPDATE_CREDIT_CARD:
-                mSettingsLauncher.launchSettingsActivity(
-                        mActivity, AutofillPaymentMethodsFragment.class);
-                break;
             case OmniboxPedalType.LAUNCH_INCOGNITO:
-                if (isChromeActivity()) {
-                    ((ChromeActivity) mActivity)
-                            .onMenuOrKeyboardAction(
-                                    R.id.new_incognito_tab_menu_id, /*fromMenu*/ false);
-                } else {
-                    Intent intent = IntentHandler.createTrustedOpenNewTabIntent(
-                            mActivity.getApplicationContext(), /*incognito=*/true);
-                    startActivity(intent);
-                }
-                break;
-            case OmniboxPedalType.RUN_CHROME_SAFETY_CHECK:
-                mSettingsLauncher.launchSettingsActivity(mActivity,
-                        SafetyCheckSettingsFragment.class,
-                        SafetyCheckSettingsFragment.createBundle(
-                                /*runSafetyCheckImmediately=*/true));
-                break;
-            case OmniboxPedalType.MANAGE_SITE_SETTINGS:
-                mSettingsLauncher.launchSettingsActivity(mActivity, SiteSettings.class);
-                break;
-            case OmniboxPedalType.MANAGE_CHROME_SETTINGS:
-                mSettingsLauncher.launchSettingsActivity(mActivity);
-                break;
-            case OmniboxPedalType.VIEW_CHROME_HISTORY:
-                if (isChromeActivity()) {
-                    ((ChromeActivity) mActivity)
-                            .onMenuOrKeyboardAction(R.id.open_history_menu_id, /*fromMenu*/ false);
-                } else {
-                    Intent intent = new Intent();
-                    intent.setClass(mActivity.getApplicationContext(), HistoryActivity.class);
-                    intent.putExtra(IntentHandler.EXTRA_INCOGNITO_MODE, false);
-                    startActivity(intent);
-                }
-                break;
-            case OmniboxPedalType.MANAGE_CHROME_ACCESSIBILITY:
-                mSettingsLauncher.launchSettingsActivity(mActivity, AccessibilitySettings.class);
-                break;
-            case OmniboxPedalType.PLAY_CHROME_DINO_GAME:
-                if (isChromeActivity()) {
-                    ((ChromeActivity) mActivity)
-                            .getActivityTab()
-                            .loadUrl(new LoadUrlParams(
-                                    UrlConstants.CHROME_DINO_URL, PageTransition.GENERATED));
-                } else {
-                    startActivity(createDinoIntent());
-                }
+                startActivity(IntentHandler.createTrustedOpenNewTabIntent(
+                        mActivity.getApplicationContext(), /*incognito=*/true));
                 break;
         }
         SuggestionsMetrics.recordPedalUsed(pedalId);
@@ -153,15 +125,24 @@ public class ActionChipsDelegateImpl implements ActionChipsDelegate {
         }
     }
 
-    /** Returns an intent to launch a new tab with chrome://dino/ URL. */
-    private @NonNull Intent createDinoIntent() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.CHROME_DINO_URL));
-        intent.setComponent(
-                new ComponentName(mActivity.getApplicationContext(), ChromeLauncherActivity.class));
-        intent.putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-
-        return intent;
+    /**
+     * Load the supplied URL in the current tab.
+     * If not possible, open a new tab and load the url there. Try to re-use existing tabs where
+     * possible.
+     *
+     * @param url the page URL to load
+     */
+    private void loadPageInCurrentTab(String url) {
+        var tab = mTabSupplier.get();
+        if (tab != null) {
+            tab.loadUrl(new LoadUrlParams(url));
+        } else {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.setComponent(new ComponentName(
+                    mActivity.getApplicationContext(), ChromeLauncherActivity.class));
+            intent.putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
+            startActivity(intent);
+        }
     }
 
     /**
@@ -174,14 +155,23 @@ public class ActionChipsDelegateImpl implements ActionChipsDelegate {
             var intent = Intent.parseUri(
                     actionInSuggest.actionInfo.getActionUri(), Intent.URI_INTENT_SCHEME);
 
-            // Don't call directly. Use `DIAL` instead to let the user decide.
-            // Note also that ACTION_CALL requires a dedicated permission.
-            if (intent.getAction().equals(Intent.ACTION_CALL)) {
-                intent.setAction(Intent.ACTION_DIAL);
-            }
+            switch (actionInSuggest.actionInfo.getActionType()) {
+                case WEBSITE:
+                    // Rather than invoking an intent that opens a new tab, load the page in the
+                    // current tab.
+                    loadPageInCurrentTab(intent.getDataString());
+                    break;
 
-            intent.putExtra(WebappConstants.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB, true);
-            startActivity(intent);
+                case CALL:
+                    // Don't call directly. Use `DIAL` instead to let the user decide.
+                    // Note also that ACTION_CALL requires a dedicated permission.
+                    intent.setAction(Intent.ACTION_DIAL);
+                    // fall through.
+                case DIRECTIONS:
+                default:
+                    startActivity(intent);
+                    break;
+            }
 
             SuggestionsMetrics.recordActionInSuggestIntentResult(
                     SuggestionsMetrics.ActionInSuggestIntentResult.SUCCESS);
@@ -202,13 +192,5 @@ public class ActionChipsDelegateImpl implements ActionChipsDelegate {
             IntentUtils.addTrustedIntentExtras(intent);
         }
         mActivity.startActivity(intent);
-    }
-
-    /**
-     * Returns true, if the current activity type is regular Chrome activity.
-     * Other activity types (SearchActivity etc) return false.
-     */
-    private boolean isChromeActivity() {
-        return mActivity instanceof ChromeActivity;
     }
 }

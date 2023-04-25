@@ -6,20 +6,19 @@
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
-
 const source_matching_promise_test = (testCase) => {
   attribution_reporting_promise_test(async t => {
     const source = {
       source_event_id: generateSourceEventId(),
       destination: testCase.sourceDestination,
     };
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       source,
       reportingOrigin: testCase.sourceReportingOrigin,
     });
     await waitForSourceToBeRegistered(source.source_event_id);
 
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       trigger: {
         event_trigger_data: [{}],
         debug_reporting: true,

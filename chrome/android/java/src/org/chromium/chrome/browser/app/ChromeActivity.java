@@ -150,7 +150,6 @@ import org.chromium.chrome.browser.share.ShareDelegateImpl;
 import org.chromium.chrome.browser.share.ShareDelegateSupplier;
 import org.chromium.chrome.browser.stylus_handwriting.StylusWritingCoordinator;
 import org.chromium.chrome.browser.sync.SyncService;
-import org.chromium.chrome.browser.tab.AccessibilityVisibilityHandler;
 import org.chromium.chrome.browser.tab.RequestDesktopUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
@@ -312,7 +311,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     private boolean mNativeInitialized;
     private boolean mRemoveWindowBackgroundDone;
-    protected AccessibilityVisibilityHandler mAccessibilityVisibilityHandler;
 
     // Observes when sync becomes ready to create the mContextReporter.
     private SyncService.SyncStateChangedListener mSyncStateChangedListener;
@@ -1602,6 +1600,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             mStylusWritingCoordinator.destroy();
             mStylusWritingCoordinator = null;
         }
+
+        // Destroy spare tab on activitiy destruction.
+        WarmupManager warmupManager = WarmupManager.getInstance();
+        warmupManager.destroySpareTab();
 
         mActivityTabProvider.destroy();
         ChromeActivitySessionTracker.getInstance().unregisterTabModelSelectorSupplier(this);

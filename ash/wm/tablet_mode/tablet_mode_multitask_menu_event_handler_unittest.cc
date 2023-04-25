@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -28,6 +29,7 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/compositor/test/layer_animation_stopped_waiter.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/display/display_switches.h"
 #include "ui/wm/core/window_util.h"
@@ -37,9 +39,7 @@ namespace ash {
 namespace {
 
 // The vertical distance used to end drag to show and start drag to hide.
-// TODO(b/267184500): Revert this value back to 100 when the feedback button is
-// removed.
-constexpr int kMenuDragPoint = 110;
+constexpr int kMenuDragPoint = 100;
 
 }  // namespace
 
@@ -250,17 +250,22 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest,
   ui::ScopedAnimationDurationScaleMode test_duration_mode(
       ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
 
+  // Create a larger display so the menu is within the window bounds when split.
+  UpdateDisplay("1600x1000");
+
   auto window1 = CreateTestWindow(gfx::Rect(800, 600));
   PressHalfButton(window1.get(), /*left=*/true);
   auto window2 = CreateTestWindow(gfx::Rect(800, 600));
   PressHalfButton(window2.get(), /*left=*/false);
 
-  // Start swipe down on the left window, then swap to the right window. Note
-  // that `end_y` must be less than the menu height, to start an animation.
+  // Start swipe down on the left window, then swap to the right window. Swipe
+  // distance must be less than the menu height to start an animation.
   gfx::Rect left_bounds(window1->bounds());
-  GenerateScroll(left_bounds.CenterPoint().x(), 0, /*end_y=*/150);
+  GenerateScroll(left_bounds.CenterPoint().x(), 0,
+                 /*end_y=*/kMenuDragPoint);
   gfx::Rect right_bounds(window2->bounds());
-  GenerateScroll(right_bounds.CenterPoint().x(), 0, /*end_y=*/150);
+  GenerateScroll(right_bounds.CenterPoint().x(), 0,
+                 /*end_y=*/kMenuDragPoint);
   EXPECT_TRUE(window2->GetBoundsInScreen().Contains(
       GetMultitaskMenu()->widget()->GetWindowBoundsInScreen()));
 
@@ -268,8 +273,8 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest,
   ui::test::EventGenerator* generator = GetEventGenerator();
   generator->PressTouchId(0, gfx::Point(left_bounds.CenterPoint().x(), 0));
   generator->PressTouchId(1, gfx::Point(right_bounds.CenterPoint().x(), 0));
-  generator->MoveTouchId(gfx::Point(0, 150), 0);
-  generator->MoveTouchId(gfx::Point(0, 150), 1);
+  generator->MoveTouchId(gfx::Point(0, kMenuDragPoint), 0);
+  generator->MoveTouchId(gfx::Point(0, kMenuDragPoint), 1);
 }
 
 // Tests that the multitask menu cannot be shown while in pinned state.
@@ -587,17 +592,29 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, HiddenButtons) {
 }
 
 // Tests that showing the menu will dismiss the visual cue (drag bar).
-TEST_F(TabletModeMultitaskMenuEventHandlerTest, DismissCueOnShowMenu) {
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, CueVisibleOnShowMenu) {
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
   auto window = CreateAppWindow();
 
-  auto* multitask_cue =
-      GetMultitaskMenuEventHandler()->multitask_cue_for_testing();
+  auto* multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue();
   ASSERT_TRUE(multitask_cue);
   EXPECT_TRUE(multitask_cue->cue_layer());
 
-  ShowMultitaskMenu(*window);
+  // Wait for fade in to finish.
+  ui::LayerAnimationStoppedWaiter animation_waiter;
+  animation_waiter.Wait(multitask_cue->cue_layer());
 
-  multitask_cue = GetMultitaskMenuEventHandler()->multitask_cue_for_testing();
+  // Cue should still be showing when the menu is activated.
+  ShowMultitaskMenu(*window);
+  ASSERT_TRUE(multitask_cue);
+  EXPECT_TRUE(multitask_cue->cue_layer());
+
+  multitask_cue->FireCueDismissTimerForTesting();
+
+  // Wait for fade out to finish.
+  animation_waiter.Wait(multitask_cue->cue_layer());
   ASSERT_TRUE(multitask_cue);
   EXPECT_FALSE(multitask_cue->cue_layer());
 }
@@ -694,6 +711,16 @@ TEST_F(TabletModeMultitaskMenuEventHandlerTest, NoCrashWhenExitingTabletMode) {
   auto window = CreateAppWindow();
   ShowMultitaskMenu(*window);
   TabletModeControllerTestApi().LeaveTabletMode();
+}
+
+TEST_F(TabletModeMultitaskMenuEventHandlerTest, HidesWhenMinimized) {
+  auto window = CreateAppWindow();
+  ShowMultitaskMenu(*window);
+
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
+      WINDOW_MINIMIZE, {});
+  ASSERT_TRUE(WindowState::Get(window.get())->IsMinimized());
+  EXPECT_FALSE(GetMultitaskMenu());
 }
 
 }  // namespace ash

@@ -81,6 +81,8 @@ static_library("ui") {
     "autofill/risk_util.h",
     "autofill/test/test_autofill_bubble_handler.cc",
     "autofill/test/test_autofill_bubble_handler.h",
+    "autofill/ui_util.cc",
+    "autofill/ui_util.h",
     "blocked_content/blocked_window_params.cc",
     "blocked_content/blocked_window_params.h",
     "blocked_content/chrome_popup_navigation_delegate.cc",
@@ -1246,6 +1248,8 @@ static_library("ui") {
       "performance_controls/high_efficiency_chip_tab_helper.h",
       "performance_controls/high_efficiency_opt_in_iph_controller.cc",
       "performance_controls/high_efficiency_opt_in_iph_controller.h",
+      "performance_controls/high_efficiency_utils.cc",
+      "performance_controls/high_efficiency_utils.h",
       "performance_controls/performance_controls_hats_service.cc",
       "performance_controls/performance_controls_hats_service.h",
       "performance_controls/performance_controls_hats_service_factory.cc",
@@ -1417,6 +1421,8 @@ static_library("ui") {
       "toolbar/media_router_action_controller.h",
       "toolbar/media_router_contextual_menu.cc",
       "toolbar/media_router_contextual_menu.h",
+      "toolbar/reading_list_sub_menu_model.cc",
+      "toolbar/reading_list_sub_menu_model.h",
       "toolbar/recent_tabs_sub_menu_model.cc",
       "toolbar/recent_tabs_sub_menu_model.h",
       "toolbar/toolbar_action_hover_card_types.h",
@@ -1631,6 +1637,8 @@ static_library("ui") {
       "webui/settings/custom_home_pages_table_model.h",
       "webui/settings/downloads_handler.cc",
       "webui/settings/downloads_handler.h",
+      "webui/settings/extensions_safety_check_handler.cc",
+      "webui/settings/extensions_safety_check_handler.h",
       "webui/settings/font_handler.cc",
       "webui/settings/font_handler.h",
       "webui/settings/hats_handler.cc",
@@ -1808,6 +1816,7 @@ static_library("ui") {
       "//chrome/browser/new_tab_page/modules/drive:mojo_bindings",
       "//chrome/browser/new_tab_page/modules/feed:mojo_bindings",
       "//chrome/browser/new_tab_page/modules/history_clusters:mojo_bindings",
+      "//chrome/browser/new_tab_page/modules/history_clusters/cart:mojo_bindings",
       "//chrome/browser/new_tab_page/modules/photos:mojo_bindings",
       "//chrome/browser/new_tab_page/modules/recipes:mojo_bindings",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
@@ -2299,6 +2308,10 @@ static_library("ui") {
       "ash/assistant/device_actions_delegate_impl.h",
       "ash/assistant/search_and_assistant_enabled_checker.cc",
       "ash/assistant/search_and_assistant_enabled_checker.h",
+      "ash/auth/cryptohome_pin_engine.cc",
+      "ash/auth/cryptohome_pin_engine.h",
+      "ash/auth/legacy_fingerprint_engine.cc",
+      "ash/auth/legacy_fingerprint_engine.h",
       "ash/back_gesture_contextual_nudge_delegate.cc",
       "ash/back_gesture_contextual_nudge_delegate.h",
       "ash/browser_data_migration_error_dialog.cc",
@@ -2333,8 +2346,6 @@ static_library("ui") {
       "ash/clipboard_util.h",
       "ash/crosapi_new_window_delegate.cc",
       "ash/crosapi_new_window_delegate.h",
-      "ash/cryptohome_pin_engine.cc",
-      "ash/cryptohome_pin_engine.h",
       "ash/default_pinned_apps.cc",
       "ash/default_pinned_apps.h",
       "ash/desks/chrome_desks_util.cc",
@@ -2351,6 +2362,8 @@ static_library("ui") {
       "ash/device_scheduled_reboot/scheduled_reboot_dialog.h",
       "ash/fwupd_download_client_impl.cc",
       "ash/fwupd_download_client_impl.h",
+      "ash/game_dashboard/chrome_game_dashboard_delegate.cc",
+      "ash/game_dashboard/chrome_game_dashboard_delegate.h",
       "ash/glanceables/chrome_glanceables_delegate.cc",
       "ash/glanceables/chrome_glanceables_delegate.h",
       "ash/glanceables/glanceables_keyed_service.cc",
@@ -2408,8 +2421,6 @@ static_library("ui") {
       "ash/keyboard/chrome_keyboard_ui_factory.h",
       "ash/keyboard/chrome_keyboard_web_contents.cc",
       "ash/keyboard/chrome_keyboard_web_contents.h",
-      "ash/legacy_fingerprint_engine.cc",
-      "ash/legacy_fingerprint_engine.h",
       "ash/login_screen_client_impl.cc",
       "ash/login_screen_client_impl.h",
       "ash/login_screen_shown_observer.h",
@@ -2822,6 +2833,10 @@ static_library("ui") {
       "webui/ash/login/demo_setup_screen_handler.h",
       "webui/ash/login/device_disabled_screen_handler.cc",
       "webui/ash/login/device_disabled_screen_handler.h",
+      "webui/ash/login/display_size_screen_handler.cc",
+      "webui/ash/login/display_size_screen_handler.h",
+      "webui/ash/login/drive_pinning_screen_handler.cc",
+      "webui/ash/login/drive_pinning_screen_handler.h",
       "webui/ash/login/enable_adb_sideloading_screen_handler.cc",
       "webui/ash/login/enable_adb_sideloading_screen_handler.h",
       "webui/ash/login/enable_debugging_screen_handler.cc",
@@ -3381,6 +3396,7 @@ static_library("ui") {
       "//chromeos/ash/services/bluetooth_config/public/mojom",
       "//chromeos/ash/services/cellular_setup",
       "//chromeos/ash/services/cellular_setup/public/mojom",
+      "//chromeos/ash/services/connectivity/public/mojom",
       "//chromeos/ash/services/federated/public/cpp",
       "//chromeos/ash/services/federated/public/mojom",
       "//chromeos/ash/services/hotspot_config",
@@ -3457,6 +3473,7 @@ static_library("ui") {
       "//ui/chromeos/strings",
       "//ui/chromeos/strings:strings_provider",
       "//ui/chromeos/styles:cros_styles_resources",
+      "//ui/chromeos/styles:cros_tokens_color_mappings",
       "//ui/compositor_extra",
       "//ui/display/manager",
       "//ui/events/ash",
@@ -4370,6 +4387,8 @@ static_library("ui") {
       "side_panel/history_clusters/history_clusters_side_panel_controller_utils.h",
       "side_panel/history_clusters/history_clusters_tab_helper.cc",
       "side_panel/history_clusters/history_clusters_tab_helper.h",
+      "side_panel/side_panel_entry_id.h",
+      "side_panel/side_panel_open_trigger.h",
       "side_panel/side_panel_prefs.cc",
       "side_panel/side_panel_prefs.h",
       "views/send_tab_to_self/send_tab_to_self_bubble.cc",
@@ -4953,8 +4972,6 @@ static_library("ui") {
       "views/page_info/chosen_object_view.cc",
       "views/page_info/chosen_object_view.h",
       "views/page_info/chosen_object_view_observer.h",
-      "views/page_info/page_info_about_this_site_content_view.cc",
-      "views/page_info/page_info_about_this_site_content_view.h",
       "views/page_info/page_info_ad_personalization_content_view.cc",
       "views/page_info/page_info_ad_personalization_content_view.h",
       "views/page_info/page_info_bubble_view.cc",
@@ -5165,6 +5182,7 @@ static_library("ui") {
       "views/side_panel/extensions/extension_side_panel_coordinator.h",
       "views/side_panel/extensions/extension_side_panel_manager.cc",
       "views/side_panel/extensions/extension_side_panel_manager.h",
+      "views/side_panel/extensions/extension_side_panel_utils.cc",
       "views/side_panel/feed/feed_side_panel_coordinator.cc",
       "views/side_panel/feed/feed_side_panel_coordinator.h",
       "views/side_panel/history_clusters/history_clusters_side_panel_controller.cc",
@@ -5479,6 +5497,8 @@ static_library("ui") {
       "views/webid/account_selection_bubble_view_interface.h",
       "views/webid/fedcm_account_selection_view_desktop.cc",
       "views/webid/fedcm_account_selection_view_desktop.h",
+      "views/webid/fedcm_modal_dialog_view.cc",
+      "views/webid/fedcm_modal_dialog_view.h",
       "views/webid/identity_provider_display_data.cc",
       "views/webid/identity_provider_display_data.h",
       "webauthn/account_hover_list_model.cc",
@@ -5632,20 +5652,24 @@ static_library("ui") {
       ]
     }
 
-    if (use_aura) {
+    if (use_aura && (is_linux || is_chromeos_lacros)) {
       # These files can do Gtk+-based theming for builds with gtk enabled.
-      if (is_linux || is_chromeos_lacros) {
+      sources += [
+        "views/chrome_browser_main_extra_parts_views_linux.cc",
+        "views/chrome_browser_main_extra_parts_views_linux.h",
+      ]
+      deps += [
+        "//ui/base/cursor",
+        "//ui/ozone",
+      ]
+      if (use_dbus) {
         sources += [
-          "views/chrome_browser_main_extra_parts_views_linux.cc",
-          "views/chrome_browser_main_extra_parts_views_linux.h",
           "views/dark_mode_manager_linux.cc",
           "views/dark_mode_manager_linux.h",
         ]
         deps += [
           "//components/dbus/thread_linux",
           "//dbus",
-          "//ui/base/cursor",
-          "//ui/ozone",
         ]
       }
     }
@@ -5824,6 +5848,7 @@ static_library("ui") {
       "extensions/extension_popup_types.h",
       "extensions/extension_settings_overridden_dialog.cc",
       "extensions/extension_settings_overridden_dialog.h",
+      "extensions/extension_side_panel_utils.h",
       "extensions/extensions_container.h",
       "extensions/extensions_dialogs.h",
       "extensions/extensions_overrides/simple_overrides.cc",
@@ -5883,8 +5908,6 @@ static_library("ui") {
       "web_applications/web_app_dialog_manager.h",
       "web_applications/web_app_dialog_utils.cc",
       "web_applications/web_app_dialog_utils.h",
-      "web_applications/web_app_launch_manager.cc",
-      "web_applications/web_app_launch_manager.h",
       "web_applications/web_app_launch_process.cc",
       "web_applications/web_app_launch_process.h",
       "web_applications/web_app_launch_utils.cc",
@@ -6252,6 +6275,7 @@ static_library("test_support") {
       "webui/settings/ash/fake_os_settings_sections.h",
     ]
     deps += [
+      "//ash",
       "//ash/public/cpp",
       "//ash/public/mojom",
       "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",

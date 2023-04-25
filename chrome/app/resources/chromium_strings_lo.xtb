@@ -24,7 +24,6 @@
 
 ການອະນຸຍາດທີ່ທ່ານໄດ້ມອບໃຫ້ເວັບໄຊ ແລະ ແອັບຕ່າງໆໄປກ່ອນແລ້ວອາດມີຜົນກັບບັນຊີນີ້ນຳ. ທ່ານສາມາດຈັດການບັນຊີ Google ຂອງທ່ານໄດ້ໃນ <ph name="SETTINGS_LINK_BEGIN" />ການຕັ້ງຄ່າ<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">ກຳລັງດາວໂຫຼດ...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium ໄດ້ເຊື່ອມຕໍ່ກັບອຸປະກອນ HID}=1{Chromium ເຊື່ອມຕໍ່ກັບອຸປະກອນ HID}other{Chromium ເຊື່ອມຕໍ່ກັບອຸປະກອນ HID}}</translation>
 <translation id="1708666629004767631">ມີ Chromium ລຸ້ນໃໝ່ປອດໄພກ່ວາຢູ່.</translation>
 <translation id="17264556997921157">ທ່ານສາມາດເບິ່ງ ແລະ ລຶບຫົວຂໍ້ຂອງຄວາມສົນໃຈທີ່ເວັບໄຊຕ່າງໆໃຊ້ເພື່ອສະແດງໂຄສະນາໃຫ້ທ່ານເຫັນໄດ້. Chromium ປະເມີນຄວາມສົນໃຈຂອງທ່ານໂດຍອ້າງອີງໃສ່ປະຫວັດການທ່ອງເວັບຫຼ້າສຸດຂອງທ່ານ.</translation>
 <translation id="1733725117201708356">Chromium ຈະລຶບຂໍ້ມູນການທ່ອງເວັບໃນໄວໆນີ້</translation>
@@ -247,8 +246,10 @@
 <translation id="6442900851116057561">ຣີສະຕາດ ChromiumOS</translation>
 <translation id="6455857529632101747">ຍິນດີຕ້ອນຮັບສູ່ໂປຣໄຟລ໌ Chromium</translation>
 <translation id="6475912303565314141">ມັນຍັງຄວບຄຸມວ່າຈະໃຫ້ສະແດງໜ້າໃດຂຶ້ນ ເມື່ອທ່ານເລີ່ມຕົ້ນເປີດ Chromium.</translation>
+<translation id="648319183876919572">Safe Browsing ທີ່ປັບປຸງດີຂຶ້ນຊ່ວຍປົກປ້ອງທ່ານຈາກເວັບໄຊ ແລະ ການດາວໂຫຼດທີ່ອັນຕະລາຍ</translation>
 <translation id="6510925080656968729">ຖອນ​ຕິດ​ຕັ້ງ Chromium</translation>
 <translation id="6542839706527980775">ແຕ່ລະໂປຣໄຟລ໌ມີຂໍ້ມູນ Chromium ຂອງມັນເອງ ເຊັ່ນ: ບຸກມາກ, ປະຫວັດ, ລະຫັດຜ່ານ ແລະ ອື່ນໆອີກ</translation>
+<translation id="656935081669708576">ທ່ານສາມາດສະຫຼັບເພື່ອເບິ່ງລະຫັດຜ່ານຈາກໂປຣໄຟລ໌ Chromium ອື່ນໄດ້</translation>
 <translation id="6570579332384693436">ເພື່ອແກ້ໄຂການສະກົດຄຳຜິດ, Chromium ສົ່ງຂໍ້ຄວາມທີ່ທ່ານພິມໃນຊ່ອງຂໍ້ຄວາມໃຫ້ Google</translation>
 <translation id="6598877126913850652">ໄປຫາການຕັ້ງຄ່າການແຈ້ງເຕືອນຂອງ Chromium</translation>
 <translation id="6613594504749178791">ການປ່ຽນແປງຂອງທ່ານຈະມີຜົນຄັ້ງຕໍ່ໄປທີ່ທ່ານເລີ່ມເປີດໃຊ້ Chromium ໃໝ່.</translation>

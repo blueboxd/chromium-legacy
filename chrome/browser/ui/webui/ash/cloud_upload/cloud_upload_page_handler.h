@@ -7,6 +7,7 @@
 
 #include "base/files/file.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload.mojom-shared.h"
@@ -58,14 +59,18 @@ class CloudUploadPageHandler : public mojom::PageHandler {
   void RespondWithUserActionAndClose(mojom::UserAction action) override;
   void RespondWithLocalTaskAndClose(int task_position) override;
   void SetOfficeAsDefaultHandler() override;
-  void SetAlwaysMoveOfficeFiles(bool always_move) override;
-  void SetOfficeMoveConfirmationShownTrue() override;
-  void OfficeMoveConfirmationShown(
-      OfficeMoveConfirmationShownCallback callback) override;
+  void SetAlwaysMoveOfficeFilesToDrive(bool always_move) override;
+  void SetAlwaysMoveOfficeFilesToOneDrive(bool always_move) override;
+  void SetOfficeMoveConfirmationShownForDriveTrue() override;
+  void GetOfficeMoveConfirmationShownForDrive(
+      GetOfficeMoveConfirmationShownForDriveCallback callback) override;
+  void SetOfficeMoveConfirmationShownForOneDriveTrue() override;
+  void GetOfficeMoveConfirmationShownForOneDrive(
+      GetOfficeMoveConfirmationShownForOneDriveCallback callback) override;
 
  private:
-  Profile* profile_;
-  content::WebUI* web_ui_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
+  raw_ptr<content::WebUI, ExperimentalAsh> web_ui_;
   mojom::DialogArgsPtr dialog_args_;
 
   mojo::Receiver<PageHandler> receiver_;

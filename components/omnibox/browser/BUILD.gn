@@ -58,7 +58,6 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "https_valid_in_chip.icon",
     "incognito.icon",
     "install_desktop.icon",
-    "install_desktop_chrome_refresh.icon",
     "journeys.icon",
     "keyword_search.icon",
     "offline_pin.icon",
@@ -582,6 +581,7 @@ if (is_android) {
   java_cpp_enum("browser_java_enums_srcjar") {
     sources = [
       "actions/omnibox_action_concepts.h",
+      "actions/omnibox_action_in_suggest.cc",
       "actions/omnibox_pedal_concepts.h",
       "autocomplete_match.h",
       "autocomplete_match_type.h",

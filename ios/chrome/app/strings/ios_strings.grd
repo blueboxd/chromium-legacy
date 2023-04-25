@@ -315,6 +315,9 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_AUTOFILL_EDIT_ADDRESS" desc="Title for the view in Settings for editing an Autofill profile address. [Length: 20em] [iOS only]">
         Edit Address
       </message>
+      <message name="IDS_IOS_AUTOFILL_SELECT_COUNTRY" desc="Title for the edit view of country selection when saving a new address profile. [Length: 20em] [iOS only]">
+        Country
+      </message>
       <message name="IDS_IOS_AUTOFILL_EDIT_CREDIT_CARD" desc="Title for the view in Settings for editing an Autofill profile address. [Length: 20em] [iOS only]">
         Edit Credit Card
       </message>
@@ -546,8 +549,8 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT" desc="Presented in a snackbar when bookmarks are created in an account. Specifies in which folder the bookmark was added. ">
           {count, plural,
-          =1 {Bookmark saved in your account, {email}}
-          other {Bookmarks saved in your account, {email}}}
+          =1 {Bookmark saved in your Google Account, {email}}
+          other {Bookmarks saved in your Google Account, {email}}}
       </message>
       <message name="IDS_IOS_BOOKMARK_PAGE_SAVED_INTO_ACCOUNT_FOLDER" desc="Presented in a snackbar when bookmarks are created in the folder named `TITLE` in an account with `EMAIL`.">
          {count, plural,
@@ -588,8 +591,8 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_BRING_ANDROID_TABS_PROMPT_TITLE" desc="Title of the 'Bring Android Tabs' prompt shown to Android switchers to review their recently active tabs from Android. [iOS only]">
         {count, plural,
-          =1 {Pick up the tab you left off from Android?}
-          other {Pick up the tabs you left off from Android?}}
+          =1 {Pick up the tab you left on Android?}
+          other {Pick up the tabs you left on Android?}}
       </message>
       <message name="IDS_IOS_BRING_ANDROID_TABS_REVIEW_TABLE_OPEN_BUTTON" desc="Button to open selected tabs imported from Android. [iOS only]">
         {count, plural,
@@ -1852,7 +1855,7 @@ Handoff must also be enabled in the General section of Settings, and your device
           other {After {COUNT} Days}}
       </message>
       <message name="IDS_IOS_OPTIONS_MOVE_INACTIVE_TABS" desc="Title for opening the setting for when tabs should be considered inactive. (Title case)">
-        Move Inactive Tabs
+        Inactive
       </message>
       <message name="IDS_IOS_OPTIONS_PRELOAD_WEBPAGES" desc="Title for opening the setting for if/when to preload webpages. [Length: 20em] [iOS only]">
         Preload Webpages
@@ -2003,7 +2006,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_SETTINGS_ALERT_TITLE" desc="Title for Price Notifications UI Alert Prompt displayed from the settings menu that redirects the user to the iOS push notifications permission page.">
           Turn on Price Alerts?
       </message>
-      <message name="IDS_IOS_PRICE_NOTIFICATIONS_TITLE" desc="Title for Price Notifications settings menu.">
+      <message name="IDS_IOS_NOTIFICATIONS_TITLE" desc="Title for Notifications settings menu.">
         Notifications
       </message>
       <message name="IDS_IOS_PRICE_NOTIFICATIONS_OVERFLOW_MENU_TITLE" desc="Title for Price Tracking Notifications overflow menu destination title.">
@@ -2222,7 +2225,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Passwords are saved in your Google Account so you can use them on any device.
       </message>
       <message name="IDS_SAVE_PASSWORD_FOOTER_DISPLAYING_USER_EMAIL" desc="The footer text of the infobar that offers user to save/update a password to Chrome; also display's current user's email.">
-        You can use saved passwords on any device. They're saved to Google Password Manager for <ph name="EMAIL">$1<ex>johndoe@gmail.com</ex></ph>
+        You can use saved passwords on any device. They're saved to Google Password Manager for <ph name="EMAIL">$1<ex>johndoe@gmail.com</ex></ph>.
       </message>
       <message name="IDS_IOS_PERMISSIONS_CAMERA" desc="Usually used to show whether user has enabled a site's permission to use the device camera.">
         Camera
@@ -2418,6 +2421,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         =1 {Page added to your reading list in your account, {email}}
         other {Pages added to your reading list in your account, {email}}}
       </message>
+      <message name="IDS_IOS_READING_LIST_SNACKBAR_UNDO_ACTION" desc="Text shown for the undo button in the snackbar which is shown when a new reading list item is added. Should be in uppercase letters. [CHAR_LIMIT=14]" meaning="Undo the action of adding new item to the reading list by removing the newly added item. [CHAR_LIMIT=14]">
+        UNDO
+      </message>
       <message name="IDS_IOS_READING_LIST_ENTRY_ACCESSIBILITY_LABEL" desc="Accessibility label for a reading list entry. Summarizes fields in the reading list entry (title, status and url). Read by Text To Speech. Similar to IDS_IOS_READING_LIST_ENTRY_WITH_UPLOAD_STATE_ACCESSIBILITY_LABEL">
         <ph name="TITLE"><ex>Chromium - The Chromium Projects</ex>$1</ph>, <ph name="STATE"><ex>Available offline</ex>$2</ph>, <ph name="URL"><ex>http://www.chromium.org/Home</ex>$3</ph>
       </message>
@@ -2453,6 +2459,15 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_TITLE" desc="Title of a modal dialog shown when the user tries to open the scanner in a Split View mode. [Length: 40em] [iOS only]" meaning="Title of a Split View error dialog in Scanner.">
         Split View
+      </message>
+      <message name="IDS_IOS_SEARCH_WITH_TITLE_SEARCH" desc="Edit menu button title to open a tab with a Search query of the current selection [Length: 25em]." meaning="Edit menu Search button [Length: 25em]">
+        Search
+      </message>
+      <message name="IDS_IOS_SEARCH_WITH_TITLE_SEARCH_WITH" desc="Edit menu button title to open a tab with a Search query of the current selection. Will contain the search provider. [Length: 25em]." meaning="Edit menu Search button [Length: 25em]">
+        Search with <ph name="SEARCH_PROVIDER">$1<ex>Google</ex></ph>
+      </message>
+      <message name="IDS_IOS_SEARCH_WITH_TITLE_WEB_SEARCH" desc="Edit menu button title to open a tab with a Search query of the current selection. Should be similar to the Android equivalent. [Length: 25em]." meaning="Edit menu Search button [Length: 25em]">
+        Web Search
       </message>
       <message name="IDS_IOS_SNACKBAR_ACTION_GO_TO_FEED" desc="The iOS snackbar action when successfuly following a web content. [iOS only]">
         GO TO FEED
@@ -2703,11 +2718,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SET_UP_LIST_AUTOFILL_TITLE" desc="Title for the Set Up List item that encourages the user to set up Chrome's autofill settings.">
         Use Chrome for Autofill
       </message>
+      <message name="IDS_IOS_SET_UP_LIST_COLLAPSE" desc="Accessibility label for the button to expand the Set Up List.">
+        Collapse list
+      </message>
       <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_DESCRIPTION" desc="Description for the Set Up List item that encourages the user to set Chrome as their default browser.">
         Use Chrome anytime you tap links in messages, documents, and other apps.
       </message>
       <message name="IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_TITLE" desc="Title for the Set Up List item that encourages the user to set Chrome as their default browser.">
         Use Chrome by Default
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_EXPAND" desc="Accessibility label for the button to expand the Set Up List.">
+        Expand list
+      </message>
+      <message name="IDS_IOS_SET_UP_LIST_MENU" desc="Accessibility label for the Set Up List menu button.">
+        Options
       </message>
       <message name="IDS_IOS_SET_UP_LIST_SETTINGS_TURN_OFF" desc="Title for the item to turn off the Set Up List, in the Set Up List Settings action sheet.">
         Turn off
@@ -2810,7 +2834,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
           You can use saved addresses across Google products. This address is saved in your Google Account, <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>.
       </message>
       <message name="IDS_IOS_AUTOFILL_ADDRESS_MIGRATE_IN_ACCOUNT_FOOTER" desc="Footer text shown in the address migration prompt to account. [iOS only]">
-          This address is saved only to Chrome. To use it across Google products, save it in your Google Account, <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>.
+          This address is currently saved to Chrome. To use it across Google products, save it in your Google Account, <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>.
       </message>
       <message name="IDS_IOS_SETTINGS_EDIT_AUTOFILL_ADDRESS_REQUIREMENT_ERROR" desc="Error shown when the address is edited in settings and one of the required fields is empty. [iOS only]">
           {count, plural,
@@ -2970,6 +2994,21 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_CHANGE_COMPROMISED_PASSWORD" desc="Button which is shown on Password Details Screen when password is compromised. [iOS only]" meaning="Telling user to change password on a website since it is compromised.">
         Change Password on Website
+      </message>
+      <message name="IDS_IOS_DISMISS_WARNING" desc="Button or dialog title which is shown on Password Details Screen to allow the user to dismiss a compromised password warning. [iOS only]" meaning="Title-cased">
+        Dismiss Warning
+      </message>
+      <message name="IDS_IOS_DISMISS_WARNING_DIALOG_TITLE" desc="Title of the dialog presented to the user when they want to dismiss a compromised password warning. [iOS only]" meaning="Title-cased">
+        Dismiss Warning?
+      </message>
+      <message name="IDS_IOS_DISMISS_WARNING_DIALOG_MESSAGE" desc="Message of the dialog presented to the user when they want to dismiss a compromised password warning. [iOS only]">
+        This password was exposed in a data breach on the internet. If you don't have time to change it right now, Google recommends keeping this warning to remind yourself later.
+      </message>
+      <message name="IDS_IOS_DISMISS_WARNING_DIALOG_DISMISS_BUTTON" desc="Button of the dialog presented to the user when they want to dismiss a compromised password warning. Button is used to confirm that they want to dismiss the warning. [iOS only]">
+        Dismiss
+      </message>
+      <message name="IDS_IOS_RESTORE_WARNING" desc="Button or dialog title which is shown on Password Details Screen to allow the user to restore a dismissed compromised password warning. [iOS only]" meaning="Title-cased">
+        Restore Warning
       </message>
       <message name="IDS_IOS_DELETE_PASSWORD_DESCRIPTION" desc="Message at the top of the confirmation alert when the user tapped delete password button. [iOS only]" meaning="Explaining to the user that deleting password locally won't delete account on a website.">
         Deleting this password will not delete your account on <ph name="WEBSITE">$1<ex>twitter.com</ex></ph>.
@@ -4079,7 +4118,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Share Chrome
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_TITLE" desc="The title displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
-        Chrome for Mobile
+        Chrome for iOS
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME_DESC" desc="The description displayed along with the app store link to Chrome, when sharing the chrome app" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Download Chrome here.
@@ -4474,7 +4513,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
         Something went wrong
       </message>
       <message name="IDS_IOS_PASSWORD_CHECKUP_HOMEPAGE_FOOTER" desc="Footer message for the Password Checkup Homepage explaining the purpose of Password Checkup. [iOS only]">
-        Password Checkup reviews your saved passwords and warns you of any online breaches. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more.<ph name="END_LINK">END_LINK</ph>
+        Make sure your passwords are safe, find out if they’ve been compromised, and get advice to help protect yourself online. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_ITEM_ACCOUNT_ERROR_BADGE_ACCESSIBILITY_HINT" desc="Accessibility hint to let the user know that there is an error badge associated with the listed item. The hint is appended to the a11y message that describes the item. For example, the 'settings' message will become 'settings, account error' when there is an account error badge on the item. [iOS only]">
         Account error

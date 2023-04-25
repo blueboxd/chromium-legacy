@@ -115,7 +115,7 @@ BASE_FEATURE(kApnRevamp, "ApnRevamp", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAppCollectionFolderRefresh,
              "AppCollectionFolderRefresh",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAppLaunchAutomation,
              "AppLaunchAutomation",
@@ -257,6 +257,9 @@ BASE_FEATURE(kRobustAudioDeviceSelectLogic,
 
 // Enable Big GL when using Borealis.
 BASE_FEATURE(kBorealisBigGl, "BorealisBigGl", base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enable dGPU when using Borealis.
+BASE_FEATURE(kBorealisDGPU, "BorealisDGPU", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable experimental disk management changes for Borealis.
 BASE_FEATURE(kBorealisDiskManagement,
@@ -498,6 +501,11 @@ BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpress,
              "DiacriticsOnPhysicalKeyboardLongpress",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables diacritics on longpress on the physical keyboard by default.
+BASE_FEATURE(kDiacriticsOnPhysicalKeyboardLongpressDefaultOn,
+             "DiacriticsOnPhysicalKeyboardLongpressDefaultOn",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Disables the CryptAuth v1 DeviceSync flow. Note: During the first phase
 // of the v2 DeviceSync rollout, v1 and v2 DeviceSync run in parallel. This flag
 // is needed to disable the v1 service during the second phase of the rollout.
@@ -574,7 +582,7 @@ BASE_FEATURE(kEapGtcWifiAuthentication,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the System Web App (SWA) version of Eche.
-BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEcheSWA, "EcheSWA", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables the Debug Mode of Eche.
 BASE_FEATURE(kEcheSWADebugMode,
@@ -796,7 +804,7 @@ BASE_FEATURE(kExoLinuxDmabufV4,
 // effectively matching version 2 behavior more closely.
 BASE_FEATURE(kExoLinuxDmabufModifiers,
              "ExoLinuxDmabufModifiers",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable or disable use of ordinal (unaccelerated) motion by Exo clients.
 BASE_FEATURE(kExoOrdinalMotion,
@@ -1119,7 +1127,7 @@ BASE_FEATURE(kProductivityLauncherImageSearch,
 // networks and mitigates the creation of these networks. crbug/1327803.
 BASE_FEATURE(kHiddenNetworkMigration,
              "HiddenNetworkMigration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables a warning about connecting to hidden WiFi networks.
 // https://crbug.com/903908
@@ -1145,6 +1153,11 @@ BASE_FEATURE(kHideShelfControlsInTabletMode,
 // If enabled, add Hindi Inscript keyboard layout.
 BASE_FEATURE(kHindiInscriptLayout,
              "HindiInscriptLayout",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Camera app integration with holding space.
+BASE_FEATURE(kHoldingSpaceCameraAppIntegration,
+             "HoldingSpaceCameraAppIntegration",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables in-progress downloads notification suppression with the productivity
@@ -1449,7 +1462,7 @@ BASE_FEATURE(kEcheLauncherIconsInMoreAppsButton,
 // connection status with the phone.
 BASE_FEATURE(kEcheNetworkConnectionState,
              "EcheNetworkConnectionState",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Time limit before re-attempting a background connection to check if the
 // network is suitable.
@@ -1526,10 +1539,10 @@ BASE_FEATURE(kOnDeviceSpeechRecognition,
 // If enabled, CHOBOE Screen will be shown during the new user onboarding flow.
 BASE_FEATURE(kOobeChoobe, "OobeChoobe", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, Drive Offline Screen will be shown during the new user onboarding
-// flow.
-BASE_FEATURE(kOobeDriveOffline,
-             "OobeDriveOffline",
+// If enabled, Drive Pinning Screen will be shown during
+// the new user onboarding flow.
+BASE_FEATURE(kOobeDrivePinning,
+             "OobeDrivePinning",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, TouchPadScreen will be shown in CHOOBE.
@@ -1538,11 +1551,9 @@ BASE_FEATURE(kOobeTouchpadScroll,
              "OobeTouchpadScrollDirection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// If enabled, EULA and ARC Terms of Service screens are skipped and merged
-// into Consolidated Consent Screen.
-BASE_FEATURE(kOobeConsolidatedConsent,
-             "OobeConsolidatedConsent",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kOobeDisplaySize,
+             "OobeDisplaySize",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the ChromeOS OOBE HID Detection Revamp, which updates
 // the OOBE HID detection screen UI and related infrastructure. See
@@ -1702,6 +1713,11 @@ BASE_FEATURE(kPreferConstantFrameRate,
 // Requires jelly-colors flag to also be enabled.
 BASE_FEATURE(kPrintManagementJelly,
              "PrintManagementJelly",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the new OS Printer Settings UI.
+BASE_FEATURE(kPrinterSettingsRevamp,
+             "PrinterSettingsRevamp",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables to allocate more video capture buffers.
@@ -2060,7 +2076,7 @@ BASE_FEATURE(kSystemLiveCaption,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the ability to play sounds for system services.
-BASE_FEATURE(kSystemSounds, "SystemSounds", base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kSystemSounds, "SystemSounds", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables the shadows of system tray bubbles.
 BASE_FEATURE(kSystemTrayShadow,
@@ -2106,12 +2122,12 @@ BASE_FEATURE(kTerminalTmuxIntegration,
 
 // Enables time of day screen saver.
 BASE_FEATURE(kTimeOfDayScreenSaver,
-             "FeatureManagementTimeOfDayScreenSaver",
+             "TimeOfDayScreenSaver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables time of day wallpaper.
 BASE_FEATURE(kTimeOfDayWallpaper,
-             "FeatureManagementTimeOfDayWallpaper",
+             "TimeOfDayWallpaper",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the TrafficCountersHandler class to auto-reset traffic counters
@@ -2123,11 +2139,6 @@ BASE_FEATURE(kTrafficCountersEnabled,
 // Enables trilinear filtering.
 BASE_FEATURE(kTrilinearFiltering,
              "TrilinearFiltering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the Office files upload workflow to improve Office files support.
-BASE_FEATURE(kUploadOfficeToCloud,
-             "UploadOfficeToCloud",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Uses new AuthFactor-based API when communicating with cryptohome.
@@ -2568,10 +2579,6 @@ bool IsCryptohomeRecoveryEnabled() {
   return base::FeatureList::IsEnabled(kCryptohomeRecovery);
 }
 
-bool IsDarkLightModeEnabled() {
-  return chromeos::features::IsDarkLightModeEnabled();
-}
-
 bool IsDeskButtonEnabled() {
   return base::FeatureList::IsEnabled(kDeskButton);
 }
@@ -2775,6 +2782,10 @@ bool IsHideArcMediaNotificationsEnabled() {
 
 bool IsHideShelfControlsInTabletModeEnabled() {
   return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
+}
+
+bool IsHoldingSpaceCameraAppIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpaceCameraAppIntegration);
 }
 
 bool IsHoldingSpaceInProgressDownloadsNotificationSuppressionEnabled() {
@@ -3063,12 +3074,9 @@ bool IsOobeChoobeEnabled() {
   return base::FeatureList::IsEnabled(kOobeChoobe);
 }
 
-bool IsOobeDriveOfflineEnabled() {
-  return base::FeatureList::IsEnabled(kOobeDriveOffline);
-}
-
-bool IsOobeConsolidatedConsentEnabled() {
-  return base::FeatureList::IsEnabled(kOobeConsolidatedConsent);
+bool IsOobeDrivePinningEnabled() {
+  return base::FeatureList::IsEnabled(kOobeDrivePinning) &&
+         IsOobeChoobeEnabled();
 }
 
 bool IsOobeQuickStartEnabled() {
@@ -3076,7 +3084,13 @@ bool IsOobeQuickStartEnabled() {
 }
 
 bool IsOobeTouchpadScrollEnabled() {
-  return base::FeatureList::IsEnabled(kOobeTouchpadScroll);
+  return IsOobeChoobeEnabled() &&
+         base::FeatureList::IsEnabled(kOobeTouchpadScroll);
+}
+
+bool IsOobeDisplaySizeEnabled() {
+  return IsOobeChoobeEnabled() &&
+         base::FeatureList::IsEnabled(kOobeDisplaySize);
 }
 
 bool IsOsSettingsAppBadgingToggleEnabled() {
@@ -3151,6 +3165,10 @@ bool IsPinAutosubmitBackfillFeatureEnabled() {
 
 bool IsPinAutosubmitFeatureEnabled() {
   return base::FeatureList::IsEnabled(kQuickUnlockPinAutosubmit);
+}
+
+bool IsPrinterSettingsRevampEnabled() {
+  return base::FeatureList::IsEnabled(kPrinterSettingsRevamp);
 }
 
 bool IsPrivacyIndicatorsEnabled() {
@@ -3271,8 +3289,7 @@ bool IsSettingsAppNotificationSettingsEnabled() {
 }
 
 bool IsSettingsAppThemeChangeAnimationEnabled() {
-  return IsDarkLightModeEnabled() &&
-         base::FeatureList::IsEnabled(kSettingsAppThemeChangeAnimation);
+  return base::FeatureList::IsEnabled(kSettingsAppThemeChangeAnimation);
 }
 
 bool IsShelfLauncherNudgeEnabled() {
@@ -3363,10 +3380,6 @@ bool IsTrilinearFilteringEnabled() {
   static bool use_trilinear_filtering =
       base::FeatureList::IsEnabled(kTrilinearFiltering);
   return use_trilinear_filtering;
-}
-
-bool IsUploadOfficeToCloudEnabled() {
-  return base::FeatureList::IsEnabled(kUploadOfficeToCloud);
 }
 
 bool IsUseLoginShelfWidgetEnabled() {

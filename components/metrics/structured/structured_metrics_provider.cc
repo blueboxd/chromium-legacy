@@ -55,7 +55,7 @@ char StructuredMetricsProvider::kDeviceKeyDataPath[] =
 char StructuredMetricsProvider::kUnsentLogsPath[] = "structured_metrics/events";
 
 StructuredMetricsProvider::StructuredMetricsProvider(
-    base::raw_ptr<metrics::MetricsProvider> system_profile_provider)
+    metrics::MetricsProvider* system_profile_provider)
     : StructuredMetricsProvider(base::FilePath(kDeviceKeyDataPath),
                                 base::Milliseconds(kSaveDelayMs),
                                 kMinIndependentMetricsInterval,
@@ -65,7 +65,7 @@ StructuredMetricsProvider::StructuredMetricsProvider(
     const base::FilePath& device_key_path,
     base::TimeDelta min_independent_metrics_interval,
     base::TimeDelta write_delay,
-    base::raw_ptr<metrics::MetricsProvider> system_profile_provider)
+    metrics::MetricsProvider* system_profile_provider)
     : device_key_path_(device_key_path),
       write_delay_(write_delay),
       min_independent_metrics_interval_(min_independent_metrics_interval),
@@ -294,11 +294,6 @@ void StructuredMetricsProvider::ProvideCurrentSessionData(
     return;
   }
 
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
-    return;
-  }
-
   LogNumEventsInUpload(events_.get()->get()->uma_events_size());
 
   auto* structured_data = uma_proto->mutable_structured_data();
@@ -324,11 +319,6 @@ bool StructuredMetricsProvider::HasIndependentMetrics() {
     return false;
   }
 
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
-    return false;
-  }
-
   return events_.get()->get()->non_uma_events_size() != 0;
 }
 
@@ -338,12 +328,6 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
     base::HistogramSnapshotManager*) {
   DCHECK(base::CurrentUIThread::IsSet());
   if (!recording_enabled_ || init_state_ != InitState::kInitialized) {
-    std::move(done_callback).Run(false);
-    return;
-  }
-
-  if (base::FeatureList::IsEnabled(kDelayUploadUntilHwid) &&
-      !system_profile_initialized_) {
     std::move(done_callback).Run(false);
     return;
   }
@@ -381,9 +365,9 @@ void StructuredMetricsProvider::ProvideIndependentMetrics(
 
 void StructuredMetricsProvider::ProvideSystemProfile(
     SystemProfileProto* system_profile) {
-  // Populate the proto if the system profile has been intiailzed and
-  // have a system profile provider.
-  // The field may be populated if ChromeOSMetricsProvider has already run.
+  // Populate the proto if the system profile has been initialized and
+  // has a system profile provider. The field may be populated if
+  // ChromeOSMetricsProvider has already run.
   if (system_profile_initialized_) {
     system_profile_provider_->ProvideSystemProfileMetrics(system_profile);
   }

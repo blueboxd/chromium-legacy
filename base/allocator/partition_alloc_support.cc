@@ -39,6 +39,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/thread_annotations.h"
 #include "base/threading/platform_thread.h"
@@ -1077,6 +1078,13 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
 #endif  // BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
 
 #if BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+  // No specified type means we are in the browser.
+  auto bucket_distribution =
+      process_type == ""
+          ? base::features::kPartitionAllocAlternateBucketDistributionParam
+                .Get()
+          : base::features::AlternateBucketDistributionMode::kDefault;
+
   allocator_shim::ConfigurePartitions(
       allocator_shim::EnableBrp(brp_config.enable_brp),
       allocator_shim::EnableBrpZapping(brp_config.enable_brp_zapping),
@@ -1086,9 +1094,7 @@ void PartitionAllocSupport::ReconfigureAfterFeatureListInit(
       allocator_shim::UseDedicatedAlignedPartition(
           brp_config.use_dedicated_aligned_partition),
       allocator_shim::AddDummyRefCount(brp_config.add_dummy_ref_count),
-      allocator_shim::AlternateBucketDistribution(
-          base::features::kPartitionAllocAlternateBucketDistributionParam
-              .Get()));
+      allocator_shim::AlternateBucketDistribution(bucket_distribution));
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
 
   // If BRP is not enabled, check if any of PCScan flags is enabled.
@@ -1194,7 +1200,7 @@ void PartitionAllocSupport::ReconfigureAfterTaskRunnerInit(
 
 #if BUILDFLAG(IS_ANDROID)
   // Lower thread cache limits to avoid stranding too much memory in the caches.
-  if (base::SysInfo::IsLowEndDevice()) {
+  if (base::SysInfo::IsLowEndDeviceOrPartialLowEndModeEnabled()) {
     ::partition_alloc::ThreadCacheRegistry::Instance().SetThreadCacheMultiplier(
         ::partition_alloc::ThreadCache::kDefaultMultiplier / 2.);
   }

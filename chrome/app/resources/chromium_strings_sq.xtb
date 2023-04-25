@@ -24,7 +24,6 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 
 Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen për këtë llogari. "Llogaritë e tua të Google" mund t'i menaxhosh te <ph name="SETTINGS_LINK_BEGIN" />Cilësimet<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Po shkarkohet...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium nuk është lidhur me asnjë pajisje HID}=1{Chromium është lidhur me një pajisje HID}other{Chromium është lidhur me pajisje HID}}</translation>
 <translation id="1708666629004767631">Ofrohet një version i ri më i sigurt i Chromium.</translation>
 <translation id="17264556997921157">Mund të shikosh dhe të heqësh temat e interesit që përdorin sajtet për të të shfaqur reklama. Chromium i përllogarit interesat e tu bazuar në historikun tënd të shfletimit së fundi.</translation>
 <translation id="1733725117201708356">Chromium do t'i fshijë së shpejti të dhënat e shfletimit</translation>
@@ -247,8 +246,10 @@ Lejet që u ke dhënë sajteve të uebit dhe aplikacioneve mund të zbatohen pë
 <translation id="6442900851116057561">Rinis ChromiumOS</translation>
 <translation id="6455857529632101747">Mirë se vjen në profilet e Chromium</translation>
 <translation id="6475912303565314141">Gjithashtu kontrollon se cila faqe shfaqet kur fillon Chromium</translation>
+<translation id="648319183876919572">"Shfletimi i sigurt i përmirësuar" bën më shumë për të të mbrojtur nga sajtet e uebit dhe shkarkimet e rrezikshme</translation>
 <translation id="6510925080656968729">Çinstaloje Chromium</translation>
 <translation id="6542839706527980775">Secili profil duhet të zotërojë informacionin e vet të Chromium, si: faqeshënuesit, historikun, fjalëkalimet etj.</translation>
+<translation id="656935081669708576">Mund ta ndërrosh për të parë fjalëkalimet nga një profil tjetër i Chromium</translation>
 <translation id="6570579332384693436">Për të korrigjuar gabimet drejtshkrimore, Chromium e dërgon te Google tekstin që ti shkruan në fushat e tekstit</translation>
 <translation id="6598877126913850652">Shko te "Cilësimet e njoftimeve" të Chromium</translation>
 <translation id="6613594504749178791">Ndryshimet e tua do të hyjnë në fuqi herën tjetër kur të rinisësh Chromium.</translation>

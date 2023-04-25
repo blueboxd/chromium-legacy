@@ -507,15 +507,13 @@ SplitViewController::SnapPosition GetSnapPosition(
       vertical_edge_inset);
 }
 
-bool ShouldAutomaticallyGroupOnWindowsSnappedInClamshell() {
+bool IsSnapGroupEnabledInClamshellMode() {
   auto* snap_group_controller = Shell::Get()->snap_group_controller();
   TabletModeController* tablet_mode_controller =
       Shell::Get()->tablet_mode_controller();
   const bool in_tablet_mode =
       tablet_mode_controller && tablet_mode_controller->InTabletMode();
-  return snap_group_controller &&
-         snap_group_controller->IsArm1AutomaticallyLockEnabled() &&
-         !in_tablet_mode;
+  return snap_group_controller && !in_tablet_mode;
 }
 
 views::Widget::InitParams CreateWidgetInitParams(
@@ -524,8 +522,7 @@ views::Widget::InitParams CreateWidgetInitParams(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.opacity = views::Widget::InitParams::WindowOpacity::kOpaque;
   params.activatable = views::Widget::InitParams::Activatable::kNo;
-  params.parent =
-      Shell::GetContainer(parent_window, kShellWindowId_AlwaysOnTopContainer);
+  params.parent = parent_window;
   params.init_properties_container.SetProperty(kHideInDeskMiniViewKey, true);
   params.name = widget_name;
   return params;

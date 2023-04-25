@@ -33,6 +33,7 @@ import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.autofill.settings.AutofillPaymentMethodsFragment;
 import org.chromium.chrome.browser.browsing_data.ClearBrowsingDataTabsFragment;
@@ -343,6 +344,7 @@ public class OmniboxPedalsTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1434836 - IncognitoTab version is flaky")
     public void testOpenIncognitoTabOmniboxPedalSuggestion() throws InterruptedException {
         HistogramWatcher histogramWatcher =
                 newHistogramExpectations(OmniboxPedalType.LAUNCH_INCOGNITO);
@@ -441,27 +443,13 @@ public class OmniboxPedalsTest {
 
         checkPedalWasShown(OmniboxPedalType.VIEW_CHROME_HISTORY, /*expectShown=*/true);
 
-        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(sActivityTestRule.getActivity())) {
-            // On the phone, the history setting page will be shown as a {@link Fragment}, but on
-            // the tablet, the history setting page will be shown as a native url. So we need to
-            // have a different way to verify if the history setting page is opened.
-            clickOnPedal();
-            CriteriaHelper.pollUiThread(() -> {
-                Tab tab = sActivityTestRule.getActivity().getActivityTab();
-                Criteria.checkThat(tab, Matchers.notNullValue());
-                Criteria.checkThat(tab.getUrl().getSpec(),
-                        Matchers.startsWith(UrlConstants.NATIVE_HISTORY_URL));
-            });
-
-            histogramWatcher.assertExpected();
-            return;
-        }
-
-        HistoryActivity historyActivity =
-                clickOnPedalToSettings(HistoryActivity.class, OmniboxPedalType.VIEW_CHROME_HISTORY);
-
-        // Make sure the history setting page was opened.
-        Assert.assertNotNull("Could not find the history activity", historyActivity);
+        clickOnPedal();
+        CriteriaHelper.pollUiThread(() -> {
+            Tab tab = sActivityTestRule.getActivity().getActivityTab();
+            Criteria.checkThat(tab, Matchers.notNullValue());
+            Criteria.checkThat(
+                    tab.getUrl().getSpec(), Matchers.startsWith(UrlConstants.HISTORY_URL));
+        });
 
         histogramWatcher.assertExpected();
     }

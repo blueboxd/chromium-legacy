@@ -13,6 +13,8 @@ source_set("public") {
     "browser_observer.h",
     "browser_observer_bridge.h",
     "browser_observer_bridge.mm",
+    "browser_provider.h",
+    "browser_provider_interface.h",
     "browser_user_data.h",
   ]
   deps = [
@@ -119,6 +121,8 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:fake",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/web_state_list",
@@ -126,6 +130,7 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//testing/gtest",
     "//third_party/ocmock",
+    "//ui/base:test_support",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

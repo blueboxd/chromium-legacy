@@ -11,6 +11,7 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/containers/flat_map.h"
+#include "base/files/scoped_file.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/ash/mojom/modifier_key.mojom-shared.h"
@@ -44,8 +45,10 @@ enum class TopRowActionKey {
   kNextTrack,
   kPreviousTrack,
   kPlayPause,
-  kLauncher,
-  kMaxValue = kLauncher,
+  kAllApplications,
+  kEmojiPicker,
+  kDictation,
+  kMaxValue = kDictation,
 };
 
 inline constexpr auto kLayout1TopRowActionKeys =
@@ -160,6 +163,9 @@ inline constexpr auto kReversedSixPackKeyToSystemKeyMap =
 // as top row key layout, existence of certain keys, what is top right key, etc.
 class KeyboardCapability : public InputDeviceEventObserver {
  public:
+  using ScanCodeToEvdevKeyConverter =
+      base::RepeatingCallback<absl::optional<uint32_t>(const base::ScopedFD& fd,
+                                                       uint32_t scancode)>;
   enum class DeviceType {
     kDeviceUnknown = 0,
     kDeviceInternalKeyboard,
@@ -213,6 +219,10 @@ class KeyboardCapability : public InputDeviceEventObserver {
     virtual bool TopRowKeysAreFKeys() const = 0;
 
     virtual void SetTopRowKeysAsFKeysEnabledForTesting(bool enabled) = 0;
+
+    virtual bool IsPrivacyScreenSupported() const = 0;
+
+    virtual void SetPrivacyScreenSupportedForTesting(bool is_supported) = 0;
   };
 
   struct KeyboardInfo {
@@ -231,6 +241,8 @@ class KeyboardCapability : public InputDeviceEventObserver {
   };
 
   explicit KeyboardCapability(std::unique_ptr<Delegate> delegate);
+  KeyboardCapability(ScanCodeToEvdevKeyConverter converter,
+                     std::unique_ptr<Delegate> delegate);
   KeyboardCapability(const KeyboardCapability&) = delete;
   KeyboardCapability& operator=(const KeyboardCapability&) = delete;
   ~KeyboardCapability() override;
@@ -254,10 +266,15 @@ class KeyboardCapability : public InputDeviceEventObserver {
   // function keys instead of having them rewritten into back, forward,
   // brightness, volume, etc. or if the user has specified that they desire
   // top-row keys to be treated as function keys globally.
+  // Only useful when InputDeviceSettingsSplit flag is disabled. Otherwise, it
+  // returns non-useful data.
   bool TopRowKeysAreFKeys() const;
 
   // Enable or disable top row keys as F-Keys.
   void SetTopRowKeysAsFKeysEnabledForTesting(bool enabled) const;
+
+  // Set whether the privacy screen is supported or not for testing.
+  void SetPrivacyScreenSupportedForTesting(bool is_supported) const;
 
   // Check if a key code is one of the top row keys.
   static bool IsTopRowKey(const KeyboardCode& key_code);
@@ -336,8 +353,16 @@ class KeyboardCapability : public InputDeviceEventObserver {
   bool HasGlobeKey(const InputDevice& keyboard) const;
   bool HasGlobeKeyOnAnyKeyboard() const;
 
-  // Gets the corresponding function key for the given `action_key` on the given
-  // `keyboard`.
+  // Check if the calculator key exists on the given keyboard.
+  bool HasCalculatorKey(const InputDevice& keyboard) const;
+  bool HasCalculatorKeyOnAnyKeyboard() const;
+
+  // Check if the privacy screen key exists on the given keyboard.
+  bool HasPrivacyScreenKey(const InputDevice& keyboard) const;
+  bool HasPrivacyScreenKeyOnAnyKeyboard() const;
+
+  // Gets the corresponding function key for the given `action_key` on the
+  // given `keyboard`.
   absl::optional<KeyboardCode> GetCorrespondingFunctionKey(
       const InputDevice& keyboard,
       TopRowActionKey action_key) const;
@@ -349,6 +374,8 @@ class KeyboardCapability : public InputDeviceEventObserver {
  private:
   const KeyboardInfo* GetKeyboardInfo(const InputDevice& keyboard) const;
   void TrimKeyboardInfoMap();
+
+  ScanCodeToEvdevKeyConverter scan_code_to_evdev_key_converter_;
 
   // Stores event device info objects so they do not need to be constructed
   // multiple times. This is mutable to allow caching results from the APIs

@@ -234,6 +234,7 @@
 #include "chrome/browser/media_galleries/gallery_watch_manager.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_profile_session_durations_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/drive/drive_service_factory.h"
+#include "chrome/browser/new_tab_page/modules/history_clusters/history_clusters_module_service_factory.h"
 #include "chrome/browser/new_tab_page/modules/recipes/recipes_service_factory.h"
 #include "chrome/browser/performance_manager/persistence/site_data/site_data_cache_facade_factory.h"
 #include "chrome/browser/profile_resetter/reset_report_uploader_factory.h"
@@ -376,6 +377,7 @@
 #include "chrome/browser/browser_switcher/browser_switcher_service_factory.h"
 #include "chrome/browser/enterprise/connectors/analysis/local_binary_upload_service_factory.h"
 #include "chrome/browser/enterprise/signals/signals_aggregator_factory.h"
+#include "chrome/browser/policy/cloud/profile_token_policy_web_signin_service_factory.h"
 #include "chrome/browser/signin/profile_token_web_signin_interceptor_factory.h"
 #endif
 
@@ -425,6 +427,10 @@
 #include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #include "chrome/browser/accessibility/pdf_ocr_controller_factory.h"
 #include "components/services/screen_ai/public/cpp/screen_ai_service_router_factory.h"
+#endif
+
+#if BUILDFLAG(USE_NSS_CERTS)
+#include "chrome/browser/net/nss_service_factory.h"
 #endif
 
 namespace chrome {
@@ -659,6 +665,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   HidConnectionTrackerFactory::GetInstance();
 #endif
   HistoryClustersServiceFactory::EnsureFactoryBuilt();
+#if !BUILDFLAG(IS_ANDROID)
+  HistoryClustersModuleServiceFactory::GetInstance();
+#endif
   HistoryServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
@@ -738,6 +747,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   NotificationPermissionsReviewServiceFactory::GetInstance();
   NotificationsEngagementServiceFactory::GetInstance();
   NotifierStateTrackerFactory::GetInstance();
+#if BUILDFLAG(USE_NSS_CERTS)
+  NssServiceFactory::GetInstance();
+#endif
 #if !BUILDFLAG(IS_ANDROID)
   NTPResourceCacheFactory::GetInstance();
   NtpBackgroundServiceFactory::GetInstance();
@@ -787,9 +799,11 @@ void ChromeBrowserMainExtraPartsProfiles::
   policy::ManagementServiceFactory::GetInstance();
   PolicyBlocklistFactory::GetInstance();
   PredictionServiceFactory::GetInstance();
+
   PrimaryAccountPolicyManagerFactory::GetInstance();
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
   ProfileTokenWebSigninInterceptorFactory::GetInstance();
+  policy::ProfileTokenPolicyWebSigninServiceFactory::GetInstance();
 #endif
 #if !BUILDFLAG(IS_ANDROID)
   PromoServiceFactory::GetInstance();

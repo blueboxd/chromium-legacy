@@ -110,9 +110,6 @@ BASE_FEATURE(kIPHDesktopPwaInstallFeature,
 BASE_FEATURE(kIPHProfileSwitchFeature,
              "IPH_ProfileSwitch",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHIntentChipFeature,
-             "IPH_IntentChip",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHWebUiHelpBubbleTestFeature,
              "IPH_WebUiHelpBubbleTest",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -473,6 +470,9 @@ BASE_FEATURE(kIPHiOSPromoDefaultBrowserFeature,
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+BASE_FEATURE(kIPHAutofillExternalAccountProfileSuggestionFeature,
+             "IPH_AutofillExternalAccountProfileSuggestion",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature,
              "IPH_AutofillVirtualCardSuggestion",
              base::FEATURE_ENABLED_BY_DEFAULT);

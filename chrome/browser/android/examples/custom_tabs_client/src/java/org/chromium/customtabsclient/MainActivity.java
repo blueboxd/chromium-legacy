@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -51,6 +52,7 @@ import androidx.browser.customtabs.CustomTabsClient;
 import androidx.browser.customtabs.CustomTabsIntent;
 import androidx.browser.customtabs.CustomTabsServiceConnection;
 import androidx.browser.customtabs.CustomTabsSession;
+import androidx.browser.customtabs.EngagementSignalsCallback;
 
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
@@ -90,6 +92,7 @@ public class MainActivity
     private static final String SHARED_PREF_URL_HIDING = "UrlHiding";
     private static final String SHARED_PREF_FORCE_ENGAGEMENT_SIGNALS = "ForceEngagementSignals";
     private static final String SHARED_PREF_SIDE_SHEET_MAX_BUTTON = "SideSheetMaxButton";
+    private static final String SHARED_PREF_SIDE_SHEET_ROUNDED_CORNER = "RoundedCorner";
     private static final int CLOSE_ICON_X = 0;
     private static final int CLOSE_ICON_BACK = 1;
     private static final int CLOSE_ICON_CHECK = 2;
@@ -141,6 +144,7 @@ public class MainActivity
     private CheckBox mBackgroundInteractCheckbox;
     private CheckBox mForceEngagementSignalsCheckbox;
     private CheckBox mSideSheetMaxButtonCheckbox;
+    private CheckBox mSideSheetRoundedCornerCheckbox;
     private TextView mPcctBreakpointLabel;
     private SeekBar mPcctBreakpointSlider;
     private TextView mPcctInitialHeightLabel;
@@ -175,6 +179,13 @@ public class MainActivity
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR =
             "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
+
+    public static final int ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_DEFAULT = 0;
+    public static final int ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_NONE = 1;
+    public static final int ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_TOP = 2;
+
+    public static final String EXTRA_ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_POSITION =
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_POSITION";
 
     /**
      * Once per second, asks the framework for the process importance, and logs any change.
@@ -252,6 +263,38 @@ public class MainActivity
                                 // CustomTabsConnection#ON_ACTIVITY_LAYOUT_STATE_EXTRA
                                 + " state = " + args.getInt("state"));
             }
+        }
+    }
+
+    private class EngagementCallback implements EngagementSignalsCallback {
+        @Override
+        public void onVerticalScrollEvent(boolean isDirectionUp, Bundle extras) {
+            Log.w(TAG,
+                    "EngagementSignalsCallback#onVerticalScrollEvent: isDirectionUp = "
+                            + isDirectionUp);
+        }
+
+        @Override
+        public void onGreatestScrollPercentageIncreased(int scrollPercentage, Bundle extras) {
+            Log.w(TAG,
+                    "EngagementSignalsCallback#onGreatestScrollPercentageIncreased: "
+                            + "scrollPercentage = " + scrollPercentage);
+            try {
+                Log.w(TAG,
+                        "getGreatestScrollPercentage: "
+                                + getSession().getGreatestScrollPercentage(Bundle.EMPTY));
+            } catch (RemoteException e) {
+                Log.w(TAG, "The Service died while responding to the request.", e);
+            } catch (UnsupportedOperationException e) {
+                Log.w(TAG, "Engagement Signals API isn't supported by the browser.", e);
+            }
+        }
+
+        @Override
+        public void onSessionEnded(boolean didUserInteract, Bundle extras) {
+            Log.w(TAG,
+                    "EngagementSignalsCallback#onSessionEnded: didUserInteract = "
+                            + didUserInteract);
         }
     }
 
@@ -501,6 +544,9 @@ public class MainActivity
         mSideSheetMaxButtonCheckbox = findViewById(R.id.side_sheet_max_button_checkbox);
         mSideSheetMaxButtonCheckbox.setChecked(
                 mSharedPref.getInt(SHARED_PREF_SIDE_SHEET_MAX_BUTTON, CHECKED) == CHECKED);
+        mSideSheetRoundedCornerCheckbox = findViewById(R.id.side_sheet_rounded_corner_checkbox);
+        mSideSheetRoundedCornerCheckbox.setChecked(
+                mSharedPref.getInt(SHARED_PREF_SIDE_SHEET_ROUNDED_CORNER, CHECKED) == CHECKED);
     }
 
     private void initializeCctSpinner() {
@@ -820,7 +866,11 @@ public class MainActivity
                             "androidx.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION",
                             BACKGROUND_INTERACT_OFF_VALUE);
                 }
-
+                if (mSideSheetRoundedCornerCheckbox.isChecked()) {
+                    customTabsIntent.intent.putExtra(
+                            EXTRA_ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_POSITION,
+                            ACTIVITY_SIDE_SHEET_ROUNDED_CORNERS_TOP);
+                }
                 customTabsIntent.intent.putExtra(
                         EXTRA_ACTIVITY_SIDE_SHEET_POSITION, sideSheetPosition);
                 customTabsIntent.intent.putExtra(
@@ -874,6 +924,8 @@ public class MainActivity
                     mPcctHeightResizableCheckbox.isChecked() ? CHECKED : UNCHECKED);
             editor.putInt(SHARED_PREF_SIDE_SHEET_MAX_BUTTON,
                     mSideSheetMaxButtonCheckbox.isChecked() ? CHECKED : UNCHECKED);
+            editor.putInt(SHARED_PREF_SIDE_SHEET_ROUNDED_CORNER,
+                    mSideSheetRoundedCornerCheckbox.isChecked() ? CHECKED : UNCHECKED);
             editor.putInt(SHARED_PREF_DECORATION, decorationType);
             editor.apply();
         }
@@ -995,6 +1047,15 @@ public class MainActivity
         mWarmupButton.setEnabled(true);
         mDisconnectButton.setEnabled(true);
         mMayLaunchButton.setEnabled(true);
+        try {
+            if (getSession().isEngagementSignalsApiAvailable(Bundle.EMPTY)) {
+                getSession().setEngagementSignalsCallback(new EngagementCallback(), Bundle.EMPTY);
+            }
+        } catch (RemoteException e) {
+            Log.w(TAG, "The Service died while responding to the request.", e);
+        } catch (UnsupportedOperationException e) {
+            Log.w(TAG, "Engagement Signals API isn't supported by the browser.", e);
+        }
     }
 
     @Override

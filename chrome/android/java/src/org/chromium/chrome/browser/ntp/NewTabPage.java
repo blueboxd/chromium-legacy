@@ -78,7 +78,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -461,7 +460,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         mTabStripAndToolbarHeight =
                 activity.getResources().getDimensionPixelSize(R.dimen.tab_strip_and_toolbar_height);
 
-        mNewTabPageUma.recordIsUserOnline();
         mNewTabPageUma.recordContentSuggestionsDisplayStatus(profile);
 
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
@@ -519,9 +517,6 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
                 /* overScrollDisabled= */ false, /* viewportView= */ null, actionDelegate,
                 HelpAndFeedbackLauncherImpl.getForProfile(profile), mTabModelSelector);
         mFeedSurfaceProvider = feedSurfaceCoordinator;
-
-        // Record the timestamp at which the new tab page's construction started.
-        uma.trackTimeToFirstDraw(mFeedSurfaceProvider.getView(), mConstructedTimeNs);
     }
 
     /**
@@ -1053,41 +1048,19 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
      * TODO(crbug.com/1430906): Investigate better solution to show Home surface UI on NTP upon
      * creation.
      */
-    public void showHomeSurfaceUi() {
+    public void showHomeSurfaceUi(Tab mostRecentTab) {
         if (mSingleTabSwitcherCoordinator == null) {
-            initializeSingleTabCard();
+            initializeSingleTabCard(mostRecentTab);
         } else {
-            Tab mostRecentTab =
-                    TabModelUtils.getMostRecentTab(mTabModelSelector.getModel(false), mTab.getId());
             mSingleTabSwitcherCoordinator.updateTrackingTab(mostRecentTab);
             setSingleTabCardVisibility(true);
         }
     }
 
     /**
-     * Initialize the single tab card.
-     */
-    private void initializeSingleTabCard() {
-        if (mTabModelSelector.isTabStateInitialized()) {
-            initializeSingleTabCardImpl();
-        } else {
-            TabModelSelectorObserver tabModelSelectorObserver = new TabModelSelectorObserver() {
-                @Override
-                public void onTabStateInitialized() {
-                    initializeSingleTabCardImpl();
-                    mTabModelSelector.removeObserver(this);
-                }
-            };
-            mTabModelSelector.addObserver(tabModelSelectorObserver);
-        }
-    }
-
-    /**
      * Show the module when the current new tab page is been used as the home surface.
      */
-    private void initializeSingleTabCardImpl() {
-        Tab mostRecentTab =
-                TabModelUtils.getMostRecentTab(mTabModelSelector.getModel(false), mTab.getId());
+    private void initializeSingleTabCard(Tab mostRecentTab) {
         if (mostRecentTab == null || UrlUtilities.isNTPUrl(mostRecentTab.getUrl())) {
             return;
         }

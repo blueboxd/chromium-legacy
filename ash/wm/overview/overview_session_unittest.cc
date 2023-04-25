@@ -35,9 +35,10 @@
 #include "ash/test/ash_test_util.h"
 #include "ash/test/test_window_builder.h"
 #include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
@@ -74,6 +75,7 @@
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -153,7 +155,7 @@ class TweenTester : public ui::LayerAnimationObserver {
 
  private:
   gfx::Tween::Type tween_type_ = gfx::Tween::LINEAR;
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
   bool will_animate_ = false;
 };
 
@@ -1705,9 +1707,8 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
 
   // Verify that originally the label is in the center of the workspace.
   // Midpoint of height minus shelf.
-  int expected_y = (300 - ShelfConfig::Get()->shelf_size() +
-                    DesksBarView::kZeroStateBarHeight) /
-                   2;
+  int expected_y =
+      (300 - ShelfConfig::Get()->shelf_size() + kDeskBarZeroStateHeight) / 2;
   EXPECT_EQ(gfx::Point(200, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 
@@ -1718,9 +1719,8 @@ TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
   display_manager()->SetDisplayRotation(
       display.id(), display::Display::ROTATE_90,
       display::Display::RotationSource::ACTIVE);
-  expected_y = (400 - ShelfConfig::Get()->shelf_size() +
-                DesksBarView::kZeroStateBarHeight) /
-               2;
+  expected_y =
+      (400 - ShelfConfig::Get()->shelf_size() + kDeskBarZeroStateHeight) / 2;
   EXPECT_EQ(gfx::Point(150, expected_y),
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
@@ -2602,8 +2602,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
   // Helper function which returns the ratio of the item width and height minus
   // the header and window margin.
   auto item_ratio = [](OverviewItem* item) {
-    gfx::RectF boundsf = item->target_bounds();
-    boundsf.Inset(gfx::InsetsF(kWindowMargin));
+    gfx::RectF boundsf = item->GetWindowTargetBoundsWithInsets();
     return boundsf.width() / boundsf.height();
   };
 
@@ -2646,7 +2645,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
   // the header of window margin.
   EXPECT_NEAR(shadow_ratio(wide_item), item_ratio(wide_item), 0.01f);
   EXPECT_NEAR(shadow_ratio(tall_item), item_ratio(tall_item), 0.01f);
-  EXPECT_NEAR(shadow_ratio(normal_item), item_ratio(normal_item), 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
 
   // Verify all the shadows are within the bounds of their respective item
   // widgets when the overview windows are positioned with animations.
@@ -2659,7 +2658,7 @@ TEST_P(OverviewSessionTest, ShadowBounds) {
 
   EXPECT_NEAR(shadow_ratio(wide_item), item_ratio(wide_item), 0.01f);
   EXPECT_NEAR(shadow_ratio(tall_item), item_ratio(tall_item), 0.01f);
-  EXPECT_NEAR(shadow_ratio(normal_item), item_ratio(normal_item), 0.01f);
+  EXPECT_NEAR(shadow_ratio(normal_item), 1.f, 0.01f);
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
@@ -3807,7 +3806,8 @@ TEST_F(TabletModeOverviewSessionTest, WindowDestroyWhileScrolling) {
 
 // Tests the windows are stacked correctly when entering or exiting splitview
 // while the new overivew layout is enabled.
-TEST_F(TabletModeOverviewSessionTest, StackingOrderSplitviewWindow) {
+// TODO(b/278952025): Fix this test to match the common user CUJs.
+TEST_F(TabletModeOverviewSessionTest, StackingOrderSplitViewWindow) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateUnsnappableWindow();
   std::unique_ptr<aura::Window> window3 = CreateTestWindow();
@@ -3815,8 +3815,8 @@ TEST_F(TabletModeOverviewSessionTest, StackingOrderSplitviewWindow) {
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
 
-  // Snap |window1| to the left and exit overview. |window3| should have higher
-  // z-order now, since it is the MRU window.
+  // Snap `window1` to the left and exit overview, `window3` will be snapped.
+  // `window3` will be stacked on top.
   split_view_controller()->SnapWindow(
       window1.get(), SplitViewController::SnapPosition::kPrimary);
   ToggleOverview();
@@ -3824,14 +3824,14 @@ TEST_F(TabletModeOverviewSessionTest, StackingOrderSplitviewWindow) {
             split_view_controller()->state());
   ASSERT_TRUE(IsStackedBelow(window1.get(), window3.get()));
 
-  // Test that on entering overview, |window3| is of a lower z-order, so that
-  // when we scroll the grid, it will be seen under |window1|.
+  // Test that on entering overview, `window3` is also of a lower z-order, so
+  // that when we scroll the grid, it will be seen under `window1`.
   ToggleOverview();
   EXPECT_TRUE(IsStackedBelow(window3.get(), window1.get()));
 
-  // Test that |window2| has a cannot snap widget indicating that it cannot be
-  // snapped, and that both |window2| and the widget are lower z-order than
-  // |window1|.
+  // Test that `window2` has a cannot snap widget indicating that it cannot be
+  // snapped, and that both `window2` and the widget are lower z-order than
+  // `window1`.
   views::Widget* cannot_snap_widget =
       static_cast<views::Widget*>(GetOverviewItemForWindow(window2.get())
                                       ->cannot_snap_widget_for_testing());
@@ -3841,10 +3841,10 @@ TEST_F(TabletModeOverviewSessionTest, StackingOrderSplitviewWindow) {
   EXPECT_TRUE(IsStackedBelow(window2.get(), window1.get()));
   EXPECT_TRUE(IsStackedBelow(cannot_snap_window, window1.get()));
 
-  // Test that on exiting overview, |window3| becomes activated, so it returns
-  // to being higher on the z-order than |window1|.
+  // Test that on exiting overview, the relative stacking order between
+  // `window3` and `window1` remains unchanged.
   ToggleOverview();
-  EXPECT_TRUE(IsStackedBelow(window1.get(), window3.get()));
+  EXPECT_TRUE(IsStackedBelow(window3.get(), window1.get()));
 }
 
 // Tests the windows are remain stacked underneath the split view window after

@@ -176,7 +176,8 @@ class PasswordCheckupViewControllerTest : public ChromeTableViewControllerTest {
     form->password_issues = {
         {insecure_type,
          password_manager::InsecurityMetadata(
-             base::Time::Now(), password_manager::IsMuted(is_muted))}};
+             base::Time::Now(), password_manager::IsMuted(is_muted),
+             password_manager::TriggerBackendNotification(false))}};
     AddPasswordForm(std::move(form));
   }
 
@@ -606,6 +607,16 @@ TEST_F(PasswordCheckupViewControllerTest, TestTapWeakPasswordsNotifiesHandler) {
       showPasswordIssuesWithWarningType:WarningType::kWeakPasswordsWarning]);
 
   SimulateTap(/*index=*/2, /*section=*/0);
+
+  EXPECT_OCMOCK_VERIFY((id)handler_);
+}
+
+// Verifies that deleting all saved passwords through Password Checkup triggers
+// a dismissal in the handler.
+TEST_F(PasswordCheckupViewControllerTest, TestDismissAfterPasswordsGone) {
+  OCMExpect([handler_ dismissAfterAllPasswordsGone]);
+
+  ChangePasswordCheckupHomepageState(PasswordCheckupHomepageStateDisabled);
 
   EXPECT_OCMOCK_VERIFY((id)handler_);
 }

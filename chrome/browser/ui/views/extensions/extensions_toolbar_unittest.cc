@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "components/crx_file/id_util.h"
@@ -26,6 +27,9 @@
 #include "ui/views/view_utils.h"
 
 namespace {
+
+using PermissionsManager = extensions::PermissionsManager;
+using SitePermissionsHelper = extensions::SitePermissionsHelper;
 
 base::Value::List ToListValue(const std::vector<std::string>& permissions) {
   extensions::ListBuilder builder;
@@ -153,9 +157,30 @@ void ExtensionsToolbarUnitTest::ClickButton(views::Button* button) const {
   button->OnMouseReleased(release_event);
 }
 
-extensions::PermissionsManager::UserSiteSetting
+void ExtensionsToolbarUnitTest::UpdateUserSiteAccess(
+    const extensions::Extension& extension,
+    content::WebContents* web_contents,
+    PermissionsManager::UserSiteAccess site_access) {
+  extensions::PermissionsManagerWaiter waiter(
+      PermissionsManager::Get(browser()->profile()));
+  SitePermissionsHelper(browser()->profile())
+      .UpdateSiteAccess(extension, web_contents, site_access);
+  waiter.WaitForExtensionPermissionsUpdate();
+}
+
+void ExtensionsToolbarUnitTest::UpdateUserSiteSetting(
+    extensions::PermissionsManager::UserSiteSetting site_setting,
+    const GURL& url) {
+  auto* permissions_manager = PermissionsManager::Get(browser()->profile());
+  extensions::PermissionsManagerWaiter waiter(permissions_manager);
+  permissions_manager->UpdateUserSiteSetting(url::Origin::Create(url),
+                                             site_setting);
+  waiter.WaitForUserPermissionsSettingsChange();
+}
+
+PermissionsManager::UserSiteSetting
 ExtensionsToolbarUnitTest::GetUserSiteSetting(const GURL& url) {
-  return extensions::PermissionsManager::Get(browser()->profile())
+  return PermissionsManager::Get(browser()->profile())
       ->GetUserSiteSetting(url::Origin::Create(url));
 }
 

@@ -10,6 +10,7 @@
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/disk_cache/disk_cache_test_util.h"
@@ -35,12 +36,13 @@ class SharedDictionaryDiskCacheTest : public testing::Test {
 
  protected:
   std::unique_ptr<SharedDictionaryDiskCache> CreateDiskCache() {
-    return std::make_unique<SharedDictionaryDiskCache>(
-        directory_path_,
+    auto disk_cache = std::make_unique<SharedDictionaryDiskCache>();
+    disk_cache->Initialize(directory_path_,
 #if BUILDFLAG(IS_ANDROID)
-        /*app_status_listener=*/nullptr,
+                           /*app_status_listener=*/nullptr,
 #endif  // BUILDFLAG(IS_ANDROID)
-        /*file_operations_factory=*/nullptr);
+                           /*file_operations_factory=*/nullptr);
+    return disk_cache;
   }
 
   void FlushCacheTasks() {
@@ -307,6 +309,21 @@ TEST_F(SharedDictionaryDiskCacheTest,
 
   std::unique_ptr<SharedDictionaryDiskCache> disk_cache = CreateDiskCache();
   EXPECT_EQ(net::ERR_FAILED, ClearAll(disk_cache.get()));
+}
+
+TEST_F(SharedDictionaryDiskCacheTest, DeletedWhileRuningDidCreateBackend) {
+  // Corrupt the disk cache so that the callback is called synchronously.
+  CorruptDiskCache();
+
+  std::unique_ptr<SharedDictionaryDiskCache> disk_cache = CreateDiskCache();
+
+  // Test that UAF doesn't happen when `disk_cache` is synchronously deleted in
+  // the callback.
+  disk_cache->DoomEntry(
+      kTestKey, base::BindLambdaForTesting([&](int) { disk_cache.reset(); }));
+  disk_cache->DoomEntry(kTestKey,
+                        base::BindOnce([](int) { ASSERT_TRUE(false); }));
+  FlushCacheTasks();
 }
 
 #endif  // !BUILDFLAG(IS_FUCHSIA)

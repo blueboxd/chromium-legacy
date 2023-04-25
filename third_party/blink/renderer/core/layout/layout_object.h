@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/api/selection_state.h"
+#include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_phase.h"
@@ -52,7 +52,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_type.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/core/layout/outline_rect_collector.h"
-#include "third_party/blink/renderer/core/layout/subtree_layout_scope.h"
+#include "third_party/blink/renderer/core/layout/selection_state.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_observer.h"
 #include "third_party/blink/renderer/core/paint/fragment_data.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
@@ -1960,24 +1960,20 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     bitfields_.SetNeedsCollectInlines(b);
   }
 
-  void MarkContainerChainForLayout(bool schedule_relayout = true,
-                                   SubtreeLayoutScope* = nullptr);
+  void MarkContainerChainForLayout(bool schedule_relayout = true);
   void MarkParentForSpannerOrOutOfFlowPositionedChange();
   void SetNeedsLayout(LayoutInvalidationReasonForTracing,
-                      MarkingBehavior = kMarkContainerChain,
-                      SubtreeLayoutScope* = nullptr);
+                      MarkingBehavior = kMarkContainerChain);
   void SetNeedsLayoutAndFullPaintInvalidation(
       LayoutInvalidationReasonForTracing,
-      MarkingBehavior = kMarkContainerChain,
-      SubtreeLayoutScope* = nullptr);
+      MarkingBehavior = kMarkContainerChain);
 
   void ClearNeedsLayoutWithoutPaintInvalidation();
   // |ClearNeedsLayout()| calls |SetShouldCheckForPaintInvalidation()|.
   void ClearNeedsLayout();
   void ClearNeedsLayoutWithFullPaintInvalidation();
 
-  void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain,
-                           SubtreeLayoutScope* = nullptr);
+  void SetChildNeedsLayout(MarkingBehavior = kMarkContainerChain);
   void SetNeedsPositionedMovementLayout();
   void SetIntrinsicLogicalWidthsDirty(MarkingBehavior = kMarkContainerChain);
   void ClearIntrinsicLogicalWidthsDirty();
@@ -2794,7 +2790,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // TODO(1229581): Rename this function.
   bool IsListItemIncludingNG() const {
     NOT_DESTROYED();
-    return IsLayoutNGListItem();
+    return IsLayoutNGListItem() || IsInlineListItem();
   }
 
   // There 2 different types of list markers:
@@ -2809,16 +2805,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return IsLayoutNGOutsideListMarker();
   }
-  // Any kind of LayoutNG list marker.
-  bool IsLayoutNGListMarker() const {
+  // Any kind of list marker.
+  bool IsListMarker() const {
     NOT_DESTROYED();
     return IsLayoutNGInsideListMarker() || IsLayoutNGOutsideListMarker();
-  }
-  // Any kind of list marker.
-  // TODO(1229581): Remove this function.
-  bool IsListMarkerIncludingAll() const {
-    NOT_DESTROYED();
-    return IsLayoutNGListMarker();
   }
 
   // ImageResourceObserver override.
@@ -3353,6 +3343,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     return bitfields_.IsBackgroundAttachmentFixedObject();
   }
+  bool CanCompositeBackgroundAttachmentFixed() const {
+    NOT_DESTROYED();
+    return bitfields_.CanCompositeBackgroundAttachmentFixed();
+  }
 
   bool BackgroundNeedsFullPaintInvalidation() const {
     NOT_DESTROYED();
@@ -3439,17 +3433,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     DCHECK(IsAnonymous());
     node_ = document;
-  }
-
-  bool IsLayoutNGObjectForListMarkerImage() const {
-    NOT_DESTROYED();
-    DCHECK(IsListMarkerImage());
-    return bitfields_.IsLayoutNGObjectForListMarkerImage();
-  }
-  void SetIsLayoutNGObjectForListMarkerImage(bool b) {
-    NOT_DESTROYED();
-    DCHECK(IsListMarkerImage());
-    bitfields_.SetIsLayoutNGObjectForListMarkerImage(b);
   }
 
   bool IsLayoutNGObjectForFormattedText() const {
@@ -3656,6 +3639,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   virtual void ClearPaintFlags();
 
   void SetIsBackgroundAttachmentFixedObject(bool);
+  void SetCanCompositeBackgroundAttachmentFixed(bool);
 
   void SetEverHadLayout() {
     NOT_DESTROYED();
@@ -3921,6 +3905,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           always_create_line_boxes_for_layout_inline_(false),
           background_is_known_to_be_obscured_(false),
           is_background_attachment_fixed_object_(false),
+          can_composite_background_attachment_fixed_(false),
           is_scroll_anchor_object_(false),
           scroll_anchor_disabling_style_changed_(false),
           has_box_decoration_background_(false),
@@ -3941,7 +3926,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           is_html_legend_element_(false),
           has_non_collapsed_border_decoration_(false),
           being_destroyed_(false),
-          is_layout_ng_object_for_list_marker_image_(false),
           is_table_column_constraints_dirty_(false),
           is_grid_placement_dirty_(true),
           transform_affects_vector_effect_(false),
@@ -4146,6 +4130,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
     ADD_BOOLEAN_BITFIELD(is_background_attachment_fixed_object_,
                          IsBackgroundAttachmentFixedObject);
+    ADD_BOOLEAN_BITFIELD(can_composite_background_attachment_fixed_,
+                         CanCompositeBackgroundAttachmentFixed);
     ADD_BOOLEAN_BITFIELD(is_scroll_anchor_object_, IsScrollAnchorObject);
 
     // Whether changes in this LayoutObject's CSS properties since the last
@@ -4232,10 +4218,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
 
     // True at start of |Destroy()| before calling |WillBeDestroyed()|.
     ADD_BOOLEAN_BITFIELD(being_destroyed_, BeingDestroyed);
-
-    // From LayoutListMarkerImage
-    ADD_BOOLEAN_BITFIELD(is_layout_ng_object_for_list_marker_image_,
-                         IsLayoutNGObjectForListMarkerImage);
 
     // Column constraints are cached on LayoutNGTable.
     // When this flag is set, any cached constraints are invalid.
@@ -4342,7 +4324,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
  private:
   friend class LineLayoutItem;
   friend class LocalFrameView;
-  friend class SubtreeLayoutScope;
 
   scoped_refptr<const ComputedStyle> style_;
 
@@ -4405,8 +4386,7 @@ inline bool LayoutObject::IsBeforeOrAfterContent() const {
 // identical.
 inline void LayoutObject::SetNeedsLayout(
     LayoutInvalidationReasonForTracing reason,
-    MarkingBehavior mark_parents,
-    SubtreeLayoutScope* layouter) {
+    MarkingBehavior mark_parents) {
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
@@ -4420,17 +4400,16 @@ inline void LayoutObject::SetNeedsLayout(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
         "LayoutInvalidationTracking",
         inspector_layout_invalidation_tracking_event::Data, this, reason);
-    if (mark_parents == kMarkContainerChain &&
-        (!layouter || layouter->Root() != this))
-      MarkContainerChainForLayout(!layouter, layouter);
+    if (mark_parents == kMarkContainerChain) {
+      MarkContainerChainForLayout();
+    }
   }
 }
 
 inline void LayoutObject::SetNeedsLayoutAndFullPaintInvalidation(
     LayoutInvalidationReasonForTracing reason,
-    MarkingBehavior mark_parents,
-    SubtreeLayoutScope* layouter) {
-  SetNeedsLayout(reason, mark_parents, layouter);
+    MarkingBehavior mark_parents) {
+  SetNeedsLayout(reason, mark_parents);
   SetShouldDoFullPaintInvalidation();
 }
 
@@ -4475,19 +4454,16 @@ inline void LayoutObject::ClearNeedsLayoutWithFullPaintInvalidation() {
   SetShouldDoFullPaintInvalidation();
 }
 
-inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents,
-                                              SubtreeLayoutScope* layouter) {
+inline void LayoutObject::SetChildNeedsLayout(MarkingBehavior mark_parents) {
 #if DCHECK_IS_ON()
   DCHECK(!IsSetNeedsLayoutForbidden());
 #endif
   bool already_needed_layout = NormalChildNeedsLayout();
   SetNeedsOverflowRecalc();
   SetNormalChildNeedsLayout(true);
-  // FIXME: Replace MarkOnlyThis with the SubtreeLayoutScope code path and
-  // remove the MarkingBehavior argument entirely.
-  if (!already_needed_layout && mark_parents == kMarkContainerChain &&
-      (!layouter || layouter->Root() != this))
-    MarkContainerChainForLayout(!layouter, layouter);
+  if (!already_needed_layout && mark_parents == kMarkContainerChain) {
+    MarkContainerChainForLayout();
+  }
 }
 
 inline void LayoutObject::SetNeedsPositionedMovementLayout() {

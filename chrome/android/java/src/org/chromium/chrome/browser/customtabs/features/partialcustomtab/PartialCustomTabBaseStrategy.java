@@ -11,7 +11,6 @@ import static org.chromium.chrome.browser.browserservices.intents.BrowserService
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
-import android.animation.ValueAnimator.AnimatorUpdateListener;
 import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -78,6 +77,7 @@ public abstract class PartialCustomTabBaseStrategy
     protected View mToolbarView;
     protected View mToolbarCoordinator;
     protected int mToolbarColor;
+    protected int mToolbarCornerRadius;
     protected PartialCustomTabHandleStrategyFactory mHandleStrategyFactory;
 
     protected int mShadowOffset;
@@ -152,8 +152,10 @@ public abstract class PartialCustomTabBaseStrategy
     @Override
     public void onToolbarInitialized(
             View coordinatorView, CustomTabToolbar toolbar, @Px int toolbarCornerRadius) {
+        // The radius should not be bigger than the handle view default height of 16dp.
+        mToolbarCornerRadius = Math.min(toolbarCornerRadius, mCachedHandleHeight);
         setToolbar(coordinatorView, toolbar);
-        roundCorners(toolbar, toolbarCornerRadius);
+        roundCorners(toolbar, mToolbarCornerRadius);
     }
 
     public void setToolbar(View toolbarCoordinator, CustomTabToolbar toolbar) {
@@ -201,6 +203,7 @@ public abstract class PartialCustomTabBaseStrategy
         attrs.x = 0;
         mActivity.getWindow().setAttributes(attrs);
         updateShadowOffset();
+        if (shouldDrawDividerLine()) resetCoordinatorLayoutInsets();
         maybeInvokeResizeCallback();
     }
 
@@ -210,6 +213,7 @@ public abstract class PartialCustomTabBaseStrategy
         new Handler().post(() -> {
             initializeSize();
             updateShadowOffset();
+            if (shouldDrawDividerLine()) drawDividerLine();
             maybeInvokeResizeCallback();
         });
     }
@@ -362,7 +366,6 @@ public abstract class PartialCustomTabBaseStrategy
         handleView.setElevation(
                 mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_elevation));
         updateShadowOffset();
-
         GradientDrawable cctBackground = (GradientDrawable) handleView.getBackground();
         adjustCornerRadius(cctBackground, toolbarCornerRadius);
         handleView.setBackground(cctBackground);
@@ -372,12 +375,12 @@ public abstract class PartialCustomTabBaseStrategy
         // covers the entire client area for rendering outline shadow around the CCT.
         View dragBar = handleView.findViewById(R.id.drag_bar);
         GradientDrawable dragBarBackground = getDragBarBackground();
+        adjustCornerRadius(dragBarBackground, toolbarCornerRadius);
         if (dragBar.getBackground() instanceof InsetDrawable) resetCoordinatorLayoutInsets();
 
         if (shouldDrawDividerLine()) {
             drawDividerLine();
         } else {
-            adjustCornerRadius(dragBarBackground, toolbarCornerRadius);
             dragBar.setBackground(dragBarBackground);
         }
 
@@ -399,7 +402,8 @@ public abstract class PartialCustomTabBaseStrategy
         cctBackground.setStroke(width, SemanticColorUtils.getDividerLineBgColor(mActivity));
 
         // We need an inset to make the outline shadow visible.
-        dragBar.setBackground(new InsetDrawable(dragBarBackground, width, width, width, 0));
+        dragBar.setBackground(
+                new InsetDrawable(dragBarBackground, leftInset, topInset, rightInset, 0));
         getCoordinatorLayout().setBackground(
                 new InsetDrawable(cctBackground, leftInset, topInset, rightInset, 0));
     }
@@ -460,14 +464,16 @@ public abstract class PartialCustomTabBaseStrategy
     }
 
     @Override
-    public void handleCloseAnimation(Runnable finishRunnable) {
-        if (mFinishRunnable != null) return;
-
+    public boolean handleCloseAnimation(Runnable finishRunnable) {
+        // Can be entered twice - first from CustomTabToolbar (with a tap on close button)/
+        // HandleStrategy (swiping down), once again from RootUiCoordinator. Just run the passed
+        // runnable and return for the second invocation.
+        if (mFinishRunnable != null) {
+            if (finishRunnable != null) finishRunnable.run();
+            return false;
+        }
         mFinishRunnable = finishRunnable;
-        configureLayoutBeyondScreen(true);
-        AnimatorUpdateListener updater = animator -> setWindowY((int) animator.getAnimatedValue());
-        int start = mActivity.getWindow().getAttributes().y;
-        startAnimation(start, mHeight, updater, this::onCloseAnimationEnd);
+        return true;
     }
 
     protected void configureLayoutBeyondScreen(boolean enable) {

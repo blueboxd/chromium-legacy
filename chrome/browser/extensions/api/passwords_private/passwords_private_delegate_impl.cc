@@ -44,7 +44,6 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
-#include "components/password_manager/core/browser/move_password_to_account_store_helper.h"
 #include "components/password_manager/core/browser/password_access_authenticator.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
@@ -620,28 +619,21 @@ void PasswordsPrivateDelegateImpl::MovePasswordsToAccount(
     return;
   }
 
-  std::vector<password_manager::PasswordForm> forms_to_move;
+  std::vector<CredentialUIEntry> credentials_to_move;
+  credentials_to_move.reserve(ids.size());
   for (int id : ids) {
     const CredentialUIEntry* entry = credential_id_generator_.TryGetKey(id);
     if (!entry) {
       continue;
     }
-
-    std::vector<password_manager::PasswordForm> corresponding_forms =
-        saved_passwords_presenter_.GetCorrespondingPasswordForms(*entry);
-    if (corresponding_forms.empty()) {
-      continue;
-    }
-
-    // password_manager::MovePasswordsToAccountStore() takes care of moving the
-    // entire equivalence class, so passing the first element is fine.
-    forms_to_move.push_back(std::move(corresponding_forms[0]));
+    credentials_to_move.push_back(*entry);
   }
 
-  password_manager::MovePasswordsToAccountStore(
-      forms_to_move, client,
+  // Desktop settings only offer bulk move, not invidual moves.
+  saved_passwords_presenter_.MoveCredentialsToAccount(
+      credentials_to_move,
       password_manager::metrics_util::MoveToAccountStoreTrigger::
-          kExplicitlyTriggeredInSettings);
+          kExplicitlyTriggeredForMultiplePasswordsInSettings);
 }
 
 void PasswordsPrivateDelegateImpl::ImportPasswords(
@@ -667,11 +659,26 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
 
 void PasswordsPrivateDelegateImpl::ContinueImport(
     const std::vector<int>& selected_ids,
-    ImportResultsCallback results_callback) {
-  // TODO(crbug/1417650): Add re-auth before ContinueImport.
-  password_manager_porter_->ContinueImport(
-      selected_ids,
-      base::BindOnce(&ConvertImportResults).Then(std::move(results_callback)));
+    ImportResultsCallback results_callback,
+    content::WebContents* web_contents) {
+  if (selected_ids.empty()) {
+    password_manager_porter_->ContinueImport(
+        selected_ids, base::BindOnce(&ConvertImportResults)
+                          .Then(std::move(results_callback)));
+    return;
+  }
+  // Save |web_contents| so that it can be used later when OsReauthCall() is
+  // called. Note: This is safe because the |web_contents| is used before
+  // exiting this method.
+  // TODO(crbug.com/495290): Pass the native window directly to the
+  // reauth-handling code.
+  web_contents_ = web_contents;
+
+  password_access_authenticator_.ForceUserReauthentication(
+      password_manager::ReauthPurpose::IMPORT,
+      base::BindOnce(&PasswordsPrivateDelegateImpl::OnImportPasswordsAuthResult,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     std::move(results_callback), selected_ids));
 }
 
 void PasswordsPrivateDelegateImpl::ResetImporter(bool delete_file) {
@@ -789,6 +796,10 @@ void PasswordsPrivateDelegateImpl::ShowAddShortcutDialog(
   DCHECK(browser);
   web_app::CreateWebAppFromCurrentWebContents(
       browser, web_app::WebAppInstallFlow::kInstallSite);
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ShortcutMetric",
+      password_manager::metrics_util::PasswordManagerShortcutMetric::
+          kAddShortcutClicked);
 }
 
 void PasswordsPrivateDelegateImpl::ShowExportedFileInShell(
@@ -903,6 +914,25 @@ void PasswordsPrivateDelegateImpl::OnExportPasswordsAuthResult(
       .Run(accepted ? std::string() : kExportInProgress);
 }
 
+void PasswordsPrivateDelegateImpl::OnImportPasswordsAuthResult(
+    ImportResultsCallback results_callback,
+    const std::vector<int>& selected_ids,
+    bool authenticated) {
+  if (!authenticated) {
+    password_manager::ImportResults result;
+    // TODO(crbug/1417650): Use specific enum for reauth_failed.
+    // TODO(crbug/1417650): Record metric for reauth failed.
+    result.status = password_manager::ImportResults::DISMISSED;
+    std::move(results_callback).Run(ConvertImportResults(result));
+    return;
+  }
+
+  CHECK(password_manager_porter_);
+  password_manager_porter_->ContinueImport(
+      selected_ids,
+      base::BindOnce(&ConvertImportResults).Then(std::move(results_callback)));
+}
+
 void PasswordsPrivateDelegateImpl::OnAccountStorageOptInStateChanged() {
   PasswordsPrivateEventRouter* router =
       PasswordsPrivateEventRouterFactory::GetForProfile(profile_);
@@ -938,6 +968,10 @@ void PasswordsPrivateDelegateImpl::OnWebAppInstalledWithOsHooks(
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&MaybeShowProfileSwitchIPH, profile_),
       base::Seconds(1));
+  base::UmaHistogramEnumeration(
+      "PasswordManager.ShortcutMetric",
+      password_manager::metrics_util::PasswordManagerShortcutMetric::
+          kShortcutInstalled);
 }
 
 void PasswordsPrivateDelegateImpl::OnWebAppInstallManagerDestroyed() {

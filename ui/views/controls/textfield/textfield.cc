@@ -294,7 +294,6 @@ void Textfield::SetReadOnly(bool read_only) {
     SetColor(GetTextColor());
     UpdateBackgroundColor();
   }
-  UpdateBorder();
   OnPropertyChanged(&read_only_, kPropertyEffectsPaint);
 }
 
@@ -739,13 +738,18 @@ bool Textfield::OnKeyReleased(const ui::KeyEvent& event) {
 
 void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
-    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP: {
       RequestFocusForGesture(event->details());
       if (controller_ && controller_->HandleGestureEvent(this, *event)) {
         selection_dragging_state_ = SelectionDraggingState::kNone;
         event->SetHandled();
         return;
       }
+
+      const size_t tap_pos =
+          GetRenderText()->FindCursorPosition(event->location()).caret_pos();
+      const bool should_toggle_menu = event->details().tap_count() == 1 &&
+                                      GetSelectedRange() == gfx::Range(tap_pos);
       if (selection_dragging_state_ != SelectionDraggingState::kNone) {
         // Selection has already been set in the preceding ET_GESTURE_TAP_DOWN
         // event, so handles should be shown without changing the selection.
@@ -771,8 +775,12 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
         OnAfterUserAction();
       }
       CreateTouchSelectionControllerAndNotifyIt();
+      if (touch_selection_controller_ && should_toggle_menu) {
+        touch_selection_controller_->ToggleQuickMenu();
+      }
       event->SetHandled();
       break;
+    }
     case ui::ET_GESTURE_TAP_DOWN: {
       if (::features::IsTouchTextEditingRedesignEnabled() && HasFocus()) {
         if (event->details().tap_down_count() == 2) {
@@ -2565,9 +2573,6 @@ void Textfield::UpdateCursorVisibility() {
 gfx::Rect Textfield::CalculateCursorViewBounds() const {
   gfx::Rect location(GetRenderText()->GetUpdatedCursorBounds());
   location.set_x(GetMirroredXForRect(location));
-  location.set_height(
-      std::min(location.height(),
-               GetLocalBounds().height() - location.y() - location.y()));
   return location;
 }
 
@@ -2751,8 +2756,11 @@ void Textfield::OnEditFailed() {
 bool Textfield::ShouldShowCursor() const {
   // Show the cursor when the primary selected range is empty; secondary
   // selections do not affect cursor visibility.
+  // TODO(crbug.com/1434319): The cursor will be entirely hidden if partially
+  // occluded. It would be better if only the occluded part is hidden.
   return HasFocus() && !HasSelection(true) && GetEnabled() && !GetReadOnly() &&
-         !drop_cursor_visible_ && GetRenderText()->cursor_enabled();
+         !drop_cursor_visible_ && GetRenderText()->cursor_enabled() &&
+         GetLocalBounds().Contains(cursor_view_->bounds());
 }
 
 int Textfield::CharsToDips(int width_in_chars) const {
@@ -2815,7 +2823,6 @@ void Textfield::OnCursorBlinkTimerFired() {
 void Textfield::OnEnabledChanged() {
   if (GetInputMethod())
     GetInputMethod()->OnTextInputTypeChanged(this);
-  UpdateBorder();
 }
 
 void Textfield::DropDraggedText(

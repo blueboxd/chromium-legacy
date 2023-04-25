@@ -636,8 +636,8 @@ enum WebFeature {
   kCSSAtRuleViewport = 977,
   kCSSAtRuleWebkitKeyframes = 978,
   kV8HTMLFieldSetElement_Elements_AttributeGetter = 979,
-  kExternalAddSearchProvider = 981,
-  kExternalIsSearchProviderInstalled = 982,
+  kOBSOLETE_ExternalAddSearchProvider = 981,
+  kOBSOLETE_ExternalIsSearchProviderInstalled = 982,
   kV8Permissions_RequestAll_Method = 983,
   kOBSOLETE_DeviceOrientationAbsoluteInsecureOrigin = 987,
   kDeviceOrientationAbsoluteSecureOrigin = 988,
@@ -3881,6 +3881,12 @@ enum WebFeature {
   kGamepadTouchSurfaceDimension = 4540,
   kSandboxViaFencedFrame = 4541,
   kVisibilityStateObserver = 4542,
+  kV8CompileHintsMagicAll = 4543,
+  kTextWrapBalance = 4544,
+  kTextWrapBalanceFail = 4545,
+  kAttributionReportingCrossAppWeb = 4546,
+  kSecurePaymentConfirmationActivationlessShow = 4547,
+  kServiceWorkerBypassFetchHandlerForAllWithRaceNetworkRequest = 4548,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

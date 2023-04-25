@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "base/synchronization/lock.h"
@@ -34,7 +35,6 @@
 #include "components/user_manager/user.h"
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace gfx {
 class ImageSkia;
@@ -130,20 +130,16 @@ class ChromeUserManagerImpl
   void OnProfileAdded(Profile* profile) override;
   void OnProfileManagerDestroying() override;
 
-  // UserManagerBase:
-  void OnUserRemoved(const AccountId& account_id) override;
-
   // ChromeUserManager:
   bool IsEnterpriseManaged() const override;
   void SetUserAffiliation(
       const AccountId& account_id,
-      const AffiliationIDSet& user_affiliation_ids) override;
+      const base::flat_set<std::string>& user_affiliation_ids) override;
   bool IsFullManagementDisclosureNeeded(
       policy::DeviceLocalAccountPolicyBroker* broker) const override;
 
  protected:
   const std::string& GetApplicationLocale() const override;
-  PrefService* GetLocalState() const override;
   void LoadDeviceLocalAccounts(std::set<AccountId>* users_set) override;
   void NotifyOnLogin() override;
   void NotifyUserAddedToSession(const user_manager::User* added_user,
@@ -234,10 +230,11 @@ class ChromeUserManagerImpl
       const AccountId& account_id);
 
   // Interface to the signed settings store.
-  CrosSettings* cros_settings_;
+  raw_ptr<CrosSettings, ExperimentalAsh> cros_settings_;
 
   // Interface to device-local account definitions and associated policy.
-  policy::DeviceLocalAccountPolicyService* device_local_account_policy_service_;
+  raw_ptr<policy::DeviceLocalAccountPolicyService, ExperimentalAsh>
+      device_local_account_policy_service_;
 
   base::ScopedObservation<session_manager::SessionManager,
                           session_manager::SessionManagerObserver>

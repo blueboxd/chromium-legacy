@@ -24,7 +24,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 
 Na tento účet se mohou vztahovat oprávnění, která jste již udělili webům a aplikacím. Své účty Google můžete spravovat v <ph name="SETTINGS_LINK_BEGIN" />Nastavení<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Stahování...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Prohlížeč Chromium byl připojen k zařízení HID}=1{Prohlížeč Chromium je připojen k zařízení HID}few{Prohlížeč Chromium je připojen k zařízením HID}many{Prohlížeč Chromium je připojen k zařízením HID}other{Prohlížeč Chromium je připojen k zařízením HID}}</translation>
 <translation id="1708666629004767631">K dispozici je nová, bezpečnější verze prohlížeče Chromium.</translation>
 <translation id="17264556997921157">Můžete zobrazovat a odstraňovat zájmy, které weby používají k zobrazování reklam. Chromium zájmy odhaduje na základě vaší nedávné historie prohlížení.</translation>
 <translation id="1733725117201708356">Chromium brzy smaže údaje o prohlížení</translation>
@@ -247,8 +246,10 @@ Na tento účet se mohou vztahovat oprávnění, která jste již udělili webů
 <translation id="6442900851116057561">Restartujte ChromiumOS</translation>
 <translation id="6455857529632101747">Vítejte v profilech Chromium</translation>
 <translation id="6475912303565314141">Také řídí, která stránka se zobrazí při spuštění prohlížeče Chromium.</translation>
+<translation id="648319183876919572">Vylepšené Bezpečné prohlížení vás chrání před nebezpečnými weby a soubory ke stažení</translation>
 <translation id="6510925080656968729">Odinstalovat Chromium</translation>
 <translation id="6542839706527980775">V každém profilu jsou uloženy soukromé údaje z Chromia, například záložky, historie, hesla a další</translation>
+<translation id="656935081669708576">Přepnutím můžete zobrazit hesla z jiného profilu Chromium</translation>
 <translation id="6570579332384693436">Text zadaný do textových polí odesílá Chromium kvůli opravě pravopisných chyb do Googlu</translation>
 <translation id="6598877126913850652">Přejít na nastavení oznámení prohlížeče Chromium</translation>
 <translation id="6613594504749178791">Změny se projeví po příštím restartu prohlížeče Chromium.</translation>

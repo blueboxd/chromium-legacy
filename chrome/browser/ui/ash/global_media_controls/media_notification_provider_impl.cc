@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/global_media_controls/media_notification_provider_impl.h"
 
+#include "ash/system/media/media_color_theme.h"
 #include "ash/system/media/media_notification_provider.h"
 #include "ash/system/media/media_notification_provider_observer.h"
 #include "base/metrics/histogram_functions.h"
@@ -112,7 +113,8 @@ bool MediaNotificationProviderImpl::HasFrozenNotifications() {
 std::unique_ptr<views::View>
 MediaNotificationProviderImpl::GetMediaNotificationListView(
     int separator_thickness,
-    bool should_clip_height) {
+    bool should_clip_height,
+    const std::string& item_id) {
   DCHECK(item_manager_);
   DCHECK(color_theme_);
   auto notification_list_view =
@@ -121,7 +123,11 @@ MediaNotificationProviderImpl::GetMediaNotificationListView(
               color_theme_->separator_color, separator_thickness),
           should_clip_height);
   active_session_view_ = notification_list_view->GetWeakPtr();
-  item_manager_->SetDialogDelegate(this);
+  if (item_id.empty()) {
+    item_manager_->SetDialogDelegate(this);
+  } else {
+    item_manager_->SetDialogDelegateForId(this, item_id);
+  }
   base::UmaHistogramEnumeration(
       "Media.GlobalMediaControls.EntryPoint",
       global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray);
@@ -162,7 +168,7 @@ MediaNotificationProviderImpl::ShowMediaItem(
       BuildDeviceSelector(
           id, item, GetDeviceService(item), &device_selector_delegate_, profile,
           global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray),
-      color_theme_,
+      color_theme_, GetCrosMediaColorTheme(),
       media_message_center::MediaDisplayPage::kQuickSettingsMediaDetailedView);
   auto* item_ui_ptr = item_ui.get();
   item_ui_observer_set_.Observe(id, item_ui_ptr);

@@ -7,13 +7,17 @@
 #include "ash/accelerators/accelerator_controller_impl.h"
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "ash/components/arc/arc_features.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/shell.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/memory/raw_ptr.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/ash/arc/vmm/arc_vmm_swap_scheduler.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 
 namespace arc {
@@ -62,41 +66,46 @@ ArcVmmManager::ArcVmmManager(content::BrowserContext* context,
     accelerator_ = std::make_unique<AcceleratorTarget>(this);
   }
   if (base::FeatureList::IsEnabled(kVmmSwapPolicy)) {
-    arc_system_state_observation_ =
-        std::make_unique<ArcSystemStateObservation>(context);
     swap_out_delay_ = base::Seconds(kVmmSwapOutDelaySecond.Get());
     scheduler_ = std::make_unique<ArcVmmSwapScheduler>(
-        base::Seconds(kVmmSwapOutTimeIntervalSecond.Get()),
-        base::Seconds(kVmmSwapArcSilenceIntervalSecond.Get()),
         base::BindRepeating(
-            [](base::WeakPtr<ArcSystemStateObservation> observation) {
-              return observation &&
-                     observation->GetPeaceDuration() >
-                         base::Seconds(kVmmSwapArcSilenceIntervalSecond.Get() /
-                                       2);
+            [](base::WeakPtr<ArcVmmManager> manager, bool enable) {
+              if (manager) {
+                manager->SetSwapState(enable ? SwapState::ENABLE
+                                             : SwapState::DISABLE);
+              }
             },
-            arc_system_state_observation_->GetWeakPtr()),
-        base::BindRepeating(&ArcVmmManager::SetSwapState,
-                            weak_ptr_factory_.GetWeakPtr()));
-    scheduler_->Start();
+            weak_ptr_factory_.GetWeakPtr()),
+        /* minimum_swapout_interval= */
+        base::Seconds(kVmmSwapOutTimeIntervalSecond.Get()),
+        /* swappable_checking_period= */
+        base::Seconds(kVmmSwapArcSilenceIntervalSecond.Get()),
+        std::make_unique<ArcSystemStateObservation>(context));
   }
 }
 
 ArcVmmManager::~ArcVmmManager() = default;
 
-void ArcVmmManager::SetSwapState(bool enable) {
-  if (enable) {
-    SendSwapRequest(
-        vm_tools::concierge::SwapOperation::ENABLE,
-        base::BindOnce(
-            &ArcVmmManager::PostWithSwapDelay, weak_ptr_factory_.GetWeakPtr(),
-            base::BindOnce(&ArcVmmManager::SendSwapRequest,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           vm_tools::concierge::SwapOperation::SWAPOUT,
-                           base::DoNothing())));
-  } else {
-    SendSwapRequest(vm_tools::concierge::SwapOperation::DISABLE,
-                    base::DoNothing());
+void ArcVmmManager::SetSwapState(SwapState state) {
+  switch (state) {
+    case SwapState::ENABLE:
+      SendSwapRequest(vm_tools::concierge::SwapOperation::ENABLE,
+                      base::DoNothing());
+      break;
+    case SwapState::ENABLE_WITH_SWAPOUT:
+      SendSwapRequest(
+          vm_tools::concierge::SwapOperation::ENABLE,
+          base::BindOnce(
+              &ArcVmmManager::PostWithSwapDelay, weak_ptr_factory_.GetWeakPtr(),
+              base::BindOnce(&ArcVmmManager::SendSwapRequest,
+                             weak_ptr_factory_.GetWeakPtr(),
+                             vm_tools::concierge::SwapOperation::SWAPOUT,
+                             base::DoNothing())));
+      break;
+    case SwapState::DISABLE:
+      SendSwapRequest(vm_tools::concierge::SwapOperation::DISABLE,
+                      base::DoNothing());
+      break;
   }
 }
 
@@ -110,7 +119,7 @@ void ArcVmmManager::SendSwapRequest(
   }
 
   vm_tools::concierge::SwapVmRequest request;
-  request.set_name("arcvm");
+  request.set_name(kArcVmName);
   request.set_owner_id(user_id_hash_);
   request.set_operation(operation);
   client->SwapVm(
@@ -153,9 +162,9 @@ class ArcVmmManager::AcceleratorTarget : public ui::AcceleratorTarget {
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {
     if (accelerator == vmm_swap_enabled_) {
-      manager_->SetSwapState(true);
+      manager_->SetSwapState(SwapState::ENABLE_WITH_SWAPOUT);
     } else if (accelerator == vmm_swap_disabled_) {
-      manager_->SetSwapState(false);
+      manager_->SetSwapState(SwapState::DISABLE);
     } else {
       NOTREACHED();
       return false;
@@ -166,7 +175,7 @@ class ArcVmmManager::AcceleratorTarget : public ui::AcceleratorTarget {
   bool CanHandleAccelerators() const override { return true; }
 
   // The manager responsible for executing vmm commands.
-  ArcVmmManager* const manager_;
+  const raw_ptr<ArcVmmManager, ExperimentalAsh> manager_;
 
   // The accelerator to enable vmm swap for ARCVM.
   const ui::Accelerator vmm_swap_enabled_;

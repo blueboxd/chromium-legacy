@@ -99,6 +99,8 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     private final @Px int mUnclampedInitialHeight;
     private final boolean mIsFixedHeight;
 
+    private CustomTabToolbar.HandleStrategy mHandleStrategy;
+
     private @Px int mFullyExpandedAdjustmentHeight;
     private TabAnimator mTabAnimator;
 
@@ -268,11 +270,11 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             View coordinatorView, CustomTabToolbar toolbar, @Px int toolbarCornerRadius) {
         super.onToolbarInitialized(coordinatorView, toolbar, toolbarCornerRadius);
 
-        PartialCustomTabHandleStrategy handleStrategy = mHandleStrategyFactory.create(
-                getStrategyType(), mActivity, this::isFullHeight, () -> mStatus, this);
-        toolbar.setHandleStrategy(handleStrategy);
+        mHandleStrategy = mHandleStrategyFactory.create(getStrategyType(), mActivity,
+                this::isFullHeight, () -> mStatus, this, this::handleCloseAnimation);
+        toolbar.setHandleStrategy(mHandleStrategy);
         var dragBar = (CustomTabDragBar) mActivity.findViewById(R.id.drag_bar);
-        dragBar.setHandleStrategy(handleStrategy);
+        dragBar.setHandleStrategy(mHandleStrategy);
         View dragHandle = mActivity.findViewById(R.id.drag_handle);
         dragHandle.setOnClickListener(v -> onDragBarTapped());
 
@@ -338,6 +340,12 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
 
     @Override
     protected void adjustCornerRadius(GradientDrawable d, int radius) {
+        View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
+        View dragBar = handleView.findViewById(R.id.drag_bar);
+        ViewGroup.LayoutParams dragBarLayoutParams = dragBar.getLayoutParams();
+        dragBarLayoutParams.height = mCachedHandleHeight;
+        dragBar.setLayoutParams(dragBarLayoutParams);
+
         d.mutate();
         d.setCornerRadii(new float[] {radius, radius, radius, radius, 0, 0, 0, 0});
     }
@@ -489,9 +497,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     protected void setTopMargins(int shadowOffset, int handleOffset) {
         View handleView = mActivity.findViewById(R.id.custom_tabs_handle_view);
         boolean isMaxWidthLandscapeBottomSheet = isMaxWidthLandscapeBottomSheet();
-        int sideOffset = shouldHaveNoShadowOffset()
-                ? 0
-                : mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_shadow_offset);
 
         if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
             float maxWidthBottomSheetEv =
@@ -508,6 +513,9 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             }
         }
 
+        int sideOffset = shouldDrawDividerLine()
+                ? 0
+                : mActivity.getResources().getDimensionPixelSize(R.dimen.custom_tabs_shadow_offset);
         int sideMargin = isMaxWidthLandscapeBottomSheet ? sideOffset : 0;
         if (handleView != null) {
             ViewGroup.MarginLayoutParams lp =
@@ -671,11 +679,6 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
         positionAtHeight(mDisplayHeight - window.getAttributes().y);
         maybeInvokeResizeCallback();
         mStatus = targetStatus;
-        if (mFinishRunnable != null) {
-            Runnable oldFinishRunnable = mFinishRunnable;
-            mFinishRunnable = null;
-            handleCloseAnimation(oldFinishRunnable);
-        }
     }
 
     private void hideSpinnerView() {
@@ -785,19 +788,18 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     }
 
     @Override
-    public void handleCloseAnimation(Runnable finishRunnable) {
-        if (mFinishRunnable != null) return;
-
-        mFinishRunnable = finishRunnable;
+    public boolean handleCloseAnimation(Runnable finishRunnable) {
+        if (!super.handleCloseAnimation(finishRunnable)) return false;
 
         mVersionCompat.setImeStateCallback(null);
 
         // Tapping the close button while in transition state should be ignored.
         // Delay it till the height settles in to either top/initial state, where the animation
         // begins when it detects the presence of |mFinishRunnable|.
-        if (mStatus == HeightStatus.TRANSITION) return;
+        if (mStatus == HeightStatus.TRANSITION) return false;
 
         animateTabTo(HeightStatus.CLOSE, /*autoResize=*/true);
+        return true;
     }
 
     // DragEventCallback implementation
@@ -817,7 +819,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     }
 
     @Override
-    public boolean onDragEnd(int flingDistance) {
+    public void onDragEnd(int flingDistance) {
         int currentY = mActivity.getWindow().getAttributes().y;
         int finalY = currentY + flingDistance;
         int topY = getFullyExpandedYWithAdjustment();
@@ -828,19 +830,18 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             boolean toTop = Math.abs(topY - finalY) < Math.abs(finalY - initialY);
             animateTabTo(toTop && !isFixedHeight() ? HeightStatus.TOP : HeightStatus.INITIAL_HEIGHT,
                     /*autoResize=*/false);
-            return true;
+            return;
         } else { // Move down
             // Prevents skipping initial state when swiping from the top.
             if (mStatus == HeightStatus.TOP) finalY = Math.min(initialY, finalY);
 
             if (Math.abs(initialY - finalY) < Math.abs(finalY - bottomY)) {
                 animateTabTo(HeightStatus.INITIAL_HEIGHT, /*autoResize=*/false);
-                return true;
+                return;
             }
         }
 
-        // Tab is being closed. Animation is initiated in |handleCloseAnimation()|.
-        return false;
+        handleCloseAnimation(mHandleStrategy::close);
     }
 
     // FullscreenManager.Observer implementation
@@ -923,10 +924,17 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     }
 
     @VisibleForTesting
-    PartialCustomTabHandleStrategy createHandleStrategyForTesting() {
+    CustomTabToolbar.HandleStrategy getHandleStrategyForTesting() {
+        return mHandleStrategy;
+    }
+
+    @VisibleForTesting
+    CustomTabToolbar.HandleStrategy createHandleStrategyForTesting() {
         // Pass null for context because we don't depend on the GestureDetector inside as we invoke
         // MotionEvents directly in the tests.
-        return new PartialCustomTabHandleStrategy(null, this::isFullHeight, () -> mStatus, this);
+        mHandleStrategy = new PartialCustomTabHandleStrategy(
+                null, this::isFullHeight, () -> mStatus, this, this::handleCloseAnimation);
+        return mHandleStrategy;
     }
 
     @VisibleForTesting

@@ -43,7 +43,6 @@ BASE_DECLARE_FEATURE(kIPHPowerBookmarksSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHPriceTrackingPageActionIconLabelFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListDiscoveryFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListEntryPointFeature);
-BASE_DECLARE_FEATURE(kIPHIntentChipFeature);
 BASE_DECLARE_FEATURE(kIPHReadingListInSidePanelFeature);
 BASE_DECLARE_FEATURE(kIPHReopenTabFeature);
 BASE_DECLARE_FEATURE(kIPHSideSearchAutoTriggeringFeature);
@@ -195,6 +194,7 @@ BASE_DECLARE_FEATURE(kIPHiOSPromoDefaultBrowserFeature);
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_FUCHSIA)
+BASE_DECLARE_FEATURE(kIPHAutofillExternalAccountProfileSuggestionFeature);
 BASE_DECLARE_FEATURE(kIPHAutofillVirtualCardSuggestionFeature);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||

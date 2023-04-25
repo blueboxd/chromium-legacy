@@ -28,6 +28,7 @@ void CollectTrainingData(Config* config, ExecutionService* execution_service) {
     }
   }
 }
+
 }  // namespace
 
 ResultRefreshManager::ResultRefreshManager(
@@ -46,9 +47,9 @@ void ResultRefreshManager::RefreshModelResults(
     ExecutionService* execution_service) {
   result_providers_ = std::move(result_providers);
 
-  for (const auto& config : configs_) {
+  for (const auto& config : *configs_) {
     if (config->on_demand_execution ||
-        !metadata_utils::HasMigratedToMultiOutput(config.get())) {
+        metadata_utils::ConfigUsesLegacyOutput(config.get())) {
       continue;
     }
     auto* segment_result_provider =
@@ -90,8 +91,14 @@ void ResultRefreshManager::OnGetCachedResultOrRunModel(
       result ? result->state : SegmentResultProvider::ResultState::kUnknown;
 
   if (!SupportMultiOutput(result.get())) {
+    stats::RecordSegmentSelectionFailure(
+        *config,
+        stats::SegmentationSelectionFailureReason::kMultiOutputNotSupported);
     return;
   }
+
+  stats::RecordSegmentSelectionFailure(
+      *config, stats::GetSuccessOrFailureReason(result_state));
 
   proto::PredictionResult pred_result = result->result;
   // If the model result is available either from database or running the
@@ -106,6 +113,8 @@ void ResultRefreshManager::OnGetCachedResultOrRunModel(
         SegmentResultProvider::ResultState::kDefaultModelScoreUsed));
 
   if (unexpired_score_from_db || expired_score_and_run_model) {
+    stats::RecordClassificationResultComputed(*config, pred_result);
+
     proto::ClientResult client_result =
         metadata_utils::CreateClientResultFromPredResult(pred_result,
                                                          base::Time::Now());

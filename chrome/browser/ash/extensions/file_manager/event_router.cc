@@ -22,6 +22,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/single_thread_task_runner.h"
@@ -320,7 +321,7 @@ class DeviceEventRouterImpl : public DeviceEventRouter {
   }
 
  private:
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
 };
 
 class DriveFsEventRouterImpl : public DriveFsEventRouter {
@@ -416,8 +417,9 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
     extensions::EventRouter::Get(profile_)->BroadcastEvent(std::move(event));
   }
 
-  Profile* const profile_;
-  const std::map<base::FilePath, std::unique_ptr<FileWatcher>>* const
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
+  const raw_ptr<const std::map<base::FilePath, std::unique_ptr<FileWatcher>>,
+                ExperimentalAsh>
       file_watchers_;
 };
 
@@ -585,6 +587,7 @@ void EventRouter::Shutdown() {
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->RemoveObserver(this);
+    integration_service->RemoveObserver(drivefs_event_router_.get());
     integration_service->GetDriveFsHost()->RemoveObserver(
         drivefs_event_router_.get());
     integration_service->GetDriveFsHost()->set_dialog_handler({});
@@ -651,6 +654,7 @@ void EventRouter::ObserveEvents() {
       DriveIntegrationServiceFactory::FindForProfile(profile_);
   if (integration_service) {
     integration_service->AddObserver(this);
+    integration_service->AddObserver(drivefs_event_router_.get());
     integration_service->GetDriveFsHost()->AddObserver(
         drivefs_event_router_.get());
     integration_service->GetDriveFsHost()->set_dialog_handler(

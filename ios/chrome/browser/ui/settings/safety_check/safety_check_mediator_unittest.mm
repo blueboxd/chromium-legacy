@@ -14,6 +14,7 @@
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "components/keyed_service/core/service_access_type.h"
+#import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_manager_test_utils.h"
 #import "components/password_manager/core/browser/test_password_store.h"
 #import "components/password_manager/core/common/password_manager_features.h"
@@ -101,13 +102,6 @@ UIImage* SafeImage() {
                                             kTrailingSymbolImagePointSize);
 }
 
-// The image when there are reused passwords, weak passwords or dismissed
-// compromised password warnings.
-UIImage* WarningImage() {
-  return DefaultSymbolTemplateWithPointSize(kErrorCircleFillSymbol,
-                                            kTrailingSymbolImagePointSize);
-}
-
 // The image when the state is unsafe.
 UIImage* UnsafeImage() {
   return DefaultSymbolTemplateWithPointSize(
@@ -119,12 +113,6 @@ UIImage* UnsafeImage() {
 UIColor* GreenColor() {
   return [UIColor
       colorNamed:IsPasswordCheckupEnabled() ? kGreen500Color : kGreenColor];
-}
-
-// The color when there are reused passwords, weak passwords or dismissed
-// compromised password warnings.
-UIColor* YellowColor() {
-  return [UIColor colorNamed:kYellow500Color];
 }
 
 // The color when the state is unsafe.
@@ -228,7 +216,8 @@ class SafetyCheckMediatorTest : public PlatformTest {
     form->password_issues = {
         {insecure_type,
          password_manager::InsecurityMetadata(
-             base::Time::Now(), password_manager::IsMuted(is_muted))}};
+             base::Time::Now(), password_manager::IsMuted(is_muted),
+             password_manager::TriggerBackendNotification(false))}};
     AddPasswordForm(std::move(form));
   }
 
@@ -568,9 +557,7 @@ TEST_F(SafetyCheckMediatorTest, PasswordCheckReusedPasswordsUI) {
   EXPECT_NSEQ(
       mediator_.passwordCheckItem.detailText,
       l10n_util::GetNSStringF(IDS_IOS_PASSWORD_CHECKUP_REUSED_COUNT, u"2"));
-  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, WarningImage());
-  EXPECT_TRUE([mediator_.passwordCheckItem.trailingImageTintColor
-      isEqual:YellowColor()]);
+  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, nil);
   EXPECT_EQ(mediator_.passwordCheckItem.accessoryType,
             UITableViewCellAccessoryDisclosureIndicator);
 }
@@ -602,9 +589,7 @@ TEST_F(SafetyCheckMediatorTest, PasswordCheckWeakPasswordsUI) {
   EXPECT_NSEQ(mediator_.passwordCheckItem.detailText,
               base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
                   IDS_IOS_PASSWORD_CHECKUP_WEAK_COUNT, 1)));
-  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, WarningImage());
-  EXPECT_TRUE([mediator_.passwordCheckItem.trailingImageTintColor
-      isEqual:YellowColor()]);
+  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, nil);
   EXPECT_EQ(mediator_.passwordCheckItem.accessoryType,
             UITableViewCellAccessoryDisclosureIndicator);
 }
@@ -638,9 +623,7 @@ TEST_F(SafetyCheckMediatorTest, PasswordCheckDismissedWarningsUI) {
   EXPECT_NSEQ(mediator_.passwordCheckItem.detailText,
               base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
                   IDS_IOS_PASSWORD_CHECKUP_DISMISSED_COUNT, 1)));
-  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, WarningImage());
-  EXPECT_TRUE([mediator_.passwordCheckItem.trailingImageTintColor
-      isEqual:YellowColor()]);
+  EXPECT_EQ(mediator_.passwordCheckItem.trailingImage, nil);
   EXPECT_EQ(mediator_.passwordCheckItem.accessoryType,
             UITableViewCellAccessoryDisclosureIndicator);
 }

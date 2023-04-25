@@ -949,13 +949,27 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
     ),
     BanRule(
-      r'/\b(absl|std)::(u16)?string_view\b',
+      r'/\babsl::string_view\b',
       (
-        'absl::string_view is banned and std::[u16]string_view are not allowed',
-        ' yet (https://crbug.com/691162). Use base::StringPiece[16] instead.',
+        'absl::string_view is a legacy spelling of std::string_view, which is ',
+        'not allowed yet (https://crbug.com/691162). Use base::StringPiece ',
+        'instead, unless std::string_view is needed to use with an external ',
+        'API.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+    ),
+    BanRule(
+      r'/\bstd::(u16)?string_view\b',
+      (
+        'std::[u16]string_view is not yet allowed (crbug.com/691162). Use ',
+        'base::StringPiece[16] instead, unless std::[u16]string_view is ',
+        'needed to use an external API.',
       ),
       True,
       [
+        # Needed to implement and test std::string_view interoperability.
+        r'base/strings/string_piece.*',
         # Needed to use liburlpattern API.
         r'third_party/blink/renderer/core/url_pattern/.*',
         r'third_party/blink/renderer/modules/manifest/manifest_parser\.cc',
@@ -965,6 +979,12 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         r'net/test/embedded_test_server/.*',
         r'net/third_party/quiche/.*',
         r'services/network/web_transport\.cc',
+        # This code is in the process of being extracted into an external
+        # library, where //base will be unavailable.
+        r'net/cert/pki/.*',
+        r'net/der/.*',
+        # Needed to use APIs from the above.
+        r'net/cert/.*',
         # Not an error in third_party folders.
         _THIRD_PARTY_EXCEPT_BLINK
       ],
@@ -1131,15 +1151,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
-      r'/\bstd::(u16)?string_view\b',
-      (
-        'std::[u16]string_view is not yet allowed (crbug.com/691162). Use ',
-        'base::StringPiece[16] instead.',
-      ),
-      True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
-    ),
-    BanRule(
       r'/#include <(barrier|latch|semaphore|stop_token)>',
       (
         'The thread support library is banned. Use base/synchronization '
@@ -1163,7 +1174,12 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
         ' char and std::string instead?',
       ),
       True,
-      [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
+      [
+        # The demangler does not use this type but needs to know about it.
+        'base/third_party/symbolize/demangle\.cc',
+        # Don't warn in third_party folders.
+        _THIRD_PARTY_EXCEPT_BLINK
+      ],
     ),
     BanRule(
       r'/(\b(co_await|co_return|co_yield)\b|#include <coroutine>)',
@@ -1652,6 +1668,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/allot_native_libraries.pydeps',
     'build/android/gyp/apkbuilder.pydeps',
     'build/android/gyp/assert_static_initializers.pydeps',
+    'build/android/gyp/binary_baseline_profile.pydeps',
     'build/android/gyp/bytecode_processor.pydeps',
     'build/android/gyp/bytecode_rewriter.pydeps',
     'build/android/gyp/check_flag_expectations.pydeps',
@@ -4981,19 +4998,13 @@ def CheckForTooLargeFiles(input_api, output_api):
     # files seems to be 1-2 MB, with a handful around 5-8 MB, so
     # anything over 20 MB is exceptional.
     TOO_LARGE_FILE_SIZE_LIMIT = 20 * 1024 * 1024
-    # Special exemption for a file that is slightly over the limit.
-    SPECIAL_FILE_SIZE_LIMIT = 25 * 1024 * 1024
-    SPECIAL_FILE_NAME = 'transport_security_state_static.json'
 
     too_large_files = []
     for f in input_api.AffectedFiles():
         # Check both added and modified files (but not deleted files).
         if f.Action() in ('A', 'M'):
             size = input_api.os_path.getsize(f.AbsoluteLocalPath())
-            limit = (SPECIAL_FILE_SIZE_LIMIT if
-                f.AbsoluteLocalPath().endswith(SPECIAL_FILE_NAME) else
-                TOO_LARGE_FILE_SIZE_LIMIT)
-            if size > limit:
+            if size > TOO_LARGE_FILE_SIZE_LIMIT:
                 too_large_files.append("%s: %d bytes" % (f.LocalPath(), size))
 
     if too_large_files:

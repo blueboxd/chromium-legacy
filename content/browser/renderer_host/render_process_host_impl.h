@@ -328,8 +328,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const GlobalRenderFrameHostId& render_frame_host_id) override;
 
 #if BUILDFLAG(IS_ANDROID)
-  void SetOsSupportForAttributionReporting(
-      attribution_reporting::mojom::OsSupport os_support) override;
+  void SetAttributionReportingSupport(
+      network::mojom::AttributionSupport) override;
 #endif
 
   // IPC::Sender via RenderProcessHost.

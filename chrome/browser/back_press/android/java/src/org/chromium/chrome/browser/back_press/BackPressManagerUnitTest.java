@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.back_press;
 
+import android.os.Build;
+
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
@@ -38,6 +41,13 @@ public class BackPressManagerUnitTest {
         public CallbackHelper getCallbackHelper() {
             return mCallbackHelper;
         }
+    }
+
+    @Test
+    @Before
+    public void setup() {
+        MinimizeAppAndCloseTabBackPressHandler.setVersionForTesting(Build.VERSION_CODES.TIRAMISU);
+        MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK.setForTesting(true);
     }
 
     @Test

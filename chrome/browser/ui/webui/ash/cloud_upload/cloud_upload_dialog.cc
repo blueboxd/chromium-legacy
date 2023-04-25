@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 
-#include "ash/constants/ash_features.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -32,6 +31,7 @@
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/user_manager/user_manager.h"
 #include "extensions/browser/api/file_handlers/mime_util.h"
@@ -319,15 +319,20 @@ void CloudOpenTask::OpenODFSUrls() {
 }
 
 void CloudOpenTask::ConfirmMoveOrStartUpload() {
-  if (file_manager::file_tasks::AlwaysMoveOfficeFiles(profile_)) {
-    // No dialog required.
-    return StartUpload();
-  }
-
   if (cloud_provider_ == CloudProvider::kGoogleDrive) {
-    InitAndShowDialog(mojom::DialogPage::kMoveConfirmationGoogleDrive);
+    if (file_manager::file_tasks::AlwaysMoveOfficeFilesToDrive(profile_)) {
+      // No dialog required.
+      StartUpload();
+    } else {
+      InitAndShowDialog(mojom::DialogPage::kMoveConfirmationGoogleDrive);
+    }
   } else if (cloud_provider_ == CloudProvider::kOneDrive) {
-    InitAndShowDialog(mojom::DialogPage::kMoveConfirmationOneDrive);
+    if (file_manager::file_tasks::AlwaysMoveOfficeFilesToOneDrive(profile_)) {
+      // No dialog required.
+      StartUpload();
+    } else {
+      InitAndShowDialog(mojom::DialogPage::kMoveConfirmationOneDrive);
+    }
   }
 }
 
@@ -365,7 +370,7 @@ bool IsEligibleAndEnabledUploadOfficeToCloud() {
     return false;
   }
 
-  return features::IsUploadOfficeToCloudEnabled();
+  return chromeos::features::IsUploadOfficeToCloudEnabled();
 }
 
 bool ShouldFixUpOffice(Profile* profile, const CloudProvider cloud_provider) {
@@ -610,13 +615,18 @@ void CloudOpenTask::ShowDialog(
         resulting_tasks) {
   SetTaskArgs(args, std::move(resulting_tasks));
 
+  bool office_move_confirmation_shown =
+      cloud_provider_ == CloudProvider::kGoogleDrive
+          ? file_manager::file_tasks::GetOfficeMoveConfirmationShownForDrive(
+                profile_)
+          : file_manager::file_tasks::GetOfficeMoveConfirmationShownForOneDrive(
+                profile_);
   // This CloudUploadDialog pointer is managed by an instance of
   // `views::WebDialogView` and deleted in
   // `SystemWebDialogDelegate::OnDialogClosed`.
   CloudUploadDialog* dialog = new CloudUploadDialog(
       std::move(args), base::BindOnce(&CloudOpenTask::OnDialogComplete, this),
-      dialog_page,
-      file_manager::file_tasks::OfficeMoveConfirmationShown(profile_));
+      dialog_page, office_move_confirmation_shown);
 
   if (!modal_parent_) {
     // Create a files app window and use it as the modal parent.

@@ -5,6 +5,7 @@
 #import "ui/views/controls/menu/menu_controller_cocoa_delegate_impl.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/mac/mac_util.h"
 #import "base/message_loop/message_pump_mac.h"
@@ -47,7 +48,7 @@ NSImage* NewTagImage(const ui::ColorProvider* color_provider) {
       color_provider->GetColor(ui::kColorBadgeInCocoaMenuForeground));
 
   NSDictionary* badge_attrs = @{
-    NSFontAttributeName : badge_font.GetNativeFont(),
+    NSFontAttributeName : base::mac::CFToNSCast(badge_font.GetCTFont()),
     NSForegroundColorAttributeName : badge_text_color,
   };
 

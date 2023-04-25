@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "build/config/chromebox_for_meetings/buildflags.h"
@@ -51,6 +52,8 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/services/speech/buildflags/buildflags.h"
 #include "components/browsing_topics/mojom/browsing_topics_internals.mojom.h"
+#include "components/commerce/content/browser/commerce_internals_ui.h"
+#include "components/commerce/core/internals/mojom/commerce_internals.mojom.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
@@ -245,6 +248,7 @@
 #include "ash/webui/multidevice_debug/proximity_auth_ui.h"
 #include "ash/webui/os_feedback_ui/mojom/os_feedback_ui.mojom.h"
 #include "ash/webui/os_feedback_ui/os_feedback_ui.h"
+#include "ash/webui/os_feedback_ui/os_feedback_untrusted_ui.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ui.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
@@ -312,6 +316,7 @@
 #include "chromeos/ash/services/bluetooth_config/public/mojom/cros_bluetooth_config.mojom.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/cellular_setup.mojom.h"
 #include "chromeos/ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
+#include "chromeos/ash/services/connectivity/public/mojom/passpoint.mojom.h"
 #include "chromeos/ash/services/hotspot_config/public/mojom/cros_hotspot_config.mojom.h"
 #include "chromeos/ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -948,6 +953,10 @@ void PopulateChromeWebUIFrameBinders(
       segmentation_internals::mojom::PageHandlerFactory,
       SegmentationInternalsUI>(map);
 
+  RegisterWebUIControllerInterfaceBinder<
+      commerce::mojom::CommerceInternalsHandlerFactory,
+      commerce::CommerceInternalsUI>(map);
+
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
   RegisterWebUIControllerInterfaceBinder<
@@ -980,7 +989,8 @@ void PopulateChromeWebUIFrameBinders(
       ash::FirmwareUpdateAppUI, ash::ScanningUI, ash::OSFeedbackUI,
       ash::ShortcutCustomizationAppUI,
       ash::printing::printing_manager::PrintManagementUI,
-      ash::InternetDetailDialogUI, ash::SetTimeUI,
+      ash::InternetConfigDialogUI, ash::InternetDetailDialogUI, ash::SetTimeUI,
+      ash::BluetoothPairingDialogUI, nearby_share::NearbyShareDialogUI,
 #endif
       NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI>(
       map);
@@ -1223,15 +1233,16 @@ void PopulateChromeWebUIFrameBinders(
       ash::OobeUI, ash::settings::OSSettingsUI, ash::LockScreenNetworkUI,
       ash::ShimlessRMADialogUI>(map);
 
+  if (ash::features::IsPasspointSettingsEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<
+        chromeos::connectivity::mojom::PasspointService,
+        ash::InternetDetailDialogUI, ash::NetworkUI,
+        ash::settings::OSSettingsUI>(map);
+  }
+
   RegisterWebUIControllerInterfaceBinder<
       chromeos::printing::printing_manager::mojom::PrintingMetadataProvider,
       ash::printing::printing_manager::PrintManagementUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<cros::mojom::CameraAppDeviceProvider,
-                                         ash::CameraAppUI>(map);
-
-  RegisterWebUIControllerInterfaceBinder<
-      ash::camera_app::mojom::CameraAppHelper, ash::CameraAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
       ash::help_app::mojom::PageHandlerFactory, ash::HelpAppUI>(map);
@@ -1248,6 +1259,10 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<
       ash::eche_app::mojom::SystemInfoProvider, ash::eche_app::EcheAppUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<
+      ash::eche_app::mojom::AccessibilityProvider, ash::eche_app::EcheAppUI>(
+      map);
 
   RegisterWebUIControllerInterfaceBinder<ash::eche_app::mojom::UidGenerator,
                                          ash::eche_app::EcheAppUI>(map);
@@ -1483,6 +1498,10 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
     registry.ForWebUI<ash::FaceMLAppUI>()
         .Add<ash::mojom::face_ml_app::PageHandlerFactory>();
   }
+  registry.ForWebUI<ash::CameraAppUI>()
+      .Add<color_change_listener::mojom::PageHandler>()
+      .Add<cros::mojom::CameraAppDeviceProvider>()
+      .Add<ash::camera_app::mojom::CameraAppHelper>();
   registry.ForWebUI<ash::ColorInternalsUI>()
       .Add<color_change_listener::mojom::PageHandler>()
       .Add<ash::color_internals::mojom::WallpaperColorsHandler>();
@@ -1507,6 +1526,9 @@ void PopulateChromeWebUIFrameInterfaceBrokers(
 
   registry.ForWebUI<ash::UntrustedProjectorUI>()
       .Add<ash::projector::mojom::UntrustedProjectorPageHandlerFactory>();
+
+  registry.ForWebUI<ash::feedback::OsFeedbackUntrustedUI>()
+      .Add<color_change_listener::mojom::PageHandler>();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)

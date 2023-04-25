@@ -326,6 +326,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.Cursor() == b.Cursor();
     case CSSPropertyID::kDisplay:
       return a.Display() == b.Display();
+    case CSSPropertyID::kContentVisibility:
+      return a.ContentVisibility() == b.ContentVisibility();
     case CSSPropertyID::kDominantBaseline:
       return a.DominantBaseline() == b.DominantBaseline();
     case CSSPropertyID::kEmptyCells:
@@ -1096,6 +1098,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return true;
 
     // No transitions on internal properties:
+    case CSSPropertyID::kInternalAlignContentBlock:
     case CSSPropertyID::kInternalAlignSelfBlock:
     case CSSPropertyID::kInternalEmptyLineHeight:
     case CSSPropertyID::kInternalFontSizeDelta:
@@ -1218,7 +1221,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kContain:
     case CSSPropertyID::kContainerName:
     case CSSPropertyID::kContainerType:
-    case CSSPropertyID::kContentVisibility:
     case CSSPropertyID::kDirection:
     case CSSPropertyID::kTextCombineUpright:
     case CSSPropertyID::kTextOrientation:
@@ -1242,7 +1244,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kAscentOverride:
     case CSSPropertyID::kBasePalette:
     case CSSPropertyID::kDescentOverride:
-    case CSSPropertyID::kEnd:
     case CSSPropertyID::kInvalid:
     case CSSPropertyID::kFallback:
     case CSSPropertyID::kFontDisplay:
@@ -1255,10 +1256,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kPrefix:
     case CSSPropertyID::kRange:
     case CSSPropertyID::kSize:
-    case CSSPropertyID::kSource:
     case CSSPropertyID::kSpeakAs:
     case CSSPropertyID::kSrc:
-    case CSSPropertyID::kStart:
     case CSSPropertyID::kSuffix:
     case CSSPropertyID::kSymbols:
     case CSSPropertyID::kSyntax:

@@ -361,11 +361,8 @@ void ToolbarView::Init() {
     }
   }
 
-  if (base::FeatureList::IsEnabled(
-          performance_manager::features::kBatterySaverModeAvailable)) {
-    battery_saver_button_ =
-        AddChildView(std::make_unique<BatterySaverButton>(browser_view_));
-  }
+  battery_saver_button_ =
+      AddChildView(std::make_unique<BatterySaverButton>(browser_view_));
 
   if (cast)
     cast_ = AddChildView(std::move(cast));
@@ -692,9 +689,11 @@ void ToolbarView::Layout() {
   if (display_mode_ == DisplayMode::NORMAL) {
     LayoutCommon();
 
+#if BUILDFLAG(IS_MAC)
     if (features::IsChromeRefresh2023()) {
       UpdateClipPath();
     }
+#endif
   }
 
   // Call super implementation to ensure layout manager and child layouts
@@ -806,9 +805,6 @@ void ToolbarView::InitLayout() {
   }
 
   if (toolbar_divider_) {
-    SkColor color = GetColorProvider()->GetColor(ui::kColorSysOutline);
-    toolbar_divider_->SetBackground(
-        views::CreateRoundedRectBackground(color, kToolbarDividerCornerRadius));
     toolbar_divider_->SetProperty(views::kMarginsKey,
                                   gfx::Insets::VH(0, kToolbarDividerSpacing));
   }
@@ -836,6 +832,10 @@ void ToolbarView::LayoutCommon() {
 
   if (toolbar_divider_ && extensions_container_) {
     toolbar_divider_->SetVisible(extensions_container_->GetVisible());
+    const SkColor toolbar_extension_separator_color =
+        GetColorProvider()->GetColor(kColorToolbarExtensionSeparatorEnabled);
+    toolbar_divider_->SetBackground(views::CreateRoundedRectBackground(
+        toolbar_extension_separator_color, kToolbarDividerCornerRadius));
   }
   // Cast button visibility is controlled externally.
 }

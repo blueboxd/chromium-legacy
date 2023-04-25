@@ -31,6 +31,7 @@
 #include "ash/shell.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
+#include "ash/wallpaper/wallpaper_drag_drop_delegate.h"
 #include "ash/wallpaper/wallpaper_image_downloader.h"
 #include "ash/wallpaper/wallpaper_metrics_manager.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
@@ -51,21 +52,18 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/weak_ptr.h"
 #include "base/no_destructor.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_piece_forward.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
-#include "net/http/http_request_headers.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/data_decoder/public/mojom/image_decoder.mojom-shared.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -162,15 +160,6 @@ base::FilePath GetUserGooglePhotosWallpaperDir(const AccountId& account_id) {
   DCHECK(account_id.HasAccountIdKey());
   return GlobalChromeOSGooglePhotosWallpapersDir().Append(
       account_id.GetAccountIdKey());
-}
-
-// Returns the appropriate wallpaper resolution for all root windows.
-WallpaperResolution GetAppropriateResolution() {
-  gfx::Size size = WallpaperControllerImpl::GetMaxDisplaySizeInNative();
-  return (size.width() > kSmallWallpaperMaxWidth ||
-          size.height() > kSmallWallpaperMaxHeight)
-             ? WallpaperResolution::kLarge
-             : WallpaperResolution::kSmall;
 }
 
 // Returns the path of the online wallpaper corresponding to |url| and
@@ -537,24 +526,8 @@ WallpaperControllerImpl::WallpaperControllerImpl(
 }
 
 WallpaperControllerImpl::~WallpaperControllerImpl() {
-  if (current_wallpaper_)
-    current_wallpaper_->RemoveObserver(this);
-
   Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->RemoveShellObserver(this);
-}
-
-// static
-gfx::Size WallpaperControllerImpl::GetMaxDisplaySizeInNative() {
-  // Return an empty size for test environments where the screen is null.
-  if (!display::Screen::GetScreen())
-    return gfx::Size();
-
-  gfx::Size max;
-  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays())
-    max.SetToMax(display.GetSizeInPixel());
-
-  return max;
 }
 
 // static
@@ -685,9 +658,10 @@ void WallpaperControllerImpl::ShowWallpaperImage(const gfx::ImageSkia& image,
 
   is_first_wallpaper_ = !current_wallpaper_;
   current_wallpaper_ = std::make_unique<WallpaperResizer>(
-      image, GetMaxDisplaySizeInNative(), info, sequenced_task_runner_);
-  current_wallpaper_->AddObserver(this);
-  current_wallpaper_->StartResize();
+      image, GetMaxDisplaySizeInNative(), info);
+  // `this` owns `current_wallpaper_` and therefore can use `base::Unretained`.
+  current_wallpaper_->StartResize(base::BindOnce(
+      &WallpaperControllerImpl::OnWallpaperResized, base::Unretained(this)));
 
   if (is_first_wallpaper_) {
     for (auto& observer : observers_)
@@ -822,14 +796,14 @@ void WallpaperControllerImpl::AddFirstWallpaperAnimationEndCallback(
 
 void WallpaperControllerImpl::StartDecodeFromPath(
     const AccountId& account_id,
+    const user_manager::UserType user_type,
     const WallpaperInfo& info,
     bool show_wallpaper,
     const base::FilePath& wallpaper_path) {
   if (wallpaper_path.empty()) {
     // Fallback to default if the path is empty.
     wallpaper_cache_map_.erase(account_id);
-    SetDefaultWallpaperImpl(GetUserType(account_id), show_wallpaper,
-                            base::DoNothing());
+    SetDefaultWallpaperImpl(user_type, show_wallpaper, base::DoNothing());
     return;
   }
 
@@ -844,6 +818,15 @@ void WallpaperControllerImpl::SetClient(WallpaperControllerClient* client) {
   wallpaper_controller_client_ = client;
   pref_manager_->SetClient(client);
   variant_info_fetcher_->SetClient(client);
+}
+
+WallpaperDragDropDelegate* WallpaperControllerImpl::GetDragDropDelegate() {
+  return drag_drop_delegate_.get();
+}
+
+void WallpaperControllerImpl::SetDragDropDelegate(
+    std::unique_ptr<WallpaperDragDropDelegate> delegate) {
+  drag_drop_delegate_ = std::move(delegate);
 }
 
 void WallpaperControllerImpl::SetDriveFsDelegate(
@@ -1297,7 +1280,7 @@ void WallpaperControllerImpl::ShowUserWallpaper(const AccountId& account_id) {
 
 void WallpaperControllerImpl::ShowUserWallpaper(
     const AccountId& account_id,
-    user_manager::UserType user_type) {
+    const user_manager::UserType user_type) {
   current_user_ = account_id;
   if (user_type == user_manager::USER_TYPE_KIOSK_APP ||
       user_type == user_manager::USER_TYPE_ARC_KIOSK_APP) {
@@ -1374,7 +1357,7 @@ void WallpaperControllerImpl::ShowUserWallpaper(
       FROM_HERE,
       base::BindOnce(&PathWithFallback, account_id, info, wallpaper_path),
       base::BindOnce(&WallpaperControllerImpl::StartDecodeFromPath,
-                     weak_factory_.GetWeakPtr(), account_id, info,
+                     weak_factory_.GetWeakPtr(), account_id, user_type, info,
                      /*show_wallpaper=*/true));
 }
 
@@ -1780,7 +1763,7 @@ void WallpaperControllerImpl::OnActiveUserPrefServiceChanged(
     // Migrate wallpaper info to syncable prefs.
     if (!pref_manager_->GetSyncedWallpaperInfo(account_id, &synced_info) &&
         pref_manager_->GetLocalWallpaperInfo(account_id, &local_info) &&
-        WallpaperPrefManager::IsWallpaperTypeSyncable(local_info.type)) {
+        WallpaperPrefManager::ShouldSyncOut(local_info)) {
       if (local_info.type == WallpaperType::kCustomized) {
         base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
                                     .Append(local_info.location);
@@ -2919,25 +2902,30 @@ void WallpaperControllerImpl::SyncLocalAndRemotePrefs(
   // handled it locally.
   WallpaperInfo synced_info;
   WallpaperInfo local_info;
-  if (!pref_manager_->GetSyncedWallpaperInfo(account_id, &synced_info))
+  if (!pref_manager_->GetSyncedWallpaperInfo(account_id, &synced_info)) {
     return;
+  }
   if (!pref_manager_->GetLocalWallpaperInfo(account_id, &local_info)) {
     HandleWallpaperInfoSyncedIn(account_id, synced_info);
     return;
   }
-  if (synced_info.MatchesSelection(local_info))
-    return;
-  if (synced_info.date >= local_info.date) {
-    // If synced is newer or the same age, it wins.
-    HandleWallpaperInfoSyncedIn(account_id, synced_info);
-  } else if (local_info.type == WallpaperType::kCustomized) {
+  // TODO(b/278096886): Move this sync-out logic for `kCustomized` type
+  // somewhere else.
+  if (!synced_info.MatchesSelection(local_info) &&
+      synced_info.date < local_info.date &&
+      local_info.type == WallpaperType::kCustomized) {
     // Generally, we handle setting synced_info when local_info is updated.
     // But for custom images, we wait until the image is uploaded to Drive,
     // which may not be available at the time of setting the local_info.
     base::FilePath source = GetCustomWallpaperDir(kOriginalWallpaperSubDir)
                                 .Append(local_info.location);
     SaveWallpaperToDriveFsAndSyncInfo(account_id, source);
+    return;
   }
+  if (!WallpaperPrefManager::ShouldSyncIn(synced_info, local_info)) {
+    return;
+  }
+  HandleWallpaperInfoSyncedIn(account_id, synced_info);
 }
 
 bool WallpaperControllerImpl::IsDailyRefreshEnabled() const {

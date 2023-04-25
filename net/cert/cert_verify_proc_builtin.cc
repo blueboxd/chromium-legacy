@@ -39,6 +39,7 @@
 #include "net/der/encode_values.h"
 #include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace net {
 
@@ -87,7 +88,7 @@ base::Value::List PEMCertValueList(const ParsedCertificateList& certs) {
   base::Value::List value;
   for (const auto& cert : certs) {
     std::string pem;
-    X509Certificate::GetPEMEncodedFromDER(cert->der_cert().AsStringPiece(),
+    X509Certificate::GetPEMEncodedFromDER(cert->der_cert().AsStringView(),
                                           &pem);
     value.Append(std::move(pem));
   }
@@ -367,7 +368,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       return false;
 
     SHA256HashValue root_fingerprint;
-    crypto::SHA256HashString(root->der_cert().AsStringPiece(),
+    crypto::SHA256HashString(root->der_cert().AsStringView(),
                              root_fingerprint.data,
                              sizeof(root_fingerprint.data));
 
@@ -468,7 +469,7 @@ void AddIntermediatesToIssuerSource(X509Certificate* x509_cert,
 void AppendPublicKeyHashes(const der::Input& spki_bytes,
                            HashValueVector* hashes) {
   HashValue sha256(HASH_VALUE_SHA256);
-  crypto::SHA256HashString(spki_bytes.AsStringPiece(), sha256.data(),
+  crypto::SHA256HashString(spki_bytes.AsStringView(), sha256.data(),
                            crypto::kSHA256Length);
   hashes->push_back(sha256);
 }
@@ -523,12 +524,6 @@ void MapPathBuilderErrorsToCertStatus(const CertPathErrors& errors,
     *cert_status |= CERT_STATUS_INVALID;
 }
 
-bssl::UniquePtr<CRYPTO_BUFFER> CreateCertBuffers(
-    const std::shared_ptr<const ParsedCertificate>& certificate) {
-  return X509Certificate::CreateCertBufferFromBytes(
-      certificate->der_cert().AsSpan());
-}
-
 // Creates a X509Certificate (chain) to return as the verified result.
 //
 //  * |target_cert|: The original X509Certificate that was passed in to
@@ -540,8 +535,9 @@ scoped_refptr<X509Certificate> CreateVerifiedCertChain(
   std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
 
   // Skip the first certificate in the path as that is the target certificate
-  for (size_t i = 1; i < path.certs.size(); ++i)
-    intermediates.push_back(CreateCertBuffers(path.certs[i]));
+  for (size_t i = 1; i < path.certs.size(); ++i) {
+    intermediates.push_back(bssl::UpRef(path.certs[i]->cert_buffer()));
+  }
 
   scoped_refptr<X509Certificate> result = X509Certificate::CreateFromBuffer(
       bssl::UpRef(target_cert->cert_buffer()), std::move(intermediates));
@@ -596,6 +592,8 @@ CertPathBuilder::Result TryBuildPath(
       crl_set, net_fetcher, verification_type, digest_policy, flags,
       trust_store, ocsp_response, ev_metadata, checked_revocation, deadline);
 
+  absl::optional<CertIssuerSourceAia> aia_cert_issuer_source;
+
   // Initialize the path builder.
   CertPathBuilder path_builder(
       target, trust_store->trust_store(), &path_builder_delegate,
@@ -609,12 +607,13 @@ CertPathBuilder::Result TryBuildPath(
 
   // Allow the path builder to discover intermediates through AIA fetching.
   // TODO(crbug.com/634484): hook up netlog to AIA.
-  std::unique_ptr<CertIssuerSourceAia> aia_cert_issuer_source;
-  if (net_fetcher) {
-    aia_cert_issuer_source = std::make_unique<CertIssuerSourceAia>(net_fetcher);
-    path_builder.AddCertIssuerSource(aia_cert_issuer_source.get());
-  } else {
-    LOG(ERROR) << "No net_fetcher for performing AIA chasing.";
+  if (!(flags & CertVerifyProc::VERIFY_DISABLE_NETWORK_FETCHES)) {
+    if (net_fetcher) {
+      aia_cert_issuer_source.emplace(net_fetcher);
+      path_builder.AddCertIssuerSource(&aia_cert_issuer_source.value());
+    } else {
+      LOG(ERROR) << "No net_fetcher for performing AIA chasing.";
+    }
   }
 
   path_builder.SetIterationLimit(kPathBuilderIterationLimit);

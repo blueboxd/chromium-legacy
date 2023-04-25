@@ -306,6 +306,7 @@ chromium-metrics-reviews@google.com.
     <variant name="NetworkErrorLogging" summary="NetworkErrorLogging"/>
     <variant name="NetworkHistory" summary="NetworkHistory"/>
     <variant name="ReportingCache" summary="ReportingCache"/>
+    <variant name="SharedStorage" summary="SharedStorage"/>
     <variant name="StoragePartition" summary="StoragePartition"/>
     <variant name="Synchronous" summary="Synchronous"/>
     <variant name="TrustTokens" summary="TrustTokens"/>
@@ -783,7 +784,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.ContentClustering.NumClustersAfterMerge"
-    units="counts" expires_after="2023-06-04">
+    units="counts" expires_after="2023-10-08">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -797,7 +798,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.ContentClustering.NumClustersBeforeMerge"
-    units="counts" expires_after="2023-06-04">
+    units="counts" expires_after="2023-10-08">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -811,7 +812,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="History.Clusters.Backend.ContentClustering.PairwiseMergeNumIterations"
-    units="counts" expires_after="2023-06-04">
+    units="counts" expires_after="2023-10-08">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1173,7 +1174,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.Backend.QueryAnnotatedVisits.ThreadTime"
-    units="ms" expires_after="2023-08-20">
+    units="ms" expires_after="2023-10-22">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1536,7 +1537,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.JourneysEligibleAndEnabledAtSessionStart"
-    units="BooleanEnabled" expires_after="2023-08-20">
+    units="BooleanEnabled" expires_after="2023-10-22">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1585,7 +1586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.KeywordCache.ThreadTime" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>tommycli@chromium.org</owner>
   <owner>chrome-journeys@google.com</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -1616,7 +1617,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.Clusters.ProcessClustersDuration" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>olivierli@chromium.org</owner>
   <owner>tommycli@chromium.org</owner>
   <component>UI&gt;Browser&gt;Journeys</component>
@@ -2067,7 +2068,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.DomainCount7Day_V3" units="domains"
-    expires_after="2023-07-02">
+    expires_after="2023-10-15">
   <owner>mpearson@chromium.org</owner>
   <owner>mjzhang@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
@@ -2261,7 +2262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLHistoryItems" units="items"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2273,7 +2274,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.InMemoryURLIndexingTime" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>mpearson@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2352,7 +2353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.MonthlyURLCount" units="urls"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>
@@ -2554,6 +2555,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="History.VisitedLinks.TryToAddFingerprint"
+    enum="AddFingerprint" expires_after="2024-04-20">
+  <owner>kyraseevers@chromium.org</owner>
+  <owner>brgoldstein@google.com</owner>
+  <summary>
+    When VisitedLinkWriter is asked to add a URL, it calculates that URL's
+    fingerprint and tries to add that fingerprint to the hashtable. This metric
+    records the result of that function: AddFingerprint(). If the fingerprint is
+    already in the table, we record kAlreadyVisited. If we haven't seen this
+    fingerprint before and it can be successfully stored in the hashtable, we
+    record kNewVisit. Any other outcomes due to table sizing errors are recorded
+    as kTableError.
+  </summary>
+</histogram>
+
 <histogram name="History.VisitedLinks.VisitLoggedFromMainFrame" units="boolean"
     expires_after="2024-04-11">
   <owner>kyraseevers@chromium.org</owner>
@@ -2578,7 +2594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="History.VisitTableCount" units="visits"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>mpearson@chromium.org</owner>
   <owner>sky@chromium.org</owner>
   <component>UI&gt;Browser&gt;History</component>

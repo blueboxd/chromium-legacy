@@ -5,6 +5,7 @@
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 
 #include <memory>
+#include <string>
 #include <tuple>
 #include <utility>
 #include <vector>
@@ -312,8 +313,11 @@ void SkiaOutputSurfaceImpl::DiscardBackbuffer() {
 }
 
 void SkiaOutputSurfaceImpl::RecreateRootDDLRecorder() {
-  DCHECK(characterization_.isValid());
-  root_ddl_recorder_.emplace(characterization_);
+  SkSurfaceCharacterization characterization =
+      CreateSkSurfaceCharacterizationCurrentFrame(
+          size_, color_type_, alpha_type_, /*mipmap=*/false, sk_color_space_);
+  CHECK(characterization.isValid());
+  root_ddl_recorder_.emplace(characterization);
   // This will trigger the lazy initialization of the recorder
   std::ignore = root_ddl_recorder_->getCanvas();
   reset_ddl_recorder_on_swap_ = false;
@@ -325,13 +329,24 @@ void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
   DCHECK(params.alpha_type == kPremul_SkAlphaType ||
          params.alpha_type == kOpaque_SkAlphaType);
 
+  size_ = params.size;
+  format_ = params.format;
+  alpha_type_ = params.alpha_type;
+
+  const auto format_index = static_cast<int>(params.format);
+  color_type_ = capabilities_.sk_color_types[format_index];
+  DCHECK(color_type_ != kUnknown_SkColorType)
+      << "SkColorType is invalid for buffer format_index: " << format_index;
+
+  sk_color_space_ = params.color_space.ToSkColorSpace();
+
   // SetDrawRectangle() will need to be called at the new size.
   has_set_draw_rectangle_for_frame_ = false;
 
   if (use_damage_area_from_skia_output_device_) {
-    damage_of_current_buffer_ = gfx::Rect(params.size);
+    damage_of_current_buffer_ = gfx::Rect(size_);
   } else if (frame_buffer_damage_tracker_) {
-    frame_buffer_damage_tracker_->FrameBuffersChanged(params.size);
+    frame_buffer_damage_tracker_->FrameBuffersChanged(size_);
   }
 
   if (is_using_raw_draw_ && is_raw_draw_using_msaa_) {
@@ -345,28 +360,18 @@ void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
     sample_count_ = 1;
   }
 
-  const auto format_index = static_cast<int>(params.format);
-  const auto& color_type = capabilities_.sk_color_types[format_index];
-  DCHECK(color_type != kUnknown_SkColorType)
-      << "SkColorType is invalid for buffer format_index: " << format_index;
-
-  auto sk_color_space = params.color_space.ToSkColorSpace();
-  characterization_ = CreateSkSurfaceCharacterizationCurrentFrame(
-      params.size, color_type, params.alpha_type, /*mipmap=*/false,
-      std::move(sk_color_space));
-
+  SkImageInfo image_info = SkImageInfo::Make(
+      size_.width(), size_.height(), color_type_, alpha_type_, sk_color_space_);
   // impl_on_gpu_ is released on the GPU thread by a posted task from
   // SkiaOutputSurfaceImpl::dtor. So it is safe to use base::Unretained.
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::Reshape,
-                             base::Unretained(impl_on_gpu_.get()),
-                             characterization_, params.color_space,
+                             base::Unretained(impl_on_gpu_.get()), image_info,
+                             params.color_space, sample_count_,
                              params.device_scale_factor, GetDisplayTransform());
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/true,
                  /*need_framebuffer=*/!dependency_->IsOffscreen());
   FlushGpuTasks(SyncMode::kNoWait);
 
-  size_ = params.size;
-  format_ = params.format;
   RecreateRootDDLRecorder();
 }
 
@@ -696,7 +701,7 @@ SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
   DCHECK(current_paint_);
   DCHECK(!overdraw_surface_ddl_recorder_);
 
-  nway_canvas_.emplace(characterization_.width(), characterization_.height());
+  nway_canvas_.emplace(size_.width(), size_.height());
   nway_canvas_->addCanvas(current_paint_->ddl_recorder()->getCanvas());
 
   // Overdraw feedback uses |SkOverdrawCanvas|, which relies on a buffer with an
@@ -705,10 +710,9 @@ SkCanvas* SkiaOutputSurfaceImpl::RecordOverdrawForCurrentPaint() {
 
   SkSurfaceCharacterization characterization =
       CreateSkSurfaceCharacterizationRenderPass(
-          gfx::Size(characterization_.width(), characterization_.height()),
-          color_type_with_alpha, characterization_.imageInfo().alphaType(),
-          /*mipmap=*/false, characterization_.refColorSpace(),
-          /*is_overlay=*/false, /*scanout_dcomp_surface=*/false);
+          size_, color_type_with_alpha, alpha_type_, /*mipmap=*/false,
+          sk_color_space_, /*is_overlay=*/false,
+          /*scanout_dcomp_surface=*/false);
   if (characterization.isValid()) {
     overdraw_surface_ddl_recorder_.emplace(characterization);
     overdraw_canvas_.emplace((overdraw_surface_ddl_recorder_->getCanvas()));
@@ -1273,8 +1277,8 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     int plane_index,
     uint32_t gl_texture_target,
     const absl::optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
-  if (dependency_->gr_context_type() == gpu::GrContextType::kVulkan) {
 #if BUILDFLAG(ENABLE_VULKAN)
+  if (dependency_->gr_context_type() == gpu::GrContextType::kVulkan) {
     if (!ycbcr_info) {
       return GrBackendFormat::MakeVk(gpu::ToVkFormat(si_format, plane_index));
     }
@@ -1293,8 +1297,10 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
 #else
     return GrBackendFormat::MakeVk(gr_ycbcr_info);
 #endif  // BUILDFLAG(IS_LINUX)
-#endif  // BUILDFLAG(ENABLE_VULKAN)
   } else {
+#else
+  {
+#endif  // BUILDFLAG(ENABLE_VULKAN)
     CHECK_EQ(dependency_->gr_context_type(), gpu::GrContextType::kGL);
     // Convert internal format from GLES2 to platform GL.
     bool use_angle_rgbx_format = impl_on_gpu_->GetFeatureInfo()
@@ -1437,12 +1443,14 @@ gpu::Mailbox SkiaOutputSurfaceImpl::CreateSharedImage(
     const gfx::Size& size,
     const gfx::ColorSpace& color_space,
     uint32_t usage,
+    base::StringPiece debug_label,
     gpu::SurfaceHandle surface_handle) {
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
   auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::CreateSharedImage,
                              base::Unretained(impl_on_gpu_.get()), mailbox,
-                             format, size, color_space, usage, surface_handle);
+                             format, size, color_space, usage,
+                             std::string(debug_label), surface_handle);
   EnqueueGpuTask(std::move(task), {}, /*make_current=*/true,
                  /*need_framebuffer=*/false);
 

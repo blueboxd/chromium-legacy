@@ -646,6 +646,15 @@ const char kHatsBluetoothRevampCycleEndTs[] =
 const char kHatsBluetoothRevampIsSelected[] =
     "hats_bluetooth_revamp_is_selected";
 
+// An int64 pref. This is the timestamp, microseconds after epoch, that
+// indicates the end of the Battery life experience survey.
+const char kHatsBatteryLifeCycleEndTs[] =
+    "hats_battery_life_cycle_end_timestamp";
+
+// A boolean pref. Indicates if the device is selected for the HaTS Battery
+// life experience survey.
+const char kHatsBatteryLifeIsSelected[] = "hats_battery_life_is_selected";
+
 // An int64 pref. This is a timestamp, microseconds after epoch, of the most
 // recent time the profile took or dismissed HaTS (happiness-tracking) survey.
 const char kHatsLastInteractionTimestamp[] = "hats_last_interaction_timestamp";
@@ -1830,12 +1839,23 @@ const char kDefaultHandlersForFileExtensions[] =
 // Whether the office files setup flow has ever been completed by the user.
 const char kOfficeSetupComplete[] = "filebrowser.office.setup_complete";
 
-// Whether we should always move office files without prompting the user first.
-const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
+// Whether we should always move office files to Google Drive without prompting
+// the user first.
+const char kOfficeFilesAlwaysMoveToDrive[] =
+    "filebrowser.office.always_move_to_drive";
 
-// Whether the move confirmation dialog has been shown before.
-const char kOfficeMoveConfirmationShown[] =
-    "filebrowser.office.move_confirmation_shown";
+// Whether we should always move office files to OneDrive without prompting the
+// user first.
+const char kOfficeFilesAlwaysMoveToOneDrive[] =
+    "filebrowser.office.always_move_to_onedrive";
+
+// Whether the move confirmation dialog has been shown before for Google Drive.
+const char kOfficeMoveConfirmationShownForDrive[] =
+    "filebrowser.office.move_confirmation_shown_for_drive";
+
+// Whether the move confirmation dialog has been shown before for OneDrive.
+const char kOfficeMoveConfirmationShownForOneDrive[] =
+    "filebrowser.office.move_confirmation_shown_for_onedrive";
 
 // The timestamp of the latest office file automatically moved to OneDrive.
 const char kOfficeFileMovedToOneDrive[] =
@@ -2883,10 +2903,6 @@ const char kBrowserProfilePickerShown[] = "profile.picker_shown";
 const char kBrowserShowProfilePickerOnStartup[] =
     "profile.show_picker_on_startup";
 
-// Boolean which indicates if the user is allowed to sign into Chrome on the
-// next startup.
-const char kSigninAllowedOnNextStartup[] = "signin.allowed_on_next_startup";
-
 // Boolean which indicate if signin interception is enabled.
 const char kSigninInterceptionEnabled[] = "signin.interception_enabled";
 
@@ -3556,6 +3572,11 @@ const char kDeviceHindiInscriptLayoutEnabled[] =
 // page action chip in the expanded size.
 const char kHighEfficiencyChipExpandedCount[] =
     "high_efficiency.chip_expanded_count";
+
+// Stores the timestamp of the last time the high efficiency chip was shown
+// expanded to highlight memory savings.
+const char kLastHighEfficiencyChipExpandedTimestamp[] =
+    "high_efficiency.last_chip_expanded_timestamp";
 
 // A boolean indicating whether the price track first user experience bubble
 // should show. This is set to false if the user has clicked the "Price track"

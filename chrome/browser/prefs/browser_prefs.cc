@@ -139,7 +139,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_prefs.h"
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#include "components/reading_list/core/reading_list_pref_names.h"
 #include "components/safe_browsing/content/common/file_type_policies_prefs.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
@@ -287,6 +286,7 @@
 #include "components/live_caption/live_caption_controller.h"
 #include "components/live_caption/live_translate_controller.h"
 #include "components/ntp_tiles/custom_links_manager_impl.h"
+#include "components/permissions/permission_hats_trigger_helper.h"
 #include "components/user_notes/user_notes_prefs.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -517,48 +517,6 @@ namespace {
 // Please keep the list of deprecated prefs in chronological order. i.e. Add to
 // the bottom of the list, not here at the top.
 
-// Deprecated 03/2022.
-const char kStabilityChildProcessCrashCount[] =
-    "user_experience_metrics.stability.child_process_crash_count";
-const char kStabilityRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.renderer_failed_launch_count";
-const char kStabilityExtensionRendererFailedLaunchCount[] =
-    "user_experience_metrics.stability.extension_renderer_failed_launch_count";
-#if BUILDFLAG(ENABLE_PLUGINS)
-const char kStabilityPluginStats[] =
-    "user_experience_metrics.stability.plugin_stats2";
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-const char kStabilityLaunchCount[] =
-    "user_experience_metrics.stability.launch_count";
-#endif
-const char kStabilityExtensionRendererLaunchCount[] =
-    "user_experience_metrics.stability.extension_renderer_launch_count";
-const char kShowReadingListInBookmarkBar[] = "bookmark_bar.show_reading_list";
-
-// Deprecated 04/2022.
-#if BUILDFLAG(ENABLE_PLUGINS)
-const char kPluginsMetadata[] = "plugins.metadata";
-const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-const char kAccountManagerNumTimesWelcomeScreenShown[] =
-    "account_manager.num_times_welcome_screen_shown";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-#if !BUILDFLAG(IS_ANDROID)
-const char kStabilityRendererLaunchCount[] =
-    "user_experience_metrics.stability.renderer_launch_count";
-#endif  // !BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-// Deprecated 04/2022.
-const char kTimeOnOobe[] = "settings.time_on_oobe";
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-// Deprecated 04/2022.
-const char kOptimizationGuideRemoteFetchingEnabled[] =
-    "optimization_guide.remote_fetching_enabled";
-
 #if !BUILDFLAG(IS_ANDROID)
 // Deprecated 05/2022.
 const char kAccessCodeCastDiscoveredNetworks[] =
@@ -716,6 +674,8 @@ const char kAutofillAssistantTriggerScriptsIsFirstTimeUser[] =
 // Deprecated 12/2022.
 const char kAutofillWalletImportStorageCheckboxState[] =
     "autofill.wallet_import_storage_checkbox_state";
+const char kDeprecatedReadingListHasUnseenEntries[] =
+    "reading_list.has_unseen_entries";
 
 // Deprecated 01/2023
 const char kSendDownloadToCloudPref[] =
@@ -840,32 +800,29 @@ const char kActiveRegistrationToken[] =
     "invalidation.active_registration_token";
 const char kFCMInvalidationClientIDCache[] = "fcm.invalidation.client_id_cache";
 
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kConsolidatedConsentTrial[] = "per_user_metrics.trial_group";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kOfficeFilesAlwaysMove[] = "filebrowser.office.always_move";
+const char kOfficeMoveConfirmationShown[] =
+    "filebrowser.office.move_confirmation_shown";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kProximityAuthIsChromeOSLoginEnabled[] =
+    "proximity_auth.is_chromeos_login_enabled";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
-  // Deprecated 03/2022.
-  registry->RegisterIntegerPref(kStabilityChildProcessCrashCount, 0);
-  registry->RegisterIntegerPref(kStabilityRendererFailedLaunchCount, 0);
-  registry->RegisterIntegerPref(kStabilityExtensionRendererFailedLaunchCount,
-                                0);
-#if BUILDFLAG(ENABLE_PLUGINS)
-  registry->RegisterListPref(kStabilityPluginStats);
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-  registry->RegisterIntegerPref(kStabilityLaunchCount, 0);
-#endif
-  registry->RegisterIntegerPref(kStabilityExtensionRendererLaunchCount, 0);
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  // Deprecated 04/2022.
-  registry->RegisterDictionaryPref(kPluginsMetadata);
-  registry->RegisterStringPref(kPluginsResourceCacheUpdate, "0");
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-#if !BUILDFLAG(IS_ANDROID)
-  registry->RegisterIntegerPref(kStabilityRendererLaunchCount, 0);
-#endif  // !BUILDFLAG(IS_ANDROID)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+  // Deprecated 05/2022.
   registry->RegisterBooleanPref(kNativeBridge64BitSupportExperimentEnabled,
                                 false);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -944,6 +901,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kTypeSubscribedForInvalidations);
   registry->RegisterStringPref(kActiveRegistrationToken, std::string());
   registry->RegisterStringPref(kFCMInvalidationClientIDCache, std::string());
+
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterStringPref(kConsolidatedConsentTrial, std::string());
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -972,18 +934,6 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterListPref(
       prefs::kManagedProfileSerialAllowUsbDevicesForUrlsDeprecated);
 #endif
-
-  registry->RegisterBooleanPref(kShowReadingListInBookmarkBar, true);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  registry->RegisterIntegerPref(kAccountManagerNumTimesWelcomeScreenShown, 0);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  registry->RegisterIntegerPref(kTimeOnOobe, 0);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  registry->RegisterBooleanPref(kOptimizationGuideRemoteFetchingEnabled, true);
 
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterDictionaryPref(kAccessCodeCastDiscoveredNetworks);
@@ -1078,6 +1028,7 @@ void RegisterProfilePrefsForMigration(
   // Deprecated 12/2022.
   registry->RegisterBooleanPref(kAutofillWalletImportStorageCheckboxState,
                                 true);
+  registry->RegisterBooleanPref(kDeprecatedReadingListHasUnseenEntries, false);
 
   // Deprecated 01/2023.
   registry->RegisterBooleanPref(
@@ -1162,6 +1113,17 @@ void RegisterProfilePrefsForMigration(
 #if BUILDFLAG(IS_ANDROID)
   ntp_snippets::prefs::RegisterProfilePrefsForMigrationApril2023(registry);
 #endif
+
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kOfficeFilesAlwaysMove, false);
+  registry->RegisterBooleanPref(kOfficeMoveConfirmationShown, false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kProximityAuthIsChromeOSLoginEnabled, false);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
 
 }  // namespace
@@ -1777,6 +1739,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterIntegerPref(prefs::kHighEfficiencyChipExpandedCount, 0);
+  registry->RegisterTimePref(prefs::kLastHighEfficiencyChipExpandedTimestamp,
+                             base::Time());
+  permissions::PermissionHatsTriggerHelper::RegisterProfilePrefs(registry);
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1833,27 +1798,6 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 
   // BEGIN_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
   // Please don't delete the preceding line. It is used by PRESUBMIT.py.
-
-  // Added 03/2022.
-  local_state->ClearPref(kStabilityChildProcessCrashCount);
-  local_state->ClearPref(kStabilityRendererFailedLaunchCount);
-  local_state->ClearPref(kStabilityExtensionRendererFailedLaunchCount);
-#if BUILDFLAG(ENABLE_PLUGINS)
-  local_state->ClearPref(kStabilityPluginStats);
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-  local_state->ClearPref(kStabilityLaunchCount);
-#endif
-  local_state->ClearPref(kStabilityExtensionRendererLaunchCount);
-
-  // Added 04/2022.
-#if BUILDFLAG(ENABLE_PLUGINS)
-  local_state->ClearPref(kPluginsMetadata);
-  local_state->ClearPref(kPluginsResourceCacheUpdate);
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-  local_state->ClearPref(kStabilityRendererLaunchCount);
-#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Added 05/2022.
 #if !BUILDFLAG(IS_ANDROID)
@@ -1942,6 +1886,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
   local_state->ClearPref(kActiveRegistrationToken);
   local_state->ClearPref(kFCMInvalidationClientIDCache);
 
+// Added 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  local_state->ClearPref(kConsolidatedConsentTrial);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
 
@@ -1976,22 +1925,6 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   // is fully launched.
   chrome_browser_net::secure_dns::MigrateProbesSettingToOrFromBackup(
       profile_prefs);
-
-  // Added 03/2022
-  profile_prefs->ClearPref(kShowReadingListInBookmarkBar);
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Added 04/2022
-  profile_prefs->ClearPref(kAccountManagerNumTimesWelcomeScreenShown);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Added 04/2022
-  profile_prefs->ClearPref(kTimeOnOobe);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  // Added 04/2022
-  profile_prefs->ClearPref(kOptimizationGuideRemoteFetchingEnabled);
 
 #if !BUILDFLAG(IS_ANDROID)
   // Added 05/2022
@@ -2142,8 +2075,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kAutofillAssistantTriggerScriptsIsFirstTimeUser);
 
   // Added 12/2022.
-  profile_prefs->ClearPref(
-      reading_list::prefs::kDeprecatedReadingListHasUnseenEntries);
+  profile_prefs->ClearPref(kDeprecatedReadingListHasUnseenEntries);
 
   // Added 12/2022.
   profile_prefs->ClearPref(kAutofillWalletImportStorageCheckboxState);
@@ -2230,6 +2162,17 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 #if BUILDFLAG(IS_ANDROID)
   ntp_snippets::prefs::MigrateObsoleteProfilePrefsApril2023(profile_prefs);
 #endif
+
+// Added 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kOfficeFilesAlwaysMove);
+  profile_prefs->ClearPref(kOfficeMoveConfirmationShown);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Added 04/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kProximityAuthIsChromeOSLoginEnabled);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

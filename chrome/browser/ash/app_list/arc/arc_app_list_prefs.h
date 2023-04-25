@@ -19,6 +19,7 @@
 #include "ash/components/arc/net/arc_app_metadata_provider.h"
 #include "ash/components/arc/session/connection_observer.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -108,7 +109,8 @@ class ArcAppListPrefs : public KeyedService,
             bool launchable,
             bool need_fixup,
             absl::optional<uint64_t> app_size_in_bytes,
-            absl::optional<uint64_t> data_size_in_bytes);
+            absl::optional<uint64_t> data_size_in_bytes,
+            arc::mojom::AppCategory app_category);
     AppInfo(AppInfo&& other);
     AppInfo& operator=(AppInfo&& other);
     ~AppInfo();
@@ -151,6 +153,9 @@ class ArcAppListPrefs : public KeyedService,
     // Storage size of app and it's related data.
     absl::optional<uint64_t> app_size_in_bytes;
     absl::optional<uint64_t> data_size_in_bytes;
+
+    // App category from PackageManager.
+    arc::mojom::AppCategory app_category;
 
     static void SetIgnoreCompareInstallTimeForTesting(bool ignore);
 
@@ -464,6 +469,8 @@ class ArcAppListPrefs : public KeyedService,
   // Returns true if the package is a default package, even it's uninstalled.
   bool IsDefaultPackage(const std::string& package_name) const;
 
+  arc::mojom::AppCategory GetAppCategory(const std::string& app_id) const;
+
  private:
   friend class ChromeShelfControllerTestBase;
   friend class ArcAppModelBuilderTest;
@@ -555,7 +562,8 @@ class ArcAppListPrefs : public KeyedService,
                          const bool need_fixup,
                          const WindowLayout& initial_window_layout,
                          const absl::optional<uint64_t> app_size_in_bytes,
-                         const absl::optional<uint64_t> data_size_in_bytes);
+                         const absl::optional<uint64_t> data_size_in_bytes,
+                         const arc::mojom::AppCategory app_category);
   // Adds or updates local pref for given package.
   void AddOrUpdatePackagePrefs(const arc::mojom::ArcPackageInfo& package);
   // Removes given package from local pref.
@@ -656,12 +664,14 @@ class ArcAppListPrefs : public KeyedService,
   // Updates kArcPackagesIsUpToDate pref.
   void UpdateArcPackagesIsUpToDatePref();
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
 
   // Owned by the BrowserContext.
-  PrefService* const prefs_;
+  const raw_ptr<PrefService, ExperimentalAsh> prefs_;
 
-  arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>* const
+  const raw_ptr<
+      arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>,
+      ExperimentalAsh>
       app_connection_holder_for_testing_;
 
   // List of observers.
@@ -708,7 +718,8 @@ class ArcAppListPrefs : public KeyedService,
   // To execute file operations in sequence.
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
-  arc::ArcPackageSyncableService* sync_service_ = nullptr;
+  raw_ptr<arc::ArcPackageSyncableService, DanglingUntriaged | ExperimentalAsh>
+      sync_service_ = nullptr;
 
   bool default_apps_ready_ = false;
   std::unique_ptr<ArcDefaultAppList> default_apps_;

@@ -203,12 +203,6 @@ BASE_FEATURE(kAutofillEnableSupportForApartmentNumbers,
              "AutofillEnableSupportForApartmentNumbers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls whether we download server credit cards to the ephemeral
-// account-based storage when sync the transport is enabled.
-BASE_FEATURE(kAutofillEnableAccountWalletStorage,
-             "AutofillEnableAccountWalletStorage",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Enables parsing for birthdate fields. Filling is not supported and parsing
 // is meant to prevent false positive credit card expiration dates.
 // TODO(crbug.com/1306654): Remove once launched.
@@ -233,22 +227,6 @@ BASE_FEATURE(kAutofillEnableDevtoolsIssues,
 BASE_FEATURE(kAutofillEnableImportWhenMultiplePhoneNumbers,
              "AutofillEnableImportWhenMultiplePhoneNumbers",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, candidate profiles are temporary stored on import, and merged
-// with future candidate profiles, to create an importable profile. This makes
-// importing from multi-step input flows possible.
-BASE_FEATURE(kAutofillEnableMultiStepImports,
-             "AutofillEnableMultiStepImports",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-// When enabled, imported profiles are stored as multi-step candidates too,
-// which enables complementing a recently imported profile during later steps of
-// a multi-step input flow.
-const base::FeatureParam<bool> kAutofillEnableMultiStepImportComplements{
-    &kAutofillEnableMultiStepImports, "enable_multistep_complement", true};
-// Configures the TTL of multi-step import candidates.
-const base::FeatureParam<base::TimeDelta> kAutofillMultiStepImportCandidateTTL{
-    &kAutofillEnableMultiStepImports, "multistep_candidate_ttl",
-    base::Minutes(5)};
 
 // When enabled, phone number local heuristics match empty labels when looking
 // for composite phone number inputs. E.g. Phone number <input><input>.
@@ -359,13 +337,6 @@ const base::FeatureParam<PrecedenceOverAutocompleteScope>
 BASE_FEATURE(kAutofillIgnoreUnmappableAutocompleteValues,
              "AutofillIgnoreUnmappableAutocompleteValues",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, <label for=..> inference relies on control.labels() instead of
-// iterating through all <label> tags manually.
-// TODO(crbug.com/1339277) Remove once launched.
-BASE_FEATURE(kAutofillImprovedLabelForInference,
-             "AutofillImprovedLabelForInference",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, only changed values are highlighted in preview mode.
 // TODO(crbug/1248585): Remove when launched.
@@ -529,13 +500,6 @@ BASE_FEATURE(kAutofillSkipComparingInferredLabels,
 BASE_FEATURE(kAutofillSplitCreditCardNumbersCautiously,
              "AutofillSplitCreditCardNumbersCautiously",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables support for artificial placeholders, implemented by placing text on
-// top of the input field using CSS.
-// TODO(crbug.com/1396374): Remove when launched.
-BASE_FEATURE(kAutofillSupportPoorMansPlaceholder,
-             "AutofillSupportPoorMansPlaceholder",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether Autofill should search prefixes of all words/tokens when
 // filtering profiles, or only on prefixes of the whole string.

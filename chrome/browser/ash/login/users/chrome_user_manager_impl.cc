@@ -93,6 +93,7 @@
 #include "chromeos/dbus/common/dbus_method_call_status.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/policy/core/common/cloud/affiliation.h"
 #include "components/policy/core/common/policy_details.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -679,16 +680,8 @@ bool ChromeUserManagerImpl::IsEphemeralAccountId(
           GetOwnerAccountId().is_valid());
 }
 
-void ChromeUserManagerImpl::OnUserRemoved(const AccountId& account_id) {
-  RemoveReportingUser(account_id);
-}
-
 const std::string& ChromeUserManagerImpl::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
-}
-
-PrefService* ChromeUserManagerImpl::GetLocalState() const {
-  return g_browser_process ? g_browser_process->local_state() : nullptr;
 }
 
 bool ChromeUserManagerImpl::IsEnterpriseManaged() const {
@@ -1266,24 +1259,17 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
 
 void ChromeUserManagerImpl::SetUserAffiliation(
     const AccountId& account_id,
-    const AffiliationIDSet& user_affiliation_ids) {
+    const base::flat_set<std::string>& user_affiliation_ids) {
   user_manager::User* user = FindUserAndModify(account_id);
 
   if (user) {
     policy::BrowserPolicyConnectorAsh const* const connector =
         g_browser_process->platform_part()->browser_policy_connector_ash();
-    const bool is_affiliated = IsUserAffiliated(
-        user_affiliation_ids, connector->GetDeviceAffiliationIDs(),
+    const bool is_affiliated = policy::IsUserAffiliated(
+        user_affiliation_ids, connector->device_affiliation_ids(),
         account_id.GetUserEmail());
     user->SetAffiliation(is_affiliated);
-
-    if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
-      if (is_affiliated) {
-        AddReportingUser(account_id);
-      } else {
-        RemoveReportingUser(account_id);
-      }
-    }
+    NotifyUserAffiliationUpdated(*user);
   }
 }
 

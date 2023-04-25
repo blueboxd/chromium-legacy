@@ -30,6 +30,8 @@ component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "attribution_utils.cc",
+    "attribution_utils.h",
     "client_hints.cc",
     "client_hints.h",
     "constants.cc",
@@ -468,6 +470,13 @@ component("cpp_base") {
     sources += [ "transferable_directory_fuchsia.cc" ]
   }
 
+  if (is_linux) {
+    sources += [
+      "network_interface_change_listener_mojom_traits.cc",
+      "network_interface_change_listener_mojom_traits.h",
+    ]
+  }
+
   # Since URLLoader is typedmapped in mojo and the class also uses the mojo
   # interfaces a circular dependency exists. Allow this and ignore windows
   # errors from it.
@@ -507,6 +516,7 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "attribution_utils_unittest.cc",
     "client_hints_unittest.cc",
     "content_language_parser_unittest.cc",
     "content_security_policy/content_security_policy_unittest.cc",
@@ -574,6 +584,10 @@ source_set("tests") {
       "server/http_server_unittest.cc",
       "server/web_socket_encoder_unittest.cc",
     ]
+  }
+
+  if (is_linux) {
+    sources += [ "network_interface_change_listener_mojom_traits_unittest.cc" ]
   }
 
   deps = [

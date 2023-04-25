@@ -476,6 +476,14 @@ void LayoutBoxModelObject::UpdateFromStyle() {
   SetCanContainAbsolutePositionObjects(
       ComputeIsAbsoluteContainer(&style_to_use));
   SetCanContainFixedPositionObjects(ComputeIsFixedContainer(&style_to_use));
+
+  bool is_background_attachment_fixed_object =
+      !BackgroundTransfersToView() &&
+      StyleRef().HasFixedAttachmentBackgroundImage();
+  SetIsBackgroundAttachmentFixedObject(is_background_attachment_fixed_object);
+  SetCanCompositeBackgroundAttachmentFixed(
+      is_background_attachment_fixed_object &&
+      ComputeCanCompositeBackgroundAttachmentFixed());
 }
 
 PhysicalRect LayoutBoxModelObject::PhysicalVisualOverflowRectIncludingFilters()
@@ -552,9 +560,9 @@ bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
     }
   }
   if (this_box && this_box->IsCustomItem() &&
-      (this_box->HasOverrideContainingBlockContentLogicalHeight() ||
-       this_box->HasOverridePercentageResolutionBlockSize()))
+      (this_box->HasOverrideContainingBlockContentLogicalHeight())) {
     return false;
+  }
 
   if ((logical_height_length.IsAutoOrContentOrIntrinsic() ||
        logical_height_length.IsFillAvailable()) &&
@@ -962,12 +970,7 @@ LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
   // primaryFont is null.
   if (font_data)
     height = LayoutUnit(font_data->GetFontMetrics().Height());
-  LayoutUnit vertical_space =
-      LineHeight(true,
-                 current_style.IsHorizontalWritingMode() ? kHorizontalLine
-                                                         : kVerticalLine,
-                 kPositionOfInteriorLineBoxes) -
-      height;
+  LayoutUnit vertical_space = FirstLineHeight() - height;
   LayoutUnit y = PaddingTop() + BorderTop() + (vertical_space / 2);
   return current_style.IsHorizontalWritingMode()
              ? LayoutRect(x, y, caret_width, height)

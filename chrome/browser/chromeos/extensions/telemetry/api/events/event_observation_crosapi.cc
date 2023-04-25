@@ -28,15 +28,41 @@ class DefaultEventDelegate : public EventObservationCrosapi::Delegate {
       : browser_context_(context) {}
   ~DefaultEventDelegate() override = default;
 
-  void OnAudioJackEvent(const extensions::ExtensionId& extension_id,
-                        api::os_events::AudioJackEventInfo info) override {
-    base::Value::List args;
-    args.Append(info.ToValue());
-
-    auto event = std::make_unique<extensions::Event>(
-        extensions::events::OS_EVENTS_ON_AUDIO_JACK_EVENT,
-        api::os_events::OnAudioJackEvent::kEventName, std::move(args),
-        browser_context_);
+  void OnEvent(const extensions::ExtensionId& extension_id,
+               crosapi::mojom::TelemetryEventInfoPtr info) override {
+    std::unique_ptr<extensions::Event> event;
+    switch (info->which()) {
+      case crosapi::mojom::internal::TelemetryEventInfo_Data::
+          TelemetryEventInfo_Tag::kDefaultType: {
+        LOG(WARNING) << "Got unknown event category";
+        return;
+      }
+      case crosapi::mojom::internal::TelemetryEventInfo_Data::
+          TelemetryEventInfo_Tag::kAudioJackEventInfo: {
+        base::Value::List args;
+        args.Append(
+            converters::ConvertEventPtr<api::os_events::AudioJackEventInfo>(
+                std::move(info->get_audio_jack_event_info()))
+                .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_AUDIO_JACK_EVENT,
+            api::os_events::OnAudioJackEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+      case crosapi::mojom::internal::TelemetryEventInfo_Data::
+          TelemetryEventInfo_Tag::kLidEventInfo: {
+        base::Value::List args;
+        args.Append(converters::ConvertEventPtr<api::os_events::LidEventInfo>(
+                        std::move(info->get_lid_event_info()))
+                        .ToValue());
+        event = std::make_unique<extensions::Event>(
+            extensions::events::OS_EVENTS_ON_LID_EVENT,
+            api::os_events::OnLidEvent::kEventName, std::move(args),
+            browser_context_);
+        break;
+      }
+    }
 
     extensions::EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id, std::move(event));
@@ -60,20 +86,12 @@ EventObservationCrosapi::~EventObservationCrosapi() = default;
 
 void EventObservationCrosapi::OnEvent(
     crosapi::mojom::TelemetryEventInfoPtr info) {
-  switch (info->which()) {
-    case crosapi::mojom::internal::TelemetryEventInfo_Data::
-        TelemetryEventInfo_Tag::kAudioJackEventInfo: {
-      delegate_->OnAudioJackEvent(
-          extension_id_,
-          converters::ConvertEventPtr<api::os_events::AudioJackEventInfo>(
-              std::move(info->get_audio_jack_event_info())));
-      break;
-    }
-    case crosapi::mojom::internal::TelemetryEventInfo_Data::
-        TelemetryEventInfo_Tag::kDefaultType:
-      LOG(WARNING) << "Got unknown event category";
-      break;
+  if (!info) {
+    LOG(WARNING) << "Received empty event";
+    return;
   }
+
+  delegate_->OnEvent(extension_id_, std::move(info));
 }
 
 mojo::PendingRemote<crosapi::mojom::TelemetryEventObserver>

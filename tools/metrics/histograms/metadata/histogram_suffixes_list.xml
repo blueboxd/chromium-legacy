@@ -869,26 +869,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SimpleCache.SyncOpenPrefetchMode"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="CancelableTaskTrackerDurationTypes" separator="_">
-  <suffix name="CanceledBackgroundOffSequence"
-      label="Background off-sequence task was canceled."/>
-  <suffix name="CanceledBackgroundSameSequence"
-      label="Background same-sequence task was canceled."/>
-  <suffix name="CanceledForegroundOffSequence"
-      label="Foreground off-sequence task was canceled."/>
-  <suffix name="CanceledForegroundSameSequence"
-      label="Foreground same-sequence task was canceled."/>
-  <suffix name="LiveBackgroundOffSequence"
-      label="Background off-sequence task was not canceled."/>
-  <suffix name="LiveBackgroundSameSequence"
-      label="Background same-sequence task was not canceled."/>
-  <suffix name="LiveForegroundOffSequence"
-      label="Foreground off-sequence task was not canceled."/>
-  <suffix name="LiveForegroundSameSequence"
-      label="Foreground same-sequence task was not canceled."/>
-  <affected-histogram name="Scheduler.CancelableTaskTracker.TaskDuration2"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="CertificateTypeAlgorithms" separator=".">
   <owner>rsleevi@chromium.org</owner>
   <suffix name="DH" label="DH"/>
@@ -2662,6 +2642,12 @@ chromium-metrics-reviews@google.com.
              and video track."/>
   <suffix name="AudioVideo.EME"
       label="Watch time for EME media with both an audio and video track."/>
+  <suffix name="AudioVideo.MediaFoundation.All"
+      label="MediaFoundations renderer watch time for all media with both an
+             audio and video track."/>
+  <suffix name="AudioVideo.MediaFoundation.Eme"
+      label="MediaFoundations renderer watch time for EME media with both an
+             audio and video track."/>
   <suffix name="AudioVideo.MSE"
       label="Watch time for MSE media with both an audio and video track."/>
   <suffix name="AudioVideo.Muted.All"
@@ -2878,7 +2864,6 @@ chromium-metrics-reviews@google.com.
       label="process priority = foreground"/>
   <suffix name="NewNavigation" label="New navigation"/>
   <suffix name="Reload" label="Reload"/>
-  <affected-histogram name="Navigation.IsSameProcess"/>
   <affected-histogram name="Navigation.ReadyToCommitUntilCommit2"/>
   <affected-histogram name="Navigation.StartToCommit"/>
   <affected-histogram name="Navigation.StartToCommit.CrossProcess"/>
@@ -3167,6 +3152,9 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="OfflinePagesArchiveDirectoryType" separator=".">
+  <obsolete>
+    Histogram was removed in April 2023.
+  </obsolete>
   <suffix name="Persistent" label="Persistent archive directory"/>
   <suffix name="Temporary" label="Temporary archive directory"/>
   <affected-histogram
@@ -3184,22 +3172,9 @@ chromium-metrics-reviews@google.com.
   <suffix name="last_n" label="Offline recent pages"/>
   <suffix name="ntp_suggestions" label="NTP suggestions offlined by the user"/>
   <suffix name="suggested_articles" label="Prefetched NTP suggestions"/>
-  <affected-histogram
-      name="OfflinePages.Background.EffectiveConnectionType.SavePageLater"/>
   <affected-histogram name="OfflinePages.Background.LoadingErrorStatusCode"/>
-  <affected-histogram name="OfflinePages.Background.OfflinerRequestStatus"/>
-  <affected-histogram name="OfflinePages.Background.SavePageFromCCT"/>
-  <affected-histogram name="OfflinePages.Background.TimeToCanceled"/>
-  <affected-histogram name="OfflinePages.Background.TimeToSaved"/>
-  <affected-histogram name="OfflinePages.Background.TimeToStart"/>
-  <affected-histogram name="OfflinePages.Background.TimeToStart.Svelte"/>
   <affected-histogram name="OfflinePages.PageAccessInterval"/>
   <affected-histogram name="OfflinePages.PageSize"/>
-  <affected-histogram name="OfflinePages.SavePage.AddPageTime"/>
-  <affected-histogram name="OfflinePages.SavePage.ComputeDigestTime"/>
-  <affected-histogram name="OfflinePages.SavePage.CreateArchiveTime"/>
-  <affected-histogram name="OfflinePages.SavePage.PublishArchiveTime"/>
-  <affected-histogram name="OfflinePages.SavePageTime"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Omnibox_BitmapFetchLatencyCacheSplit" separator=".">
@@ -3306,7 +3281,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.DocumentTiming.NavigationToDOMContentLoadedEventFired"/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
-  <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.PaintTiming.NavigationToFirstImagePaint"/>
@@ -3406,8 +3380,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
   <affected-histogram
-      name="PageLoad.Experimental.Bytes.NetworkIncludingHeaders"/>
-  <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
 </histogram_suffixes>
@@ -3441,8 +3413,6 @@ chromium-metrics-reviews@google.com.
              ResourceLoadingHints to show a Preview version of the page."/>
   <affected-histogram
       name="PageLoad.DocumentTiming.NavigationToLoadEventFired"/>
-  <affected-histogram
-      name="PageLoad.Experimental.Bytes.NetworkIncludingHeaders"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.ParseBlockedOnScriptLoad"/>
@@ -3534,8 +3504,6 @@ chromium-metrics-reviews@google.com.
       name="PageLoad.Clients.ServiceWorker2.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram
       name="PageLoad.Clients.ServiceWorker2.ParseTiming.NavigationToParseStart"/>
-  <affected-histogram name="PageLoad.Experimental.Bytes.Network"/>
-  <affected-histogram name="PageLoad.Experimental.Bytes.Total2"/>
   <affected-histogram
       name="PageLoad.PaintTiming.NavigationToFirstContentfulPaint"/>
   <affected-histogram name="PageLoad.ParseTiming.NavigationToParseStart"/>
@@ -5058,27 +5026,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SB2.RequestDestination"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="SchedulerDarkMatterMetrics" separator=".">
-  <suffix name="Tracked"
-      label="Total duration of all tasks managed by the scheduler. This
-             histogram is similar to the plain .CPUTimePerThread, but it
-             ensures that the number of samples matches the .Untracked
-             version of the same histogram."/>
-  <suffix name="Untracked"
-      label="Total execution time unaccounted for by the scheduler.
-             Calculated as the difference between total thread time and the
-             sum of all tasks managed by the scheduler."/>
-  <affected-histogram name="Scheduler.Experimental.CPUTimePerThread"/>
-  <affected-histogram name="Scheduler.Experimental.Renderer.CPUTimePerThread"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="SchedulerTotalDurationHistograms" separator=".">
-  <suffix name="Negative" label=""/>
-  <suffix name="Positive" label=""/>
-  <affected-histogram
-      name="Scheduler.Experimental.Renderer.TotalTime.Wall.MainThread"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="ScrollSourceDevice" separator=".">
   <suffix name="Touch" label="Touch"/>
   <suffix name="Wheel" label="Wheel"/>
@@ -5850,21 +5797,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Setup.Install.LzmaUnPackStatus"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="UserClasses" separator=".">
-  <suffix name="ActiveNTPUser" label="Active NTP user"/>
-  <suffix name="ActiveSuggestionsConsumer" label="Active suggestions consumer"/>
-  <suffix name="RareNTPUser" label="Rare NTP user"/>
-  <affected-histogram
-      name="NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger"/>
-  <affected-histogram
-      name="NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger"/>
-  <affected-histogram
-      name="NewTabPage.ContentSuggestions.TimeUntilPersistentFetch"/>
-  <affected-histogram name="NewTabPage.ContentSuggestions.TimeUntilSoftFetch"/>
-  <affected-histogram
-      name="NewTabPage.ContentSuggestions.TimeUntilStartupFetch"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="UserScriptRunLocation" separator=".">
   <suffix name="DocumentEnd" label="Scripts with run_at: document_end."/>
   <suffix name="DocumentIdle" label="Scripts with run_at: document_idle."/>
@@ -6101,6 +6033,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="OpenBookmark" label=""/>
   <suffix name="OpenInChrome" label=""/>
   <suffix name="OpenRecentTab" label=""/>
+  <suffix name="PasswordManager" label=""/>
   <suffix name="Paste" label=""/>
   <suffix name="PinToStartScreen" label=""/>
   <suffix name="Print" label=""/>

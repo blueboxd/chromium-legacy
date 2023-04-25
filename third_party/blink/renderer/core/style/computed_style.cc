@@ -27,7 +27,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/cxx17_backports.h"
 #include "base/memory/values_equivalent.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/clamped_math.h"
@@ -258,7 +257,8 @@ static bool DiffAffectsContainerQueries(const ComputedStyle& old_style,
       !new_style.IsContainerForSizeContainerQueries()) {
     return false;
   }
-  if ((old_style.ContainerName() != new_style.ContainerName()) ||
+  if (!base::ValuesEquivalent(old_style.ContainerName(),
+                              new_style.ContainerName()) ||
       (old_style.ContainerType() != new_style.ContainerType())) {
     return true;
   }
@@ -273,13 +273,19 @@ static bool DiffAffectsContainerQueries(const ComputedStyle& old_style,
 
 static bool DiffAffectsScrollAnimations(const ComputedStyle& old_style,
                                         const ComputedStyle& new_style) {
-  if ((old_style.ScrollTimelineName() != new_style.ScrollTimelineName()) ||
-      (old_style.ScrollTimelineAxis() != new_style.ScrollTimelineAxis())) {
+  if (!base::ValuesEquivalent(old_style.ScrollTimelineName(),
+                              new_style.ScrollTimelineName()) ||
+      (old_style.ScrollTimelineAxis() != new_style.ScrollTimelineAxis()) ||
+      (old_style.ScrollTimelineAttachment() !=
+       new_style.ScrollTimelineAttachment())) {
     return true;
   }
-  if ((old_style.ViewTimelineName() != new_style.ViewTimelineName()) ||
+  if (!base::ValuesEquivalent(old_style.ViewTimelineName(),
+                              new_style.ViewTimelineName()) ||
       (old_style.ViewTimelineAxis() != new_style.ViewTimelineAxis()) ||
-      (old_style.ViewTimelineInset() != new_style.ViewTimelineInset())) {
+      (old_style.ViewTimelineInset() != new_style.ViewTimelineInset()) ||
+      (old_style.ViewTimelineAttachment() !=
+       new_style.ViewTimelineAttachment())) {
     return true;
   }
   return false;
@@ -368,6 +374,9 @@ bool ComputedStyle::NeedsReattachLayoutTree(const Element& element,
   }
 
   if (old_style->Overlay() != new_style->Overlay()) {
+    return true;
+  }
+  if (old_style->ListStylePosition() != new_style->ListStylePosition()) {
     return true;
   }
   return false;
@@ -2248,17 +2257,16 @@ TextEmphasisMark ComputedStyle::GetTextEmphasisMark() const {
   return TextEmphasisMark::kSesame;
 }
 
-LayoutRectOutsets ComputedStyle::ImageOutsets(
+NGPhysicalBoxStrut ComputedStyle::ImageOutsets(
     const NinePieceImage& image) const {
-  return LayoutRectOutsets(
-      NinePieceImage::ComputeOutset(image.Outset().Top(),
-                                    BorderTopWidth().ToInt()),
-      NinePieceImage::ComputeOutset(image.Outset().Right(),
-                                    BorderRightWidth().ToInt()),
-      NinePieceImage::ComputeOutset(image.Outset().Bottom(),
-                                    BorderBottomWidth().ToInt()),
-      NinePieceImage::ComputeOutset(image.Outset().Left(),
-                                    BorderLeftWidth().ToInt()));
+  return {NinePieceImage::ComputeOutset(image.Outset().Top(),
+                                        BorderTopWidth().ToInt()),
+          NinePieceImage::ComputeOutset(image.Outset().Right(),
+                                        BorderRightWidth().ToInt()),
+          NinePieceImage::ComputeOutset(image.Outset().Bottom(),
+                                        BorderBottomWidth().ToInt()),
+          NinePieceImage::ComputeOutset(image.Outset().Left(),
+                                        BorderLeftWidth().ToInt())};
 }
 
 bool ComputedStyle::BorderObscuresBackground() const {
@@ -2286,13 +2294,13 @@ bool ComputedStyle::BorderObscuresBackground() const {
   return true;
 }
 
-LayoutRectOutsets ComputedStyle::BoxDecorationOutsets() const {
+NGPhysicalBoxStrut ComputedStyle::BoxDecorationOutsets() const {
   DCHECK(HasVisualOverflowingEffect());
-  LayoutRectOutsets outsets;
+  NGPhysicalBoxStrut outsets;
 
   if (const ShadowList* box_shadow = BoxShadow()) {
-    outsets =
-        EnclosingLayoutRectOutsets(box_shadow->RectOutsetsIncludingOriginal());
+    outsets = NGPhysicalBoxStrut::Enclosing(
+        box_shadow->RectOutsetsIncludingOriginal());
   }
 
   if (HasBorderImageOutsets()) {
@@ -2388,6 +2396,16 @@ const AtomicString& ComputedStyle::ListStyleStringValue() const {
     return g_null_atom;
   }
   return ListStyleType()->GetStringValue();
+}
+
+bool ComputedStyle::MarkerShouldBeInside(const Node& parent_node) const {
+  // https://w3c.github.io/csswg-drafts/css-lists/#list-style-position-outside
+  // > If the list item is an inline box: this value is equivalent to inside.
+  if (Display() == EDisplay::kInlineListItem) {
+    return true;
+  }
+  return ListStylePosition() == EListStylePosition::kInside ||
+         (IsA<HTMLLIElement>(parent_node) && !IsInsideListElement());
 }
 
 absl::optional<blink::Color> ComputedStyle::AccentColorResolved() const {
@@ -2566,7 +2584,7 @@ bool ComputedStyleBuilder::SetEffectiveZoom(float f) {
   // real cost to our understanding of the zooms in use.
   base::UmaHistogramSparse(
       "Blink.EffectiveZoom",
-      base::clamp<float>(clamped_effective_zoom * 100, 0, 400));
+      std::clamp<float>(clamped_effective_zoom * 100, 0, 400));
   return true;
 }
 

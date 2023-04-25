@@ -19,6 +19,7 @@
 #include "ash/system/federated/federated_service_controller_impl.h"
 #include "base/feature_list.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -58,6 +59,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 
 namespace {
@@ -130,13 +132,13 @@ ash::NewWindowDelegate::Disposition ConvertDisposition(
 
 class ScopedIphSessionImpl : public ash::ScopedIphSession {
  public:
-  explicit ScopedIphSessionImpl(raw_ptr<feature_engagement::Tracker> tracker,
+  explicit ScopedIphSessionImpl(feature_engagement::Tracker* tracker,
                                 const base::Feature& iph_feature)
       : tracker_(tracker), iph_feature_(iph_feature) {
     CHECK(tracker_);
   }
 
-  ~ScopedIphSessionImpl() override { tracker_->Dismissed(iph_feature_); }
+  ~ScopedIphSessionImpl() override { tracker_->Dismissed(*iph_feature_); }
 
   void NotifyEvent(const std::string& event) override {
     tracker_->NotifyEvent(event);
@@ -144,7 +146,7 @@ class ScopedIphSessionImpl : public ash::ScopedIphSession {
 
  private:
   raw_ptr<feature_engagement::Tracker> tracker_;
-  const base::Feature& iph_feature_;
+  const raw_ref<const base::Feature, ExperimentalAsh> iph_feature_;
 };
 
 }  // namespace
@@ -343,19 +345,6 @@ void AppListClientImpl::InvokeSearchResultAction(
   }
 }
 
-void AppListClientImpl::ViewClosing() {
-  display_id_ = display::kInvalidDisplayId;
-}
-
-void AppListClientImpl::ViewShown(int64_t display_id) {
-  if (current_model_updater_) {
-    base::RecordAction(base::UserMetricsAction("Launcher_Show"));
-    base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
-                             current_model_updater_->BadgedItemCount());
-  }
-  display_id_ = display_id;
-}
-
 void AppListClientImpl::ActivateItem(int profile_id,
                                      const std::string& id,
                                      int event_flags,
@@ -426,7 +415,7 @@ void AppListClientImpl::OnAppListVisibilityWillChange(bool visible) {
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
   app_list_visible_ = visible;
   if (visible) {
-    MaybeRecordViewShown();
+    RecordViewShown();
   } else if (current_model_updater_) {
     current_model_updater_->OnAppListHidden();
 
@@ -648,7 +637,13 @@ aura::Window* AppListClientImpl::GetAppListWindow() {
 }
 
 int64_t AppListClientImpl::GetAppListDisplayId() {
-  return display_id_;
+  aura::Window* const app_list_window = GetAppListWindow();
+  if (!app_list_window) {
+    return display::kInvalidDisplayId;
+  }
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(app_list_window)
+      .id();
 }
 
 bool AppListClientImpl::IsAppPinned(const std::string& app_id) {
@@ -722,7 +717,7 @@ AppListClientImpl::CreateLauncherSearchIphSession() {
     return nullptr;
   }
 
-  raw_ptr<feature_engagement::Tracker> tracker =
+  feature_engagement::Tracker* tracker =
       feature_engagement::TrackerFactory::GetForBrowserContext(profile_);
   if (!tracker->ShouldTriggerHelpUI(
           feature_engagement::kIPHLauncherSearchHelpUiFeature)) {
@@ -766,7 +761,9 @@ void AppListClientImpl::CommitTemporarySortOrder() {
   current_model_updater_->CommitTemporarySortOrder();
 }
 
-void AppListClientImpl::MaybeRecordViewShown() {
+void AppListClientImpl::RecordViewShown() {
+  base::RecordAction(base::UserMetricsAction("Launcher_Show"));
+
   // Record the time duration between session activation and the first launcher
   // showing if the current user is new.
 

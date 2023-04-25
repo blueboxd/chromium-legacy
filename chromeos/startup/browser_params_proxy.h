@@ -130,6 +130,10 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool EnableCpuMappableNativeGpuMemoryBuffers() const;
 
+  bool OopVideoDecodingEnabled() const;
+
+  bool IsUploadOfficeToCloudEnabled() const;
+
  private:
   friend base::NoDestructor<BrowserParamsProxy>;
 

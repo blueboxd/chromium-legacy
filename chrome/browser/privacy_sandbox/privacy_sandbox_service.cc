@@ -246,11 +246,14 @@ PrivacySandboxService::PrivacySandboxService(
     // Disable trials prefs.
     pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, false);
 
-    // Disable M1 prefs.
+    // Disable M1 prefs. Measurement pref should not be reset when restricted
+    // notice feature is enabled.
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1TopicsEnabled, false);
     pref_service_->SetBoolean(prefs::kPrivacySandboxM1FledgeEnabled, false);
-    pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
-                              false);
+    if (!privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.Get()) {
+      pref_service_->SetBoolean(prefs::kPrivacySandboxM1AdMeasurementEnabled,
+                                false);
+    }
 
     // Clear any recorded consent information.
     pref_service_->ClearPref(prefs::kPrivacySandboxTopicsConsentGiven);
@@ -259,6 +262,15 @@ PrivacySandboxService::PrivacySandboxService(
         prefs::kPrivacySandboxTopicsConsentLastUpdateReason);
     pref_service_->ClearPref(
         prefs::kPrivacySandboxTopicsConsentTextAtLastUpdate);
+  }
+
+  // kRestricted prompt suppression reason must be cleared at startup when
+  // restricted notice feature is enabled.
+  if (privacy_sandbox::kPrivacySandboxSettings4RestrictedNotice.Get() &&
+      static_cast<PromptSuppressedReason>(
+          pref_service->GetInteger(prefs::kPrivacySandboxM1PromptSuppressed)) ==
+          PromptSuppressedReason::kRestricted) {
+    pref_service_->ClearPref(prefs::kPrivacySandboxM1PromptSuppressed);
   }
 
   // Check for FPS pref init at each startup.
@@ -360,6 +372,8 @@ void PrivacySandboxService::PromptActionOccurredM1(
     RecordUpdatedTopicsConsent(
         privacy_sandbox::TopicsConsentUpdateSource::kConfirmation, false);
   }
+  // TODO(crbug.com/1428506): Handle PromptAction::kRestrictedNoticeAcknowledge
+  // and PromptAction::kRestrictedNoticeOpenSettings.
 }
 
 // static
@@ -422,6 +436,10 @@ bool PrivacySandboxService::IsPrivacySandboxManaged() {
 
 bool PrivacySandboxService::IsPrivacySandboxRestricted() {
   return privacy_sandbox_settings_->IsPrivacySandboxRestricted();
+}
+
+bool PrivacySandboxService::IsRestrictedNoticeEnabled() {
+  return privacy_sandbox_settings_->IsRestrictedNoticeEnabled();
 }
 
 void PrivacySandboxService::SetPrivacySandboxEnabled(bool enabled) {
@@ -1626,6 +1644,16 @@ void PrivacySandboxService::RecordPromptActionMetrics(
     case (PromptAction::kNoticeMoreButtonClicked): {
       base::RecordAction(base::UserMetricsAction(
           "Settings.PrivacySandbox.Notice.MoreButtonClicked"));
+      break;
+    }
+    case (PromptAction::kRestrictedNoticeAcknowledge): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.RestrictedNotice.Acknowledged"));
+      break;
+    }
+    case (PromptAction::kRestrictedNoticeOpenSettings): {
+      base::RecordAction(base::UserMetricsAction(
+          "Settings.PrivacySandbox.RestrictedNotice.OpenedSettings"));
       break;
     }
   }

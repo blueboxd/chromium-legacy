@@ -24,7 +24,6 @@ Eginbide batzuk agian dira erabilgarri egongo eta hobespenei egindako aldaketak 
 
 Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Google-ko kontuak kudeatzeko, joan <ph name="SETTINGS_LINK_BEGIN" />Ezarpenak<ph name="SETTINGS_LINK_END" /> atalera.</translation>
 <translation id="1640672724030957280">Deskargatzen…</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium HID gailu batera konektatuta zegoen}=1{Chromium HID gailu batera konektatuta dago}other{Chromium HID gailuetara konektatuta dago}}</translation>
 <translation id="1708666629004767631">Chromium-en bertsio berriagoa eta seguruagoa erabilgarri dago.</translation>
 <translation id="17264556997921157">Webguneek iragarkiak erakusteko erabili dituzten gai interesgarriak ikusi eta ken ditzakezu. Azkenaldiko arakatze-historian oinarrituta estimatzen ditu Chromium-ek zure interesak.</translation>
 <translation id="1733725117201708356">Chromium-ek arakatze-datuak ezabatuko ditu laster</translation>
@@ -247,8 +246,10 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6442900851116057561">Berrabiarazi Chromium OS</translation>
 <translation id="6455857529632101747">Ongi etorri Chromium-eko profiletara</translation>
 <translation id="6475912303565314141">Chromium abiarazten duzunean erakusten den orria ere kontrolatzen du.</translation>
+<translation id="648319183876919572">Arakatze seguru hobetuak are gehiago babesten zaitu webgune eta deskarga arriskutsuen aurka</translation>
 <translation id="6510925080656968729">Desinstalatu Chromium</translation>
 <translation id="6542839706527980775">Profil bakoitzak Chromium-eko informazio propioa dauka; adibidez, laster-markak, historia, pasahitzak eta beste</translation>
+<translation id="656935081669708576">Chromium-eko beste profil bateko pasahitzak ikustera joan zaitezke</translation>
 <translation id="6570579332384693436">Ortografia-akatsak konpondu ahal izateko, testu-eremuetan idazten duzun testua Google-ri bidaltzen dio Chromium-ek</translation>
 <translation id="6598877126913850652">Joan Chromium-en jakinarazpen-ezarpenetara</translation>
 <translation id="6613594504749178791">Aldaketek Chromium abiarazten duzun hurrengo aldian izango dute eragina.</translation>

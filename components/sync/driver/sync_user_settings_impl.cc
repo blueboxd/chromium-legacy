@@ -70,18 +70,6 @@ SyncUserSettingsImpl::SyncUserSettingsImpl(
 
 SyncUserSettingsImpl::~SyncUserSettingsImpl() = default;
 
-bool SyncUserSettingsImpl::IsSyncRequested() const {
-  return prefs_->IsSyncRequested();
-}
-
-void SyncUserSettingsImpl::SetSyncRequested() {
-  prefs_->SetSyncRequested(true);
-}
-
-void SyncUserSettingsImpl::ClearSyncRequested() {
-  prefs_->SetSyncRequested(false);
-}
-
 bool SyncUserSettingsImpl::IsFirstSetupComplete() const {
   return prefs_->IsFirstSetupComplete();
 }
@@ -258,10 +246,6 @@ void SyncUserSettingsImpl::SetDecryptionNigoriKey(
 
 std::unique_ptr<Nigori> SyncUserSettingsImpl::GetDecryptionNigoriKey() const {
   return crypto_->GetDecryptionNigoriKey();
-}
-
-void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
-  prefs_->SetSyncRequestedIfNotSetExplicitly();
 }
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {

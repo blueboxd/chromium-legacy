@@ -49,7 +49,7 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
     explicit FencedFrameDelegate(HTMLFencedFrameElement* outer_element)
         : outer_element_(outer_element) {}
     virtual ~FencedFrameDelegate();
-    void Trace(Visitor* visitor) const;
+    virtual void Trace(Visitor* visitor) const;
 
     virtual void Navigate(const KURL&, const String&) = 0;
     // This method is used to clean up all state in preparation for destruction,
@@ -144,7 +144,6 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
 
   // Element overrides.
   void ParseAttribute(const AttributeModificationParams&) override;
-  bool IsURLAttribute(const Attribute&) const override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void CollectStyleForPresentationAttribute(
       const QualifiedName&,

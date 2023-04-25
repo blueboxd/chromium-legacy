@@ -19,6 +19,7 @@
 #include "ash/style/system_shadow.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "base/memory/raw_ptr.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -132,7 +133,7 @@ class BottomAlignedBoxLayout : public views::BoxLayout {
     }
   }
 
-  TrayBubbleView* bubble_view_;
+  raw_ptr<TrayBubbleView, ExperimentalAsh> bubble_view_;
 };
 
 }  // namespace
@@ -542,8 +543,7 @@ void TrayBubbleView::OnThemeChanged() {
       params_.corner_radius,
       chromeos::features::IsJellyrollEnabled()
           ? views::HighlightBorder::Type::kHighlightBorderOnShadow
-          : views::HighlightBorder::Type::kHighlightBorder1,
-      /*use_light_colors=*/false));
+          : views::HighlightBorder::Type::kHighlightBorder1));
   set_color(GetColorProvider()->GetColor(
       chromeos::features::IsJellyEnabled()
           ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)

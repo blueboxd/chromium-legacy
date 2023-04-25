@@ -28,7 +28,7 @@
 @implementation DeviceNameAndTransportType
 
 - (instancetype)initWithName:(NSString*)deviceName
-               transportType:(int32_t)transportType {
+               transportType:(media::VideoCaptureTransportType)transportType {
   if (self = [super init]) {
     _deviceName.reset([deviceName copy]);
     _transportType = transportType;
@@ -40,7 +40,7 @@
   return _deviceName;
 }
 
-- (int32_t)transportType {
+- (media::VideoCaptureTransportType)deviceTransportType {
   return _transportType;
 }
 
@@ -49,6 +49,10 @@
 namespace media {
 
 namespace {
+
+BASE_FEATURE(kExposeAllUvcControls,
+             "ExposeAllUvcControls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Mac specific limits for minimum and maximum frame rate.
 const float kMinFrameRate = 1.0f;
@@ -170,7 +174,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     return;
 
   PowerLineFrequency frequency = GetPowerLineFrequency(params);
-  if (frequency != PowerLineFrequency::FREQUENCY_DEFAULT) {
+  if (frequency != PowerLineFrequency::kDefault) {
     // Try setting the power line frequency removal (anti-flicker). The built-in
     // cameras are normally suspended so the configuration must happen right
     // before starting capture and during configuration.
@@ -180,8 +184,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
     if (device_model.length() > 2 * kVidPidSize) {
       if (UvcControl uvc(device_model, uvc::kVcProcessingUnit); uvc.Good()) {
         int power_line_flag_value =
-            (frequency == PowerLineFrequency::FREQUENCY_50HZ) ? uvc::k50Hz
-                                                              : uvc::k60Hz;
+            (frequency == PowerLineFrequency::k50Hz) ? uvc::k50Hz : uvc::k60Hz;
         uvc.SetControlCurrent<uint8_t>(uvc::kPuPowerLineFrequencyControl,
                                        power_line_flag_value,
                                        "power line frequency");
@@ -244,7 +247,8 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
   const std::string device_model = GetDeviceModelId(
       device_descriptor_.device_id, device_descriptor_.capture_api,
       device_descriptor_.transport_type);
-  if (UvcControl uvc(device_model, uvc::kVcInputTerminal); uvc.Good()) {
+  if (UvcControl uvc(device_model, uvc::kVcInputTerminal);
+      uvc.Good() && base::FeatureList::IsEnabled(kExposeAllUvcControls)) {
     photo_state->current_focus_mode = mojom::MeteringMode::NONE;
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kCtFocusAbsoluteControl,
                                           photo_state->focus_distance.get(),
@@ -284,21 +288,23 @@ void VideoCaptureDeviceMac::GetPhotoState(GetPhotoStateCallback callback) {
       photo_state->supported_exposure_modes.push_back(
           mojom::MeteringMode::CONTINUOUS);
     }
-
+  }
+  if (UvcControl uvc(device_model, uvc::kVcInputTerminal); uvc.Good()) {
     MaybeUpdatePanTiltControlRange(uvc, photo_state->pan.get(),
                                    photo_state->tilt.get());
 
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kCtZoomAbsoluteControl,
                                           photo_state->zoom.get(), "zoom");
   }
-  if (UvcControl uvc(device_model, uvc::kVcProcessingUnit); uvc.Good()) {
+  if (UvcControl uvc(device_model, uvc::kVcProcessingUnit);
+      uvc.Good() && base::FeatureList::IsEnabled(kExposeAllUvcControls)) {
     uvc.MaybeUpdateControlRange<int16_t>(uvc::kPuBrightnessAbsoluteControl,
                                          photo_state->brightness.get(),
                                          "brightness");
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuContrastAbsoluteControl,
                                           photo_state->contrast.get(),
                                           "contrast");
-    uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuBrightnessAbsoluteControl,
+    uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuSaturationAbsoluteControl,
                                           photo_state->saturation.get(),
                                           "saturation");
     uvc.MaybeUpdateControlRange<uint16_t>(uvc::kPuSharpnessAbsoluteControl,
@@ -366,7 +372,8 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
   const std::string device_model = GetDeviceModelId(
       device_descriptor_.device_id, device_descriptor_.capture_api,
       device_descriptor_.transport_type);
-  if (UvcControl uvc(device_model, uvc::kVcInputTerminal); uvc.Good()) {
+  if (UvcControl uvc(device_model, uvc::kVcInputTerminal);
+      uvc.Good() && base::FeatureList::IsEnabled(kExposeAllUvcControls)) {
     if (settings->has_focus_mode &&
         (settings->focus_mode == mojom::MeteringMode::CONTINUOUS ||
          settings->focus_mode == mojom::MeteringMode::MANUAL)) {
@@ -393,6 +400,8 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
       uvc.SetControlCurrent<uint16_t>(uvc::kCtExposureTimeAbsoluteControl,
                                       settings->exposure_time, "exposure time");
     }
+  }
+  if (UvcControl uvc(device_model, uvc::kVcInputTerminal); uvc.Good()) {
     if (settings->has_pan || settings->has_tilt) {
       SetPanTiltCurrent(uvc,
                         settings->has_pan ? absl::make_optional(settings->pan)
@@ -405,7 +414,8 @@ void VideoCaptureDeviceMac::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                                       settings->zoom, "zoom");
     }
   }
-  if (UvcControl uvc(device_model, uvc::kVcProcessingUnit); uvc.Good()) {
+  if (UvcControl uvc(device_model, uvc::kVcProcessingUnit);
+      uvc.Good() && base::FeatureList::IsEnabled(kExposeAllUvcControls)) {
     if (settings->has_brightness) {
       uvc.SetControlCurrent<int16_t>(uvc::kPuBrightnessAbsoluteControl,
                                      settings->brightness, "brightness");

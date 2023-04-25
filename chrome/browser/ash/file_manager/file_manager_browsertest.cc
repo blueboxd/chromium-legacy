@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/immediate_crash.h"
+#include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -609,7 +610,8 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
 
   // MockDlpRulesManager is owned by KeyedService and is guaranteed to outlive
   // this class.
-  policy::MockDlpRulesManager* mock_rules_manager_ = nullptr;
+  raw_ptr<policy::MockDlpRulesManager, ExperimentalAsh> mock_rules_manager_ =
+      nullptr;
 
  private:
   std::unique_ptr<KeyedService> SetDlpRulesManager(
@@ -1549,6 +1551,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveLinkOpenFileThroughTransitiveLink"),
         TestCase("driveWelcomeBanner"),
         TestCase("driveOfflineInfoBanner"),
+        TestCase("driveEncryptionBadge"),
         TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
         TestCase("driveInlineSyncStatusSingleFile").EnableInlineStatusSync(),
         TestCase("driveInlineSyncStatusParentFolder").EnableInlineStatusSync()
@@ -1577,12 +1580,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("transferFromDriveToDownloads")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
-// TODO(crbug.com/1425820), TODO(crbug.com/1428909): Re-enable this test.
-#if !defined(LEAK_SANITIZER) || !BUILDFLAG(IS_CHROMEOS) || \
-    !defined(ADDRESS_SANITIZER)
         TestCase("transferOfficeFileFromDriveToDownloads")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
-#endif
         TestCase("transferFromDownloadsToMyFiles")
             .FeatureIds({"screenplay-9e3628b5-86db-481f-8623-f13eac08d61a"}),
         TestCase("transferFromDownloadsToMyFilesMove")
@@ -2191,7 +2190,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("showSearchResultMessageWhenSearching").EnableSearchV2(),
         TestCase("showsEducationNudge").EnableSearchV2(),
         TestCase("searchFromMyFiles").EnableSearchV2(),
-        TestCase("selectionPath").EnableSearchV2()
+        TestCase("selectionPath").EnableSearchV2(),
+        TestCase("searchHierarchy").EnableSearchV2(),
+        TestCase("hideSearchInTrash").EnableTrash().EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));
@@ -2283,7 +2284,6 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableTrash(),
         TestCase("trashEnsureOldEntriesArePeriodicallyRemoved").EnableTrash(),
         TestCase("trashDragDropOutOfTrashPerformsRestoration").EnableTrash(),
-        TestCase("trashCopyShouldBeDisabledCutShouldBeEnabled").EnableTrash(),
         TestCase("trashRestorationDialogInProgressDoesntShowUndo")
             .EnableTrash(),
         TestCase("trashTogglingTrashEnabledNavigatesAwayFromTrashRoot")
@@ -2294,7 +2294,14 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase(
             "trashPressingEnterOnFileInTrashRootShowsDialogWithRestoreButton")
             .EnableTrash(),
-        TestCase("trashCantRenameFilesInTrashRoot").EnableTrash(),
+        TestCase("trashInfeasibleActionsForFileDisabledAndHiddenInTrashRoot")
+            .EnableTrash(),
+        TestCase("trashInfeasibleActionsForFolderDisabledAndHiddenInTrashRoot")
+            .EnableTrash(),
+        TestCase("trashExtractAllForZipHiddenAndDisabledInTrashRoot")
+            .EnableTrash(),
+        TestCase("trashAllActionsDisabledForBlankSpaceInTrashRoot")
+            .EnableTrash(),
         TestCase("trashNudgeShownOnFirstTrashOperation").EnableTrash(),
         TestCase("trashStaleTrashInfoFilesAreRemovedAfterOneHour")
             .EnableTrash()));

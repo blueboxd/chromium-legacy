@@ -673,13 +673,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
       // Transition the image back to the desired end state. This is used
       // for transitioning the image to the external queue for Vulkan/GL
       // interop.
-      if (auto end_state = scoped_read_access->TakeEndState()) {
-        if (!shared_context_state_->gr_context()->setBackendTextureState(
-                scoped_read_access->promise_image_texture()->backendTexture(),
-                *end_state)) {
-          DLOG(ERROR) << "setBackendTextureState() failed.";
-        }
-      }
+      scoped_read_access->ApplyBackendSurfaceEndState();
       // Signal the semaphores.
       SignalSemaphores(std::move(end_semaphores));
       return success;
@@ -852,13 +846,12 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
 
       procs_->bufferRelease(buffer);
 
+      // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
+      // will populate it with semaphores and call GrDirectContext::flush.
+      surface->flush();
       // Transition the image back to the desired end state. This is used for
       // transitioning the image to the external queue for Vulkan/GL interop.
-      if (auto end_state = scoped_write_access->TakeEndState()) {
-        // It's ok to pass in empty GrFlushInfo here since SignalSemaphores()
-        // will populate it with semaphores and call GrDirectContext::flush.
-        surface->flush(/*info=*/{}, end_state.get());
-      }
+      scoped_write_access->ApplyBackendSurfaceEndState();
 
       SignalSemaphores(std::move(end_semaphores));
 
@@ -1582,7 +1575,8 @@ void WebGPUDecoderImpl::DiscoverAdapters() {
         dawn_adapters_.push_back(adapter);
       }
     } else if (adapterProperties.backendType != WGPUBackendType_Null &&
-               adapterProperties.backendType != WGPUBackendType_OpenGL) {
+               adapterProperties.backendType != WGPUBackendType_OpenGL &&
+               adapterProperties.backendType != WGPUBackendType_D3D11) {
       dawn_adapters_.push_back(adapter);
     }
   }

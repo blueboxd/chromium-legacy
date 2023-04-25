@@ -91,6 +91,7 @@
 <translation id="1676557873873341166">Ідзе здымка відэа</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">Наяўнасць DNS-рэзолвера</translation>
+<translation id="1708602061922134366">Сіні (Google)</translation>
 <translation id="1710499924611012470">Навігацыя са спецыяльнымі магчымасцямі</translation>
 <translation id="1715359911173058521">Узнікла праблема пры абмене даных са сканерам. Праверце падключэнне да сеткі або USB-падключэнне і паўтарыце спробу.</translation>
 <translation id="1717874160321062422">Прыладай кіруюць <ph name="FIRST_MANAGER" /> і <ph name="SECOND_MANAGER" /></translation>
@@ -105,6 +106,7 @@
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">Тып аўтэнтыфікацыі</translation>
+<translation id="1776228893584526149">Колер шпалер</translation>
 <translation id="1782199038061388045">пераклад</translation>
 <translation id="1790209694022261219">Вокны і працоўныя сталы</translation>
 <translation id="1792647875738159689">Сканіраванне скасоўваецца</translation>
@@ -483,6 +485,7 @@
 <translation id="5166918508782100047">Налады Хуткіх адказаў</translation>
 <translation id="5168185087976003268">Стан акумулятара</translation>
 <translation id="5170568018924773124">Паказаць у папцы</translation>
+<translation id="5180712487038406644">Выразныя колеры</translation>
 <translation id="5190187232518914472">Ажывіце прыемныя ўспаміны. Каб дадаць або змяніць альбомы, перайдзіце ў <ph name="LINK_BEGIN" />Google Фота<ph name="LINK_END" />.</translation>
 <translation id="5212593641110061691">Таблоід</translation>
 <translation id="5222676887888702881">Выйсці</translation>
@@ -517,6 +520,7 @@
 <translation id="5423849171846380976">Уключана</translation>
 <translation id="5430931332414098647">Імгненны рэжым мадэма</translation>
 <translation id="5431318178759467895">Колер</translation>
+<translation id="5456936324019847994">Не ўдаецца ўстанавіць падключэнне ні з адным з уключаных уласных пунктаў APN. Па дадатковую інфармацыю звяртайцеся да аператара мабільнай сувязі.</translation>
 <translation id="5457599981699367932">Праглядаць як госць</translation>
 <translation id="54609108002486618">Пад кіраваннем</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Засталася {0} спроба}one{Засталася {0} спроба}few{Засталося {0} спробы}many{Засталося {0} спроб}other{Засталося {0} спробы}}</translation>
@@ -572,6 +576,7 @@
 <translation id="5931523347251946569">Файл не знойдзены</translation>
 <translation id="5939518447894949180">Скінуць</translation>
 <translation id="594552776027197022">Стварэнне выпадковай пары ключоў</translation>
+<translation id="5946538341867151940">Падключэнне не ўстаноўлена. Калі ваш аператар мабільнай сувязі рэкамендуе выкарыстоўваць карыстальніцкую назву пункта доступу, увядзіце неабходную інфармацыю, націснуўшы "+ Новая APN".</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Стандартныя шпалеры</translation>
 <translation id="6017514345406065928">Зялёны</translation>
@@ -646,6 +651,7 @@
 <translation id="6527081081771465939">Невядомы пратакол сістэмы бяспекі Wi-Fi</translation>
 <translation id="6535178685492749208">Вы па-за сеткай. Водгук будзе адпраўлены пазней.</translation>
 <translation id="65587193855025101">Планшэтны сканер</translation>
+<translation id="6560196641871357166">Яскравыя колеры</translation>
 <translation id="6564646048574748301">Збой: прынтар недаступны</translation>
 <translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
 <translation id="6574762126505704998">Запоўніць</translation>
@@ -727,6 +733,7 @@
 <translation id="7281657306185710294">Адчуванне брызу</translation>
 <translation id="7287310195820267359">Калекцыі шпалер</translation>
 <translation id="7297226631177386107">Не ўдалося падключыцца праз брандмаўар да вэб-сайтаў HTTPS</translation>
+<translation id="7297726121602187087">Цёмна-зялёны</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Пытанні экспертам і адказы на іх на даведачным форуме Chromebook</translation>
@@ -761,6 +768,7 @@
 <translation id="7570674786725311828">Сэнсарны экран з USB</translation>
 <translation id="7595982850646262331">Застаецца <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Для перамяшчэння выкарыстоўвайце мыш або клавішы са стрэлкамі.</translation>
+<translation id="7618774594543487847">Нейтральны</translation>
 <translation id="7620771111601174153">Атрымаць больш інфармацыі ў Даведачным цэнтры</translation>
 <translation id="763165478673169849">Час апошняга скіду</translation>
 <translation id="7648838807254605802">Вялікая затрымка HTTPS</translation>
@@ -873,6 +881,7 @@
 <translation id="8575298406870537639">Магчыма, вам спатрэбіцца ўключыць гэту наладу, каб падключыцца да сеткі вашага аператара. Звяжыцеся з аператарам, каб даведацца больш.</translation>
 <translation id="8576249514688522074">Неініцыялізаваная</translation>
 <translation id="8620617069779373398">Стан роўмінгу</translation>
+<translation id="86356131183441916">Светла-фіялетавы</translation>
 <translation id="8655295600908251630">Версія</translation>
 <translation id="8655828773034788261">Абагуліць URL-адрас:</translation>
 <translation id="8660881923941176839">фунт.</translation>
@@ -957,6 +966,7 @@
 <translation id="945522503751344254">Адправіць водгук</translation>
 <translation id="952992212772159698">Неактыўнае</translation>
 <translation id="960719561871045870">Код аператара</translation>
+<translation id="979450713603643090">Светла-ружовы</translation>
 <translation id="982713511914535780">Выканаць праверку разрадкі</translation>
 <translation id="987264212798334818">Агульныя</translation>
 </translationbundle>

@@ -254,6 +254,8 @@ extern const char kKeyPermissionsOneTimeMigrationDone[];
 extern const char kUnifiedDesktopEnabledByDefault[];
 extern const char kHatsBluetoothRevampCycleEndTs[];
 extern const char kHatsBluetoothRevampIsSelected[];
+extern const char kHatsBatteryLifeCycleEndTs[];
+extern const char kHatsBatteryLifeIsSelected[];
 extern const char kHatsLastInteractionTimestamp[];
 extern const char kHatsSurveyCycleEndTimestamp[];
 extern const char kHatsDeviceIsSelected[];
@@ -603,8 +605,10 @@ extern const char kDefaultTasksBySuffix[];
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kDefaultHandlersForFileExtensions[];
 extern const char kOfficeSetupComplete[];
-extern const char kOfficeFilesAlwaysMove[];
-extern const char kOfficeMoveConfirmationShown[];
+extern const char kOfficeFilesAlwaysMoveToDrive[];
+extern const char kOfficeFilesAlwaysMoveToOneDrive[];
+extern const char kOfficeMoveConfirmationShownForDrive[];
+extern const char kOfficeMoveConfirmationShownForOneDrive[];
 extern const char kOfficeFileMovedToOneDrive[];
 extern const char kOfficeFileMovedToGoogleDrive[];
 #endif
@@ -969,7 +973,6 @@ extern const char kForceBrowserSignin[];
 extern const char kBrowserProfilePickerAvailabilityOnStartup[];
 extern const char kBrowserProfilePickerShown[];
 extern const char kBrowserShowProfilePickerOnStartup[];
-extern const char kSigninAllowedOnNextStartup[];
 extern const char kSigninInterceptionEnabled[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kEchoCheckedOffers[];
@@ -1266,6 +1269,7 @@ extern const char kDeviceHindiInscriptLayoutEnabled[];
 
 #if !BUILDFLAG(IS_ANDROID)
 extern const char kHighEfficiencyChipExpandedCount[];
+extern const char kLastHighEfficiencyChipExpandedTimestamp[];
 
 extern const char kShouldShowPriceTrackFUEBubble[];
 extern const char kShouldShowSidePanelBookmarkTab[];

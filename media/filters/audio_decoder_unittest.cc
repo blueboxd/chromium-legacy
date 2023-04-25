@@ -143,7 +143,8 @@ class AudioDecoderTest
         break;
 #elif BUILDFLAG(IS_MAC)
       case AudioDecoderType::kAudioToolbox:
-        decoder_ = std::make_unique<AudioToolboxAudioDecoder>();
+        decoder_ =
+            std::make_unique<AudioToolboxAudioDecoder>(media_log_.Clone());
         break;
 #elif BUILDFLAG(IS_WIN)
       case AudioDecoderType::kMediaFoundation:
@@ -695,7 +696,7 @@ TEST_P(AudioDecoderTest, Reset) {
 
 TEST_P(AudioDecoderTest, NoTimestamp) {
   ASSERT_NO_FATAL_FAILURE(Initialize());
-  scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
+  auto buffer = base::MakeRefCounted<DecoderBuffer>(0);
   buffer->set_timestamp(kNoTimestamp);
   DecodeBuffer(std::move(buffer));
   EXPECT_THAT(last_decode_status(), IsDecodeErrorStatus());

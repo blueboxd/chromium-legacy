@@ -27,6 +27,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
+#import "ios/chrome/browser/main/browser_provider.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_controller.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_controller_testing.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
@@ -108,7 +109,8 @@ ChromeBrowserState* GetCurrentIncognitoBrowserState() {
 }
 
 Browser* GetMainBrowser() {
-  return GetMainController().interfaceProvider.mainInterface.browser;
+  return GetMainController()
+      .browserProviderInterface.mainBrowserProvider.browser;
 }
 
 UIViewController* GetActiveViewController() {
@@ -155,6 +157,11 @@ void ClearPresentedState(ProceduralBlock completion) {
   [GetForegroundActiveSceneController()
       dismissModalDialogsWithCompletion:completion
                          dismissOmnibox:YES];
+}
+
+void PresentSignInAccountsViewControllerIfNecessary() {
+  [GetForegroundActiveSceneController()
+      presentSignInAccountsViewControllerIfNecessary];
 }
 
 void SetBooleanLocalStatePref(const char* pref_name, bool value) {

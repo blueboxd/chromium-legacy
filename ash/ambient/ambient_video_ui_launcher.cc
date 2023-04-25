@@ -4,10 +4,12 @@
 
 #include "ash/ambient/ambient_video_ui_launcher.h"
 
+#include "ash/ambient/ambient_controller.h"
 #include "ash/ambient/ambient_ui_settings.h"
 #include "ash/ambient/ui/ambient_video_utils.h"
 #include "ash/ambient/ui/ambient_video_view.h"
 #include "ash/public/cpp/personalization_app/time_of_day_paths.h"
+#include "ash/shell.h"
 #include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -47,8 +49,10 @@ void VerifyVideoExistsOnDisc(AmbientVideo video) {
 
 }  // namespace
 
-AmbientVideoUiLauncher::AmbientVideoUiLauncher(PrefService* pref_service)
-    : pref_service_(pref_service) {
+AmbientVideoUiLauncher::AmbientVideoUiLauncher(
+    PrefService* pref_service,
+    AmbientViewDelegate* view_delegate)
+    : pref_service_(pref_service), view_delegate_(view_delegate) {
   CHECK(pref_service_);
 }
 AmbientVideoUiLauncher::~AmbientVideoUiLauncher() = default;
@@ -68,16 +72,21 @@ void AmbientVideoUiLauncher::Initialize(InitializationCallback on_done) {
       {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&VerifyVideoExistsOnDisc, current_video_));
+  weather_refresher_ = Shell::Get()
+                           ->ambient_controller()
+                           ->ambient_weather_controller()
+                           ->CreateScopedRefresher();
   std::move(on_done).Run(/*success=*/true);
 }
 
 std::unique_ptr<views::View> AmbientVideoUiLauncher::CreateView() {
   CHECK(is_active_);
   return std::make_unique<AmbientVideoView>(GetAmbientVideoPath(current_video_),
-                                            GetVideoHtmlPath());
+                                            GetVideoHtmlPath(), view_delegate_);
 }
 
 void AmbientVideoUiLauncher::Finalize() {
+  weather_refresher_.reset();
   is_active_ = false;
 }
 
@@ -87,6 +96,10 @@ AmbientBackendModel* AmbientVideoUiLauncher::GetAmbientBackendModel() {
 
 bool AmbientVideoUiLauncher::IsActive() {
   return is_active_;
+}
+
+bool AmbientVideoUiLauncher::IsReady() {
+  return true;
 }
 
 }  // namespace ash

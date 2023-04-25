@@ -707,6 +707,13 @@
 #include "ui/accessibility/accessibility_features.h"
 #endif
 
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_cookie_refresh_service_factory.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_request_throttled_listener_browser_impl.h"
+#include "chrome/common/bound_session_request_throttled_listener.h"
+#endif  // BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+
 using blink::mojom::EffectiveConnectionType;
 using blink::web_pref::WebPreferences;
 using content::BrowserThread;
@@ -5545,15 +5552,38 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   }
 #endif
 
-  chrome::mojom::DynamicParams dynamic_params = {
-      profile->GetPrefs()->GetBoolean(
-          policy::policy_prefs::kForceGoogleSafeSearch),
-      profile->GetPrefs()->GetInteger(
-          policy::policy_prefs::kForceYouTubeRestrict),
-      profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps)};
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+  BoundSessionCookieRefreshService* bound_session_cookie_refresh_service =
+      BoundSessionCookieRefreshServiceFactory::GetForProfile(profile);
+  std::unique_ptr<BoundSessionRequestThrottledListener>
+      bound_session_request_throttled_listener;
+  chrome::mojom::BoundSessionParamsPtr bound_session_params;
+
+  if (bound_session_cookie_refresh_service) {
+    bound_session_request_throttled_listener =
+        std::make_unique<BoundSessionRequestThrottledListenerBrowserImpl>(
+            *bound_session_cookie_refresh_service);
+    bound_session_params =
+        bound_session_cookie_refresh_service->GetBoundSessionParams();
+  }
+#endif
+
+  chrome::mojom::DynamicParamsPtr dynamic_params =
+      chrome::mojom::DynamicParams::New(
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+          std::move(bound_session_params),
+#endif
+          profile->GetPrefs()->GetBoolean(
+              policy::policy_prefs::kForceGoogleSafeSearch),
+          profile->GetPrefs()->GetInteger(
+              policy::policy_prefs::kForceYouTubeRestrict),
+          profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps));
   result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
 #if BUILDFLAG(IS_ANDROID)
       client_data_header,
+#endif
+#if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
+      std::move(bound_session_request_throttled_listener),
 #endif
       std::move(dynamic_params)));
 
@@ -7718,16 +7748,9 @@ bool ChromeContentBrowserClient::
 }
 
 #if BUILDFLAG(IS_MAC)
-base::FilePath ChromeContentBrowserClient::GetChildProcessPath(
-    int child_flags,
-    const base::FilePath& helpers_path) {
-  std::string helper_name(chrome::kHelperProcessExecutableName);
+std::string ChromeContentBrowserClient::GetChildProcessSuffix(int child_flags) {
   if (child_flags == chrome::kChildProcessHelperAlerts) {
-    helper_name += chrome::kMacHelperSuffixAlerts;
-    return helpers_path.Append(helper_name + ".app")
-        .Append("Contents")
-        .Append("MacOS")
-        .Append(helper_name);
+    return chrome::kMacHelperSuffixAlerts;
   }
   NOTREACHED() << "Unsupported child process flags!";
   return {};

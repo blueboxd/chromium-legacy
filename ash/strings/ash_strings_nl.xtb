@@ -34,6 +34,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1148499908455722006">Dialoogvenster met informatie openen voor <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Agenda</translation>
 <translation id="1153356358378277386">Gekoppelde apparaten</translation>
+<translation id="1160215328209699296">aan en in gebruik</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Je USB-C-kabel sluit misschien niet goed aan op schermen</translation>
 <translation id="1175572348579024023">Scrollen</translation>
@@ -225,6 +226,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="1978498689038657292">Tekstinvoer</translation>
 <translation id="1980808257969311265">Deelnemen aan <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">Vorige week tonen</translation>
+<translation id="1986150224850161328">Zorg dat je telefoon en Chromebook met hetzelfde netwerk zijn verbonden en probeer het opnieuw. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">Kan geen content opnemen</translation>
 <translation id="1990046457226896323">Spraakbestanden gedownload</translation>
 <translation id="1993072747612765854">Meer informatie over de laatste update van <ph name="SYSTEM_APP_NAME" /></translation>
@@ -238,9 +240,9 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2023558322300866873">Je kunt het opnemen van packets op elk moment stoppen</translation>
 <translation id="2034971124472263449">Toch opslaan</translation>
 <translation id="2049240716062114887">Bureaunaam is veranderd in <ph name="DESK_NAME" /></translation>
-<translation id="2050339315714019657">Staand</translation>
 <translation id="2064048859448024834">Het cameravoorbeeld staat aan</translation>
 <translation id="2067602449040652523">Toetsenbordhelderheid</translation>
+<translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> schakelen. <ph name="CAPTURE_MEDIUM" /> is <ph name="CAPTURE_STATE" /></translation>
 <translation id="2078034614700056995">Swipe met 4 vingers naar rechts om naar het volgende bureau te schakelen</translation>
 <translation id="2079545284768500474">Ongedaan maken</translation>
 <translation id="2083190527011054446">Goedenacht <ph name="GIVEN_NAME" />,</translation>
@@ -325,6 +327,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2487915095798731898">Deelnemen</translation>
 <translation id="2501920221385095727">Plaktoetsen</translation>
 <translation id="2509468283778169019">CAPS LOCK staat aan</translation>
+<translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> stoppen. <ph name="CAPTURE_MEDIUM" /> is <ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">De vensters ontgrendelen</translation>
 <translation id="2530896289327917474">Browsen met navigatietoetsen aan- of uitzetten</translation>
@@ -374,6 +377,7 @@ Hier zijn wat voorbeelden van wat je kunt proberen om aan de slag te gaan.</tran
 <translation id="2761723519669354964">Gemarkeerd item openen vanuit plank</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> beheerd door <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Opnamemodus sluiten</translation>
+<translation id="2785499565474703580">1 verbonden apparaat</translation>
 <translation id="2791421900609674576">Je ziet aanbevelingen zodat je verder kunt gaan waar je gebleven was. Tik en houd vast om aanbevelingen te verwijderen.</translation>
 <translation id="2792498699870441125">Alt+Zoeken</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
@@ -600,7 +604,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="3779139509281456663"><ph name="NAME" /> koppelen</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Vergrendelen</translation>
-<translation id="3796198851576711985">batterijstatus</translation>
+<translation id="3796198851576711985">batterijconditie</translation>
 <translation id="3796746699333205839">Een app gebruikt je camera en microfoon</translation>
 <translation id="3798670284305777884">Luidspreker (intern)</translation>
 <translation id="3799080171973636491">Je hebt op de sneltoets van het vergrootglas voor volledig scherm gedrukt. Wil je deze functie aanzetten?</translation>
@@ -893,7 +897,7 @@ Sluit je apparaat aan op een stopcontact.</translation>
 <translation id="5147567197700016471">Ontgrendeld</translation>
 <translation id="5150070631291639005">Privacyinstellingen</translation>
 <translation id="5155897006997040331">Leesnelheid</translation>
-<translation id="5163434717504750796">Batterijstatus <ph name="BATTERY_HEALTH_PERCENTAGE" />% | Aantal cycli <ph name="CYCLE_COUNT" /></translation>
+<translation id="5163434717504750796">Batterijconditie <ph name="BATTERY_HEALTH_PERCENTAGE" />% | Aantal cycli <ph name="CYCLE_COUNT" /></translation>
 <translation id="5166007464919321363">Bureau opslaan als template</translation>
 <translation id="5168181903108465623">Cast-apparaten beschikbaar</translation>
 <translation id="5170568018924773124">Tonen in map</translation>
@@ -1278,6 +1282,7 @@ Nieuwe installatie</translation>
 <translation id="6941333068993625698">Feedback sturen</translation>
 <translation id="6942518653766415536">Menu voor opname-indelingen</translation>
 <translation id="6945221475159498467">Selecteren</translation>
+<translation id="6945922087561257829">Je telefoon gebruikt een mobiel netwerk. Zorg dat je telefoon en Chromebook met hetzelfde wifi-netwerk zijn verbonden en probeer het opnieuw. <ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">Niet geactiveerd. Neem contact op met je provider.</translation>
 <translation id="6961121602502368900">Geluid van telefoon kan niet worden uitgezet in je werkprofiel</translation>
 <translation id="6961840794482373852">De sneltoets Alt + pijl-omhoog is veranderd. Als je de toets Page Up wilt gebruiken, druk je op de <ph name="LAUNCHER_KEY_NAME" />-toets + pijl-omhoog.</translation>
@@ -1332,6 +1337,7 @@ Nieuwe installatie</translation>
 <translation id="7188494361780961876">Menu verplaatst naar linksboven in het scherm.</translation>
 <translation id="7189412385142492784">Hoe ver weg is Venus</translation>
 <translation id="7198435252016571249">Camera uitgelijnd op de rechterbenedenhoek. Conflict met systeemoppervlak.</translation>
+<translation id="7219573373513695352">Geen apparaten gekoppeld</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Deze Chromebook moet opnieuw worden opgestart om een update uit te voeren. Dit kan ongeveer één minuut duren.</translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
 <translation id="7258828758145722155">Gisteren bewerkt</translation>
@@ -1479,6 +1485,7 @@ Als je het apparaat wilt uitzetten, houd je de aan/uit-knop op het apparaat weer
 <translation id="7902625623987030061">Raak de vingerafdruksensor aan</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> verbonden apparaten</translation>
 <translation id="7930731167419639574">Spraak wordt nu lokaal verwerkt en Dicteren werkt offline</translation>
 <translation id="7932451802722951285">Openen in Google Agenda</translation>
 <translation id="7933084174919150729">De Google Assistent is alleen beschikbaar voor het primaire profiel.</translation>
@@ -1513,6 +1520,7 @@ Als je het apparaat wilt uitzetten, houd je de aan/uit-knop op het apparaat weer
 <translation id="8051716679295756675">Er bestaat al een template met de naam <ph name="DESK_TEMPLATE_NAME" /></translation>
 <translation id="8052898407431791827">Gekopieerd naar klembord</translation>
 <translation id="8054466585765276473">Accuduur berekenen.</translation>
+<translation id="8079538659226626406">Scherm delen</translation>
 <translation id="8083540854303889870">Opgeslagen voor later</translation>
 <translation id="8091153018031979607">Begint om <ph name="START_TIME" /> <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">Automatische updates</translation>
@@ -1769,7 +1777,6 @@ Als je het apparaat wilt uitzetten, houd je de aan/uit-knop op het apparaat weer
 <translation id="954052413789300507">Onvoldoende ruimte voor <ph name="FILENAME" />. Maak ruimte vrij.</translation>
 <translation id="974545358917229949"><ph name="RESULT_COUNT" /> resultaten bekijken voor <ph name="QUERY" /></translation>
 <translation id="98120814841227350">Naar het einde van het document gaan</translation>
-<translation id="98515147261107953">Liggend</translation>
 <translation id="989374776391122812">Camera- en audiobediening</translation>
 <translation id="990277280839877440">Venster <ph name="WINDOW_TITILE" /> gesloten.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

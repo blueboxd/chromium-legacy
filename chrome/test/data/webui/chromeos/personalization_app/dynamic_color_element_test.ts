@@ -201,9 +201,9 @@ suite('DynamicColorElementTest', function() {
     assertTrue(
         getStaticColorSelector().hidden,
         'when the toggle is on, the static color buttons should be hidden.');
-    const checkedButton = getColorSchemeSelector().querySelector(
-                              'cr-button[aria-checked="true"]') as HTMLElement;
-    assertEquals(String(colorScheme), checkedButton.dataset['colorSchemeId']);
+    const pressedButton = getColorSchemeSelector().querySelector(
+                              'cr-button[aria-pressed="true"]') as HTMLElement;
+    assertEquals(String(colorScheme), pressedButton.dataset['colorSchemeId']);
   });
 
   test('displays static color on load', async () => {
@@ -219,9 +219,10 @@ suite('DynamicColorElementTest', function() {
     assertFalse(
         getStaticColorSelector().hidden,
         'when the toggle is off, the static color buttons should be visible.');
-    const checkedButton = getStaticColorSelector().querySelector(
-                              'cr-button[aria-checked="true"]') as HTMLElement;
-    assertEquals(staticColorHex, checkedButton.dataset['staticColor']);
+    const pressedButton = getStaticColorSelector().querySelector(
+                              'cr-button[aria-pressed="true"]') as HTMLElement;
+    assertTrue(pressedButton.getElementsByTagName('circle')[0]!
+                   .getAttribute('style')!.includes(staticColorHex));
   });
 
   test('flips toggle', async () => {
@@ -306,7 +307,7 @@ suite('DynamicColorElementTest', function() {
     personalizationStore.expectAction(ThemeActionName.SET_COLOR_SCHEME);
     await showColorSchemeButtons();
     const button = getColorSchemeButtons()[1]!;
-    assertEquals(button.getAttribute('aria-checked'), 'false');
+    assertEquals(button.getAttribute('aria-pressed'), 'false');
 
     button.click();
     await themeProvider.whenCalled('setColorScheme');
@@ -318,7 +319,7 @@ suite('DynamicColorElementTest', function() {
     assertEquals(
         Number(button.dataset['colorSchemeId']!),
         personalizationStore.data.theme.colorSchemeSelected);
-    assertEquals(button.getAttribute('aria-checked'), 'true');
+    assertEquals(button.getAttribute('aria-pressed'), 'true');
   });
 
   test('set static color', async () => {
@@ -326,7 +327,7 @@ suite('DynamicColorElementTest', function() {
     personalizationStore.expectAction(ThemeActionName.SET_STATIC_COLOR);
     await showStaticColorButtons();
     const button = getStaticColorButtons()[1]!;
-    assertEquals(button.getAttribute('aria-checked'), 'false');
+    assertEquals(button.getAttribute('aria-pressed'), 'false');
 
     button.click();
     await themeProvider.whenCalled('setStaticColor');
@@ -335,17 +336,21 @@ suite('DynamicColorElementTest', function() {
         await personalizationStore.waitForAction(
             ThemeActionName.SET_STATIC_COLOR) as SetStaticColorAction;
     assertTrue(!!action.staticColor);
+    // Gets the style attribute of the circle, uses regex to search for the hex
+    // string, and then converts it to an SkColor.
+    const buttonSkColor = hexColorToSkColor(
+        button.getElementsByTagName('circle')[0]!.getAttribute('style')!.match(
+            '#.{6}')![0]);
     assertDeepEquals(
-        hexColorToSkColor(button.dataset['staticColor']!),
-        personalizationStore.data.theme.staticColorSelected);
-    assertEquals(button.getAttribute('aria-checked'), 'true');
+        buttonSkColor, personalizationStore.data.theme.staticColorSelected);
+    assertEquals(button.getAttribute('aria-pressed'), 'true');
   });
 
   test('selects default color scheme on initial load', async () => {
     await initDynamicColorElement();
 
     const colorSchemeButtons = getColorSchemeButtons();
-    assertEquals('true', colorSchemeButtons[0]!.ariaChecked);
+    assertEquals('true', colorSchemeButtons[0]!.ariaPressed);
   });
 
   test('selects default static color when static color is null', async () => {
@@ -354,7 +359,7 @@ suite('DynamicColorElementTest', function() {
     await initDynamicColorElement();
 
     const staticColorButtons = getStaticColorButtons();
-    assertEquals('true', staticColorButtons[0]!.ariaChecked);
+    assertEquals('true', staticColorButtons[0]!.ariaPressed);
   });
 
   test('stores previous color scheme selection locally', async () => {

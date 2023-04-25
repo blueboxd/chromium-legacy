@@ -20,7 +20,6 @@
 <translation id="1625909126243026060">‏يمكنك مراجعة العناصر الرئيسية للتحكّم في الخصوصية والأمان في Chromium.</translation>
 <translation id="1632539827495546968">‏إذا أردت استخدام هذا الحساب لمرة واحدة فقط، يمكنك استخدام <ph name="GUEST_LINK_BEGIN" />وضع الضيف<ph name="GUEST_LINK_END" /> في متصفّح Chromium. وإذا أردت إضافة حساب لمستخدم آخر، <ph name="LINK_BEGIN" />أضِف مستخدمًا جديدًا<ph name="LINK_END" /> إلى <ph name="DEVICE_TYPE" />، مع العِلم بأنّ الأذونات التي سبق لك منحها إلى المواقع الإلكترونية والتطبيقات يمكن أن تنطبق على هذا الحساب. يمكنك إدارة حساباتك على Google من خلال <ph name="SETTINGS_LINK_BEGIN" />الإعدادات<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">جارٍ التنزيل...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{‏‫Chromium غير متصل بأي جهاز HID.}=1{‏‫Chromium متصل بجهاز HID واحد.}two{‏‫Chromium متصل بجهازَي HID.}few{‏‫Chromium متصل بأجهزة HID.}many{‏‫Chromium متصل بأجهزة HID.}other{‏‫Chromium متصل بأجهزة HID.}}</translation>
 <translation id="1708666629004767631">‏يتوفر إصدار جديد وأكثر أمانًا Chromium.</translation>
 <translation id="17264556997921157">‏يمكنك الاطّلاع على المواضيع التي تهمّك وتستخدمها المواقع الإلكترونية لعرض الإعلانات لك، وبإمكانك كذلك إزالة ما تشاء من هذه المواضيع. ويعمل Chromium على تقديم تقديرات حول اهتماماتك بناءً على سجل التصفّح الأخير.</translation>
 <translation id="1733725117201708356">‏سيحذف Chromium بيانات التصفُّح قريبًا</translation>
@@ -243,8 +242,10 @@
 <translation id="6442900851116057561">‏إعادة تشغيل نظام التشغيل Chromium</translation>
 <translation id="6455857529632101747">‏مرحبًا بك في الملفات الشخصية على Chromium</translation>
 <translation id="6475912303565314141">‏كما أنها تتحكم في الصفحة التي تظهر عند تشغيل Chromium.</translation>
+<translation id="648319183876919572">تعزِّز ميزة "الحماية المُحسّنة للتصفّح الآمن" حمايتك من المواقع الإلكترونية الضارة وعمليات التنزيل الخطيرة.</translation>
 <translation id="6510925080656968729">‏إزالة Chromium</translation>
 <translation id="6542839706527980775">‏يحتفظ كل ملف شخصي بالمعلومات الخاصة به على Chromium، مثل الإشارات المرجعية والسجلّ وكلمات المرور وغير ذلك.</translation>
+<translation id="656935081669708576">‏يمكنك التبديل للاطّلاع على كلمات المرور من ملف شخصي آخر في Chromium.</translation>
 <translation id="6570579332384693436">‏لإصلاح الأخطاء الإملائية، يُرسِل Chromium ما تكتبه في حقول النص إلى Google</translation>
 <translation id="6598877126913850652">‏الانتقال إلى إعدادات الإشعارات في Chromium</translation>
 <translation id="6613594504749178791">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Chromium.</translation>

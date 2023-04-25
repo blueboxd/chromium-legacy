@@ -6,18 +6,22 @@
  * @fileoverview
  * `settings-toggle-button` is a toggle that controls a supplied preference.
  */
+import '//resources/cr_elements/cr_shared_style.css.js';
 import '//resources/cr_elements/cr_shared_vars.css.js';
 import '//resources/cr_elements/action_link.css.js';
 import '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import '//resources/cr_elements/policy/cr_policy_pref_indicator.js';
 import '//resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classes.js';
-import '../settings_shared.css.js';
+// <if expr='chromeos_ash'>
+import '//resources/cr_elements/chromeos/cros_color_overrides.css.js';
+
+// </if>
 
 import {CrToggleElement} from '//resources/cr_elements/cr_toggle/cr_toggle.js';
 import {PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {SettingsBooleanControlMixin} from '/shared/settings/controls/settings_boolean_control_mixin.js';
 import {sanitizeInnerHtml} from 'chrome://resources/js/parse_html_subset.js';
 
-import {SettingsBooleanControlMixin} from './settings_boolean_control_mixin.js';
 import {getTemplate} from './settings_toggle_button.html.js';
 
 

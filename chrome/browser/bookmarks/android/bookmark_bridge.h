@@ -12,7 +12,6 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/containers/flat_map.h"
-#include "base/guid.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -79,18 +78,18 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  base::android::ScopedJavaLocalRef<jobject> GetBookmarkByID(
+  base::android::ScopedJavaLocalRef<jobject> GetBookmarkById(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jlong id,
       jint type);
 
-  void GetTopLevelFolderParentIDs(
+  void GetTopLevelFolderParentIds(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_result_obj);
 
-  void GetTopLevelFolderIDs(
+  void GetTopLevelFolderIds(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jboolean get_special,
@@ -133,7 +132,7 @@ class BookmarkBridge : public bookmarks::BaseBookmarkModelObserver,
       jlong id,
       jint type);
 
-  void GetChildIDs(JNIEnv* env,
+  void GetChildIds(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jlong id,
                    jint type,

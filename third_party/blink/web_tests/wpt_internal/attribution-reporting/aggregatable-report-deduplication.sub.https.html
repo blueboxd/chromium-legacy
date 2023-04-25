@@ -7,10 +7,9 @@
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/helpers.js"></script>
 <script>
-
 const aggregatable_dedup_promise_test = (testCase) => {
   attribution_reporting_promise_test(async t => {
-    const host = `https://{{host}}`;
+    const host = 'https://{{host}}';
 
     const source = {
       source_event_id: generateSourceEventId(),
@@ -23,7 +22,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
         'x': ['y', 'z'],
       }
     };
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       source,
       method: 'open',
       cookie: attributionDebugCookie,
@@ -44,7 +43,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
       debug_reporting: true,
     };
 
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       trigger,
     });
 
@@ -58,7 +57,7 @@ const aggregatable_dedup_promise_test = (testCase) => {
     trigger.aggregatable_deduplication_keys =
         testCase.aggregatable_deduplication_keys;
 
-    await registerAttributionSrc(t, {
+    await registerAttributionSrc({
       trigger,
       cookie: attributionDebugCookie,
     });

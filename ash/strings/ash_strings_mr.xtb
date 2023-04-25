@@ -29,11 +29,13 @@
 <translation id="1104084341931202936">ॲक्सेसिबिलिटी सेटिंग्ज दाखवा</translation>
 <translation id="1104621072296271835">तुमची डिव्हाइस एकत्र आणखी चांगले काम करतात</translation>
 <translation id="1111021433905331574">तुम्ही तुमच्या कीबोर्ड बॅकलाइटचा रंग सेटिंग्ज &gt; <ph name="APP_TITLE" /> मध्ये बदलू शकता</translation>
+<translation id="1112998165730922436">कास्ट करणे थांबवले आहे</translation>
 <translation id="112308213915226829">शेल्फ स्वयं लपवा</translation>
 <translation id="1142002900084379065">अलीकडील फोटो</translation>
 <translation id="1148499908455722006"><ph name="USER_NAME" /> साठी माहिती डायलॉग उघडा</translation>
 <translation id="1150989369772528668">कॅलेंडर</translation>
 <translation id="1153356358378277386">जोडलेली डिव्हाइस</translation>
+<translation id="1160215328209699296">सुरू आहे आणि वापरला जात आहे</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">तुमची USB-C केबल ही कदाचित डिस्प्लेना योग्यरीत्या कनेक्ट होणार नाही</translation>
 <translation id="1175572348579024023">स्क्रोल करा</translation>
@@ -225,6 +227,7 @@
 <translation id="1978498689038657292">मजकूर इनपुट</translation>
 <translation id="1980808257969311265"><ph name="EVENT_SUMMARY" /> मध्ये सामील व्हा</translation>
 <translation id="1982717156487272186">मागील आठवडा दाखवा</translation>
+<translation id="1986150224850161328">तुमचा फोन आणि Chromebook एकाच नेटवर्कवर असल्याची खात्री करा व नंतर पुन्हा प्रयत्न करा. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">आशय कॅप्चर करू शकत नाही</translation>
 <translation id="1990046457226896323">स्पीच फाइल डाउनलोड केल्या आहेत</translation>
 <translation id="1993072747612765854"><ph name="SYSTEM_APP_NAME" /> च्या नवीनतम अपडेटबाबत अधिक जाणून घ्या</translation>
@@ -238,9 +241,9 @@
 <translation id="2023558322300866873">तुम्ही पॅकेट कॅप्चर कधीही थांबवू शकता</translation>
 <translation id="2034971124472263449">तरीही सेव्ह करा</translation>
 <translation id="2049240716062114887">डेस्कचे नाव <ph name="DESK_NAME" /> वर बदलले होते</translation>
-<translation id="2050339315714019657">पोर्ट्रेट</translation>
 <translation id="2064048859448024834">कॅमेराचे पूर्वावलोकन सुरू आहे</translation>
 <translation id="2067602449040652523">कीबोर्डची चमक</translation>
+<translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> टॉगल करा. <ph name="CAPTURE_MEDIUM" /> हा <ph name="CAPTURE_STATE" /></translation>
 <translation id="2078034614700056995">पुढील डेस्कवर स्विच करण्यासाठी चार बोटांनी उजवीकडे स्‍वाइप करा</translation>
 <translation id="2079545284768500474">पहिल्यासारखे करा</translation>
 <translation id="2083190527011054446">शुभ रात्री <ph name="GIVEN_NAME" />,</translation>
@@ -325,6 +328,7 @@
 <translation id="2487915095798731898">सामील व्हा</translation>
 <translation id="2501920221385095727">स्टिकी की</translation>
 <translation id="2509468283778169019">CAPS LOCK सुरू आहे</translation>
+<translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> थांबवा. <ph name="CAPTURE_MEDIUM" /> हा <ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">विंडो अनलॉक करा</translation>
 <translation id="2530896289327917474">कॅरेट ब्राउझिंग सुरू किंवा बंद करा</translation>
@@ -374,6 +378,7 @@
 <translation id="2761723519669354964">शेल्फमधील हायलाइट केलेला आयटम उघडा</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> हे <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे</translation>
 <translation id="2782591952652094792">कॅप्चर मोडमधून बाहेर पडा</translation>
+<translation id="2785499565474703580">एक डिव्हाइस कनेक्ट केलेले आहे</translation>
 <translation id="2791421900609674576">तुम्हाला शिफारशी दिसतील, जेणेकरून तुम्ही जिथे सोडले होते तेथून सुरू ठेवू शकता. तुम्ही शिफारशी काढून टाकण्यासाठी स्पर्श करून धरून ठेवू शकता.</translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2797741504905337289">शेल्फ पार्टी</translation>
@@ -1278,6 +1283,7 @@
 <translation id="6941333068993625698">फीडबॅक सबमिट करा</translation>
 <translation id="6942518653766415536">रेकॉर्डिंग फॉरमॅट मेनू</translation>
 <translation id="6945221475159498467">निवडा</translation>
+<translation id="6945922087561257829">तुमचा फोन मोबाइल नेटवर्क वापरत आहे. तुमचा फोन आणि Chromebook एकाच वाय-फाय नेटवर्कवर असल्याची खात्री करा व नंतर पुन्हा प्रयत्न करा.<ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">अ‍ॅक्टिव्हेट केलेले नाही. तुमच्या वाहकाशी संपर्क साधा.</translation>
 <translation id="6961121602502368900">कार्य प्रोफाइलवर सायलन्स फोन उपलब्ध नाही</translation>
 <translation id="6961840794482373852">Alt + Up Arrow कीबोर्ड शॉर्टकट बदलला आहे. पेज अप की वापरण्यासाठी, <ph name="LAUNCHER_KEY_NAME" /> की + अप अ‍ॅरो प्रेस करा.</translation>
@@ -1332,6 +1338,7 @@
 <translation id="7188494361780961876">मेनू स्क्रीनच्या वरच्या डाव्या कोपर्‍यात हलवला.</translation>
 <translation id="7189412385142492784">शुक्र किती दूर आहे</translation>
 <translation id="7198435252016571249">कॅमेरा सर्वात खालच्या उजव्या कोपऱ्यात स्नॅप केला आहे. सिस्टीम सर्फेसवरील इतर ॲपवर ओव्‍हरलॅप होत आहे.</translation>
+<translation id="7219573373513695352">कोणतीही डिव्हाइस कनेक्ट केलेली नाहीत</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. अपडेट लागू करण्यासाठी तुम्ही हे Chromebook रीस्टार्ट करणे आवश्यक आहे. याला सुमारे एक मिनिट लागू शकते.</translation>
 <translation id="7256634071279256947">मागील मायक्रोफोन</translation>
 <translation id="7258828758145722155">काल संपादित केलेली</translation>
@@ -1482,6 +1489,7 @@
 <translation id="7902625623987030061">फिंगरप्रिंट सेन्सरला स्पर्श करा</translation>
 <translation id="7904094684485781019">या खात्याच्या ॲडमिनिस्ट्रेटरने एकाहून अधिक साइन इन ची परवानगी  रद्द केली आहे.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> डिव्हाइस कनेक्ट केली आहेत</translation>
 <translation id="7930731167419639574">स्पीचवर आता स्थानिक पातळीवर प्रक्रिया केली जाते आणि डिक्टेशन ऑफलाइन काम करते</translation>
 <translation id="7932451802722951285">Google Calendar मध्ये उघडा</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
@@ -1516,6 +1524,7 @@
 <translation id="8051716679295756675"><ph name="DESK_TEMPLATE_NAME" /> नावाचे टेंप्लेट आधीपासून अस्तित्वात आहे</translation>
 <translation id="8052898407431791827">क्लिपबोर्डवर कॉपी केले</translation>
 <translation id="8054466585765276473">बॅटरी वेळ गणना करत आहे.</translation>
+<translation id="8079538659226626406">स्क्रीन शेअर</translation>
 <translation id="8083540854303889870">नंतरसाठी सेव्ह केले</translation>
 <translation id="8091153018031979607"><ph name="START_TIME" /> <ph name="DAYS_ELAPSED" /> वाजता सुरू होईल</translation>
 <translation id="8091387634532529612">ऑटोमॅटिक अपडेट</translation>
@@ -1773,7 +1782,6 @@
 <translation id="954052413789300507"><ph name="FILENAME" /> साठी पुरेशी जागा नाही. जागा मोकळी करा.</translation>
 <translation id="974545358917229949"><ph name="QUERY" /> साठी <ph name="RESULT_COUNT" /> परिणाम दाखवत आहे</translation>
 <translation id="98120814841227350">दस्तऐवजाच्या शेवटी जा</translation>
-<translation id="98515147261107953">लँडस्केप</translation>
 <translation id="989374776391122812">कॅमेरा आणि ऑडिओ नियंत्रणे</translation>
 <translation id="990277280839877440"><ph name="WINDOW_TITILE" /> विंडो बंद केली आहे.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

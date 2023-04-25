@@ -32,6 +32,8 @@
 #import "ios/chrome/browser/follow/follow_browser_agent.h"
 #import "ios/chrome/browser/follow/followed_web_site.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/main/browser_provider.h"
+#import "ios/chrome/browser/main/browser_provider_interface.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
@@ -122,7 +124,7 @@
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_mediator.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/lens/lens_coordinator.h"
-#import "ios/chrome/browser/ui/main/browser_interface_provider.h"
+#import "ios/chrome/browser/ui/location_bar/location_bar_coordinator.h"
 #import "ios/chrome/browser/ui/main/default_browser_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_component_factory.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_coordinator.h"
@@ -208,7 +210,8 @@ constexpr base::TimeDelta kLegacyFullscreenControllerToolbarAnimationDuration =
     base::Milliseconds(300);
 
 // URL to share when user selects "Share Chrome"
-const char kChromeAppStoreUrl[] = "https://google.com/chrome/go-mobile";
+const char kChromeAppStoreUrl[] =
+    "https://apps.apple.com/app/id535886823?pt=9008&ct=iosChromeShare&mt=8";
 
 // Enum for toolbar to present.
 enum class ToolbarKind {
@@ -321,6 +324,9 @@ enum class ToolbarKind {
 // keyboard.
 @property(nonatomic, strong)
     FormInputAccessoryCoordinator* formInputAccessoryCoordinator;
+
+// Coordinator for the location bar containing the omnibox.
+@property(nonatomic, strong) LocationBarCoordinator* locationBarCoordinator;
 
 // The container coordinators for the infobar modalities.
 @property(nonatomic, strong)
@@ -452,6 +458,7 @@ enum class ToolbarKind {
   CredentialProviderPromoCoordinator* _credentialProviderPromoCoordinator;
   // Used to display the Voice Search UI.  Nil if not visible.
   id<VoiceSearchController> _voiceSearchController;
+  UrlLoadingNotifierBrowserAgent* _urlLoadingNotifierBrowserAgent;
 }
 
 #pragma mark - ChromeCoordinator
@@ -656,15 +663,12 @@ enum class ToolbarKind {
   DCHECK(self.browserContainerCoordinator.viewController);
 
   _viewController = [[BrowserViewController alloc]
-                     initWithBrowser:self.browser
-      browserContainerViewController:self.browserContainerCoordinator
-                                         .viewController
-                 keyCommandsProvider:_keyCommandsProvider
-                        dependencies:_viewControllerDependencies];
+      initWithBrowserContainerViewController:self.browserContainerCoordinator
+                                                 .viewController
+                         keyCommandsProvider:_keyCommandsProvider
+                                dependencies:_viewControllerDependencies];
   self.tabLifecycleMediator.baseViewController = self.viewController;
   self.tabLifecycleMediator.delegate = self.viewController;
-  _viewController.readingListBrowserAgent =
-      ReadingListBrowserAgent::FromBrowser(self.browser);
 
   WebNavigationBrowserAgent::FromBrowser(self.browser)->SetDelegate(self);
 
@@ -746,8 +750,13 @@ enum class ToolbarKind {
 
   _fullscreenController = FullscreenController::FromBrowser(self.browser);
 
+  self.locationBarCoordinator =
+      [[LocationBarCoordinator alloc] initWithBrowser:self.browser];
+
   _primaryToolbarCoordinator =
       [[PrimaryToolbarCoordinator alloc] initWithBrowser:self.browser];
+  _primaryToolbarCoordinator.locationBarCoordinator =
+      self.locationBarCoordinator;
 
   _secondaryToolbarCoordinator =
       [[SecondaryToolbarCoordinator alloc] initWithBrowser:self.browser];
@@ -834,18 +843,17 @@ enum class ToolbarKind {
   self.tabLifecycleMediator.NTPCoordinator = _NTPCoordinator;
 
   _lensCoordinator = [[LensCoordinator alloc] initWithBrowser:self.browser];
+  _urlLoadingNotifierBrowserAgent =
+      UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
 
   // TODO(crbug.com/1413769) Typecast should be performed using
-  // HandlerForProtocol method. PrimaryToolbarCoordinator isn't started yet, so
-  // LocationBarCoordinator is not created at this point and therefore not
-  // dispatching LoadQueryCommands.
+  // HandlerForProtocol method. LocationBarCoordinator isn't started yet
+  // therefore not dispatching LoadQueryCommands.
   id<LoadQueryCommands> _loadQueryCommandsHandler =
       static_cast<id<LoadQueryCommands>>(_dispatcher);
   _voiceSearchController =
       ios::provider::CreateVoiceSearchController(self.browser);
-  if (_primaryToolbarCoordinator) {
-    _voiceSearchController.dispatcher = _loadQueryCommandsHandler;
-  }
+  _voiceSearchController.dispatcher = _loadQueryCommandsHandler;
 
   _viewControllerDependencies.prerenderService = prerenderService;
   _viewControllerDependencies.bubblePresenter = _bubblePresenter;
@@ -887,7 +895,7 @@ enum class ToolbarKind {
   _viewControllerDependencies.urlLoadingBrowserAgent =
       UrlLoadingBrowserAgent::FromBrowser(self.browser);
   _viewControllerDependencies.urlLoadingNotifierBrowserAgent =
-      UrlLoadingNotifierBrowserAgent::FromBrowser(self.browser);
+      _urlLoadingNotifierBrowserAgent;
   _viewControllerDependencies.tabUsageRecorderBrowserAgent =
       TabUsageRecorderBrowserAgent::FromBrowser(self.browser);
   _viewControllerDependencies.webNavigationBrowserAgent =
@@ -926,8 +934,10 @@ enum class ToolbarKind {
   _lensCoordinator.baseViewController = self.viewController;
   [_lensCoordinator start];
 
-  _primaryToolbarCoordinator.delegate = self.viewController;
-  _primaryToolbarCoordinator.popupPresenterDelegate = self.viewController;
+  self.locationBarCoordinator.delegate = self.viewController;
+  self.locationBarCoordinator.popupPresenterDelegate = self.viewController;
+  [self.locationBarCoordinator start];
+
   [_primaryToolbarCoordinator start];
 
   _legacyTabStripCoordinator.baseViewController = self.viewController;
@@ -996,6 +1006,9 @@ enum class ToolbarKind {
 
   [self.browserContainerCoordinator stop];
   self.browserContainerCoordinator = nil;
+
+  [self.locationBarCoordinator stop];
+  self.locationBarCoordinator = nil;
 
   [_NTPCoordinator stop];
   _NTPCoordinator = nil;
@@ -1120,17 +1133,15 @@ enum class ToolbarKind {
   self.viewController.infobarBannerOverlayContainerViewController =
       self.infobarBannerOverlayContainerCoordinator.viewController;
 
-  if (IsPriceTrackingEnabled(self.browser->GetBrowserState())) {
-    self.priceNotificationsIPHCoordinator =
-        [[PriceNotificationsIPHCoordinator alloc]
-            initWithBaseViewController:self.viewController
-                               browser:self.browser];
-    [self.priceNotificationsIPHCoordinator start];
-    // Updates the priceNotificationsIPHPresenter value inside
-    // tabLifecycleMediator.
-    self.tabLifecycleMediator.priceNotificationsIPHPresenter =
-        self.priceNotificationsIPHCoordinator;
-  }
+  self.priceNotificationsIPHCoordinator =
+      [[PriceNotificationsIPHCoordinator alloc]
+          initWithBaseViewController:self.viewController
+                             browser:self.browser];
+  [self.priceNotificationsIPHCoordinator start];
+  // Updates the priceNotificationsIPHPresenter value inside
+  // tabLifecycleMediator.
+  self.tabLifecycleMediator.priceNotificationsIPHPresenter =
+      self.priceNotificationsIPHCoordinator;
 
   if (IsCredentialProviderExtensionPromoEnabled()) {
     _credentialProviderPromoCoordinator =
@@ -1290,7 +1301,9 @@ enum class ToolbarKind {
   self.tabEventsMediator = [[TabEventsMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
             ntpCoordinator:_NTPCoordinator
-          restorationAgent:sessionRestorationBrowserAgent];
+          restorationAgent:sessionRestorationBrowserAgent
+              browserState:browserState
+           loadingNotifier:_urlLoadingNotifierBrowserAgent];
   self.tabEventsMediator.consumer = browserViewController;
 
   browserViewController.reauthHandler =
@@ -1935,8 +1948,8 @@ enum class ToolbarKind {
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
   self.passwordSettingsCoordinator = [[PasswordSettingsCoordinator alloc]
       initWithBaseViewController:self.viewController
-                         browser:sceneState.interfaceProvider.mainInterface
-                                     .browser];
+                         browser:sceneState.browserProviderInterface
+                                     .mainBrowserProvider.browser];
   self.passwordSettingsCoordinator.delegate = self;
   [self.passwordSettingsCoordinator start];
 }
@@ -2658,7 +2671,6 @@ enum class ToolbarKind {
 
 #pragma mark - NewTabPageTabHelperDelegate
 
-// TODO(crbug.com/1427128): Have the TabEventsMediator implement this.
 - (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
                                 forWebState:(web::WebState*)webState {
   DCHECK(self.browser);
@@ -2672,15 +2684,16 @@ enum class ToolbarKind {
   }
   NewTabPageCoordinator* NTPCoordinator = self.NTPCoordinator;
   DCHECK(NTPCoordinator);
-  // Handle NTP visibility changes within a web state.
   if (NTPHelper->IsActive()) {
-    if (!NTPCoordinator.started) {
+    // Starting the NTPCoordinator triggers its visibility, so we only
+    // explicitly call `didNavigateToNTP` if the NTP was already started.
+    if (NTPCoordinator.started) {
+      [NTPCoordinator didNavigateToNTP];
+    } else {
       [NTPCoordinator start];
     }
-    [NTPCoordinator didNavigateToNTPInWebState:webState];
   } else {
     [NTPCoordinator didNavigateAwayFromNTP];
-    [NTPCoordinator stopIfNeeded];
   }
   if (self.isActive) {
     [self.viewController displayCurrentTab];

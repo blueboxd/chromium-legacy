@@ -63,7 +63,6 @@ suite('NewTabPageAppTest', () => {
         'getBackgroundImageLoadTime', Promise.resolve(0));
     moduleRegistry = installMock(ModuleRegistry);
     moduleResolver = new PromiseResolver();
-    moduleRegistry.setResultFor('getDescriptors', []);
     moduleRegistry.setResultFor('initializeModules', moduleResolver.promise);
     metrics = fakeMetricsPrivate();
 
@@ -605,6 +604,7 @@ suite('NewTabPageAppTest', () => {
     suiteSetup(() => {
       loadTimeData.overrideValues({
         modulesEnabled: true,
+        wideModulesEnabled: false,
       });
     });
 

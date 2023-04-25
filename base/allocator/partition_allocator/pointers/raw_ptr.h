@@ -160,6 +160,14 @@ struct TraitsToImpl;
 template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
 class raw_ptr;
 
+#if BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
+template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+using raw_ptr_experimental = raw_ptr<T, Traits>;
+#else
+template <typename T, RawPtrTraits Traits = RawPtrTraits::kEmpty>
+using raw_ptr_experimental = T*;
+#endif  // BUILDFLAG(ENABLE_RAW_PTR_EXPERIMENTAL)
+
 }  // namespace base
 
 // This type is to be used internally, or in callbacks arguments when it is
@@ -1127,6 +1135,7 @@ using RemovePointerT = typename RemovePointer<T>::type;
 }  // namespace base
 
 using base::raw_ptr;
+using base::raw_ptr_experimental;
 
 // DisableDanglingPtrDetection option for raw_ptr annotates
 // "intentional-and-safe" dangling pointers. It is meant to be used at the
@@ -1148,6 +1157,17 @@ constexpr auto DanglingUntriaged = base::RawPtrTraits::kMayDangle;
 // disabled by default. Usually a container like span<> should be used
 // instead of the raw_ptr.
 constexpr auto AllowPtrArithmetic = base::RawPtrTraits::kAllowPtrArithmetic;
+
+// Temporary flag for `raw_ptr` / `raw_ref`. This is used by finch experiments
+// to differentiate pointers added recently for the ChromeOS ash rewrite.
+//
+// See launch plan:
+// https://docs.google.com/document/d/105OVhNl-2lrfWElQSk5BXYv-nLynfxUrbC4l8cZ0CoU/edit#
+//
+// This is not meant to be added manually. You can ignore this flag.
+//
+// TODO(https://crbug.com/1435441) Implement the ExperimentalAsh Trait.
+constexpr auto ExperimentalAsh = base::RawPtrTraits::kMayDangle;
 
 namespace std {
 

@@ -3957,11 +3957,11 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   if (!before_unload_event.defaultPrevented())
     DefaultEventHandler(before_unload_event);
 
-  if (before_unload_event.returnValue().IsNull()) {
+  if (before_unload_event.returnValue().empty()) {
     RecordBeforeUnloadUse(BeforeUnloadUse::kNoDialogNoText);
   }
   bool cancelled_by_script =
-      !before_unload_event.returnValue().IsNull() ||
+      !before_unload_event.returnValue().empty() ||
       (RuntimeEnabledFeatures::
            BeforeunloadEventCancelByPreventDefaultEnabled() &&
        before_unload_event.defaultPrevented());
@@ -4513,6 +4513,7 @@ void Document::ProcessBaseElement() {
     UpdateBaseURL();
   }
 
+  AtomicString old_base_target = base_target_;
   if (target) {
     if (target->Contains('\n') || target->Contains('\r'))
       UseCounter::Count(*this, WebFeature::kBaseWithNewlinesInTarget);
@@ -4521,6 +4522,11 @@ void Document::ProcessBaseElement() {
     base_target_ = *target;
   } else {
     base_target_ = g_null_atom;
+  }
+  if (old_base_target != base_target_) {
+    if (auto* document_rules = DocumentSpeculationRules::FromIfExists(*this)) {
+      document_rules->DocumentBaseTargetChanged();
+    }
   }
 }
 
@@ -6607,7 +6613,6 @@ FragmentDirective& Document::fragmentDirective() const {
 
 ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
                                         const String& issuer,
-                                        const String& type,
                                         ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
@@ -6625,14 +6630,6 @@ ScriptPromise Document::hasPrivateToken(ScriptState* script_state,
     exception_state.ThrowTypeError(
         "hasPrivateToken: Private Token issuer origins must be both HTTP(S) "
         "and secure (\"potentially trustworthy\").");
-    resolver->Reject(exception_state);
-    return promise;
-  }
-
-  if (type != "private-state-token") {
-    exception_state.ThrowTypeError(
-        "hasPrivateToken: Private Token types other than "
-        "private-state-token are unsupported.");
     resolver->Reject(exception_state);
     return promise;
   }

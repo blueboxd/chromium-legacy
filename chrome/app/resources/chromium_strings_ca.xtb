@@ -22,7 +22,6 @@
 
 És possible que els permisos que ja hagis donat a llocs web i aplicacions s'apliquin a aquest compte. Pots gestionar els teus Comptes de Google a <ph name="SETTINGS_LINK_BEGIN" />Configuració<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">S'està baixant...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium estava connectat a un dispositiu HID}=1{Chromium està connectat a un dispositiu HID}other{Chromium està connectat a dispositius HID}}</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="17264556997921157">Pots veure i suprimir els temes d'interès que els llocs web utilitzen per mostrar-te anuncis. Chromium estima els teus interessos basant-se en l'historial de navegació recent.</translation>
 <translation id="1733725117201708356">Chromium suprimirà les dades de navegació aviat</translation>
@@ -245,8 +244,10 @@
 <translation id="6442900851116057561">Reinicia Chromium OS</translation>
 <translation id="6455857529632101747">Et donem la benvinguda als perfils de Chromium</translation>
 <translation id="6475912303565314141">També controla la pàgina que es mostra quan inicieu Chromium.</translation>
+<translation id="648319183876919572">La Navegació segura millorada és més eficaç a l'hora de protegir-te de baixades i llocs web perillosos</translation>
 <translation id="6510925080656968729">Desinstal·la Chromium</translation>
 <translation id="6542839706527980775">Cada perfil conserva la seva pròpia informació de Chromium, com ara les adreces d'interès, l'historial, les contrasenyes i més</translation>
+<translation id="656935081669708576">Pots canviar de perfil per veure les contrasenyes d'un altre perfil de Chromium</translation>
 <translation id="6570579332384693436">Per corregir els errors d'ortografia, Chromium envia a Google el que escrius als camps de text</translation>
 <translation id="6598877126913850652">Ves a la configuració de notificacions de Chromium</translation>
 <translation id="6613594504749178791">Els canvis s'aplicaran la propera vegada que reinicieu Chromium.</translation>

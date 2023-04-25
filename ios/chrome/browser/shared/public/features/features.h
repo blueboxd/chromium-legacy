@@ -54,6 +54,9 @@ BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
 // the promo manager.
 BASE_DECLARE_FEATURE(kDefaultBrowserRefactoringPromoManager);
 
+// Feature flag that enables the default browser video promo.
+BASE_DECLARE_FEATURE(kDefaultBrowserVideoPromo);
+
 // Feature flag to use the new Edit menu API for browser view.
 BASE_DECLARE_FEATURE(kIOSCustomBrowserEditMenu);
 
@@ -62,9 +65,28 @@ extern const char kIOSEditMenuPartialTranslateNoIncognitoParam[];
 // Feature flag to enable partial translate in the edit menu.
 BASE_DECLARE_FEATURE(kIOSEditMenuPartialTranslate);
 
+// Helper function to check if kIOSEditMenuPartialTranslate is enabled and on
+// supported OS.
+bool IsPartialTranslateEnabled();
+
 // Helper function to check if kIOSEditMenuPartialTranslate is enabled in
 // incognito.
 bool ShouldShowPartialTranslateInIncognito();
+
+// Feature param under kIOSEditMenuSearchWith to select the title.
+extern const char kIOSEditMenuSearchWithTitleParamTitle[];
+extern const char kIOSEditMenuSearchWithTitleSearchParam[];
+extern const char kIOSEditMenuSearchWithTitleSearchWithParam[];
+extern const char kIOSEditMenuSearchWithTitleWebSearchParam[];
+// Feature flag to enable search with in the edit menu.
+BASE_DECLARE_FEATURE(kIOSEditMenuSearchWith);
+
+// Helper function to check if kIOSEditMenuSearchWith is enabled and on
+// supported OS.
+bool IsSearchWithEnabled();
+
+// Feature flag to hide search web in the edit menu.
+BASE_DECLARE_FEATURE(kIOSEditMenuHideSearchWeb);
 
 // Feature flag that shows iOS 15 context menu, instead of tooltip popover,
 // during a location bar long press gesture.

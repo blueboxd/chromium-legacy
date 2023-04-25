@@ -62,7 +62,6 @@ if (!is_android) {
     "../browser/sync/test/integration/two_client_extension_settings_and_app_settings_sync_test.cc",
     "../browser/sync/test/integration/two_client_extensions_sync_test.cc",
     "../browser/sync/test/integration/two_client_passwords_sync_test.cc",
-    "../browser/sync/test/integration/two_client_polling_sync_test.cc",
     "../browser/sync/test/integration/two_client_power_bookmarks_sync_test.cc",
     "../browser/sync/test/integration/two_client_preferences_sync_test.cc",
     "../browser/sync/test/integration/two_client_search_engines_sync_test.cc",
@@ -85,6 +84,14 @@ if (!is_android) {
 
 if (is_win || is_mac || is_linux) {
   sync_integration_tests_sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_test_mac_win_linux.cc" ]
+}
+
+if (is_win || is_linux) {
+  sync_integration_tests_sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_test_win_linux.cc" ]
+}
+
+if (is_mac) {
+  sync_integration_tests_sources += [ "../browser/sync/test/integration/two_client_web_apps_integration_test_mac.cc" ]
 }
 
 if (is_win) {

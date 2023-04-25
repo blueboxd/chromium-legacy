@@ -17,10 +17,19 @@ namespace unchecked {
 api::os_events::AudioJackEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryAudioJackEventInfoPtr ptr);
 
+api::os_events::LidEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryLidEventInfoPtr ptr);
+
 }  // namespace unchecked
 
 api::os_events::AudioJackEvent Convert(
     crosapi::mojom::TelemetryAudioJackEventInfo::State state);
+
+api::os_events::AudioJackDeviceType Convert(
+    crosapi::mojom::TelemetryAudioJackEventInfo::DeviceType device_type);
+
+api::os_events::LidEvent Convert(
+    crosapi::mojom::TelemetryLidEventInfo::State state);
 
 crosapi::mojom::TelemetryEventCategoryEnum Convert(
     api::os_events::EventCategory input);

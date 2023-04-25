@@ -1468,26 +1468,6 @@
         "name": "desktop_ui/tab_search:top50:2020"
     },
     {
-        "duration": "90.0",
-        "name": "desktop_ui/webui_tab_strip:clean_slate"
-    },
-    {
-        "duration": "92.0",
-        "name": "desktop_ui/webui_tab_strip:measure_memory"
-    },
-    {
-        "duration": "90.0",
-        "name": "desktop_ui/webui_tab_strip:measure_memory:2window"
-    },
-    {
-        "duration": "129.0",
-        "name": "desktop_ui/webui_tab_strip:top10:2020"
-    },
-    {
-        "duration": "133.0",
-        "name": "desktop_ui/webui_tab_strip:top10:loading:2020"
-    },
-    {
         "duration": "33.0",
         "name": "dummy_benchmark.noisy_benchmark_1/dummy_page.html"
     },
@@ -1496,16 +1476,8 @@
         "name": "dummy_benchmark.stable_benchmark_1/dummy_page.html"
     },
     {
-        "duration": "244.0",
-        "name": "jetstream/JetStream"
-    },
-    {
         "duration": "314.0",
         "name": "jetstream2/JetStream2"
-    },
-    {
-        "duration": "63.0",
-        "name": "kraken/http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html"
     },
     {
         "duration": "92.0",
@@ -3248,10 +3220,6 @@
         "name": "speedometer2-future/Speedometer2"
     },
     {
-        "duration": "137.0",
-        "name": "speedometer2-pcscan/Speedometer2"
-    },
-    {
         "duration": "120.0",
         "name": "speedometer2/Speedometer2"
     },
@@ -3882,10 +3850,6 @@
     {
         "duration": "115.0",
         "name": "system_health.memory_desktop/play:media:soundcloud:2018"
-    },
-    {
-        "duration": "0.0",
-        "name": "system_health.pcscan/browse:news:cnn:2021"
     },
     {
         "duration": "161.0",

@@ -49,6 +49,9 @@ import {getTemplate} from './power_bookmarks_list.html.js';
 import {editingDisabledByPolicy, Label, PowerBookmarksService} from './power_bookmarks_service.js';
 import {BookmarkProductInfo} from './shopping_list.mojom-webui.js';
 
+const ADD_FOLDER_ACTION_UMA = 'Bookmarks.FolderAddedFromSidePanel';
+const ADD_URL_ACTION_UMA = 'Bookmarks.AddedFromSidePanel';
+
 function getBookmarkName(bookmark: chrome.bookmarks.BookmarkTreeNode): string {
   return bookmark.title || bookmark.url || '';
 }
@@ -72,6 +75,7 @@ export interface SortOption {
 
 export interface PowerBookmarksListElement {
   $: {
+    bookmarks: HTMLElement,
     contextMenu: PowerBookmarksContextMenuElement,
     deletionToast: CrLazyRenderElement<CrToastElement>,
     powerBookmarksContainer: HTMLElement,
@@ -175,6 +179,13 @@ export class PowerBookmarksListElement extends PolymerElement {
         type: String,
         value: '',
       },
+
+      /* If container containing shown bookmarks has scrollbars. */
+      hasScrollbars_: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -211,6 +222,8 @@ export class PowerBookmarksListElement extends PolymerElement {
   private renamingId_: string;
   private deletionDescription_: string;
   private shownBookmarksResizeObserver_?: ResizeObserver;
+  private hasScrollbars_: boolean;
+  private contextMenuBookmark_: chrome.bookmarks.BookmarkTreeNode|undefined;
 
   constructor() {
     super();
@@ -246,9 +259,8 @@ export class PowerBookmarksListElement extends PolymerElement {
 
     if (document.documentElement.hasAttribute('chrome-refresh-2023')) {
       this.shownBookmarksResizeObserver_ =
-          new ResizeObserver(this.resizeShownBookmarks_.bind(this));
-      this.shownBookmarksResizeObserver_.observe(
-          this.shadowRoot!.querySelector('#bookmarks')!);
+          new ResizeObserver(this.onShownBookmarksResize_.bind(this));
+      this.shownBookmarksResizeObserver_.observe(this.$.bookmarks);
     }
 
     this.recordMetricsOnConnected_();
@@ -495,6 +507,11 @@ export class PowerBookmarksListElement extends PolymerElement {
     return imageUrls;
   }
 
+  private getBookmarkForceHover_(bookmark: chrome.bookmarks.BookmarkTreeNode):
+      boolean {
+    return bookmark === this.contextMenuBookmark_;
+  }
+
   private getActiveFolderLabel_(): string {
     return this.getFolderLabel_(this.getActiveFolder_());
   }
@@ -635,6 +652,7 @@ export class PowerBookmarksListElement extends PolymerElement {
     event.stopPropagation();
     let parentId = event.detail.folderId;
     for (const folder of event.detail.newFolders) {
+      chrome.metricsPrivate.recordUserAction(ADD_FOLDER_ACTION_UMA);
       const newFolder =
           await this.bookmarksApi_.createFolder(folder.parentId!, folder.title);
       folder.children!.forEach(child => child.parentId = newFolder.id);
@@ -675,22 +693,7 @@ export class PowerBookmarksListElement extends PolymerElement {
   }
 
   private shouldHideHeader_(): boolean {
-    return this.hasActiveLabels_() || !!this.searchQuery_ ||
-        this.hasNoBookmarks_();
-  }
-
-  private hasNoBookmarks_(): boolean {
-    return this.hasNoBookmarksInActiveFolder_() && !this.getActiveFolder_();
-  }
-
-  private hasNoBookmarksInActiveFolder_(): boolean {
-    for (const bookmark of this.shownBookmarks_) {
-      if (bookmark.url || bookmark.parentId !== '0' ||
-          bookmark.children!.length) {
-        return false;
-      }
-    }
-    return true;
+    return this.hasActiveLabels_() || !!this.searchQuery_;
   }
 
   private getSelectedDescription_() {
@@ -745,13 +748,14 @@ export class PowerBookmarksListElement extends PolymerElement {
     const priceTracked = this.isPriceTracked(event.detail.bookmark);
     const priceTrackingEligible =
         this.isPriceTrackingEligible_(event.detail.bookmark);
+    this.contextMenuBookmark_ = event.detail.bookmark;
     if (event.detail.event.button === 0) {
       this.$.contextMenu.showAt(
-          event.detail.event, [event.detail.bookmark], priceTracked,
+          event.detail.event, [this.contextMenuBookmark_], priceTracked,
           priceTrackingEligible);
     } else {
       this.$.contextMenu.showAtPosition(
-          event.detail.event, [event.detail.bookmark], priceTracked,
+          event.detail.event, [this.contextMenuBookmark_], priceTracked,
           priceTrackingEligible);
     }
   }
@@ -776,6 +780,7 @@ export class PowerBookmarksListElement extends PolymerElement {
       this.showDisabledFeatureDialog_();
       return;
     }
+    chrome.metricsPrivate.recordUserAction(ADD_FOLDER_ACTION_UMA);
     this.bookmarksApi_
         .createFolder(newParent.id, loadTimeData.getString('newFolderTitle'))
         .then((newFolder) => {
@@ -808,24 +813,29 @@ export class PowerBookmarksListElement extends PolymerElement {
         });
   }
 
-  private onContextMenuEditClicked_(event: CustomEvent<{id: string}>) {
+  private onContextMenuEditClicked_(
+      event: CustomEvent<{bookmarks: chrome.bookmarks.BookmarkTreeNode[]}>) {
     event.preventDefault();
     event.stopPropagation();
-    const bookmark =
-        this.bookmarksService_.findBookmarkWithId(event.detail.id)!;
-    if (editingDisabledByPolicy([bookmark])) {
+    if (editingDisabledByPolicy(event.detail.bookmarks)) {
       this.showDisabledFeatureDialog_();
       return;
     }
-    this.showEditDialog_([bookmark], false);
+    this.showEditDialog_(
+        event.detail.bookmarks, event.detail.bookmarks.length > 1);
   }
 
-  private onContextMenuDeleteClicked_(event: MouseEvent) {
+  private onContextMenuDeleteClicked_(
+      event: CustomEvent<{bookmarks: chrome.bookmarks.BookmarkTreeNode[]}>) {
     event.preventDefault();
     event.stopPropagation();
-    // Context menu delete is expected to only be called on a single bookmark.
-    this.showDeletionToastWithCount_(1);
+    this.showDeletionToastWithCount_(event.detail.bookmarks.length);
+    this.selectedBookmarks_ = [];
     this.editing_ = false;
+  }
+
+  private onContextMenuClosed_() {
+    this.contextMenuBookmark_ = undefined;
   }
 
   private showDeletionToastWithCount_(deletionCount: number) {
@@ -915,6 +925,7 @@ export class PowerBookmarksListElement extends PolymerElement {
       this.showDisabledFeatureDialog_();
       return;
     }
+    chrome.metricsPrivate.recordUserAction(ADD_URL_ACTION_UMA);
     this.bookmarksApi_.bookmarkCurrentTabInFolder(newParent.id);
   }
 
@@ -989,11 +1000,14 @@ export class PowerBookmarksListElement extends PolymerElement {
     }
   }
 
-  private resizeShownBookmarks_() {
+  private onShownBookmarksResize_() {
     // The iron-list of `shownBookmarks_` is in a dynamically sized card.
     // Any time the size changes, let iron-list know so that iron-list can
     // properly adjust to its possibly new height.
     this.$.shownBookmarksIronList.notifyResize();
+
+    this.hasScrollbars_ =
+        this.$.bookmarks.scrollHeight > this.$.bookmarks.offsetHeight;
   }
 }
 

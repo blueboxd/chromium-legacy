@@ -135,6 +135,7 @@
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/human_presence/human_presence_orientation_controller.h"
 #include "ash/system/human_presence/snooping_protection_controller.h"
+#include "ash/system/input_device_settings/input_device_key_alias_manager.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "ash/system/input_device_settings/input_device_settings_dispatcher.h"
 #include "ash/system/input_device_settings/input_device_tracker.h"
@@ -747,6 +748,7 @@ Shell::~Shell() {
   input_device_settings_dispatcher_.reset();
   input_device_tracker_.reset();
   input_device_settings_controller_.reset();
+  input_device_key_alias_manager_.reset();
 
   screen_orientation_controller_.reset();
   screen_layout_observer_.reset();
@@ -1174,7 +1176,8 @@ void Shell::Init(
       shell_delegate_->CreateCaptureModeDelegate());
 
   if (features::IsGameDashboardEnabled()) {
-    game_dashboard_controller_ = std::make_unique<GameDashboardController>();
+    game_dashboard_controller_ = std::make_unique<GameDashboardController>(
+        shell_delegate_->CreateGameDashboardDelegate());
   }
 
   // Accelerometer file reader starts listening to tablet mode controller.
@@ -1195,8 +1198,8 @@ void Shell::Init(
   }
 
   native_cursor_manager_ = new NativeCursorManagerAsh;
-  cursor_manager_ =
-      std::make_unique<CursorManager>(base::WrapUnique(native_cursor_manager_));
+  cursor_manager_ = std::make_unique<CursorManager>(
+      base::WrapUnique(native_cursor_manager_.get()));
 
   InitializeDisplayManager();
 
@@ -1252,6 +1255,9 @@ void Shell::Init(
   // windows are active.
   window_modality_controller_ =
       std::make_unique<::wm::WindowModalityController>(this, env);
+
+  input_device_key_alias_manager_ =
+      std::make_unique<InputDeviceKeyAliasManager>();
 
   // The `InputDeviceSettingsController` is a dependency of the following so it
   // must be initialized first:
@@ -1356,7 +1362,8 @@ void Shell::Init(
   user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
 
   control_v_histogram_recorder_ = std::make_unique<ControlVHistogramRecorder>();
-  AddPreTargetHandler(control_v_histogram_recorder_.get());
+  AddPreTargetHandler(control_v_histogram_recorder_.get(),
+                      ui::EventTarget::Priority::kAccessibility);
 
   // AcceleratorTracker should be placed before AcceleratorFilter to make sure
   // the accelerators won't be filtered out before getting AcceleratorTracker.

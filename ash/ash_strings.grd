@@ -552,6 +552,9 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_NOTIFICATION_MESSAGE" desc="The notification message to tell the user we are casting the desktop.">
         You are currently casting screen.
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_PAUSED" desc="The notification message to tell the user that casting is paused.">
+        Casting is paused
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_TAB" desc="The title label used in the tray popup to tell the user we are casting a tab.">
         <ph name="ROUTE_TITLE">$1<ex>YouTube</ex></ph> on <ph name="RECEIVER_NAME">$2<ex>Living Room</ex></ph>
       </message>
@@ -1477,10 +1480,35 @@ Style notes:
         Scanning
       </message>
 
-       <!-- Video Conference tray/bubble  -->
-      <message name="IDS_ASH_VIDEO_CONFERENCE_TOGGLE_BUBBLE_BUTTON_TOOLTIP" desc="The tooltip for the toggle bubble button in the video conference tray.">
+       <!-- Video Conference tray  -->
+        <message name="IDS_ASH_VIDEO_CONFERENCE_TOGGLE_BUBBLE_BUTTON_TOOLTIP" desc="The tooltip for the toggle bubble button in the video conference tray.">
         Camera and audio controls
       </message>
+  <message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_TOOLTIP" desc="Tooltip shown for the toggle buttons shown in the shelf tray. There is a different toggle button for each (Microphone, Camera, Screen Capture). If the button is toggled on, it may also be in-use.">
+        Toggle <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph>. <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph> is <ph name="CAPTURE_STATE">$2<ex>on and in use</ex></ph>
+  </message>
+  <message name="VIDEO_CONFERENCE_ONE_WAY_TOGGLE_BUTTON_TOOLTIP" desc="Tooltip shown for a toggle button in the shelf tray which is 'one way', which means that activating the button only turns the behavior off and it cannot be turned back on.">
+        Stop <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph>. <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph> is <ph name="CAPTURE_STATE">$2<ex>on and in use</ex></ph>
+  </message>
+   <message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_TYPE_CAMERA" desc="The portion of the tooltip for the camera toggle button.">
+   Camera
+   </message>
+   <message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_TYPE_MICROPHONE" desc="The portion of the tooltip for the microphone toggle button.">
+   Microphone
+   </message>
+   <message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_TYPE_SCREEN_SHARE" desc="The portion of the tooltip for the screen capture toggle button.">
+   Screen Share
+   </message>
+   <message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_STATE_ON" desc="The state of the toggle button when the toggle is on but not capturing.">
+   on
+   </message>
+<message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_STATE_ON_AND_IN_USE" desc="The state of the toggle button when the toggle is on and capturing.">
+   on and in use
+   </message>
+<message name="VIDEO_CONFERENCE_TOGGLE_BUTTON_STATE_OFF" desc="The state of the toggle button when the toggle is muting.">
+   off
+   </message>
+       <!--  Video Conference bubble  -->
       <message name="IDS_ASH_VIDEO_CONFERENCE_RETURN_TO_APP_SUMMARY_TEXT" desc="The summary text in the return to app panel of the video conference panel, specifying how many video conferencing apps are in used.">
         Used by <ph name="APP_COUNT">$1<ex>2</ex></ph> apps
       </message>
@@ -2965,12 +2993,6 @@ Connect your device to power.
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_AUTO" desc="The text shown in the tray menu when rotation is set to auto and the user can enable the rotation lock by tapping.">
         Auto rotate
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_LANDSCAPE" desc="The text shown in the tray menu when rotation is set locked to landscape.">
-        Landscape
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_PORTRAIT" desc="The text shown in the tray menu when rotation is set locked to portrait.">
-        Portrait
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_ROTATION_LOCK_TOOLTIP" desc="The tooltip text used for the button that toggles rotation lock enabled/disabled.">
         Toggle rotation lock. <ph name="STATE_TEXT">$1<ex>Locked to vertical</ex></ph>
       </message>
@@ -3993,7 +4015,7 @@ Connect your device to power.
       </message>
       <!-- Ambient Accelerator Action -->
       <message name="IDS_AMBIENT_ACCELERATOR_GO_TO_TAB_IN_RANGE" translateable="false" desc="Action for accelerator action - Go to tabs 1 through 8.">
-        <ph name="MODIFIER">$1<ex>ctrl</ex></ph> <ph name="DELIMITER">$2<ex>+</ex></ph> <ph name="KEY_ONE">$3<ex>1</ex></ph> through <ph name="KEY_TWO">$4<ex>8</ex></ph>
+        <ph name="MODIFIER">$1<ex>ctrl</ex></ph><ph name="DELIMITER">$2<ex>+</ex></ph><ph name="KEY_ONE">$3<ex>1</ex></ph> through <ph name="KEY_TWO">$4<ex>8</ex></ph>
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_DRAG_LINK_IN_NEW_TAB" translateable="false" desc="Action for accelerator action - Open the link in a new tab.">
         Drag link to blank area on the tab strip
@@ -4023,7 +4045,7 @@ Connect your device to power.
         Drag link to bookmarks bar
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_LAUNCH_NUMBERED_APP" translateable="false" desc="Action for accelerator action - Click icons 1-8 on your shelf.">
-        <ph name="MODIFIER">$1<ex>alt</ex></ph> <ph name="DELIMITER">$2<ex>+</ex></ph> <ph name="KEY_ONE">$3<ex>1</ex></ph> through <ph name="KEY_TWO">$4<ex>8</ex></ph>
+        <ph name="MODIFIER">$1<ex>alt</ex></ph><ph name="DELIMITER">$2<ex>+</ex></ph><ph name="KEY_ONE">$3<ex>1</ex></ph> through <ph name="KEY_TWO">$4<ex>8</ex></ph>
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_OPEN_FILE" translateable="false" desc="Action for accelerator action - Preview a file in the Files app.">
         Select the file, then press <ph name="KEY">$1<ex>space</ex></ph>
@@ -4050,7 +4072,7 @@ Connect your device to power.
         <ph name="MODIFIER_ONE">$1<ex>ctrl</ex></ph><ph name="MODIFIER_TWO">$2<ex>shift</ex></ph> then <ph name="KEY_ONE">$3<ex>left</ex></ph> or <ph name="KEY_TWO">$4<ex>right</ex></ph> or <ph name="KEY_THREE">$5<ex>up</ex></ph> or <ph name="KEY_FOUR">$6<ex>down</ex></ph>
       </message>
       <message name="IDS_AMBIENT_ACCELERATOR_ACTIVATE_INDEXED_DESK" translateable="false" desc="Action for accelerator action - Go to desk 1 to 8.">
-        <ph name="MODIFIER_ONE">$1<ex>shift</ex></ph><ph name="MODIFIER_TWO">$2<ex>search</ex></ph> <ph name="DELIMITER">$3<ex>+</ex></ph> <ph name="KEY_ONE">$4<ex>1</ex></ph> through <ph name="KEY_TWO">$5<ex>8</ex></ph>
+        <ph name="MODIFIER_ONE">$1<ex>shift</ex></ph><ph name="MODIFIER_TWO">$2<ex>search</ex></ph><ph name="DELIMITER">$3<ex>+</ex></ph><ph name="KEY_ONE">$4<ex>1</ex></ph> through <ph name="KEY_TWO">$5<ex>8</ex></ph>
       </message>
       <message name="IDS_BROWSER_ACCELERATOR_STOP_DRAG_TAB" translateable="false" desc="Action for accelerator action - Return the tab to its original position.">
         While dragging the tab, press <ph name="KEY_ONE">$1<ex>esc</ex></ph>

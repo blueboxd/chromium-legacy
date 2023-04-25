@@ -170,6 +170,10 @@ id<GREYMatcher> OmniboxContainingText(const std::string& text) {
       omniboxContainingText:base::SysUTF8ToNSString(text)];
 }
 
+id<GREYMatcher> OmniboxAutocompleteLabel() {
+  return [ChromeMatchersAppInterface omniboxAutocompleteLabel];
+}
+
 id<GREYMatcher> LocationViewContainingText(const std::string& text) {
   return [ChromeMatchersAppInterface
       locationViewContainingText:base::SysUTF8ToNSString(text)];
@@ -361,8 +365,8 @@ id<GREYMatcher> SettingsPrivacySafeBrowsingTableView() {
   return [ChromeMatchersAppInterface settingsPrivacySafeBrowsingTableView];
 }
 
-id<GREYMatcher> SettingsPriceNotificationsTableView() {
-  return [ChromeMatchersAppInterface settingsPriceNotificationsTableView];
+id<GREYMatcher> SettingsNotificationsTableView() {
+  return [ChromeMatchersAppInterface settingsNotificationsTableView];
 }
 
 id<GREYMatcher> SettingsTrackingPriceTableView() {
@@ -398,8 +402,8 @@ id<GREYMatcher> SettingsMenuPrivacyButton() {
   return [ChromeMatchersAppInterface settingsMenuPrivacyButton];
 }
 
-id<GREYMatcher> SettingsMenuPriceNotificationsButton() {
-  return [ChromeMatchersAppInterface settingsMenuPriceNotificationsButton];
+id<GREYMatcher> SettingsMenuNotificationsButton() {
+  return [ChromeMatchersAppInterface settingsMenuNotificationsButton];
 }
 
 id<GREYMatcher> SettingsMenuPasswordsButton() {
@@ -496,6 +500,14 @@ id<GREYMatcher> SystemSelectionCalloutLinkToTextButton() {
 
 id<GREYMatcher> SystemSelectionCalloutCopyButton() {
   return [EditMenuAppInterface editMenuCopyButtonMatcher];
+}
+
+id<GREYMatcher> SystemSelectionCalloutCutButton() {
+  return [EditMenuAppInterface editMenuCutButtonMatcher];
+}
+
+id<GREYMatcher> SystemSelectionCalloutPasteButton() {
+  return [EditMenuAppInterface editMenuPasteButtonMatcher];
 }
 
 id<GREYMatcher> SystemSelectionCalloutOverflowButton() {

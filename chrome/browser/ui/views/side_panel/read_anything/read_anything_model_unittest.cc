@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
+#include "chrome/common/accessibility/read_anything_constants.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -258,6 +259,20 @@ TEST_F(ReadAnythingModelTest, FontModelGetCurrentFontName) {
   EXPECT_EQ("Times New Roman", GetFontModel()->GetFontNameAt(5));
 }
 
+TEST_F(ReadAnythingModelTest, LabelFontListModelGetsCurrentFontList) {
+  std::string default_font = string_constants::kReadAnythingDefaultFontName;
+
+  const std::vector<std::string> expected_fonts = {
+      "Standard font", "Sans-serif",    "Serif",
+      "Arial",         "Comic Sans MS", "Times New Roman"};
+
+  for (size_t i = 0; i < expected_fonts.size(); i++) {
+    auto retrieved_fonts = GetFontModel()->GetLabelFontNameAt(i);
+    EXPECT_EQ(expected_fonts[i], retrieved_fonts[0]);
+    EXPECT_EQ(default_font, retrieved_fonts[1]);
+  }
+}
+
 TEST_F(ReadAnythingModelTest, DefaultIndexSetOnSetSelectedFontByIndex) {
   size_t testIndex = 2;
   model_->SetSelectedFontByIndex(testIndex);
@@ -286,6 +301,28 @@ TEST_F(ReadAnythingModelTest, FontModelSetsDropdownAndForegroundColors) {
             GetFontModel()->GetDropdownBackgroundColorIdAt(0).value());
   EXPECT_EQ(color_info.selected_dropdown_color_id,
             GetFontModel()->GetDropdownSelectedBackgroundColorIdAt(0).value());
+}
+
+TEST_F(ReadAnythingModelTest, GetLabelFontList_DoesNotCrashBeforeSet) {
+  ReadAnythingColorsModel* color_model = model_->GetColorsModel();
+  EXPECT_EQ(nullptr, color_model->GetLabelFontListAt(0));
+
+  ReadAnythingLineSpacingModel* line_spacing_model =
+      model_->GetLineSpacingModel();
+  EXPECT_EQ(nullptr, line_spacing_model->GetLabelFontListAt(0));
+
+  ReadAnythingLetterSpacingModel* letter_spacing_model =
+      model_->GetLetterSpacingModel();
+  EXPECT_EQ(nullptr, letter_spacing_model->GetLabelFontListAt(0));
+}
+
+TEST_F(ReadAnythingModelTest, GetLabelFontList_GetsCorrectFontList) {
+  ReadAnythingColorsModel* color_model = model_->GetColorsModel();
+  color_model->SetLabelFontList("Arial");
+
+  const gfx::FontList* font_list = color_model->GetLabelFontListAt(0);
+  EXPECT_EQ(2, (int)font_list->GetFonts().size());
+  EXPECT_EQ("Arial", font_list->GetPrimaryFont().GetFontName());
 }
 
 #endif  // !defined(ADDRESS_SANITIZER)

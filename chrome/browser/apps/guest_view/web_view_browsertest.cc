@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/process/process.h"
@@ -25,6 +24,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/uuid.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -2565,21 +2565,16 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DOMStorageIsolation) {
                                {.launch_as_platform_app = true}));
   // Verify that the browser tab's local/session storage does not have the same
   // values which were stored by the webviews.
-  std::string output;
   std::string get_local_storage(
-      "window.domAutomationController.send("
-      "window.localStorage.getItem('foo') || 'badval')");
+      "window.localStorage.getItem('foo') || 'badval'");
   std::string get_session_storage(
-      "window.domAutomationController.send("
-      "window.localStorage.getItem('baz') || 'badval')");
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetWebContentsAt(0),
-      get_local_storage.c_str(), &output));
-  EXPECT_STREQ("badval", output.c_str());
-  ASSERT_TRUE(ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetWebContentsAt(0),
-      get_session_storage.c_str(), &output));
-  EXPECT_STREQ("badval", output.c_str());
+      "window.localStorage.getItem('baz') || 'badval'");
+  EXPECT_EQ("badval",
+            content::EvalJs(browser()->tab_strip_model()->GetWebContentsAt(0),
+                            get_local_storage));
+  EXPECT_EQ("badval",
+            content::EvalJs(browser()->tab_strip_model()->GetWebContentsAt(0),
+                            get_session_storage));
 }
 
 // This tests how guestviews should or should not be able to find each other
@@ -3611,7 +3606,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
     url_chain.push_back(download->GetURL().ReplaceComponents(replacements));
 
     downloads.push_back(download_manager->CreateDownloadItem(
-        base::GenerateGUID(), download->GetId() + 2, download->GetFullPath(),
+        base::Uuid::GenerateRandomV4().AsLowercaseString(),
+        download->GetId() + 2, download->GetFullPath(),
         download->GetTargetFilePath(), url_chain, download->GetReferrerUrl(),
         download_manager
             ->SerializedEmbedderDownloadDataToStoragePartitionConfig(
@@ -4409,7 +4405,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NavigateGuestToWebviewAccessibleResource) {
       extensions::ExtensionRegistry::Get(browser()->profile());
   const extensions::Extension* extension =
       registry->enabled_extensions().GetByID(guest_url.host());
-  EXPECT_NE(extensions::Feature::BLESSED_EXTENSION_CONTEXT,
+  EXPECT_EQ(extensions::Feature::UNBLESSED_EXTENSION_CONTEXT,
             process_map->GetMostLikelyContextType(
                 extension, guest_process->GetID(), &guest_url));
 }
@@ -4433,6 +4429,97 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadWebviewAccessibleResource) {
   EXPECT_EQ(webview_url, web_view_frame->GetLastCommittedURL());
 }
 
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       CookiesEnabledAfterWebviewAccessibleResource) {
+  TestHelper("testCookiesEnabledAfterWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
+// Tests that webviews cannot embed accessible resources in iframes.
+// https://crbug.com/1430991.
+IN_PROC_BROWSER_TEST_F(WebViewTest, CannotIframeWebviewAccessibleResource) {
+  TestHelper("testIframeWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+
+  content::RenderFrameHost* web_view_frame =
+      GetGuestViewManager()->GetLastGuestRenderFrameHostCreated();
+  ASSERT_TRUE(web_view_frame);
+  content::RenderFrameHost* child_frame =
+      content::ChildFrameAt(web_view_frame, 0);
+  ASSERT_TRUE(child_frame);
+
+  // The frame should never have committed to the extension resource.
+  // The JS file verifies the load error.
+  EXPECT_EQ(GURL(), child_frame->GetLastCommittedURL());
+}
+
+// Tests that webviews navigated to accessible resources can call certain
+// extension APIs.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       CallingExtensionAPIsFromWebviewAccessibleResource) {
+  TestHelper("testNavigateGuestToWebviewAccessibleResource",
+             "web_view/load_webview_accessible_resource", NO_TEST_SERVER);
+
+  content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameHost* web_view_frame =
+      GetGuestViewManager()->GetLastGuestRenderFrameHostCreated();
+  ASSERT_TRUE(embedder_contents);
+  ASSERT_TRUE(web_view_frame);
+
+  // The embedder and the webview should be in separate site instances and
+  // processes, even though they're for the same extension.
+  EXPECT_NE(embedder_contents->GetPrimaryMainFrame()->GetProcess(),
+            web_view_frame->GetProcess());
+  EXPECT_NE(embedder_contents->GetPrimaryMainFrame()->GetSiteInstance(),
+            web_view_frame->GetSiteInstance());
+
+  GURL embedder_url(embedder_contents->GetLastCommittedURL());
+  GURL accessible_resource_url =
+      embedder_url.GetWithEmptyPath().Resolve("assets/foo.html");
+
+  EXPECT_EQ(accessible_resource_url, web_view_frame->GetLastCommittedURL());
+
+  // Try calling an extension API function. The extension frame, being embedded
+  // in a webview, has fewer permissions that other extension contexts*. Try the
+  // i18n.getAcceptLanguages() API. We choose this API because:
+  // - It is exposed to the embedded frame.
+  // - It is a "regular" extension API function that goes through the request /
+  //   response flow in ExtensionFunctionDispatcher, unlike extension message
+  //   APIs.
+  // *TODO(https://crbug.com/1430991): The exact set of APIs and type of
+  // context this is is a bit fuzzy. In practice, it's basically the same set
+  // as is exposed to content scripts.
+  static constexpr char kGetAcceptLanguages[] =
+      R"(new Promise(resolve => {
+           chrome.i18n.getAcceptLanguages((languages) => {
+             let result = 'success';
+             if (chrome.runtime.lastError) {
+               result = 'Error: ' + chrome.runtime.lastError;
+             } else if (!languages || !Array.isArray(languages) ||
+                        !languages.includes('en')) {
+               result = 'Invalid return result: ' + JSON.stringify(languages);
+             }
+             resolve(result);
+           });
+         });)";
+  EXPECT_EQ("success", content::EvalJs(web_view_frame, kGetAcceptLanguages));
+
+  // Finally, try accessing a privileged API, which shouldn't be available to
+  // the embedded resource.
+  std::string app_window_result;
+  static constexpr char kCallAppWindowCreate[] =
+      R"(var message;
+         if (chrome.app && chrome.app.window) {
+           message = 'chrome.app.window unexpectedly available.';
+         } else {
+           message = 'success';
+         }
+         domAutomationController.send(message);)";
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_view_frame, kCallAppWindowCreate, &app_window_result));
+  EXPECT_EQ("success", app_window_result);
+}
+
 // Tests that a WebView can navigate an iframe to a blob URL that it creates
 // while its main frame is at a WebView accessible resource.
 IN_PROC_BROWSER_TEST_F(WebViewTest, BlobInWebviewAccessibleResource) {
@@ -4454,12 +4541,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, BlobInWebviewAccessibleResource) {
   content::RenderFrameHost* blob_frame = ChildFrameAt(webview_rfh, 0);
   EXPECT_TRUE(blob_frame->GetLastCommittedURL().SchemeIsBlob());
 
-  std::string result;
-  EXPECT_TRUE(ExecuteScriptAndExtractString(
-      blob_frame,
-      "window.domAutomationController.send(document.body.innerText);",
-      &result));
-  EXPECT_EQ("Blob content", result);
+  EXPECT_EQ("Blob content",
+            content::EvalJs(blob_frame, "document.body.innerText;"));
 }
 
 // Tests that a WebView cannot load a webview-inaccessible resource. See

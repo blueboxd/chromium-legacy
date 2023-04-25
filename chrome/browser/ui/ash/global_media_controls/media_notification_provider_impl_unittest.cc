@@ -7,6 +7,7 @@
 
 #include "ash/system/media/media_notification_provider_observer.h"
 #include "ash/test_shell_delegate.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/ash/crosapi/test_crosapi_environment.h"
@@ -174,7 +175,7 @@ class MediaNotificationProviderImplTest : public ChromeAshTestBase {
 
   std::unique_ptr<ChromeLayoutProvider> layout_provider_;
   std::unique_ptr<MockMediaNotificationProviderObserver> observer_;
-  MediaNotificationProviderImpl* provider_;
+  raw_ptr<MediaNotificationProviderImpl, ExperimentalAsh> provider_;
 };
 
 TEST_F(MediaNotificationProviderImplTest, NotificationListTest) {
@@ -186,7 +187,8 @@ TEST_F(MediaNotificationProviderImplTest, NotificationListTest) {
   SimulateShowNotification(id_2);
   provider_->SetColorTheme(media_message_center::NotificationTheme());
   std::unique_ptr<views::View> view =
-      provider_->GetMediaNotificationListView(1, /*should_clip_height=*/true);
+      provider_->GetMediaNotificationListView(1, /*should_clip_height=*/true,
+                                              /*item_id=*/"");
 
   auto* notification_list_view =
       static_cast<global_media_controls::MediaItemUIListView*>(view.get());
@@ -222,8 +224,8 @@ TEST_F(MediaNotificationProviderImplTest, DontUseDeletedListView) {
   provider_->SetColorTheme(media_message_center::NotificationTheme());
 
   // Create a list view with that item.
-  std::unique_ptr<views::View> view =
-      provider_->GetMediaNotificationListView(1, /*should_clip_height=*/true);
+  std::unique_ptr<views::View> view = provider_->GetMediaNotificationListView(
+      1, /*should_clip_height=*/true, /*item_id=*/"");
 
   // Delete the list view.
   view.reset();
@@ -265,11 +267,11 @@ class CastStartStopMediaNotificationProviderImplTest
     provider_->SetColorTheme(media_message_center::NotificationTheme());
     // We must initialize the list view before we can show individual media
     // items.
-    list_view_ =
-        provider_->GetMediaNotificationListView(1, /*should_clip_height=*/true);
+    list_view_ = provider_->GetMediaNotificationListView(
+        1, /*should_clip_height=*/true, /*item_id=*/"");
   }
 
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
   crosapi::TestCrosapiEnvironment crosapi_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<views::View> list_view_;

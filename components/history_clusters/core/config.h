@@ -366,6 +366,21 @@ struct Config {
   // The max number of URLs that should be stored in the URL for display cache.
   int url_for_display_cache_size = 100;
 
+  // The `kJourneysZeroStateFiltering` feature and child params.
+
+  bool apply_zero_state_filtering = false;
+
+  // The `kNtpChromeCartInHistoryClusterModule` child params.
+
+  // Whether to use the NTP-specific algorithms and signals for determining
+  // intracluster ranking.
+  bool use_ntp_specific_intracluster_ranking = false;
+
+  // Returns the weight to use for the visit duration when ranking visits within
+  // a cluster. Will always be greater than or equal to 0 specifically on the
+  // NTP surface when `use_ntp_specific_intracluster_ranking is true`.
+  float ntp_visit_duration_ranking_weight = 1.0;
+
   // Lonely features without child params.
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.

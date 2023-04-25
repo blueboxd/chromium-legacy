@@ -14,6 +14,9 @@ namespace features {
 
 BASE_DECLARE_FEATURE(kSidePanelCompanion);
 extern const base::FeatureParam<std::string> kHomepageURLForCompanion;
+extern const base::FeatureParam<std::string> kImageUploadURLForCompanion;
+extern const base::FeatureParam<bool> kEnableOpenCompanionForImageSearch;
+extern const base::FeatureParam<bool> kEnableOpenCompanionForWebSearch;
 
 }  // namespace features
 

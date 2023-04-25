@@ -64,6 +64,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/logging.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "chromeos/ash/services/assistant/public/cpp/assistant_enums.h"
@@ -156,7 +157,8 @@ class WindowAnimationsCallback : public ui::LayerAnimationObserver {
   }
 
   base::OnceClosure callback_;
-  ui::LayerAnimator* animator_;  // Owned by the layer that is animating.
+  raw_ptr<ui::LayerAnimator, ExperimentalAsh>
+      animator_;  // Owned by the layer that is animating.
   base::CallbackListSubscription subscription_;
 };
 
@@ -345,11 +347,13 @@ void AppListControllerImpl::OpenSearchBoxIphUrl() {
   client_->OpenSearchBoxIphUrl();
 }
 
-void AppListControllerImpl::SetActiveModel(int profile_id,
-                                           AppListModel* model,
-                                           SearchModel* search_model) {
+void AppListControllerImpl::SetActiveModel(
+    int profile_id,
+    AppListModel* model,
+    SearchModel* search_model,
+    QuickAppAccessModel* quick_app_access_model) {
   profile_id_ = profile_id;
-  model_provider_->SetActiveModel(model, search_model);
+  model_provider_->SetActiveModel(model, search_model, quick_app_access_model);
   UpdateSearchBoxUiVisibilities();
 }
 
@@ -1206,9 +1210,6 @@ void AppListControllerImpl::InvokeSearchResultAction(
 void AppListControllerImpl::ViewShown(int64_t display_id) {
   UpdateSearchBoxUiVisibilities();
 
-  if (client_)
-    client_->ViewShown(display_id);
-
   // Note that IsHomeScreenVisible() might still return false at this point, as
   // the home screen visibility takes into account whether the app list view is
   // obscured by an app window, or overview UI. This method gets called when the
@@ -1227,9 +1228,6 @@ bool AppListControllerImpl::AppListTargetVisibility() const {
 }
 
 void AppListControllerImpl::ViewClosing() {
-  if (client_)
-    client_->ViewClosing();
-
   split_view_observation_.Reset();
 }
 

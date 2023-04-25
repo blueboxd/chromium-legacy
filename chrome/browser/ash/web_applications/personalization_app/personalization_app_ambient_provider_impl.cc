@@ -134,6 +134,11 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientObserver(
   // Call it once to get the current ambient ui settings.
   OnAmbientUiSettingsChanged();
 
+  // Call it once to get the current ambient duration settings.
+  if (ash::features::IsScreenSaverDurationEnabled()) {
+    OnScreenSaverDurationChanged();
+  }
+
   ResetLocalSettings();
 }
 
@@ -208,6 +213,12 @@ void PersonalizationAppAmbientProviderImpl::SetTopicSource(
 
   // 2. Select Google Photos topic source if at least one album is selected.
   MaybeUpdateTopicSource(ash::AmbientModeTopicSource::kGooglePhotos);
+}
+
+void PersonalizationAppAmbientProviderImpl::SetScreenSaverDuration(
+    int minutes) {
+  Shell::Get()->ambient_controller()->SetScreenSaverDuration(minutes);
+  OnScreenSaverDurationChanged();
 }
 
 void PersonalizationAppAmbientProviderImpl::SetTemperatureUnit(
@@ -334,6 +345,19 @@ void PersonalizationAppAmbientProviderImpl::OnAmbientUiSettingsChanged() {
 
   ambient_observer_remote_->OnAnimationThemeChanged(
       GetCurrentUiSettings().theme());
+}
+
+void PersonalizationAppAmbientProviderImpl::OnScreenSaverDurationChanged() {
+  absl::optional<int> duration_pref_value =
+      Shell::Get()->ambient_controller()->GetScreenSaverDuration();
+
+  if (!ambient_observer_remote_.is_bound() ||
+      !duration_pref_value.has_value() || duration_pref_value.value() < 0) {
+    return;
+  }
+
+  ambient_observer_remote_->OnScreenSaverDurationChanged(
+      duration_pref_value.value());
 }
 
 void PersonalizationAppAmbientProviderImpl::OnTemperatureUnitChanged() {

@@ -24,7 +24,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 
 Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljajo za ta račun. Račune Google lahko upravljate v <ph name="SETTINGS_LINK_BEGIN" />nastavitvah<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Prenos ...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium je bil povezan z napravo HID}=1{Chromium je povezan z napravo HID}one{Chromium je povezan z napravami HID}two{Chromium je povezan z napravami HID}few{Chromium je povezan z napravami HID}other{Chromium je povezan z napravami HID}}</translation>
 <translation id="1708666629004767631">Na voljo je nova, varnejša različica Chromiuma.</translation>
 <translation id="17264556997921157">Vidite ali odstranite lahko teme zanimanja, ki jih spletna mesta uporabljajo, da vam prikazujejo oglase. Chromium oceni vaša zanimanja glede na nedavno zgodovino brskanja.</translation>
 <translation id="1733725117201708356">Chromium bo kmalu izbrisal podatke brskanja</translation>
@@ -247,8 +246,10 @@ Dovoljenja, ki ste jih že odobrili spletnim mestom in aplikacijam, morda veljaj
 <translation id="6442900851116057561">Vnovičen zagon sistema Chromium OS</translation>
 <translation id="6455857529632101747">Pozdravljeni v profilih za Chromium</translation>
 <translation id="6475912303565314141">Določa tudi, katera stran je prikazana, ko zaženete Chromium.</translation>
+<translation id="648319183876919572">Izboljšano varno brskanje vas še bolje varuje pred nevarnimi spletnimi mesti in prenosi</translation>
 <translation id="6510925080656968729">Odstranitev Chromiuma</translation>
 <translation id="6542839706527980775">Vsak profil ima svoje podatke v Chromiumu, kot so zaznamki, zgodovina, gesla in drugo.</translation>
+<translation id="656935081669708576">Če si želite ogledati gesla v drugem profilu za Chromium, lahko preklopite</translation>
 <translation id="6570579332384693436">Chromium zaradi odpravljanja napak pri črkovanju Googlu pošlje besedilo, ki ga vnesete v besedilna polja</translation>
 <translation id="6598877126913850652">Odprite nastavitve obvestil v Chromiumu</translation>
 <translation id="6613594504749178791">Spremembe bodo začele veljati ob naslednjem zagonu Chromiuma.</translation>

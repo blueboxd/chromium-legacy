@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="NewTabPage.ActionAndroid2" enum="NewTabPageActionAndroid2"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>twellington@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
   <summary>
@@ -319,7 +319,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.ConcretePage" enum="NewTabPageConcretePage"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>danpeng@google.com</owner>
   <owner>tiborg@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -330,7 +330,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.ArticlesListVisible"
-    enum="BooleanVisible" expires_after="2023-08-20">
+    enum="BooleanVisible" expires_after="2023-10-22">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>
@@ -344,17 +344,6 @@ chromium-metrics-reviews@google.com.
   <owner>skym@chromium.org</owner>
   <owner>carlosk@chromium.org</owner>
   <summary>Android: Loading of Zine was artifically delayed</summary>
-</histogram>
-
-<histogram name="NewTabPage.ContentSuggestions.BackgroundFetchTrigger"
-    enum="BackgroundFetchTrigger" expires_after="2021-12-26">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The type of trigger that caused a background fetch of NTP content
-    suggestions from a suggestion server. Every background fetch is recorded.
-  </summary>
 </histogram>
 
 <histogram name="NewTabPage.ContentSuggestions.CountOnNtpOpenedIfVisible"
@@ -540,76 +529,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true"
-    name="NewTabPage.ContentSuggestions.TimeUntilFirstShownTrigger" units="ms"
-    expires_after="2021-12-26">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The time since the last fetch, recorded upon the first on-shown
-    fetch trigger. The first on-shown trigger does not necessarily cause a fetch
-    (if it comes before the end of the respective scheduling interval). This
-    metric is recorded at most once after each fetch (and additionaly at most
-    once after each startup of Chrome before the next fetch). This is used to
-    understand how changing scheduling intervals will impact traffic of
-    background fetches.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="NewTabPage.ContentSuggestions.TimeUntilFirstStartupTrigger"
-    units="ms" expires_after="2021-08-22">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The time since the last fetch, recorded upon the first startup
-    fetch trigger. The first startup trigger does not necessarily cause a fetch
-    (if it comes before the end of the respective scheduling interval). This
-    metric is recorded at most once after each fetch (and additionaly at most
-    once after each startup of Chrome before the next fetch). This is used to
-    understand how changing scheduling intervals will impact traffic of
-    background fetches.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="NewTabPage.ContentSuggestions.TimeUntilPersistentFetch" units="ms"
-    expires_after="M90">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The time since the last fetch, recorded upon a persistent fetch.
-    This is used to understand what are the real persistent fetching intervals
-    in the wild.
-  </summary>
-</histogram>
-
-<histogram base="true" name="NewTabPage.ContentSuggestions.TimeUntilSoftFetch"
-    units="ms" expires_after="M90">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The time since the last fetch, recorded upon a soft fetch. This is
-    used to understand what are the real soft fetching intervals in the wild.
-  </summary>
-</histogram>
-
-<histogram base="true"
-    name="NewTabPage.ContentSuggestions.TimeUntilStartupFetch" units="ms"
-    expires_after="M90">
-  <owner>carlosk@chromium.org</owner>
-  <owner>freedjm@chromium.org</owner>
-  <owner>feed@chromium.org</owner>
-  <summary>
-    Android: The time since the last fetch, recorded upon a startup fetch. This
-    is used to understand what are the real soft fetching intervals in the wild.
-  </summary>
-</histogram>
-
 <histogram name="NewTabPage.CryptidRenderResult" enum="CryptidRenderResult"
     expires_after="2022-01-23">
   <owner>tmartino@chromium.org</owner>
@@ -664,7 +583,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Customized" enum="NTPCustomizedFeatures"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -675,7 +594,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.CustomizedShortcuts"
-    enum="NTPCustomizedShortcutSettings" expires_after="2023-08-20">
+    enum="NTPCustomizedShortcutSettings" expires_after="2023-10-22">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -699,7 +618,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.CustomizeShortcutAction"
-    enum="NTPCustomizeShortcutAction" expires_after="2023-08-20">
+    enum="NTPCustomizeShortcutAction" expires_after="2023-10-22">
   <owner>tiborg@chromium.org</owner>
   <owner>yyushkina@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1057,6 +976,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="NewTabPage.MobileIsUserOnline" enum="Boolean"
     expires_after="M85">
+  <obsolete>
+    Removed in April 2023.
+  </obsolete>
   <owner>fserb@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -1084,7 +1006,8 @@ chromium-metrics-reviews@google.com.
     recorded when user clicks on the home button. For profile button: is
     recorded when user clicks on the profile button. For doodle logo: is
     recorded every time when user clicks on the doodle and navigates to another
-    website. The histogram is logged on New tab page and is Android-only.
+    website. For menu button: is recorded when user clicks on the menu button.
+    The histogram is logged on New tab page and is Android-only.
   </summary>
 </histogram>
 
@@ -1229,7 +1152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Modules.FreOptOut" units="count"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>danpeng@google.com</owner>
   <owner>pauladedeji@chromium.org</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1433,7 +1356,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.MostVisitedMigratedDefaultAppType"
-    enum="TypeOfDeletedMostVisitedApp" expires_after="2023-08-20">
+    enum="TypeOfDeletedMostVisitedApp" expires_after="2023-10-22">
   <owner>dibyapal@chromium.org</owner>
   <owner>desktop-pwas-team@google.com</owner>
   <summary>
@@ -1561,7 +1484,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NewTabPage.Promos.DismissAction" enum="NtpPromoDismissAction"
-    expires_after="2023-08-11">
+    expires_after="2023-10-15">
   <owner>danpeng@google.com</owner>
   <owner>pauladedeji@google.com</owner>
   <owner>chrome-desktop-ntp@google.com</owner>
@@ -1953,7 +1876,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2023-08-20">
+<histogram name="NewTabPage.TimeSpent" units="ms" expires_after="2023-10-22">
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
@@ -1980,6 +1903,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="NewTabPage.TimeToFirstDraw2" units="ms"
     expires_after="2021-07-01">
+  <obsolete>
+    Removed in April 2023.
+  </obsolete>
   <owner>freedjm@chromium.org</owner>
   <owner>feed@chromium.org</owner>
   <summary>

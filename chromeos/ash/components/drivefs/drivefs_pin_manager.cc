@@ -16,6 +16,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
@@ -102,16 +103,16 @@ ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
 
   const double seconds = ms / 1000.0;
   if (seconds < 60) {
-    return out << std::setprecision(2) << seconds << " seconds";
+    return out << base::StringPrintf("%.1f seconds", seconds);
   }
 
   const double minutes = seconds / 60.0;
   if (minutes < 60) {
-    return out << std::setprecision(2) << minutes << " minutes";
+    return out << base::StringPrintf("%.1f minutes", minutes);
   }
 
   const double hours = minutes / 60.0;
-  return out << std::setprecision(2) << hours << " hours";
+  return out << base::StringPrintf("%.1f hours", hours);
 }
 
 ostream& operator<<(ostream& out, Quoter<Path> q) {
@@ -132,19 +133,48 @@ ostream& operator<<(ostream& out, Quoter<absl::optional<T>> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<ShortcutDetails> q) {
-  return out << "{id: " << PinManager::Id(q.value.target_stable_id)
-             << ", status: " << Quote(q.value.target_lookup_status) << "}";
+  out << "{" << PinManager::Id(q.value.target_stable_id);
+
+  if (q.value.target_lookup_status != LookupStatus::kOk) {
+    out << " " << Quote(q.value.target_lookup_status);
+  }
+
+  return out << "}";
 }
 
 ostream& operator<<(ostream& out, Quoter<FileMetadata> q) {
   const FileMetadata& md = q.value;
-  out << "{" << Quote(md.type) << " " << PinManager::Id(md.stable_id)
-      << ", size: " << HumanReadableSize(md.size) << ", pinned: " << md.pinned
-      << ", can_pin: " << (md.can_pin == FileMetadata::CanPinStatus::kOk)
-      << ", available_offline: " << md.available_offline;
-  if (md.shortcut_details) {
-    out << ", shortcut_details: " << Quote(*md.shortcut_details);
+
+  out << "{" << Quote(md.type) << " " << PinManager::Id(md.stable_id);
+
+  if (md.size != 0) {
+    out << " of " << HumanReadableSize(md.size);
   }
+
+  if (md.trashed) {
+    out << ", trashed";
+  }
+
+  if (md.can_pin != FileMetadata::CanPinStatus::kOk) {
+    out << ", not pinnable";
+  }
+
+  if (VLOG_IS_ON(2)) {
+    out << ", pinned: " << md.pinned;
+  } else if (md.pinned) {
+    out << ", pinned";
+  }
+
+  if (VLOG_IS_ON(2)) {
+    out << ", available_offline: " << md.available_offline;
+  } else if (md.available_offline) {
+    out << ", available offline";
+  }
+
+  if (md.shortcut_details) {
+    out << ", shortcut to " << Quote(*md.shortcut_details);
+  }
+
   return out << "}";
 }
 
@@ -293,6 +323,10 @@ bool InProgress(const Stage stage) {
 
 std::string ToString(Stage stage) {
   return (std::ostringstream() << Quote(stage)).str();
+}
+
+std::string ToString(TimeDelta time_delta) {
+  return (std::ostringstream() << Quote(time_delta)).str();
 }
 
 constexpr TimeDelta kStalledFileInterval = base::Seconds(10);
@@ -575,20 +609,6 @@ void PinManager::OnFreeSpaceRetrieved1(const int64_t free_space) {
 
   progress_.free_space = free_space;
   VLOG(1) << "Free space: " << HumanReadableSize(free_space);
-
-  VLOG(1) << "Enabling Docs offline";
-  drivefs_->SetDocsOfflineEnabled(
-      true, base::BindOnce(&PinManager::OnDocsOfflineEnabled, GetWeakPtr()));
-}
-
-void PinManager::OnDocsOfflineEnabled(drive::FileError error) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (error != drive::FILE_ERROR_OK) {
-    LOG(ERROR) << "Cannot enable Docs offline: " << error;
-    return Complete(Stage::kCannotEnableDocsOffline);
-  }
-
-  VLOG(1) << "Successfully enabled Docs offline";
   VLOG(1) << "Listing files";
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kListingFiles;
@@ -708,6 +728,8 @@ void PinManager::OnSearchResult(const Id dir_id,
     }
   }
 
+  progress_.time_spent_listing_items = timer_.Elapsed();
+
   if (items.empty()) {
     VLOG(1) << "Visited " << dir_id << " " << Quote(dir_path);
 
@@ -718,7 +740,8 @@ void PinManager::OnSearchResult(const Id dir_id,
       return;
     }
 
-    VLOG(1) << "Finished listing files in " << Quote(timer_.Elapsed());
+    VLOG(1) << "Finished listing files in "
+            << Quote(progress_.time_spent_listing_items);
     VLOG(1) << NiceNum << "Total queries: " << progress_.total_queries;
     VLOG(1) << NiceNum
             << "Max active queries: " << progress_.max_active_queries;
@@ -741,8 +764,9 @@ void PinManager::OnSearchResult(const Id dir_id,
   }
 
   VLOG(1) << NiceNum << "Listed " << progress_.listed_items << " items in "
-          << Quote(timer_.Elapsed()) << ", Skipped " << progress_.skipped_items
-          << " items, Tracking " << files_to_track_.size() << " files";
+          << Quote(progress_.time_spent_listing_items) << ", Skipped "
+          << progress_.skipped_items << " items, Tracking "
+          << files_to_track_.size() << " files";
   NotifyProgress();
   GetNextPage(dir_id, std::move(dir_path), std::move(query));
 }
@@ -756,10 +780,12 @@ void PinManager::HandleQueryItem(Id dir_id,
   Id id = Id(md.stable_id);
   const Path& path = item.path;
 
+  VLOG(2) << "Listed " << id << " " << Quote(path) << ": " << Quote(md);
+
   if (!dir_path.IsParent(path)) {
-    VLOG(1) << "Disconnected path for " << Quote(md.type) << " " << id << " "
-            << Quote(path) << " when listing items in Directory " << dir_id
-            << " " << Quote(dir_path);
+    // This can happen when the parent folder was found by following a shortcut.
+    VLOG(2) << Quote(md.type) << " " << id << " " << Quote(path)
+            << " is not in Directory " << dir_id << " " << Quote(dir_path);
   }
 
   // Is this item a shortcut?
@@ -773,8 +799,9 @@ void PinManager::HandleQueryItem(Id dir_id,
       VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
               << "Target " << Quote(md.type) << " "
               << Id(md.shortcut_details->target_stable_id)
-              << " has lookup error: "
-              << Quote(md.shortcut_details->target_lookup_status);
+              << " has lookup error "
+              << Quote(md.shortcut_details->target_lookup_status) << ": "
+              << Quote(md);
       return;
     }
 
@@ -784,14 +811,15 @@ void PinManager::HandleQueryItem(Id dir_id,
       progress_.skipped_items++;
       VLOG(1) << "Broken shortcut " << id << " " << Quote(path) << ": "
               << "Target " << Quote(md.type) << " "
-              << Id(md.shortcut_details->target_stable_id) << " is trashed";
+              << Id(md.shortcut_details->target_stable_id)
+              << " is trashed: " << Quote(md);
       return;
     }
 
     // The shortcut target is accessible.
     VLOG(1) << "Following shortcut " << id << " " << Quote(path) << " to "
             << Quote(md.type) << " "
-            << Id(md.shortcut_details->target_stable_id);
+            << Id(md.shortcut_details->target_stable_id) << ": " << Quote(md);
 
     // Follow the shortcut.
     md.stable_id = md.shortcut_details->target_stable_id;
@@ -804,8 +832,9 @@ void PinManager::HandleQueryItem(Id dir_id,
     DCHECK_EQ(it->first, id);
     progress_.skipped_items++;
     VLOG(1) << "Skipped " << Quote(md.type) << " " << id << " " << Quote(path)
-            << " seen in Directory " << dir_id << " " << Quote(dir_path)
-            << ": Previously seen in Directory " << it->second;
+            << " " << Quote(md) << " seen in Directory " << dir_id << " "
+            << Quote(dir_path) << ": Previously seen in Directory "
+            << it->second;
     return;
   }
 
@@ -829,7 +858,7 @@ void PinManager::HandleQueryItem(Id dir_id,
 
   progress_.skipped_items++;
   LOG(ERROR) << "Unexpected item type " << Quote(md.type) << " for " << id
-             << " " << path;
+             << " " << path << ": " << Quote(md);
 }
 
 void PinManager::Complete(const Stage stage) {
@@ -884,6 +913,19 @@ void PinManager::StartPinning() {
     return Complete(Stage::kSuccess);
   }
 
+  VLOG(1) << "Enabling Docs offline";
+  drivefs_->SetDocsOfflineEnabled(
+      true, base::BindOnce(&PinManager::OnDocsOfflineEnabled, GetWeakPtr()));
+}
+
+void PinManager::OnDocsOfflineEnabled(drive::FileError error) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (error != drive::FILE_ERROR_OK) {
+    LOG(ERROR) << "Cannot enable Docs offline: " << error;
+    return Complete(Stage::kCannotEnableDocsOffline);
+  }
+
+  VLOG(1) << "Successfully enabled Docs offline";
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kSyncing;
   NotifyProgress();
@@ -922,27 +964,37 @@ void PinManager::PinSomeFiles() {
     DCHECK_EQ(progress_.syncing_files, CountPinnedFiles());
   }
 
+  if (!progress_.emptied_queue) {
+    progress_.time_spent_pinning_files = timer_.Elapsed();
+  }
+
+  bool notify_progress = false;
   if (progress_timer_.Elapsed() >= base::Seconds(1)) {
+    notify_progress = true;
     VLOG(1) << NiceNum << "Progress "
             << Percentage(progress_.pinned_bytes, progress_.bytes_to_pin)
             << "%: Synced " << HumanReadableSize(progress_.pinned_bytes)
-            << " and " << progress_.pinned_files << " files, Syncing "
+            << " and " << progress_.pinned_files << " files in "
+            << Quote(progress_.time_spent_pinning_files) << ", Syncing "
             << progress_.syncing_files << " files";
     progress_timer_ = {};
   }
 
   if (files_to_track_.empty() && !progress_.emptied_queue) {
+    notify_progress = true;
     progress_.emptied_queue = true;
     LOG_IF(ERROR, progress_.failed_files > 0)
         << NiceNum << "Failed to pin " << progress_.failed_files << " files";
     VLOG(1) << NiceNum << "Pinned " << progress_.pinned_files << " files and "
             << HumanReadableSize(progress_.pinned_bytes) << " in "
-            << Quote(timer_.Elapsed());
+            << Quote(progress_.time_spent_pinning_files);
     VLOG(2) << NiceNum << "Useful events: " << progress_.useful_events;
     VLOG(2) << NiceNum << "Duplicated events: " << progress_.duplicated_events;
   }
 
-  NotifyProgress();
+  if (notify_progress) {
+    NotifyProgress();
+  }
 }
 
 void PinManager::OnFilePinned(const Id id,

@@ -73,6 +73,7 @@
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
+#include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test.h"
@@ -335,11 +336,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
 
   std::string GetJsStatementValueAsString(content::WebContents* web_contents,
                                           const std::string& js_statement) {
-    std::string str;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents, "domAutomationController.send( " + js_statement + ");",
-        &str));
-    return str;
+    return content::EvalJs(web_contents, js_statement).ExtractString();
   }
 
  private:
@@ -432,17 +429,14 @@ class SystemWebAppManagerLaunchDirectoryBrowserTest
   std::string ReadContentFromJsFileHandle(
       content::WebContents* web_contents,
       const std::string& file_handle_or_promise) {
-    std::string js_file_content;
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        web_contents,
-        "Promise.resolve(" + file_handle_or_promise + ")" +
-            ".then(async (fileHandle) => {"
-            "  const file = await fileHandle.getFile();"
-            "  const content = await file.text();"
-            "  window.domAutomationController.send(content);"
-            "});",
-        &js_file_content));
-    return js_file_content;
+    return content::EvalJs(web_contents,
+                           "Promise.resolve(" + file_handle_or_promise + ")" +
+                               ".then(async (fileHandle) => {"
+                               "  const file = await fileHandle.getFile();"
+                               "  const content = await file.text();"
+                               "  return content;"
+                               "});")
+        .ExtractString();
   }
 
   // Writes |content_to_write| to |file_handle_or_promise| file handle. Returns
@@ -748,17 +742,17 @@ IN_PROC_BROWSER_TEST_P(
       CheckFileIsGif(web_contents, "window.launchParams.files[1].getFile()"));
 
   // Check we can list the directory.
-  std::string file_names;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "(async function() {"
-      "  let fileNames = [];"
-      "  const files = await window.launchParams.files[0].keys();"
-      "  for await (const name of files)"
-      "    fileNames.push(name);"
-      "  domAutomationController.send(fileNames.sort().join(';'));"
-      "})();",
-      &file_names));
+  std::string file_names =
+      content::EvalJs(
+          web_contents,
+          "(async function() {"
+          "  let fileNames = [];"
+          "  const files = await window.launchParams.files[0].keys();"
+          "  for await (const name of files)"
+          "    fileNames.push(name);"
+          "  return fileNames.sort().join(';');"
+          "})();")
+          .ExtractString();
   EXPECT_EQ(base::StrCat({kTestPngFile, ";", kTestGifFile}), file_names);
 
   // Verify we can read a file (other than launch file) inside the directory.
@@ -1020,8 +1014,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
       [&](const apps::AppUpdate& app) {
         if ((app.AppType() == apps::AppType::kSystemWeb ||
              app.AppType() == apps::AppType::kWeb) &&
-            app.Readiness() != apps::Readiness::kUninstalledByMigration &&
-            app.Readiness() != apps::Readiness::kUninstalledByUser) {
+            apps_util::IsInstalled(app.Readiness())) {
           swa_found = true;
         }
       });

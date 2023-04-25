@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/commands/manifest_update_check_command.h"
 
 #include "base/feature_list.h"
+#include "base/strings/to_string.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/callback_utils.h"
@@ -344,7 +345,8 @@ ManifestUpdateCheckCommand::MakeAppIconIdentityUpdateDecision() const {
   // of time where they can "fix" themselves silently to use the site provided
   // icons.
   constexpr base::TimeDelta kSyncGeneratedIconFixWindowDuration = base::Days(7);
-  if (base::FeatureList::IsEnabled(features::kWebAppSyncGeneratedIconFix) &&
+  if (base::FeatureList::IsEnabled(
+          features::kWebAppSyncGeneratedIconUpdateFix) &&
       web_app.is_generated_icon() &&
       web_app.latest_install_source() == webapps::WebappInstallSource::SYNC &&
       check_time_ <

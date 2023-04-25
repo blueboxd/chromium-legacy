@@ -34,9 +34,11 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/favicon/favicon_utils.h"
+#include "chrome/browser/preloading/chrome_preloading.h"
 #include "chrome/browser/preloading/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -67,7 +69,6 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_metrics.h"
@@ -182,6 +183,17 @@ enum class PreloadBookmarkMetricsEvent {
   kMaxValue = kMouseClick,
 };
 
+// These are used as control the behavior of kBookmarkTriggerForPrerender2.
+const base::FeatureParam<int> kPrerenderStartDelayOnMouseHoverByMiliSeconds{
+    &features::kBookmarkTriggerForPrerender2,
+    "prerender_start_delay_on_mouse_hover_ms", 300};
+const base::FeatureParam<bool> kPrerenderBookmarkBarOnMousePressedTrigger{
+    &features::kBookmarkTriggerForPrerender2,
+    "prerender_bookmarkbar_on_mouse_pressed_trigger", true};
+const base::FeatureParam<bool> kPrerenderBookmarkBarOnMouseHoverTrigger{
+    &features::kBookmarkTriggerForPrerender2,
+    "prerender_bookmarkbar_on_mouse_hover_trigger", true};
+
 // BookmarkButtonBase -----------------------------------------------
 
 // Base class for non-menu hosting buttons used on the bookmark bar.
@@ -269,15 +281,26 @@ class BookmarkButton : public BookmarkButtonBase {
   }
 
   void MayRecordHoverDuration(bool taken) {
-    if (!mouse_entered_time_.has_value()) {
+    // Record once. `moouse_entered_time_` should not be set if
+    // `OnButtonPressed` is called for keyboard events. We are not interested
+    // in such cases.
+    if (hover_duration_recorded_ || !mouse_entered_time_.has_value()) {
       return;
     }
+    hover_duration_recorded_ = true;
     base::TimeDelta duration = base::TimeTicks::Now() - *mouse_entered_time_;
-    mouse_entered_time_ = absl::nullopt;
     base::UmaHistogramTimes(
         taken ? "Prerender.Experimental.BookmarkBar.HoverDuration.Taken"
               : "Prerender.Experimental.BookmarkBar.HoverDuration.NotTaken",
         duration);
+    CHECK(mouse_move_time_.has_value());
+    base::TimeDelta duration_from_last_move =
+        base::TimeTicks::Now() - *mouse_move_time_;
+    base::UmaHistogramTimes(taken ? "Prerender.Experimental.BookmarkBar."
+                                    "HoverDuration.FromLastMouseMove.Taken"
+                                  : "Prerender.Experimental.BookmarkBar."
+                                    "HoverDuration.FromLastMouseMove.NotTaken",
+                            duration_from_last_move);
   }
 
   // views::View:
@@ -318,12 +341,26 @@ class BookmarkButton : public BookmarkButtonBase {
   void OnMouseEntered(const ui::MouseEvent& event) override {
     // Reset source information for taking metrics for following mouse events.
     mouse_entered_time_ = base::TimeTicks::Now();
+    mouse_move_time_ = *mouse_entered_time_;
+    hover_duration_recorded_ = false;
     mouse_has_been_pressed_ = false;
 
     base::UmaHistogramEnumeration(
         "Prerender.Experimental.BookmarkUrlButtonEvent",
         PreloadBookmarkMetricsEvent::kMouseOver);
     BookmarkButtonBase::OnMouseEntered(event);
+
+    if (base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2) &&
+        kPrerenderBookmarkBarOnMouseHoverTrigger.Get() &&
+        url_->SchemeIs("https")) {
+      preloading_timer_.Start(
+          FROM_HERE,
+          base::Milliseconds(
+              kPrerenderStartDelayOnMouseHoverByMiliSeconds.Get()),
+          base::BindRepeating(
+              &BookmarkButton::StartPrerendering, base::Unretained(this),
+              chrome_preloading_predictor::kMouseHoverOnBookmarkBar, *url_));
+    }
   }
 
   void OnMouseExited(const ui::MouseEvent& event) override {
@@ -338,9 +375,12 @@ class BookmarkButton : public BookmarkButtonBase {
                                     PreloadBookmarkMetricsEvent::kMouseDown);
     }
     // Record duration if the event happens before PressedCallback invocation.
-    if (!mouse_has_been_pressed_ && mouse_entered_time_.has_value()) {
+    if (!mouse_has_been_pressed_) {
       mouse_has_been_pressed_ = true;
-      base::TimeDelta duration = base::TimeTicks::Now() - *mouse_entered_time_;
+      auto now = base::TimeTicks::Now();
+      // It seems `mouse_entered_time_` could be empty, maybe OnMouseEntered()
+      // can be dropped sometime.
+      base::TimeDelta duration = now - mouse_entered_time_.value_or(now);
       base::UmaHistogramTimes(
           "Prerender.Experimental.BookmarkBar.EnterToPressDuration", duration);
       if (event.IsOnlyLeftMouseButton()) {
@@ -350,35 +390,52 @@ class BookmarkButton : public BookmarkButtonBase {
             duration);
       }
     }
-    if (event.IsOnlyLeftMouseButton()) {
-      // TODO(https://crbug.com/1422819): Cancel the prerendering if the mouse
-      // exits without triggering PressedCallback. Prerender only for https
-      // scheme, and add an enum metric to report the protocol scheme.
-      if (base::FeatureList::IsEnabled(
-              features::kBookmarkTriggerForPrerender2)) {
-        PrerenderManager::CreateForWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents());
-        auto* prerender_manager = PrerenderManager::FromWebContents(
-            browser_->tab_strip_model()->GetActiveWebContents());
-        prerender_manager->StartPrerenderBookmark(*url_);
-      }
+    if (event.IsOnlyLeftMouseButton() &&
+        base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2) &&
+        kPrerenderBookmarkBarOnMousePressedTrigger.Get()) {
+      StartPrerendering(chrome_preloading_predictor::kPointerDownOnBookmarkBar,
+                        *url_);
     }
     return result;
   }
 
+  void OnMouseMoved(const ui::MouseEvent& event) override {
+    mouse_move_time_ = base::TimeTicks::Now();
+    return BookmarkButtonBase::OnMouseMoved(event);
+  }
+
  private:
+  void StartPrerendering(content::PreloadingPredictor predictor, GURL url) {
+    // TODO(https://crbug.com/1422819): Cancel the prerendering if the mouse
+    // exits without triggering PressedCallback. Prerender only for https
+    // scheme, and add an enum metric to report the protocol scheme.
+    CHECK(
+        base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2));
+    if (!prerender_handle_) {
+      PrerenderManager::CreateForWebContents(
+          browser_->tab_strip_model()->GetActiveWebContents());
+      auto* prerender_manager = PrerenderManager::FromWebContents(
+          browser_->tab_strip_model()->GetActiveWebContents());
+      prerender_handle_ =
+          prerender_manager->StartPrerenderBookmark(url, predictor);
+    }
+  }
+
   // A cached value of maximum width for tooltip to skip generating
   // new tooltip text.
   mutable int max_tooltip_width_ = 0;
   mutable std::u16string tooltip_text_;
   PressedCallback callback_;
   const raw_ref<const GURL> url_;
+  const raw_ptr<Browser> browser_;
+  base::WeakPtr<content::PrerenderHandle> prerender_handle_;
+  base::RetainingOneShotTimer preloading_timer_;
 
   // Information for metrics.
   absl::optional<base::TimeTicks> mouse_entered_time_;
+  absl::optional<base::TimeTicks> mouse_move_time_;
+  bool hover_duration_recorded_ = false;
   bool mouse_has_been_pressed_ = false;
-
-  const raw_ptr<Browser> browser_;
 };
 
 BEGIN_METADATA(BookmarkButton, BookmarkButtonBase)

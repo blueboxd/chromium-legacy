@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.app.flags;
 import android.text.TextUtils;
 
 import org.chromium.build.BuildConfig;
+import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.back_press.MinimizeAppAndCloseTabBackPressHandler;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -87,6 +89,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sCctRetainableStateInMemory,
                 ChromeFeatureList.sCctToolbarCustomizations,
                 ChromeFeatureList.sCloseTabSuggestions,
+                ChromeFeatureList.sCloseTabSaveTabList,
                 ChromeFeatureList.sCommandLineOnNonRooted,
                 ChromeFeatureList.sCriticalPersistedTabData,
                 ChromeFeatureList.sDiscoverMultiColumn,
@@ -107,6 +110,7 @@ public class ChromeCachedFlags {
                 ChromeFeatureList.sQueryTiles,
                 ChromeFeatureList.sQueryTilesOnStart,
                 ChromeFeatureList.sShouldIgnoreIntentSkipInternalCheck,
+                ChromeFeatureList.sSpareTab,
                 ChromeFeatureList.sStartSurfaceAndroid,
                 ChromeFeatureList.sStartSurfaceDisabledFeedImprovement,
                 ChromeFeatureList.sStartSurfaceReturnTime,
@@ -141,14 +145,19 @@ public class ChromeCachedFlags {
                 OptimizationGuidePushNotificationManager.MAX_CACHE_SIZE,
                 OmniboxFeatures.ENABLE_MODERNIZE_VISUAL_UPDATE_ON_TABLET,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_ACTIVE_COLOR_ON_OMNIBOX,
+                OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_MERGE_CLIPBOARD_ON_NTP,
                 OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALL_BOTTOM_MARGIN,
-                CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES,
+                OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLER_MARGINS,
+                OmniboxFeatures.MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS,
+            CustomTabIntentDataProvider.AUTO_TRANSLATE_ALLOW_ALL_FIRST_PARTIES,
                 CustomTabIntentDataProvider.AUTO_TRANSLATE_PACKAGE_NAME_ALLOWLIST,
                 CustomTabIntentDataProvider.THIRD_PARTIES_DEFAULT_POLICY,
                 CustomTabIntentDataProvider.DENYLIST_ENTRIES,
                 CustomTabIntentDataProvider.ALLOWLIST_ENTRIES,
+                WarmupManager.SPARE_TAB_INITIALIZE_RENDERER,
                 StartSurfaceConfiguration.IS_DOODLE_SUPPORTED,
                 StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_SECONDS,
+                StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_ON_TABLET_SECONDS,
                 StartSurfaceConfiguration.START_SURFACE_RETURN_TIME_USE_MODEL,
                 StartSurfaceConfiguration.SHOW_TABS_IN_MRU_ORDER,
                 StartSurfaceConfiguration.SIGNIN_PROMO_NTP_COUNT_LIMIT,
@@ -170,7 +179,8 @@ public class ChromeCachedFlags {
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO,
                 TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_DETACHED,
                 VersionNumberGetter.MIN_SDK_VERSION,
-                ChromeActivity.CONTENT_VIS_DELAY_MS);
+                ChromeActivity.CONTENT_VIS_DELAY_MS,
+                MinimizeAppAndCloseTabBackPressHandler.SYSTEM_BACK);
         // clang-format on
         tryToCatchMissingParameters(fieldTrialsToCache);
         CachedFeatureFlags.cacheFieldTrialParameters(fieldTrialsToCache);

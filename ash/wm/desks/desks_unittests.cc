@@ -52,13 +52,13 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desk_textfield.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_test_api.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/root_window_desk_switch_animator_test_api.h"
 #include "ash/wm/desks/scroll_arrow_button.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
@@ -85,6 +85,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/rtl.h"
+#include "base/memory/raw_ptr.h"
 #include "base/ranges/algorithm.h"
 #include "base/scoped_observation.h"
 #include "base/strings/stringprintf.h"
@@ -420,7 +421,8 @@ class DesksTest : public AshTestBase,
     scoped_feature_list_.Reset();
   }
 
-  const views::LabelButton* GetDefaultDeskButton(const DesksBarView* bar_view) {
+  const views::LabelButton* GetDefaultDeskButton(
+      const LegacyDeskBarView* bar_view) {
     if (GetParam().enable_jellyroll) {
       return bar_view->default_desk_button();
     }
@@ -429,7 +431,7 @@ class DesksTest : public AshTestBase,
   }
 
   const views::LabelButton* GetZeroStateNewDeskButton(
-      const DesksBarView* bar_view) {
+      const LegacyDeskBarView* bar_view) {
     if (GetParam().enable_jellyroll) {
       return bar_view->new_desk_button();
     }
@@ -438,7 +440,7 @@ class DesksTest : public AshTestBase,
   }
 
   const views::View* GetExpandedStateNewDeskButton(
-      const DesksBarView* bar_view) {
+      const LegacyDeskBarView* bar_view) {
     if (GetParam().enable_jellyroll) {
       return bar_view->new_desk_button();
     }
@@ -447,7 +449,7 @@ class DesksTest : public AshTestBase,
   }
 
   const views::LabelButton* GetExpandedStateInnerNewDeskButton(
-      const DesksBarView* bar_view) {
+      const LegacyDeskBarView* bar_view) {
     if (GetParam().enable_jellyroll) {
       return bar_view->new_desk_button();
     }
@@ -455,7 +457,7 @@ class DesksTest : public AshTestBase,
     return bar_view->expanded_state_new_desk_button()->GetInnerButton();
   }
 
-  void VerifyZeroStateNewDeskButtonVisibility(const DesksBarView* bar_view,
+  void VerifyZeroStateNewDeskButtonVisibility(const LegacyDeskBarView* bar_view,
                                               bool expected_visibility) {
     // If `Jellyroll` is enabled, new desk button is always visible no matter
     // what's the current desks bar's state. Thus check the button's state
@@ -472,8 +474,9 @@ class DesksTest : public AshTestBase,
               bar_view->zero_state_new_desk_button()->GetVisible());
   }
 
-  void VerifyExpandedStateNewDeskButtonVisibility(const DesksBarView* bar_view,
-                                                  bool expected_visibility) {
+  void VerifyExpandedStateNewDeskButtonVisibility(
+      const LegacyDeskBarView* bar_view,
+      bool expected_visibility) {
     // If `Jellyroll` is enabled, new desk button is always visible no matter
     // what's the current desks bar's state. Thus verify the button's state
     // instead of the visibility.
@@ -493,7 +496,7 @@ class DesksTest : public AshTestBase,
     PressAndReleaseKey(key_code, flags);
   }
 
-  SkColor GetNewDeskButtonBackgroundColor(const DesksBarView* bar_view) {
+  SkColor GetNewDeskButtonBackgroundColor(const LegacyDeskBarView* bar_view) {
     return GetParam().enable_jellyroll
                ? bar_view->new_desk_button()->background()->get_color()
                : bar_view->expanded_state_new_desk_button()
@@ -2791,13 +2794,13 @@ void VerifyDesksRestoreData(PrefService* user_prefs,
 }
 
 // Returns the GUIDs in the given `user_prefs`.
-std::vector<base::GUID> GetDeskRestoreGuids(PrefService* user_prefs) {
+std::vector<base::Uuid> GetDeskRestoreGuids(PrefService* user_prefs) {
   const base::Value::List& desks_restore_guids =
       user_prefs->GetList(prefs::kDesksGuidsList);
 
-  std::vector<base::GUID> guids;
+  std::vector<base::Uuid> guids;
   for (const base::Value& value : desks_restore_guids) {
-    const base::GUID guid = base::GUID::ParseLowercase(value.GetString());
+    const base::Uuid guid = base::Uuid::ParseLowercase(value.GetString());
     guids.emplace_back(guid);
   }
   return guids;
@@ -2814,7 +2817,7 @@ class DesksEditableNamesTest : public DesksTest {
 
   DesksController* controller() { return controller_; }
   OverviewGrid* overview_grid() { return overview_grid_; }
-  const DesksBarView* desks_bar_view() { return desks_bar_view_; }
+  const LegacyDeskBarView* desks_bar_view() { return desks_bar_view_; }
 
   // DesksTest:
   void SetUp() override {
@@ -2842,9 +2845,9 @@ class DesksEditableNamesTest : public DesksTest {
   }
 
  private:
-  DesksController* controller_ = nullptr;
-  OverviewGrid* overview_grid_ = nullptr;
-  const DesksBarView* desks_bar_view_ = nullptr;
+  raw_ptr<DesksController, ExperimentalAsh> controller_ = nullptr;
+  raw_ptr<OverviewGrid, ExperimentalAsh> overview_grid_ = nullptr;
+  raw_ptr<const LegacyDeskBarView, ExperimentalAsh> desks_bar_view_ = nullptr;
 };
 
 TEST_P(DesksEditableNamesTest, DefaultNameChangeAborted) {
@@ -3723,14 +3726,14 @@ TEST_P(TabletModeDesksTest, HotSeatStateAfterMovingAWindowToAnotherDesk) {
   EXPECT_EQ(HotseatState::kExtended, hotseat_widget->state());
 
   const struct {
-    aura::Window* window;
+    raw_ptr<aura::Window, ExperimentalAsh> window;
     const char* trace_message;
   } kTestTable[] = {{win0.get(), "Minimized window"},
                     {win1.get(), "Normal window"}};
 
   for (const auto& test_case : kTestTable) {
     SCOPED_TRACE(test_case.trace_message);
-    auto* win = test_case.window;
+    auto* win = test_case.window.get();
     auto* overview_item = overview_session->GetOverviewItemForWindow(win);
     ASSERT_TRUE(overview_item);
 
@@ -4472,8 +4475,8 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
  private:
   std::unique_ptr<MultiUserWindowManager> multi_user_window_manager_;
 
-  TestingPrefServiceSimple* user_1_prefs_ = nullptr;
-  TestingPrefServiceSimple* user_2_prefs_ = nullptr;
+  raw_ptr<TestingPrefServiceSimple, ExperimentalAsh> user_1_prefs_ = nullptr;
+  raw_ptr<TestingPrefServiceSimple, ExperimentalAsh> user_2_prefs_ = nullptr;
 };
 
 TEST_F(DesksMultiUserTest, SwitchUsersBackAndForth) {
@@ -5542,8 +5545,8 @@ TEST_P(DesksTest, NameNudges) {
 
 // Tests that name nudges works with multiple displays. When a user
 // clicks/touches the new desk button, the newly created DeskNameView that
-// resides on the same DesksBarView as the clicked button should be focused.
-// See crbug.com/1206013.
+// resides on the same LegacyDeskBarView as the clicked button should be
+// focused. See crbug.com/1206013.
 TEST_P(DesksTest, NameNudgesMultiDisplay) {
   UpdateDisplay("800x700,800x700");
 
@@ -8111,7 +8114,7 @@ TEST_P(DesksCloseAllTest, CombineDesksTooltipIsUpdatedOnUserActions) {
   EnterOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
-  const DesksBarView* desks_bar_view = GetPrimaryRootDesksBarView();
+  const LegacyDeskBarView* desks_bar_view = GetPrimaryRootDesksBarView();
 
   // Cache the mini views and their name views and combine desks buttons.
   DeskMiniView* mini_view_1 = desks_bar_view->mini_views()[0];
@@ -8516,14 +8519,14 @@ TEST_P(DesksTest, DeskGuidsSaved) {
   // We don't need to save the desk GUID for restore if there is only one desk.
   NewDesk();
   auto* controller = DesksController::Get();
-  base::GUID desk1_guid = controller->desks()[0].get()->uuid();
-  base::GUID desk2_guid = controller->desks()[1].get()->uuid();
+  base::Uuid desk1_guid = controller->desks()[0].get()->uuid();
+  base::Uuid desk2_guid = controller->desks()[1].get()->uuid();
   EXPECT_THAT(GetDeskRestoreGuids(GetPrimaryUserPrefService()),
               testing::ElementsAre(desk1_guid, desk2_guid));
 
   // Add a third desk, close the second desk, and check the GUIDs.
   NewDesk();
-  base::GUID desk3_guid = controller->desks()[2].get()->uuid();
+  base::Uuid desk3_guid = controller->desks()[2].get()->uuid();
   EnterOverview();
   CloseDeskFromMiniView(GetOverviewGridForRoot(Shell::GetPrimaryRootWindow())
                             ->desks_bar_view()
@@ -8539,9 +8542,9 @@ TEST_P(DesksTest, DeskGuidsReorder) {
   NewDesk();
   NewDesk();
   auto* controller = DesksController::Get();
-  base::GUID desk1_guid = controller->desks()[0].get()->uuid();
-  base::GUID desk2_guid = controller->desks()[1].get()->uuid();
-  base::GUID desk3_guid = controller->desks()[2].get()->uuid();
+  base::Uuid desk1_guid = controller->desks()[0].get()->uuid();
+  base::Uuid desk2_guid = controller->desks()[1].get()->uuid();
+  base::Uuid desk3_guid = controller->desks()[2].get()->uuid();
   EXPECT_THAT(GetDeskRestoreGuids(GetPrimaryUserPrefService()),
               testing::ElementsAre(desk1_guid, desk2_guid, desk3_guid));
 

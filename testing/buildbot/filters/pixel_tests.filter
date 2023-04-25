@@ -54,6 +54,7 @@ PageInfoBubbleViewCookiesSubpageBrowserTest.*
 PageInfoBubbleViewIsolatedWebAppBrowserTest.*
 *PasswordBubbleBrowserTest.*
 *PasswordGenerationPopupViewBrowsertest.*
+*PasswordManagementRevampedBubbleInteractiveUiTest.*
 PasswordReuseModalWarningTest.*
 *PasswordRevampedManagementBubbleBrowserTest.*
 PermissionRequestChipDialogBrowserTest.*
@@ -64,7 +65,7 @@ PrivacySandboxNoticeBubbleBrowserTest.*
 ProfilePickerUIPixelTest.*
 ProfileTypeChoiceUIPixelTest.*
 PromptForScanningModalDialogTest.*
-QRCodeGeneratorBubbleBrowserTest.*
+QrCodeGeneratorServicePixelTest.*
 RelaunchRecommendedBubbleViewDialogTest.*
 RelaunchRequiredDialogViewDialogTest.*
 ReopenTabPromoControllerDialogBrowserTest.*

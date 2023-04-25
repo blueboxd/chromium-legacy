@@ -575,7 +575,7 @@ BASE_FEATURE(kInMemoryCodeCache,
 // cases, e.g. PDF tiles are ignored. See https://crbug.com/1360351 for details.
 BASE_FEATURE(kInnerFrameCompositorSurfaceEviction,
              "InnerFrameCompositorSurfaceEviction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Kill switch for the GetInstalledRelatedApps API.
 BASE_FEATURE(kInstalledApp, "InstalledApp", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1074,12 +1074,23 @@ constexpr base::FeatureParam<bool> kStartServiceWorkerForEmptyFetchHandler{
 // This feature param controls if the service worker is started for an
 // empty service worker fetch handler while `kSkipEmptyFetchHandler` is on.
 // Unlike the feature param `kStartServiceWorkerForEmptyFetchHandler`,
-// this starts service worker in `TaskRunner::PostTask`.
+// this starts service worker in `TaskRunner::PostDelayTask`.
 constexpr base::FeatureParam<bool> kAsyncStartServiceWorkerForEmptyFetchHandler{
     &kServiceWorkerSkipIgnorableFetchHandler,
     "AsyncStartServiceWorkerForEmptyFetchHandler",
     false,
 };
+
+// This feature param controls duration to start fetch handler
+// if `kAsyncStartServiceWorkerForEmptyFetchHandler` is used.
+// Negative values and the value larger than a threshold is ignored, and
+// treated as 0.
+constexpr base::FeatureParam<int>
+    kAsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs{
+        &kServiceWorkerSkipIgnorableFetchHandler,
+        "AsyncStartServiceWorkerForEmptyFetchHandlerDurationInMs",
+        0,
+    };
 
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
@@ -1373,7 +1384,7 @@ BASE_FEATURE(kWebAssemblyLazyCompilation,
 // Enable the use of WebAssembly Relaxed SIMD operations
 BASE_FEATURE(kWebAssemblyRelaxedSimd,
              "WebAssemblyRelaxedSimd",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enable support for the WebAssembly Stringref proposal:
 // https://github.com/WebAssembly/stringref.

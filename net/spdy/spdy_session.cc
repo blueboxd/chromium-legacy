@@ -19,7 +19,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
-#include "base/strings/abseil_string_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -149,7 +148,7 @@ enum PushedStreamVaryResponseHeaderValues ParseVaryInPushedResponse(
   spdy::Http2HeaderBlock::iterator it = headers.find(kVary);
   if (it == headers.end())
     return kNoVaryHeader;
-  base::StringPiece value = base::StringViewToStringPiece(it->second);
+  base::StringPiece value = it->second;
   if (value.empty())
     return kVaryIsEmpty;
   if (value == kStar)
@@ -1003,7 +1002,7 @@ SpdySession::~SpdySession() {
 int SpdySession::GetPushedStream(const GURL& url,
                                  spdy::SpdyStreamId pushed_stream_id,
                                  RequestPriority priority,
-                                 SpdyStream** stream) {
+                                 raw_ptr<SpdyStream>* stream) {
   CHECK(!in_io_loop_);
   // |pushed_stream_id| must be valid.
   DCHECK_NE(pushed_stream_id, kNoPushedStreamFound);

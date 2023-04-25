@@ -181,8 +181,9 @@ void PrintBackendServiceManager::UnregisterClient(ClientId id) {
              << ", is client being unregistered multiple times?";
     return;
   }
-  VLOG(1) << "Unregistering client with ID " << id
-          << " from print backend service.";
+  VLOG(1) << "Unregistering client with ID " << id << " (client type "
+          << ClientTypeToString(client_type.value())
+          << ") from print backend service.";
 
   absl::optional<base::TimeDelta> new_timeout =
       DetermineIdleTimeoutUpdateOnUnregisteredClient(client_type.value(),
@@ -280,6 +281,30 @@ void PrintBackendServiceManager::GetPrinterSemanticCapsAndDefaults(
           base::Unretained(this), std::move(context)));
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_WIN)
+void PrintBackendServiceManager::GetPaperPrintableArea(
+    const std::string& printer_name,
+    const PrintSettings::RequestedMedia& media,
+    mojom::PrintBackendService::GetPaperPrintableAreaCallback callback) {
+  CallbackContext context;
+  auto& service = GetServiceAndCallbackContextForQuery(printer_name, context);
+
+  SaveCallback(
+      GetRemoteSavedGetPaperPrintableAreaCallbacks(context.is_sandboxed),
+      context.remote_id, context.saved_callback_id, std::move(callback));
+
+  SetCrashKeys(printer_name);
+
+  LogCallToRemote("GetPaperPrintableArea", context);
+  // Safe to use base::Unretained(this) since `this` is a global singleton
+  // which never goes away.
+  service->GetPaperPrintableArea(
+      printer_name, media,
+      base::BindOnce(&PrintBackendServiceManager::OnDidGetPaperPrintableArea,
+                     base::Unretained(this), std::move(context)));
+}
+#endif
 
 PrintBackendServiceManager::ContextId
 PrintBackendServiceManager::EstablishPrintingContext(
@@ -1038,7 +1063,7 @@ void PrintBackendServiceManager::SetServiceIdleHandler(
   // Safe to use base::Unretained(this) since `this` is a global singleton
   // which never goes away.
   service.set_idle_handler(
-      kNoClientsRegisteredResetOnIdleTimeout,
+      timeout,
       base::BindRepeating(&PrintBackendServiceManager::OnIdleTimeout,
                           base::Unretained(this), sandboxed, remote_id));
 
@@ -1106,6 +1131,10 @@ void PrintBackendServiceManager::OnRemoteDisconnected(
       remote_id,
       mojom::PrinterSemanticCapsAndDefaultsResult::NewResultCode(
           mojom::ResultCode::kFailed));
+#if BUILDFLAG(IS_WIN)
+  RunSavedCallbacks(GetRemoteSavedGetPaperPrintableAreaCallbacks(sandboxed),
+                    remote_id, gfx::Rect());
+#endif
   RunSavedCallbacksStructResult(
       GetRemoteSavedUseDefaultSettingsCallbacks(sandboxed), remote_id,
       mojom::PrintSettingsResult::NewResultCode(mojom::ResultCode::kFailed));
@@ -1160,6 +1189,16 @@ PrintBackendServiceManager::
              ? sandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_
              : unsandboxed_saved_get_printer_semantic_caps_and_defaults_callbacks_;
 }
+
+#if BUILDFLAG(IS_WIN)
+PrintBackendServiceManager::RemoteSavedGetPaperPrintableAreaCallbacks&
+PrintBackendServiceManager::GetRemoteSavedGetPaperPrintableAreaCallbacks(
+    bool sandboxed) {
+  return sandboxed ? sandboxed_saved_get_paper_printable_area_callbacks_
+                   : unsandboxed_saved_get_paper_printable_area_callbacks_;
+}
+
+#endif
 
 PrintBackendServiceManager::RemoteSavedUseDefaultSettingsCallbacks&
 PrintBackendServiceManager::GetRemoteSavedUseDefaultSettingsCallbacks(
@@ -1280,7 +1319,7 @@ void PrintBackendServiceManager::ServiceCallbackDone(
 
   auto callback_entry = callback_map.find(saved_callback_id);
   DCHECK(callback_entry != callback_map.end());
-  base::OnceCallback<void(X...)> callback = std::move(callback_entry->second);
+  auto callback = std::move(callback_entry->second);
   callback_map.erase(callback_entry);
 
   // Done disconnect wrapper management, propagate the callback.
@@ -1324,6 +1363,17 @@ void PrintBackendServiceManager::OnDidGetPrinterSemanticCapsAndDefaults(
                       context.remote_id, context.saved_callback_id,
                       std::move(printer_caps));
 }
+
+#if BUILDFLAG(IS_WIN)
+void PrintBackendServiceManager::OnDidGetPaperPrintableArea(
+    const CallbackContext& context,
+    const gfx::Rect& printable_area_um) {
+  LogCallbackFromRemote("GetPaperPrintableArea", context);
+  ServiceCallbackDone(
+      GetRemoteSavedGetPaperPrintableAreaCallbacks(context.is_sandboxed),
+      context.remote_id, context.saved_callback_id, printable_area_um);
+}
+#endif
 
 void PrintBackendServiceManager::OnDidUseDefaultSettings(
     const CallbackContext& context,
@@ -1427,7 +1477,7 @@ template <class... T>
 void PrintBackendServiceManager::RunSavedCallbacks(
     RemoteSavedCallbacks<T...>& saved_callbacks,
     const RemoteId& remote_id,
-    T... result) {
+    std::remove_reference<T>::type... result) {
   auto found_callbacks_map = saved_callbacks.find(remote_id);
   if (found_callbacks_map == saved_callbacks.end())
     return;  // No callbacks to run.

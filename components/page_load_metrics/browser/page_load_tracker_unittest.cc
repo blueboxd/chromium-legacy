@@ -5,6 +5,7 @@
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 
 #include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "components/page_load_metrics/browser/observers/page_load_metrics_observer_content_test_harness.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/prerender_test_util.h"
@@ -34,7 +35,7 @@ using content::test::ScopedPrerenderWebContentsDelegate;
 
 class TestPageLoadMetricsObserver final : public PageLoadMetricsObserver {
  public:
-  TestPageLoadMetricsObserver(raw_ptr<PageLoadMetricsObserverEvents> events)
+  TestPageLoadMetricsObserver(PageLoadMetricsObserverEvents* events)
       : events_(events) {}
 
   void StopObservingOnPrerender() { stop_on_prerender_ = true; }

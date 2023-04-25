@@ -587,6 +587,10 @@ std::string ReadAnythingAppController::GetHtmlTag(
   ui::AXNode* ax_node = model_.GetAXNode(ax_node_id);
   DCHECK(ax_node);
 
+  if (ui::IsTextField(ax_node->GetRole())) {
+    return "div";
+  }
+
   // Replace mark element with bold element for readability
   std::string html_tag =
       ax_node->GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
@@ -694,6 +698,19 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
 
   // Ignore the selection if it's collapsed, which is created by a simple click.
   if ((anchor_offset == focus_offset) && (anchor_node_id == focus_node_id)) {
+    return;
+  }
+
+  ui::AXNode* focus_node = model_.GetAXNode(focus_node_id);
+  ui::AXNode* anchor_node = model_.GetAXNode(anchor_node_id);
+  // Some text fields, like Gmail, allow a <div> to be returned as a focus
+  // node for selection, most frequently when a triple click causes an entire
+  // range of text to be selected, including non-text nodes. This can cause
+  // inconsistencies in how the selection is handled. e.g. the focus node can
+  // be before the anchor node and set to a non-text node, which can cause
+  // page_handler_->OnSelectionChange to be incorrectly triggered, resulting in
+  // a failing DCHECK. Therefore, return early if this happens.
+  if (!focus_node->IsText() || !anchor_node->IsText()) {
     return;
   }
 

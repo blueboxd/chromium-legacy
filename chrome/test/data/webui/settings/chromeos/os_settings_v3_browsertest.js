@@ -240,22 +240,22 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['AppManagementToggleRow', 'app_management/toggle_row_test.js'],
  ['CellularNetworksList', 'cellular_networks_list_test.js'],
  ['CellularRoamingToggleButton', 'cellular_roaming_toggle_button_test.js'],
- ['CellularSetupDialog', 'cellular_setup_dialog_test.js'],
  [
-   'ChromeVoxSubpage',
-   'chromevox_subpage_tests.js',
-   {enabled: ['features::kAccessibilityChromeVoxPageMigration']},
+   'CupsPrinterEntry', 'cups_printer_entry_tests.js',
+   {enabled: ['ash::features::kPrinterSettingsRevamp']}
  ],
- [
-   'DictationChangeLanguageLocaleDialogTest',
-   'change_dictation_locale_dialog_test.js',
- ],
- ['CupsPrinterEntry', 'cups_printer_entry_tests.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.js'],
- ['CupsPrinterPage', 'cups_printer_page_tests.js'],
+ [
+   'CupsPrinterPage', 'cups_printer_page_tests.js',
+   {enabled: ['ash::features::kPrinterSettingsRevamp']}
+ ],
  ['DateTimePage', 'date_time_page_tests.js'],
  ['DateTimePageTimezoneSelector', 'date_time_page/timezone_selector_test.js'],
  ['DateTimePageTimezoneSubpage', 'date_time_page/timezone_subpage_test.js'],
+ [
+   'DevicePageFakeInputDeviceSettingsProvider',
+   'device_page/fake_input_device_settings_provider_test.js'
+ ],
  [
    'DevicePagePerDeviceKeyboard', 'device_page/per_device_keyboard_test.js',
    {enabled: ['ash::features::kInputDeviceSettingsSplit']}
@@ -303,11 +303,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ['EsimRemoveProfileDialog', 'esim_remove_profile_dialog_test.js'],
  ['EsimRenameDialog', 'esim_rename_dialog_test.js'],
  ['FakeCrosAudioConfig', 'fake_cros_audio_config_test.js'],
- ['FakeInputDeviceSettings', 'fake_input_device_settings_provider_test.js'],
  ['FingerprintListSubpage', 'fingerprint_list_subpage_test.js'],
  ['GoogleAssistantSubpage', 'google_assistant_subpage_test.js'],
  ['GuestOsSharedPaths', 'guest_os_shared_paths_test.js'],
- ['GuestOsSharedUsbDevices', 'guest_os_shared_usb_devices_test.js'],
+ ['GuestOsSharedUsbDevices', 'guest_os/guest_os_shared_usb_devices_test.js'],
  [
    'HotspotConfigDialog',
    'hotspot_config_dialog_tests.js',
@@ -338,6 +337,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    {enabled: ['ash::features::kApnRevamp']}
  ],
  [
+   'InternetPageCellularSetupDialog',
+   'internet_page/cellular_setup_dialog_test.js'
+ ],
+ [
    'InternetPageInternetDetailSubpage',
    'internet_page/internet_detail_subpage_tests.js',
    {enabled: ['ash::features::kApnRevamp']}
@@ -353,8 +356,8 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  ],
  ['InternetSubpage', 'internet_subpage_tests.js'],
  ['InternetSubpageMenu', 'internet_subpage_menu_test.js'],
- ['KerberosAccounts', 'kerberos_accounts_test.js'],
- ['KerberosPage', 'kerberos_page_test.js'],
+ ['KerberosPage', 'kerberos_page/kerberos_page_test.js'],
+ ['KerberosPageKerberosAccounts', 'kerberos_page/kerberos_accounts_test.js'],
  [
    'KeyboardShortcutBanner',
    'keyboard_shortcut_banner/keyboard_shortcut_banner_test.js'
@@ -429,20 +432,30 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
    'os_a11y_page/audio_and_captions_page_test.js',
  ],
  [
+   'OsA11yPageChromeVoxSubpage',
+   'os_a11y_page/chromevox_subpage_test.js',
+   {enabled: ['features::kAccessibilityChromeVoxPageMigration']},
+ ],
+ [
    'OsA11yPageCursorAndTouchpadPage',
    'os_a11y_page/cursor_and_touchpad_page_test.js',
  ],
  [
+   'OsA11yPageChangeDictationLocaleDialog',
+   'os_a11y_page/change_dictation_locale_dialog_test.js',
+ ],
+ [
    'OsA11yPageDisplayAndMagnificationPage',
    'os_a11y_page/display_and_magnification_page_test.js',
+   {enabled: ['features::kExperimentalAccessibilityColorEnhancementSettings']},
  ],
  [
    'OsA11yPageKeyboardAndTextInputPage',
    'os_a11y_page/keyboard_and_text_input_page_test.js',
  ],
  [
-   'OsA11yPageManageAccessibilityPage',
-   'os_a11y_page/manage_accessibility_page_test.js'
+   'OsA11yPageManageA11ySubpage',
+   'os_a11y_page/manage_a11y_subpage_test.js',
  ],
  [
    'OsA11yPageTextToSpeechPage',
@@ -532,6 +545,10 @@ TEST_F('OSSettingsCrostiniExtraContainerPageV3Test', 'AllJsTests', () => {
  [
    'PersonalizationPageWithPersonalizationHub',
    'personalization_page_with_personalization_hub_test.js',
+ ],
+ [
+   'PrinterStatus',
+   'printer_status_tests.js',
  ],
  [
    'PrivacyHubSubpage',

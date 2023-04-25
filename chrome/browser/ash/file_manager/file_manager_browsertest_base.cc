@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "base/memory/raw_ptr.h"
 
 #include <stddef.h>
 
@@ -19,7 +20,6 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/public/cpp/style/scoped_light_mode_as_default.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/webui/file_manager/url_constants.h"
@@ -114,6 +114,7 @@
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/ash/components/smbfs/smbfs_host.h"
 #include "chromeos/ash/components/smbfs/smbfs_mounter.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/drive/drive_pref_names.h"
@@ -199,7 +200,7 @@ class WebContentCapturingObserver : public content::TestNavigationObserver {
   }
 
  private:
-  content::WebContents* web_contents_;
+  raw_ptr<content::WebContents, ExperimentalAsh> web_contents_;
 };
 
 // During test, the test extensions can send a list of entries (directories
@@ -1513,11 +1514,12 @@ class DriveFsTestVolume : public TestVolume {
   absl::optional<drivefs::mojom::DialogResult> last_dialog_result_;
 
   // Profile associated with this volume: not owned.
-  Profile* profile_ = nullptr;
+  raw_ptr<Profile, ExperimentalAsh> profile_ = nullptr;
   // Integration service used for testing: not owned.
-  drive::DriveIntegrationService* integration_service_ = nullptr;
+  raw_ptr<drive::DriveIntegrationService, ExperimentalAsh>
+      integration_service_ = nullptr;
 
-  Profile* const original_profile_;
+  const raw_ptr<Profile, ExperimentalAsh> original_profile_;
   std::map<base::FilePath, const AddEntriesMessage::TestEntryInfo> entries_;
   std::unique_ptr<drive::FakeDriveFsHelper> fake_drivefs_helper_;
 };
@@ -1598,7 +1600,8 @@ class DocumentsProviderTestVolume : public TestVolume {
   }
 
  protected:
-  arc::FakeFileSystemInstance* const file_system_instance_;
+  const raw_ptr<arc::FakeFileSystemInstance, ExperimentalAsh>
+      file_system_instance_;
   const std::string authority_;
   const std::string root_document_id_;
   const bool read_only_;
@@ -1864,7 +1867,7 @@ class MockGuestOsMountProvider : public guest_os::GuestOsMountProvider {
   int cid_;
 
  private:
-  Profile* profile_;
+  raw_ptr<Profile, ExperimentalAsh> profile_;
   std::string name_;
   guest_os::VmType vm_type_;
 };
@@ -1888,7 +1891,7 @@ class GuestOsTestVolume : public LocalTestVolume {
 
   const base::FilePath& mount_path() const { return root_path(); }
 
-  MockGuestOsMountProvider* provider_;
+  raw_ptr<MockGuestOsMountProvider, ExperimentalAsh> provider_;
 };
 
 FileManagerBrowserTestBase::FileManagerBrowserTestBase() = default;
@@ -2057,9 +2060,9 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   }
 
   if (options.enable_upload_office_to_cloud) {
-    enabled_features.push_back(ash::features::kUploadOfficeToCloud);
+    enabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
   } else {
-    disabled_features.push_back(ash::features::kUploadOfficeToCloud);
+    disabled_features.push_back(chromeos::features::kUploadOfficeToCloud);
   }
 
   if (command_line->HasSwitch(switches::kDevtoolsCodeCoverage) &&
@@ -3135,8 +3138,12 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     CHECK(base::Contains(swa_web_contents_, *app_id))
         << "Couldn't find the SWA WebContents for appId: " << *app_id;
     web_contents = swa_web_contents_[*app_id];
-    SimulateMouseClickAt(web_contents, 0 /* modifiers */,
-                         blink::WebMouseEvent::Button::kLeft,
+
+    absl::optional<bool> leftClick = value.FindBool("leftClick");
+    ASSERT_TRUE(leftClick.has_value());
+    auto button = leftClick.value() ? blink::WebMouseEvent::Button::kLeft
+                                    : blink::WebMouseEvent::Button::kRight;
+    SimulateMouseClickAt(web_contents, 0 /* modifiers */, button,
                          gfx::Point(*click_x, *click_y));
     return;
   }
@@ -3209,7 +3216,6 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
   }
 
   if (name == "isDarkModeEnabled") {
-    ash::ScopedLightModeAsDefault scoped_light_mode_as_default;
     *output = ash::DarkLightModeControllerImpl::Get()->IsDarkModeEnabled()
                   ? "true"
                   : "false";

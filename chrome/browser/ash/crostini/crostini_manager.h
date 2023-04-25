@@ -13,6 +13,7 @@
 #include "base/callback_list.h"
 #include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observation.h"
@@ -256,8 +257,6 @@ class CrostiniManager : public KeyedService,
       std::string name,
       // Path to the disk image on the host.
       const base::FilePath& disk_path,
-      // Path to the wayland server's socket, per go/secure-exo-ids.
-      const base::FilePath& wayland_path,
       // The number of logical CPU cores that are currently disabled.
       size_t num_cores_disabled,
       // A callback to invoke with the result of the launch request.

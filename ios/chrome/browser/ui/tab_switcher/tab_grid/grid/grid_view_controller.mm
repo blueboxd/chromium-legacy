@@ -4,8 +4,9 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_view_controller.h"
 
+#import <algorithm>
+
 #import "base/check_op.h"
-#import "base/cxx17_backports.h"
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
@@ -1076,19 +1077,20 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UIScrollViewDelegate
 
-- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
-  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  [self.delegate gridViewControllerScrollViewDidScroll:self];
+  if (!self.thumbStripEnabled) {
+    return;
+  }
+  [self updateFractionVisibleOfLastItem];
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.delegate gridViewControllerWillBeginDragging:self];
 }
 
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  [self.delegate gridViewControllerScrollViewDidScroll:self];
-  if (!self.thumbStripEnabled)
-    return;
-  [self updateFractionVisibleOfLastItem];
+- (void)scrollViewDidChangeAdjustedContentInset:(UIScrollView*)scrollView {
+  self.emptyStateView.scrollViewContentInsets = scrollView.contentInset;
 }
 
 #pragma mark - GridCellDelegate
@@ -1105,7 +1107,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
 }
 
-#pragma mark-- SuggestedActionsViewControllerDelegate
+#pragma mark - SuggestedActionsViewControllerDelegate
 
 - (void)suggestedActionsViewController:
             (SuggestedActionsViewController*)viewController
@@ -1693,10 +1695,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [self.items indexOfObjectPassingTest:selectedTest];
 }
 
-// Configures `cell`'s title synchronously, and favicon and snapshot
-// asynchronously with information from `item`. Updates the `cell`'s theme to
-// this view controller's theme. This view controller becomes the delegate for
-// the cell.
+// Configures `cell`'s identifier and title synchronously, and favicon and
+// snapshot asynchronously with information from `item`. Updates the `cell`'s
+// theme to this view controller's theme. This view controller becomes the
+// delegate for the cell.
 - (void)configureCell:(GridCell*)cell withItem:(TabSwitcherItem*)item {
   DCHECK(cell);
   DCHECK(item);
@@ -1714,28 +1716,38 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   } else {
     cell.state = GridCellStateNotEditing;
   }
-  NSString* itemIdentifier = item.identifier;
-  [self.imageDataSource faviconForIdentifier:itemIdentifier
-                                  completion:^(UIImage* icon) {
-                                    // Only update the icon if the cell is not
-                                    // already reused for another item.
-                                    if ([cell hasIdentifier:itemIdentifier])
-                                      cell.icon = icon;
-                                  }];
+  [item fetchFavicon:^(TabSwitcherItem* innerItem, UIImage* icon) {
+    // Only update the icon if the cell is not already reused for another item.
+    if ([cell hasIdentifier:innerItem.identifier]) {
+      cell.icon = icon;
+    }
+  }];
 
   __weak __typeof(self) weakSelf = self;
-  [self.imageDataSource snapshotForIdentifier:itemIdentifier
-                                   completion:^(UIImage* snapshot) {
-                                     // Only update the icon if the cell is not
-                                     // already reused for another item.
-                                     if ([cell hasIdentifier:itemIdentifier]) {
-                                       if (weakSelf.thumbStripEnabled) {
-                                         [cell fadeInSnapshot:snapshot];
-                                       } else {
-                                         cell.snapshot = snapshot;
-                                       }
-                                     }
-                                   }];
+  TabSwitcherImageFetchingCompletionBlock completion =
+      ^(TabSwitcherItem* innerItem, UIImage* snapshot) {
+        // Only update the icon if the cell is not already reused for another
+        // item.
+        if ([cell hasIdentifier:innerItem.identifier]) {
+          if (weakSelf.thumbStripEnabled) {
+            [cell fadeInSnapshot:snapshot];
+          } else {
+            cell.snapshot = snapshot;
+          }
+        }
+      };
+  if (_mode == TabGridModeInactive) {
+    [item fetchSnapshot:completion];
+  } else {
+    // TODO(crbug.com/1421321): Migrate to using
+    // `-[TabSwitcherItem fetchSnapshot:]`.
+    [self.imageDataSource snapshotForIdentifier:item.identifier
+                                     completion:^(UIImage* snapshot) {
+                                       completion(item, snapshot);
+                                     }];
+  }
+
+  NSString* itemIdentifier = item.identifier;
   [self.priceCardDataSource
       priceCardForIdentifier:itemIdentifier
                   completion:^(PriceCardItem* priceCardItem) {
@@ -1846,7 +1858,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Updates the value stored in `fractionVisibleOfLastItem`.
 - (void)updateFractionVisibleOfLastItem {
   CGFloat offset = self.offsetPastEndOfScrollView;
-  self.fractionVisibleOfLastItem = base::clamp<CGFloat>(
+  self.fractionVisibleOfLastItem = std::clamp<CGFloat>(
       1 - offset / kScrollThresholdForPlusSignButtonHide, 0, 1);
 }
 
@@ -1962,40 +1974,54 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // Returns the size that should be dedicated the the Inactive Tabs button
 // header.
 - (CGSize)inactiveTabsButtonHeaderSize {
-  NSString* kind = UICollectionElementKindSectionHeader;
-  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
-                                               inSection:kOpenTabsSectionIndex];
-  InactiveTabsButtonHeader* header =
-      base::mac::ObjCCastStrict<InactiveTabsButtonHeader>([self
-                             collectionView:self.collectionView
-          viewForSupplementaryElementOfKind:kind
-                                atIndexPath:indexPath]);
+  // Keep a sizing header.
+  static InactiveTabsButtonHeader* gHeader =
+      [[InactiveTabsButtonHeader alloc] init];
+
+  // Configure it.
+  [gHeader configureWithDaysThreshold:self.inactiveTabsDaysThreshold];
+  if (IsShowInactiveTabsCountEnabled()) {
+    [gHeader configureWithCount:self.inactiveTabsCount];
+  }
+
+  // Get its fitting size.
   CGFloat width = CGRectGetWidth(self.collectionView.bounds);
   CGSize targetSize = CGSize(width, UILayoutFittingExpandedSize.height);
+  // Host the view in the hierarchy for it to get the appropriate trait
+  // collection. This might be due a UIKit/SwiftUI interaction bug, as this is
+  // not necessary for `InactiveTabsPreambleHeader` below for example.
+  gHeader.parent = self;
+
   CGSize size =
-      [header systemLayoutSizeFittingSize:targetSize
-            withHorizontalFittingPriority:UILayoutPriorityRequired
-                  verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+      [gHeader systemLayoutSizeFittingSize:targetSize
+             withHorizontalFittingPriority:UILayoutPriorityRequired
+                   verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
+  // De-parent the header.
+  [gHeader removeFromSuperview];
+  gHeader.parent = nil;
+
   return CGSizeMake(width, size.height);
 }
 
 // Returns the size that should be dedicated the the Inactive Tabs preamble
 // header.
 - (CGSize)inactiveTabsPreambleHeaderSize {
-  NSString* kind = UICollectionElementKindSectionHeader;
-  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0
-                                               inSection:kOpenTabsSectionIndex];
-  InactiveTabsPreambleHeader* header =
-      base::mac::ObjCCastStrict<InactiveTabsPreambleHeader>([self
-                             collectionView:self.collectionView
-          viewForSupplementaryElementOfKind:kind
-                                atIndexPath:indexPath]);
+  // Keep a sizing header.
+  static InactiveTabsPreambleHeader* gHeader =
+      [[InactiveTabsPreambleHeader alloc] init];
+
+  // Configure it.
+  gHeader.daysThreshold = self.inactiveTabsDaysThreshold;
+
+  // Get its fitting size.
   CGFloat width = CGRectGetWidth(self.collectionView.bounds);
   CGSize targetSize = CGSize(width, UILayoutFittingExpandedSize.height);
   CGSize size =
-      [header systemLayoutSizeFittingSize:targetSize
-            withHorizontalFittingPriority:UILayoutPriorityRequired
-                  verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+      [gHeader systemLayoutSizeFittingSize:targetSize
+             withHorizontalFittingPriority:UILayoutPriorityRequired
+                   verticalFittingPriority:UILayoutPriorityFittingSizeLevel];
+
   return CGSizeMake(width, size.height);
 }
 

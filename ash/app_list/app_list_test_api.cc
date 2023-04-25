@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/test/app_list_test_api.h"
+#include "base/memory/raw_ptr.h"
 
 #include <string>
 #include <utility>
@@ -262,8 +263,8 @@ class WindowAddedWaiter : public aura::WindowObserver {
     run_loop_.Quit();
   }
 
-  aura::Window* const container_;
-  aura::Window* added_window_ = nullptr;
+  const raw_ptr<aura::Window, ExperimentalAsh> container_;
+  raw_ptr<aura::Window, ExperimentalAsh> added_window_ = nullptr;
   base::RunLoop run_loop_;
 };
 
@@ -289,7 +290,7 @@ class ScopedItemMoveAnimationDisabler {
   }
 
  private:
-  AppsGridView* const apps_grid_;
+  const raw_ptr<AppsGridView, ExperimentalAsh> apps_grid_;
 };
 
 }  // namespace
@@ -309,14 +310,21 @@ void AppListTestApi::ShowBubbleAppListAndWait() {
 }
 
 void AppListTestApi::WaitForBubbleWindow(bool wait_for_opening_animation) {
+  WaitForBubbleWindowInRootWindow(Shell::GetPrimaryRootWindow(),
+                                  wait_for_opening_animation);
+}
+
+void AppListTestApi::WaitForBubbleWindowInRootWindow(
+    aura::Window* root_window,
+    bool wait_for_opening_animation) {
   DCHECK(!Shell::Get()->IsInTabletMode());
 
   // Wait for the window only when the app list window does not exist.
   auto* app_list_controller = Shell::Get()->app_list_controller();
   if (!app_list_controller->GetWindow()) {
     // Wait for a child window to be added to the app list container.
-    aura::Window* container = Shell::GetContainer(
-        Shell::GetPrimaryRootWindow(), kShellWindowId_AppListContainer);
+    aura::Window* container =
+        Shell::GetContainer(root_window, kShellWindowId_AppListContainer);
     WindowAddedWaiter waiter(container);
     waiter.Wait();
 

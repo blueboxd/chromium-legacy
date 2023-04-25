@@ -25,7 +25,7 @@ from urllib.parse import urlsplit
 import mozinfo
 
 from blinkpy.common import path_finder
-from blinkpy.common.html_diff import html_diff
+from blinkpy.common.wpt_results_diff import wpt_results_diff
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.unified_diff import unified_diff
@@ -166,6 +166,9 @@ class WPTResult(Result):
     def actual_metadata(self):
         return wptmanifest.serialize(self._test_section)
 
+    def test_section(self):
+        return self._test_section
+
 
 def _test_basename(test_id: str) -> str:
     # The test "basename" is test path + query string + fragment
@@ -266,8 +269,10 @@ class WPTResultsProcessor:
         if test_name_prefix and not test_name_prefix.endswith('/'):
             test_name_prefix += '/'
         self.test_name_prefix = test_name_prefix
-        self.wpt_manifest = self.port.wpt_manifest('external/wpt')
-        self.internal_manifest = self.port.wpt_manifest('wpt_internal')
+        # Manifests should include `jsshell` tests, which wptrunner will report
+        # as skipped. See crbug.com/1431514#c3.
+        self.wpt_manifest = self.port.wpt_manifest('external/wpt', False)
+        self.internal_manifest = self.port.wpt_manifest('wpt_internal', False)
         self.path_finder = path_finder.PathFinder(self.fs)
         # Provide placeholder properties until the `suite_start` events are
         # processed.
@@ -595,14 +600,15 @@ class WPTResultsProcessor:
         if not test_manifest:
             raise ValueError('test ID does not exist')
         update_with_static_expectations(test_manifest)
-        return wptmanifest.serialize(test_manifest.node)
+        return test_manifest
 
     def _write_text_results(self, test_name: str, artifacts: Artifacts,
-                            actual_text: str, file_path: str):
+                            actual_text: str, file_path: str,
+                            actual_node: Any):
         """Write actual, expected, and diff text outputs to disk, if possible.
 
         If the expected output (WPT metadata) is missing, this method will not
-        produce diffs.
+        produce diff, but will still produce pretty diff.
 
         Arguments:
             test_name: Web test name (a path).
@@ -615,33 +621,42 @@ class WPTResultsProcessor:
             test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.txt')
         artifacts.CreateArtifact('actual_text', actual_subpath,
                                  actual_text.encode())
+        expected_file_exists = True
 
         try:
-            expected_text = self._read_expected_metadata(test_name, file_path)
+            expected_manifest = self._read_expected_metadata(
+                test_name, file_path)
         except FileNotFoundError:
             _log.debug('".ini" file for "%s" does not exist.', file_path)
-            return
+            expected_file_exists = False
         except (ValueError, KeyError, wptmanifest.parser.ParseError) as error:
             _log.warning('Unable to parse metadata for %s: %s', test_name,
                          error)
-            return
-        expected_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
-        artifacts.CreateArtifact('expected_text', expected_subpath,
-                                 expected_text.encode())
+            expected_file_exists = False
 
-        diff_content = unified_diff(
-            expected_text,
-            actual_text,
-            expected_subpath,
-            actual_subpath,
-        )
-        diff_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
-        artifacts.CreateArtifact('text_diff', diff_subpath,
-                                 diff_content.encode())
+        if expected_file_exists:
+            expected_text = wptmanifest.serialize(expected_manifest.node)
+            expected_subpath = self.port.output_filename(
+                test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
+            artifacts.CreateArtifact('expected_text', expected_subpath,
+                                     expected_text.encode())
 
-        html_diff_content = html_diff(expected_text, actual_text)
+            diff_content = unified_diff(
+                expected_text,
+                actual_text,
+                expected_subpath,
+                actual_subpath,
+            )
+            diff_subpath = self.port.output_filename(
+                test_name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
+            artifacts.CreateArtifact('text_diff', diff_subpath,
+                                     diff_content.encode())
+
+        expected_node = None
+        if expected_file_exists:
+            expected_node = expected_manifest.node
+        html_diff_content = wpt_results_diff(expected_node, actual_node,
+                                             file_path)
         html_diff_subpath = self.port.output_filename(
             test_name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
         artifacts.CreateArtifact('pretty_text_diff', html_diff_subpath,
@@ -723,7 +738,8 @@ class WPTResultsProcessor:
         leaf = self._leaves[result.name]
         if result.actual not in [ResultType.Pass, ResultType.Skip]:
             self._write_text_results(result.name, artifacts,
-                                     result.actual_metadata, result.file_path)
+                                     result.actual_metadata, result.file_path,
+                                     result.test_section())
             screenshots = (extra or {}).get('reftest_screenshots') or []
             if screenshots:
                 diff_stats = self._write_screenshots(result.name, artifacts,

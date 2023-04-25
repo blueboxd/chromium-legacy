@@ -24,7 +24,6 @@
 
 Дазволы, якія вы ўжо далі вэб-сайтам і праграмам, могуць дзейнічаць для гэтага ўліковага запісу. Кіраваць Уліковымі запісамі Google можна ў <ph name="SETTINGS_LINK_BEGIN" />Наладах<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="1640672724030957280">Ідзе спампоўванне…</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Браўзер Chromium быў падключаны да прылады HID}=1{Браўзер Chromium падключаны да прылады HID}one{Браўзер Chromium падключаны да прылад HID}few{Браўзер Chromium падключаны да прылад HID}many{Браўзер Chromium падключаны да прылад HID}other{Браўзер Chromium падключаны да прылад HID}}</translation>
 <translation id="1708666629004767631">Ёсць новая, больш бяспечная версія Chromium.</translation>
 <translation id="17264556997921157">Вы можаце праглядаць і выдаляць цікавыя вам тэмы, якія сайты выкарыстоўваюць для паказу вам рэкламы. Chromium вызначае вашы інтарэсы на аснове нядаўняй гісторыі прагляду вамі сайтаў.</translation>
 <translation id="1733725117201708356">Даныя пра работу ў Chromium хутка будуць выдалены</translation>
@@ -247,8 +246,10 @@
 <translation id="6442900851116057561">Перазапусціце Chromium OS</translation>
 <translation id="6455857529632101747">Вітаем у профілях Chromium</translation>
 <translation id="6475912303565314141">Таксама вызначае, якая старонка паказваецца пра запуску Chromium.</translation>
+<translation id="648319183876919572">Палепшаны Бяспечны прагляд забяспечвае дадатковую абарону ад небяспечных вэб-сайтаў і спамповак</translation>
 <translation id="6510925080656968729">Выдаліць Chromium</translation>
 <translation id="6542839706527980775">У кожным профілі захоўваюцца свае даныя Chromium, напрыклад закладкі, гісторыя, паролі і не толькі</translation>
+<translation id="656935081669708576">Вы можаце пераключыцца на прагляд пароляў з іншага профілю Chromium</translation>
 <translation id="6570579332384693436">Для выпраўлення арфаграфічных памылак Chromium адпраўляе ў Google тэкст, які вы набіраеце ў тэкставых палях</translation>
 <translation id="6598877126913850652">Перайсці ў налады апавяшчэнняў Chromium</translation>
 <translation id="6613594504749178791">Змены ўступяць у сілу пасля перазапуску Chromium.</translation>

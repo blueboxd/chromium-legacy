@@ -7,8 +7,10 @@
 
 #include <memory>
 
+#include "ash/ambient/ambient_weather_controller.h"
 #include "ash/ash_export.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "ui/wm/public/activation_change_observer.h"
 
@@ -66,7 +68,8 @@ class ASH_EXPORT GlanceablesController : public wm::ActivationChangeObserver,
 
   std::unique_ptr<GlanceablesDelegate> delegate_;
   std::unique_ptr<views::Widget> widget_;
-  GlanceablesView* view_ = nullptr;
+  raw_ptr<GlanceablesView, ExperimentalAsh> view_ = nullptr;
+  std::unique_ptr<AmbientWeatherController::ScopedRefresher> weather_refresher_;
 
   // The start of current month in UTC. Used for fetching calendar events.
   // TODO(crbug.com/1353495): Update value at the beginning of the next month

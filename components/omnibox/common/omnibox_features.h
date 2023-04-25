@@ -103,6 +103,7 @@ BASE_DECLARE_FEATURE(kWebUIOmniboxPopup);
 BASE_DECLARE_FEATURE(kExpandedStateHeight);
 BASE_DECLARE_FEATURE(kExpandedStateShape);
 BASE_DECLARE_FEATURE(kExpandedStateColors);
+BASE_DECLARE_FEATURE(kExpandedStateSuggestIcons);
 
 // Omnibox UI - these affect the UI or function of the location bar (not the
 // popup).
@@ -155,7 +156,7 @@ BASE_DECLARE_FEATURE(kReportSearchboxStats);
 
 // Omnibox ML scoring.
 BASE_DECLARE_FEATURE(kLogUrlScoringSignals);
-BASE_DECLARE_FEATURE(kMlRelevanceScoring);
+BASE_DECLARE_FEATURE(kMlUrlScoring);
 BASE_DECLARE_FEATURE(kUrlScoringModel);
 
 // Inspire Me - additional suggestions based on user's location and interests.

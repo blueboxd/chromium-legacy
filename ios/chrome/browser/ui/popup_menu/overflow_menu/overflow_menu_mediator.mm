@@ -79,7 +79,6 @@
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ios/web/common/user_agent.h"
 #import "ios/web/public/js_messaging/web_frame.h"
-#import "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_client.h"
@@ -801,9 +800,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
   auto handlerWithMetrics = ^{
     overflow_menu::RecordUmaActionForDestination(destination);
 
-    if (IsSmartSortingNewOverflowMenuEnabled()) {
-      [weakSelf.destinationUsageHistory recordClickForDestination:destination];
-    }
+    [weakSelf.destinationUsageHistory recordClickForDestination:destination];
 
     handler();
   };
@@ -939,7 +936,7 @@ NSArray<OverflowMenuDestination*>* SortBadgedDestinations(
 
   NSArray<OverflowMenuDestination*>* baseDestinations = [self baseDestinations];
 
-  if (self.destinationUsageHistory && IsSmartSortingNewOverflowMenuEnabled()) {
+  if (self.destinationUsageHistory) {
     baseDestinations = [self.destinationUsageHistory
         sortedDestinationsFromCarouselDestinations:baseDestinations];
   } else {

@@ -15,6 +15,8 @@ import './screens/common/choobe.js';
 import './screens/common/consolidated_consent.js';
 import './screens/common/cryptohome_recovery_setup.js';
 import './screens/common/device_disabled.js';
+import './screens/common/display_size.js';
+import './screens/common/drive_pinning.js';
 import './screens/common/enable_kiosk.js';
 import './screens/common/error_message.js';
 import './screens/common/family_link_notice.js';
@@ -84,6 +86,17 @@ export const commonScreensList = [
   {tag: 'consolidated-consent-element', id: 'consolidated-consent'},
   {tag: 'cryptohome-recovery-setup-element', id: 'cryptohome-recovery-setup'},
   {tag: 'device-disabled-element', id: 'device-disabled'},
+  {
+    tag: 'display-size-element',
+    id: 'display-size',
+    condition: 'isDisplaySizeEnabled',
+  },
+  {
+
+    tag: 'drive-pinning-element',
+    id: 'drive-pinning',
+    condition: 'isDrivePinningEnabled',
+  },
   {tag: 'enable-kiosk-element', id: 'kiosk-enable'},
   {tag: 'error-message-element', id: 'error-message'},
   {tag: 'family-link-notice-element', id: 'family-link-notice'},

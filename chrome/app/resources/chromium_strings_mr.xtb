@@ -23,7 +23,6 @@
 
 तुम्ही वेबसाइट आणि अ‍ॅप्सना आधीपासून दिलेल्या परवानग्या या खात्याला लागू होऊ शकतात. तुम्ही तुमची Google खाती <ph name="SETTINGS_LINK_BEGIN" />सेटिंग्ज<ph name="SETTINGS_LINK_END" /> मध्ये व्यवस्थापित करू शकता.</translation>
 <translation id="1640672724030957280">डाऊनलोड करीत आहे...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium was connected to a HID device}=1{Chromium हे HID डिव्हाइसशी कनेक्ट केले आहे}other{Chromium हे HID डिव्हाइसशी कनेक्ट केले आहे}}</translation>
 <translation id="1708666629004767631">Chromium ची नवीन, सुरक्षित आवृत्ती उपलब्ध आहे.</translation>
 <translation id="17264556997921157">तुम्हाला जाहिराती दाखवण्यासाठी साइट जे स्वारस्याचे विषय वापरतात, ते तुम्ही पाहू आणि काढून टाकू शकता. तुमच्या अलीकडील ब्राउझिंग इतिहासाच्या आधारे Chromium तुमच्या स्वारस्यांचा अंदाज लावते.</translation>
 <translation id="1733725117201708356">Chromium लवकरच ब्राउझिंग डेटा हटवेल</translation>
@@ -246,8 +245,10 @@
 <translation id="6442900851116057561">ChromiumOS रीस्टार्ट करा</translation>
 <translation id="6455857529632101747">Chromium प्रोफाइलमध्ये स्वागत आहे</translation>
 <translation id="6475912303565314141">तुम्ही Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हेदेखील हे नियंत्रित करते.</translation>
+<translation id="648319183876919572">वर्धित सुरक्षित ब्राउझिंग धोकादायक वेबसाइट आणि डाउनलोडपासून तुमचे संरक्षण करण्यासाठी बरेच काही करते</translation>
 <translation id="6510925080656968729">Chromium अनइंस्टॉल करा</translation>
 <translation id="6542839706527980775">प्रत्येक प्रोफाइलमध्ये तिची स्वतःची Chromium माहिती असते जसे की, बुकमार्क, इतिहास, पासवर्ड आणि आणखी बरेच काही</translation>
+<translation id="656935081669708576">तुम्ही दुसऱ्या Chromium प्रोफाइलवरील पासवर्ड पाहण्यासाठी स्विच करू शकता</translation>
 <translation id="6570579332384693436">शब्दलेखनाच्या चुकांमध्ये सुधारणा करण्यासाठी Chromium तुम्ही मजकूर भागामध्ये टाइप केलेला मजकूर Google ला पाठवते</translation>
 <translation id="6598877126913850652">Chromium च्या सूचना सेटिंग्जमध्ये जा</translation>
 <translation id="6613594504749178791">तुम्ही पुढल्या वेळी Chromium रीलाँच कराल तोपर्यंत तुमचे बदल प्रभावी होतील.</translation>

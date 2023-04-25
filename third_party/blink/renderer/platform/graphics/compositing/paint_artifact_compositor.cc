@@ -209,9 +209,6 @@ bool PaintArtifactCompositor::ComputeNeedsCompositedScrolling(
   if (scroll_translation.HasDirectCompositingReasons()) {
     return true;
   }
-  if (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled()) {
-    return false;
-  }
   // Don't automatically composite non-user-scrollable scrollers.
   if (!scroll_translation.ScrollNode()->UserScrollableHorizontal() &&
       !scroll_translation.ScrollNode()->UserScrollableVertical()) {
@@ -790,12 +787,15 @@ void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> artifact,
     const ViewportProperties& viewport_properties,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes,
+    const Vector<const TransformPaintPropertyNode*>&
+        anchor_scroll_container_nodes,
     Vector<std::unique_ptr<cc::ViewTransitionRequest>> transition_requests) {
   const bool unification_enabled =
       base::FeatureList::IsEnabled(features::kScrollUnification);
   // See: |UpdateRepaintedLayers| for repaint updates.
   DCHECK(needs_update_);
   DCHECK(scroll_translation_nodes.empty() || unification_enabled);
+  DCHECK(anchor_scroll_container_nodes.empty() || !unification_enabled);
   DCHECK(root_layer_);
 
   TRACE_EVENT0("blink", "PaintArtifactCompositor::Update");
@@ -921,6 +921,13 @@ void PaintArtifactCompositor::Update(
     for (auto* node : scroll_node_only) {
       property_tree_manager.EnsureCompositorScrollNode(*node->ScrollNode(),
                                                        *node);
+    }
+  } else {
+    // anchor-scroll requires all relevant scroll containers to have their
+    // cc::TransformNode and cc::ScrollNode, so that compositor can update the
+    // translation correctly.
+    for (auto* node : anchor_scroll_container_nodes) {
+      property_tree_manager.EnsureCompositorScrollAndTransformNode(*node);
     }
   }
 
@@ -1095,6 +1102,30 @@ bool PaintArtifactCompositor::DirectlySetScrollOffset(
   return true;
 }
 
+uint32_t PaintArtifactCompositor::GetMainThreadScrollingReasons(
+    const ScrollPaintPropertyNode& scroll) const {
+  if (!RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled()) {
+    return scroll.GetMainThreadScrollingReasons();
+  }
+  CHECK(root_layer_);
+  if (!root_layer_->layer_tree_host()) {
+    return 0;
+  }
+  return PropertyTreeManager::GetMainThreadScrollingReasons(
+      *root_layer_->layer_tree_host(), scroll);
+}
+
+bool PaintArtifactCompositor::UsesCompositedScrolling(
+    const ScrollPaintPropertyNode& scroll) const {
+  DCHECK(RuntimeEnabledFeatures::CompositeScrollAfterPaintEnabled());
+  CHECK(root_layer_);
+  if (!root_layer_->layer_tree_host()) {
+    return false;
+  }
+  return PropertyTreeManager::UsesCompositedScrolling(
+      *root_layer_->layer_tree_host(), scroll);
+}
+
 void PaintArtifactCompositor::SetLayerDebugInfoEnabled(bool enabled) {
   if (enabled == layer_debug_info_enabled_)
     return;
@@ -1159,6 +1190,8 @@ CompositingReasons PaintArtifactCompositor::GetCompositingReasons(
   }
   if (layer.Chunks().size() == 1 && layer.FirstPaintChunk().size() == 1) {
     switch (layer.FirstDisplayItem().GetType()) {
+      case DisplayItem::kFixedAttachmentBackground:
+        return CompositingReason::kFixedAttachmentBackground;
       case DisplayItem::kCaret:
         return CompositingReason::kCaret;
       case DisplayItem::kScrollbarHorizontal:

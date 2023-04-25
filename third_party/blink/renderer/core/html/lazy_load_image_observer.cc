@@ -343,28 +343,26 @@ void LazyLoadImageObserver::DocumentOnLoadFinished(Document* root_document) {
 
 void LazyLoadImageObserver::CreateLazyLoadIntersectionObserver(
     Document* root_document) {
-  HeapVector<Member<Element>> existing_targets;
-  if (lazy_load_intersection_observer_) {
-    for (const IntersectionObservation* observation :
-         lazy_load_intersection_observer_->Observations()) {
-      existing_targets.push_back(observation->Target());
-    }
-  }
-
   int viewport_threshold =
       use_viewport_distance_threshold_
           ? GetLazyImageLoadingViewportDistanceThresholdPx(*root_document)
           : 0;
-  lazy_load_intersection_observer_ = IntersectionObserver::Create(
+  IntersectionObserver* new_observer = IntersectionObserver::Create(
       {Length::Fixed(viewport_threshold)}, {std::numeric_limits<float>::min()},
       root_document,
       WTF::BindRepeating(&LazyLoadImageObserver::LoadIfNearViewport,
                          WrapWeakPersistent(this)),
       LocalFrameUkmAggregator::kLazyLoadIntersectionObserver);
 
-  for (Element* element : existing_targets) {
-    lazy_load_intersection_observer_->observe(element);
+  if (lazy_load_intersection_observer_) {
+    for (const IntersectionObservation* observation :
+         lazy_load_intersection_observer_->Observations()) {
+      new_observer->observe(observation->Target());
+    }
+    lazy_load_intersection_observer_->disconnect();
   }
+
+  lazy_load_intersection_observer_ = new_observer;
 }
 
 void LazyLoadImageObserver::Trace(Visitor* visitor) const {

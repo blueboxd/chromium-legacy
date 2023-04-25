@@ -49,6 +49,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <variant name=".Embedder_DefaultSearchEngine"/>
   <variant name=".Embedder_DirectURLInput"/>
   <variant name=".SpeculationRule"/>
+  <variant name=".SpeculationRuleFromIsolatedWorld"/>
 </variants>
 
 <histogram name="BackForwardCache.AllSites.EvictedAfterDocumentRestoredReason"
@@ -520,7 +521,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>Whether the back-forward navigation was served from cache.</summary>
 </histogram>
 
-<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="2023-08-13">
+<histogram name="Navigation.BlobUrl" enum="Boolean" expires_after="2023-10-15">
   <owner>jkokatsu@google.com</owner>
   <owner>chrome-security-owp-team@google.com</owner>
   <summary>
@@ -531,7 +532,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.BlobUrl.MainFrame" enum="Boolean"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>jkokatsu@google.com</owner>
   <owner>chrome-security-owp-team@google.com</owner>
   <summary>
@@ -541,7 +542,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.BlobUrl.Sandboxed" enum="Boolean"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>jkokatsu@google.com</owner>
   <owner>chrome-security-owp-team@google.com</owner>
   <summary>
@@ -576,48 +577,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
     <variant name="Resource"/>
     <variant name="Subframe"/>
   </token>
-</histogram>
-
-<histogram name="Navigation.CommitTimeout.NetworkServiceAvailability"
-    enum="NetworkServiceAvailability" expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    Logged with the status of the network service for each navigation commit
-    timeout. This will be used to debug http://crbug.com/934317.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.CommitTimeout.NetworkServiceLastCrashTime"
-    units="ms" expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    Logged with the time since the last network service crash if available for
-    each navigation commit timeout. This will be used to debug
-    http://crbug.com/934317.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.CommitTimeout.NetworkServicePingTime" units="ms"
-    expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    Logs the time it takes to make a round trip call to the network service for
-    each navigation commit timeout. This will be used to debug
-    http://crbug.com/934317.
-  </summary>
-</histogram>
-
-<histogram name="Navigation.CommitTimeout.Scheme" enum="NavigationURLScheme"
-    expires_after="M82">
-  <owner>cduvall@chromium.org</owner>
-  <owner>cmumford@chromium.org</owner>
-  <summary>
-    Logged with the navigation URL scheme for each navigation commit timeout.
-    This will be used to debug http://crbug.com/934317.
-  </summary>
 </histogram>
 
 <histogram name="Navigation.DownloadPolicy.LogArbitraryPolicyPerDownload"
@@ -670,7 +629,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.EngagementTime.Ratio" units="%"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>estark@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -680,7 +639,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.GetFrameHostForNavigation.Duration" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -785,7 +744,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsNavigationSameSite.Duration" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>peilinwang@google.com</owner>
   <owner>woa-performance-bugs+jank@google.com</owner>
   <summary>
@@ -804,13 +763,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     Whether a main frame navigation led to a change of BrowsingInstance or not.
   </summary>
-</histogram>
-
-<histogram name="Navigation.IsSameProcess" enum="NavigationIsSameProcess"
-    expires_after="M85">
-  <owner>clamy@chromium.org</owner>
-  <owner>nasko@chromium.org</owner>
-  <summary>Whether the navigation led to a change of process or not.</summary>
 </histogram>
 
 <histogram name="Navigation.IsSameSiteInstance"
@@ -893,7 +845,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.SiteEngagementLevel"
-    enum="SiteEngagementLevel" expires_after="2023-08-20">
+    enum="SiteEngagementLevel" expires_after="2023-10-22">
   <owner>meacer@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
   <summary>
@@ -903,7 +855,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.ThirdPartyCookieBlockingEnabled"
-    enum="ThirdPartyCookieBlockState" expires_after="2023-08-20">
+    enum="ThirdPartyCookieBlockState" expires_after="2023-10-22">
   <owner>dullweber@chromium.org</owner>
   <owner>feuunk@chromium.org</owner>
   <summary>
@@ -1319,7 +1271,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.RequiresDedicatedProcess"
-    enum="NavigationRequiresDedicatedProcess" expires_after="2023-08-20">
+    enum="NavigationRequiresDedicatedProcess" expires_after="2023-10-22">
   <owner>alexmos@chromium.org</owner>
   <owner>lukasza@chromium.org</owner>
   <summary>
@@ -1365,6 +1317,24 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.SuddenTerminationDisabler.{Origins}"
+    enum="NavigationSuddenTerminationDisabler" expires_after="2023-10-11">
+  <owner>fergal@chromium.org</owner>
+  <owner>rakina@chromium.org</owner>
+  <summary>
+    Records the combination of mainframe/subframe and what sudden termination
+    disablers were present. This is recorded on every cross-document navigation.
+    Currently only covers Unload. The SameOrigin variant only considers a frame
+    to be same origin as the main frame if it can be reached through a chain of
+    same-origin frames. So e.g. in a-&gt;b-&gt;a, the second a is not
+    same-origin.
+  </summary>
+  <token key="Origins">
+    <variant name="AllOrigins"/>
+    <variant name="SameOrigin"/>
+  </token>
+</histogram>
+
 <histogram name="Navigation.ThrottleDeferTime.{Event}" units="ms"
     expires_after="2023-02-11">
   <owner>cduvall@chromium.org</owner>
@@ -1388,10 +1358,10 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.TimeToActivatePrerender{PrerenderTriggerType}"
-    units="ms" expires_after="2023-04-27">
+    units="ms" expires_after="2024-04-27">
+  <owner>nhiroki@chromium.org</owner>
   <owner>sreejakshetty@chromium.org</owner>
-  <owner>altimin@chromium.org</owner>
-  <owner>asamidoi@chromium.org</owner>
+  <owner>chrome-prerendering@chromium.org</owner>
   <summary>
     The time needed to commit a navigation using prerender activation. This is
     the time from the beginning of NavigationStart to the end of
@@ -1494,7 +1464,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.GetDomainInfoDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-08-20">
+    units="ms" expires_after="2023-10-22">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1510,7 +1480,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.IsLookalikeUrlDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-08-20">
+    units="ms" expires_after="2023-10-22">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1526,7 +1496,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="NavigationSuggestion.PerformChecksDelayBeforeAllowingNavigation"
-    units="ms" expires_after="2023-08-20">
+    units="ms" expires_after="2023-10-22">
   <owner>meacer@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
   <owner>security-enamel@chromium.org</owner>
@@ -1624,9 +1594,8 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <owner>toyoshim@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
-    The metrics for preload boomark to understand the distribution of delay to
-    press {ButtonType}. It records duration time from entering to to pressing
-    the button.
+    The metrics for preload bookmark to understand the distribution of delay to
+    press {ButtonType}. Recorded when the mouse {ButtonType} is pressed.
   </summary>
   <token key="ButtonType">
     <variant name="" summary="any button"/>
@@ -1635,17 +1604,21 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.BookmarkBar.HoverDuration.{ConversionResultType}"
+    name="Prerender.Experimental.BookmarkBar.HoverDuration{OriginType}.{ConversionResultType}"
     units="ms" expires_after="2023-09-24">
   <owner>robertlin@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
     The metrics for preload boomark to understand the distribution of mouse
-    hovering duration. It records mouse hovering duration time when mouse leaves
-    the bookmark button areas without using it as NotTaken, or when the bookmark
-    is actually clicked as Taken.
+    hovering duration from {OriginType}. It records mouse hovering duration time
+    when mouse leaves the bookmark button areas without using it as NotTaken, or
+    when the bookmark is actually clicked as Taken.
   </summary>
+  <token key="OriginType">
+    <variant name="" summary="the time mouse entering to the button"/>
+    <variant name=".FromLastMouseMove" summary="the last time mouse move"/>
+  </token>
   <token key="ConversionResultType">
     <variant name="NotTaken"/>
     <variant name="Taken"/>
@@ -1660,19 +1633,6 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   <summary>
     The metrics for preload bookmark to evaluate the ratio of mouseover and
     mousedown translating into full mouse click.
-  </summary>
-</histogram>
-
-<histogram
-    name="Prerender.Experimental.CancellationPercentageByExcessiveMemoryUsage.SpeculationRule"
-    units="%" expires_after="2023-08-27">
-  <owner>asamidoi@chromium.org</owner>
-  <owner>chrome-prerendering@google.com</owner>
-  <summary>
-    Records the percentage of destroyed prerenders due to the excessive memory
-    usage in started prerenders. The result should be an integer between 0 and
-    100. This is recorded when SpeculationHostImpl is destructed or a primary
-    page is updated.
   </summary>
 </histogram>
 
@@ -1707,7 +1667,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DefaultSearchEngine"
-    enum="PrerenderPredictionStatus" expires_after="2023-08-20">
+    enum="PrerenderPredictionStatus" expires_after="2023-10-22">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1719,7 +1679,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.Experimental.PredictionStatus.DirectUrlInput"
-    enum="PrerenderPredictionStatus" expires_after="2023-08-20">
+    enum="PrerenderPredictionStatus" expires_after="2023-10-22">
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
@@ -1732,7 +1692,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.PrerenderCancelledInterface{PrerenderTriggerType}"
-    enum="PrerenderCancelledInterface" expires_after="2023-06-05">
+    enum="PrerenderCancelledInterface" expires_after="2023-12-05">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1746,7 +1706,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.PrerenderCancelledUnknownInterface{PrerenderTriggerType}"
-    enum="PrerenderCancelledUnknownInterface" expires_after="2023-06-05">
+    enum="PrerenderCancelledUnknownInterface" expires_after="2023-12-05">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1795,7 +1755,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 
 <histogram
     name="Prerender.Experimental.PrerenderHostFinalStatus{PrerenderTriggerType}"
-    enum="PrerenderHostFinalStatus" expires_after="2023-06-05">
+    enum="PrerenderHostFinalStatus" expires_after="2023-12-05">
   <owner>nhiroki@chromium.org</owner>
   <owner>toyoshim@chromium.org</owner>
   <owner>lingqi@chromium.org</owner>
@@ -1855,7 +1815,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Prerender.FinalStatus" enum="PrerenderFinalStatus"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>ryansturm@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>
   <summary>

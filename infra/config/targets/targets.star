@@ -936,6 +936,11 @@ targets.compile_target(
     label = "//testing:empty_main",
 )
 
+targets.console_test_launcher(
+    name = "env_chromium_unittests",
+    label = "//third_party/leveldatabase:env_chromium_unittests",
+)
+
 targets.windowed_test_launcher(
     name = "events_unittests",
     label = "//ui/events:events_unittests",
@@ -1312,6 +1317,11 @@ targets.generated_script(
 targets.console_test_launcher(
     name = "latency_unittests",
     label = "//ui/latency:latency_unittests",
+)
+
+targets.console_test_launcher(
+    name = "leveldb_unittests",
+    label = "//third_party/leveldatabase:leveldb_unittests",
 )
 
 targets.console_test_launcher(
@@ -1769,21 +1779,6 @@ targets.generated_script(
 targets.generated_script(
     name = "resource_sizes_lacros_chrome",
     label = "//chromeos/lacros:resource_sizes_lacros_chrome",
-)
-
-targets.generated_script(
-    name = "resource_sizes_monochrome_public_minimal_apks",
-    label = "//chrome/android:resource_sizes_monochrome_public_minimal_apks",
-)
-
-targets.generated_script(
-    name = "resource_sizes_trichrome",
-    label = "//chrome/android:resource_sizes_trichrome",
-)
-
-targets.generated_script(
-    name = "resource_sizes_system_webview_bundle",
-    label = "//android_webview:resource_sizes_system_webview_bundle",
 )
 
 targets.compile_target(

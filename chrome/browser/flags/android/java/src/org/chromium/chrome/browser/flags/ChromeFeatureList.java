@@ -173,6 +173,7 @@ public abstract class ChromeFeatureList {
             "AddEduAccountFromAccountSettingsForSupervisedUsers";
     public static final String ADD_TO_HOMESCREEN_IPH = "AddToHomescreenIPH";
     public static final String ALLOW_NEW_INCOGNITO_TAB_INTENTS = "AllowNewIncognitoTabIntents";
+    public static final String ANDROID_APP_INTEGRATION = "AndroidAppIntegration";
     public static final String ANDROID_SCROLL_OPTIMIZATIONS = "AndroidScrollOptimizations";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
@@ -238,7 +239,6 @@ public abstract class ChromeFeatureList {
     public static final String CCT_INTENT_FEATURE_OVERRIDES = "CCTIntentFeatureOverrides";
     public static final String CCT_NEW_DOWNLOAD_TAB = "CCTNewDownloadTab";
     public static final String CCT_POST_MESSAGE_API = "CCTPostMessageAPI";
-    public static final String CCT_POST_MESSAGE_ORIGIN = "CCTPostMessageOrigin";
     public static final String CCT_PREFETCH_DELAY_SHOW_ON_START = "CCTPrefetchDelayShowOnStart";
     public static final String CCT_REAL_TIME_ENGAGEMENT_SIGNALS = "CCTRealTimeEngagementSignals";
     public static final String CCT_REAL_TIME_ENGAGEMENT_SIGNALS_ALTERNATIVE_IMPL =
@@ -258,6 +258,8 @@ public abstract class ChromeFeatureList {
             "CCTResizableSideSheetForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
     public static final String CCT_RETAINING_STATE_IN_MEMORY = "CCTRetainingStateInMemory";
+    public static final String CCT_TEXT_FRAGMENT_LOOKUP_API_ENABLED =
+            "CCTTextFragmentLookupApiEnabled";
     public static final String CCT_TOOLBAR_CUSTOMIZATIONS = "CCTToolbarCustomizations";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_LAUNCH_ADJACENT =
@@ -266,6 +268,7 @@ public abstract class ChromeFeatureList {
     public static final String CLEAR_OMNIBOX_FOCUS_AFTER_NAVIGATION =
             "ClearOmniboxFocusAfterNavigation";
     public static final String CLOSE_TAB_SUGGESTIONS = "CloseTabSuggestions";
+    public static final String CLOSE_TAB_SAVE_TAB_LIST = "CloseTabSaveTabList";
     public static final String COMMAND_LINE_ON_NON_ROOTED = "CommandLineOnNonRooted";
     public static final String COMMERCE_MERCHANT_VIEWER = "CommerceMerchantViewer";
     public static final String COMMERCE_PRICE_TRACKING = "CommercePriceTracking";
@@ -322,7 +325,7 @@ public abstract class ChromeFeatureList {
     public static final String FEED_SHOW_SIGN_IN_COMMAND = "FeedShowSignInCommand";
     public static final String FEED_BOC_SIGN_IN_INTERSTITIAL = "FeedBoCSigninInterstitial";
     public static final String FEED_USER_INTERACTION_RELIABILITY_REPORT =
-            "kFeedUserInteractionReliabilityReport";
+            "FeedUserInteractionReliabilityReport";
     public static final String FILLING_PASSWORDS_FROM_ANY_ORIGIN = "FillingPasswordsFromAnyOrigin";
     public static final String FOCUS_OMNIBOX_IN_INCOGNITO_TAB_INTENTS =
             "FocusOmniboxInIncognitoTabIntents";
@@ -400,8 +403,6 @@ public abstract class ChromeFeatureList {
     public static final String PAGE_INFO_ABOUT_THIS_SITE_EN = "PageInfoAboutThisSiteEn";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_IMPROVED_BOTTOMSHEET =
             "PageInfoAboutThisSiteImprovedBottomSheet";
-    public static final String PAGE_INFO_ABOUT_THIS_SITE_MORE_INFO =
-            "PageInfoAboutThisSiteMoreInfo";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NEW_ICON = "PageInfoAboutThisSiteNewIcon";
     public static final String PAGE_INFO_ABOUT_THIS_SITE_NON_EN = "PageInfoAboutThisSiteNonEn";
     public static final String PAINT_PREVIEW_DEMO = "PaintPreviewDemo";
@@ -439,6 +440,8 @@ public abstract class ChromeFeatureList {
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String RECORD_SUPPRESSION_METRICS = "RecordSuppressionMetrics";
     public static final String RECOVER_FROM_NEVER_SAVE_ANDROID = "RecoverFromNeverSaveAndroid";
+    public static final String REDUCE_TOOLBAR_UPDATES_FOR_SAME_DOC_NAVIGATIONS =
+            "ReduceToolbarUpdatesForSameDocNavigations";
     public static final String REENGAGEMENT_NOTIFICATION = "ReengagementNotification";
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String REQUEST_DESKTOP_SITE_DEFAULTS = "RequestDesktopSiteDefaults";
@@ -475,6 +478,7 @@ public abstract class ChromeFeatureList {
             "SkipServiceWorkerForInstallPromot";
     public static final String SMART_SUGGESTION_FOR_LARGE_DOWNLOADS =
             "SmartSuggestionForLargeDownloads";
+    public static final String SPARE_TAB = "SpareTab";
     public static final String SPLIT_COMPOSITOR_TASK = "SplitCompositorTask";
     public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =
             "SplitCacheByNetworkIsolationKey";
@@ -594,6 +598,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_TOOLBAR_CUSTOMIZATIONS, true);
     public static final CachedFlag sCloseTabSuggestions =
             new CachedFlag(CLOSE_TAB_SUGGESTIONS, false);
+    public static final CachedFlag sCloseTabSaveTabList =
+            new CachedFlag(CLOSE_TAB_SAVE_TAB_LIST, true);
     public static final CachedFlag sCommandLineOnNonRooted =
             new CachedFlag(COMMAND_LINE_ON_NON_ROOTED, false);
     public static final CachedFlag sCriticalPersistedTabData =
@@ -632,6 +638,7 @@ public abstract class ChromeFeatureList {
     public static final CachedFlag sQueryTilesOnStart = new CachedFlag(QUERY_TILES_ON_START, false);
     public static final CachedFlag sShouldIgnoreIntentSkipInternalCheck =
             new CachedFlag(SHOULD_IGNORE_INTENT_SKIP_INTERNAL_CHECK, true);
+    public static final CachedFlag sSpareTab = new CachedFlag(SPARE_TAB, false);
     public static final CachedFlag sStartSurfaceAndroid =
             new CachedFlag(START_SURFACE_ANDROID, true);
     public static final CachedFlag sStartSurfaceDisabledFeedImprovement =

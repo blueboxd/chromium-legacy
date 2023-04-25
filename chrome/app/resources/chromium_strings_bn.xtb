@@ -22,7 +22,6 @@
 
 বিভিন্ন ওয়েবসাইট ও অ্যাপকে আপনার আগে দেওয়া অনুমতি এই অ্যাকাউন্টের ক্ষেত্রেও প্রযোজ্য হবে। <ph name="SETTINGS_LINK_BEGIN" />সেটিংস<ph name="SETTINGS_LINK_END" /> থেকে আপনার Google অ্যাকাউন্ট ম্যানেজ করতে পারবেন।</translation>
 <translation id="1640672724030957280">ডাউনলোড হচ্ছে...</translation>
-<translation id="1691024636239527281">{NUM_DEVICES,plural, =0{Chromium একটি HID ডিভাইসে কানেক্ট করা ছিল}=1{Chromium একটি HID ডিভাইসে কানেক্ট করা আছে}one{Chromium একটি HID ডিভাইসে কানেক্ট করা আছে}other{Chromium কিছু HID ডিভাইসে কানেক্ট করা আছে}}</translation>
 <translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ ভার্সন উপলভ্য আছে৷</translation>
 <translation id="17264556997921157">আগ্রহের যেসব বিষয়ের উপর ভিত্তি করে সাইট আপনাকে বিজ্ঞাপন দেখায়, আপনি সেগুলি দেখতে ও সরিয়ে দিতে পারবেন। Chromium আপনার সাম্প্রতিক ব্রাউজিং ইতিহাসের উপর ভিত্তি করে আপনার আগ্রহ সম্পর্কে ধারণা করতে পারে।</translation>
 <translation id="1733725117201708356">Chromium শীঘ্রই ব্রাউজ করা ডেটা মুছে ফেলবে</translation>
@@ -245,8 +244,10 @@
 <translation id="6442900851116057561">ChromiumOS রিস্টার্ট করুন</translation>
 <translation id="6455857529632101747">Chromium প্রোফাইল-এ স্বাগতম</translation>
 <translation id="6475912303565314141">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
+<translation id="648319183876919572">উন্নত Safe Browsing আপনাকে বিপজ্জনক ওয়েবসাইট, ডাউনলোড থেকে আরও সুরক্ষা দেয়</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>
 <translation id="6542839706527980775">প্রতিটি প্রোফাইলে বুকমার্ক, ইতিহাস, পাসওয়ার্ড ও আরও অনেক কিছুর মতো তার নিজস্ব Chromium তথ্য আছে</translation>
+<translation id="656935081669708576">অন্য একটি Chromium প্রোফাইল থেকে পাসওয়ার্ড দেখতে, আপনি প্রোফাইল পরিবর্তন করতে পারবেন</translation>
 <translation id="6570579332384693436">ভুল বানানগুলি ঠিক করতে, Chromium টেক্সট ফিল্ডে আপনার লেখা টেক্সট Google-এ পাঠায়</translation>
 <translation id="6598877126913850652">Chromium বিজ্ঞপ্তি সেটিংসে যান</translation>
 <translation id="6613594504749178791">আপনার পরিবর্তনগুলি পরবর্তী সময় আপনি Chromium আবার চালু হলে ফলপ্রদ হবে৷</translation>

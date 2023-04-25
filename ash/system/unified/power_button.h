@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/style/icon_button.h"
+#include "base/memory/raw_ptr.h"
 
 namespace ui {
 class Event;
@@ -20,12 +21,14 @@ class MenuItemView;
 
 namespace ash {
 
+class UnifiedSystemTrayController;
+
 // The power button that lives in the `QuickSettingsView` footer. The
 // `background_view_` will change its corner radii and a power button
 // menu will pop up at the same time when it's active.
 class ASH_EXPORT PowerButton : public views::View {
  public:
-  PowerButton();
+  explicit PowerButton(UnifiedSystemTrayController* tray_controller);
   PowerButton(const PowerButton&) = delete;
   PowerButton& operator=(const PowerButton&) = delete;
   ~PowerButton() override;
@@ -62,12 +65,15 @@ class ASH_EXPORT PowerButton : public views::View {
   views::MenuItemView* GetMenuViewForTesting();
 
   // Owned by views hierarchy.
-  views::View* background_view_ = nullptr;
-  IconButton* button_content_ = nullptr;
+  raw_ptr<views::View, ExperimentalAsh> background_view_ = nullptr;
+  raw_ptr<IconButton, ExperimentalAsh> button_content_ = nullptr;
 
   // The context menu, which will be set as the controller to show the power
   // button menu view.
   std::unique_ptr<MenuController> context_menu_;
+
+  // Owned by UnifiedSystemTrayBubble.
+  UnifiedSystemTrayController* const tray_controller_;
 };
 
 }  // namespace ash

@@ -27,28 +27,21 @@ namespace {
 
 // Formats supported by CreateSharedImage() with no GpuMemoryBufferHandle.
 DXGI_FORMAT GetDXGIFormatForCreateTexture(viz::SharedImageFormat format) {
-  if (format.is_single_plane()) {
-    switch (format.resource_format()) {
-      case viz::ResourceFormat::RGBA_F16:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-      case viz::ResourceFormat::BGRA_8888:
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-      case viz::ResourceFormat::RGBA_8888:
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-      case viz::ResourceFormat::RED_8:
-        return DXGI_FORMAT_R8_UNORM;
-      case viz::ResourceFormat::RG_88:
-        return DXGI_FORMAT_R8G8_UNORM;
-      case viz::ResourceFormat::R16_EXT:
-        return DXGI_FORMAT_R16_UNORM;
-      case viz::ResourceFormat::RG16_EXT:
-        return DXGI_FORMAT_R16G16_UNORM;
-      default:
-        break;
-    }
-  }
-
-  if (format == viz::MultiPlaneFormat::kNV12) {
+  if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+    return DXGI_FORMAT_B8G8R8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_8888) {
+    return DXGI_FORMAT_R8G8B8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kR_8) {
+    return DXGI_FORMAT_R8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRG_88) {
+    return DXGI_FORMAT_R8G8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kR_16) {
+    return DXGI_FORMAT_R16_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRG_1616) {
+    return DXGI_FORMAT_R16G16_UNORM;
+  } else if (format == viz::MultiPlaneFormat::kNV12) {
     return DXGI_FORMAT_NV12;
   }
 
@@ -58,40 +51,30 @@ DXGI_FORMAT GetDXGIFormatForCreateTexture(viz::SharedImageFormat format) {
 
 // Formats supported by CreateSharedImage(GMB).
 DXGI_FORMAT GetDXGIFormatForGMB(viz::SharedImageFormat format) {
-  if (format.is_single_plane()) {
-    switch (format.resource_format()) {
-      case viz::ResourceFormat::RGBA_8888:
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-      case viz::ResourceFormat::BGRA_8888:
-        return DXGI_FORMAT_B8G8R8A8_UNORM;
-      case viz::ResourceFormat::RGBA_F16:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-      case viz::ResourceFormat::YUV_420_BIPLANAR:
-        return DXGI_FORMAT_NV12;
-      default:
-        return DXGI_FORMAT_UNKNOWN;
-    }
-  }
-  if (format == viz::MultiPlaneFormat::kNV12) {
+  if (format == viz::SinglePlaneFormat::kRGBA_8888) {
+    return DXGI_FORMAT_R8G8B8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+    return DXGI_FORMAT_B8G8R8A8_UNORM;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return DXGI_FORMAT_R16G16B16A16_FLOAT;
+  } else if (format == viz::MultiPlaneFormat::kNV12 ||
+             format == viz::LegacyMultiPlaneFormat::kNV12) {
     return DXGI_FORMAT_NV12;
   }
+
   return DXGI_FORMAT_UNKNOWN;
 }
 
 // Typeless formats supported by CreateSharedImage(GMB) for XR.
 DXGI_FORMAT GetDXGITypelessFormat(viz::SharedImageFormat format) {
-  if (format.is_single_plane()) {
-    switch (format.resource_format()) {
-      case viz::ResourceFormat::RGBA_8888:
-        return DXGI_FORMAT_R8G8B8A8_TYPELESS;
-      case viz::ResourceFormat::BGRA_8888:
-        return DXGI_FORMAT_B8G8R8A8_TYPELESS;
-      case viz::ResourceFormat::RGBA_F16:
-        return DXGI_FORMAT_R16G16B16A16_TYPELESS;
-      default:
-        return DXGI_FORMAT_UNKNOWN;
-    }
+  if (format == viz::SinglePlaneFormat::kRGBA_8888) {
+    return DXGI_FORMAT_R8G8B8A8_TYPELESS;
+  } else if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+    return DXGI_FORMAT_B8G8R8A8_TYPELESS;
+  } else if (format == viz::SinglePlaneFormat::kRGBA_F16) {
+    return DXGI_FORMAT_R16G16B16A16_TYPELESS;
   }
+
   return DXGI_FORMAT_UNKNOWN;
 }
 
@@ -356,7 +339,7 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     GrSurfaceOrigin surface_origin,
     SkAlphaType alpha_type,
     uint32_t usage,
-    std::string debug_label_client,
+    std::string debug_label,
     bool is_thread_safe) {
   DCHECK(!is_thread_safe);
 
@@ -396,27 +379,23 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
   if ((usage & gpu::SHARED_IMAGE_USAGE_WEBGPU_STORAGE_TEXTURE) &&
       format.is_single_plane()) {
     DCHECK(usage & gpu::SHARED_IMAGE_USAGE_WEBGPU);
-    switch (format.resource_format()) {
-      // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
-      case viz::ResourceFormat::RGBA_8888:
-      case viz::ResourceFormat::RGBA_F16:
-        desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-        break;
+    // WebGPU can use RGBA_8888 and RGBA_16 for STORAGE_BINDING.
+
+    if (format == viz::SinglePlaneFormat::kRGBA_8888 ||
+        format == viz::SinglePlaneFormat::kRGBA_F16) {
+      desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+    }
 
       // WebGPU can use BGRA_8888 for STORAGE_BINDING when BGRA_8888 is
       // supported as UAV.
-      case viz::ResourceFormat::BGRA_8888: {
-        if (SupportsBGRA8UnormStorage()) {
-          desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
-        } else {
-          LOG(ERROR)
-              << "D3D11_BIND_UNORDERED_ACCESS is not supported on BGRA_8888";
-          return nullptr;
-        }
-        break;
+    if (format == viz::SinglePlaneFormat::kBGRA_8888) {
+      if (SupportsBGRA8UnormStorage()) {
+        desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
+      } else {
+        LOG(ERROR)
+            << "D3D11_BIND_UNORDERED_ACCESS is not supported on BGRA_8888";
+        return nullptr;
       }
-      default:
-        break;
     }
   }
   if (is_shm_gmb) {
@@ -438,8 +417,7 @@ std::unique_ptr<SharedImageBacking> D3DImageBackingFactory::CreateSharedImage(
     return nullptr;
   }
 
-  const std::string debug_label =
-      "SharedImage_Texture2D" + CreateLabelForSharedImageUsage(usage);
+  debug_label = "D3DSharedImage_" + debug_label;
   d3d11_texture->SetPrivateData(WKPDID_D3DDebugObjectName, debug_label.length(),
                                 debug_label.c_str());
 

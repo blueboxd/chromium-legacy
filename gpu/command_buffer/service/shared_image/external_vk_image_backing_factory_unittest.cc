@@ -204,9 +204,7 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, DawnWrite_SkiaVulkanRead) {
       EXPECT_EQ(pixel[3], 255);
     }
 
-    if (auto end_state = skia_scoped_access->TakeEndState()) {
-      gr_context()->setBackendTextureState(backend_texture, *end_state);
-    }
+    skia_scoped_access->ApplyBackendSurfaceEndState();
 
     GrFlushInfo flush_info;
     flush_info.fNumSemaphores = end_semaphores.size();
@@ -271,8 +269,8 @@ TEST_F(ExternalVkImageBackingFactoryDawnTest, SkiaVulkanWrite_DawnRead) {
     flush_info.fSignalSemaphores = end_semaphores.data();
     gpu::AddVulkanCleanupTaskForSkiaFlush(vulkan_context_provider_.get(),
                                           &flush_info);
-    auto end_state = skia_scoped_access->TakeEndState();
-    dest_surface->flush(flush_info, end_state.get());
+    dest_surface->flush(flush_info, nullptr);
+    skia_scoped_access->ApplyBackendSurfaceEndState();
     gr_context()->submit();
   }
 
@@ -413,15 +411,17 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
       EXPECT_EQ(plane_size.height(), surface->height());
     }
 
+    scoped_write_access->ApplyBackendSurfaceEndState();
     // Handle end state and semaphores.
-    auto end_state = scoped_write_access->TakeEndState();
-    if (!end_semaphores.empty() || end_state) {
+    if (!end_semaphores.empty()) {
       GrFlushInfo flush_info;
       if (!end_semaphores.empty()) {
         flush_info.fNumSemaphores = end_semaphores.size();
         flush_info.fSignalSemaphores = end_semaphores.data();
       }
-      scoped_write_access->surface()->flush(flush_info, end_state.get());
+      for (int plane = 0; plane < format.NumberOfPlanes(); ++plane) {
+        scoped_write_access->surface(plane)->flush(flush_info, nullptr);
+      }
       gr_context()->submit();
     }
   }
@@ -449,11 +449,7 @@ TEST_P(ExternalVkImageBackingFactoryWithFormatTest, Basic) {
     }
 
     // Handle end state and semaphores.
-    if (auto end_state = scoped_read_access->TakeEndState()) {
-      gr_context()->setBackendTextureState(
-          scoped_read_access->promise_image_texture(0)->backendTexture(),
-          *end_state);
-    }
+    scoped_read_access->ApplyBackendSurfaceEndState();
     if (!end_semaphores.empty()) {
       GrFlushInfo flush_info = {
           .fNumSemaphores = end_semaphores.size(),

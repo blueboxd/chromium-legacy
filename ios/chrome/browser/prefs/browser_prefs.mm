@@ -39,7 +39,6 @@
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/proxy_config/pref_proxy_config_tracker_impl.h"
-#import "components/reading_list/core/reading_list_pref_names.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/search_engines/template_url_prepopulate_data.h"
 #import "components/segmentation_platform/embedder/default_model/device_switcher_result_dispatcher.h"
@@ -73,7 +72,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_path_cache.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
-#import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_retention_field_trial.h"
 #import "ios/chrome/browser/ui/ntp/synced_segments_field_trial.h"
@@ -121,9 +119,16 @@ const char kPrefPromoObject[] = "ios.ntppromo";
 // Deprecated 11/2022.
 const char kLocalConsentsDictionary[] = "local_consents";
 
+// Deprecated 12/2022.
+const char kDeprecatedReadingListHasUnseenEntries[] =
+    "reading_list.has_unseen_entries";
+
 // Deprecated 01/2023.
 const char* kTrialGroupMICeAndDefaultBrowserVersionPrefName =
     "fre_refactoring_mice_and_default_browser.trial_version";
+
+// Deprecated 04/2023.
+const char kTrialPrefName[] = "trending_queries.trial_version";
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -139,7 +144,6 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
-  trending_queries_field_trial::RegisterLocalStatePrefs(registry);
   new_tab_page_retention_field_trial::RegisterLocalStatePrefs(registry);
   synced_segments_field_trial::RegisterLocalStatePrefs(registry);
   component_updater::RegisterComponentUpdateServicePrefs(registry);
@@ -277,6 +281,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   [SigninCoordinator registerBrowserStatePrefs:registry];
   [SigninPromoViewMediator registerBrowserStatePrefs:registry];
 
+  registry->RegisterBooleanPref(prefs::kBottomOmnibox, true);
   registry->RegisterBooleanPref(kDataSaverEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kEnableDoNotTrack, false,
@@ -382,6 +387,8 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kBrowserLockdownModeEnabled, false);
 
   ntp_snippets::prefs::RegisterProfilePrefsForMigrationApril2023(registry);
+
+  registry->RegisterBooleanPref(kDeprecatedReadingListHasUnseenEntries, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -406,6 +413,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 01/2023
   prefs->ClearPref(kTrialGroupMICeAndDefaultBrowserVersionPrefName);
+
+  // Added 04/2023
+  if (prefs->FindPreference(kTrialPrefName)) {
+    prefs->ClearPref(kTrialPrefName);
+  }
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -449,7 +461,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   }
 
   // Added 12/2022.
-  prefs->ClearPref(reading_list::prefs::kDeprecatedReadingListHasUnseenEntries);
+  prefs->ClearPref(kDeprecatedReadingListHasUnseenEntries);
 
   // Added 04/2023.
   ntp_snippets::prefs::MigrateObsoleteProfilePrefsApril2023(prefs);

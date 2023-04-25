@@ -33,7 +33,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
-#include "components/attribution_reporting/os_support.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
 #include "components/attribution_reporting/suitable_origin.h"
@@ -70,13 +69,15 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/attribution.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom-forward.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -86,6 +87,7 @@
 #include "content/browser/attribution_reporting/attribution_os_level_manager_android.h"
 #include "content/browser/attribution_reporting/attribution_reporting.mojom.h"
 #include "content/browser/attribution_reporting/os_registration.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #endif
 
 namespace content {
@@ -236,6 +238,8 @@ void RecordNetworkConnectionTypeOnFailure(
           "Conversions.AggregatableReport.NetworkConnectionTypeOnFailure",
           connection_type);
       break;
+    case AttributionReport::Type::kNullAggregatable:
+      break;
   }
 }
 
@@ -288,6 +292,8 @@ void LogMetricsOnReportSend(const AttributionReport& report, base::Time now) {
           now - report.report_time(), base::Seconds(1), base::Days(1), 50);
       break;
     }
+    case AttributionReport::Type::kNullAggregatable:
+      break;
   }
 }
 
@@ -304,6 +310,8 @@ void LogMetricsOnReportCompleted(const AttributionReport& report,
       base::UmaHistogramEnumeration(
           "Conversions.AggregatableReport.ReportSendOutcome2",
           ConvertToConversionReportSendOutcome(status));
+      break;
+    case AttributionReport::Type::kNullAggregatable:
       break;
   }
 }
@@ -338,6 +346,8 @@ void LogMetricsOnReportSent(const AttributionReport& report) {
           "Conversions.AggregatableReport.ExtraReportDelayForSuccessfulSend",
           time_since_original_report_time, base::Seconds(1), base::Days(24),
           /*bucket_count=*/50);
+      break;
+    case AttributionReport::Type::kNullAggregatable:
       break;
   }
 }
@@ -420,14 +430,25 @@ AttributionManagerImpl::CreateWithNewDbForTesting(
 
 bool AttributionManagerImpl::IsReportAllowed(
     const AttributionReport& report) const {
-  const CommonSourceInfo& common_info =
-      report.attribution_info().source.common_info();
+  const attribution_reporting::SuitableOrigin* source_origin = absl::visit(
+      base::Overloaded{
+          [](const AttributionReport::EventLevelData& data) {
+            return &data.source.common_info().source_origin();
+          },
+          [](const AttributionReport::AggregatableAttributionData& data) {
+            return &data.source.common_info().source_origin();
+          },
+          [&](const AttributionReport::NullAggregatableData&) {
+            return &report.attribution_info().context_origin;
+          },
+      },
+      report.data());
   return IsOperationAllowed(
       storage_partition_.get(),
       ContentBrowserClient::AttributionReportingOperation::kReport,
-      /*rfh=*/nullptr, &*common_info.source_origin(),
+      /*rfh=*/nullptr, &**source_origin,
       &*report.attribution_info().context_origin,
-      &*common_info.reporting_origin());
+      &*report.GetReportingOrigin());
 }
 
 // static
@@ -449,13 +470,34 @@ AttributionManagerImpl::CreateForTesting(
 }
 
 // static
-attribution_reporting::mojom::OsSupport AttributionManagerImpl::GetOsSupport() {
+network::mojom::AttributionSupport AttributionManagerImpl::GetSupport() {
 #if BUILDFLAG(IS_ANDROID)
-  return AttributionOsLevelManagerAndroid::GetOsSupport();
+  bool is_web_allowed =
+      GetContentClient()->browser()->IsWebAttributionReportingAllowed();
+  switch (AttributionOsLevelManagerAndroid::GetApiState()) {
+    case AttributionOsLevelManagerAndroid::ApiState::kDisabled:
+      return is_web_allowed ? network::mojom::AttributionSupport::kWeb
+                            : network::mojom::AttributionSupport::kNone;
+    case AttributionOsLevelManagerAndroid::ApiState::kEnabled:
+      return is_web_allowed ? network::mojom::AttributionSupport::kWebAndOs
+                            : network::mojom::AttributionSupport::kOs;
+  }
 #else
-  return attribution_reporting::mojom::OsSupport::kDisabled;
+  return network::mojom::AttributionSupport::kWeb;
 #endif
 }
+
+#if BUILDFLAG(IS_ANDROID)
+// static
+void AttributionManagerImpl::UpdateSupportForRenderProcessHosts() {
+  network::mojom::AttributionSupport attribution_support = GetSupport();
+
+  for (RenderProcessHost::iterator it = RenderProcessHost::AllHostsIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    it.GetCurrentValue()->SetAttributionReportingSupport(attribution_support);
+  }
+}
+#endif
 
 AttributionManagerImpl::AttributionManagerImpl(
     StoragePartitionImpl* storage_partition,
@@ -518,7 +560,7 @@ AttributionManagerImpl::AttributionManagerImpl(
 
 #if BUILDFLAG(IS_ANDROID)
   if (base::FeatureList::IsEnabled(
-          blink::features::kAttributionReportingCrossAppWeb)) {
+          network::features::kAttributionReportingCrossAppWeb)) {
     attribution_os_level_manager_ =
         std::make_unique<AttributionOsLevelManagerAndroid>();
   }
@@ -754,16 +796,14 @@ void AttributionManagerImpl::AddPendingAggregatableReportTiming(
     return;
   }
 
-  const auto* data =
-      absl::get_if<AttributionReport::AggregatableAttributionData>(
-          &report.data());
-  DCHECK(data);
+  DCHECK_EQ(report.GetReportType(),
+            AttributionReport::Type::kAggregatableAttribution);
 
   auto [it, inserted] = pending_aggregatable_reports_.try_emplace(
-      data->id, PendingReportTimings{
-                    .creation_time = base::Time::Now(),
-                    .report_time = report.report_time(),
-                });
+      report.id(), PendingReportTimings{
+                       .creation_time = base::Time::Now(),
+                       .report_time = report.report_time(),
+                   });
   DCHECK(inserted);
 }
 
@@ -790,6 +830,9 @@ void AttributionManagerImpl::OnReportStored(
     MaybeSendDebugReport(std::move(*report));
   }
 
+  min_new_report_time = AttributionReport::MinReportTime(
+      min_new_report_time, result.min_null_aggregatable_report_time());
+
   scheduler_timer_.MaybeSet(min_new_report_time);
 
   if (result.event_level_status() !=
@@ -803,6 +846,8 @@ void AttributionManagerImpl::OnReportStored(
     NotifyReportsChanged();
   }
 
+  // TODO(crbug.com/1432558): Notify reports changed for null reports.
+
   for (auto& observer : observers_) {
     observer.OnTriggerHandled(trigger, cleared_debug_key, result);
   }
@@ -812,7 +857,9 @@ void AttributionManagerImpl::OnReportStored(
 
 void AttributionManagerImpl::MaybeSendDebugReport(AttributionReport&& report) {
   const AttributionInfo& attribution_info = report.attribution_info();
-  if (!attribution_info.debug_key || !attribution_info.source.debug_key() ||
+  const StoredSource* source = report.GetStoredSource();
+  DCHECK(source);
+  if (!attribution_info.debug_key || !source->debug_key() ||
       !IsReportAllowed(report)) {
     return;
   }
@@ -967,7 +1014,7 @@ void AttributionManagerImpl::SendReports(
   for (AttributionReport& report : reports) {
     DCHECK_LE(report.report_time(), now);
 
-    bool inserted = reports_being_sent_.emplace(report.ReportId()).second;
+    bool inserted = reports_being_sent_.emplace(report.id()).second;
     if (!inserted) {
       if (web_ui_callback) {
         web_ui_callback.Run();
@@ -976,11 +1023,9 @@ void AttributionManagerImpl::SendReports(
       continue;
     }
 
-    if (auto id = report.ReportId();
-        const auto* aggregatable_id =
-            absl::get_if<AttributionReport::AggregatableAttributionData::Id>(
-                &id)) {
-      pending_aggregatable_reports_.erase(*aggregatable_id);
+    if (report.GetReportType() ==
+        AttributionReport::Type::kAggregatableAttribution) {
+      pending_aggregatable_reports_.erase(report.id());
     }
 
     if (!IsReportAllowed(report)) {
@@ -1019,6 +1064,7 @@ void AttributionManagerImpl::PrepareToSendReport(AttributionReport report,
                                  std::move(callback));
       break;
     case AttributionReport::Type::kAggregatableAttribution:
+    case AttributionReport::Type::kNullAggregatable:
       AssembleAggregatableReport(std::move(report), is_debug_report,
                                  std::move(callback));
       break;
@@ -1060,13 +1106,13 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
           manager->NotifyReportsChanged();
         }
       },
-      std::move(done), weak_factory_.GetWeakPtr(), report.ReportId(),
+      std::move(done), weak_factory_.GetWeakPtr(), report.id(),
       new_report_time);
 
   if (new_report_time) {
     attribution_storage_
         .AsyncCall(&AttributionStorage::UpdateReportForSendFailure)
-        .WithArgs(report.ReportId(), *new_report_time)
+        .WithArgs(report.id(), *new_report_time)
         .Then(std::move(then));
 
     // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
@@ -1075,7 +1121,7 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
   }
 
   attribution_storage_.AsyncCall(&AttributionStorage::DeleteReport)
-      .WithArgs(report.ReportId())
+      .WithArgs(report.id())
       .Then(std::move(then));
 
   LogMetricsOnReportCompleted(report, info.status);
@@ -1151,10 +1197,18 @@ void AttributionManagerImpl::OnAggregatableReportAssembled(
     return;
   }
 
-  auto* data = absl::get_if<AttributionReport::AggregatableAttributionData>(
-      &report.data());
-  DCHECK(data);
-  data->assembled_report = std::move(assembled_report);
+  absl::visit(
+      base::Overloaded{
+          [](const AttributionReport::EventLevelData&) { NOTREACHED(); },
+          [&](AttributionReport::AggregatableAttributionData& data) {
+            data.common_data.assembled_report = std::move(assembled_report);
+          },
+          [&](AttributionReport::NullAggregatableData& data) {
+            data.common_data.assembled_report = std::move(assembled_report);
+          },
+      },
+      report.data());
+
   RecordAssembleAggregatableReportStatus(
       AssembleAggregatableReportStatus::kSuccess);
 
@@ -1269,6 +1323,13 @@ void AttributionManagerImpl::HandleOsRegistration(
     return;
   }
 
+  auto* rfh = RenderFrameHost::FromID(render_frame_id);
+
+  if (rfh) {
+    GetContentClient()->browser()->LogWebFeatureForCurrentPage(
+        rfh, blink::mojom::WebFeature::kAttributionReportingCrossAppWeb);
+  }
+
   ContentBrowserClient::AttributionReportingOperation operation;
   const url::Origin* source_origin;
   const url::Origin* destination_origin;
@@ -1287,8 +1348,7 @@ void AttributionManagerImpl::HandleOsRegistration(
       break;
   }
 
-  if (!IsOperationAllowed(storage_partition_.get(), operation,
-                          RenderFrameHost::FromID(render_frame_id),
+  if (!IsOperationAllowed(storage_partition_.get(), operation, rfh,
                           source_origin, destination_origin,
                           /*reporting_origin=*/&registration_origin)) {
     NotifyOsRegistration(registration,
@@ -1363,6 +1423,9 @@ void AttributionManagerImpl::OnOsRegistration(
     const OsRegistration& registration,
     bool is_debug_key_allowed,
     bool success) {
+  base::UmaHistogramBoolean("Conversions.AttributionOsRegistrationResult",
+                            success);
+
   NotifyOsRegistration(registration, is_debug_key_allowed,
                        success ? OsRegistrationResult::kPassedToOs
                                : OsRegistrationResult::kRejectedByOs);

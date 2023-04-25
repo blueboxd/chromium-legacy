@@ -81,10 +81,14 @@ TEST_F(AttributionSqlQueryPlanTest, kSelectInactiveSourcesSql) {
             UsesIndex("reports_by_source_id_report_type")));
 }
 
-TEST_F(AttributionSqlQueryPlanTest, kScanCandidateData) {
-  EXPECT_THAT(GetPlan(attribution_queries::kScanCandidateData,
-                      SqlFullScanReason::kNotOptimized),
-              UsesIndex("reports_by_source_id_report_type"));
+TEST_F(AttributionSqlQueryPlanTest, kScanSourcesData) {
+  EXPECT_THAT(GetPlan(attribution_queries::kScanSourcesData),
+              UsesIndex("sources_by_source_time"));
+}
+
+TEST_F(AttributionSqlQueryPlanTest, kScanReportsData) {
+  EXPECT_THAT(GetPlan(attribution_queries::kScanReportsData),
+              UsesIndex("reports_by_trigger_time"));
 }
 
 TEST_F(AttributionSqlQueryPlanTest, kDeleteVestigialConversionSql) {
@@ -105,6 +109,12 @@ TEST_F(AttributionSqlQueryPlanTest, kGetSourcesDataKeysSql) {
   EXPECT_THAT(GetPlan(attribution_queries::kGetSourcesDataKeysSql,
                       SqlFullScanReason::kIntentional),
               UsesCoveringIndex("sources_by_active_reporting_origin"));
+}
+
+TEST_F(AttributionSqlQueryPlanTest, kGetNullReportsDataKeysSql) {
+  EXPECT_THAT(GetPlan(attribution_queries::kGetNullReportsDataKeysSql,
+                      SqlFullScanReason::kNotOptimized),
+              UsesIndex("reports_by_reporting_origin"));
 }
 
 TEST_F(AttributionSqlQueryPlanTest, kGetRateLimitDataKeysSql) {

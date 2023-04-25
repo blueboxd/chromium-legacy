@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 
+#include <cstdint>
 #include <memory>
 #include <tuple>
 #include <unordered_map>
@@ -652,7 +653,9 @@ DetermineWhetherToForbidTrustTokenRedemption(
     absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
         fenced_frame_mode_for_navigation) {
   std::unique_ptr<blink::PermissionsPolicy> subframe_policy;
-  if (frame->IsNestedWithinFencedFrame()) {
+  // TODO(https://crbug.com/1430514): Add WPT to test how TrustTokens behave in
+  // a FencedFrame's subframe.
+  if (frame->IsFencedFrameRoot()) {
     // Fenced frames have a list of required permission policies to load and
     // can't be granted extra policies, so use the required policies instead of
     // inheriting from its parent. Note that the parent policies must allow the
@@ -1812,7 +1815,7 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   ResourceCacheManager* resource_cache_manager =
       GetStoragePartition()->GetResourceCacheManager();
   if (resource_cache_manager) {
-    resource_cache_manager->RenderFrameHostDeleted(*this);
+    resource_cache_manager->RenderFrameHostBecameIneligible(*this);
   }
 
   render_view_host_.reset();
@@ -4059,7 +4062,7 @@ bool RenderFrameHostImpl::IsThirdPartyStoragePartitioningEnabled(
 
   // If the deprecation trial is enabled, we have directive to override the
   // current value of net::features::ThirdPartyStoragePartitioning.
-  if (rfs_document_data_for_storage_key->runtime_feature_read_context()
+  if (rfs_document_data_for_storage_key->runtime_feature_state_read_context()
           .IsDisableThirdPartyStoragePartitioningEnabled()) {
     return false;
   }
@@ -4190,7 +4193,8 @@ void RenderFrameHostImpl::SetOriginDependentStateOfNewFrame(
         RuntimeFeatureStateDocumentData::GetForCurrentDocument(creator_frame);
     DCHECK(rfs_document_data_from_creator);
     RuntimeFeatureStateDocumentData::CreateForCurrentDocument(
-        this, rfs_document_data_from_creator->runtime_feature_read_context());
+        this,
+        rfs_document_data_from_creator->runtime_feature_state_read_context());
   } else {
     // Otherwise create a RuntimeFeatureStateContext. We need to construct a
     // RuntimeFeatureStateContext because its constructor initializes default
@@ -4691,6 +4695,11 @@ void RenderFrameHostImpl::DidCommitSameDocumentNavigation(
               "RenderFrameHostImpl::DidCommitSameDocumentNavigation",
               ChromeTrackEvent::kRenderFrameHost, this, "url",
               params->url.possibly_invalid_spec());
+
+  // TODO(peilinwang): remove after the
+  // kReduceToolbarUpdatesForSameDocNavigations experiment is complete.
+  SCOPED_UMA_HISTOGRAM_TIMER(
+      "Navigation.DidCommitSameDocumentNavigation.Duration");
 
   ScopedActiveURL scoped_active_url(params->url,
                                     GetMainFrame()->GetLastCommittedOrigin());
@@ -7056,6 +7065,7 @@ void RenderFrameHostImpl::FocusedElementChanged(
 void RenderFrameHostImpl::TextSelectionChanged(const std::u16string& text,
                                                uint32_t offset,
                                                const gfx::Range& range) {
+  RecordAction(base::UserMetricsAction("TextSelectionChanged"));
   has_selection_ = !text.empty();
   GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
@@ -8209,17 +8219,29 @@ void RenderFrameHostImpl::SendFencedFrameReportingBeaconInternal(
     blink::FencedFrame::ReportingDestination destination,
     bool from_renderer,
     absl::optional<int64_t> navigation_id) {
+  if (!IsActive()) {
+    // reportEvent is not allowed when this RenderFrameHost or one of its
+    // ancestors is not active.
+    return;
+  }
+
   // Get the reporting metadata associated with the fenced frame.
   const absl::optional<FencedFrameProperties>& fenced_frame_properties =
       frame_tree_node_->GetFencedFrameProperties();
-  if (from_renderer && fenced_frame_properties.has_value() &&
+  if (fenced_frame_properties.has_value() &&
       fenced_frame_properties->is_ad_component_) {
-    // Direct invocation of fence.reportEvent from ad components is disallowed.
-    AddMessageToConsole(
-        blink::mojom::ConsoleMessageLevel::kError,
-        "This frame is an ad component. It is not allowed to call "
-        "fence.reportEvent.");
-    return;
+    if (from_renderer) {
+      // Direct invocation of fence.reportEvent from an ad component is
+      // disallowed.
+      AddMessageToConsole(
+          blink::mojom::ConsoleMessageLevel::kError,
+          "This frame is an ad component. It is not allowed to call "
+          "fence.reportEvent.");
+      return;
+    }
+    // The only allowed event type from an ad component is
+    // `reserved.top_navigation`.
+    CHECK_EQ(event_type, blink::kFencedFrameTopNavigationBeaconType);
   }
 
   if (!fenced_frame_properties.has_value() ||
@@ -9388,6 +9410,45 @@ void RenderFrameHostImpl::SendAllPendingBeaconsOnNavigation() {
   }
 }
 
+uint32_t RenderFrameHostImpl::FindSuddenTerminationHandlers(bool same_origin) {
+  uint32_t navigation_termination = 0;
+  // Search this frame and subframes for sudden termination disablers
+  ForEachRenderFrameHostWithAction([this, same_origin, &navigation_termination](
+                                       RenderFrameHost* rfh) {
+    if (same_origin &&
+        GetLastCommittedOrigin() != rfh->GetLastCommittedOrigin()) {
+      return FrameIterationAction::kSkipChildren;
+    }
+    if (rfh->GetSuddenTerminationDisablerState(
+            blink::mojom::SuddenTerminationDisablerType::kUnloadHandler)) {
+      navigation_termination = navigation_termination |
+                               NavigationSuddenTerminationDisablerType::kUnload;
+      // We can stop when we find the first unload handler. If we ever start
+      // reporting other types of sudden termination handler, we will need to
+      // continue.
+      return FrameIterationAction::kStop;
+    }
+    return FrameIterationAction::kContinue;
+  });
+  return navigation_termination;
+}
+
+void RenderFrameHostImpl::RecordNavigationSuddenTerminationHandlers() {
+  uint32_t navigation_termination =
+      is_main_frame() ? NavigationSuddenTerminationDisablerType::kMainFrame : 0;
+
+  base::UmaHistogramExactLinear(
+      "Navigation.SuddenTerminationDisabler.AllOrigins",
+      navigation_termination |
+          FindSuddenTerminationHandlers(/*same_origin=*/false),
+      NavigationSuddenTerminationDisablerType::kMaxValue * 2);
+  base::UmaHistogramExactLinear(
+      "Navigation.SuddenTerminationDisabler.SameOrigin",
+      navigation_termination |
+          FindSuddenTerminationHandlers(/*same_origin=*/true),
+      NavigationSuddenTerminationDisablerType::kMaxValue * 2);
+}
+
 void RenderFrameHostImpl::CommitNavigation(
     NavigationRequest* navigation_request,
     blink::mojom::CommonNavigationParamsPtr common_params,
@@ -9826,10 +9887,10 @@ void RenderFrameHostImpl::CommitNavigation(
       if (factory_bundle_for_keep_alive) {
         // Also setting up URLLoaderFactory for keepalive using the same loader
         // factories.
-        auto* storage_partition = GetStoragePartition();
-        storage_partition->GetKeepAliveURLLoaderService()->BindFactory(
+        GetStoragePartition()->GetKeepAliveURLLoaderService()->BindFactory(
             keep_alive_loader_factory.InitWithNewPipeAndPassReceiver(),
-            std::move(factory_bundle_for_keep_alive));
+            std::move(factory_bundle_for_keep_alive),
+            navigation_request->GetPolicyContainerHost());
       }
     }
 
@@ -10902,7 +10963,7 @@ void RenderFrameHostImpl::CreateWebUsbService(
 }
 
 void RenderFrameHostImpl::ResetPermissionsPolicy() {
-  if (IsNestedWithinFencedFrame()) {
+  if (IsFencedFrameRoot()) {
     const absl::optional<FencedFrameProperties>& properties =
         frame_tree_node()->GetFencedFrameProperties();
     // Fenced frames have a list of required permission policies to load and
@@ -12524,6 +12585,8 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   } else {
     SetInheritedBaseUrl(GURL::EmptyGURL());
   }
+
+  navigation_id_ = navigation_request->GetNavigationId();
 
   // The nonce to use in credentialless iframe is a page scoped attribute. So it
   // needs to change every time the top-level document change.
@@ -15092,7 +15155,7 @@ bool RenderFrameHostImpl::GetIsThirdPartyCookiesUserBypassEnabled() {
     return false;
   }
   blink::RuntimeFeatureStateReadContext read_context =
-      document_data->runtime_feature_read_context();
+      document_data->runtime_feature_state_read_context();
   return read_context.IsThirdPartyCookiesUserBypassEnabled();
 }
 

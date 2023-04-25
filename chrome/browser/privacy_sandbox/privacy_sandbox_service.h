@@ -98,7 +98,13 @@ class PrivacySandboxService : public KeyedService {
     kConsentMoreButtonClicked = 14,
     kNoticeMoreButtonClicked = 15,
 
-    kMaxValue = kNoticeMoreButtonClicked,
+    // Restricted notice interactions, including only the interactions that
+    // complete
+    // the notice, using the `kNoticeXxx` for all other interactions.
+    kRestrictedNoticeAcknowledge = 16,
+    kRestrictedNoticeOpenSettings = 17,
+
+    kMaxValue = kRestrictedNoticeOpenSettings,
   };
 
   // TODO(crbug.com/1378703): Integrate this when handling Notice and Consent
@@ -206,6 +212,10 @@ class PrivacySandboxService : public KeyedService {
   // profile. UI code should consult this to ensure that when restricted,
   // Privacy Sandbox related UI is updated appropriately.
   virtual bool IsPrivacySandboxRestricted();
+
+  // Returns whether the Privacy Sandbox is configured to show a restricted
+  // notice.
+  virtual bool IsRestrictedNoticeEnabled();
 
   // Called when the V2 Privacy Sandbox preference is changed.
   void OnPrivacySandboxV2PrefChanged();

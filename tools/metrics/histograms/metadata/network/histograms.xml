@@ -49,6 +49,12 @@ chromium-metrics-reviews@google.com.
   <variant name="L2tpIpsec" summary="L2TP/IPsec"/>
 </variants>
 
+<variants name="PhysicalTechnology">
+  <variant name="Cellular" summary="Cellular"/>
+  <variant name="Ethernet" summary="Ethernet"/>
+  <variant name="Wifi" summary="Wifi"/>
+</variants>
+
 <variants name="VPNType">
   <variant name="ARC" summary="Android VPN"/>
   <variant name="Ikev2" summary="IKEv2"/>
@@ -2233,7 +2239,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.ExpiredLeaseLengthSeconds2"
-    units="seconds" expires_after="2023-08-20">
+    units="seconds" expires_after="2023-10-22">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2297,7 +2303,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Ethernet.TimeToConfig" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2554,7 +2560,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.SuspendActionTimeTaken" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>matthewmwang@chromium.org</owner>
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -2648,7 +2654,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.RemoteAuthenticationType"
-    enum="VPNRemoteAuthenticationType" expires_after="2023-08-13">
+    enum="VPNRemoteAuthenticationType" expires_after="2023-10-15">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2658,7 +2664,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeOnline" units="seconds"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2672,7 +2678,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.TimeToConfig" units="ms"
-    expires_after="2023-08-13">
+    expires_after="2023-10-15">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2692,7 +2698,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.UserAuthenticationType"
-    enum="VPNUserAuthenticationType" expires_after="2023-08-13">
+    enum="VPNUserAuthenticationType" expires_after="2023-10-15">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2702,7 +2708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.WireGuardAllowedIPsType"
-    enum="VPNWireGuardAllowedIPsType" expires_after="2023-08-13">
+    enum="VPNWireGuardAllowedIPsType" expires_after="2023-10-22">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2722,7 +2728,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Vpn.WireGuardPeersNum" units="WireGuard peers"
-    expires_after="2023-08-13">
+    expires_after="2023-10-22">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2796,7 +2802,7 @@ chromium-metrics-reviews@google.com.
   <token key="VPNType" variants="IPsecVPNType"/>
 </histogram>
 
-<histogram name="Network.Shill.Vpn.{VPNType}.IPType" enum="VPNIPType"
+<histogram name="Network.Shill.Vpn.{VPNType}.IPType" enum="NetworkIPType"
     expires_after="2023-12-31">
   <owner>jiejiang@chromium.org</owner>
   <owner>cros-connectivity@google.com</owner>
@@ -2809,7 +2815,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.AdapterAllowlisted"
-    enum="WiFiAdapterInAllowlist" expires_after="2023-08-20">
+    enum="WiFiAdapterInAllowlist" expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2883,7 +2889,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ApChannelSwitch" enum="WiFiApChannelSwitch"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>matthewmwang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2893,7 +2899,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ApDisconnectReason" enum="WiFiReasonCode"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2903,7 +2909,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ApDisconnectType" enum="WiFiStatusType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2923,7 +2929,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.AssocFailureType" enum="WiFiStatusCode"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -2990,7 +2996,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Channel" enum="NetworkChannelType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3011,7 +3017,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ClientDisconnectReason"
-    enum="WiFiReasonCode" expires_after="2023-08-20">
+    enum="WiFiReasonCode" expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3021,7 +3027,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ClientDisconnectType" enum="WiFiStatusType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3031,7 +3037,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.CQMNotification"
-    enum="WiFiCQMNotificationType" expires_after="2023-08-20">
+    enum="WiFiCQMNotificationType" expires_after="2023-10-22">
   <owner>kuabhs@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3053,7 +3059,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Disconnect" enum="NetworkDisconnectType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3206,7 +3212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.NetworkConnectionIPType"
-    enum="NetworkConnectionIPType" expires_after="2023-08-20">
+    enum="NetworkConnectionIPType" expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3256,7 +3262,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.PortalResult" enum="NetworkPortalResult"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>matthewmwang@chromium.org</owner>
   <owner>stevenjb@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
@@ -3278,7 +3284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.RememberedNetworkCount" units="units"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>matthewmwang@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3316,6 +3322,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram base="true" name="Network.Shill.WiFi.RestartReason"
+    enum="WiFiRestartReason" expires_after="2024-04-18">
+  <owner>billyzhao@chromium.org</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network metric recording instances where Shill is told to restart
+    the WiFi device. This is triggered by udev event from the iwl7000 driver.
+    See b/270746800 for more details. This metric will be removed once we notice
+    the driver not sending these requests. This removal process is tracked in
+    b/278765529.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Network.Shill.WiFi.RoamComplete"
     enum="WiFiRoamComplete" expires_after="2023-08-20">
 <!-- Name completed by histogram_suffixes name="RoamSecurityType" -->
@@ -3343,7 +3362,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.ScanResult" enum="WiFiScanResult"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3363,7 +3382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.Security" enum="NetworkSecurityType"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3386,7 +3405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.ServiceErrors" enum="NetworkServiceError"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>kuabhs@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3436,7 +3455,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.SignalStrength" units="negative dBm"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>kuabhs@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3538,7 +3557,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToOnline" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3572,7 +3591,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToScan" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3582,7 +3601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.Wifi.TimeToScanAndConnect" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3594,7 +3613,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.TransmitBitrateMbps" units="Mbps"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -3628,13 +3647,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Shill.WiFi.UserInitiatedConnectionResult"
-    enum="ConnectionResult" expires_after="2023-08-20">
+    enum="ConnectionResult" expires_after="2023-10-22">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
     ChromeOS network performance metric that tracks the result of user-initiated
     WiFi connection attempts.
   </summary>
+</histogram>
+
+<histogram name="Network.Shill.{Technology}.IPType" enum="NetworkIPType"
+    expires_after="2023-12-31">
+  <owner>jiejiang@chromium.org</owner>
+  <owner>cros-connectivity@google.com</owner>
+  <owner>cros-network-metrics@google.com</owner>
+  <summary>
+    ChromeOS network usage metric emitted after a {Technology} connection has
+    been connected for 30 seconds, to track the IP type on this connection. Wait
+    for 30 seconds because IPv4 and IPv6 configuration are usually provisioned
+    at different time. Note that no metric will be emitted if the duration of
+    the connection is shorter than 30 seconds.
+  </summary>
+  <token key="Technology" variants="PhysicalTechnology"/>
 </histogram>
 
 <histogram name="Network.Wifi.Channel" enum="NetworkChannelType"
@@ -3688,7 +3722,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.Connection.Result" enum="BooleanSuccess"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3734,7 +3768,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Network.Wifi.Synced.TotalCount" units="units"
-    expires_after="2023-08-20">
+    expires_after="2023-10-22">
   <owner>jonmann@chromium.org</owner>
   <owner>crisrael@google.com</owner>
   <owner>chromeos-cross-device-eng@google.com</owner>
@@ -3898,7 +3932,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="NetworkService.MemoryCache.EntryStatus"
-    enum="NetworkServiceMemoryCacheEntryStatus" expires_after="2023-04-16">
+    enum="NetworkServiceMemoryCacheEntryStatus" expires_after="2023-07-18">
   <owner>bashi@chromium.org</owner>
   <owner>blink-network-stack@google.com</owner>
   <summary>

@@ -81,7 +81,8 @@ void AddIssueToForm(PasswordForm* form,
   form->password_issues.insert_or_assign(
       type, password_manager::InsecurityMetadata(
                 base::Time::Now() - time_since_creation,
-                password_manager::IsMuted(is_muted)));
+                password_manager::IsMuted(is_muted),
+                password_manager::TriggerBackendNotification(false)));
 }
 
 class PasswordCheckupUtilsTest : public PlatformTest {
@@ -141,8 +142,10 @@ TEST_F(PasswordCheckupUtilsTest, CheckHighestPriorityWarningType) {
   EXPECT_THAT(GetWarningOfHighestPriority(insecure_credentials),
               WarningType::kDismissedWarningsWarning);
 
-  // Add a weak password.
+  // Add a muted password that is also weak.
   PasswordForm form2 = MakeSavedPassword(kExampleCom2, kUsername116);
+  AddIssueToForm(&form2, InsecureType::kLeaked, base::Minutes(1),
+                 /*is_muted=*/true);
   AddIssueToForm(&form2, InsecureType::kWeak, base::Minutes(1));
   store().AddLogin(form2);
   RunUntilIdle();
@@ -151,10 +154,20 @@ TEST_F(PasswordCheckupUtilsTest, CheckHighestPriorityWarningType) {
   EXPECT_THAT(GetWarningOfHighestPriority(insecure_credentials),
               WarningType::kWeakPasswordsWarning);
 
-  // Add a reused password.
+  // Add a weak password.
   PasswordForm form3 = MakeSavedPassword(kExampleCom3, kUsername116);
-  AddIssueToForm(&form3, InsecureType::kReused, base::Minutes(1));
+  AddIssueToForm(&form3, InsecureType::kWeak, base::Minutes(1));
   store().AddLogin(form3);
+  RunUntilIdle();
+  insecure_credentials = manager().GetInsecureCredentials();
+  // The "weak passwords" warning stays the highest priority warning.
+  EXPECT_THAT(GetWarningOfHighestPriority(insecure_credentials),
+              WarningType::kWeakPasswordsWarning);
+
+  // Add a reused password.
+  PasswordForm form4 = MakeSavedPassword(kExampleCom4, kUsername116);
+  AddIssueToForm(&form4, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(form4);
   RunUntilIdle();
   insecure_credentials = manager().GetInsecureCredentials();
   // The "reused passwords" warning becomes the highest priority warning.
@@ -162,9 +175,9 @@ TEST_F(PasswordCheckupUtilsTest, CheckHighestPriorityWarningType) {
               WarningType::kReusedPasswordsWarning);
 
   // Add an unmuted compromised password.
-  PasswordForm form4 = MakeSavedPassword(kExampleCom4, kUsername116);
-  AddIssueToForm(&form4, InsecureType::kLeaked, base::Minutes(1));
-  store().AddLogin(form4);
+  PasswordForm form5 = MakeSavedPassword(kExampleCom5, kUsername116);
+  AddIssueToForm(&form5, InsecureType::kLeaked, base::Minutes(1));
+  store().AddLogin(form5);
   RunUntilIdle();
   insecure_credentials = manager().GetInsecureCredentials();
   // The "compromised passwords" warning becomes the highest priority warning.
@@ -350,17 +363,21 @@ TEST_F(PasswordCheckupUtilsTest, CheckPasswordsForWarningType) {
   AddIssueToForm(&weak_form, InsecureType::kWeak, base::Minutes(1));
   store().AddLogin(weak_form);
 
-  // Add a reused password.
-  PasswordForm reused_form = MakeSavedPassword(kExampleCom3, kUsername116);
-  AddIssueToForm(&reused_form, InsecureType::kReused, base::Minutes(1));
-  store().AddLogin(reused_form);
+  // Add 2 reused passwords.
+  PasswordForm reused_form1 = MakeSavedPassword(kExampleCom3, kUsername116);
+  AddIssueToForm(&reused_form1, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(reused_form1);
+
+  PasswordForm reused_form2 = MakeSavedPassword(kExampleCom4, kUsername116);
+  AddIssueToForm(&reused_form2, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(reused_form2);
 
   // Add two unmuted compromised passwords, a leaked one and a phished one.
-  PasswordForm leaked_form = MakeSavedPassword(kExampleCom4, kUsername116);
+  PasswordForm leaked_form = MakeSavedPassword(kExampleCom5, kUsername116);
   AddIssueToForm(&leaked_form, InsecureType::kLeaked, base::Minutes(1));
   store().AddLogin(leaked_form);
 
-  PasswordForm phished_form = MakeSavedPassword(kExampleCom5, kUsername116);
+  PasswordForm phished_form = MakeSavedPassword(kExampleCom6, kUsername116);
   AddIssueToForm(&phished_form, InsecureType::kPhished, base::Minutes(1));
   store().AddLogin(phished_form);
 
@@ -394,5 +411,48 @@ TEST_F(PasswordCheckupUtilsTest, CheckPasswordsForWarningType) {
   filtered_credentials = GetPasswordsForWarningType(
       WarningType::kReusedPasswordsWarning, insecure_credentials);
   EXPECT_THAT(filtered_credentials,
-              UnorderedElementsAre(CredentialUIEntry(reused_form)));
+              UnorderedElementsAre(CredentialUIEntry(reused_form1),
+                                   CredentialUIEntry(reused_form2)));
+}
+
+// Tests that `CountInsecurePasswordsPerInsecureType` doesn't take into account
+// a password marked as reused if there is no other credential with the same
+// password.
+// TODO(crbug.com/1434343): Update or delete this test once a fix has landed.
+TEST_F(PasswordCheckupUtilsTest, CheckInsecurePasswordWhenOneReusedPassword) {
+  // Add a reused password.
+  PasswordForm reused_form = MakeSavedPassword(kExampleCom1, kUsername116);
+  AddIssueToForm(&reused_form, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(reused_form);
+  RunUntilIdle();
+
+  std::vector<CredentialUIEntry> insecure_credentials =
+      manager().GetInsecureCredentials();
+
+  EXPECT_EQ(
+      CountInsecurePasswordsPerInsecureType(insecure_credentials).reused_count,
+      0);
+}
+
+// Tests that `GetPasswordCountForWarningType` doesn't take into account a
+// password marked as reused if there is no other credential with the same
+// password.
+// TODO(crbug.com/1434343): Update or delete this test once a fix has landed.
+TEST_F(PasswordCheckupUtilsTest,
+       CheckPasswordsForWarningTypeWhenOneReusedPassword) {
+  // Add a reused password.
+  PasswordForm reused_form = MakeSavedPassword(kExampleCom1, kUsername116);
+  AddIssueToForm(&reused_form, InsecureType::kReused, base::Minutes(1));
+  store().AddLogin(reused_form);
+  RunUntilIdle();
+
+  std::vector<CredentialUIEntry> insecure_credentials =
+      manager().GetInsecureCredentials();
+
+  std::vector<CredentialUIEntry> filtered_credentials;
+
+  // Verify Reused Passwords.
+  filtered_credentials = GetPasswordsForWarningType(
+      WarningType::kReusedPasswordsWarning, insecure_credentials);
+  EXPECT_TRUE(filtered_credentials.empty());
 }

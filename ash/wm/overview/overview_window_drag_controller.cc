@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/wm/overview/overview_window_drag_controller.h"
+#include "base/memory/raw_ptr.h"
 
 #include <algorithm>
 #include <memory>
@@ -16,8 +17,8 @@
 #include "ash/wm/desks/cros_next_default_desk_button.h"
 #include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk_preview_view.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -111,17 +112,19 @@ bool DraggedItemIsVisibleOnAllDesks(OverviewItem* item) {
 }
 
 // Returns the scaled-down size of the dragged item that should be used when
-// it's dragged over the DesksBarView that belongs to |overview_grid|.
+// it's dragged over the LegacyDeskBarView that belongs to |overview_grid|.
 // |window_original_size| is the size of the item's window before it was scaled
 // up for dragging.
 gfx::SizeF GetItemSizeWhenOnDesksBar(OverviewGrid* overview_grid,
                                      const gfx::SizeF& window_original_size) {
   DCHECK(overview_grid);
-  const DesksBarView* desks_bar_view = overview_grid->desks_bar_view();
+  const LegacyDeskBarView* desks_bar_view = overview_grid->desks_bar_view();
   DCHECK(desks_bar_view);
 
   const int expanded_desks_bar_height =
-      DesksBarView::GetExpandedBarHeight(overview_grid->root_window());
+      LegacyDeskBarView::GetPreferredBarHeight(
+          overview_grid->root_window(), LegacyDeskBarView::Type::kOverview,
+          LegacyDeskBarView::State::kExpanded);
 
   // We should always use the expanded desks bar height here even if the desks
   // bar is actually in zero state to calculate `scale_factor`. Because if zero
@@ -226,7 +229,7 @@ class OverviewItemMoveHelper : public aura::WindowObserver {
   }
 
  private:
-  aura::Window* const window_;
+  const raw_ptr<aura::Window, ExperimentalAsh> window_;
   const gfx::RectF target_item_bounds_;
 };
 
@@ -399,8 +402,9 @@ void OverviewWindowDragController::StartNormalDragMode(
           GetItemSizeWhenOnDesksBar(grid.get(), window_original_size);
       grid_desks_bar_data.desks_bar_bounds = grid_desks_bar_data.shrink_bounds =
           gfx::RectF(grid->desks_bar_view()->GetBoundsInScreen());
-      const int expanded_height =
-          DesksBarView::GetExpandedBarHeight(grid->root_window());
+      const int expanded_height = LegacyDeskBarView::GetPreferredBarHeight(
+          grid->root_window(), LegacyDeskBarView::Type::kOverview,
+          LegacyDeskBarView::State::kExpanded);
       grid_desks_bar_data.desks_bar_bounds.set_height(expanded_height);
       grid_desks_bar_data.shrink_bounds.set_height(expanded_height);
       grid_desks_bar_data.shrink_bounds.Inset(gfx::InsetsF::VH(

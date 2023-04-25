@@ -290,4 +290,12 @@ bool BrowserParamsProxy::EnableCpuMappableNativeGpuMemoryBuffers() const {
       ->enable_cpu_mappable_native_gpu_memory_buffers;
 }
 
+bool BrowserParamsProxy::OopVideoDecodingEnabled() const {
+  return BrowserInitParams::Get()->oop_video_decoding_enabled;
+}
+
+bool BrowserParamsProxy::IsUploadOfficeToCloudEnabled() const {
+  return BrowserInitParams::Get()->is_upload_office_to_cloud_enabled;
+}
+
 }  // namespace chromeos

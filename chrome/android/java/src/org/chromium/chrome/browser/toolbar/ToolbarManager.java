@@ -768,6 +768,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
             @Override
             public void onCrash(Tab tab) {
+                mLocationBarModel.notifyOnCrash();
                 updateTabLoadingState(false);
                 updateButtonStatus();
             }
@@ -786,6 +787,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
             @Override
             public void onContentChanged(Tab tab) {
+                mLocationBarModel.notifyContentChanged();
                 checkIfNtpLoaded();
                 mToolbar.onTabContentViewChanged();
                 maybeShowCursorInLocationBar();
@@ -797,6 +799,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             @Override
             public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 if (!didStartLoad) return;
+                mLocationBarModel.notifyWebContentsSwapped();
                 mLocationBarModel.notifyUrlChanged();
                 onBackPressStateChanged();
                 mLocationBarModel.notifySecurityStateChanged();
@@ -842,6 +845,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     ntp.setUrlFocusAnimationsDisabled(false);
                     onTabOrModelChanged();
                 }
+
+                mLocationBarModel.notifyDidFinishNavigation(navigation.isSameDocument());
+            }
+
+            @Override
+            public void onDidStartNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigationHandle) {
+                mLocationBarModel.notifyDidStartNavigation(navigationHandle.isSameDocument());
             }
 
             @Override
@@ -1919,6 +1930,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * inheriting classes the chance to update the button visuals as well.
      */
     private void updateButtonStatus() {
+        if (mLocationBarModel.shouldDoSameDocOptimzations()) {
+            return;
+        }
+
         Tab currentTab = mLocationBarModel.getTab();
         boolean tabCrashed = currentTab != null && SadTab.isShowing(currentTab);
 
@@ -2167,11 +2182,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     : null;
             var tab = mActivityTabProvider.get();
             var t2 = mTabModelSelector != null ? mTabModelSelector.getCurrentTab() : null;
-            var msg = String.format(
-                    "BottomCtrl %s %s; actTab %s, urlBarTab %s, sTab %s, init %s, destroy %s", bc,
+            var layout = mLayoutStateProviderSupplier.hasValue()
+                    ? mLayoutStateProviderSupplier.get().getActiveLayoutType()
+                    : LayoutType.NONE;
+            var msg = String.format("BottomCtrl %s %s; actTab %s, urlBarTab %s, sTab %s, layout %s",
+                    bc,
                     bc != null && Boolean.TRUE.equals(bc.getHandleBackPressChangedSupplier().get()),
-                    tab, mLocationBarModel.getTab(), t2, tab != null && tab.isInitialized(),
-                    tab != null && tab.isDestroyed());
+                    tab, mLocationBarModel.getTab(), t2, layout);
             assert false : msg;
         }
         onBackPressStateChanged();

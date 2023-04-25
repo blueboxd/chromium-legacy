@@ -34,6 +34,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1148499908455722006">Abrir el diálogo de información de <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Calendario</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
+<translation id="1160215328209699296">se activó y está en uso</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Es posible que el cable USB-C no se conecte a las pantallas de manera adecuada</translation>
 <translation id="1175572348579024023">Desplazamiento</translation>
@@ -225,6 +226,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1978498689038657292">Ingreso de texto</translation>
 <translation id="1980808257969311265">Unirse a <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">Mostrar la semana pasada</translation>
+<translation id="1986150224850161328">Asegúrate de que el teléfono y la Chromebook estén conectados a la misma red y vuelve a intentarlo. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">No se puede capturar contenido</translation>
 <translation id="1990046457226896323">Se descargaron los archivos de Subtitulado instantáneo</translation>
 <translation id="1993072747612765854">Más información sobre la actualización más reciente de <ph name="SYSTEM_APP_NAME" /></translation>
@@ -238,9 +240,9 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2023558322300866873">Puedes detener la captura de paquetes en cualquier momento.</translation>
 <translation id="2034971124472263449">Guardar de todos modos</translation>
 <translation id="2049240716062114887">Se cambió el nombre del escritorio a <ph name="DESK_NAME" /></translation>
-<translation id="2050339315714019657">Vertical</translation>
 <translation id="2064048859448024834">Se muestra la vista previa de la cámara</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
+<translation id="2075520525463668108">Activar o desactivar <ph name="CAPTURE_MEDIUM" /> (estado de <ph name="CAPTURE_MEDIUM" />: <ph name="CAPTURE_STATE" />)</translation>
 <translation id="2078034614700056995">Para cambiar al siguiente escritorio, desliza cuatro dedos hacia la derecha.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
 <translation id="2083190527011054446">Buenas noches, <ph name="GIVEN_NAME" />:</translation>
@@ -325,6 +327,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2487915095798731898">Unirse</translation>
 <translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
+<translation id="2514415433888497495">Detener <ph name="CAPTURE_MEDIUM" /> (estado de <ph name="CAPTURE_MEDIUM" />: <ph name="CAPTURE_STATE" />)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Desbloquear las ventanas</translation>
 <translation id="2530896289327917474">Activar o desactivar la navegación por cursor de texto</translation>
@@ -374,6 +377,7 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2761723519669354964">Abrir el elemento destacado de la barra</translation>
 <translation id="2778650143428714839"><ph name="MANAGER" /> administra <ph name="DEVICE_TYPE" /></translation>
 <translation id="2782591952652094792">Salir del modo de captura</translation>
+<translation id="2785499565474703580">1 dispositivo conectado</translation>
 <translation id="2791421900609674576">Verás recomendaciones para continuar desde donde dejaste. Para quitarlas, manténlas presionadas.</translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2797741504905337289">Grupo de barras</translation>
@@ -1279,6 +1283,7 @@ Nueva instalación</translation>
 <translation id="6941333068993625698">Enviar comentarios</translation>
 <translation id="6942518653766415536">Menú de formato de grabación</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6945922087561257829">El teléfono está usando una red móvil. Asegúrate de que el teléfono y la Chromebook estén conectados a la misma red Wi-Fi y vuelve a intentarlo. <ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">No está activada. Comunícate con tu proveedor.</translation>
 <translation id="6961121602502368900">La opción Silenciar teléfono no está disponible en los perfiles de trabajo</translation>
 <translation id="6961840794482373852">Se modificó la combinación de teclas Alt + flecha hacia arriba. Para usar la tecla Re Pág, presiona la tecla <ph name="LAUNCHER_KEY_NAME" /> + flecha hacia arriba.</translation>
@@ -1333,6 +1338,7 @@ Nueva instalación</translation>
 <translation id="7188494361780961876">El menú se movió a la esquina superior izquierda de la pantalla.</translation>
 <translation id="7189412385142492784">A qué distancia está Venus</translation>
 <translation id="7198435252016571249">Se ajustó la cámara a la esquina inferior derecha. Entra en conflicto con la superficie del sistema.</translation>
+<translation id="7219573373513695352">No hay dispositivos conectados</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Debes reiniciar esta Chromebook para aplicar una actualización. Este proceso puede tardar 1 minuto.</translation>
 <translation id="7256634071279256947">Micrófono posterior</translation>
 <translation id="7258828758145722155">Se editó ayer</translation>
@@ -1483,6 +1489,7 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="7902625623987030061">Toca el sensor de huellas dactilares</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> dispositivos conectados</translation>
 <translation id="7930731167419639574">Ahora la voz se procesa de manera local y el dictado funciona sin conexión</translation>
 <translation id="7932451802722951285">Abrir en el Calendario de Google</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible para el perfil principal.</translation>
@@ -1517,6 +1524,7 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="8051716679295756675">Ya existe una plantilla con el nombre <ph name="DESK_TEMPLATE_NAME" />.</translation>
 <translation id="8052898407431791827">Se copió el elemento en el portapapeles</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
+<translation id="8079538659226626406">Compartir pantalla</translation>
 <translation id="8083540854303889870">Guardados para después</translation>
 <translation id="8091153018031979607">Comienza a las <ph name="START_TIME" /> el día <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">Actualizaciones automáticas</translation>
@@ -1773,7 +1781,6 @@ Para apagarlo, vuelve a mantener presionado el botón de encendido.</translation
 <translation id="954052413789300507">No hay suficiente espacio disponible para <ph name="FILENAME" />. Libera espacio.</translation>
 <translation id="974545358917229949">Mostrando <ph name="RESULT_COUNT" /> resultados para <ph name="QUERY" /></translation>
 <translation id="98120814841227350">Ir al final del documento</translation>
-<translation id="98515147261107953">Horizontal</translation>
 <translation id="989374776391122812">Controles de cámara y audio</translation>
 <translation id="990277280839877440">Se cerró la ventana <ph name="WINDOW_TITILE" />.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

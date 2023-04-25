@@ -943,6 +943,8 @@ if (is_win) {
 
   bundle_data("chrome_framework_resources") {
     sources = [
+      "//ui/gl/resources/angle-metal/gpu_shader_cache.bin",
+
       # This image is used to badge the lock icon in the
       # authentication dialogs, such as those used for installation
       # from disk image and Keystone promotion (if so enabled).  It

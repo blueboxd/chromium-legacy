@@ -7,6 +7,7 @@
 
 #include "ash/public/cpp/desk_template.h"
 #include "base/callback_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -73,7 +74,7 @@ class FloatingWorkspaceService : public KeyedService,
   void OnDeskModelDestroying() override;
   void EntriesAddedOrUpdatedRemotely(
       const std::vector<const DeskTemplate*>& new_entries) override;
-  void EntriesRemovedRemotely(const std::vector<base::GUID>& uuids) override {}
+  void EntriesRemovedRemotely(const std::vector<base::Uuid>& uuids) override {}
 
  private:
   void InitForV1();
@@ -122,7 +123,7 @@ class FloatingWorkspaceService : public KeyedService,
   // Callback function that is run after a floating workspace template
   // is downloaded and launched.
   void OnTemplateLaunched(absl::optional<DesksClient::DeskActionError> error,
-                          const base::GUID& desk_uuid);
+                          const base::Uuid& desk_uuid);
 
   // Callback function that is run after a floating workspace template is
   // captured by `desks_storage::DeskSyncBridge`.
@@ -133,9 +134,10 @@ class FloatingWorkspaceService : public KeyedService,
       desks_storage::DeskModel::AddOrUpdateEntryStatus status,
       std::unique_ptr<DeskTemplate> new_entry);
 
-  Profile* const profile_;
+  const raw_ptr<Profile, ExperimentalAsh> profile_;
 
-  sync_sessions::SessionSyncService* session_sync_service_;
+  raw_ptr<sync_sessions::SessionSyncService, ExperimentalAsh>
+      session_sync_service_;
 
   base::CallbackListSubscription foreign_session_updated_subscription_;
 

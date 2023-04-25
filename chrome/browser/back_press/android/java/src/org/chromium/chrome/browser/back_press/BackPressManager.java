@@ -73,6 +73,7 @@ public class BackPressManager implements Destroyable {
     static final String FAILURE_HISTOGRAM = "Android.BackPress.Failure";
 
     private final BackPressHandler[] mHandlers = new BackPressHandler[Type.NUM_TYPES];
+    private final boolean mUseSystemBack;
 
     private final Callback<Boolean>[] mObserverCallbacks = new Callback[Type.NUM_TYPES];
     private Runnable mFallbackOnBackPressed;
@@ -115,6 +116,8 @@ public class BackPressManager implements Destroyable {
 
     public BackPressManager() {
         mFallbackOnBackPressed = () -> {};
+        mUseSystemBack = MinimizeAppAndCloseTabBackPressHandler.shouldUseSystemBack();
+        backPressStateChanged();
     }
 
     /**
@@ -213,12 +216,10 @@ public class BackPressManager implements Destroyable {
                 removeHandler(i);
             }
         }
-        // All handlers have been removed, so no handler will consume the back event. As a result,
-        // the callback should be disabled so that the OS can handle the back press.
-        assert !mCallback.isEnabled();
     }
 
-    private boolean shouldInterceptBackPress() {
+    @VisibleForTesting
+    boolean shouldInterceptBackPress() {
         for (BackPressHandler handler : mHandlers) {
             if (handler == null) continue;
             if (!Boolean.TRUE.equals(handler.getHandleBackPressChangedSupplier().get())) continue;

@@ -29,11 +29,13 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1104084341931202936">Einstellungen für Bedienungshilfen anzeigen</translation>
 <translation id="1104621072296271835">Vorteile durch das Verbinden deiner Geräte</translation>
 <translation id="1111021433905331574">Du kannst die Farbe der Hintergrundbeleuchtung der Tastatur in den Einstellungen &gt; „<ph name="APP_TITLE" />“ ändern</translation>
+<translation id="1112998165730922436">Streamen pausiert</translation>
 <translation id="112308213915226829">Ablage autom. ausblenden</translation>
 <translation id="1142002900084379065">Aktuelle Fotos</translation>
 <translation id="1148499908455722006">Infodialog für <ph name="USER_NAME" /> öffnen</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Gekoppelte Geräte</translation>
+<translation id="1160215328209699296">eingeschaltet und wird verwendet</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Dein USB-C-Kabel ist nicht zum Verbinden von Bildschirmen geeignet</translation>
 <translation id="1175572348579024023">Scrollen</translation>
@@ -225,6 +227,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="1978498689038657292">Texteingabe</translation>
 <translation id="1980808257969311265"><ph name="EVENT_SUMMARY" /> beitreten</translation>
 <translation id="1982717156487272186">Vorherige Woche anzeigen</translation>
+<translation id="1986150224850161328">Achte darauf, dass sich dein Smartphone und dein Chromebook im selben Netzwerk befinden, und versuche es dann noch einmal. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">Inhalt kann nicht aufgenommen werden</translation>
 <translation id="1990046457226896323">Sprachdateien heruntergeladen</translation>
 <translation id="1993072747612765854">Weitere Informationen zum aktuellen <ph name="SYSTEM_APP_NAME" />-Update</translation>
@@ -238,9 +241,9 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2023558322300866873">Du kannst die Paketaufnahme jederzeit beenden</translation>
 <translation id="2034971124472263449">Trotzdem speichern</translation>
 <translation id="2049240716062114887">Der Name des Desktops wurde zu "<ph name="DESK_NAME" />" geändert</translation>
-<translation id="2050339315714019657">Hochformat</translation>
 <translation id="2064048859448024834">Kameravorschau wird angezeigt</translation>
 <translation id="2067602449040652523">Tastaturhelligkeit</translation>
+<translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> ein-/ausschalten. <ph name="CAPTURE_MEDIUM" /> ist <ph name="CAPTURE_STATE" />.</translation>
 <translation id="2078034614700056995">Wische mit vier Fingern nach rechts, um zum nächsten Desktop zu wechseln</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
 <translation id="2083190527011054446">Gute Nacht <ph name="GIVEN_NAME" />,</translation>
@@ -325,6 +328,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2487915095798731898">Übernehmen</translation>
 <translation id="2501920221385095727">Sticky Keys</translation>
 <translation id="2509468283778169019">Feststelltaste aktiviert</translation>
+<translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> beenden. <ph name="CAPTURE_MEDIUM" /> ist <ph name="CAPTURE_STATE" />.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Fenster entsperren</translation>
 <translation id="2530896289327917474">Tastaturnavigation aktivieren oder deaktivieren</translation>
@@ -374,6 +378,7 @@ Hier sind ein paar Dinge, die du tun kannst, um loszulegen.</translation>
 <translation id="2761723519669354964">Hervorgehobenes Element in der Ablage öffnen</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> verwaltet von <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Aufnahmemodus beenden</translation>
+<translation id="2785499565474703580">1 Gerät verbunden</translation>
 <translation id="2791421900609674576">Empfehlungen werden angezeigt, damit du dort fortfahren kannst, wo du aufgehört hast. Durch Berühren und Halten kannst du Empfehlungen entfernen.</translation>
 <translation id="2792498699870441125">Alt+Suchtaste</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
@@ -1277,6 +1282,7 @@ Neuinstallation</translation>
 <translation id="6941333068993625698">Feedback geben</translation>
 <translation id="6942518653766415536">Menü für Aufnahmeformat</translation>
 <translation id="6945221475159498467">Auswählen</translation>
+<translation id="6945922087561257829">Dein Smartphone ist mit einem Mobilfunknetz verbunden. Achte darauf, dass dein Smartphone und dein Chromebook mit demselben WLAN verbunden sind, und versuche es dann noch einmal. <ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">Nicht aktiviert. Wende dich bitte an deinen Mobilfunkanbieter.</translation>
 <translation id="6961121602502368900">„Smartphone stummschalten“ ist im Arbeitsprofil nicht verfügbar</translation>
 <translation id="6961840794482373852">Die Tastenkombination Alt + Aufwärtspfeil hat sich geändert. Wenn du jetzt die Seite-nach-oben-Taste benötigst, drücke <ph name="LAUNCHER_KEY_NAME" />-Taste + Aufwärtspfeil.</translation>
@@ -1331,10 +1337,11 @@ Neuinstallation</translation>
 <translation id="7188494361780961876">Menü wurde nach links oben auf dem Bildschirm verschoben.</translation>
 <translation id="7189412385142492784">Wie weit ist die Venus entfernt?</translation>
 <translation id="7198435252016571249">Kamera ist an der unteren rechten Ecke angepinnt. Konflikt mit der Systemoberfläche.</translation>
+<translation id="7219573373513695352">Keine verbundenen Geräte</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Dieses Chromebook muss zur Installation eines Updates neu gestartet werden. Dies kann bis zu einer Minute dauern.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="7258828758145722155">Gestern bearbeitet</translation>
-<translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
+<translation id="726276584504105859">Für Splitscreen hierher ziehen</translation>
 <translation id="7262906531272962081">Erinnerung erstellen</translation>
 <translation id="7297440678881127227"><ph name="START_TIME" /> bis
         <ph name="END_TIME" />,
@@ -1481,6 +1488,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="7902625623987030061">Fingerabdrucksensor berühren</translation>
 <translation id="7904094684485781019">Der Administrator dieses Kontos hat keine Mehrfachanmeldung zugelassen.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> Geräte verbunden</translation>
 <translation id="7930731167419639574">Die Sprachdateien werden nun lokal verarbeitet und die Spracheingabe funktioniert offline</translation>
 <translation id="7932451802722951285">In Google Kalender öffnen</translation>
 <translation id="7933084174919150729">Google Assistant ist nur für das Hauptprofil verfügbar.</translation>
@@ -1515,6 +1523,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="8051716679295756675">Eine Vorlage namens „<ph name="DESK_TEMPLATE_NAME" />“ ist bereits vorhanden</translation>
 <translation id="8052898407431791827">In Zwischenablage kopiert</translation>
 <translation id="8054466585765276473">Akku-Laufzeit wird berechnet.</translation>
+<translation id="8079538659226626406">Bildschirmfreigabe</translation>
 <translation id="8083540854303889870">Für später gespeichert</translation>
 <translation id="8091153018031979607">Beginnt um <ph name="START_TIME" /> Uhr <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">Automatische Updates</translation>
@@ -1680,7 +1689,7 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="8858369206579825206">Datenschutzeinstellungen</translation>
 <translation id="8860817004574502558">Akkulaufzeit</translation>
 <translation id="8863602954531760927"><ph name="STORAGE_IN_USE_SIZE" /> belegt / <ph name="STORAGE_TOTAL_SIZE" /></translation>
-<translation id="8870509716567206129">Das Teilen des Bildschirms wird in dieser App nicht unterstützt.</translation>
+<translation id="8870509716567206129">Splitscreen wird in dieser App nicht unterstützt.</translation>
 <translation id="8874184842967597500">Nicht verbunden</translation>
 <translation id="8875021410787719674">Zwischen der unteren rechten Ecke, dem Launcher, der Adressleiste, der Lesezeichenleiste, der geöffneten Website und den Downloads wechseln</translation>
 <translation id="8876148469852588625">Termin <ph name="EVENT_POSITION" /> von <ph name="EVENT_TOTAL_COUNT" /></translation>
@@ -1771,7 +1780,6 @@ Halte zum Herunterfahren des Geräts die Ein-/Aus-Taste noch einmal gedrückt.</
 <translation id="954052413789300507">Nicht genug Speicherplatz für „<ph name="FILENAME" />“. Gib Speicherplatz frei.</translation>
 <translation id="974545358917229949"><ph name="RESULT_COUNT" /> Suchergebnisse für "<ph name="QUERY" />"</translation>
 <translation id="98120814841227350">Zum Ende des Dokuments springen</translation>
-<translation id="98515147261107953">Querformat</translation>
 <translation id="989374776391122812">Kamera- und Audiosteuerung</translation>
 <translation id="990277280839877440">Fenster "<ph name="WINDOW_TITILE" />" geschlossen.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

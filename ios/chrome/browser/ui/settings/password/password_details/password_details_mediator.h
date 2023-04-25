@@ -13,7 +13,6 @@
 
 namespace password_manager {
 struct CredentialUIEntry;
-class PasswordManagerClient;
 }  // namespace password_manager
 
 namespace syncer {
@@ -21,18 +20,9 @@ class SyncService;
 }  // namespace syncer
 
 class PrefService;
-
 class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsConsumer;
-
-// Provides PasswordManagerClient (per-tab object) on-demand, so there's no need
-// to worry about tabs being closed.
-class PasswordManagerClientProvider {
- public:
-  virtual ~PasswordManagerClientProvider() = default;
-
-  virtual password_manager::PasswordManagerClient* GetAny() = 0;
-};
+@protocol PasswordDetailsMediatorDelegate;
 
 // This mediator fetches and organises the credentials for its consumer.
 @interface PasswordDetailsMediator
@@ -49,8 +39,7 @@ class PasswordManagerClientProvider {
                       prefService:(PrefService*)prefService
                       syncService:(syncer::SyncService*)syncService
                           context:(DetailsContext)context
-    passwordManagerClientProvider:
-        (PasswordManagerClientProvider*)passwordManagerClientProvider
+                         delegate:(id<PasswordDetailsMediatorDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -76,6 +65,9 @@ class PasswordManagerClientProvider {
 // Returns YES if the account stores the same username for the website with a
 // different password, NO otherwise.
 - (BOOL)hasPasswordConflictInAccount:(PasswordDetails*)password;
+
+// Dismisses the compromised credential warning.
+- (void)didConfirmWarningDismissalForPassword:(PasswordDetails*)password;
 
 @end
 

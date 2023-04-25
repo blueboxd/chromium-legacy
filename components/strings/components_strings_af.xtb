@@ -37,7 +37,6 @@
 <translation id="10614374240317010">Nooit gestoor nie</translation>
 <translation id="1064054731605354900">A3x5</translation>
 <translation id="106701514854093668">Werkskermboekmerke</translation>
-<translation id="1067561478268651872">Die <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />-beleid word nie gebruik nie, tensy die <ph name="SECURE_DNS_SALT" />-beleid gestel is.</translation>
 <translation id="1068672505746868501">Moet nooit bladsye in <ph name="SOURCE_LANGUAGE" /> vertaal nie</translation>
 <translation id="1070853536588271387">Hibried- en alternatiewe voertuie</translation>
 <translation id="1070901266639972381">Nag</translation>
@@ -307,6 +306,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="1658918301167915956">bluetooth-toestelle</translation>
 <translation id="1662550410081243962">Stoor en vul betaalmetodes in</translation>
 <translation id="1663943134801823270">Kaarte en adresse kom uit Chrome. Jy kan hulle in <ph name="BEGIN_LINK" />Instellings<ph name="END_LINK" /> bestuur.</translation>
+<translation id="1668071460721346172">Kry ’n e-pos</translation>
 <translation id="1671391448414634642">Bladsye in <ph name="SOURCE_LANGUAGE" /> sal van nou af in <ph name="TARGET_LANGUAGE" /> vertaal word.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> na <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Kort kant eerste</translation>
@@ -367,6 +367,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="1806174020048213474">Hierdie app versoek toestemming om wi-fi-eiebewyse te installeer. Jou <ph name="DEVICE_TYPE" /> sal ná die opstelling outomaties aan deelnemende wi-fi-netwerke koppel. Deïnstalleer die app om hierdie eiebewyse te verwyder.</translation>
 <translation id="1807246157184219062">Lig</translation>
 <translation id="1807528111851433570">Beginbladsy</translation>
+<translation id="180757923930449935">(64-bis geëmuleer)</translation>
 <translation id="180991881384371158">Jou CVC is op die agterkant van jou kaart. Dis die laaste 3 syfers bo regs in die handtekeningkassie.</translation>
 <translation id="181000283860817563">Spoor pryse op veelvuldige werwe na</translation>
 <translation id="1810391395243432441">Beskerm wagwoorde met jou skermslot</translation>
@@ -437,6 +438,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2003775180883135320">Vierpons bo</translation>
 <translation id="201174227998721785">Bestuur toestemmings en data wat op werwe geberg is in Chrome-instellings</translation>
 <translation id="2019607688127825327">Knoppie om toeganklikheidsinstellings te bestuur; druk Enter om jou toeganklikheidsnutsgoed in Chrome-instellings te personaliseer</translation>
+<translation id="2021333772895814435">Hierdie beleid deaktiveer outomaties sinkronisering tussen toestelle vir: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">12x19 dm.</translation>
 <translation id="2025115093177348061">Aangevulde realiteit</translation>
 <translation id="2025186561304664664">Instaanbediener is gestel om outomaties op te stel.</translation>
@@ -510,6 +512,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2166049586286450108">Volle administrateurtoegang</translation>
 <translation id="2166378884831602661">Hierdie werf kan nie 'n veilige verbinding bied nie</translation>
 <translation id="2168151236314517198">Administrateursbeleid verhoed dat hierdie inhoud gedruk kan word</translation>
+<translation id="2176974405772725904">Stoor adres in rekening</translation>
 <translation id="2181821976797666341">Beleide</translation>
 <translation id="2183608646556468874">Foonnommer</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 adres}other{# adresse}}</translation>
@@ -523,7 +526,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2204482073374652408">Klaar opgedateer!</translation>
 <translation id="22081806969704220">Laai 3</translation>
 <translation id="2210794033760923560">Laai verslag op</translation>
-<translation id="2212579473415663542">Hierdie adres is in jou Google-rekening (<ph name="ACCOUNT" />) gestoor. Jy kan die adres in verskillende Google-produkte op enige toestel gebruik.</translation>
 <translation id="2212735316055980242">Beleid nie gevind nie</translation>
 <translation id="2213606439339815911">Gaan haal tans inskrywings …</translation>
 <translation id="2213612003795704869">Bladsy is gedruk</translation>
@@ -638,6 +640,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2521736961081452453">Skep vorm</translation>
 <translation id="2523886232349826891">Net op hierdie toestel gestoor</translation>
 <translation id="2524461107774643265">Voeg meer inligting by</translation>
+<translation id="2526280916094749336">Jy kan gestoorde adresse in alle Google-produkte gebruik. Hierdie adres sal in jou Google-rekening, <ph name="ACCOUNT" />, gestoor word.</translation>
 <translation id="2527451058878391043">Jou CVC is op die voorkant van jou kaart. Dis die 4-syferkode bo regs bo jou kaartnommer.</translation>
 <translation id="2529899080962247600">Hierdie veld moenie meer as <ph name="MAX_ITEMS_LIMIT" /> inskrywings hê nie. Alle verdere inskrywings sal geïgnoreer word.</translation>
 <translation id="253493526287553278">Sien promosiekodebesonderhede</translation>
@@ -1224,6 +1227,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4031179711345676612">Mikrofoon word toegelaat</translation>
 <translation id="4040350669425716613">Kolleges en universiteite</translation>
 <translation id="4047351652147966654">18x24 dm.</translation>
+<translation id="4047620889508350431">Jy kan nou adresse uit jou Google-rekening gebruik.</translation>
 <translation id="405399507749852140">Kry kennisgewings as die prys op enige werf daal</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4063063121357725926">Laat Google jou help om afslag vir jou mandjies te kry</translation>
@@ -1736,6 +1740,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">Verwerp</translation>
+<translation id="5238301240406177137">Stoor in rekening</translation>
 <translation id="5239623327352565343">Ligging toegelaat</translation>
 <translation id="5242889659037569123">Bagasie en reisbykomstighede</translation>
 <translation id="5244732203286792411">Laai tans …
@@ -1754,7 +1759,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5273881944177595304">Webprogramme en aanlyn nutsgoed</translation>
 <translation id="5274025349362408263">Boeke en literatuur</translation>
 <translation id="5279286380302340275">Bestuur aflaaie</translation>
-<translation id="5279453600310613955">Nee, dankie</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Dokumenteienskappe</translation>
 <translation id="528468243742722775">Einde</translation>
@@ -1919,7 +1923,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5695542892312572833">Gebruik Windows Hello om jou aankoop te verifieer en te voltooi?</translation>
 <translation id="5701381305118179107">Sentreer</translation>
 <translation id="570530837424789914">Bestuur …</translation>
-<translation id="5706906618852913030">Stoor in rekening?</translation>
 <translation id="5707154300732650394">Hervat jou reis</translation>
 <translation id="57094364128775171">Stel sterk wagwoord voor …</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2066,6 +2069,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6051221802930200923">Jy kan nie <ph name="SITE" /> nou onmiddellik besoek nie omdat die webwerf sertifikaatvasspelding gebruik. Netwerkfoute en -aanvalle is gewoonlik tydelik en daarom sal hierdie bladsy waarskynlik later werk.</translation>
 <translation id="6051898664905071243">Aantal bladsye:</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6053584886670442526">Jy kan gestoorde adresse in alle Google-produkte gebruik. Hierdie adres is in jou Google-rekening, <ph name="ACCOUNT" />, gestoor.</translation>
 <translation id="6053735090575989697">Kom in ons privaatheidsbeleid meer te wete oor hoe Google jou data beskerm.</translation>
 <translation id="6055888660316801977">Blad vir geen passende eiebewys vir veilige betalingeiebewys</translation>
 <translation id="6058977677006700226">Gebruik jou kaarte op al jou toestelle?</translation>
@@ -2106,6 +2110,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6165508094623778733">Kom meer te wete</translation>
 <translation id="6167577165590485365">Laaste haalpoging:</translation>
 <translation id="6169916984152623906">Jy kan nou privaat blaai en ander mense wat hierdie toestel gebruik sal nie jou aktiwiteit sien nie. Aflaaie en boekmerke sal egter gestoor word.</translation>
+<translation id="617256461084925519">Google Chrome probeer verifieer dat dit jy is sodat dit jou betaalinligting kan invul.</translation>
 <translation id="6177128806592000436">Jou verbinding aan hierdie werf is nie veilig nie</translation>
 <translation id="6177531123306197852">Koevert C2</translation>
 <translation id="6180316780098470077">Herprobeer-interval</translation>
@@ -2144,6 +2149,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6279183038361895380">Druk |<ph name="ACCELERATOR" />| om jou merker te wys</translation>
 <translation id="6280223929691119688">Kan nie by hierdie adres aflewer nie. Kies 'n ander adres.</translation>
 <translation id="6284292079994426700">26x38 dm.</translation>
+<translation id="6284517535531159884">Variasiesaadtipe</translation>
 <translation id="6285507000506177184">Knoppie om aflaaie in Chrome te bestuur; druk Enter om lêers wat jy in Chrome afgelaai het, te bestuur</translation>
 <translation id="6289939620939689042">Bladsykleur</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -2153,7 +2159,6 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6301104306974789820">Kry prysnasporingkennisgewings</translation>
 <translation id="6305205051461490394"><ph name="URL" /> is onbereikbaar.</translation>
 <translation id="6306713302480826305">Hierdie adres sal op hierdie en jou ander aangemelde toestelle uitgevee word</translation>
-<translation id="6311165245110979290">Virtuele kaart is beskikbaar</translation>
 <translation id="6312113039770857350">Webbladsy is nie beskikbaar nie</translation>
 <translation id="6316226860534107313">Bromponies en kragfietse</translation>
 <translation id="63172326633386613">Bestuur toeganklikheidsinstellings</translation>
@@ -2244,6 +2249,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6513005815064132016">Kan vra om jou kameraposisie na te spoor</translation>
 <translation id="6517596291481585650">Waarskuwing: Hierdie beleid is nie saamgevoeg as 'n lys soos deur die beleid gespesifiseer nie omdat dit nie 'n lys is nie.</translation>
 <translation id="6518133107902771759">Verifieer</translation>
+<translation id="65203098586853226">Vertaal uit <ph name="SOURCE" /> in <ph name="TARGET" /></translation>
 <translation id="6521745193039995384">Onaktief</translation>
 <translation id="6529173248185917884">Sewende rol</translation>
 <translation id="6529602333819889595">Herdoen uitvee</translation>
@@ -2253,6 +2259,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6545864417968258051">Bluetooth-opsporing</translation>
 <translation id="6547208576736763147">Dubbelpons links</translation>
 <translation id="6549443526281184652">Kostuums</translation>
+<translation id="6551873053534932690">Stoor adres in rekening?</translation>
 <translation id="6554732001434021288">Laas <ph name="NUM_DAYS" /> dae gelede besoek</translation>
 <translation id="6556866813142980365">Herdoen</translation>
 <translation id="6557715786897013164">14x17 dm.</translation>
@@ -2317,6 +2324,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6716672519412350405"><ph name="URL" /> wil 'n 3D-kaart van jou omgewing skep en kameraposisie naspoor.</translation>
 <translation id="6718612893943028815">Gebruik kamera?</translation>
 <translation id="6721678857435001674">Sien die maak en model van jou sekuriteitsleutel</translation>
+<translation id="6726832600570791992">(32-bis geëmuleer)</translation>
 <translation id="6727094998759448074">SRA4</translation>
 <translation id="6732087373923685049">kamera</translation>
 <translation id="6738516213925468394">Jou data is om <ph name="TIME" /> met jou <ph name="BEGIN_LINK" />sinkroniseringwagfrase<ph name="END_LINK" /> geënkripeer. Voer dit in om sinkronisering te begin.</translation>
@@ -2657,6 +2665,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="7518003948725431193">Geen webbladsy is vir die volgende webadres gevind nie: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7521825010239864438">"<ph name="SECTION" />"-afdeling is versteek</translation>
+<translation id="752189128961566325">Jy kan dit in alle Google-produkte gebruik</translation>
 <translation id="7523408071729642236">Vervaardiging</translation>
 <translation id="7526934274050461096">Jou verbinding aan hierdie werf is nie privaat nie</translation>
 <translation id="7529884293139707752">Tuisonderwys</translation>
@@ -2884,6 +2893,7 @@ om uit te vind hoe om die sagteware permanent van jou rekenaar te verwyder&lt;/o
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" is nie reg opgestel nie."<ph name="SOFTWARE_NAME" />" stel gewoonlik die probleem reg. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8058009102480785916">Voedselproduksie</translation>
 <translation id="8058603697124206642">Nie vereis nie</translation>
+<translation id="8064892030280197386">verifieer dat dit jy is sodat dit jou betaalinligting kan invul.</translation>
 <translation id="8066225060526005217">Bestuur deur webkoekie-instellings</translation>
 <translation id="8067872629359326442">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium kan help. Klik Beskerm Rekening om jou wagwoord te verander en stel Google in kennis dat jou rekening dalk in gevaar is.</translation>
 <translation id="8070439594494267500">Programikoon</translation>
@@ -3215,7 +3225,6 @@ Bykomende besonderhede:
 <translation id="8913778647360618320">Bestuur Betaalmetodes-knoppie; druk Enter om jou betalings- en kredietkaartinligting in Chrome-instellings te bestuur</translation>
 <translation id="8922013791253848639">Laat advertensies altyd op hierdie werf toe</translation>
 <translation id="892588693504540538">Pons regs bo</translation>
-<translation id="8930098617363288380">Die <ph name="SECURE_DNS_SALT" />-waarde is nie relevant nie, en sal nie gebruik word nie, tensy die <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />-beleid gestel is.</translation>
 <translation id="8930330541574156305">Eiendom</translation>
 <translation id="8931333241327730545">Wil jy hierdie kaart in jou Google-rekening stoor?</translation>
 <translation id="8932102934695377596">Jou horlosie is agter</translation>

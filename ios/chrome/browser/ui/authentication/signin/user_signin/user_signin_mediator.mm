@@ -111,7 +111,7 @@
     // We need to set Sync requested in order to display the preferences
     // correctly and differentiate the special state where the user is
     // signed in, but the sync feature can't start yet.
-    self.syncService->GetUserSettings()->SetSyncRequested();
+    self.syncService->SetSyncFeatureRequested();
   } else {
     [self.delegate userSigninMediatorSigninFailed];
   }
@@ -174,10 +174,6 @@
       NOTREACHED_NORETURN();
     }
   }
-
-  // All codepaths above clear the sync-requested bit, either because the user
-  // is signed out or because SyncService::StopAndClear() does the job.
-  CHECK(!self.syncService->GetUserSettings()->IsSyncRequested());
 }
 
 - (void)signinWithIdentityOnStartAfterSignout {

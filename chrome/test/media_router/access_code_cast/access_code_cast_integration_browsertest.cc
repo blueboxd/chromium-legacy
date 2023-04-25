@@ -19,6 +19,7 @@
 #include "chrome/browser/media/router/chrome_media_router_factory.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_constants.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_pref_updater_impl.h"
 #include "chrome/browser/media/router/discovery/media_sink_discovery_metrics.h"
 #include "chrome/browser/media/router/providers/cast/dual_media_sink_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -555,7 +556,7 @@ void AccessCodeCastIntegrationBrowserTest::ExpectStartRouteCallFromTabMirroring(
                                   _, timeout, false));
 }
 
-raw_ptr<AccessCodeCastPrefUpdater>
+AccessCodeCastPrefUpdater*
 AccessCodeCastIntegrationBrowserTest::GetPrefUpdater() {
   return AccessCodeCastSinkServiceFactory::GetForProfile(browser()->profile())
       ->pref_updater_.get();

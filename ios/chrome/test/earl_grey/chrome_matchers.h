@@ -132,6 +132,9 @@ id<GREYMatcher> OmniboxText(const std::string& text);
 // Returns a matcher for `text` being a substring of the text in the omnibox.
 id<GREYMatcher> OmniboxContainingText(const std::string& text);
 
+// Returns a matcher for omnibox autocomplete.
+id<GREYMatcher> OmniboxAutocompleteLabel();
+
 // Returns a matcher for `text` being a substring of the text in the location
 // view.
 id<GREYMatcher> LocationViewContainingText(const std::string& text);
@@ -287,7 +290,7 @@ id<GREYMatcher> SettingsPrivacyTableView();
 id<GREYMatcher> SettingsPrivacySafeBrowsingTableView();
 
 // Returns a matcher for the notifications settings table view.
-id<GREYMatcher> SettingsPriceNotificationsTableView();
+id<GREYMatcher> SettingsNotificationsTableView();
 
 // Returns a matcher for the tracking price settings table view.
 id<GREYMatcher> SettingsTrackingPriceTableView();
@@ -320,9 +323,9 @@ id<GREYMatcher> SettingsMenuPrivacyButton();
 // Returns a matcher for the Save passwords cell on the main Settings screen.
 id<GREYMatcher> SettingsMenuPasswordsButton();
 
-// Returns a matcher for the Price Notifications cell on the main Settings
+// Returns a matcher for the Notifications cell on the main Settings
 // screen.
-id<GREYMatcher> SettingsMenuPriceNotificationsButton();
+id<GREYMatcher> SettingsMenuNotificationsButton();
 
 // Returns a matcher for the payment request collection view.
 id<GREYMatcher> PaymentRequestView();
@@ -396,6 +399,12 @@ id<GREYMatcher> SystemSelectionCalloutLinkToTextButton();
 
 // Returns a matcher for the copy button on the system selection callout.
 id<GREYMatcher> SystemSelectionCalloutCopyButton();
+
+// Returns a matcher for the cut button on the system selection callout.
+id<GREYMatcher> SystemSelectionCalloutCutButton();
+
+// Returns a matcher for the paste button on the system selection callout.
+id<GREYMatcher> SystemSelectionCalloutPasteButton();
 
 // Returns a matcher for the system selection callout overflow button to show
 // more menu items.

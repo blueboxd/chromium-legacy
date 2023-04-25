@@ -342,7 +342,6 @@ html.col-resize .jelly-splitter:not(.splitter-active):hover {
 .dialog-header {
   align-items: center;
   background: none;
-  border-bottom: 1px solid var(--cros-separator-color);
   box-sizing: border-box;
   color: var(--cros-text-color-secondary);
   display: flex;
@@ -2138,6 +2137,8 @@ body.files-ng #list-container li .detail-checkmark {
   color: var(--cros-sys-on_surface);
 }
 
+#list-container .list .encryption-status,
+#list-container .list .encryption-status xf-icon,
 #list-container .list .inline-status,
 #list-container .list .inline-status .progress,
 #list-container .list .inline-status xf-icon {
@@ -2151,6 +2152,8 @@ body.files-ng #list-container li .detail-checkmark {
   justify-content: center;
 }
 
+#list-container .list li.encrypted:not([renaming]) .encryption-status,
+#list-container .list li.encrypted:not([renaming]) .encryption-status xf-icon[type=encrypted],
 #list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status,
 #list-container .list li.pinned:not([renaming]):not(.dim-offline) .inline-status xf-icon,
 #list-container .list li:not([renaming])[data-sync-status]:not([data-sync-status=not_found]) .inline-status,
@@ -2158,8 +2161,17 @@ body.files-ng #list-container li .detail-checkmark {
   display: flex;
 }
 
+#list-container .list li.encrypted .encryption-status xf-icon[type=encrypted],
 #list-container .list li.pinned .inline-status xf-icon[type=offline] {
   --xf-icon-color: currentColor;
+}
+
+#list-container .list li.encrypted:not([renaming]) .filename-label {
+  flex-grow: 0;
+}
+
+#list-container .list li.encrypted:not([renaming]) .encryption-status {
+  flex-grow: 1;
 }
 
 #new-folder-button {
@@ -2188,7 +2200,7 @@ body.files-ng #list-container li .detail-checkmark {
 }
 
 .install-linux-package-details-frame {
-  border: 1px solid var(--cros-separator-color);
+  border: 1px solid var(--cros-sys-separator);
   display: block;
   height: 150px;
   overflow: scroll;
@@ -2205,13 +2217,13 @@ body.files-ng #list-container li .detail-checkmark {
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-label {
-  color: var(--cros-text-color-primary);
+  color: var(--cros-sys-on_surface);
   display: inline;
   margin-inline-end: 5px;
 }
 
 .cr-dialog-container.files-ng .install-linux-package-detail-value {
-  color: var(--cros-text-color-secondary);
+  color: var(--cros-sys-secondary);
   display: inline;
   margin-bottom: 5px;
   white-space: pre-wrap;
@@ -2390,21 +2402,18 @@ files-tooltip:not(:defined) {
 }
 
 #banners > *:not([hidden]) {
-  background-color: var(--cros-bg-color-elevation-1);
+  background-color: var(--cros-sys-app_base_shaded);
   border-radius: 8px;
-  box-shadow: var(--cros-elevation-1-shadow);
   height: auto;
-  margin-bottom: 4px;
   margin-inline-end: 16px;
-  margin-inline-start: 0;
-  margin-top: 16px;
+  margin-inline-start: 16px;
   max-height: 300px;
   min-height: 46px;
   opacity: 1;
-  padding-bottom: 12px;
+  padding-bottom: 13px;
   padding-inline-end: 8px;
   padding-inline-start: 0;
-  padding-top: 12px;
+  padding-top: 13px;
   visibility: visible;
 }
 

@@ -517,6 +517,7 @@
 <translation id="5423849171846380976">Na-activate</translation>
 <translation id="5430931332414098647">Instant na Pag-tether</translation>
 <translation id="5431318178759467895">Kulay</translation>
+<translation id="5456936324019847994">Hindi makakonekta sa kahit anong naka-enable na custom na APN. Makipag-ugnayan sa iyong mobile carrier para sa higit pang impormasyon.</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{{0} pagsubok na lang ang natitira}one{{0} pagsubok na lang ang natitira}other{{0} na pagsubok na lang ang natitira}}</translation>
@@ -572,6 +573,7 @@
 <translation id="5931523347251946569">Hindi nahanap ang file</translation>
 <translation id="5939518447894949180">I-reset</translation>
 <translation id="594552776027197022">Bumuo ng random na keypair</translation>
+<translation id="5946538341867151940">Hindi ka pa nakakonekta. Kung nagrerekomenda ang iyong mobile carrier ng custom na APN, ilagay ang impormasyon ng APN sa pamamagitan ng pagpili sa "+ Bagong APN"</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Default na Wallpaper</translation>
 <translation id="6017514345406065928">Berde</translation>
@@ -727,6 +729,7 @@
 <translation id="7281657306185710294">Feel the breeze</translation>
 <translation id="7287310195820267359">Mga Koleksyon ng Wallpaper</translation>
 <translation id="7297226631177386107">Hindi makakonekta sa pamamagitan ng firewall sa mga HTTPS na website</translation>
+<translation id="7297726121602187087">Dark green</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Magtanong sa mga eksperto sa forum ng tulong ng Chromebook</translation>
@@ -761,6 +764,7 @@
 <translation id="7570674786725311828">USB na touchscreen</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> pa</translation>
 <translation id="7613724632293948900">Baguhin ang posisyon gamit ang mouse o mga arrow key.</translation>
+<translation id="7618774594543487847">Neutral</translation>
 <translation id="7620771111601174153">Matuto pa sa Help Center</translation>
 <translation id="763165478673169849">Oras ng Huling Pag-reset</translation>
 <translation id="7648838807254605802">Mataas na latency ng HTTPS</translation>

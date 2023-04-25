@@ -517,6 +517,7 @@
 <translation id="5423849171846380976">Aktiviert</translation>
 <translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431318178759467895">Farbe</translation>
+<translation id="5456936324019847994">Es kann keine Verbindung zu aktivierten benutzerdefinierten APNs hergestellt werden. Wende dich für weitere Informationen an deinen Mobilfunkanbieter.</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="54609108002486618">Verwaltet</translation>
 <translation id="5478289488939624992">{ATTEMPTS_LEFT,plural, =1{Noch {0} Versuch}other{Noch {0} Versuche}}</translation>
@@ -572,6 +573,7 @@
 <translation id="5931523347251946569">Datei nicht gefunden</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="594552776027197022">Zufälliges Schlüsselpaar generieren</translation>
+<translation id="5946538341867151940">Du bist noch nicht verbunden. Wenn dein Mobilfunkanbieter einen benutzerdefinierten APN empfiehlt, wähle die Option „Neuer APN“ aus, um die APN-Informationen einzugeben.</translation>
 <translation id="5972388717451707488">Update Engine</translation>
 <translation id="5984145644188835034">Standardhintergrund</translation>
 <translation id="6017514345406065928">Grün</translation>
@@ -727,6 +729,7 @@
 <translation id="7281657306185710294">Sanfte Brise</translation>
 <translation id="7287310195820267359">Hintergrundsammlungen</translation>
 <translation id="7297226631177386107">Eine Verbindung zu HTTPS-Websites durch eine Firewall ist nicht möglich</translation>
+<translation id="7297726121602187087">Dunkelgrün</translation>
 <translation id="7302860742311162920">ICCID</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Experten im Chromebook-Hilfeforum fragen</translation>
@@ -761,6 +764,7 @@
 <translation id="7570674786725311828">USB-Touchscreen</translation>
 <translation id="7595982850646262331">Noch <ph name="TIME_VALUE" /></translation>
 <translation id="7613724632293948900">Mit Maus oder Pfeiltasten neu positionieren.</translation>
+<translation id="7618774594543487847">Neutral</translation>
 <translation id="7620771111601174153">Weitere Informationen in der Hilfe</translation>
 <translation id="763165478673169849">Zuletzt zurückgesetzt</translation>
 <translation id="7648838807254605802">Hohe HTTPS-Latenz</translation>

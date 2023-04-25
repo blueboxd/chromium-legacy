@@ -537,7 +537,8 @@ class VideoResourceUpdater::HardwarePlaneResource
     auto* sii = SharedImageInterface();
     mailbox_ = sii->CreateSharedImage(
         format, size, color_space, kTopLeft_GrSurfaceOrigin,
-        kPremul_SkAlphaType, shared_image_usage, gpu::kNullSurfaceHandle);
+        kPremul_SkAlphaType, shared_image_usage, "VideoResourceUpdater",
+        gpu::kNullSurfaceHandle);
     ContextGL()->WaitSyncTokenCHROMIUM(
         sii->GenUnverifiedSyncToken().GetConstData());
   }
@@ -1413,8 +1414,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         for (int row = 0; row < resource_size_pixels.height(); ++row) {
           uint16_t* dst = reinterpret_cast<uint16_t*>(
               &upload_pixels_[upload_image_stride * row]);
-          const uint16_t* src = reinterpret_cast<uint16_t*>(
-              video_frame->writable_data(i) + (video_stride_bytes * row));
+          const uint16_t* src = reinterpret_cast<const uint16_t*>(
+              video_frame->data(i) + (video_stride_bytes * row));
           half_float_maker->MakeHalfFloats(src, bytes_per_row / 2, dst);
         }
       } else if (needs_bit_downshifting) {
@@ -1422,7 +1423,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
                plane_si_format == viz::SinglePlaneFormat::kR_8);
         const int scale = 0x10000 >> (bits_per_channel - 8);
         libyuv::Convert16To8Plane(
-            reinterpret_cast<uint16_t*>(video_frame->writable_data(i)),
+            reinterpret_cast<const uint16_t*>(video_frame->data(i)),
             video_stride_bytes / 2, upload_pixels_.get(), upload_image_stride,
             scale, bytes_per_row, resource_size_pixels.height());
       } else {

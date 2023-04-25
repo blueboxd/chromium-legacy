@@ -49,7 +49,8 @@ NSArray<PasswordIssue*>* GetSortedPasswordIssues(
 
   BOOL enable_compromised_description =
       IsPasswordCheckupEnabled() &&
-      warning_type == WarningType::kCompromisedPasswordsWarning;
+      (warning_type == WarningType::kCompromisedPasswordsWarning ||
+       warning_type == WarningType::kDismissedWarningsWarning);
 
   for (auto credential : insecure_credentials) {
     [passwords addObject:[[PasswordIssue alloc] initWithCredential:credential
@@ -242,6 +243,11 @@ NSInteger GetDismissedWarningsCount(
   [self setConsumerHeader];
 
   [self providePasswordsToConsumer];
+}
+
+- (BOOL)hasOneIssueLeft {
+  return _insecureCredentials.has_value() &&
+         _insecureCredentials->size() == 1 && _dismissedWarningsCount == 0;
 }
 
 #pragma mark - PasswordCheckObserver

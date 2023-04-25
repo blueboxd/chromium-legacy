@@ -29,11 +29,13 @@
 <translation id="1104084341931202936">نشان دادن تنظیمات دسترس‌پذیری</translation>
 <translation id="1104621072296271835">دستگاه‌هایتان باهم به‌مراتب بهتر کار می‌کنند</translation>
 <translation id="1111021433905331574">می‌توانید رنگ نور پس‌زمینه صفحه‌کلید را در اینجا تغییر دهید: «تنظیمات &gt; <ph name="APP_TITLE" />»</translation>
+<translation id="1112998165730922436">پخش محتوا موقتاً متوقف شد</translation>
 <translation id="112308213915226829">پنهان کردن خودکار قفسه</translation>
 <translation id="1142002900084379065">عکس‌های اخیر</translation>
 <translation id="1148499908455722006">باز کردن کادر گفتگوی اطلاعات برای <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">تقویم</translation>
 <translation id="1153356358378277386">دستگاه‌های مرتبط‌شده</translation>
+<translation id="1160215328209699296">روشن و درحال استفاده</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />،<ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">‏کابل USB-C شما ممکن است نتواند درست به نمایشگرها وصل شود</translation>
 <translation id="1175572348579024023">پیمایش</translation>
@@ -225,6 +227,7 @@
 <translation id="1978498689038657292">ورودی نوشتاری</translation>
 <translation id="1980808257969311265">پیوستن به <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">نمایش هفته گذشته</translation>
+<translation id="1986150224850161328">‏مطمئن شوید تلفن و Chromebook به یک شبکه متصل باشند و سپس دوباره امتحان کنید. <ph name="LEARN_MORE" /></translation>
 <translation id="1989113344093894667">نمی‌توان محتوا را ضبط کرد</translation>
 <translation id="1990046457226896323">فایل‌های گفتاری بارگیری شد</translation>
 <translation id="1993072747612765854">درباره جدیدترین به‌روزرسانی‌ <ph name="SYSTEM_APP_NAME" /> بیشتر بدانید.</translation>
@@ -238,9 +241,9 @@
 <translation id="2023558322300866873">هرزمان خواستید می‌توانید ضبط بسته را متوقف کنید</translation>
 <translation id="2034971124472263449">درهرصورت ذخیره شود</translation>
 <translation id="2049240716062114887">نام میزکار به <ph name="DESK_NAME" /> تغییر کرد</translation>
-<translation id="2050339315714019657">عمودی</translation>
 <translation id="2064048859448024834">پیش‌نمای دوربین روشن است</translation>
 <translation id="2067602449040652523">روشنایی صفحه‌کلید</translation>
+<translation id="2075520525463668108">روشن/ خاموش کردن <ph name="CAPTURE_MEDIUM" />. <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> است</translation>
 <translation id="2078034614700056995">برای رفتن به میزکار بعدی، با ۴ انگشت تند به راست بکشید</translation>
 <translation id="2079545284768500474">لغو</translation>
 <translation id="2083190527011054446">شب‌به‌خیر <ph name="GIVEN_NAME" />،</translation>
@@ -325,6 +328,7 @@
 <translation id="2487915095798731898">پیوستن</translation>
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
+<translation id="2514415433888497495">متوقف کردن <ph name="CAPTURE_MEDIUM" />. <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> است</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">باز کردن قفل پنجره‌ها</translation>
 <translation id="2530896289327917474">روشن یا خاموش کردن مرور با نشانگر نوشتار</translation>
@@ -374,6 +378,7 @@
 <translation id="2761723519669354964">باز کردن مورد برجسته‌شده در قفسه</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> تحت مدیریت <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">خروج از حالت ضبط</translation>
+<translation id="2785499565474703580">یک دستگاه متصل است</translation>
 <translation id="2791421900609674576">توصیه‌هایی خواهید دید تا بتوانید کارتان را از جایی که رها کرده‌اید ادامه دهید. برای حذف توصیه‌ها می‌توانید لمس کنید و نگه دارید.</translation>
 <translation id="2792498699870441125">‏Alt+جستجو</translation>
 <translation id="2797741504905337289">گروه قفسه‌ها</translation>
@@ -1277,6 +1282,7 @@
 <translation id="6941333068993625698">ارسال بازخورد</translation>
 <translation id="6942518653766415536">منوی قالب ضبط</translation>
 <translation id="6945221475159498467">انتخاب</translation>
+<translation id="6945922087561257829">‏تلفن شما از شبکه تلفن همراه استفاده می‌کند. مطمئن شوید تلفن و Chromebook به یک شبکه Wi-Fi متصل باشند و سپس دوباره امتحان کنید. <ph name="LEARN_MORE" /></translation>
 <translation id="6960565108681981554">فعال نیست. با شرکت مخابراتی‌تان تماس بگیرید.</translation>
 <translation id="6961121602502368900">«بی‌صدا کردن تلفن» در نمایه کاری دردسترس نیست</translation>
 <translation id="6961840794482373852">میان‌بر صفحه‌کلید «دگرساز + جهت‌نمای بالا» تغییر کرده است. برای استفاده از کلید «صفحه قبلی»، کلید «<ph name="LAUNCHER_KEY_NAME" /> + جهت‌نمای بالا» را فشار دهید.</translation>
@@ -1331,6 +1337,7 @@
 <translation id="7188494361780961876">منو به گوشه راست بالای صفحه منتقل شد.</translation>
 <translation id="7189412385142492784">‏How far is Venus (فاصله سیاره ناهید از ما چقدر است)</translation>
 <translation id="7198435252016571249">دوربین به گوشه پایین سمت راست چسبید. تداخلی با سطح سیستم روی داد.</translation>
+<translation id="7219573373513695352">دستگاهی متصل نیست</translation>
 <translation id="7246071203293827765">‏<ph name="UPDATE_TEXT" />. این Chromebook برای اعمال به‌روزرسانی باید بازراه‌اندازی شود. این کار ممکن است تا ۱ دقیقه طول بکشد.</translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="7258828758145722155">دیروز ویرایش شده است</translation>
@@ -1481,6 +1488,7 @@
 <translation id="7902625623987030061">حسگر اثر انگشت را لمس کنید</translation>
 <translation id="7904094684485781019">سرپرست این حساب اجازه ورود چندگانه به سیستم را نمی‌دهد.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> دستگاه متصل است</translation>
 <translation id="7930731167419639574">اکنون گفتار در دستگاه پردازش می‌شود و «تایپ صوتی» به‌صورت آفلاین کار می‌کند</translation>
 <translation id="7932451802722951285">‏باز کردن در «تقویم Google»</translation>
 <translation id="7933084174919150729">‏«دستیار Google» فقط برای نمایه اصلی دردسترس است.</translation>
@@ -1515,6 +1523,7 @@
 <translation id="8051716679295756675">الگویی با نام <ph name="DESK_TEMPLATE_NAME" /> ازقبل وجود دارد</translation>
 <translation id="8052898407431791827">در بریده‌دان کپی شد</translation>
 <translation id="8054466585765276473">درحال محاسبه زمان شارژ باتری.</translation>
+<translation id="8079538659226626406">هم‌رسانی صفحه‌نمایش</translation>
 <translation id="8083540854303889870">برای بعد ذخیره شده است</translation>
 <translation id="8091153018031979607">در <ph name="START_TIME" /> <ph name="DAYS_ELAPSED" /> شروع می‌شود</translation>
 <translation id="8091387634532529612">به‌روزرسانی‌های خودکار</translation>
@@ -1770,7 +1779,6 @@
 <translation id="954052413789300507">فضای کافی برای <ph name="FILENAME" /> وجود ندارد فضا آزاد کنید.</translation>
 <translation id="974545358917229949">نمایش <ph name="RESULT_COUNT" /> نتیجه برای <ph name="QUERY" /></translation>
 <translation id="98120814841227350">رفتن به انتهای سند</translation>
-<translation id="98515147261107953">افقی</translation>
 <translation id="989374776391122812">کنترل‌های دوربین و صدا</translation>
 <translation id="990277280839877440">پنجره <ph name="WINDOW_TITILE" /> بسته شد.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />، <ph name="SUBTEXT" /></translation>

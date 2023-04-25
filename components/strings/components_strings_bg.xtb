@@ -37,7 +37,6 @@
 <translation id="10614374240317010">Незапазвани никога</translation>
 <translation id="1064054731605354900">A3 x 5</translation>
 <translation id="106701514854093668">Настолни отметки</translation>
-<translation id="1067561478268651872">Правилото <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" /> не се използва, освен ако не е зададено правилото <ph name="SECURE_DNS_SALT" />.</translation>
 <translation id="1068672505746868501">Страниците на <ph name="SOURCE_LANGUAGE" /> да не се превеждат</translation>
 <translation id="1070853536588271387">Хибридни и алтернативни превозни средства</translation>
 <translation id="1070901266639972381">През нощта</translation>
@@ -307,6 +306,7 @@
 <translation id="1658918301167915956">устройства с Bluetooth</translation>
 <translation id="1662550410081243962">Запазване и попълване на начини на плащане</translation>
 <translation id="1663943134801823270">Картите и адресите са от Chrome. Можете да ги управлявате от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" />.</translation>
+<translation id="1668071460721346172">Получаване на имейл</translation>
 <translation id="1671391448414634642">От сега нататък страниците на <ph name="SOURCE_LANGUAGE" /> ще се превеждат на <ph name="TARGET_LANGUAGE" />.</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> на <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="1682696192498422849">Късата страна напред</translation>
@@ -367,6 +367,7 @@
 <translation id="1806174020048213474">Това приложение иска разрешение да инсталира идентификационните данни за Wi-Fi. След настройването устройството ви <ph name="DEVICE_TYPE" /> ще се свързва автоматично с участващите Wi-Fi мрежи. За да премахнете тези идентификационни данни, деинсталирайте приложението.</translation>
 <translation id="1807246157184219062">Светло</translation>
 <translation id="1807528111851433570">Първи лист</translation>
+<translation id="180757923930449935">(64-битова емулация)</translation>
 <translation id="180991881384371158">Кодът за проверка се намира на гърба на картата ви. Това са последните 3 цифри горе вдясно на полето за подпис.</translation>
 <translation id="181000283860817563">Проследяване на цените в няколко сайта</translation>
 <translation id="1810391395243432441">Защита на паролите с опцията ви за заключване на екрана</translation>
@@ -437,6 +438,7 @@
 <translation id="2003775180883135320">Четворно перфориране в горната част</translation>
 <translation id="201174227998721785">Управление на разрешенията и съхраняваните данни от сайтовете от настройките на Chrome</translation>
 <translation id="2019607688127825327">Бутон „Управление на настройките за достъпност“. Натиснете Enter, за да персонализирате инструментите за достъпност в настройките на Chrome</translation>
+<translation id="2021333772895814435">Това правило автоматично деактивира синхронизирането между устройствата на следните данни: <ph name="ACTION_LIST" />.</translation>
 <translation id="202224654587969958">12 x 19 инча</translation>
 <translation id="2025115093177348061">Обогатена реалност</translation>
 <translation id="2025186561304664664">За прокси сървъра е зададена автоматична конфигурация.</translation>
@@ -510,6 +512,7 @@
 <translation id="2166049586286450108">Пълен администраторски достъп</translation>
 <translation id="2166378884831602661">Този сайт не може да осигури защитена връзка</translation>
 <translation id="2168151236314517198">Отпечатването на това съдържание е блокирано чрез администраторско правило</translation>
+<translation id="2176974405772725904">Запазване на адреса в профила</translation>
 <translation id="2181821976797666341">Правила</translation>
 <translation id="2183608646556468874">Телефонен номер</translation>
 <translation id="2184405333245229118">{COUNT,plural, =1{1 адрес}other{# адреса}}</translation>
@@ -523,7 +526,6 @@
 <translation id="2204482073374652408">Актуализирането завърши!</translation>
 <translation id="22081806969704220">Тава 3</translation>
 <translation id="2210794033760923560">Качване на отчет</translation>
-<translation id="2212579473415663542">Този адрес е запазен в профила ви в Google (<ph name="ACCOUNT" />). Можете да го използвате в продуктите ни на всяко устройство.</translation>
 <translation id="2212735316055980242">Правилото не е намерено</translation>
 <translation id="2213606439339815911">Записите се извличат...</translation>
 <translation id="2213612003795704869">Страницата е отпечатана</translation>
@@ -638,6 +640,7 @@
 <translation id="2521736961081452453">Създаване на формуляр</translation>
 <translation id="2523886232349826891">Запазено само на това устройство</translation>
 <translation id="2524461107774643265">Добавяне на още информация</translation>
+<translation id="2526280916094749336">Можете да използвате запазените адреси в различни продукти на Google. Този адрес ще бъде запазен в профила ви в Google (<ph name="ACCOUNT" />).</translation>
 <translation id="2527451058878391043">Кодът за проверка се намира върху лицевата страна на картата ви. Това е 4-цифреният код горе вдясно над номера на картата.</translation>
 <translation id="2529899080962247600">Това поле не трябва да съдържа повече от <ph name="MAX_ITEMS_LIMIT" /> записа. Следващите се пренебрегват.</translation>
 <translation id="253493526287553278">Преглед на подробностите за промоционалния код</translation>
@@ -1224,6 +1227,7 @@
 <translation id="4031179711345676612">Достъпът до микрофона е разрешен</translation>
 <translation id="4040350669425716613">Колежи и университети</translation>
 <translation id="4047351652147966654">18 x 24 инча</translation>
+<translation id="4047620889508350431">Вече можете да използвате адреси от профила си в Google.</translation>
 <translation id="405399507749852140">Получаване на сигнали при понижение на цената в който и да е сайт</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4063063121357725926">Позволете на Google да ви помага да намирате отстъпки за кошниците си</translation>
@@ -1736,6 +1740,7 @@
 <translation id="5230815978613972521">B8</translation>
 <translation id="523149107733989821">A4 Extra</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
+<translation id="5238301240406177137">Запазване в профила</translation>
 <translation id="5239623327352565343">Достъпът до местоположението е разрешен</translation>
 <translation id="5242889659037569123">Багаж и пътнически принадлежности</translation>
 <translation id="5244732203286792411">Зарежда се...
@@ -1754,7 +1759,6 @@
 <translation id="5273881944177595304">Уеб приложения и онлайн инструменти</translation>
 <translation id="5274025349362408263">Книги и литература</translation>
 <translation id="5279286380302340275">Управление на изтеглянията</translation>
-<translation id="5279453600310613955">Не, благодаря</translation>
 <translation id="5283044957620376778">B1</translation>
 <translation id="5284295735376057059">Свойства на документа</translation>
 <translation id="528468243742722775">Край</translation>
@@ -1919,7 +1923,6 @@
 <translation id="5695542892312572833">Искате ли да използвате Windows Hello, за да потвърдите и завършите покупката си?</translation>
 <translation id="5701381305118179107">Центриране</translation>
 <translation id="570530837424789914">Управление...</translation>
-<translation id="5706906618852913030">Да се запази ли в профила?</translation>
 <translation id="5707154300732650394">Възобновяване на пътешествието</translation>
 <translation id="57094364128775171">Предложение за надеждна парола…</translation>
 <translation id="571403275720188526">(arm64)</translation>
@@ -2066,6 +2069,7 @@
 <translation id="6051221802930200923">В момента не можете да посетите <ph name="SITE" />, защото уебсайтът използва метод за допълнително потвърждаване на сертификатите. Обикновено грешките в мрежата и атаките срещу нея са временни, така че тази страница вероятно ще работи по-късно.</translation>
 <translation id="6051898664905071243">Брой страници:</translation>
 <translation id="6052284303005792909">•</translation>
+<translation id="6053584886670442526">Можете да използвате запазените адреси в различни продукти на Google. Този адрес е запазен в профила ви в Google (<ph name="ACCOUNT" />).</translation>
 <translation id="6053735090575989697">В Декларацията ни за поверителност можете да научите повече за това как Google защитава данните ви.</translation>
 <translation id="6055888660316801977">Лист за несъответстващи идентификационни данни за сигурни плащания</translation>
 <translation id="6058977677006700226">Искате ли да използвате картите си на всичките си устройства?</translation>
@@ -2106,6 +2110,7 @@
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6167577165590485365">Последен опит за извличане:</translation>
 <translation id="6169916984152623906">Вече можете да сърфирате частно. Така другите хора, които използват това устройство, няма да виждат активността ви. Изтеглянията и отметките обаче ще се запазват.</translation>
+<translation id="617256461084925519">Google Chrome се опитва да потвърди, че това сте вие, за да може да попълни данните ви за плащане.</translation>
 <translation id="6177128806592000436">Връзката ви с този сайт не е защитена</translation>
 <translation id="6177531123306197852">Плик C2</translation>
 <translation id="6180316780098470077">Интервал за повторен опит</translation>
@@ -2144,6 +2149,7 @@
 <translation id="6279183038361895380">Натиснете |<ph name="ACCELERATOR" />|, за да се покаже курсорът</translation>
 <translation id="6280223929691119688">Този адрес за бърза доставка не се поддържа. Изберете друг.</translation>
 <translation id="6284292079994426700">26 x 38 инча</translation>
+<translation id="6284517535531159884">Тип на началното число за вариантите</translation>
 <translation id="6285507000506177184">Бутон „Управление на изтеглянията с Chrome“. Натиснете Enter, за да управлявате файловете, които сте изтеглили с Chrome</translation>
 <translation id="6289939620939689042">Цвят на страницата</translation>
 <translation id="6293309776179964942">JIS B5</translation>
@@ -2153,7 +2159,6 @@
 <translation id="6301104306974789820">Получаване на известия за проследяване на цените</translation>
 <translation id="6305205051461490394">Няма достъп до <ph name="URL" />.</translation>
 <translation id="6306713302480826305">Този адрес ще бъде изтрит от това устройство и от другите, на които сте влезли в профила си</translation>
-<translation id="6311165245110979290">Налице е виртуална карта</translation>
 <translation id="6312113039770857350">Уеб страницата не е налице</translation>
 <translation id="6316226860534107313">Скутери и мотопеди</translation>
 <translation id="63172326633386613">Управление на настройките за достъпност</translation>
@@ -2244,6 +2249,7 @@
 <translation id="6513005815064132016">Може да поиска разрешение да следи позицията на камерата ви</translation>
 <translation id="6517596291481585650">Предупреждение: Това правило не бе обединено като списък според посоченото в правилото, тъй като не е списък.</translation>
 <translation id="6518133107902771759">Потвърждаване</translation>
+<translation id="65203098586853226">Превежда се от <ph name="SOURCE" /> на <ph name="TARGET" /></translation>
 <translation id="6521745193039995384">Не е активно</translation>
 <translation id="6529173248185917884">Седма ролка</translation>
 <translation id="6529602333819889595">&amp;Възстановяване на изтриването</translation>
@@ -2253,6 +2259,7 @@
 <translation id="6545864417968258051">Сканиране за устройства с Bluetooth</translation>
 <translation id="6547208576736763147">Двойно перфориране отляво</translation>
 <translation id="6549443526281184652">Костюми</translation>
+<translation id="6551873053534932690">Адресът да се запази ли в профила?</translation>
 <translation id="6554732001434021288">Последно посещение: преди <ph name="NUM_DAYS" /> дни</translation>
 <translation id="6556866813142980365">Възстановяване</translation>
 <translation id="6557715786897013164">14 x 17 инча</translation>
@@ -2317,6 +2324,7 @@
 <translation id="6716672519412350405"><ph name="URL" /> иска да създаде триизмерна карта на заобикалящата ви среда и да следи позицията на камерата</translation>
 <translation id="6718612893943028815">Да се използва ли камерата?</translation>
 <translation id="6721678857435001674">Преглед на марката и модела на ключа ви за сигурност</translation>
+<translation id="6726832600570791992">(32-битова емулация)</translation>
 <translation id="6727094998759448074">SRA4</translation>
 <translation id="6732087373923685049">камера</translation>
 <translation id="6738516213925468394">На <ph name="TIME" /> данните ви бяха шифровани с <ph name="BEGIN_LINK" />пропуска ви за синхронизиране<ph name="END_LINK" />. Въведете го, за да стартирате синхронизирането.</translation>
@@ -2657,6 +2665,7 @@
 <translation id="7518003948725431193">Не е намерена уеб страница за уеб адреса: <ph name="URL" /></translation>
 <translation id="7521387064766892559">JavaScript</translation>
 <translation id="7521825010239864438">Секцията „<ph name="SECTION" />“ бе скрита</translation>
+<translation id="752189128961566325">Можете да го използвате в продуктите на Google</translation>
 <translation id="7523408071729642236">Производство</translation>
 <translation id="7526934274050461096">Връзката ви с този сайт не е частна</translation>
 <translation id="7529884293139707752">Домашно образование</translation>
@@ -2884,6 +2893,7 @@
 <translation id="8057711352706143257">Софтуерът <ph name="SOFTWARE_NAME" /> не е конфигуриран правилно. Обикновено проблемът се отстранява с деинсталиране на <ph name="SOFTWARE_NAME" />. <ph name="FURTHER_EXPLANATION" /></translation>
 <translation id="8058009102480785916">Хранително-вкусова промишленост</translation>
 <translation id="8058603697124206642">Не е задължително</translation>
+<translation id="8064892030280197386">потвърди, че това сте вие, за да може да попълни данните ви за плащане.</translation>
 <translation id="8066225060526005217">Управлява се от настройките за „бисквитките“</translation>
 <translation id="8067872629359326442">Току-що въведохте паролата си в измамнически сайт. Chromium може да помогне. За да промените паролата си и да уведомите Google за това, че профилът ви може да е изложен на риск, кликнете върху „Защита на профила“.</translation>
 <translation id="8070439594494267500">Икона на приложението</translation>
@@ -3215,7 +3225,6 @@
 <translation id="8913778647360618320">Бутон „Управление на начините на плащане“. Натиснете Enter, за да управлявате информацията си за плащане и данните за кредитните си карти в настройките на Chrome</translation>
 <translation id="8922013791253848639">Рекламите на този сайт да са разрешени винаги</translation>
 <translation id="892588693504540538">Перфориране горе вдясно</translation>
-<translation id="8930098617363288380">Стойността на <ph name="SECURE_DNS_SALT" /> не е подходяща и няма да се използва, освен ако не е зададено правилото <ph name="SECURE_DNS_TEMPLATES_WITH_IDENTIFIERS" />.</translation>
 <translation id="8930330541574156305">Недвижими имоти</translation>
 <translation id="8931333241327730545">Искате ли да запазите тази карта в профила си в Google?</translation>
 <translation id="8932102934695377596">Часовникът ви е назад</translation>

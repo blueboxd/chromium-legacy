@@ -192,11 +192,6 @@ extern const char kEmailDescription[] =
     "When enabled, one tapping or long pressing on an email address will "
     "trigger the email experience.";
 
-extern const char kPDFSnapshotName[] =
-    "Fix PDF snapshot by using a different API";
-extern const char kPDFSnapshotDescription[] =
-    "When enabled, the tab showing PDF should have the correct thumbnail.";
-
 extern const char kPhoneNumberName[] = "Phone number experience enable";
 extern const char kPhoneNumberDescription[] =
     "When enabled, one tapping or long pressing on a phone number will trigger "
@@ -233,12 +228,6 @@ extern const char kLongPressSurroundingTextName[] =
 extern const char kLongPressSurroundingTextDescription[] =
     "When enabled, long pressing a text will analyze larger part of the text.";
 
-const char kContentSuggestionsUIModuleRefreshName[] =
-    "Content Suggestions UI Module Refresh";
-const char kContentSuggestionsUIModuleRefreshDescription[] =
-    "When enabled, the Content Suggestions will be redesigned to be contained "
-    "into distinct modules.";
-
 const char kCredentialProviderExtensionPromoName[] =
     "Enable the Credential Provider Extension promo.";
 const char kCredentialProviderExtensionPromoDescription[] =
@@ -268,6 +257,12 @@ const char kDefaultBrowserRefactoringPromoManagerName[] =
 const char kDefaultBrowserRefactoringPromoManagerDescription[] =
     "When enabled, the full screen default browser promos will be be included "
     "and managed in the promo manager";
+
+const char kDefaultBrowserVideoPromoName[] =
+    "Enable default browser video promo";
+const char kDefaultBrowserVideoPromoDescription[] =
+    "When enabled, the user will be presented a video promo showing how to set "
+    "Chrome as default browser.";
 
 const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
@@ -551,6 +546,16 @@ const char kIOSEditMenuPartialTranslateDescription[] =
     "Replace the Apple translate entry in the web edit menu to use Google "
     "Translate instead.";
 
+extern const char kIOSEditMenuSearchWithName[] =
+    "Enable Search with in edit menu";
+extern const char kIOSEditMenuSearchWithDescription[] =
+    "Add an entry to search the web selection with your default search engine.";
+
+extern const char kIOSEditMenuHideSearchWebName[] =
+    "Hides Search Web in edit menu";
+extern const char kIOSEditMenuHideSearchWebDescription[] =
+    "Hides the Search Web entry in edit menu.";
+
 const char kIOSForceTranslateEnabledName[] = "Allow force translate on iOS.";
 const char kIOSForceTranslateEnabledDescription[] =
     "Enable the translate feature when language detection failed.";
@@ -573,11 +578,6 @@ const char kIOSPasswordUISplitDescription[] =
 const char kIOSSetUpListName[] = "IOS Set Up List";
 const char kIOSSetUpListDescription[] =
     "Displays an unobtrusive list of set up tasks on Home for a new user.";
-
-const char kIOSPasswordManagerCrossOriginIframeSupportName[] =
-    "IOS Password Manager Cross-Origin Iframe Support";
-const char kIOSPasswordManagerCrossOriginIframeSupportDescription[] =
-    "Enables password saving and filling in cross-origin iframes on IOS.";
 
 const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
@@ -933,11 +933,6 @@ const char kShowInactiveTabsCountDescription[] =
     "When enabled, the count of Inactive Tabs is shown in the Inactive Tabs "
     "button that appears in the Tab Grid.";
 
-const char kSmartSortingNewOverflowMenuName[] =
-    "Smart Sorting the new Overflow Menu";
-const char kSmartSortingNewOverflowMenuDescription[] =
-    "Enables smart sorting the new overflow menu carousel by frecency.";
-
 const char kSmartSortingPriceTrackingDestinationName[] =
     "Price Tracking destination (with Smart Sorting)";
 const char kSmartSortingPriceTrackingDestinationDescription[] =
@@ -1009,10 +1004,6 @@ const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
     "managed by the toolbar container coordinator rather than BVC.";
-
-extern const char kTrendingQueriesModuleName[] = "Show Trending Queries module";
-extern const char kTrendingQueriesModuleDescription[] =
-    "When enabled, the trending queries module will be shown in the NTP";
 
 const char kUseLensToSearchForImageName[] =
     "Use Google Lens to Search for images";

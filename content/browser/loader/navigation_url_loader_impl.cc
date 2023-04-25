@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_stats.h"
 #include "content/browser/about_url_loader_factory.h"
+#include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/client_hints/client_hints.h"
 #include "content/browser/data_url_loader_factory.h"
@@ -325,6 +326,8 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_storage_access =
       request_info.begin_params->has_storage_access;
 
+  new_request->attribution_reporting_support = AttributionManager::GetSupport();
+
   return new_request;
 }
 
@@ -525,7 +528,7 @@ void NavigationURLLoaderImpl::CreateInterceptors(
   // Set up an interceptor for prefetch.
   std::unique_ptr<PrefetchURLLoaderInterceptor> prefetch_interceptor =
       content::PrefetchURLLoaderInterceptor::MaybeCreateInterceptor(
-          frame_tree_node_id_);
+          frame_tree_node_id_, request_info_->previous_render_frame_host_id);
   if (prefetch_interceptor) {
     interceptors_.push_back(std::move(prefetch_interceptor));
   }

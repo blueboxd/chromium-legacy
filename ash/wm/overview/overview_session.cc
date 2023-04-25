@@ -27,9 +27,9 @@
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/utility/haptics_util.h"
 #include "ash/wm/desks/desk.h"
-#include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
+#include "ash/wm/desks/legacy_desk_bar_view.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
@@ -53,6 +53,7 @@
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
+#include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
@@ -123,7 +124,7 @@ class AsyncWindowStateChangeObserver : public WindowStateObserver,
     window_->RemoveObserver(this);
   }
 
-  aura::Window* window_;
+  raw_ptr<aura::Window, ExperimentalAsh> window_;
 
   base::OnceCallback<void(WindowState*)> on_post_window_state_changed_;
 };
@@ -187,7 +188,7 @@ void OverviewSession::Init(const WindowList& windows,
   active_window_before_overview_ = window_util::GetActiveWindow();
   if (active_window_before_overview_) {
     active_window_before_overview_observation_.Observe(
-        active_window_before_overview_);
+        active_window_before_overview_.get());
   }
 
   // Create this before the desks bar widget.
@@ -330,7 +331,7 @@ void OverviewSession::Shutdown() {
       overview_grid->CalculateWindowListAnimationStates(
           selected_item_ &&
                   selected_item_->overview_grid() == overview_grid.get()
-              ? selected_item_
+              ? selected_item_.get()
               : nullptr,
           OverviewTransition::kExit, /*target_bounds=*/{});
     }
@@ -1045,7 +1046,7 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 }
 
 void OverviewSession::ShowSavedDeskLibrary(
-    const base::GUID& item_to_focus,
+    const base::Uuid& item_to_focus,
     const std::u16string& saved_desk_name,
     aura::Window* const root_window) {
   if (Shell::Get()->tablet_mode_controller()->InTabletMode() ||

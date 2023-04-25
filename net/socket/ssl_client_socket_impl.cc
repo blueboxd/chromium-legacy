@@ -629,8 +629,16 @@ void SSLClientSocketImpl::GetSSLCertRequestInfo(
   size_t num_client_cert_types =
       SSL_get0_certificate_types(ssl_.get(), &client_cert_types);
   for (size_t i = 0; i < num_client_cert_types; i++) {
-    cert_request_info->cert_key_types.push_back(
-        static_cast<SSLClientCertType>(client_cert_types[i]));
+    switch (client_cert_types[i]) {
+      case static_cast<uint8_t>(SSLClientCertType::kRsaSign):
+      case static_cast<uint8_t>(SSLClientCertType::kEcdsaSign):
+        cert_request_info->cert_key_types.push_back(
+            static_cast<SSLClientCertType>(client_cert_types[i]));
+        break;
+      default:
+        // Unknown client certificate types are ignored.
+        break;
+    }
   }
 }
 
@@ -1722,8 +1730,7 @@ SSLClientSessionCache::Key SSLClientSocketImpl::GetSessionCacheKey(
   SSLClientSessionCache::Key key;
   key.server = host_and_port_;
   key.dest_ip_addr = dest_ip_addr;
-  if (base::FeatureList::IsEnabled(
-          features::kPartitionSSLSessionsByNetworkIsolationKey)) {
+  if (NetworkAnonymizationKey::IsPartitioningEnabled()) {
     key.network_anonymization_key = ssl_config_.network_anonymization_key;
   }
   key.privacy_mode = ssl_config_.privacy_mode;

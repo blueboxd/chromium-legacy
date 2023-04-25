@@ -29,11 +29,13 @@
 <translation id="1104084341931202936">A kisegítő lehetőségekhez tartozó beállítások megjelenítése</translation>
 <translation id="1104621072296271835">Eszközei együtt még jobban működnek</translation>
 <translation id="1111021433905331574">Lehetősége van a billentyűzet háttérvilágítása színének módosítására, amelyet a következő pontban tehet meg: Beállítások &gt; <ph name="APP_TITLE" /></translation>
+<translation id="1112998165730922436">Az átküldés szünetel</translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
 <translation id="1142002900084379065">Nemrégiben feltöltött fotók</translation>
 <translation id="1148499908455722006">Információs párbeszédpanel, <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Naptár</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
+<translation id="1160215328209699296">bekapcsolva és használatban</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Előfordulhat, hogy az USB-C kábellel nem csatlakoztathatók megfelelően a kijelzők</translation>
 <translation id="1175572348579024023">Görgetés</translation>
@@ -225,6 +227,7 @@
 <translation id="1978498689038657292">Szöveges bevitel</translation>
 <translation id="1980808257969311265">Csatlakozás a következőhöz: <ph name="EVENT_SUMMARY" /></translation>
 <translation id="1982717156487272186">Az előző hét megjelenítése</translation>
+<translation id="1986150224850161328">Győződjön meg arról, hogy a telefon és a Chromebook ugyanahhoz a hálózathoz csatlakozik, majd próbálja újra. <ph name="LEARN_MORE" />.</translation>
 <translation id="1989113344093894667">Nem lehet rögzíteni tartalmat</translation>
 <translation id="1990046457226896323">Beszédfájlok letöltve</translation>
 <translation id="1993072747612765854">További információ a legújabb <ph name="SYSTEM_APP_NAME" />-frissítésről</translation>
@@ -238,9 +241,9 @@
 <translation id="2023558322300866873">A csomagok elfogását bármikor leállíthatja</translation>
 <translation id="2034971124472263449">Mentés mindenképp</translation>
 <translation id="2049240716062114887">Az asztal neve a következőre változott: <ph name="DESK_NAME" /></translation>
-<translation id="2050339315714019657">Álló</translation>
 <translation id="2064048859448024834">Kamera-előnézet bekapcsolva</translation>
 <translation id="2067602449040652523">Billentyűzet világossága</translation>
+<translation id="2075520525463668108"><ph name="CAPTURE_MEDIUM" /> be-/kikapcsolása. A <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> van.</translation>
 <translation id="2078034614700056995">Csúsztasson jobbra négy ujjal a következő asztalra váltáshoz</translation>
 <translation id="2079545284768500474">Visszavonás</translation>
 <translation id="2083190527011054446">Jó éjszakát, <ph name="GIVEN_NAME" />!</translation>
@@ -325,6 +328,7 @@
 <translation id="2487915095798731898">Csatlakozás</translation>
 <translation id="2501920221385095727">Beragadó billentyűk</translation>
 <translation id="2509468283778169019">A CAPS LOCK be van kapcsolva</translation>
+<translation id="2514415433888497495"><ph name="CAPTURE_MEDIUM" /> leállítása. A <ph name="CAPTURE_MEDIUM" /> <ph name="CAPTURE_STATE" /> van.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2526581474998477112">Az ablakok zárolásának feloldása</translation>
 <translation id="2530896289327917474">A billentyűzettel böngészés be- vagy kikapcsolása</translation>
@@ -374,6 +378,7 @@
 <translation id="2761723519669354964">Kiemelt elem megnyitása a polcról</translation>
 <translation id="2778650143428714839"><ph name="DEVICE_TYPE" /> kezelője: <ph name="MANAGER" /></translation>
 <translation id="2782591952652094792">Kilépés a rögzítés módból</translation>
+<translation id="2785499565474703580">1 csatlakoztatott eszköz</translation>
 <translation id="2791421900609674576">Ajánlásokat tekinthet meg, hogy ott folytathassa, ahol abbahagyta. Érintéssel és nyomva tartással eltávolíthatja az ajánlásokat.</translation>
 <translation id="2792498699870441125">Alt + Keresés</translation>
 <translation id="2797741504905337289">Shelf Party</translation>
@@ -1279,6 +1284,7 @@ Frissen telepítve</translation>
 <translation id="6941333068993625698">Visszajelzés küldése</translation>
 <translation id="6942518653766415536">Rögzítési formátum menüje</translation>
 <translation id="6945221475159498467">Kiválasztás</translation>
+<translation id="6945922087561257829">Telefonja mobilhálózathoz csatlakozik. Győződjön meg arról, hogy a telefon és a Chromebook ugyanahhoz a Wi-Fi-hálózathoz csatlakozik, majd próbálja újra. <ph name="LEARN_MORE" />.</translation>
 <translation id="6960565108681981554">Nincs aktiválva. Forduljon a szolgáltatójához.</translation>
 <translation id="6961121602502368900">A Telefon némítása funkció nem használható munkaprofillal</translation>
 <translation id="6961840794482373852">Az Alt + Felfelé nyíl billentyűparancs módosult. A Felfelé nyíl billentyű használatához nyomja le a következő billentyűparancsot: <ph name="LAUNCHER_KEY_NAME" /> + Felfelé nyíl.</translation>
@@ -1333,6 +1339,7 @@ Frissen telepítve</translation>
 <translation id="7188494361780961876">A menü a képernyő bal felső sarkába került.</translation>
 <translation id="7189412385142492784">Milyen messze van a Vénusz?</translation>
 <translation id="7198435252016571249">Kamera a jobb alsó sarokhoz igazítva. Ütközés a rendszerfelülettel.</translation>
+<translation id="7219573373513695352">Nincsenek csatlakoztatott eszközök</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. A Chromebookot újra kell indítani a frissítés alkalmazásához. Ez akár egy percig is eltarthat.</translation>
 <translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="7258828758145722155">Tegnap szerkesztette</translation>
@@ -1483,6 +1490,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="7902625623987030061">Érintse meg az ujjlenyomat-érzékelőt</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7911118814695487383">Linux</translation>
+<translation id="7917760201509801422"><ph name="DEVICECOUNT" /> csatlakoztatott eszköz</translation>
 <translation id="7930731167419639574">A beszéd feldolgozása helyben történik, a diktálás pedig offline működik.</translation>
 <translation id="7932451802722951285">Megnyitás a Google Naptárban</translation>
 <translation id="7933084174919150729">A Google Segéd csak az elsődleges profilhoz áll rendelkezésre.</translation>
@@ -1517,6 +1525,7 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="8051716679295756675">A(z) <ph name="DESK_TEMPLATE_NAME" /> nevű sablon már létezik.</translation>
 <translation id="8052898407431791827">Vágólapra másolva</translation>
 <translation id="8054466585765276473">Akkumulátor-időtartam kiszámítása.</translation>
+<translation id="8079538659226626406">Képernyőmegosztás</translation>
 <translation id="8083540854303889870">Későbbre mentett</translation>
 <translation id="8091153018031979607">Kezdés: <ph name="START_TIME" />, <ph name="DAYS_ELAPSED" /></translation>
 <translation id="8091387634532529612">Automatikus frissítések</translation>
@@ -1773,7 +1782,6 @@ Az eszköz leállításához tartsa ismét nyomva az eszköz bekapcsológombját
 <translation id="954052413789300507">Nincs elég tárhely a következő fájl számára: <ph name="FILENAME" />. Szabadítson fel tárhelyet.</translation>
 <translation id="974545358917229949"><ph name="RESULT_COUNT" /> találat megjelenítése a következő lekérdezésre: <ph name="QUERY" /></translation>
 <translation id="98120814841227350">Ugrás a dokumentum végére</translation>
-<translation id="98515147261107953">Fekvő</translation>
 <translation id="989374776391122812">Kamera- és hangvezérlők</translation>
 <translation id="990277280839877440">Bezárta a következő ablakot: <ph name="WINDOW_TITILE" />.</translation>
 <translation id="994354411665877646"><ph name="NETWORK_NAME" />, <ph name="SUBTEXT" /></translation>

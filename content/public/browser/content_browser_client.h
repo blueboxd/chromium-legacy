@@ -22,6 +22,7 @@
 #include "base/types/strong_alias.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_topics/common/common_types.h"
 #include "components/download/public/common/quarantine_connection.h"
@@ -891,6 +892,12 @@ class CONTENT_EXPORT ContentBrowserClient {
       const url::Origin* source_origin,
       const url::Origin* destination_origin,
       const url::Origin* reporting_origin);
+
+#if BUILDFLAG(IS_ANDROID)
+  // Allows the embedder to control if web attribution reporting is allowed.
+  // This method must be idempotent.
+  virtual bool IsWebAttributionReportingAllowed();
+#endif
 
   // Allows the embedder to control if Shared Storage API operations can happen
   // in a given context.
@@ -2388,13 +2395,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void OnDisplayInsecureContent(WebContents* web_contents) {}
 
 #if BUILDFLAG(IS_MAC)
-  // Gets the path for an embedder-specific helper child process. The
+  // Gets the suffix for an embedder-specific helper child process. The
   // |child_flags| is a value greater than
-  // ChildProcessHost::CHILD_EMBEDDER_FIRST. The |helpers_path| is the location
-  // of the known //content Mac helpers in the framework bundle.
-  virtual base::FilePath GetChildProcessPath(
-      int child_flags,
-      const base::FilePath& helpers_path);
+  // ChildProcessHost::CHILD_EMBEDDER_FIRST. The embedder-specific helper app
+  // bundle should be placed next to the known //content Mac helpers in the
+  // framework bundle.
+  virtual std::string GetChildProcessSuffix(int child_flags);
 #endif  // BUILDFLAG(IS_MAC)
 
   // Checks if Isolated Web Apps are enabled, e.g. by feature flag

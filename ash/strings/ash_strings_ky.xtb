@@ -834,7 +834,7 @@
 <translation id="5393156353051693207">Колдонмолоруңуздун иретин өзгөртүү үчүн каалаган жерди басып кармап туруңуз</translation>
 <translation id="5395308026110844773">Папка түзүү үчүн, <ph name="DRAGGED_APP_NAME" /> колдонмосун <ph name="IN_PLACE_APP" /> колдонмосунун үстүнө сүйрөп барып, коё бериңиз.</translation>
 <translation id="5397578532367286026">Башкаруучу бул колдонуучунун пайдалангандарын жана таржымалын (<ph name="MANAGER_EMAIL" />) chrome.com дарегинен карап чыга алат.</translation>
-<translation id="5400461572260843123">Ыкчам жөндөөлөр, Билдирмелер борборуна өтүү үчүн Издөө + сол баскычты басыңыз.</translation>
+<translation id="5400461572260843123">Ыкчам параметрлер, Билдирмелер борборуна өтүү үчүн Издөө + сол баскычты басыңыз.</translation>
 <translation id="5426063383988017631">Параметрлер менюсу жабылды</translation>
 <translation id="5428899915242071344">Тандап баштоо</translation>
 <translation id="5429993543155113935">Жашыруун терезелер учурда колдоого алынбайт</translation>
@@ -1017,7 +1017,7 @@
 <translation id="6424520630891723617"><ph name="SECURITY_STATUS" />, Сигналдын күчү <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="642644398083277086">Бардык билдирмелерди өчүрүү</translation>
 <translation id="643147933154517414">Баары даяр</translation>
-<translation id="6431865393913628856">Экрандан видео жаздырып алуу</translation>
+<translation id="6431865393913628856">Экранды жаздыруу</translation>
 <translation id="6442259747294754014">Түзмөктүн микрофонун колдонуу мүмкүнчүлүгү өчүк</translation>
 <translation id="6445835306623867477"><ph name="RECEIVER_NAME" /> бөлмөсүндөгү <ph name="ROUTE_TITLE" /></translation>
 <translation id="6447111710783417522"><ph name="DATE" />, <ph name="NUMBER" /> иш-чара</translation>
@@ -1198,7 +1198,7 @@
 <translation id="7382680553121047388">Күйүк</translation>
 <translation id="7384028040782072252">Колдонмолоруңуздун иретин өзгөртүү үчүн каалаган жерде оң баскычты чыкылдатыңыз</translation>
 <translation id="7386767620098596324">Тармакка туташууну өчүрүү/күйгүзүү. <ph name="STATE_TEXT" />.</translation>
-<translation id="7392563512730092880">Кийинчерээк Жөндөөлөргө өтүп, бул функцияны жөндөсөңүз болот.</translation>
+<translation id="7392563512730092880">Кийинчерээк Параметрлерге өтүп, бул функцияны жөндөсөңүз болот.</translation>
 <translation id="7405710164030118432">Бул түзмөктүн кулпусун ачуу үчүн Family Link'теги ата-эненин кирүү кодун териңиз</translation>
 <translation id="7406608787870898861">Мобилдик тармагыңызды жөндөп бүтүрүңүз</translation>
 <translation id="740790383907119240">Колдонмодогу кыска жолдор</translation>

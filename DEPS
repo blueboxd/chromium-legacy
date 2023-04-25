@@ -299,7 +299,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'f5715362aac554ff3108b9e2a56b8ac8a6ef1acb',
+  'skia_revision': '4dc670a8c5575180caa3d4d03f1e05da0177240d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '5becbed305e3da317f8c35150c24639e6590bba9',
+  'angle_revision': 'aed05b609629db64999e3a32364ee3a6d9eba4f3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -350,7 +350,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '3f01161ff22c84c371b6dc3b5e0351e0d6e8e771',
+  'freetype_revision': 'e78e2d29a95baf6053e30cc9422aa20319259803',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -1212,7 +1212,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + 'ddb1bded33bf7620a5ce4415714b2e21fb592689',
+      'url': 'https://chrome-internal.googlesource.com/devtools/devtools-internal.git' + '@' + 'e26493e4ca097fab701d346a727ab392da8861ba',
     'condition': 'checkout_src_internal',
   },
 
@@ -1774,7 +1774,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/google/snappy.git' + '@' + '65dc7b383985eb4f63cd3e752136db8d9b4be8c0',
 
   'src/third_party/sqlite/src':
-    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + '88742a54683bcdec9a0d0c14462621da8b6f841e',
+    Var('chromium_git') + '/chromium/deps/sqlite.git' + '@' + 'f6752b7ed1fe3cc1491c0c47ec5804ee2bd0e59b',
 
   'src/third_party/sqlite4java': {
       'packages': [
@@ -1939,7 +1939,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4b29ff977c821b1967c191468efbf2de16c1c156',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5996f6f06a6b6036ee2bada8821092edee2e5a26',
     'condition': 'checkout_src_internal',
   },
 

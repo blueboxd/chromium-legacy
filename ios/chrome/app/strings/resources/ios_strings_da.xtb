@@ -127,7 +127,7 @@ Kun personer med din adgangssætning kan læse dine krypterede data. Adgangssæt
 <translation id="1813414402673211292">Ryd browserdata</translation>
 <translation id="1815941218935345331">Adgangskode</translation>
 <translation id="1820259098641718022">Føjet til læseliste</translation>
-<translation id="1832848789136765277">Bekræft din identitet for at sikre, at du altid har adgang til dine synkroniserede data</translation>
+<translation id="1832848789136765277">Verificer din identitet for at sikre, at du altid har adgang til dine synkroniserede data</translation>
 <translation id="1870148520156231997">Vis adgangskode</translation>
 <translation id="1872096359983322073">Lommelygte</translation>
 <translation id="1891796056033961979">Dine gemte bogmærker, adgangskoder, indstillinger og meget mere er tilgængelige via denne skærm.</translation>
@@ -495,7 +495,7 @@ Se din søgemaskines vejledning i, hvordan du sletter din søgehistorik, hvis de
 <translation id="4592368184551360546">Tastatur</translation>
 <translation id="4606247758155004938">Din browser administreres af din organisation.</translation>
 <translation id="461440297010471931">Søgning via Google</translation>
-<translation id="4619564267100705184">Bekræft din identitet</translation>
+<translation id="4619564267100705184">Verificer din identitet</translation>
 <translation id="4619615317237390068">Faner fra andre enheder</translation>
 <translation id="4620246317052452550">Sider, du har læst</translation>
 <translation id="4620888520263267479">Vis forhåndsvisninger af links</translation>
@@ -581,7 +581,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5149188072385105201">Tilføj adgangskode…</translation>
 <translation id="5150492518600715772">Send til din enhed</translation>
 <translation id="5168414296986405587">Udviklet til iPadOS</translation>
-<translation id="5173088371991956744">Synkronisering skal bekræfte din identitet</translation>
+<translation id="5173088371991956744">Synkronisering skal verificere din identitet</translation>
 <translation id="5181140330217080051">Downloader</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
 <translation id="5186185447130319458">Privat</translation>
@@ -840,7 +840,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="681368974849482173">Elementet blev oprettet</translation>
 <translation id="683022620450280906">Du kan bruge gemte adgangskoder på alle enheder. De er gemt i Googles Adgangskodeadministrator for <ph name="EMAIL" /></translation>
 <translation id="6831043979455480757">Oversæt</translation>
-<translation id="6842136130964845393">Bekræft din identitet for at sikre, at du altid har adgang til dine gemte adgangskoder</translation>
+<translation id="6842136130964845393">Verificer din identitet for at sikre, at du altid har adgang til dine gemte adgangskoder</translation>
 <translation id="6851516051005285358">Vis computerversion</translation>
 <translation id="6858855187367714033">Scannet</translation>
 <translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et betalingskort.</translation>
@@ -905,7 +905,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">Valgmuligheder for at gemme kort</translation>
 <translation id="7351537303876921605">Tryk på Opret link i genvejsmenuen</translation>
-<translation id="7353432112255316844">Bekræft din identitet</translation>
+<translation id="7353432112255316844">Verificer din identitet</translation>
 <translation id="7383797227493018512">Læseliste</translation>
 <translation id="7398893703713203428">Opret link</translation>
 <translation id="7400418766976504921">Webadresse</translation>
@@ -975,7 +975,7 @@ Når du er i Inkognito, kan websites ikke bruge cookies til at se din browserhis
 <translation id="7884694604461143138">Søgehistorik (<ph name="COUNT" /> blev fundet)</translation>
 <translation id="7887198238286927132">Af hensyn til beskyttelsen af dine personlige oplysninger autofylder Chrome ikke dette felt.</translation>
 <translation id="7911190106180361398">Din organisation tillader ikke, at du synkroniserer alt.</translation>
-<translation id="7920949005883349320">Sikkerhed og privatliv</translation>
+<translation id="7920949005883349320">Privatliv og sikkerhed</translation>
 <translation id="7930998711684428189">Advarer dig, hvis adgangskoder offentliggøres i et brud på datasikkerheden.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér adgangskoder…</translation>

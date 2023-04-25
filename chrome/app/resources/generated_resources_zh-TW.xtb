@@ -582,7 +582,7 @@
 <translation id="1517467582299994451">如要使用代碼建立投放連線，請開啟 Chrome 瀏覽器同步處理設定</translation>
 <translation id="1521442365706402292">管理憑證</translation>
 <translation id="1521774566618522728">上次使用時間：今天</translation>
-<translation id="152234381334907219">永不儲存</translation>
+<translation id="152234381334907219">一律不儲存</translation>
 <translation id="1523279371236772909">過去一個月看過</translation>
 <translation id="1523978563989812243">文字轉語音的引擎</translation>
 <translation id="1524430321211440688">鍵盤</translation>
@@ -2277,7 +2277,7 @@
 <translation id="2979639724566107830">於新視窗中開啟</translation>
 <translation id="2981113813906970160">顯示大型滑鼠游標</translation>
 <translation id="2981293774053328982">這個檔案含有惡意軟體，可能會入侵你的社群網路或個人帳戶</translation>
-<translation id="2983102365694924129">根據你在網站上的活動獨家推薦。這項設定已關閉。</translation>
+<translation id="2983102365694924129">以你的網站活動做為依據。這項設定已關閉。</translation>
 <translation id="2983373101216420412">充電盒電量為 <ph name="PERCENTAGE" />%。</translation>
 <translation id="2985348301114641460">要傳送「<ph name="EXTENSION_NAME" />」的安裝要求給系統管理員嗎？</translation>
 <translation id="2987620471460279764">從其他裝置分享的文字</translation>
@@ -2329,7 +2329,7 @@
 <translation id="3019023222666709803">箭頭工具</translation>
 <translation id="3019285239893817657">子頁面按鈕</translation>
 <translation id="3019595674945299805">VPN 服務</translation>
-<translation id="3020183492814296499">快速鍵</translation>
+<translation id="3020183492814296499">捷徑</translation>
 <translation id="3020990233660977256">序號：<ph name="SERIAL_NUMBER" /></translation>
 <translation id="3021065318976393105">使用電池時</translation>
 <translation id="3021066826692793094">蝴蝶</translation>
@@ -2340,7 +2340,7 @@
 <translation id="3024374909719388945">使用 24 小時制時鐘</translation>
 <translation id="3025174326431589540">{COUNT,plural, =0{未儲存密碼}=1{已檢查 {COUNT} 個網站的密碼}other{已檢查 {COUNT} 個網站和應用程式的密碼}}</translation>
 <translation id="3027296729579831126">開啟鄰近分享功能</translation>
-<translation id="3027644380269727216">根據你在網站上的活動獨家推薦。這項設定已開啟。</translation>
+<translation id="3027644380269727216">以你的網站活動做為依據。這項設定已開啟。</translation>
 <translation id="3029276696788198026">不使用預先載入模式</translation>
 <translation id="3029466929721441205">在檔案櫃中顯示觸控筆工具</translation>
 <translation id="3029808567601324798">鎖定時間</translation>
@@ -2451,7 +2451,7 @@
 <translation id="313205617302240621">忘記密碼了嗎？</translation>
 <translation id="3132277757485842847">無法與你的手機維持連線狀態。請確認你的手機在附近，且已解鎖及開啟藍牙和 Wi-Fi。</translation>
 <translation id="3132896062549112541">規則</translation>
-<translation id="3132996321662585180">每天重新整理</translation>
+<translation id="3132996321662585180">每天更新</translation>
 <translation id="3134393957315651797">選取「<ph name="EXPERIMENT_NAME" />」的實驗狀態。實驗說明：<ph name="EXPERIMENT_DESCRIPTION" /></translation>
 <translation id="3139925690611372679">預設的黃色顯示圖片</translation>
 <translation id="3141093262818886744">仍要開啟</translation>
@@ -2842,7 +2842,7 @@
 <translation id="3507888235492474624">重新掃描藍牙裝置</translation>
 <translation id="3508492320654304609">無法刪除你的登入資料</translation>
 <translation id="3508920295779105875">選擇另一個資料夾...</translation>
-<translation id="3509379002674019679">建立、儲存及管理密碼，輕鬆登入網站和應用程式。</translation>
+<translation id="3509379002674019679">設定、儲存及管理密碼，輕鬆登入網站和應用程式。</translation>
 <translation id="3511200754045804813">重新掃描</translation>
 <translation id="3511307672085573050">複製連結網址(&amp;E)</translation>
 <translation id="351152300840026870">固定寬度字型</translation>
@@ -3389,7 +3389,7 @@
 <translation id="3979748722126423326">啟用 <ph name="NETWORKDEVICE" /></translation>
 <translation id="3981058120448670012">以「<ph name="DEVICE_NAME" />」的名稱向附近的裝置顯示 <ph name="REMAINING_TIME" />...</translation>
 <translation id="3981760180856053153">輸入的儲存類型無效。</translation>
-<translation id="3981902534690264083">廣告客戶可以瞭解廣告成效</translation>
+<translation id="3981902534690264083">廣告商可以瞭解廣告成效</translation>
 <translation id="3982375475032951137">只要簡單幾個步驟就能完成瀏覽器設定</translation>
 <translation id="3983400541576569538">某些應用程式的資料可能會遺失</translation>
 <translation id="3983586614702900908">製造商不明的裝置</translation>
@@ -3719,7 +3719,7 @@
 <translation id="4299022904780065004">新增無痕式視窗(&amp;I)</translation>
 <translation id="4301671483919369635">這個頁面具有檔案編輯權限</translation>
 <translation id="4303079906735388947">為安全金鑰設定新的 PIN 碼</translation>
-<translation id="4304713468139749426">密碼管理員</translation>
+<translation id="4304713468139749426">密碼管理工具</translation>
 <translation id="4305402730127028764">複製到「<ph name="DEVICE_NAME" />」</translation>
 <translation id="4305817255990598646">切換</translation>
 <translation id="4306119971288449206">應用程式的內容類型應設為「<ph name="CONTENT_TYPE" />」</translation>
@@ -4793,7 +4793,7 @@
 <translation id="5299109548848736476">不追蹤</translation>
 <translation id="5299558715747014286">查看及管理分頁群組</translation>
 <translation id="5300287940468717207">要重設網站權限嗎？</translation>
-<translation id="5300426565656326054">以瀏覽器為主的廣告個人化</translation>
+<translation id="5300426565656326054">根據瀏覽器的使用記錄放送個人化廣告</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5300719150368506519">將你造訪的網頁網址傳送給 Google</translation>
 <translation id="5301751748813680278">正在以訪客身分登入。</translation>
@@ -6624,7 +6624,7 @@
 <translation id="6970480684834282392">啟動類型</translation>
 <translation id="6970543303783413625">無法匯入密碼，一次最多只能匯入 <ph name="COUNT" /> 個密碼。</translation>
 <translation id="6970856801391541997">列印特定網頁</translation>
-<translation id="6970861306198150268">請確認要為這個網站儲存目前的密碼</translation>
+<translation id="6970861306198150268">請確認你儲存的是這個網站目前的密碼</translation>
 <translation id="6972754398087986839">開始使用</translation>
 <translation id="697312151395002334">可以傳送彈出式視窗及使用重新導向</translation>
 <translation id="6973611239564315524">現在可以升級至 Debian 10 (Buster)</translation>
@@ -7059,7 +7059,7 @@
 <translation id="7387273928653486359">可以接受</translation>
 <translation id="7387951778417998929">如要使用非系統預設的搜尋引擎，請在網址列中輸入相應的快捷字詞，然後按下你慣用的鍵盤快速鍵。你也可以在這裡變更你的預設搜尋引擎。</translation>
 <translation id="7388209873137778229">只顯示支援的裝置。</translation>
-<translation id="7388615499319468910">網站和廣告客戶可以瞭解廣告成效。這項設定已關閉。</translation>
+<translation id="7388615499319468910">網站和廣告商可以瞭解廣告成效。這項設定已關閉。</translation>
 <translation id="7392118418926456391">病毒掃描失敗</translation>
 <translation id="7392915005464253525">重新開啟已關閉視窗(&amp;E)</translation>
 <translation id="7393073300870882456">{COUNT,plural, =1{已複製 1 個項目}other{已複製 {COUNT} 個項目}}</translation>
@@ -7136,7 +7136,7 @@
 <translation id="7453467225369441013">大多數網站都會將你登出，但系統並不會將你登出 Google 帳戶。</translation>
 <translation id="7454548535253569100">入口網站：<ph name="SUBFRAME_SITE" /></translation>
 <translation id="7455730275746867420">管理其他容器</translation>
-<translation id="7455988709578031708">根據你的瀏覽記錄獨家推薦。這項設定已開啟。</translation>
+<translation id="7455988709578031708">以你的瀏覽記錄做為依據。這項設定已開啟。</translation>
 <translation id="7456142309650173560">開發人員版</translation>
 <translation id="7456774706094330779">延伸預先載入模式</translation>
 <translation id="7456847797759667638">開啟位置...</translation>
@@ -7208,7 +7208,7 @@
 <translation id="7515998400212163428">Android</translation>
 <translation id="7516981202574715431">「<ph name="APP_NAME" />」已暫停</translation>
 <translation id="7520766081042531487">無痕模式入口網站：<ph name="SUBFRAME_SITE" /></translation>
-<translation id="752098910262610337">顯示快速鍵</translation>
+<translation id="752098910262610337">顯示捷徑</translation>
 <translation id="7522255036471229694">說出「Ok Google」</translation>
 <translation id="7523585675576642403">重新命名設定檔</translation>
 <translation id="7525067979554623046">建立</translation>
@@ -7878,7 +7878,7 @@
 <translation id="8098616321286360457">需要網路連線</translation>
 <translation id="810068641062493918">已選取<ph name="LANGUAGE" />。按下搜尋鍵加空白鍵即可取消選取。</translation>
 <translation id="8100972288595615768">要清除 <ph name="SITE_NAME" /> 的網站資料和權限嗎？</translation>
-<translation id="8101409298456377967">建立、儲存及管理密碼，讓你輕鬆登入網站和應用程式。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
+<translation id="8101409298456377967">設定、儲存及管理密碼，輕鬆登入網站和應用程式。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="810185532889603849">自訂顏色</translation>
 <translation id="8101987792947961127">必須在下次重新啟動時執行 Powerwash</translation>
 <translation id="8102139037507939978">移除 system_logs.txt 中的個人識別資訊。</translation>
@@ -8483,7 +8483,7 @@
 <translation id="8665180165765946056">備份完成</translation>
 <translation id="866611985033792019">信任這個用於識別電子郵件使用者的憑證</translation>
 <translation id="8666321716757704924">已重新授權給 <ph name="WEBSITE" /></translation>
-<translation id="8666759526542103597">關於以瀏覽器為主的廣告個人化</translation>
+<translation id="8666759526542103597">「根據瀏覽器的使用記錄放送個人化廣告」的相關說明</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> 已顯示為全螢幕，並且停用了滑鼠游標。</translation>
 <translation id="8667760277771450375">我們正在開發限制跨網站追蹤的方法，同時讓網站能夠防範廣告垃圾內容和欺詐行為。</translation>
 <translation id="8668378421690365723">裝置可能無法再正常運作，而且可能會有安全性和效能問題。</translation>
@@ -8973,12 +8973,12 @@
 <translation id="9094982973264386462">移除</translation>
 <translation id="9095364055741191097">無法復原本機資料</translation>
 <translation id="909554839118732438">關閉無痕模式</translation>
-<translation id="9099220545925418560">根據你的瀏覽記錄獨家推薦。這項設定已關閉。</translation>
+<translation id="9099220545925418560">以你的瀏覽記錄做為依據。這項設定已關閉。</translation>
 <translation id="9100416672768993722">如要切換到上次使用的輸入法，請按下 <ph name="BEGIN_SHORTCUT" /><ph name="BEGIN_CTRL" />Ctrl<ph name="END_CTRL" /><ph name="SEPARATOR" /><ph name="BEGIN_SPACE" />Space<ph name="END_SPACE" /><ph name="END_SHORTCUT" /> 鍵</translation>
 <translation id="9100765901046053179">進階設定</translation>
 <translation id="9101691533782776290">啟動應用程式</translation>
 <translation id="9102610709270966160">啟用擴充功能</translation>
-<translation id="9102864637938129124">網站和廣告客戶可以瞭解廣告成效。這項設定已開啟。</translation>
+<translation id="9102864637938129124">網站和廣告商可以瞭解廣告成效。這項設定已開啟。</translation>
 <translation id="9103479157856427471">放大的螢幕畫面會追蹤鍵盤焦點</translation>
 <translation id="9103868373786083162">按下即可返回，內容選單會顯示歷史記錄</translation>
 <translation id="9108035152087032312">命名視窗...(&amp;W)</translation>

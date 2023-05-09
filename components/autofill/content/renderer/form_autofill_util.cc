@@ -1506,32 +1506,6 @@ void MaybeEmitDuplicateIdForInputIssue(
   }
 }
 
-// Emits a devtools issue if an input tag has no associated label, meaning
-// neither a label tag, nor an aria-label attribute nor an aria-labelledby
-// attribute.
-void MaybeEmitInputWithNoLabelIssue(
-    const WebVector<WebFormControlElement>& control_elements,
-    FormData* form,
-    const std::vector<bool>& fields_extracted) {
-  for (size_t element_index = 0, field_index = 0;
-       element_index < control_elements.size(); ++element_index) {
-    if (!fields_extracted[element_index]) {
-      continue;
-    }
-
-    FormFieldData& field = form->fields[field_index++];
-    if (!field.label.empty() || !field.aria_label.empty()) {
-      continue;
-    }
-
-    const WebFormControlElement& control_element =
-        control_elements[element_index];
-    control_element.GetDocument().GetFrame()->AddGenericIssue(
-        GenericIssueErrorType::kFormInputWithNoLabelError,
-        control_element.GetDevToolsNodeId());
-  }
-}
-
 void MaybeEmitInputWithEmptyIdAndNameIssue(
     const WebFormControlElement& element) {
   static base::NoDestructor<WebString> kName("name");
@@ -1718,10 +1692,6 @@ bool FormOrFieldsetsToFormData(
     }
   }
 
-  if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
-    MaybeEmitInputWithNoLabelIssue(control_elements, form, fields_extracted);
-  }
-
   // Infers field labels from other tags or <labels> without for="...".
   bool found_field = false;
   DCHECK_EQ(control_elements.size(), fields_extracted.size());
@@ -1860,6 +1830,15 @@ void ValidateAutocompleteAttributeForElement(const WebElement& element) {
     element.GetDocument().GetFrame()->AddGenericIssue(
         blink::mojom::GenericIssueErrorType::
             kFormAutocompleteAttributeEmptyError,
+        element.GetDevToolsNodeId());
+  }
+
+  const WebInputElement input_element = element.DynamicTo<WebInputElement>();
+
+  if (IsAutocompleteTypeWrongButWellIntended(autocomplete_attribute)) {
+    element.GetDocument().GetFrame()->AddGenericIssue(
+        blink::mojom::GenericIssueErrorType::
+            kFormInputHasWrongButWellIntendedAutocompleteValueError,
         element.GetDevToolsNodeId());
   }
 }
@@ -2201,13 +2180,13 @@ void WebFormControlElementToFormField(
   field->max_length =
       IsTextInput(input_element) ? input_element.MaxLength() : 0;
   field->autocomplete_attribute = GetAutocompleteAttribute(element);
+  field->parsed_autocomplete = ParseAutocompleteAttribute(
+      field->autocomplete_attribute, field->max_length);
 
   if (base::FeatureList::IsEnabled(features::kAutofillEnableDevtoolsIssues)) {
     ValidateAutocompleteAttributeForElement(element);
   }
 
-  field->parsed_autocomplete = ParseAutocompleteAttribute(
-      field->autocomplete_attribute, field->max_length);
   if (base::EqualsCaseInsensitiveASCII(element.GetAttribute(*kRole).Utf16(),
                                        "presentation")) {
     field->role = FormFieldData::RoleAttribute::kPresentation;

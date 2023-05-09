@@ -216,7 +216,7 @@ public class TopToolbarCoordinator implements Toolbar {
         }
         controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
                 constraintsSupplier, toolbarDataProvider::getTab, compositorInMotionSupplier,
-                browserStateBrowserControlsVisibilityDelegate);
+                browserStateBrowserControlsVisibilityDelegate, layoutStateProviderSupplier);
         mToolbarLayout.initialize(toolbarDataProvider, tabController, mMenuButtonCoordinator,
                 historyDelegate, partnerHomepageEnabledSupplier, offlineDownloader);
         mToolbarLayout.setThemeColorProvider(normalThemeColorProvider);
@@ -805,5 +805,13 @@ public class TopToolbarCoordinator implements Toolbar {
     @Override
     public boolean isBrowsingModeToolbarVisible() {
         return mToolbarLayout.getVisibility() == View.VISIBLE;
+    }
+
+    public void onTransitionStart() {
+        mToolbarLayout.onTransitionStart();
+    }
+
+    public void onTransitionEnd() {
+        mToolbarLayout.onTransitionEnd();
     }
 }

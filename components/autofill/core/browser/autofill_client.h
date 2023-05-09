@@ -15,6 +15,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/autofill_trigger_source.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -270,7 +271,7 @@ class AutofillClient : public RiskDataLoader {
     bool show_prompt = true;
 
     // Whether the prompt suggests migration into the user's account.
-    bool is_migration = false;
+    bool is_migration_to_account = false;
   };
 
   // Required arguments to create a dropdown showing autofill suggestions.
@@ -665,7 +666,10 @@ class AutofillClient : public RiskDataLoader {
   // Returns true if the Fast Checkout feature is both supported by platform and
   // enabled.
   // TODO(crbug.com/1379149): Remove once bug is resolved.
-  virtual bool IsFastCheckoutSupported() = 0;
+  virtual bool IsFastCheckoutSupported(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillManager& autofill_manager) = 0;
 
   // Returns whether the FC surface is currently being shown.
   virtual bool IsShowingFastCheckoutUI() = 0;
@@ -765,6 +769,11 @@ class AutofillClient : public RiskDataLoader {
   virtual void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) = 0;
+
+  // Inform the client that the form has been filled.
+  virtual void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
+                                    AutofillTriggerSource trigger_source,
+                                    bool is_refill) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(

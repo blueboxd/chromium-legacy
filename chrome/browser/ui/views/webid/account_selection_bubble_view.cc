@@ -566,7 +566,8 @@ void AccountSelectionBubbleView::ShowSingleAccountConfirmDialog(
 
 void AccountSelectionBubbleView::ShowFailureDialog(
     const std::u16string& top_frame_for_display,
-    const std::u16string& idp_for_display) {
+    const std::u16string& idp_for_display,
+    const content::IdentityProviderMetadata& idp_metadata) {
   const std::u16string title = l10n_util::GetStringFUTF16(
       IDS_FAILURE_DIALOG_TITLE, top_frame_for_display, idp_for_display);
   title_label_->SetText(title);
@@ -578,6 +579,21 @@ void AccountSelectionBubbleView::ShowFailureDialog(
 void AccountSelectionBubbleView::AddIdpImage(const GURL& image_url,
                                              gfx::ImageSkia image) {
   idp_images_[image_url] = image;
+}
+
+std::string AccountSelectionBubbleView::GetDialogTitle() const {
+  // We cannot just return title_ because it is not always set
+  // (e.g. by ShowFailureDialog).
+  return base::UTF16ToUTF8(title_label_->GetText());
+}
+
+absl::optional<std::string> AccountSelectionBubbleView::GetDialogSubtitle()
+    const {
+  if (!subtitle_label_) {
+    return absl::nullopt;
+  }
+
+  return base::UTF16ToUTF8(subtitle_label_->GetText());
 }
 
 gfx::Rect AccountSelectionBubbleView::GetBubbleBounds() {

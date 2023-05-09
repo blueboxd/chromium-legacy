@@ -69,8 +69,9 @@
 namespace content {
 namespace {
 
-WebUIDataSource* CreateGpuHTMLSource() {
-  WebUIDataSource* source = WebUIDataSource::Create(kChromeUIGpuHost);
+void CreateAndAddGpuHTMLSource(BrowserContext* browser_context) {
+  WebUIDataSource* source =
+      WebUIDataSource::CreateAndAdd(browser_context, kChromeUIGpuHost);
   source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self';");
@@ -98,7 +99,6 @@ WebUIDataSource* CreateGpuHTMLSource() {
   source->AddResourcePath("vulkan_types.mojom-webui.js",
                           IDR_VULKAN_TYPES_MOJO_JS);
   source->SetDefaultResource(IDR_GPU_INTERNALS_HTML);
-  return source;
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -241,10 +241,8 @@ base::Value::List GetBasicGpuInfo(const gpu::GPUInfo& gpu_info,
                                                gpu_info.machine_model_name));
   basic_info.Append(display::BuildGpuInfoEntry("Machine model version",
                                                gpu_info.machine_model_version));
-  basic_info.Append(display::BuildGpuInfoEntry("GL implementation",
-                                               gpu_info.gl_implementation));
-  basic_info.Append(display::BuildGpuInfoEntry("ANGLE implementation",
-                                               gpu_info.angle_implementation));
+  basic_info.Append(display::BuildGpuInfoEntry(
+      "GL implementation parts", gpu_info.gl_implementation_parts.ToString()));
   basic_info.Append(
       display::BuildGpuInfoEntry("Display type", gpu_info.display_type));
   basic_info.Append(
@@ -912,9 +910,7 @@ GpuInternalsUI::GpuInternalsUI(WebUI* web_ui)
   web_ui->AddMessageHandler(std::make_unique<GpuMessageHandler>());
 
   // Set up the chrome://gpu/ source.
-  BrowserContext* browser_context =
-      web_ui->GetWebContents()->GetBrowserContext();
-  WebUIDataSource::Add(browser_context, CreateGpuHTMLSource());
+  CreateAndAddGpuHTMLSource(web_ui->GetWebContents()->GetBrowserContext());
 }
 
 }  // namespace content

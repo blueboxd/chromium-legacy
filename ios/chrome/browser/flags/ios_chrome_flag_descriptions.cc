@@ -343,6 +343,11 @@ const char kEnableFullscreenAPIName[] = "Enable Fullscreen API";
 const char kEnableFullscreenAPIDescription[] =
     "Enable the Fullscreen API for web content (iOS 16.0+).";
 
+const char kEnableFollowIPHExpParamsName[] =
+    "Enable Follow IPH Experiment Parameters";
+const char kEnableFollowIPHExpParamsDescription[] =
+    "Enable follow IPH experiment parameters.";
+
 const char kEnableFollowManagementInstantReloadName[] =
     "Enable Follow Management Instant Reload";
 const char kEnableFollowManagementInstantReloadDescription[] =
@@ -421,17 +426,23 @@ const char kFeedBackgroundRefreshDescription[] =
     "Schedules a feed background refresh after some minimum period of time has "
     "passed after the last refresh.";
 
+const char kFeedDisableHotStartRefreshName[] = "Disable hot start feed refresh";
+const char kFeedDisableHotStartRefreshDescription[] =
+    "Disables all Discover-controlled foregrounding refreshes.";
+
 const char kFeedExperimentTaggingName[] = "Enable Feed experiment tagging";
 const char kFeedExperimentTaggingDescription[] =
     "Makes server experiments visible as client-side experiments.";
 
-const char kFeedForegroundRefreshName[] = "Enable feed foreground refresh";
-const char kFeedForegroundRefreshDescription[] =
-    "Foreground refresh has two variations. The first is when the Feed is "
-    "refreshed after the user ends a Feed session, but the app is still in the "
-    "foreground (e.g., user switches tabs, user navigates away from Feed in "
-    "current tab). The second is when the Feed is refreshed at the moment the "
-    "app is backgrounding (e.g., extended execution time).";
+const char kFeedInvisibleForegroundRefreshName[] =
+    "Enable feed invisible foreground refresh";
+const char kFeedInvisibleForegroundRefreshDescription[] =
+    "Invisible foreground refresh has two variations. The first is when the "
+    "Feed is refreshed after the user ends a Feed session, but the app is "
+    "still in the foreground (e.g., user switches tabs, user navigates away "
+    "from Feed in current tab). The second is when the Feed is refreshed at "
+    "the moment the app is backgrounding (e.g., during extended execution "
+    "time).";
 
 const char kFillingAcrossAffiliatedWebsitesName[] =
     "Fill passwords across affiliated websites.";
@@ -477,12 +488,22 @@ const char kIndicateAccountStorageErrorInAccountCellDescription[] =
     "When enabled, the Account Cell indicates the Account"
     " Storage error when Sync is turned OFF";
 
+const char kIndicateIdentityErrorInOverflowMenuName[] =
+    "Indicate Identity Error in Overflow Menu";
+const char kIndicateIdentityErrorInOverflowMenuDescription[] =
+    "When enabled, the Overflow Menu indicates the identity error with an "
+    "error badge on the Settings destination";
+
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
     "When enabled, in-product help promotions occur exactly once per cold "
     "start. Enabled causes all in-product help promotions to occur. Enabling "
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
+
+const char kIOSBrowserEditMenuMetricsName[] = "Browser edit menu metrics";
+const char kIOSBrowserEditMenuMetricsDescription[] =
+    "Collect metrics for edit menu usage.";
 
 const char kIOSCustomBrowserEditMenuName[] = "Custom browser edit menu";
 const char kIOSCustomBrowserEditMenuDescription[] =
@@ -969,6 +990,9 @@ const char kEnableLensInOmniboxCopiedImageDescription[] =
     "When enabled, use Lens to search images from your device clipboard "
     "when Google is the selected search engine, accessible from the omnibox or "
     "popup menu.";
+
+const char kSFSymbolsFollowupName[] = "SF Symbol follow up";
+const char kSFSymbolsFollowupDescription[] = "Change the + button.";
 
 const char kTabGridRecencySortName[] = "Change TabGrid sorting";
 const char kTabGridRecencySortDescription[] =

@@ -108,18 +108,23 @@ class UrlRealTimeMechanism : public SafeBrowsingLookupMechanism {
 
   void SetWebUIToken(int token);
 
-  // Perform the hash based check for the url.
-  void PerformHashBasedCheck(const GURL& url);
+  // Perform the hash based check for the url. |real_time_request_failed|
+  // specifies whether this was triggered due to the real-time request having
+  // failed (e.g. due to backoff, network errors, other service unavailability).
+  void PerformHashBasedCheck(const GURL& url, bool real_time_request_failed);
 
   // The real-time URL check can sometimes default back to the hash-based check.
   // In these cases, this function is called once the check has completed, so
   // that the real-time URL check can report back the final results to the
   // caller.
+  // |real_time_request_failed| specifies whether the real-time request failed
+  // (e.g. due to backoff, network errors, other service unavailability).
   void OnHashDatabaseCompleteCheckResult(
+      bool real_time_request_failed,
       std::unique_ptr<SafeBrowsingLookupMechanism::CompleteCheckResult> result);
-  void OnHashDatabaseCompleteCheckResultInternal(
-      SBThreatType threat_type,
-      const ThreatMetadata& metadata);
+  void OnHashDatabaseCompleteCheckResultInternal(SBThreatType threat_type,
+                                                 const ThreatMetadata& metadata,
+                                                 bool real_time_request_failed);
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -132,8 +137,7 @@ class UrlRealTimeMechanism : public SafeBrowsingLookupMechanism {
   int url_web_ui_token_ = -1;
 
   // Whether the high confidence allowlist can be checked. It is set to
-  // false when enterprise real time URL lookup and allowlist bypass is also
-  // enabled (SafeBrowsingRealTimeUrlLookupForEnterpriseAllowlistBypass).
+  // false when enterprise real time URL lookup is enabled.
   bool can_check_high_confidence_allowlist_;
 
   // URL Lookup service suffix for logging metrics.

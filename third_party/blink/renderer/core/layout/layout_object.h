@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
@@ -509,7 +510,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     NOT_DESTROYED();
     if (NeedsLayout() && !ChildLayoutBlockedByDisplayLock())
       ShowLayoutTreeForThis();
-    SECURITY_DCHECK(!NeedsLayout() || ChildLayoutBlockedByDisplayLock());
+    DCHECK(!NeedsLayout() || ChildLayoutBlockedByDisplayLock());
   }
 
   void AssertSubtreeIsLaidOut() const {
@@ -742,7 +743,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     return style.IsStackingContextWithoutContainment() ||
            ((style.ContainsLayout() || style.ContainsPaint()) &&
             (!IsInline() || IsAtomicInlineLevel()) && !IsRubyText() &&
-            (!IsTablePart() || IsLayoutBlockFlow()));
+            (!IsTablePart() || IsLayoutBlockFlow())) ||
+           ViewTransitionUtils::IsRepresentedViaPseudoElements(*this);
   }
 
   inline bool IsStacked() const {
@@ -3314,6 +3316,11 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   const FragmentData& FirstFragment() const {
     NOT_DESTROYED();
     return *fragment_;
+  }
+
+  bool IsFragmented() const {
+    NOT_DESTROYED();
+    return !!FirstFragment().NextFragment();
   }
 
   enum OverflowRecalcType {

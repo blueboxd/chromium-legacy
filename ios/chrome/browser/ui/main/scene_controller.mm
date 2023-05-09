@@ -76,6 +76,7 @@
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/lens_commands.h"
 #import "ios/chrome/browser/shared/public/commands/omnibox_commands.h"
+#import "ios/chrome/browser/shared/public/commands/open_lens_input_selection_command.h"
 #import "ios/chrome/browser/shared/public/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/shared/public/commands/policy_change_commands.h"
 #import "ios/chrome/browser/shared/public/commands/qr_scanner_commands.h"
@@ -1958,7 +1959,8 @@ void InjectNTP(Browser* browser) {
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSavedPasswordsSettingsFromViewController:
             (UIViewController*)baseViewController
-                                    showCancelButton:(BOOL)showCancelButton {
+                                    showCancelButton:(BOOL)showCancelButton
+                                  startPasswordCheck:(BOOL)startPasswordCheck {
   if (!baseViewController) {
     // TODO(crbug.com/779791): Don't pass base view controller through
     // dispatched command.
@@ -1967,41 +1969,19 @@ void InjectNTP(Browser* browser) {
   DCHECK(!self.signinCoordinator)
       << "self.signinCoordinator: "
       << base::SysNSStringToUTF8([self.signinCoordinator description]);
+  [self dismissModalDialogs];
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController
-                                    showCancelButton:showCancelButton];
+                                    showCancelButton:showCancelButton
+                                  startPasswordCheck:startPasswordCheck];
     return;
   }
   Browser* browser = self.mainInterface.browser;
   self.settingsNavigationController = [SettingsNavigationController
       savePasswordsControllerForBrowser:browser
                                delegate:self
-        startPasswordCheckAutomatically:YES
                        showCancelButton:showCancelButton];
-  [baseViewController presentViewController:self.settingsNavigationController
-                                   animated:YES
-                                 completion:nil];
-}
-
-- (void)showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
-    (UIViewController*)baseViewController {
-  DCHECK(!self.signinCoordinator)
-      << "self.signinCoordinator: "
-      << base::SysNSStringToUTF8([self.signinCoordinator description]);
-  [self dismissModalDialogs];
-  if (self.settingsNavigationController) {
-    [self.settingsNavigationController
-        showSavedPasswordsSettingsAndStartPasswordCheckFromViewController:
-            baseViewController];
-    return;
-  }
-  Browser* browser = self.mainInterface.browser;
-  self.settingsNavigationController =
-      [SettingsNavigationController savePasswordsControllerForBrowser:browser
-                                                             delegate:self
-                                      startPasswordCheckAutomatically:YES
-                                                     showCancelButton:NO];
   [baseViewController presentViewController:self.settingsNavigationController
                                    animated:YES
                                  completion:nil];
@@ -2282,15 +2262,14 @@ void InjectNTP(Browser* browser) {
 - (void)startVoiceSearchInCurrentBVC {
   // If the background (non-current) BVC is playing TTS audio, call
   // -startVoiceSearch on it to stop the TTS.
-  BrowserViewController* backgroundBVC =
-      self.mainInterface == self.currentInterface ? self.incognitoInterface.bvc
-                                                  : self.mainInterface.bvc;
-  // TODO(crbug.com/1329104): playingTTS will be removed as an API from the BVC
-  // and something else will be used instead.
-  if (backgroundBVC.playingTTS)
-    [backgroundBVC startVoiceSearch];
-  else
+  id<BrowserInterface> interface = self.mainInterface == self.currentInterface
+                                       ? self.incognitoInterface
+                                       : self.mainInterface;
+  if (interface.playingTTS) {
+    [interface.bvc startVoiceSearch];
+  } else {
     [self.currentInterface.bvc startVoiceSearch];
+  }
 }
 
 - (void)startQRCodeScanner {
@@ -2308,8 +2287,12 @@ void InjectNTP(Browser* browser) {
   }
   id<LensCommands> lensHandler = HandlerForProtocol(
       self.currentInterface.browser->GetCommandDispatcher(), LensCommands);
-  [lensHandler
-      openInputSelectionForEntrypoint:LensEntrypoint::HomeScreenWidget];
+  OpenLensInputSelectionCommand* command = [[OpenLensInputSelectionCommand
+      alloc]
+          initWithEntryPoint:LensEntrypoint::HomeScreenWidget
+           presentationStyle:LensInputSelectionPresentationStyle::SlideFromRight
+      presentationCompletion:nil];
+  [lensHandler openLensInputSelection:command];
 }
 
 - (void)focusOmnibox {

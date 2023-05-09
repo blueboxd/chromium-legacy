@@ -52,6 +52,7 @@ import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.supplier.UnownedUserDataSupplier;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.build.annotations.UsedByReflection;
 import org.chromium.cc.input.BrowserControlsState;
 import org.chromium.chrome.R;
@@ -207,7 +208,6 @@ import org.chromium.components.webapps.ShortcutSource;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.RenderFrameHost;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -452,6 +452,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 getMultiWindowModeStateDispatcher(), getLifecycleDispatcher(),
                 getModalDialogManagerSupplier(), this);
         StartSurfaceUserData.reset();
+        mBackPressManager.setFallbackOnBackPressed(
+                () -> { minimizeAppAndCloseTabOnBackPress(getActivityTab()); });
     }
 
     @Override
@@ -602,13 +604,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
                     boolean gridTabSwitcherEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled(
                             ChromeTabbedActivity.this);
-                    boolean overviewVisible =
-                            mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)
-                            || mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE);
+                    boolean overviewVisible = isLayoutManagerCreated()
+                            && (mLayoutManager.isLayoutVisible(LayoutType.TAB_SWITCHER)
+                                    || mLayoutManager.isLayoutVisible(LayoutType.START_SURFACE));
                     boolean hasNextTab = !(getTabModelSelector().getTotalTabCount() == 0
                             || (!getTabModelSelector().isIncognitoSelected()
                                     && getTabModelSelector().getModel(false).getCount() == 0));
-
                     boolean multiWindowActive =
                             MultiWindowUtils.getInstance().areMultipleChromeInstancesRunning(
                                     ChromeTabbedActivity.this)
@@ -655,7 +656,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                         && getTabModelSelector().getModel(false).getCount() == 0));
 
         if (!overviewVisible && !hasNextTab) {
-            mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, false);
+            mLayoutManager.showLayout(LayoutType.TAB_SWITCHER, true);
         }
     }
 
@@ -816,7 +817,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 RecordUserAction.record("MobileTopToolbarNewTabButton");
 
                 RecordUserAction.record("MobileNewTabOpened");
-                ReturnToChromeUtil.onNewTabOpened();
             };
             OnClickListener bookmarkClickHandler =
                     v -> mTabBookmarkerSupplier.get().addOrEditBookmark(getActivityTab());
@@ -965,30 +965,33 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                             || ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                                     ChromeFeatureList.SPLIT_COMPOSITOR_TASK, "enable_on_tablet",
                                     false))) {
-                PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+                PostTask.postTask(TaskTraits.UI_DEFAULT,
                         mCallbackController.makeCancelable(this::initializeCompositorContent));
             } else {
                 initializeCompositorContent();
             }
 
             // All this initialization can be expensive so it's split into multiple tasks.
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                    mCallbackController.makeCancelable(this::refreshSignIn));
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            PostTask.postTask(
+                    TaskTraits.UI_DEFAULT, mCallbackController.makeCancelable(this::refreshSignIn));
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(this::initializeToolbarManager));
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(
                             this::maybeCreateIncognitoTabSnapshotController));
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            if (BackPressManager.isEnabled()) {
+                PostTask.postTask(TaskTraits.UI_DEFAULT, this::initializeBackPressHandlers);
+            }
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(
                             this::onAccessibilityTabSwitcherModeChanged));
 
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(
                             this::maybeGetFeedAppLifecycleAndMaybeCreatePageViewObserver));
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(this::initJourneyManager));
-            PostTask.postTask(UiThreadTaskTraits.DEFAULT,
+            PostTask.postTask(TaskTraits.UI_DEFAULT,
                     mCallbackController.makeCancelable(this::finishNativeInitialization));
             ChromeAccessibilityUtil.get().addObserver(this);
         }
@@ -1007,7 +1010,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
             ChromeAccessibilityUtil.get().addObserver(mLayoutManager);
             if (isTablet()) ChromeAccessibilityUtil.get().addObserver(mCompositorViewHolder);
-            if (BackPressManager.isEnabled()) initializeBackPressHandlers();
 
             mInactivityTracker.setLastVisibleTimeMsAndRecord(System.currentTimeMillis());
         }
@@ -2094,7 +2096,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             getTabModelSelector().getModel(false).commitAllTabClosures();
             RecordUserAction.record("MobileMenuNewTab");
             RecordUserAction.record("MobileNewTabOpened");
-            ReturnToChromeUtil.onNewTabOpened();
             reportNewTabShortcutUsed(false);
             if (fromMenu) RecordUserAction.record("MobileMenuNewTab.AppMenu");
 
@@ -2108,7 +2109,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 // are dropped when an incognito tab is open.
                 RecordUserAction.record("MobileMenuNewIncognitoTab");
                 RecordUserAction.record("MobileNewTabOpened");
-                ReturnToChromeUtil.onNewTabOpened();
                 reportNewTabShortcutUsed(true);
                 if (fromMenu) RecordUserAction.record("MobileMenuNewIncognitoTab.AppMenu");
                 getTabCreator(true).launchNTP();
@@ -2160,7 +2160,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
                 NewTabPageUma.recordAction(NewTabPageUma.ACTION_OPENED_RECENT_TABS_MANAGER);
             }
             RecordUserAction.record("MobileMenuRecentTabs");
-            ReturnToChromeUtil.onRecentTabsOpened();
         } else if (id == R.id.close_tab) {
             getCurrentTabModel().closeTab(currentTab, true, false, true);
             RecordUserAction.record("MobileTabClosed");
@@ -2207,7 +2206,8 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             QuickDeleteMetricsDelegate.recordHistogram(
                     QuickDeleteMetricsDelegate.PrivacyQuickDelete.MENU_ITEM_CLICKED);
 
-            new QuickDeleteController(this, getModalDialogManager(), getSnackbarManager())
+            new QuickDeleteController(
+                    this, getModalDialogManager(), getSnackbarManager(), getLayoutManager())
                     .triggerQuickDeleteFlow();
         } else {
             return super.onMenuOrKeyboardAction(id, fromMenu);
@@ -2258,12 +2258,12 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // crbug.com/1416719: back press on start surface should close the app.
         final boolean isStartSurfaceHomepageShowing =
                 mStartSurfaceSupplier.hasValue() && mStartSurfaceSupplier.get().isHomepageShown();
-        final Tab currentTab = isStartSurfaceHomepageShowing ? null : getActivityTab();
+        final Tab activityTab = BackPressManager.shouldUseActivityTabProvider()
+                ? getActivityTabProvider().get()
+                : getActivityTab();
+        final Tab currentTab = isStartSurfaceHomepageShowing ? null : activityTab;
         if (currentTab == null) {
-            BackPressManager.record(BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
-            MinimizeAppAndCloseTabBackPressHandler.record(MinimizeAppAndCloseTabType.MINIMIZE_APP);
-            assertOnLastBackPress();
-            moveTaskToBack(true);
+            minimizeAppAndCloseTabOnBackPress(null);
             return true;
         }
 
@@ -2305,7 +2305,22 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             nativePage.notifyHidingWithBack();
         }
 
+        if (minimizeAppAndCloseTabOnBackPress(currentTab)) return true;
+
+        assert false : "The back button should have already been handled by this point";
+        return false;
+    }
+
+    private boolean minimizeAppAndCloseTabOnBackPress(@Nullable Tab currentTab) {
+        if (currentTab == null) {
+            BackPressManager.record(BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB);
+            MinimizeAppAndCloseTabBackPressHandler.record(MinimizeAppAndCloseTabType.MINIMIZE_APP);
+            assertOnLastBackPress();
+            moveTaskToBack(true);
+            return true;
+        }
         final boolean shouldCloseTab = backShouldCloseTab(currentTab);
+        final WebContents webContents = currentTab.getWebContents();
 
         // Minimize the app if either:
         // - we decided not to close the tab
@@ -2334,8 +2349,6 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
             if (webContents != null) webContents.dispatchBeforeUnload(false);
             return true;
         }
-
-        assert false : "The back button should have already been handled by this point";
         return false;
     }
 

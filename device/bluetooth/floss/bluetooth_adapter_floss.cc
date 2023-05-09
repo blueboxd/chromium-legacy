@@ -793,7 +793,15 @@ void BluetoothAdapterFloss::AdapterSspRequest(
   BluetoothPairingFloss* pairing = device->pairing();
 
   if (!pairing) {
-    LOG(WARNING) << "SSP request for an unknown pairing";
+    // For incoming bonding, reject it right away to avoid users try to pair
+    // with it while the remote is waiting reply.
+    FlossDBusManager::Get()->GetAdapterClient()->SetPairingConfirmation(
+        base::DoNothing(), remote_device, /*accept=*/false);
+    return;
+  }
+
+  if (!pairing->active()) {
+    LOG(WARNING) << "SSP request for an inactive pairing";
     return;
   }
 
@@ -853,6 +861,10 @@ void BluetoothAdapterFloss::DeviceBondStateChanged(
       static_cast<BluetoothDeviceFloss*>(devices_[canonical_address].get());
 
   if (status != 0) {
+    if (device->pairing()) {
+      // Mark that no actions should be triggered for pairing delegate.
+      device->pairing()->SetActive(false);
+    }
     LOG(ERROR) << "Received BondStateChanged with error status = " << status;
     device->SetBondState(bond_state);
     if (bond_state == FlossAdapterClient::BondState::kNotBonded) {
@@ -1226,8 +1238,11 @@ BluetoothAdapterFloss::StartLowEnergyScanSession(
 
 device::BluetoothAdapter::LowEnergyScanSessionHardwareOffloadingStatus
 BluetoothAdapterFloss::GetLowEnergyScanSessionHardwareOffloadingStatus() {
-  NOTIMPLEMENTED();
-  return LowEnergyScanSessionHardwareOffloadingStatus::kNotSupported;
+  return FlossDBusManager::Get()->GetGattManagerClient()->GetMsftSupported()
+             ? device::BluetoothAdapter::
+                   LowEnergyScanSessionHardwareOffloadingStatus::kSupported
+             : device::BluetoothAdapter::
+                   LowEnergyScanSessionHardwareOffloadingStatus::kNotSupported;
 }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 

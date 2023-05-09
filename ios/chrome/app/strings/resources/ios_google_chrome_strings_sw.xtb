@@ -40,6 +40,7 @@
 <translation id="3167189358072330585">Akaunti yako haifanyi kazi kwenye Google Chrome. Tafadhali wasiliana na msimamizi wako wa kikoa au utumie Akaunti yako ya kawaida ya Google kuingia.</translation>
 <translation id="3173834708294760622">Ukurasa wa Google Chrome</translation>
 <translation id="3196546062792660320">Chrome inakuokolea wakati kwa kuleta akaunti zako kwenye wavuti. Unaweza kuongeza au kuondoa akaunti katika Mipangilio.</translation>
+<translation id="322254490661677575">Ili utumie na uhifadhi data ya Chrome kwenye Akaunti yako ya Google, weka kauli yako ya siri.</translation>
 <translation id="3282568296779691940">Ingia katika Chrome</translation>
 <translation id="3345341804167540816">Tumia Chrome Kila Mahali</translation>
 <translation id="3503014945441706099">Pia, pata Kipengele cha Kuvinjari Salama Kilichoboreshwa kwenye wasifu huu wa Chrome</translation>
@@ -52,6 +53,7 @@
 <translation id="3980220367029651214">Unabadilisha akaunti za kusawazisha kutoka <ph name="USER_EMAIL1" /> hadi <ph name="USER_EMAIL2" />. Data yako iliyopo ya Chrome inadhibitiwa na <ph name="DOMAIN" />. Hatua hii itafuta data yako kwenye kifaa hiki, lakini data yako itasalia katika <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Shirika lako linahitaji usiingie katika akaunti kwenye Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome haina uwezo wa kufikia picha au video zako. Washa ufikiaji katika Mipangilio ya iOS &gt; Faragha &gt; Picha.</translation>
+<translation id="4064699917955374540">Ili utumie na uhifadhi data ya Chrome kwenye Akaunti yako ya Google, thibitisha kuwa ni wewe.</translation>
 <translation id="417201473131094001">Haitumiki kwenye Chrome Canary (toleo la jaribio)</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> alikuwa akitumia Chrome na akaacha alamisho, manenosiri na mipangilio mingine kwenye kifaa hiki.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
@@ -68,6 +70,7 @@
 <translation id="5119391094379141756">Chagua Chrome</translation>
 <translation id="5162467219239570114">Toleo hili la Chrome limepitwa na wakati. Iwapo hakuna sasisho kwenye <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, kuna uwezekano kuwa kifaa chako hakitumii tena matoleo mapya ya Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome imeshindwa kutumia kamera yako kwa sababu inatumiwa na programu nyingine</translation>
+<translation id="5395376160638294582">Hakikisha kuwa unaweza kutumia data ya Chrome katika Akaunti yako ya Google kila wakati</translation>
 <translation id="5460571915754665838">4. Chagua Chrome</translation>
 <translation id="5492504007368565877">Kidhibiti cha Manenosiri cha Google kimeshindwa kukagua manenosiri yako.</translation>
 <translation id="5552137475244467770">Chrome hukagua mara kwa mara manenosiri yako ikilinganisha na orodha ambazo zimechapishwa mtandaoni. Wakati inafanya hivyo, manenosiri na majina yako ya mtumiaji huwa yamesimbwa kwa njia fiche, kwa hivyo hayawezi kusomwa na mtu mwingine, ikiwemo Google.</translation>
@@ -122,6 +125,7 @@
 <translation id="8370517070665726704">Hakimiliki <ph name="YEAR" /> Google LLC. Haki zote zimehifadhiwa.</translation>
 <translation id="840168496893712993">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali jaribu kuzisanidua.</translation>
 <translation id="8414886616817913619">Shirika lako linahitaji uingie katika akaunti ili uweze kutumia Chrome. <ph name="BEGIN_LINK" />Pata Maelezo Zaidi<ph name="END_LINK" /></translation>
+<translation id="84594714173170813">Endelea kutumia data ya Chrome katika Akaunti yako ya Google</translation>
 <translation id="8459495907675268833">Data uliyochagua imeondolewa kwenye Chrome na kwenye vifaa vilivyosawazishwa. Huenda Akaunti yako ya Google ina aina nyingine za historia ya mambo uliyovinjari kama vile mambo uliyotafuta na shughuli kutoka huduma nyingine za Google katika history.google.com.</translation>
 <translation id="850555388806794946">Ili ufanye Chrome iwe kivinjari chako chaguomsingi:
   1. Fungua Mipangilio

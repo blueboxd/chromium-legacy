@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.Callback;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.toolbar.ButtonDataImpl;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.adaptive.AdaptiveToolbarButtonVariant;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -73,9 +75,12 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     private ObserverList<ButtonDataObserver> mObservers = new ObserverList<>();
     private boolean mNativeIsInitialized;
 
+    private boolean mIsTabNtp;
+    private boolean mIsStartSurface;
+
     /**
      *
-     * @param context The Context for retrieving resources, launching preference activiy, etc.
+     * @param context The Context for retrieving resources, launching preference activity, etc.
      * @param activityLifecycleDispatcher Dispatcher for activity lifecycle events, e.g. native
      *         initialization completing.
      */
@@ -123,8 +128,8 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
 
     @Override
     public ButtonData get(Tab tab) {
-        boolean isNtp = tab != null && tab.getNativePage() instanceof NewTabPage;
-        if (!isNtp) {
+        mIsTabNtp = tab != null && tab.getNativePage() instanceof NewTabPage;
+        if (!mIsTabNtp) {
             mButtonData.setCanShow(false);
             return mButtonData;
         }
@@ -135,14 +140,15 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
 
     public ButtonData getForStartSurface(
             @StartSurfaceState int overviewModeState, @LayoutType int layoutType) {
-        if (ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)) {
-            if (layoutType != LayoutType.START_SURFACE) {
-                mButtonData.setCanShow(false);
-                return mButtonData;
-            }
-        } else if (overviewModeState != StartSurfaceState.SHOWN_HOMEPAGE) {
+        if ((ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)
+                    && layoutType != LayoutType.START_SURFACE)
+                || (!ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mContext)
+                        && overviewModeState != StartSurfaceState.SHOWN_HOMEPAGE)) {
+            mIsStartSurface = false;
             mButtonData.setCanShow(false);
             return mButtonData;
+        } else {
+            mIsStartSurface = true;
         }
 
         calculateButtonData();
@@ -297,8 +303,11 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
     /**
      * Records IdentityDisc usage with feature engagement tracker. This signal can be used to decide
      * whether to show in-product help.
+     * We also record the clicking actions on the profile icon in histograms.
      */
     private void recordIdentityDiscUsed() {
+        BrowserUiUtils.recordIdentityDiscClicked(mIsStartSurface, mIsTabNtp);
+
         assert mProfileSupplier != null && mProfileSupplier.get() != null;
         Tracker tracker = TrackerFactory.getTrackerForProfile(mProfileSupplier.get());
         tracker.notifyEvent(EventConstants.IDENTITY_DISC_USED);
@@ -355,7 +364,11 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
                 R.string.accessibility_toolbar_btn_identity_disc_with_name, userName);
     }
 
-    private void onClick() {
+    @VisibleForTesting
+    void onClick() {
+        if (!mNativeIsInitialized) {
+            return;
+        }
         recordIdentityDiscUsed();
 
         SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
@@ -369,6 +382,7 @@ public class IdentityDiscController implements NativeInitObserver, ProfileDataCa
         }
     }
 
+    @VisibleForTesting
     boolean isProfileDataCacheEmpty() {
         return mProfileDataCache == null;
     }

@@ -146,7 +146,8 @@ BASE_FEATURE(kDefaultEnableGpuRasterization,
 // Enables the use of out of process rasterization for canvas.
 BASE_FEATURE(kCanvasOopRasterization,
              "CanvasOopRasterization",
-#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_IOS) || BUILDFLAG(IS_WIN) || \
+    (BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM64))
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -183,6 +184,14 @@ BASE_FEATURE(kDisableVideoOverlayIfMoving,
 
 BASE_FEATURE(kNoUndamagedOverlayPromotion,
              "NoUndamagedOverlayPromotion",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Use a DCompPresenter as the root surface, instead of a
+// DirectCompositionSurfaceWin. DCompPresenter is surface-less and the actual
+// allocation of the root surface will be owned by the
+// SkiaOutputDeviceDCompPresenter.
+BASE_FEATURE(kDCompPresenter,
+             "DCompPresenter",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

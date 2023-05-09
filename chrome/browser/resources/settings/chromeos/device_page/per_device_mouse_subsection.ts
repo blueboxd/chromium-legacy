@@ -23,11 +23,21 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {DeepLinkingMixin} from '../deep_linking_mixin.js';
+import {Setting} from '../mojom-webui/setting.mojom-webui.js';
+import {routes} from '../os_settings_routes.js';
+import {RouteObserverMixin} from '../route_observer_mixin.js';
+import {Route} from '../router.js';
+
 import {getInputDeviceSettingsProvider} from './input_device_mojo_interface_provider.js';
-import {InputDeviceSettingsProviderInterface, Mouse} from './input_device_settings_types.js';
+import {InputDeviceSettingsProviderInterface, Mouse, MouseSettings} from './input_device_settings_types.js';
+import {settingsAreEqual} from './input_device_settings_utils.js';
 import {getTemplate} from './per_device_mouse_subsection.html.js';
 
-export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
+const SettingsPerDeviceMouseSubsectionElementBase =
+    DeepLinkingMixin(RouteObserverMixin(PolymerElement));
+export class SettingsPerDeviceMouseSubsectionElement extends
+    SettingsPerDeviceMouseSubsectionElementBase {
   static get is(): string {
     return 'settings-per-device-mouse-subsection';
   }
@@ -140,6 +150,24 @@ export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
       mouse: {
         type: Object,
       },
+
+      /**
+       * Used by DeepLinkingMixin to focus this page's deep links.
+       */
+      supportedSettingIds: {
+        type: Object,
+        value: () => new Set<Setting>([
+          Setting.kMouseSwapPrimaryButtons,
+          Setting.kMouseReverseScrolling,
+          Setting.kMouseAcceleration,
+          Setting.kMouseScrollAcceleration,
+          Setting.kMouseSpeed,
+        ]),
+      },
+
+      mouseIndex: {
+        type: Number,
+      },
     };
   }
 
@@ -155,6 +183,18 @@ export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
     ];
   }
 
+  override currentRouteChanged(route: Route): void {
+    // Does not apply to this page.
+    if (route !== routes.PER_DEVICE_MOUSE) {
+      return;
+    }
+
+    // If multiple mice are available, focus on the first one.
+    if (this.mouseIndex === 0) {
+      this.attemptDeepLink();
+    }
+  }
+
   private mouse: Mouse;
   private primaryRightPref: chrome.settingsPrivate.PrefObject;
   private accelerationPref: chrome.settingsPrivate.PrefObject;
@@ -165,8 +205,13 @@ export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
   private isInitialized: boolean = false;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
       getInputDeviceSettingsProvider();
+  private mouseIndex: number;
 
   private updateSettingsToCurrentPrefs(): void {
+    // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
+    // gets updated. This subsection element can be reused multiple times so we
+    // need to reset `isInitialized` so we do not make unneeded API calls.
+    this.isInitialized = false;
     this.set('primaryRightPref.value', this.mouse.settings.swapRight);
     this.set('accelerationPref.value', this.mouse.settings.accelerationEnabled);
     this.set('sensitivityPref.value', this.mouse.settings.sensitivity);
@@ -195,11 +240,11 @@ export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
   }
 
   private onSettingsChanged(): void {
-    // TODO(wangdanny): Implement onSettingsChanged.
     if (!this.isInitialized) {
       return;
     }
-    this.mouse.settings = {
+
+    const newSettings: MouseSettings = {
       ...this.mouse.settings,
       swapRight: this.primaryRightPref.value,
       accelerationEnabled: this.accelerationPref.value,
@@ -209,6 +254,11 @@ export class SettingsPerDeviceMouseSubsectionElement extends PolymerElement {
       reverseScrolling: this.reverseScrollValue,
     };
 
+    if (settingsAreEqual(newSettings, this.mouse.settings)) {
+      return;
+    }
+
+    this.mouse.settings = newSettings;
     this.inputDeviceSettingsProvider.setMouseSettings(
         this.mouse.id, this.mouse.settings);
   }

@@ -630,7 +630,7 @@ suite('NewTabPageAppTest', () => {
 
     test('modules max width media rule applied', async () => {
       const sampleMaxWidthPx = 768;
-      loadTimeData.overrideValues({modulesMaxWidthPx: sampleMaxWidthPx});
+      loadTimeData.overrideValues({wideModulesEnabled: true});
       document.body.innerHTML = window.trustedTypes!.emptyHTML;
       document.body.setAttribute('style', `width:${sampleMaxWidthPx}px`);
       app = document.createElement('ntp-app');
@@ -823,6 +823,11 @@ suite('NewTabPageAppTest', () => {
       });
     });
 
+    test('customize chrome in product help might show on startup'), () => {
+      assertEquals(
+          1, handler.getCallCount('maybeShowCustomizeChromeFeaturePromo'));
+    };
+
     test('clicking customize button opens side panel', () => {
       // Act.
       $$<HTMLElement>(app, '#customizeButton')!.click();
@@ -930,6 +935,11 @@ suite('NewTabPageAppTest', () => {
       });
     });
 
+    test('lens upload dialog closed on start', () => {
+      // Assert.
+      assertFalse(!!app.shadowRoot!.querySelector('ntp-lens-upload-dialog'));
+    });
+
     test('realbox is not visible when Lens upload dialog is open', async () => {
       // Arrange.
       callbackRouterRemote.setTheme(createTheme());
@@ -940,6 +950,7 @@ suite('NewTabPageAppTest', () => {
       await flushTasks();
 
       // Assert.
+      assertTrue(!!app.shadowRoot!.querySelector('ntp-lens-upload-dialog'));
       assertStyle($$(app, '#realbox')!, 'visibility', 'hidden');
 
       // Act.

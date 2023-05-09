@@ -111,17 +111,6 @@ extern const char kRevertIconOnFailureParam[];
 extern const base::FeatureParam<bool> kRevertIconOnFailure;
 
 // Feature parameters for ChromeCart on Desktop.
-
-// Whether to use OptimizationGuide to optimize renderer signal collection.
-constexpr base::FeatureParam<bool> kOptimizeRendererSignal(
-#if !BUILDFLAG(IS_ANDROID)
-    &ntp_features::kNtpChromeCartModule,
-#else
-    &kCommerceHintAndroid,
-#endif
-    "optimize-renderer-signal",
-    true);
-
 constexpr base::FeatureParam<base::TimeDelta> kDiscountFetchDelayParam(
     &ntp_features::kNtpChromeCartModule,
     "discount-fetch-delay",
@@ -339,6 +328,9 @@ extern const base::FeatureParam<bool> kReadyToFetchMerchantWidePromotion;
 // Feature params for code-based Rule-based Discount (RBD).
 extern const char kCodeBasedRuleDiscountParam[];
 extern const base::FeatureParam<bool> kCodeBasedRuleDiscount;
+extern const char kCodeBasedRuleDiscountCouponDeletionTimeParam[];
+extern const base::FeatureParam<base::TimeDelta>
+    kCodeBasedRuleDiscountCouponDeletionTime;
 
 // Check if a URL belongs to a partner merchant of any type of discount.
 bool IsPartnerMerchant(const GURL& url);

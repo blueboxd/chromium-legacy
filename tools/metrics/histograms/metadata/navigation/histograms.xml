@@ -366,7 +366,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.PageWithForm.RestoreResult"
-    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-06-30">
+    enum="BackForwardCacheHistoryNavigationOutcome" expires_after="2023-09-17">
   <owner>wenyufu@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -383,7 +383,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="BackForwardCache.PageWithForm.Storable"
-    enum="BackForwardCachePageWithFormStorable" expires_after="2023-06-30">
+    enum="BackForwardCachePageWithFormStorable" expires_after="2023-09-17">
   <owner>wenyufu@chromium.org</owner>
   <owner>bfcache-dev@chromium.org</owner>
   <summary>
@@ -691,7 +691,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Guest.IsHTTPOrHTTPS"
-    enum="BooleanHttpBasedOrOtherScheme" expires_after="2023-07-16">
+    enum="BooleanHttpBasedOrOtherScheme" expires_after="2023-09-17">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -704,7 +704,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.Guest.IsMainFrame" enum="BooleanMainFrame"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -750,7 +750,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.IsGuest" enum="NavigationIsGuest"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>alexmos@chromium.org</owner>
   <owner>creis@chromium.org</owner>
   <owner>wjmaclean@chromium.org</owner>
@@ -866,7 +866,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.MainFrame.MaxFrameCount" units="frames"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>michaelpg@chromium.org</owner>
   <owner>yilkal@chromium.org</owner>
   <owner>cros-families-eng@google.com</owner>
@@ -1046,7 +1046,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadBrowserToRendererIpcTime" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1056,7 +1056,7 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram name="Navigation.OnBeforeUnloadLegacyPostTaskTime" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>sky@chromium.org</owner>
   <owner>jam@chromium.org</owner>
   <summary>
@@ -1364,6 +1364,24 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
   </summary>
 </histogram>
 
+<histogram name="Navigation.SuddenTerminationDisabler.{Origins}"
+    enum="NavigationSuddenTerminationDisabler" expires_after="2023-10-11">
+  <owner>fergal@chromium.org</owner>
+  <owner>rakina@chromium.org</owner>
+  <summary>
+    Records the combination of mainframe/subframe and what sudden termination
+    disablers were present. This is recorded on every cross-document navigation.
+    Currently only covers Unload. The SameOrigin variant only considers a frame
+    to be same origin as the main frame if it can be reached through a chain of
+    same-origin frames. So e.g. in a-&gt;b-&gt;a, the second a is not
+    same-origin.
+  </summary>
+  <token key="Origins">
+    <variant name="AllOrigins"/>
+    <variant name="SameOrigin"/>
+  </token>
+</histogram>
+
 <histogram name="Navigation.ThrottleDeferTime.{Event}" units="ms"
     expires_after="2023-02-11">
   <owner>cduvall@chromium.org</owner>
@@ -1611,15 +1629,48 @@ Also used in tools/metrics/histograms/metadata/page/histograms.xml.
 </histogram>
 
 <histogram
-    name="Prerender.Experimental.CancellationPercentageByExcessiveMemoryUsage.SpeculationRule"
-    units="%" expires_after="2023-08-27">
-  <owner>asamidoi@chromium.org</owner>
+    name="Prerender.Experimental.BookmarkBar.EnterToPressDuration{ButtonType}"
+    units="ms" expires_after="2023-09-24">
+  <owner>robertlin@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
   <owner>chrome-prerendering@google.com</owner>
   <summary>
-    Records the percentage of destroyed prerenders due to the excessive memory
-    usage in started prerenders. The result should be an integer between 0 and
-    100. This is recorded when SpeculationHostImpl is destructed or a primary
-    page is updated.
+    The metrics for preload boomark to understand the distribution of delay to
+    press {ButtonType}. It records duration time from entering to to pressing
+    the button.
+  </summary>
+  <token key="ButtonType">
+    <variant name="" summary="any button"/>
+    <variant name=".LeftButton" summary="the left button"/>
+  </token>
+</histogram>
+
+<histogram
+    name="Prerender.Experimental.BookmarkBar.HoverDuration.{ConversionResultType}"
+    units="ms" expires_after="2023-09-24">
+  <owner>robertlin@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    The metrics for preload boomark to understand the distribution of mouse
+    hovering duration. It records mouse hovering duration time when mouse leaves
+    the bookmark button areas without using it as NotTaken, or when the bookmark
+    is actually clicked as Taken.
+  </summary>
+  <token key="ConversionResultType">
+    <variant name="NotTaken"/>
+    <variant name="Taken"/>
+  </token>
+</histogram>
+
+<histogram name="Prerender.Experimental.BookmarkUrlButtonEvent"
+    enum="PreloadBookmarkMetricsEvent" expires_after="2023-06-20">
+  <owner>robertlin@chromium.org</owner>
+  <owner>toyoshim@chromium.org</owner>
+  <owner>chrome-prerendering@google.com</owner>
+  <summary>
+    The metrics for preload bookmark to evaluate the ratio of mouseover and
+    mousedown translating into full mouse click.
   </summary>
 </histogram>
 

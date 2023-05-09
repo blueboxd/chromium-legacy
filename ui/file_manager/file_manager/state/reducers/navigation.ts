@@ -49,10 +49,10 @@ function getPrefixEntryOrEntry(state: State, volume: Volume): VolumeEntry|
  *  2. Shortcuts.
  *  3. "My-Files" (grouping), actually Downloads volume.
  *  4. Drive volumes.
- *  5. Trash.
- *  6. Other FSP (File System Provider) (when mounted).
- *  7. Other volumes (MTP, ARCHIVE, REMOVABLE).
- *  8. Android apps.
+ *  5. Other FSP (File System Provider) (when mounted).
+ *  6. Other volumes (MTP, ARCHIVE, REMOVABLE).
+ *  7. Android apps.
+ *  8. Trash.
  */
 export function refreshNavigationRoots(
     currentState: State, _action: RefreshNavigationRootsAction): State {
@@ -108,7 +108,8 @@ export function refreshNavigationRoots(
   roots.push({
     key: myFilesEntry.toURL(),
     section: NavigationSection.MY_FILES,
-    separator: true,
+    // Only show separator if this is not the first navigation item.
+    separator: processedEntryKeys.size > 0,
     type: myFilesVolume ? NavigationType.VOLUME : NavigationType.ENTRY_LIST,
   });
   processedEntryKeys.add(myFilesEntry.toURL());
@@ -126,20 +127,7 @@ export function refreshNavigationRoots(
     processedEntryKeys.add(driveEntry.toURL());
   }
 
-  // 5. Trash
-  const trashEntry =
-      getEntry(currentState, trashRootKey) as FilesAppEntry | null;
-  if (trashEntry) {
-    roots.push({
-      key: trashRootKey,
-      section: NavigationSection.TRASH,
-      separator: true,
-      type: NavigationType.TRASH,
-    });
-    processedEntryKeys.add(trashRootKey);
-  }
-
-  // 6/7. Other volumes.
+  // 5/6. Other volumes.
   const volumesOrder = {
     [VolumeType.SMB]: 1,
     [VolumeType.PROVIDED]: 2,  // FSP.
@@ -149,7 +137,6 @@ export function refreshNavigationRoots(
     [VolumeType.MTP]: 6,
   };
   // Filter volumes based on the volumeInfoList in volumeManager.
-  // TODO: get volume manger properly.
   const {volumeManager} = window.fileManager;
   const filteredVolumeIds = new Set<VolumeId>();
   for (let i = 0; i < volumeManager.volumeInfoList.length; i++) {
@@ -200,7 +187,7 @@ export function refreshNavigationRoots(
     }
   }
 
-  // 8. Android Apps.
+  // 7. Android Apps.
   Object
       .values(
           androidApps as Record<string, chrome.fileManagerPrivate.AndroidApp>)
@@ -213,6 +200,19 @@ export function refreshNavigationRoots(
         });
         processedEntryKeys.add(app.packageName);
       });
+
+  // 8. Trash
+  const trashEntry =
+      getEntry(currentState, trashRootKey) as FilesAppEntry | null;
+  if (trashEntry) {
+    roots.push({
+      key: trashRootKey,
+      section: NavigationSection.TRASH,
+      separator: true,
+      type: NavigationType.TRASH,
+    });
+    processedEntryKeys.add(trashRootKey);
+  }
 
   return {
     ...currentState,

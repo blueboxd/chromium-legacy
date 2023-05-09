@@ -174,6 +174,8 @@ extensions::api::passwords_private::ImportEntry ConvertImportEntry(
           entry.status);
   result.url = entry.url;
   result.username = entry.username;
+  result.password = entry.password;
+  result.id = entry.id;
   return result;
 }
 
@@ -189,9 +191,10 @@ extensions::api::passwords_private::ImportResults ConvertImportResults(
           results.status);
   private_results.number_imported = results.number_imported;
   private_results.file_name = results.file_name;
-  private_results.failed_imports.reserve(results.failed_imports.size());
-  for (const auto& entry : results.failed_imports)
-    private_results.failed_imports.emplace_back(ConvertImportEntry(entry));
+  private_results.displayed_entries.reserve(results.displayed_entries.size());
+  for (const auto& entry : results.displayed_entries) {
+    private_results.displayed_entries.emplace_back(ConvertImportEntry(entry));
+  }
   return private_results;
 }
 
@@ -290,11 +293,14 @@ void PasswordsPrivateDelegateImpl::GetSavedPasswordsList(
 PasswordsPrivateDelegate::CredentialsGroups
 PasswordsPrivateDelegateImpl::GetCredentialGroups() {
   std::vector<api::passwords_private::CredentialGroup> groups;
+  bool sync_enabled = password_manager::sync_util::IsPasswordSyncEnabled(
+      SyncServiceFactory::GetForProfile(profile_));
   for (const password_manager::AffiliatedGroup& group :
        saved_passwords_presenter_.GetAffiliatedGroups()) {
     api::passwords_private::CredentialGroup group_api;
     group_api.name = group.GetDisplayName();
-    group_api.icon_url = group.GetIconURL().spec();
+    group_api.icon_url = sync_enabled ? group.GetIconURL().spec()
+                                      : group.GetFallbackIconURL().spec();
 
     DCHECK(!group.GetCredentials().empty());
     for (const CredentialUIEntry& credential : group.GetCredentials()) {
@@ -629,6 +635,22 @@ void PasswordsPrivateDelegateImpl::ImportPasswords(
   if (client->GetPasswordFeatureManager()->IsOptedInForAccountStorage()) {
     client->GetPasswordFeatureManager()->SetDefaultPasswordStore(store_to_use);
   }
+}
+
+void PasswordsPrivateDelegateImpl::ContinueImport(
+    const std::vector<int>& selected_ids,
+    ImportResultsCallback results_callback) {
+  // TODO(crbug/1417650): Implement PasswordManagerPorter::ContinueImport
+  // TODO(crbug/1417650): Add re-auth before ContinueImport.
+  extensions::api::passwords_private::ImportResults private_results;
+  private_results.status = extensions::api::passwords_private::
+      ImportResultsStatus::IMPORT_RESULTS_STATUS_UNKNOWN_ERROR;
+  std::move(results_callback).Run(private_results);
+}
+
+void PasswordsPrivateDelegateImpl::ResetImporter(bool delete_file) {
+  // TODO(crbug/1417650): Implement PasswordManagerPorter::ResetImporter.
+  return;
 }
 
 void PasswordsPrivateDelegateImpl::ExportPasswords(

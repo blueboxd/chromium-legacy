@@ -308,6 +308,8 @@ message CheckUserAccountResponse {
 
 // Response from server to device register request.
 message DeviceRegisterResponse {
+  reserved 6;
+
   // Device management token for this registration.  This token MUST be
   // part of HTTP Authorization header for all future requests from
   // device to server.
@@ -348,10 +350,6 @@ message DeviceRegisterResponse {
   // registering for policy is affiliated on the device.
   // Only sent if DeviceRegisterRequest.Type == USER
   repeated string user_affiliation_ids = 5;
-
-  // The unique directory api ID of the device which was generated on the
-  // server-side.
-  optional string directory_api_id = 6;
 }
 
 // Request from device to server to unregister device.
@@ -1913,21 +1911,6 @@ message Extension {
   optional int32 manifest_version = 14;
 }
 
-// Plugin information.
-message Plugin {
-  // The human friendly name of plugin.
-  optional string name = 1;
-
-  // Currently installed version of the plugin.
-  optional string version = 2;
-
-  // The file name from the path of the plugin.
-  optional string filename = 3;
-
-  // More details of the plugin.
-  optional string description = 4;
-}
-
 // Policy information.
 message Policy {
   // The name of the policy.
@@ -2063,6 +2046,8 @@ message ChromeUserProfileInfo {
 
 // Report browser level status.
 message BrowserReport {
+  reserved 7;
+
   // The Chrome browser version, as seen from within Chrome code as opposed to
   // user agent.
   optional string browser_version = 1;
@@ -2084,9 +2069,6 @@ message BrowserReport {
   // upload full details due to the limitation of the report size.
   // These details will be uploaded in the following reports.
   repeated ChromeUserProfileInfo chrome_user_profile_infos = 6;
-
-  // A list of plugins installed in the browser.
-  repeated Plugin plugins = 7;
 
   // The installed version of the browser if it differs from |browser_version|,
   // or absent otherwise. When present, it indicates that an update (of a higher

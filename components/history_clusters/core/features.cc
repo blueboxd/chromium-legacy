@@ -37,6 +37,9 @@ BASE_FEATURE(kJourneysImages,
              "JourneysImages",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<bool> kJourneysImagesCover{
+    &kJourneysImages, "JourneysImagesCover", true};
+
 BASE_FEATURE(kPersistedClusters,
              "HistoryClustersPersistedClusters",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -79,6 +82,10 @@ BASE_FEATURE(kHistoryClustersVisitDeduping,
 
 BASE_FEATURE(kJourneysIncludeSyncedVisits,
              "JourneysIncludeSyncedVisits",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kJourneysPersistCachesToPrefs,
+             "JourneysPersistCachesToPrefs",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kHistoryClustersNavigationContextClustering,

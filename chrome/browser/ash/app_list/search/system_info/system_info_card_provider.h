@@ -7,17 +7,18 @@
 
 #include <bitset>
 #include <memory>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/app_list/search/search_provider.h"
 #include "chrome/browser/ash/app_list/search/system_info/battery_health.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_data.h"
 #include "chrome/browser/ash/app_list/search/system_info/cpu_usage_data.h"
+#include "chrome/browser/ash/app_list/search/system_info/system_info_keyword_input.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/settings/ash/calculator/size_calculator.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
-#include "chromeos/dbus/power/power_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -31,7 +32,6 @@ relevant pages within the Settings and Diagnostics apps.*/
 // TODO(b/263994165): Complete the System Info Card Provider to return results.
 // This provider is a work in progress.
 class SystemInfoCardProvider : public SearchProvider,
-                               public chromeos::PowerManagerClient::Observer,
                                public ash::settings::SizeCalculator::Observer {
  public:
   explicit SystemInfoCardProvider(Profile* profile);
@@ -63,16 +63,9 @@ class SystemInfoCardProvider : public SearchProvider,
   void UpdateCpuUsage();
   void OnCpuUsageUpdated(ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
 
-  void UpdateBatteryInfo(absl::optional<power_manager::PowerSupplyProperties>
-                             power_supply_properties);
+  void UpdateBatteryInfo();
   void OnBatteryInfoUpdated(
-      absl::optional<power_manager::PowerSupplyProperties>
-          power_supply_properties,
       ash::cros_healthd::mojom::TelemetryInfoPtr info_ptr);
-
-  // chromeos::PowerManagerClient::Observer:
-  void PowerChanged(const power_manager::PowerSupplyProperties&
-                        power_supply_properties) override;
 
   void UpdateChromeOsVersion();
 
@@ -80,6 +73,7 @@ class SystemInfoCardProvider : public SearchProvider,
   void StartObservingCalculators();
   void OnStorageInfoUpdated();
   void StopObservingCalculators();
+  void CreateStorageAnswerCard();
 
   // Instances calculating the size of each storage items.
   ::ash::settings::TotalDiskSpaceCalculator total_disk_space_calculator_;
@@ -114,6 +108,7 @@ class SystemInfoCardProvider : public SearchProvider,
   std::unique_ptr<BatteryHealth> battery_health_{nullptr};
   gfx::ImageSkia os_settings_icon_;
   gfx::ImageSkia diagnostics_icon_;
+  std::vector<SystemInfoKeywordInput> keywords_;
 
   base::WeakPtrFactory<SystemInfoCardProvider> weak_factory_{this};
 };

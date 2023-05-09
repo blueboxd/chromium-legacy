@@ -4,6 +4,7 @@
 
 #include "ash/system/message_center/message_center_utils.h"
 
+#include "ash/constants/ash_constants.h"
 #include "ash/public/cpp/metrics_util.h"
 #include "ash/public/cpp/vm_camera_mic_constants.h"
 #include "ash/root_window_controller.h"
@@ -21,6 +22,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/view.h"
@@ -38,9 +40,7 @@ void ReportAnimationSmoothness(const std::string& animation_histogram_name,
 
 }  // namespace
 
-namespace ash {
-
-namespace message_center_utils {
+namespace ash::message_center_utils {
 
 bool CompareNotifications(message_center::Notification* n1,
                           message_center::Notification* n2) {
@@ -84,9 +84,11 @@ size_t GetNotificationCount() {
       [](auto* notification) {
         const std::string& notifier = notification->notifier_id().id;
 
-        // Don't count these notifications since we have `CameraMicTrayItemView`
-        // to show indicators on the systray.
-        if (notifier == kVmCameraMicNotifierId) {
+        // Don't count these notifications since we have
+        // `PrivacyIndicatorsTrayItemView` or `CameraMicTrayItemView` to show
+        // indicators on the systray.
+        if (notifier == kPrivacyIndicatorsNotifierId ||
+            notifier == kVmCameraMicNotifierId) {
           return false;
         }
 
@@ -259,6 +261,23 @@ void SlideOutView(views::View* view,
       .SetTransform(view->layer(), transform);
 }
 
-}  // namespace message_center_utils
+absl::optional<gfx::ImageSkia> ResizeImageIfExceedSizeLimit(
+    const gfx::ImageSkia& input_image,
+    size_t size_limit_in_byte) {
+  const size_t image_size_in_bytes = input_image.bitmap()->computeByteSize();
+  if (image_size_in_bytes <= size_limit_in_byte) {
+    return absl::nullopt;
+  }
 
-}  // namespace ash
+  // Calculate the image size after resize.
+  gfx::SizeF resized_size(input_image.size());
+  const float multiple =
+      image_size_in_bytes / static_cast<float>(size_limit_in_byte);
+  resized_size.Scale(1 / std::sqrt(multiple));
+
+  return gfx::ImageSkiaOperations::CreateResizedImage(
+      input_image, skia::ImageOperations::RESIZE_BEST,
+      gfx::ToFlooredSize(resized_size));
+}
+
+}  // namespace ash::message_center_utils

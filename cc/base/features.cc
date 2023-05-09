@@ -58,6 +58,10 @@ BASE_FEATURE(kMainRepaintScrollPrefersNewContent,
              "MainRepaintScrollPrefersNewContent",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kFlushGpuAtDraw,
+             "FlushGpuAtDraw",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kSchedulerSmoothnessForAnimatedScrolls,
              "SmoothnessModeForAnimatedScrolls",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -92,7 +96,7 @@ BASE_FEATURE(kNormalPriorityImageDecoding,
 
 BASE_FEATURE(kSkipCommitsIfNotSynchronizingCompositorState,
              "SkipCommitsIfNotSynchronizingCompositorState",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseDMSAAForTiles,
              "UseDMSAAForTiles",
@@ -122,4 +126,7 @@ BASE_FEATURE(kMoreAggressiveSolidColorDetection,
              "MoreAggressiveSolidColorDetection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kReducedFrameRateEstimation,
+             "kReducedFrameRateEstimation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 }  // namespace features

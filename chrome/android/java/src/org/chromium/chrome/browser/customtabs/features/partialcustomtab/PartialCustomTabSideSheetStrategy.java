@@ -6,6 +6,9 @@ package org.chromium.chrome.browser.customtabs.features.partialcustomtab;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_SIDE_SHEET;
+import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_LAYOUT_STATE_SIDE_SHEET_MAXIMIZED;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_DIVIDER;
 import static org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ACTIVITY_SIDE_SHEET_DECORATION_TYPE_NONE;
 
@@ -26,6 +29,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.MathUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider.ActivityLayoutState;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
@@ -49,11 +53,12 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
 
     public PartialCustomTabSideSheetStrategy(Activity activity, @Px int initialWidth,
             CustomTabHeightStrategy.OnResizedCallback onResizedCallback,
+            CustomTabHeightStrategy.OnActivityLayoutCallback onActivityLayoutCallback,
             FullscreenManager fullscreenManager, boolean isTablet, boolean interactWithBackground,
             boolean showMaximizeButton, boolean startMaximized, int position, int slideInBehavior,
             PartialCustomTabHandleStrategyFactory handleStrategyFactory, int decorationType) {
-        super(activity, onResizedCallback, fullscreenManager, isTablet, interactWithBackground,
-                handleStrategyFactory);
+        super(activity, onResizedCallback, onActivityLayoutCallback, fullscreenManager, isTablet,
+                interactWithBackground, handleStrategyFactory);
 
         mUnclampedInitialWidth = initialWidth;
         mShowMaximizeButton = showMaximizeButton;
@@ -135,42 +140,50 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             updateShadowOffset();
         }
 
+        AnimatorUpdateListener updateListener;
+        WindowManager.LayoutParams windowLayout = mActivity.getWindow().getAttributes();
+        int displayWidth = mVersionCompat.getDisplayWidth();
         int start;
         int end;
-        int restWidth = mVersionCompat.getDisplayWidth() - mUnclampedInitialWidth;
-        Window window = mActivity.getWindow();
-        configureLayoutBeyondScreen(true);
-        // For smooth animation, make the window full-width first and then translate it
-        // rather than resizing the window itself during the animation.
         if (mSheetOnRight) {
-            setWindowWidth(mVersionCompat.getDisplayWidth());
-            start = window.getAttributes().x;
-            end = mIsMaximized ? 0 : restWidth;
+            configureLayoutBeyondScreen(true);
+            setWindowWidth(displayWidth);
+            int xOffset = mVersionCompat.getXOffset();
+            start = windowLayout.x;
+            end = (mIsMaximized ? 0 : displayWidth - mUnclampedInitialWidth) + xOffset;
+            updateListener = (anim) -> setWindowX((int) anim.getAnimatedValue());
         } else {
-            if (mIsMaximized) {
-                // For the left-side sheet, adjust the start x (out of the screen) before
-                // animating the full-width tab back into screen.
-                var attrs = mActivity.getWindow().getAttributes();
-                attrs.x = -restWidth;
-                attrs.width = mVersionCompat.getDisplayWidth();
-                mActivity.getWindow().setAttributes(attrs);
-            }
-            start = window.getAttributes().x;
-            end = mIsMaximized ? 0 : -restWidth;
+            start = windowLayout.width;
+            end = calculateWidth(mIsMaximized ? displayWidth : mUnclampedInitialWidth);
+            updateListener = (anim) -> setWindowWidth((int) anim.getAnimatedValue());
         }
-        AnimatorUpdateListener updateListener = (anim) -> setWindowX((int) anim.getAnimatedValue());
-        startAnimation(start, end, updateListener, () -> onMaximizeEnd(animate), animate);
+        // Keep the WebContents invisible during the animation to hide the jerky visual artifacts
+        // of the contents due to resizing.
+        setContentVisible(false);
+        startAnimation(start, end, updateListener, this::onMaximizeEnd, animate);
         return mIsMaximized;
     }
 
-    private void onMaximizeEnd(boolean animate) {
+    private void setContentVisible(boolean visible) {
+        View content = (ViewGroup) mActivity.findViewById(R.id.compositor_view_holder);
+        if (visible) {
+            // Set a slight delay in restoring the view to hide the visual glitch caused by
+            // the resized web contents.
+            new Handler().postDelayed(() -> content.setVisibility(View.VISIBLE), 20);
+        } else {
+            content.setVisibility(View.INVISIBLE);
+        }
+    }
+
+    private void onMaximizeEnd() {
         if (isMaximized()) {
-            configureLayoutBeyondScreen(false);
+            if (mSheetOnRight) configureLayoutBeyondScreen(false);
             maybeInvokeResizeCallback();
+            setContentVisible(true);
         } else {
             // System UI dimensions are not settled yet. Post the task.
             new Handler().post(() -> {
-                configureLayoutBeyondScreen(false);
+                if (mSheetOnRight) configureLayoutBeyondScreen(false);
                 initializeSize();
                 maybeInvokeResizeCallback();
             });
@@ -250,6 +263,18 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         mVersionCompat.setImeStateCallback(null);
     }
 
+    @Override
+    @ActivityLayoutState
+    protected int getActivityLayoutState() {
+        if (isFullscreen()) {
+            return ACTIVITY_LAYOUT_STATE_FULL_SCREEN;
+        } else if (isMaximized()) {
+            return ACTIVITY_LAYOUT_STATE_SIDE_SHEET_MAXIMIZED;
+        } else {
+            return ACTIVITY_LAYOUT_STATE_SIDE_SHEET;
+        }
+    }
+
     // ValueAnimator used when no animation should run. Simply lets the animator listener
     // receive only the final value to skip the animation effect.
     private static class NoAnimator extends ValueAnimator {
@@ -289,6 +314,7 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             mIsMaximized = false;
             toggleMaximize(/*animate=*/false);
         }
+        setContentVisible(true);
     }
 
     private void positionOnWindow() {
@@ -297,14 +323,15 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
         attrs.width = calculateWidth(mUnclampedInitialWidth);
 
         attrs.y = mStatusbarHeight;
-        attrs.x = mSheetOnRight ? mVersionCompat.getDisplayWidth() - attrs.width : 0;
+        attrs.x = (mSheetOnRight ? mVersionCompat.getDisplayWidth() - attrs.width : 0)
+                + mVersionCompat.getXOffset();
         attrs.gravity = Gravity.TOP | Gravity.START;
         mActivity.getWindow().setAttributes(attrs);
     }
 
     private int calculateWidth(int unclampedWidth) {
-        return MathUtils.clamp(unclampedWidth, mVersionCompat.getDisplayWidth(),
-                (int) (mVersionCompat.getDisplayWidth() * MINIMAL_WIDTH_RATIO));
+        int width = mVersionCompat.getDisplayWidth();
+        return MathUtils.clamp(unclampedWidth, width, (int) (width * MINIMAL_WIDTH_RATIO));
     }
 
     private float calculateElevation() {

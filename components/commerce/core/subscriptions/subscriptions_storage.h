@@ -8,6 +8,7 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 
 #include "base/check.h"
 #include "base/functional/callback.h"
@@ -26,6 +27,12 @@ using GetLocalSubscriptionsCallback = base::OnceCallback<void(
 // Used to handle if storage-related operation succeeds.
 using StorageOperationCallback =
     base::OnceCallback<void(SubscriptionsRequestStatus)>;
+// Indicate if storage is updated successfully and pass the added & removed
+// subscriptions to the callback.
+using StorageUpdateCallback =
+    base::OnceCallback<void(SubscriptionsRequestStatus,
+                            std::vector<CommerceSubscription>,
+                            std::vector<CommerceSubscription>)>;
 
 using CommerceSubscriptionProto =
     commerce_subscription_db::CommerceSubscriptionContentProto;
@@ -67,6 +74,14 @@ class SubscriptionsStorage {
       StorageOperationCallback callback,
       std::unique_ptr<std::vector<CommerceSubscription>> remote_subscriptions);
 
+  // Update local cache to keep consistency with |remote_subscriptions| and
+  // notify |callback| if it completes successfully. This will also pass the
+  // added & removed subscriptions to the |callback|.
+  virtual void UpdateStorageAndNotifyModifiedSubscriptions(
+      SubscriptionType type,
+      StorageUpdateCallback callback,
+      std::unique_ptr<std::vector<CommerceSubscription>> remote_subscriptions);
+
   // Delete all local subscriptions.
   virtual void DeleteAll();
 
@@ -74,13 +89,20 @@ class SubscriptionsStorage {
   virtual void IsSubscribed(CommerceSubscription subscription,
                             base::OnceCallback<void(bool)> callback);
 
+  // Checks if a subscription exists from the in-memory cache. Use of the
+  // callback-based version |IsSubscribed| is preferred. Information provided
+  // by this API is not guaranteed to be correct as it doesn't query the
+  // backend.
+  virtual bool IsSubscribedFromCache(const CommerceSubscription& subscription);
+
   // Get all subscriptions that match the provided |type|.
   virtual void LoadAllSubscriptionsForType(
       SubscriptionType type,
       GetLocalSubscriptionsCallback callback);
 
-  // Load all subscriptions regardless of type.
-  virtual void LoadAllSubscriptions(GetLocalSubscriptionsCallback callback);
+ protected:
+  // Default constructor for testing.
+  SubscriptionsStorage();
 
  private:
   void SaveSubscription(CommerceSubscription subscription,
@@ -108,9 +130,12 @@ class SubscriptionsStorage {
       std::unique_ptr<std::vector<CommerceSubscription>> local_subscriptions);
 
   void PerformUpdateStorage(
-      StorageOperationCallback callback,
+      StorageUpdateCallback callback,
       std::unique_ptr<std::vector<CommerceSubscription>> remote_subscriptions,
       std::unique_ptr<std::vector<CommerceSubscription>> local_subscriptions);
+
+  // Load all subscriptions regardless of type.
+  void LoadAllSubscriptions(GetLocalSubscriptionsCallback callback);
 
   void HandleLoadCompleted(GetLocalSubscriptionsCallback callback,
                            bool succeeded,
@@ -118,7 +143,12 @@ class SubscriptionsStorage {
 
   raw_ptr<SessionProtoStorage<CommerceSubscriptionProto>> proto_db_;
 
-  base::WeakPtrFactory<SubscriptionsStorage> weak_ptr_factory_;
+  // An in-memory cache of subscriptions that can be accessed synchronously.
+  // This may not have the most up-to-date information as it does not check
+  // the backend.
+  std::unordered_set<std::string> subscriptions_cache_;
+
+  base::WeakPtrFactory<SubscriptionsStorage> weak_ptr_factory_{this};
 };
 
 }  // namespace commerce

@@ -70,7 +70,7 @@ suite('history-clusters', () => {
     const cluster1: Cluster = {
       id: BigInt(111),
       visits: [urlVisit1],
-      label: undefined,
+      label: '',
       labelMatchPositions: [],
       relatedSearches: [],
       imageUrl: undefined,
@@ -81,7 +81,7 @@ suite('history-clusters', () => {
     const cluster2: Cluster = {
       id: BigInt(222),
       visits: [],
-      label: undefined,
+      label: '',
       labelMatchPositions: [],
       relatedSearches: [],
       imageUrl: undefined,
@@ -244,5 +244,18 @@ suite('history-clusters', () => {
     const imageUrl = icon.getImageUrlForTesting();
     assertTrue(!!imageUrl);
     assertEquals('https://example.com/image.png', imageUrl.url);
+
+    // Verify that the icon's image can be cleared.
+    imageServiceHandler.reset();
+    imageServiceHandler.setResultFor('getPageImageUrl', Promise.resolve({
+      result: null,
+    }));
+    icon.url = {url: 'https://something-different.com'};
+    const [newClientId, newPageUrl] =
+        await imageServiceHandler.whenCalled('getPageImageUrl');
+    assertEquals(ImageServiceClientId.Journeys, newClientId);
+    assertTrue(!!newPageUrl);
+    assertEquals('https://something-different.com', newPageUrl.url);
+    assertTrue(!icon.getImageUrlForTesting());
   });
 });

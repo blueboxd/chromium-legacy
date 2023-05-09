@@ -130,7 +130,8 @@ void FedCmAccountSelectionView::Show(
 
 void FedCmAccountSelectionView::ShowFailureDialog(
     const std::string& top_frame_etld_plus_one,
-    const std::string& idp_etld_plus_one) {
+    const std::string& idp_etld_plus_one,
+    const content::IdentityProviderMetadata& idp_metadata) {
   state_ = State::IDP_SIGNIN_STATUS_MISMATCH;
 
   bool create_bubble = !bubble_widget_;
@@ -153,7 +154,8 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   }
 
   GetBubbleView()->ShowFailureDialog(base::UTF8ToUTF16(top_frame_etld_plus_one),
-                                     base::UTF8ToUTF16(idp_etld_plus_one));
+                                     base::UTF8ToUTF16(idp_etld_plus_one),
+                                     idp_metadata);
 
   if (create_bubble) {
     bubble_widget_->Show();
@@ -164,14 +166,22 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   // associated web contents are hidden.
 }
 
+std::string FedCmAccountSelectionView::GetTitle() const {
+  return GetBubbleView()->GetDialogTitle();
+}
+
+absl::optional<std::string> FedCmAccountSelectionView::GetSubtitle() const {
+  return GetBubbleView()->GetDialogSubtitle();
+}
+
 void FedCmAccountSelectionView::OnVisibilityChanged(
     content::Visibility visibility) {
   if (!bubble_widget_)
     return;
 
   if (visibility == content::Visibility::VISIBLE) {
-    bubble_widget_->widget_delegate()->SetCanActivate(true);
     bubble_widget_->Show();
+    bubble_widget_->widget_delegate()->SetCanActivate(true);
     // This will protect against potentially unintentional inputs that happen
     // right after the dialog becomes visible again.
     input_protector_->VisibilityChanged(true);
@@ -180,8 +190,8 @@ void FedCmAccountSelectionView::OnVisibilityChanged(
     // Make the views::Widget non-activatable while it is hidden to prevent the
     // views::Widget from being shown during focus traversal.
     // TODO(crbug.com/1367309): fix the issue on Mac.
-    bubble_widget_->widget_delegate()->SetCanActivate(false);
     bubble_widget_->Hide();
+    bubble_widget_->widget_delegate()->SetCanActivate(false);
     input_protector_->VisibilityChanged(false);
   }
 }
@@ -243,6 +253,11 @@ FedCmAccountSelectionView::GetBubbleView() {
       bubble_widget_->widget_delegate());
 }
 
+const AccountSelectionBubbleViewInterface*
+FedCmAccountSelectionView::GetBubbleView() const {
+  return static_cast<const AccountSelectionBubbleView*>(
+      bubble_widget_->widget_delegate());
+}
 void FedCmAccountSelectionView::OnWidgetDestroying(views::Widget* widget) {
   DismissReason dismiss_reason =
       (bubble_widget_->closed_reason() ==

@@ -94,7 +94,7 @@ public class MainActivity
 
     /** Extra that enables the maximization button on the side sheet Custom Tab toolbar. */
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION =
-            "androix.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_ENABLE_MAXIMIZATION";
 
     /**
      * Minimal height the bottom sheet CCT should show is half of the display height.
@@ -152,14 +152,14 @@ public class MainActivity
     public static final int ACTIVITY_SIDE_SHEET_POSITION_END = 2;
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_POSITION =
-            "androidx.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_POSITION";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_POSITION";
 
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_DEFAULT = 0;
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_BOTTOM = 1;
     public static final int ACTIVITY_SIDE_SHEET_SLIDE_IN_FROM_SIDE = 2;
 
     public static final String EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR =
-            "androidx.browser.customtabs.extra.EXTRA_ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
+            "androidx.browser.customtabs.extra.ACTIVITY_SIDE_SHEET_SLIDE_IN_BEHAVIOR";
 
     /**
      * Once per second, asks the framework for the process importance, and logs any change.
@@ -214,6 +214,28 @@ public class MainActivity
                 Log.w(TAG,
                         "onGreatestScrollPercentageIncreased: scrollPercentage = "
                                 + args.getInt("scrollPercentage"));
+                // CustomTabsConnection#ON_RESIZED_CALLBACK
+            } else if (callbackName.equals("onResized")) {
+                // CustomTabsConnection#ON_RESIZED_SIZE_EXTRA
+                Log.w(TAG, "onResized: size = " + args.getInt("size"));
+                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_CALLBACK
+            } else if (callbackName.equals("onActivityLayout")) {
+                Log.w(TAG,
+                        "onActivityLayout:"
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_LEFT_EXTRA
+                                + " left = "
+                                + args.getInt("left")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_TOP_EXTRA
+                                + " top = "
+                                + args.getInt("top")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_RIGHT_EXTRA
+                                + " right = "
+                                + args.getInt("right")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_BOTTOM_EXTRA
+                                + " bottom = "
+                                + args.getInt("bottom")
+                                // CustomTabsConnection#ON_ACTIVITY_LAYOUT_STATE_EXTRA
+                                + " state = " + args.getInt("state"));
             }
         }
     }
@@ -761,7 +783,7 @@ public class MainActivity
                 }
                 if (!mBackgroundInteractCheckbox.isChecked()) {
                     customTabsIntent.intent.putExtra(
-                            "androix.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION",
+                            "androidx.browser.customtabs.extra.ENABLE_BACKGROUND_INTERACTION",
                             BACKGROUND_INTERACT_OFF_VALUE);
                 }
 

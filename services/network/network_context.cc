@@ -959,6 +959,30 @@ void NetworkContext::ClearTrustTokenData(mojom::ClearDataFilterPtr filter,
       std::move(filter), std::move(done)));
 }
 
+void NetworkContext::ClearTrustTokenSessionOnlyData(
+    ClearTrustTokenSessionOnlyDataCallback callback) {
+  // Only called when Private State Tokens is enabled, i.e.,
+  // `trust_token_store_` is non-null.
+  DCHECK(trust_token_store_);
+  DCHECK(cookie_manager_);
+
+  DeleteCookiePredicate cookie_predicate =
+      cookie_manager_->cookie_settings().CreateDeleteCookieOnExitPredicate();
+
+  auto store_predicate = base::BindRepeating(
+      [](DeleteCookiePredicate predicate, const std::string& origin) {
+        return predicate.Run(origin, true);
+      },
+      std::move(cookie_predicate));
+  trust_token_store_->ExecuteOrEnqueue(base::BindOnce(
+      [](base::RepeatingCallback<bool(const std::string&)> pred,
+         ClearTrustTokenSessionOnlyDataCallback cb, TrustTokenStore* store) {
+        bool any_data_deleted = store->ClearDataForPredicate(std::move(pred));
+        std::move(cb).Run(any_data_deleted);
+      },
+      std::move(store_predicate), std::move(callback)));
+}
+
 void NetworkContext::ClearNetworkingHistoryBetween(
     base::Time start_time,
     base::Time end_time,
@@ -1325,10 +1349,6 @@ void NetworkContext::SetEnableReferrers(bool enable_referrers) {
   // that calls MakeURLRequestContext().
   DCHECK(network_delegate_);
   network_delegate_->set_enable_referrers(enable_referrers);
-}
-
-void NetworkContext::SetEnablePreconnect(bool enable_preconnect) {
-  params_->enable_preconnect = enable_preconnect;
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -2287,7 +2307,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     builder.SetCookieStore(std::move(cookie_store));
   }
 
-  if (base::FeatureList::IsEnabled(features::kPrivateStateTokens)) {
+  if (base::FeatureList::IsEnabled(features::kPrivateStateTokens) ||
+      base::FeatureList::IsEnabled(features::kFledgePst)) {
     trust_token_store_ = std::make_unique<PendingTrustTokenStore>();
 
     base::FilePath trust_token_path;

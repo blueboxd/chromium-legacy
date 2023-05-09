@@ -20,6 +20,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/notreached.h"
 #include "base/observer_list.h"
@@ -27,6 +28,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -43,6 +45,7 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -83,6 +86,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
@@ -133,6 +137,7 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/drag_utils.h"
 #include "ui/views/metrics.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_constants.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -165,6 +170,15 @@ const std::u16string& GetFolderButtonAccessibleName(
       l10n_util::GetStringUTF16(IDS_UNNAMED_BOOKMARK_FOLDER);
   return folder_title.empty() ? fallback_name : folder_title;
 }
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PreloadBookmarkMetricsEvent {
+  kMouseOver = 0,
+  kMouseDown = 1,
+  kMouseClick = 2,
+  kMaxValue = kMouseClick,
+};
 
 // BookmarkButtonBase -----------------------------------------------
 
@@ -238,9 +252,30 @@ class BookmarkButton : public BookmarkButtonBase {
   BookmarkButton(PressedCallback callback,
                  const GURL& url,
                  const std::u16string& title)
-      : BookmarkButtonBase(std::move(callback), title), url_(url) {}
+      : BookmarkButtonBase(base::BindRepeating(&BookmarkButton::OnButtonPressed,
+                                               base::Unretained(this)),
+                           title),
+        callback_(std::move(callback)),
+        url_(url) {}
   BookmarkButton(const BookmarkButton&) = delete;
   BookmarkButton& operator=(const BookmarkButton&) = delete;
+
+  void OnButtonPressed(const ui::Event& event) {
+    MayRecordHoverDuration(/*taken=*/true);
+    callback_.Run(event);
+  }
+
+  void MayRecordHoverDuration(bool taken) {
+    if (!mouse_entered_time_.has_value()) {
+      return;
+    }
+    base::TimeDelta duration = base::TimeTicks::Now() - *mouse_entered_time_;
+    mouse_entered_time_ = absl::nullopt;
+    base::UmaHistogramTimes(
+        taken ? "Prerender.Experimental.BookmarkBar.HoverDuration.Taken"
+              : "Prerender.Experimental.BookmarkBar.HoverDuration.NotTaken",
+        duration);
+  }
 
   // views::View:
   std::u16string GetTooltipText(const gfx::Point& p) const override {
@@ -264,12 +299,55 @@ class BookmarkButton : public BookmarkButtonBase {
     tooltip_text_.clear();
   }
 
+  void OnMouseEntered(const ui::MouseEvent& event) override {
+    // Reset source information for taking metrics for following mouse events.
+    mouse_entered_time_ = base::TimeTicks::Now();
+    mouse_has_been_pressed_ = false;
+
+    base::UmaHistogramEnumeration(
+        "Prerender.Experimental.BookmarkUrlButtonEvent",
+        PreloadBookmarkMetricsEvent::kMouseOver);
+    BookmarkButtonBase::OnMouseEntered(event);
+  }
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    MayRecordHoverDuration(/*taken=*/false);
+    BookmarkButtonBase::OnMouseExited(event);
+  }
+
+  bool OnMousePressed(const ui::MouseEvent& event) override {
+    bool result = BookmarkButtonBase::OnMousePressed(event);
+    if (GetState() == ButtonState::STATE_PRESSED) {
+      base::UmaHistogramEnumeration("Prerender.Experimental.BookmarkMetrics",
+                                    PreloadBookmarkMetricsEvent::kMouseDown);
+    }
+    // Record duration if the event happens before PressedCallback invocation.
+    if (!mouse_has_been_pressed_ && mouse_entered_time_.has_value()) {
+      mouse_has_been_pressed_ = true;
+      base::TimeDelta duration = base::TimeTicks::Now() - *mouse_entered_time_;
+      base::UmaHistogramTimes(
+          "Prerender.Experimental.BookmarkBar.EnterToPressDuration", duration);
+      if (event.IsOnlyLeftMouseButton()) {
+        base::UmaHistogramTimes(
+            "Prerender.Experimental.BookmarkBar.EnterToPressDuration."
+            "LeftButton",
+            duration);
+      }
+    }
+    return result;
+  }
+
  private:
   // A cached value of maximum width for tooltip to skip generating
   // new tooltip text.
   mutable int max_tooltip_width_ = 0;
   mutable std::u16string tooltip_text_;
+  PressedCallback callback_;
   const raw_ref<const GURL> url_;
+
+  // Information for metrics.
+  absl::optional<base::TimeTicks> mouse_entered_time_;
+  bool mouse_has_been_pressed_ = false;
 };
 
 BEGIN_METADATA(BookmarkButton, BookmarkButtonBase)
@@ -451,6 +529,7 @@ BookmarkBarView::BookmarkBarView(Browser* browser, BrowserView* browser_view)
       browser_(browser),
       browser_view_(browser_view) {
   SetID(VIEW_ID_BOOKMARK_BAR);
+  SetProperty(views::kElementIdentifierKey, kBookmarkBarElementId);
 
   // TODO(lgrey): This layer was introduced to support clipping the bookmark
   // bar to bounds to prevent it from drawing over the toolbar while animating.
@@ -1303,6 +1382,11 @@ void BookmarkBarView::OnButtonPressed(const bookmarks::BookmarkNode* node,
   RecordAppLaunch(browser_->profile(), node->url());
   chrome::OpenAllIfAllowed(browser_, {node},
                            ui::DispositionFromEventFlags(event.flags()), false);
+  if (event.IsMouseEvent()) {
+    base::UmaHistogramEnumeration(
+        "Prerender.Experimental.BookmarkUrlButtonEvent",
+        PreloadBookmarkMetricsEvent::kMouseClick);
+  }
   RecordBookmarkLaunch(
       BookmarkLaunchLocation::kAttachedBar,
       profile_metrics::GetBrowserProfileType(browser_->profile()));
@@ -2011,12 +2095,14 @@ const BookmarkNode* BookmarkBarView::GetParentNodeAndIndexForDrop(
   return parent_node;
 }
 
-void BookmarkBarView::PerformDrop(const bookmarks::BookmarkNodeData data,
-                                  const BookmarkNode* parent_node,
-                                  const size_t index,
-                                  const bool copy,
-                                  const ui::DropTargetEvent& event,
-                                  ui::mojom::DragOperation& output_drag_op) {
+void BookmarkBarView::PerformDrop(
+    const bookmarks::BookmarkNodeData data,
+    const BookmarkNode* parent_node,
+    const size_t index,
+    const bool copy,
+    const ui::DropTargetEvent& event,
+    ui::mojom::DragOperation& output_drag_op,
+    std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner) {
   DCHECK(data.is_valid());
   DCHECK(parent_node);
   DCHECK_NE(index, static_cast<size_t>(-1));

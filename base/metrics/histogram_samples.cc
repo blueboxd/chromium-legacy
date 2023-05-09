@@ -37,7 +37,7 @@ class SampleCountPickleIterator : public SampleCountIterator {
   void Next() override;
   void Get(HistogramBase::Sample* min,
            int64_t* max,
-           HistogramBase::Count* count) const override;
+           HistogramBase::Count* count) override;
 
  private:
   const raw_ptr<PickleIterator> iter_;
@@ -68,7 +68,7 @@ void SampleCountPickleIterator::Next() {
 
 void SampleCountPickleIterator::Get(HistogramBase::Sample* min,
                                     int64_t* max,
-                                    HistogramBase::Count* count) const {
+                                    HistogramBase::Count* count) {
   DCHECK(!Done());
   *min = min_;
   *max = max_;
@@ -397,14 +397,11 @@ void SingleSampleIterator::Next() {
 
 void SingleSampleIterator::Get(HistogramBase::Sample* min,
                                int64_t* max,
-                               HistogramBase::Count* count) const {
+                               HistogramBase::Count* count) {
   DCHECK(!Done());
-  if (min != nullptr)
-    *min = min_;
-  if (max != nullptr)
-    *max = max_;
-  if (count != nullptr)
-    *count = count_;
+  *min = min_;
+  *max = max_;
+  *count = count_;
 }
 
 bool SingleSampleIterator::GetBucketIndex(size_t* index) const {

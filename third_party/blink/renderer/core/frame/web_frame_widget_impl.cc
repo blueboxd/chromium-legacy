@@ -127,6 +127,7 @@
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/graphics/animation_worklet_mutator_dispatcher_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
@@ -312,7 +313,7 @@ WebFrameWidgetImpl::~WebFrameWidgetImpl() {
 
 void WebFrameWidgetImpl::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
-  if (RuntimeEnabledFeatures::LongAnimationFrameTimingEnabled() &&
+  if (RuntimeEnabledFeatures::LongAnimationFrameMonitoringEnabled() &&
       !IsHidden()) {
     DCHECK(local_root_->GetFrame());
     animation_frame_timing_monitor_ =
@@ -363,6 +364,47 @@ WebLocalFrame* WebFrameWidgetImpl::LocalRoot() const {
 bool WebFrameWidgetImpl::RequestedMainFramePending() {
   return View() && View()->does_composite() && LayerTreeHost() &&
          LayerTreeHost()->RequestedMainFramePending();
+}
+
+ukm::UkmRecorder* WebFrameWidgetImpl::MainFrameUkmRecorder() {
+  DCHECK(local_root_);
+  if (!local_root_->IsOutermostMainFrame()) {
+    return nullptr;
+  }
+
+  if (!local_root_->GetFrame() || !local_root_->GetFrame()->DomWindow()) {
+    return nullptr;
+  }
+
+  return local_root_->GetFrame()->DomWindow()->UkmRecorder();
+}
+ukm::SourceId WebFrameWidgetImpl::MainFrameUkmSourceId() {
+  DCHECK(local_root_);
+  if (!local_root_->IsOutermostMainFrame()) {
+    return ukm::kInvalidSourceId;
+  }
+
+  if (!local_root_->GetFrame() || !local_root_->GetFrame()->DomWindow()) {
+    return ukm::kInvalidSourceId;
+  }
+
+  return local_root_->GetFrame()->DomWindow()->UkmSourceID();
+}
+
+bool WebFrameWidgetImpl::IsMainFrameFullyLoaded() const {
+  DCHECK(local_root_);
+  if (!local_root_->IsOutermostMainFrame()) {
+    return false;
+  }
+
+  return local_root_->GetFrame() &&
+         local_root_->GetFrame()->Loader().GetDocumentLoader() &&
+         !local_root_->GetFrame()
+              ->Loader()
+              .GetDocumentLoader()
+              ->GetTiming()
+              .LoadEventEnd()
+              .is_null();
 }
 
 gfx::Rect WebFrameWidgetImpl::ComputeBlockBound(
@@ -1812,6 +1854,13 @@ std::unique_ptr<cc::ScopedPauseRendering> WebFrameWidgetImpl::PauseRendering() {
   if (!View()->does_composite())
     return nullptr;
   return widget_base_->LayerTreeHost()->PauseRendering();
+}
+
+absl::optional<int> WebFrameWidgetImpl::GetMaxRenderBufferBounds() const {
+  if (!View()->does_composite()) {
+    return absl::nullopt;
+  }
+  return widget_base_->GetMaxRenderBufferBounds();
 }
 
 std::unique_ptr<cc::ScopedDeferMainFrameUpdate>
@@ -3274,11 +3323,18 @@ void WebFrameWidgetImpl::AddEditCommandForNextKeyEvent(const WebString& name,
 }
 
 bool WebFrameWidgetImpl::HandleCurrentKeyboardEvent() {
-  bool did_execute_command = false;
+  if (edit_commands_.empty()) {
+    return false;
+  }
   WebLocalFrame* frame = FocusedWebLocalFrameInWidget();
   if (!frame)
     frame = local_root_;
-  for (const auto& command : edit_commands_) {
+  bool did_execute_command = false;
+  // Executing an edit command can run JS and we can end up reassigning
+  // `edit_commands_` so move it to a stack variable before iterating on it.
+  Vector<mojom::blink::EditCommandPtr> edit_commands =
+      std::move(edit_commands_);
+  for (const auto& command : edit_commands) {
     // In gtk and cocoa, it's possible to bind multiple edit commands to one
     // key (but it's the exception). Once one edit command is not executed, it
     // seems safest to not execute the rest.

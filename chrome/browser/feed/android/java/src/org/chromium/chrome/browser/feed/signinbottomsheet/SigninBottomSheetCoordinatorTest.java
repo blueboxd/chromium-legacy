@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,10 +29,12 @@ import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.ui.signin.account_picker.AccountPickerBottomSheetCoordinator;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
+import org.chromium.components.signin.metrics.SigninAccessPoint;
 import org.chromium.ui.base.WindowAndroid;
 
 /** Tests for SigninBottomSheetCoordinator */
@@ -47,6 +50,9 @@ public class SigninBottomSheetCoordinatorTest {
 
     @Mock
     private BottomSheetController mBottomSheetControllerMock;
+
+    @Mock
+    private BottomSheetContent mBottomSheetContentMock;
 
     @Mock
     private WindowAndroid mWindowAndroidMock;
@@ -71,6 +77,7 @@ public class SigninBottomSheetCoordinatorTest {
         IdentityServicesProvider.setInstanceForTests(mock(IdentityServicesProvider.class));
         when(IdentityServicesProvider.get().getSigninManager(mProfileMock))
                 .thenReturn(mSigninManagerMock);
+        when(mSigninManagerMock.isSigninAllowed()).thenReturn(true);
         mCoreAccountInfo = mAccountManagerTestRule.addAccount(TEST_EMAIL);
         mSigninCoordinator = new SigninBottomSheetCoordinator(
                 mWindowAndroidMock, mBottomSheetControllerMock, mProfileMock);
@@ -108,5 +115,17 @@ public class SigninBottomSheetCoordinatorTest {
                 mAccountPickerBottomSheetCoordinatorMock);
         mSigninCoordinator.signIn(TEST_EMAIL, error -> {});
         histogramWatcher.assertExpected();
+    }
+
+    @Test
+    public void testSignInNotAllowed() {
+        HistogramWatcher watchSigninDisabledToastShownHistogram =
+                HistogramWatcher.newSingleRecordWatcher("Signin.SigninDisabledNotificationShown",
+                        SigninAccessPoint.NTP_FEED_CARD_MENU_PROMO);
+        when(mSigninManagerMock.isSigninAllowed()).thenReturn(false);
+        mSigninCoordinator.setToastOverrideForTesting();
+        mSigninCoordinator.signIn(TEST_EMAIL, error -> {});
+        verify(mSigninManagerMock, never())
+                .signin(eq(AccountUtils.createAccountFromName(TEST_EMAIL)), any());
     }
 }

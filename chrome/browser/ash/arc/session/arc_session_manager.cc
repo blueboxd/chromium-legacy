@@ -53,7 +53,6 @@
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/login/demo_mode/demo_components.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
-#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -780,11 +779,28 @@ void ArcSessionManager::Initialize() {
   data_remover_ = std::make_unique<ArcDataRemover>(prefs, cryptohome_id);
 
   if (ArcVmDataMigrationIsInProgress(prefs)) {
-    VLOG(1) << "ARCVM /data migration is in progress. Restarting Chrome "
-               "session to resume the migration";
-    // TODO(b/272151802): Count the number of resumes and report to UMA.
-    attempt_restart_callback_.Run();
-    return;
+    const int auto_resume_count =
+        prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount);
+    if (auto_resume_count <= kArcVmDataMigrationMaxAutoResumeCount) {
+      // |auto_resume_count| == kArcVmDataMigrationMaxAutoResumeCount means that
+      // this is the first ARC session in which auto-resume is disabled.
+      // Report to UMA and increment the pref value so that we can track the
+      // number of users who hit the maximum number of auto-resumes.
+      base::UmaHistogramExactLinear("Arc.VmDataMigration.AutoResumeCount",
+                                    auto_resume_count,
+                                    kArcVmDataMigrationMaxAutoResumeCount);
+      prefs->SetInteger(prefs::kArcVmDataMigrationAutoResumeCount,
+                        auto_resume_count + 1);
+      if (auto_resume_count < kArcVmDataMigrationMaxAutoResumeCount) {
+        VLOG(1) << "ARCVM /data migration is in progress. Restarting Chrome "
+                   "session to resume the migration. Auto-resume count: "
+                << auto_resume_count;
+        attempt_restart_callback_.Run();
+        return;
+      }
+    }
+    LOG(WARNING) << "Skipping auto-resume of ARCVM /data migration, because it "
+                    "has reached the maximum number of retries";
   }
 
   // Chrome may be shut down before completing ARC data removal.
@@ -1047,16 +1063,16 @@ bool ArcSessionManager::RequestEnableImpl() {
   if (ArcVmDataMigrationIsInProgress(prefs)) {
     VLOG(1) << "Skipping request to enable ARC because ARCVM /data migration "
                "is in progress";
-    return false;
-  }
-
-  // When ARC is blocked because of powerwash request, do not proceed
-  // to starting ARC nor follow further state transitions. Applications are
-  // still visible but replaced with notification requesting powerwash.
-  policy::PowerwashRequirementsChecker pw_checker(
-      policy::PowerwashRequirementsChecker::Context::kArc, profile_);
-  if (pw_checker.GetState() !=
-      policy::PowerwashRequirementsChecker::State::kNotRequired) {
+    // Auto-resume should be disabled only when |auto_resume_enabled| is larger
+    // than kArcVmDataMigrationMaxAutoResumeCount. This is because the value is
+    // incremented in Initialize() when it is smaller than or equal to
+    // kArcVmDataMigrationMaxAutoResumeCount. See Initialize() for detail.
+    const bool auto_resume_enabled =
+        prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount) <=
+        kArcVmDataMigrationMaxAutoResumeCount;
+    for (auto& observer : observer_list_) {
+      observer.OnArcSessionBlockedByArcVmDataMigration(auto_resume_enabled);
+    }
     return false;
   }
 

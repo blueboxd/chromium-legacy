@@ -131,6 +131,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_list.h"
+#include "third_party/blink/renderer/core/html/anchor_element_observer.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element.h"
 #include "third_party/blink/renderer/core/html/custom/custom_element_registry.h"
@@ -2837,6 +2838,7 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
       frame->GetEditor().GetUndoStack().ElementRemoved(this);
     }
     frame->GetEditor().ElementRemoved(this);
+    frame->GetSpellChecker().ElementRemoved(this);
     frame->GetEventHandler().ElementRemoved(this);
   }
 }
@@ -8907,26 +8909,38 @@ AnchorScrollData* Element::GetAnchorScrollData() const {
   return HasRareData() ? GetElementRareData()->GetAnchorScrollData() : nullptr;
 }
 
-void Element::IncrementAnchoredPopoverCount() {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
-  if (RuntimeEnabledFeatures::CSSAnchorPositioningEnabled() &&
-      !HasAnchoredPopover() && GetLayoutObject()) {
+void Element::IncrementImplicitlyAnchoredElementCount() {
+  DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+  if (!HasImplicitlyAnchoredElement() && GetLayoutObject()) {
     // Invalidate layout to populate itself into NGPhysical/LogicalAnchorQuery.
     GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
         layout_invalidation_reason::kAnchorPositioning);
     GetLayoutObject()->MarkMayHaveAnchorQuery();
   }
-  EnsureElementRareData().IncrementAnchoredPopoverCount();
+  EnsureElementRareData().IncrementImplicitlyAnchoredElementCount();
 }
-void Element::DecrementAnchoredPopoverCount() {
-  DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
-  EnsureElementRareData().DecrementAnchoredPopoverCount();
+void Element::DecrementImplicitlyAnchoredElementCount() {
+  DCHECK(HasRareData());
+  GetElementRareData()->DecrementImplicitlyAnchoredElementCount();
 }
-bool Element::HasAnchoredPopover() const {
-  return (HasRareData() && GetElementRareData()->HasAnchoredPopover()) ||
+bool Element::HasImplicitlyAnchoredElement() const {
+  // TODO(xiaochengh): <selectmenu> should also use the implicitly anchored
+  // element count on element rare data.
+  return (HasRareData() &&
+          GetElementRareData()->HasImplicitlyAnchoredElement()) ||
          IsA<HTMLSelectMenuElement>(this);
+}
+
+AnchorElementObserver* Element::GetAnchorElementObserver() const {
+  return HasRareData() ? GetElementRareData()->GetAnchorElementObserver()
+                       : nullptr;
+}
+
+AnchorElementObserver& Element::EnsureAnchorElementObserver() {
+  DCHECK(IsHTMLElement());
+  DCHECK(RuntimeEnabledFeatures::CSSAnchorPositioningEnabled());
+  return EnsureElementRareData().EnsureAnchorElementObserver(
+      To<HTMLElement>(this));
 }
 
 Element* Element::ImplicitAnchorElement() {

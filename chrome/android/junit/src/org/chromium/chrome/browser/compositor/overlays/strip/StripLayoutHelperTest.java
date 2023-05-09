@@ -18,6 +18,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -670,6 +671,40 @@ public class StripLayoutHelperTest {
     }
 
     @Test
+    @Feature("Tab Strip Redesign")
+    public void testNewTabButtonPosition_NotAnchored() {
+        // Setup
+        TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO.setForTesting(true);
+        TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR.setForTesting(true);
+        int tabCount = 1;
+        initializeTest(false, false, false, 0, tabCount);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+
+        // Verify new tab button position.
+        // tabWidth(237) + tabOverLapWidth(28) = 265(Same for both TSR arms)
+        assertEquals("New tab button position is not as expected", 265.f,
+                mStripLayoutHelper.getNewTabButton().getX(), EPSILON);
+    }
+
+    @Test
+    @Feature("Tab Strip Redesign")
+    public void testNewTabButtonPosition_NotAnchored_Rtl() {
+        // Setup
+        TabManagementFieldTrial.TAB_STRIP_REDESIGN_ENABLE_FOLIO.setForTesting(true);
+        TabUiFeatureUtilities.TAB_STRIP_REDESIGN_DISABLE_NTB_ANCHOR.setForTesting(true);
+        int tabCount = 1;
+        initializeTest(true, false, false, 0, tabCount);
+        mStripLayoutHelper.onSizeChanged(SCREEN_WIDTH, SCREEN_HEIGHT, false, TIMESTAMP);
+        mStripLayoutHelper.updateLayout(TIMESTAMP);
+
+        // Verify new tab button position.
+        // stripWidth(800) - tabWidth(237) - tabOverLapWidth(28) - NtbWidth(36) = 499
+        assertEquals("New tab button position is not as expected", 499,
+                mStripLayoutHelper.getNewTabButton().getX(), EPSILON);
+    }
+
+    @Test
     @Feature("Tab Strip Improvements")
     public void testScrollOffset_OnResume_StartOnLeft_SelectedRightmostTab() {
         // Arrange: Initialize tabs with last tab selected.
@@ -833,6 +868,23 @@ public class StripLayoutHelperTest {
 
         // Assert: scroller position is not modified.
         assertEquals(1000, mStripLayoutHelper.getScroller().getFinalX());
+    }
+
+    @Test
+    public void testTabCreated_Animation() {
+        // Initialize with default amount of tabs. Clear any animations.
+        initializeTest(false, false, 3);
+        mStripLayoutHelper.finishAnimationsAndPushTabUpdates();
+        assertNull("Animation should not be running.",
+                mStripLayoutHelper.getRunningAnimatorForTesting());
+
+        // Act: Create new tab in model and trigger update in tab strip.
+        mModel.addTab("new tab");
+        mStripLayoutHelper.tabCreated(TIMESTAMP, 5, 3, true, false, false);
+
+        // Assert: Animation is running.
+        assertNotNull(
+                "Animation should running.", mStripLayoutHelper.getRunningAnimatorForTesting());
     }
 
     @Test
@@ -1661,6 +1713,27 @@ public class StripLayoutHelperTest {
         // Verify extra scroll offset.
         assertNotEquals("Extra min offset should be set.", 0f,
                 mStripLayoutHelper.getReorderExtraMinScrollOffset(), EPSILON);
+    }
+
+    @Test
+    public void testTabClosed() {
+        // Initialize with 10 tabs.
+        int tabCount = 10;
+        initializeTest(false, false, false, 0, tabCount);
+
+        // Remove tab from model and verify that the tab strip has not yet updated.
+        int closedTabId = 1;
+        int expectedNumTabs = tabCount;
+        mModel.closeTab(mModel.getTabAt(closedTabId), false, false, true);
+        assertEquals("Tab strip should not yet have changed.", expectedNumTabs,
+                mStripLayoutHelper.getStripLayoutTabs().length);
+
+        // Trigger update and verify the tab strip matches the tab model.
+        expectedNumTabs = 9;
+        mStripLayoutHelper.tabClosed(TIMESTAMP, closedTabId);
+        assertEquals("Tab strip should match tab model.", expectedNumTabs,
+                mStripLayoutHelper.getStripLayoutTabs().length);
+        verify(mUpdateHost, times(2)).requestUpdate();
     }
 
     @Test

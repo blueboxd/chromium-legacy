@@ -75,17 +75,16 @@ void EnsureHeadlessCommandResources() {
   }
 }
 
-content::WebUIDataSource* CreateHeadlessHostDataSource() {
+void CreateAndAddHeadlessHostDataSource(
+    content::BrowserContext* browser_context) {
   EnsureHeadlessCommandResources();
 
-  content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(kChromeHeadlessHost);
+  content::WebUIDataSource* source = content::WebUIDataSource::CreateAndAdd(
+      browser_context, kChromeHeadlessHost);
   DCHECK(source);
 
   source->AddResourcePath(kHeadlessCommandHtml, IDR_HEADLESS_COMMAND_HTML);
   source->AddResourcePath(kHeadlessCommandJs, IDR_HEADLESS_COMMAND_JS);
-
-  return source;
 }
 
 base::Value::Dict GetColorDictFromHexColor(uint32_t color, bool has_alpha) {
@@ -247,22 +246,20 @@ HeadlessCommandHandler::HeadlessCommandHandler(
     GURL target_url,
     DoneCallback done_callback,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
-    : web_contents_(web_contents),
-      target_url_(std::move(target_url)),
+    : target_url_(std::move(target_url)),
       done_callback_(std::move(done_callback)),
       io_task_runner_(std::move(io_task_runner)) {
-  DCHECK(web_contents_);
+  DCHECK(web_contents);
   DCHECK(io_task_runner_);
+
+  content::WebContentsObserver::Observe(web_contents);
 
   // Load command execution harness resources and create URL data source
   // for chrome://headless.
-  content::WebUIDataSource::Add(web_contents_->GetBrowserContext(),
-                                CreateHeadlessHostDataSource());
-
-  content::WebContentsObserver::Observe(web_contents_);
+  CreateAndAddHeadlessHostDataSource(web_contents->GetBrowserContext());
 
   browser_devtools_client_.AttachToBrowser();
-  devtools_client_.AttachToWebContents(web_contents_);
+  devtools_client_.AttachToWebContents(web_contents);
 }
 
 HeadlessCommandHandler::~HeadlessCommandHandler() = default;
@@ -357,7 +354,8 @@ void HeadlessCommandHandler::DocumentOnLoadCompletedInPrimaryMainFrame() {
 }
 
 void HeadlessCommandHandler::WebContentsDestroyed() {
-  CHECK(false);
+  LOG(ERROR) << "Unexpected renderer destruction.";
+  Done();
 }
 
 void HeadlessCommandHandler::OnTargetCrashed(const base::Value::Dict&) {
@@ -387,7 +385,6 @@ void HeadlessCommandHandler::OnCommandsResult(base::Value::Dict result) {
 }
 
 void HeadlessCommandHandler::Done() {
-  DCHECK(web_contents_);
   devtools_client_.DetachClient();
   browser_devtools_client_.DetachClient();
 

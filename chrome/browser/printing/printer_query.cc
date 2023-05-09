@@ -10,6 +10,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/location.h"
+#include "base/notreached.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -18,6 +19,7 @@
 #include "components/crash/core/common/crash_keys.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents.h"
 #include "printing/backend/print_backend.h"
 #include "printing/buildflags/buildflags.h"
@@ -32,6 +34,10 @@
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/browser/printing/printer_query_oop.h"
 #include "printing/printing_features.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "base/strings/utf_string_conversions.h"
 #endif
 
 namespace printing {
@@ -244,6 +250,55 @@ void PrinterQuery::SetSettingsFromPOD(
       base::BindOnce(&PrinterQuery::PostSettingsDone, base::Unretained(this),
                      std::move(callback),
                      /*maybe_is_modifiable=*/absl::nullopt));
+}
+#endif
+
+#if BUILDFLAG(IS_WIN)
+// static
+bool PrinterQuery::UpdatePrintableArea(PrintSettings& print_settings) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  scoped_refptr<PrintBackend> print_backend =
+      PrintBackend::CreateInstance(g_browser_process->GetApplicationLocale());
+
+  // Blocking is needed here because Windows printer drivers are oftentimes
+  // not thread-safe and have to be accessed on the UI thread.
+  base::ScopedAllowBlocking allow_blocking;
+  std::string printer_name = base::UTF16ToUTF8(print_settings.device_name());
+  crash_keys::ScopedPrinterInfo crash_key(
+      print_backend->GetPrinterDriverInfo(printer_name));
+
+  const PrintSettings::RequestedMedia& media = print_settings.requested_media();
+  absl::optional<gfx::Rect> printable_area_um =
+      print_backend->GetPaperPrintableArea(
+          base::UTF16ToUTF8(print_settings.device_name()), media.vendor_id,
+          media.size_microns);
+  if (!printable_area_um.has_value()) {
+    return false;
+  }
+
+  print_settings.UpdatePrinterPrintableArea(printable_area_um.value());
+  return true;
+}
+#endif
+
+// static
+void PrinterQuery::ApplyDefaultPrintableAreaToVirtualPrinterPrintSettings(
+    PrintSettings& print_settings) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // The purpose of `print_context` is to set the default printable area. To do
+  // so, it doesn't need a RFH, so just default initialize the RFH id.
+  PrintingContextDelegate delegate((content::GlobalRenderFrameHostId()));
+  std::unique_ptr<PrintingContext> print_context =
+      PrintingContext::Create(&delegate, /*skip_system_calls=*/false);
+  print_context->SetPrintSettings(print_settings);
+  print_context->SetDefaultPrintableAreaForVirtualPrinters();
+  print_settings = print_context->settings();
+}
+
+#if BUILDFLAG(ENABLE_OOP_PRINTING)
+void PrinterQuery::SetClientId(PrintBackendServiceManager::ClientId client_id) {
+  // Only supposed to be called for `PrinterQueryOop` objects.
+  NOTREACHED_NORETURN();
 }
 #endif
 

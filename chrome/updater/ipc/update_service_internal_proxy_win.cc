@@ -16,11 +16,11 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/bind_post_task.h"
 #include "base/threading/platform_thread.h"
 #include "chrome/updater/app/server/win/updater_internal_idl.h"
 #include "chrome/updater/ipc/proxy_impl_base_win.h"
 #include "chrome/updater/updater_scope.h"
-#include "chrome/updater/util/util.h"
 #include "chrome/updater/util/win_util.h"
 #include "chrome/updater/win/win_constants.h"
 
@@ -53,7 +53,7 @@ class UpdaterInternalCallback
 
  private:
   ~UpdaterInternalCallback() override {
-    DCHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
     if (callback_)
       std::move(callback_).Run();
   }
@@ -66,13 +66,13 @@ class UpdaterInternalCallback
 };
 
 IFACEMETHODIMP UpdaterInternalCallback::Run(LONG result) {
-  DCHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+  CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
   VLOG(2) << __func__ << " result " << result << ".";
   return S_OK;
 }
 
 base::OnceClosure UpdaterInternalCallback::Disconnect() {
-  DCHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+  CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
   VLOG(2) << __func__;
   return std::move(callback_);
 }
@@ -154,13 +154,13 @@ UpdateServiceInternalProxy::~UpdateServiceInternalProxy() {
 void UpdateServiceInternalProxy::Run(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->Run(OnCurrentSequence(std::move(callback)));
+  impl_->Run(base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
 void UpdateServiceInternalProxy::Hello(base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->Hello(OnCurrentSequence(std::move(callback)));
+  impl_->Hello(base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
 scoped_refptr<UpdateServiceInternal> CreateUpdateServiceInternalProxy(

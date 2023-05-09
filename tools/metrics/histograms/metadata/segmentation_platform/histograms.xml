@@ -27,6 +27,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ChromeStartAndroid"/>
   <variant name="ChromeStartAndroidV2"/>
   <variant name="CrossDeviceUser"/>
+  <variant name="DeviceTier"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUser"/>
   <variant name="IntentionalUser"/>
@@ -63,6 +64,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ContextualPageActions"/>
   <variant name="CrossDeviceUser"/>
   <variant name="DeviceSwitcher"/>
+  <variant name="DeviceTier"/>
   <variant name="DummyFeature"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUser"/>
@@ -72,6 +74,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ResumeHeavyUser"/>
   <variant name="SearchUser"/>
   <variant name="ShoppingUser"/>
+  <variant name="TabletProductivityUser"/>
 </variants>
 
 <variants name="SegmentationModel">
@@ -82,6 +85,7 @@ chromium-metrics-reviews@google.com.
   <variant name="ContextualPageActionPriceTracking"/>
   <variant name="CrossDeviceUser"/>
   <variant name="DeviceSwitcher"/>
+  <variant name="DeviceTier"/>
   <variant name="Dummy"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUserSegment"/>
@@ -93,6 +97,7 @@ chromium-metrics-reviews@google.com.
   <variant name="SearchUserSegment"/>
   <variant name="Share"/>
   <variant name="ShoppingUser"/>
+  <variant name="TabletProductivityUserSegment"/>
   <variant name="Unknown"/>
   <variant name="Voice"/>
 </variants>

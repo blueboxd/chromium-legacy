@@ -268,7 +268,13 @@ export class SearchContainer extends EventTarget {
     if (!this.pathDisplay_) {
       return;
     }
-    this.pathDisplay_.path = this.getSelectedPath_(state);
+    const path = this.getSelectedPath_(state);
+    if (path) {
+      this.pathDisplay_.removeAttribute('hidden');
+      this.pathDisplay_.path = path;
+    } else {
+      this.pathDisplay_.setAttribute('hidden', '');
+    }
   }
 
   /**
@@ -280,17 +286,26 @@ export class SearchContainer extends EventTarget {
     if (!keys) {
       return '';
     }
-    const fileData = state.allEntries[keys[0]!];
-    if (!fileData) {
+    const pathSet = new Set();
+    for (const dirKey of keys) {
+      const entry = state.allEntries[dirKey!]?.entry;
+      if (!entry) {
+        continue;
+      }
+      // TODO(b:274559834): Improve efficiency of these computations.
+      const parts: PathComponent[] =
+          PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
+      // Drop the file name; keep the folders only.
+      pathSet.add(parts.slice(0, -1).map(p => p.name).join('/'));
+    }
+    if (pathSet.size === 0) {
       return '';
     }
-    const entry = fileData.entry;
-    if (!entry) {
-      return '';
+    if (pathSet.size === 1) {
+      return pathSet.values().next().value;
     }
-    const parts: PathComponent[] =
-        PathComponent.computeComponentsFromEntry(entry, this.volumeManager_);
-    return parts.map(p => p.name).join('/');
+
+    return str('SEARCH_RESULTS_MULTIPLE_SELECTION');
   }
 
   /**

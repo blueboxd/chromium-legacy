@@ -26,12 +26,11 @@
     }
   }
 
-  @media (min-width: 768px) {
-    :host {
-      --ntp-module-layout-width:
-          var(--ntp-module-max-width, var(--ntp-search-box-width));
-      --ntp-module-width:
-          var(--ntp-module-max-width, var(--ntp-search-box-width));
+  /*A module width of 768px with 18px gaps on each side. */
+  @media (min-width: 804px) {
+    :host([wide-modules-enabled_]) {
+      --ntp-module-layout-width: 768px;
+      --ntp-module-width: 768px;
     }
   }
 
@@ -363,17 +362,17 @@
         on-open-lens-search="onOpenLensSearch_"
         on-open-voice-search="onOpenVoiceSearch_" shown$="[[realboxShown_]]">
     </ntp-realbox>
-    <template is="dom-if" if="[[realboxLensSearchEnabled_]]">
+    <template is="dom-if" if="[[showLensUploadDialog_]]" restamp>
       <ntp-lens-upload-dialog id="lensUploadDialog"
-          on-close-lens-search="onCloseLensSearch_"
-          on-bind-open-dialog="bindOpenLensDialog_">
+          on-close-lens-search="onCloseLensSearch_">
       </ntp-lens-upload-dialog>
     </template>
   </div>
   <dom-if if="[[lazyRender_]]" on-dom-change="onLazyRendered_">
     <template>
       <template is="dom-if" if="[[shortcutsEnabled_]]">
-        <cr-most-visited id="mostVisited" theme="[[theme_.mostVisited]]">
+        <cr-most-visited id="mostVisited" theme="[[theme_.mostVisited]]"
+            single-row="[[singleRowShortcutsEnabled_]]">
         </cr-most-visited>
       </template>
       <template is="dom-if" if="[[middleSlotPromoEnabled_]]">

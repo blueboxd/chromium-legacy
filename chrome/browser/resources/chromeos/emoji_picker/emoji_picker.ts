@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import './icons.html.js';
+import './emoji_image.js';
 import './emoji_group.js';
 import './emoji_group_button.js';
 import './emoji_search.js';
@@ -1003,15 +1004,17 @@ export class EmojiPicker extends PolymerElement {
                    visualContent: emoji.base.visualContent,
                    keywords: [],
                  },
-                 alternates: emoji.alternates.map(
-                     (alternate: Emoji):
-                         Emoji => {
-                           return {
-                             string: alternate.string,
-                             name: alternate.name,
-                             keywords: [...(alternate.keywords ?? [])],
-                           };
-                         }),
+                 alternates: emoji.alternates?.map(
+                                 (alternate: Emoji):
+                                     Emoji => {
+                                       return {
+                                         string: alternate.string,
+                                         name: alternate.name,
+                                         keywords:
+                                             [...(alternate.keywords ?? [])],
+                                       };
+                                     }) ??
+                     [],
                })) ??
         [];
   }

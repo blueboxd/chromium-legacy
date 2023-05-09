@@ -32,8 +32,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
-class GURL;
-
 namespace attribution_reporting {
 class SuitableOrigin;
 }  // namespace attribution_reporting
@@ -47,10 +45,6 @@ class UpdateableSequencedTaskRunner;
 namespace storage {
 class SpecialStoragePolicy;
 }  // namespace storage
-
-namespace url {
-class Origin;
-}  // namespace url
 
 namespace content {
 
@@ -70,7 +64,7 @@ struct StoreSourceResult;
 
 #if BUILDFLAG(IS_ANDROID)
 class AttributionOsLevelManager;
-struct AttributionInputEvent;
+struct OsRegistration;
 #endif
 
 // UI thread class that manages the lifetime of the underlying attribution
@@ -164,18 +158,14 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 
 #if BUILDFLAG(IS_ANDROID)
 
-  void HandleOsSource(const GURL& registration_url,
-                      const url::Origin& top_level_origin,
-                      AttributionInputEvent,
-                      GlobalRenderFrameHostId render_frame_id) override;
-
-  void HandleOsTrigger(const GURL& registration_url,
-                       const url::Origin& top_level_origin,
-                       GlobalRenderFrameHostId render_frame_id) override;
+  void HandleOsRegistration(OsRegistration,
+                            GlobalRenderFrameHostId render_frame_id) override;
 
   AttributionOsLevelManager* GetOsLevelManager() {
     return attribution_os_level_manager_.get();
   }
+
+  void NotifyOsRegistration(const OsRegistration&, bool is_debug_key_allowed);
 
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -265,10 +255,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 #if BUILDFLAG(IS_ANDROID)
   void OverrideOsLevelManagerForTesting(
       std::unique_ptr<AttributionOsLevelManager>);
-  void HandleOsRegistration(const GURL& registration_url,
-                            const url::Origin& top_level_origin,
-                            absl::optional<AttributionInputEvent>,
-                            GlobalRenderFrameHostId);
   void ProcessNextOsEvent();
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -326,7 +312,6 @@ class CONTENT_EXPORT AttributionManagerImpl : public AttributionManager {
 #if BUILDFLAG(IS_ANDROID)
   std::unique_ptr<AttributionOsLevelManager> attribution_os_level_manager_;
 
-  struct OsRegistration;
   base::circular_deque<OsRegistration> pending_os_events_;
 #endif  // BUILDFLAG(IS_ANDROID)
 

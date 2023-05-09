@@ -5,20 +5,27 @@
 #include "chrome/browser/ui/views/extensions/extensions_menu_view_controller.h"
 
 #include "base/i18n/case_conversion.h"
+#include "chrome/browser/extensions/site_permissions_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 #include "chrome/browser/ui/extensions/extensions_container.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/extensions/extensions_dialogs_utils.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_main_page_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_site_permissions_page_view.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/permissions_manager.h"
 #include "ui/base/metadata/metadata_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
+
+using PermissionsManager = extensions::PermissionsManager;
+using SitePermissionsHelper = extensions::SitePermissionsHelper;
 
 // Returns sorted extension ids based on their extensions name.
 std::vector<std::string> SortExtensionsByName(
@@ -61,6 +68,22 @@ ExtensionsMenuSitePermissionsPageView* GetSitePermissionsPage(
   return views::AsViewClass<ExtensionsMenuSitePermissionsPageView>(page);
 }
 
+// Returns whether the site setting toggle for `web_contents` should be visible.
+bool IsSiteSettingsToggleVisible(
+    const raw_ptr<ToolbarActionsModel> toolbar_model,
+    content::WebContents* web_contents) {
+  return !toolbar_model->IsRestrictedUrl(web_contents->GetLastCommittedURL());
+}
+
+// Returns whether the site settings toggle for `web_contents` should be on.
+bool IsSiteSettingsToggleOn(Browser* browser,
+                            content::WebContents* web_contents) {
+  auto origin = web_contents->GetPrimaryMainFrame()->GetLastCommittedOrigin();
+  return extensions::PermissionsManager::Get(browser->profile())
+             ->GetUserSiteSetting(origin) ==
+         extensions::PermissionsManager::UserSiteSetting::kCustomizeByExtension;
+}
+
 }  // namespace
 
 ExtensionsMenuViewController::ExtensionsMenuViewController(
@@ -75,6 +98,8 @@ ExtensionsMenuViewController::ExtensionsMenuViewController(
       toolbar_model_(ToolbarActionsModel::Get(browser_->profile())) {
   browser_->tab_strip_model()->AddObserver(this);
   toolbar_model_observation_.Observe(toolbar_model_.get());
+  permissions_manager_observation_.Observe(
+      extensions::PermissionsManager::Get(browser_->profile()));
 }
 
 ExtensionsMenuViewController::~ExtensionsMenuViewController() {
@@ -84,6 +109,15 @@ ExtensionsMenuViewController::~ExtensionsMenuViewController() {
 
 void ExtensionsMenuViewController::OpenMainPage() {
   auto main_page = std::make_unique<ExtensionsMenuMainPageView>(browser_, this);
+
+  content::WebContents* web_contents = GetActiveWebContents();
+  std::u16string current_site = GetCurrentHost(web_contents);
+  bool is_site_settings_toggle_visible =
+      IsSiteSettingsToggleVisible(toolbar_model_, web_contents);
+  bool is_site_settings_toggle_on =
+      IsSiteSettingsToggleOn(browser_, web_contents);
+  main_page->Update(current_site, is_site_settings_toggle_visible,
+                    is_site_settings_toggle_on);
   PopulateMainPage(main_page.get());
 
   SwitchToPage(std::move(main_page));
@@ -100,10 +134,14 @@ void ExtensionsMenuViewController::OpenSitePermissionsPage(
   std::u16string extension_name = action_controller->GetActionName();
   ui::ImageModel extension_icon = action_controller->GetIcon(
       GetActiveWebContents(), gfx::Size(icon_size, icon_size));
+  bool is_show_requests_toggle_on =
+      extensions::SitePermissionsHelper(browser_->profile())
+          .ShowAccessRequestsInToolbar(extension_id);
 
   auto site_permissions_page =
       std::make_unique<ExtensionsMenuSitePermissionsPageView>(
-          browser_, extension_name, extension_icon, extension_id, this);
+          browser_, extension_name, extension_icon, extension_id,
+          is_show_requests_toggle_on, this);
   SwitchToPage(std::move(site_permissions_page));
 }
 
@@ -136,7 +174,13 @@ void ExtensionsMenuViewController::UpdatePage(
 
   ExtensionsMenuMainPageView* main_page = GetMainPage(current_page_);
   if (main_page && web_contents) {
-    main_page->Update(web_contents);
+    std::u16string current_site = GetCurrentHost(web_contents);
+    bool is_site_settings_toggle_visible =
+        IsSiteSettingsToggleVisible(toolbar_model_, web_contents);
+    bool is_site_settings_toggle_on =
+        IsSiteSettingsToggleOn(browser_, web_contents);
+    main_page->Update(current_site, is_site_settings_toggle_visible,
+                      is_site_settings_toggle_on);
   }
 }
 
@@ -225,6 +269,53 @@ void ExtensionsMenuViewController::OnToolbarPinnedActionsChanged() {
   main_page->UpdatePinButtons();
 }
 
+void ExtensionsMenuViewController::OnUserPermissionsSettingsChanged(
+    const PermissionsManager::UserPermissionsSettings& settings) {
+  DCHECK(current_page_);
+
+  if (GetSitePermissionsPage(current_page_)) {
+    // Site permissions page can only be opened when site setting is set to
+    // "customize by extension". Thus, when site settings changed, we have to
+    // return to main page.
+    DCHECK_NE(PermissionsManager::Get(browser_->profile())
+                  ->GetUserSiteSetting(GetActiveWebContents()
+                                           ->GetPrimaryMainFrame()
+                                           ->GetLastCommittedOrigin()),
+              PermissionsManager::UserSiteSetting::kCustomizeByExtension);
+    OpenMainPage();
+    return;
+  }
+
+  DCHECK(GetMainPage(current_page_));
+  UpdatePage(GetActiveWebContents());
+
+  // TODO(crbug.com/1390952): Update the "highlighted section" based on the
+  // `site_setting` and whether a page refresh is needed.
+
+  // TODO(crbug.com/1390952): Run blocked actions for extensions that only have
+  // blocked actions that don't require a page refresh to run.
+}
+
+void ExtensionsMenuViewController::OnShowAccessRequestsInToolbarChanged(
+    const extensions::ExtensionId& extension_id,
+    bool can_show_requests) {
+  DCHECK(current_page_);
+
+  // Changing whether an extension can show requests access in the toolbar only
+  // affects the site permissions page for such extension.
+  auto* site_permissions_page = GetSitePermissionsPage(current_page_);
+  if (site_permissions_page &&
+      site_permissions_page->extension_id() == extension_id) {
+    site_permissions_page->UpdateShowRequestsToggle(can_show_requests);
+  }
+}
+
+void ExtensionsMenuViewController::OnViewIsDeleting(
+    views::View* observed_view) {
+  DCHECK_EQ(observed_view, current_page_);
+  current_page_ = nullptr;
+}
+
 ExtensionsMenuMainPageView*
 ExtensionsMenuViewController::GetMainPageViewForTesting() {
   DCHECK(current_page_);
@@ -242,7 +333,9 @@ void ExtensionsMenuViewController::SwitchToPage(
   if (current_page_) {
     bubble_contents_->RemoveChildViewT(current_page_.get());
   }
+  DCHECK(!current_page_);
   current_page_ = bubble_contents_->AddChildView(std::move(page));
+  current_page_->AddObserver(this);
 
   // Only resize the menu if the bubble is created, since page could be added to
   // the menu beforehand and delegate wouldn't know the bubble bounds.

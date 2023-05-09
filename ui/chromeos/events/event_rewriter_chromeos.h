@@ -88,16 +88,23 @@ class EventRewriterChromeOS : public EventRewriter {
 
     // Returns whether or not Meta + Top Row Keys should be rewritten. Should
     // return correctly with respect to the values set in
-    // |SuppressMetaTopRowKeyRewrites|.
-    virtual bool RewriteMetaTopRowKeyComboEvents() const = 0;
+    // |SuppressMetaTopRowKeyRewrites|. If per-device settings are enabled, it
+    // should instead return the correct setting for the given `device_id`.
+    virtual bool RewriteMetaTopRowKeyComboEvents(int device_id) const = 0;
 
     // Set whether or not Meta + Top Row Keys key events should be rewritten.
     virtual void SuppressMetaTopRowKeyComboRewrites(bool should_suppress) = 0;
 
-    // Returns true if get keyboard remapped preference value successfully and
-    // the value will be stored in |value|.
-    virtual bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
-                                              int* value) const = 0;
+    // If per-device settings is disabled, returns the remapped modifier value
+    // from prefs by looking up the given |pref_name|. If per-device settings is
+    // enabled, returns the remapped modifier value for |device_id| and
+    // |modifier_key|.
+    // TODO(dpad): Remove |pref_name| once fully transitioned to per-device
+    // settings.
+    virtual absl::optional<mojom::ModifierKey> GetKeyboardRemappedModifierValue(
+        int device_id,
+        mojom::ModifierKey modifier_key,
+        const std::string& pref_name) const = 0;
 
     // Returns true if the target would prefer to receive raw
     // function keys instead of having them rewritten into back, forward,
@@ -343,7 +350,21 @@ class EventRewriterChromeOS : public EventRewriter {
 
   // A set of device IDs whose press event has been rewritten.
   // This is to ensure that press and release events are rewritten consistently.
-  std::set<int> pressed_device_ids_;
+  //
+  // As the variable name suggests, we only care about
+  // left-button-remapped-to-right events here.
+  //
+  // With the help of this variable, we are able to eliminate two types of edge
+  // cases. (1) is that when we have more than one input sources, such as a
+  // touchpad and a mouse. (2) is that when we deal with modifier(Alt or Search)
+  // induced left to right button remapping.
+  //
+  // This variable works closely with
+  // EventRewriterChromeOS::ShouldRemapToRightClick(). As of this writing we
+  // don't have a product feature that would rewrite a mouse non-left button
+  // event to a mouse left button event. This is why we only have
+  // `pressed_as_right_button_device_ids_` here without a "left" counterpart.
+  std::set<int> pressed_as_right_button_device_ids_;
 
   std::map<int, DeviceInfo> device_id_to_info_;
 

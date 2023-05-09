@@ -256,9 +256,6 @@ void CheckInstallation(UpdaterScope scope,
                 !IsServiceGone(GetServiceName(is_internal_service)))
           << ": " << service_name << ": " << is_internal_service;
 
-// TODO(crbug.com/1378769) - this code can be enabled after the the new CIPD
-// build containing fix r1105318 is published.
-#if 0
       if (!is_installed) {
         ForEachServiceWithPrefix(
             base::StrCat({base::ASCIIToWide(PRODUCT_FULLNAME_STRING),
@@ -269,7 +266,6 @@ void CheckInstallation(UpdaterScope scope,
               ADD_FAILURE() << "Unexpected service found: " << service_name;
             }));
       }
-#endif  // 0
     }
   }
 
@@ -302,14 +298,28 @@ void CheckInstallation(UpdaterScope scope,
 
   const absl::optional<base::FilePath> path =
       GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
-  EXPECT_TRUE(path);
+  ASSERT_TRUE(path);
   EXPECT_TRUE(WaitFor(base::BindLambdaForTesting([&]() {
                         return is_installed == base::PathExists(*path);
                       }),
                       base::BindLambdaForTesting([&]() {
                         VLOG(0) << "Still waiting for " << *path
                                 << " where is_installed=" << is_installed;
-                      })));
+                      })))
+      << base::JoinString(
+             [&path]() {
+               base::FileEnumerator it(*path, true,
+                                       base::FileEnumerator::FILES |
+                                           base::FileEnumerator::DIRECTORIES);
+               std::vector<base::FilePath::StringType> files;
+               for (base::FilePath name = it.Next(); !name.empty();
+                    name = it.Next()) {
+                 files.push_back(name.value());
+               }
+
+               return files;
+             }(),
+             FILE_PATH_LITERAL(","));
 }
 
 // Returns true if any updater process is found running in any session in the

@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "ash/webui/eche_app_ui/apps_launch_info_provider.h"
 #include "ash/webui/eche_app_ui/eche_feature_status_provider.h"
 #include "ash/webui/eche_app_ui/eche_notification_click_handler.h"
 #include "ash/webui/eche_app_ui/eche_recent_app_click_handler.h"
@@ -42,6 +43,7 @@ class SecureChannelClient;
 
 namespace eche_app {
 
+class AppsLaunchInfoProvider;
 class EcheConnector;
 class EcheMessageReceiver;
 class EcheAlertGenerator;
@@ -55,7 +57,7 @@ class EcheStreamStatusChangeHandler;
 class EcheTrayStreamStatusObserver;
 class EcheConnectionScheduler;
 class EcheStreamOrientationObserver;
-class EcheConnectionStatusObserver;
+class EcheConnectionStatusHandler;
 
 // Implements the core logic of the EcheApp and exposes interfaces via its
 // public API. Implemented as a KeyedService since it depends on other
@@ -101,6 +103,8 @@ class EcheAppManager : public KeyedService {
 
   AppsAccessManager* GetAppsAccessManager();
 
+  EcheConnectionStatusHandler* GetEcheConnectionStatusHandler();
+
   // This trigger Eche Web to release connection resource.
   void CloseStream();
 
@@ -111,9 +115,12 @@ class EcheAppManager : public KeyedService {
   void Shutdown() override;
 
  private:
+  phonehub::PhoneHubManager* phone_hub_manager_;
   std::unique_ptr<secure_channel::ConnectionManager> connection_manager_;
+  std::unique_ptr<EcheConnectionStatusHandler> eche_connection_status_handler_;
   std::unique_ptr<EcheFeatureStatusProvider> feature_status_provider_;
   std::unique_ptr<LaunchAppHelper> launch_app_helper_;
+  std::unique_ptr<AppsLaunchInfoProvider> apps_launch_info_provider_;
   std::unique_ptr<EcheStreamStatusChangeHandler> stream_status_change_handler_;
   std::unique_ptr<EcheNotificationClickHandler>
       eche_notification_click_handler_;
@@ -133,8 +140,6 @@ class EcheAppManager : public KeyedService {
       eche_tray_stream_status_observer_;
   std::unique_ptr<EcheStreamOrientationObserver>
       eche_stream_orientation_observer_;
-  std::unique_ptr<EcheConnectionStatusObserver>
-      eche_connection_status_observer_;
 };
 
 }  // namespace eche_app

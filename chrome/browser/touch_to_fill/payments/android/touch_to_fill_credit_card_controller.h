@@ -11,11 +11,15 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/containers/span.h"
+#include "base/functional/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/touch_to_fill/payments/android/touch_to_fill_credit_card_view_controller.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_keyboard_suppressor.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 
 namespace autofill {
 
+class ContentAutofillClient;
 class TouchToFillCreditCardView;
 class TouchToFillDelegate;
 class CreditCard;
@@ -25,21 +29,29 @@ class CreditCard;
 // interactions. While the surface is shown, stores its Java counterpart in
 // `java_object_`.
 class TouchToFillCreditCardController
-    : public TouchToFillCreditCardViewController {
+    : public TouchToFillCreditCardViewController,
+      public ContentAutofillDriverFactory::Observer {
  public:
-  TouchToFillCreditCardController();
+  explicit TouchToFillCreditCardController(
+      ContentAutofillClient* autofill_client);
   TouchToFillCreditCardController(const TouchToFillCreditCardController&) =
       delete;
   TouchToFillCreditCardController& operator=(
       const TouchToFillCreditCardController&) = delete;
   ~TouchToFillCreditCardController() override;
 
+  // ContentAutofillDriverFactory::Observer:
+  void OnContentAutofillDriverFactoryDestroyed(
+      ContentAutofillDriverFactory& factory) override;
+  void OnContentAutofillDriverCreated(ContentAutofillDriverFactory& factory,
+                                      ContentAutofillDriver& driver) override;
+
   // Shows the Touch To Fill `view`. `delegate` will provide the fillable credit
   // cards and be notified of the user's decision. Returns whether the surface
   // was successfully shown.
   bool Show(std::unique_ptr<TouchToFillCreditCardView> view,
             base::WeakPtr<TouchToFillDelegate> delegate,
-            base::span<const autofill::CreditCard> cards_to_suggest);
+            base::span<const CreditCard> cards_to_suggest);
 
   // Hides the surface if it is currently shown.
   void Hide();
@@ -52,16 +64,29 @@ class TouchToFillCreditCardController
                           base::android::JavaParamRef<jstring> unique_id,
                           bool is_virtual) override;
 
+  TouchToFillKeyboardSuppressor& keyboard_suppressor_for_test() {
+    return keyboard_suppressor_;
+  }
+
  private:
   // Gets or creates the Java counterpart.
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
 
+  // Observes creation of ContentAutofillDrivers to inject a
+  // TouchToFillDelegateImpl into the BrowserAutofillManager.
+  base::ScopedObservation<ContentAutofillDriverFactory,
+                          ContentAutofillDriverFactory::Observer>
+      driver_factory_observation_{this};
   // Delegate for the surface being shown.
   base::WeakPtr<TouchToFillDelegate> delegate_;
   // View that displays the surface, owned by `this`.
   std::unique_ptr<TouchToFillCreditCardView> view_;
   // The corresponding Java TouchToFillCreditCardControllerBridge.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+  // Suppresses the keyboard between
+  // AutofillManager::Observer::On{Before,After}AskForValuesToFill() events if
+  // TTF may be shown.
+  TouchToFillKeyboardSuppressor keyboard_suppressor_;
 };
 
 }  // namespace autofill

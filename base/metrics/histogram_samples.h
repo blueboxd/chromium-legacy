@@ -139,15 +139,15 @@ class BASE_EXPORT HistogramSamples {
   virtual HistogramBase::Count GetCount(HistogramBase::Sample value) const = 0;
   virtual HistogramBase::Count TotalCount() const = 0;
 
-  virtual void Add(const HistogramSamples& other);
+  void Add(const HistogramSamples& other);
 
   // Add from serialized samples.
-  virtual bool AddFromPickle(PickleIterator* iter);
+  bool AddFromPickle(PickleIterator* iter);
 
-  virtual void Subtract(const HistogramSamples& other);
+  void Subtract(const HistogramSamples& other);
 
   virtual std::unique_ptr<SampleCountIterator> Iterator() const = 0;
-  virtual void Serialize(Pickle* pickle) const;
+  void Serialize(Pickle* pickle) const;
 
   // Returns ASCII representation of histograms data for histogram samples.
   // The dictionary returned will be of the form
@@ -250,14 +250,13 @@ class BASE_EXPORT SampleCountIterator {
   virtual void Next() = 0;
 
   // Get the sample and count at current position.
-  // |min| |max| and |count| can be NULL if the value is not of interest.
   // Note: |max| is int64_t because histograms support logged values in the
   // full int32_t range and bucket max is exclusive, so it needs to support
   // values up to MAXINT32+1.
   // Requires: !Done();
   virtual void Get(HistogramBase::Sample* min,
                    int64_t* max,
-                   HistogramBase::Count* count) const = 0;
+                   HistogramBase::Count* count) = 0;
   static_assert(std::numeric_limits<HistogramBase::Sample>::max() <
                     std::numeric_limits<int64_t>::max(),
                 "Get() |max| must be able to hold Histogram::Sample max + 1");
@@ -284,7 +283,7 @@ class BASE_EXPORT SingleSampleIterator : public SampleCountIterator {
   void Next() override;
   void Get(HistogramBase::Sample* min,
            int64_t* max,
-           HistogramBase::Count* count) const override;
+           HistogramBase::Count* count) override;
 
   // SampleVector uses predefined buckets so iterator can return bucket index.
   bool GetBucketIndex(size_t* index) const override;

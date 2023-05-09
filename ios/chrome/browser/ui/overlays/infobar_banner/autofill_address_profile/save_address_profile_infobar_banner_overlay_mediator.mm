@@ -65,16 +65,14 @@ using autofill_address_profile_infobar_overlays::
       setTitleText:base::SysUTF16ToNSString(self.config->message_text())];
   [self.consumer
       setSubtitleText:base::SysUTF16ToNSString(self.config->description())];
-  [self.consumer setRestrictSubtitleTextToSingleLine:YES];
 
-  if (UseSymbols()) {
-    [self.consumer
-        setIconImage:CustomSymbolWithPointSize(kLocationFillSymbol,
-                                               kInfobarSymbolPointSize)];
-  } else {
-    [self.consumer
-        setIconImage:[UIImage imageNamed:self.config->icon_image_name()]];
+  if (!self.config->is_migration_to_account()) {
+    [self.consumer setRestrictSubtitleTextToSingleLine:YES];
   }
+
+  [self.consumer
+      setIconImage:CustomSymbolWithPointSize(kLocationFillSymbol,
+                                             kInfobarSymbolPointSize)];
   // This is done to hide the settings image from the banner view. The modal
   // would still be presented when the user chooses to pick the Save/Update
   // action.

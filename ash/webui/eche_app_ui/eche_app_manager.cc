@@ -9,10 +9,11 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/webui/eche_app_ui/apps_access_manager_impl.h"
+#include "ash/webui/eche_app_ui/apps_launch_info_provider.h"
 #include "ash/webui/eche_app_ui/eche_alert_generator.h"
 #include "ash/webui/eche_app_ui/eche_connection_metrics_recorder.h"
 #include "ash/webui/eche_app_ui/eche_connection_scheduler_impl.h"
-#include "ash/webui/eche_app_ui/eche_connection_status_observer.h"
+#include "ash/webui/eche_app_ui/eche_connection_status_handler.h"
 #include "ash/webui/eche_app_ui/eche_connector_impl.h"
 #include "ash/webui/eche_app_ui/eche_message_receiver_impl.h"
 #include "ash/webui/eche_app_ui/eche_presence_manager.h"
@@ -47,30 +48,39 @@ EcheAppManager::EcheAppManager(
     LaunchAppHelper::LaunchEcheAppFunction launch_eche_app_function,
     LaunchAppHelper::LaunchNotificationFunction launch_notification_function,
     LaunchAppHelper::CloseNotificationFunction close_notification_function)
-    : connection_manager_(
+    : phone_hub_manager_(phone_hub_manager),
+      connection_manager_(
           std::make_unique<secure_channel::ConnectionManagerImpl>(
               multidevice_setup_client,
               device_sync_client,
               secure_channel_client,
               kSecureChannelFeatureName,
               std::make_unique<EcheConnectionMetricsRecorder>())),
+      eche_connection_status_handler_(
+          std::make_unique<EcheConnectionStatusHandler>()),
       feature_status_provider_(std::make_unique<EcheFeatureStatusProvider>(
           phone_hub_manager,
           device_sync_client,
           multidevice_setup_client,
-          connection_manager_.get())),
+          connection_manager_.get(),
+          eche_connection_status_handler_.get())),
       launch_app_helper_(
           std::make_unique<LaunchAppHelper>(phone_hub_manager,
                                             launch_eche_app_function,
                                             launch_notification_function,
                                             close_notification_function)),
+      apps_launch_info_provider_(std::make_unique<AppsLaunchInfoProvider>(
+          eche_connection_status_handler_.get())),
       stream_status_change_handler_(
-          std::make_unique<EcheStreamStatusChangeHandler>()),
+          std::make_unique<EcheStreamStatusChangeHandler>(
+              apps_launch_info_provider_.get(),
+              eche_connection_status_handler_.get())),
       eche_notification_click_handler_(
           std::make_unique<EcheNotificationClickHandler>(
               phone_hub_manager,
               feature_status_provider_.get(),
-              launch_app_helper_.get())),
+              launch_app_helper_.get(),
+              apps_launch_info_provider_.get())),
       connection_scheduler_(std::make_unique<EcheConnectionSchedulerImpl>(
           connection_manager_.get(),
           feature_status_provider_.get())),
@@ -78,8 +88,10 @@ EcheAppManager::EcheAppManager(
           std::make_unique<EcheConnectorImpl>(feature_status_provider_.get(),
                                               connection_manager_.get(),
                                               connection_scheduler_.get())),
-      signaler_(std::make_unique<EcheSignaler>(eche_connector_.get(),
-                                               connection_manager_.get())),
+      signaler_(
+          std::make_unique<EcheSignaler>(eche_connector_.get(),
+                                         connection_manager_.get(),
+                                         apps_launch_info_provider_.get())),
       message_receiver_(
           std::make_unique<EcheMessageReceiverImpl>(connection_manager_.get())),
       eche_presence_manager_(std::make_unique<EchePresenceManager>(
@@ -95,7 +107,8 @@ EcheAppManager::EcheAppManager(
               phone_hub_manager,
               feature_status_provider_.get(),
               launch_app_helper_.get(),
-              stream_status_change_handler_.get())),
+              stream_status_change_handler_.get(),
+              apps_launch_info_provider_.get())),
       alert_generator_(
           std::make_unique<EcheAlertGenerator>(launch_app_helper_.get(),
                                                pref_service)),
@@ -111,9 +124,7 @@ EcheAppManager::EcheAppManager(
               stream_status_change_handler_.get(),
               feature_status_provider_.get())),
       eche_stream_orientation_observer_(
-          std::make_unique<EcheStreamOrientationObserver>()),
-      eche_connection_status_observer_(
-          std::make_unique<EcheConnectionStatusObserver>()) {
+          std::make_unique<EcheStreamOrientationObserver>()) {
   ash::GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
   system_info_provider_ = std::make_unique<SystemInfoProvider>(
@@ -122,8 +133,8 @@ EcheAppManager::EcheAppManager(
   signaler_->SetSystemInfoProvider(system_info_provider_.get());
 
   if (features::IsEcheNetworkConnectionStateEnabled()) {
-    phone_hub_manager->GetRecentAppsInteractionHandler()
-        ->SetConnectionStatusObserver(eche_connection_status_observer_.get());
+    phone_hub_manager_->SetEcheConnectionStatusHandler(
+        eche_connection_status_handler_.get());
   }
 }
 
@@ -161,11 +172,15 @@ void EcheAppManager::BindStreamOrientationObserverInterface(
 
 void EcheAppManager::BindConnectionStatusObserverInterface(
     mojo::PendingReceiver<mojom::ConnectionStatusObserver> receiver) {
-  eche_connection_status_observer_->Bind(std::move(receiver));
+  eche_connection_status_handler_->Bind(std::move(receiver));
 }
 
 AppsAccessManager* EcheAppManager::GetAppsAccessManager() {
   return apps_access_manager_.get();
+}
+
+EcheConnectionStatusHandler* EcheAppManager::GetEcheConnectionStatusHandler() {
+  return eche_connection_status_handler_.get();
 }
 
 void EcheAppManager::CloseStream() {
@@ -179,7 +194,10 @@ void EcheAppManager::StreamGoBack() {
 // NOTE: These should be destroyed in the opposite order of how these objects
 // are initialized in the constructor.
 void EcheAppManager::Shutdown() {
-  eche_connection_status_observer_.reset();
+  if (features::IsEcheNetworkConnectionStateEnabled() && phone_hub_manager_) {
+    phone_hub_manager_->SetEcheConnectionStatusHandler(nullptr);
+  }
+
   eche_stream_orientation_observer_.reset();
   system_info_provider_.reset();
   eche_tray_stream_status_observer_.reset();
@@ -194,8 +212,11 @@ void EcheAppManager::Shutdown() {
   connection_scheduler_.reset();
   eche_notification_click_handler_.reset();
   stream_status_change_handler_.reset();
+  apps_launch_info_provider_.reset();
   launch_app_helper_.reset();
+  eche_connection_status_handler_.reset();
   feature_status_provider_.reset();
+  eche_connection_status_handler_.reset();
   connection_manager_.reset();
 }
 

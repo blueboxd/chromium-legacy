@@ -594,6 +594,10 @@ void PersonalDataManager::SyncStarted(syncer::ModelType model_type) {
 }
 
 void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
+  for (PersonalDataManagerObserver& observer : observers_) {
+    observer.OnPersonalDataSyncStateChanged();
+  }
+
   if (base::FeatureList::IsEnabled(
           features::kAutofillEnableAccountWalletStorage)) {
     // Use the ephemeral account storage when the user didn't enable the sync
@@ -811,6 +815,15 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
   std::vector<AutofillProfile*> profiles = GetProfiles();
   auto iter = FindElementByGUID(profiles, guid);
   return iter != profiles.end() ? *iter : nullptr;
+}
+
+bool PersonalDataManager::IsEligibleForAddressAccountStorage() const {
+  // The CONTACT_INFO data type is only running for eligible users. See
+  // ContactInfoModelTypeController.
+  return base::FeatureList::IsEnabled(
+             features::kAutofillAccountProfileStorage) &&
+         sync_service_ &&
+         sync_service_->GetActiveDataTypes().Has(syncer::CONTACT_INFO);
 }
 
 void PersonalDataManager::MigrateProfileToAccount(

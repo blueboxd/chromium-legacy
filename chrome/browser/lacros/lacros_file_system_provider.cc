@@ -14,20 +14,123 @@
 #include "chromeos/lacros/lacros_service.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/image_loader.h"
 #include "extensions/browser/unloaded_extension_reason.h"
+#include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace {
-
 // Returns the single main profile, or nullptr if none is found.
 Profile* GetMainProfile() {
   auto profiles = g_browser_process->profile_manager()->GetLoadedProfiles();
   const auto main_it = base::ranges::find_if(profiles, &Profile::IsMainProfile);
-  if (main_it == profiles.end())
+  if (main_it == profiles.end()) {
     return nullptr;
+  }
   return *main_it;
 }
+
+const extensions::Extension* GetEnabledExtension(
+    content::BrowserContext* browser_context,
+    const extensions::ExtensionId& extension_id) {
+  extensions::ExtensionRegistry* registry =
+      extensions::ExtensionRegistry::Get(browser_context);
+  return registry->GetExtensionById(extension_id,
+                                    extensions::ExtensionRegistry::ENABLED);
+}
+
+// Loads an icon of a single size.
+void LoadExtensionIcon(content::BrowserContext* browser_context,
+                       const extensions::ExtensionId& extension_id,
+                       int size,
+                       extensions::ImageLoaderImageCallback callback) {
+  const extensions::Extension* extension =
+      GetEnabledExtension(browser_context, extension_id);
+  if (!extension) {
+    return;
+  }
+  extensions::ExtensionResource icon = extensions::IconsInfo::GetIconResource(
+      extension, size, ExtensionIconSet::MatchType::MATCH_BIGGER);
+  extensions::ImageLoader::Get(browser_context)
+      ->LoadImageAsync(extension, icon, gfx::Size(size, size),
+                       std::move(callback));
+}
+
+void OnLoadedIcon32x32(base::WeakPtr<Profile> weak_profile_ptr,
+                       const extensions::ExtensionId& extension_id,
+                       const gfx::Image& icon16x16,
+                       const gfx::Image& icon32x32) {
+  Profile* profile = weak_profile_ptr.get();
+  if (!profile) {
+    return;
+  }
+  const extensions::Extension* extension =
+      GetEnabledExtension(profile, extension_id);
+  if (!extension) {
+    return;
+  }
+  auto* capabilities =
+      extensions::FileSystemProviderCapabilities::Get(extension);
+  if (!capabilities) {
+    return;
+  }
+
+  chromeos::LacrosService* service = chromeos::LacrosService::Get();
+  int fsp_service_version = service->GetInterfaceVersion(
+      crosapi::mojom::FileSystemProviderService::Uuid_);
+  if (fsp_service_version <
+      int{crosapi::mojom::FileSystemProviderService::MethodMinVersions::
+              kExtensionLoadedDeprecatedMinVersion}) {
+    return;
+  }
+
+  crosapi::mojom::FileSystemSource source;
+  switch (capabilities->source()) {
+    case extensions::FileSystemProviderSource::SOURCE_FILE:
+      source = crosapi::mojom::FileSystemSource::kFile;
+      break;
+    case extensions::FileSystemProviderSource::SOURCE_NETWORK:
+      source = crosapi::mojom::FileSystemSource::kNetwork;
+      break;
+    case extensions::FileSystemProviderSource::SOURCE_DEVICE:
+      source = crosapi::mojom::FileSystemSource::kDevice;
+      break;
+  }
+
+  auto& fsp_service =
+      service->GetRemote<crosapi::mojom::FileSystemProviderService>();
+  if (fsp_service_version <
+      int{crosapi::mojom::FileSystemProviderService::MethodMinVersions::
+              kExtensionLoadedMinVersion}) {
+    fsp_service->ExtensionLoadedDeprecated(
+        capabilities->configurable(), capabilities->watchable(),
+        capabilities->multiple_mounts(), source, extension->name(),
+        extension->id());
+    return;
+  }
+
+  fsp_service->ExtensionLoaded(
+      capabilities->configurable(), capabilities->watchable(),
+      capabilities->multiple_mounts(), source, extension->name(),
+      extension->id(), icon16x16.AsImageSkia(), icon32x32.AsImageSkia());
+}
+
+void OnLoadedIcon16x16(base::WeakPtr<Profile> weak_profile_ptr,
+                       const extensions::ExtensionId& extension_id,
+                       const gfx::Image& icon16x16) {
+  Profile* profile = weak_profile_ptr.get();
+  if (!profile) {
+    return;
+  }
+  LoadExtensionIcon(profile, extension_id, 32,
+                    base::BindOnce(&OnLoadedIcon32x32, profile->GetWeakPtr(),
+                                   extension_id, icon16x16));
+}
+
 }  // namespace
 
 LacrosFileSystemProvider::LacrosFileSystemProvider() : receiver_{this} {
@@ -188,36 +291,14 @@ void LacrosFileSystemProvider::OnExtensionLoaded(
           extensions::mojom::APIPermissionID::kFileSystemProvider)) {
     return;
   }
-  const extensions::FileSystemProviderCapabilities* const capabilities =
-      extensions::FileSystemProviderCapabilities::Get(extension);
-  if (!capabilities)
-    return;
-
-  chromeos::LacrosService* service = chromeos::LacrosService::Get();
-  if (service->GetInterfaceVersion(
-          crosapi::mojom::FileSystemProviderService::Uuid_) <
-      int{crosapi::mojom::FileSystemProviderService::MethodMinVersions::
-              kExtensionLoadedMinVersion}) {
+  if (!extensions::FileSystemProviderCapabilities::Get(extension)) {
     return;
   }
 
-  crosapi::mojom::FileSystemSource source;
-  switch (capabilities->source()) {
-    case extensions::FileSystemProviderSource::SOURCE_FILE:
-      source = crosapi::mojom::FileSystemSource::kFile;
-      break;
-    case extensions::FileSystemProviderSource::SOURCE_NETWORK:
-      source = crosapi::mojom::FileSystemSource::kNetwork;
-      break;
-    case extensions::FileSystemProviderSource::SOURCE_DEVICE:
-      source = crosapi::mojom::FileSystemSource::kDevice;
-      break;
-  }
-
-  service->GetRemote<crosapi::mojom::FileSystemProviderService>()
-      ->ExtensionLoaded(capabilities->configurable(), capabilities->watchable(),
-                        capabilities->multiple_mounts(), source,
-                        extension->name(), extension->id());
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  LoadExtensionIcon(profile, extension->id(), 16,
+                    base::BindOnce(&OnLoadedIcon16x16, profile->GetWeakPtr(),
+                                   extension->id()));
 }
 
 void LacrosFileSystemProvider::OnExtensionUnloaded(

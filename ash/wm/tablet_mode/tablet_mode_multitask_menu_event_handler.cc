@@ -25,6 +25,10 @@ namespace {
 // The dimensions of the area that can activate the multitask menu.
 constexpr gfx::SizeF kTargetAreaSize(200.f, 16.f);
 
+// The minimum distance a touch has to be moved by before it is considered to be
+// a drag on the menu.
+constexpr int kDragYThreshold = 8;
+
 }  // namespace
 
 TabletModeMultitaskMenuEventHandler::TabletModeMultitaskMenuEventHandler() {
@@ -33,7 +37,18 @@ TabletModeMultitaskMenuEventHandler::TabletModeMultitaskMenuEventHandler() {
 }
 
 TabletModeMultitaskMenuEventHandler::~TabletModeMultitaskMenuEventHandler() {
+  // The cue needs to be destroyed first so that it doesn't do any work when
+  // window activation changes as a result of destroying `this`.
+  multitask_cue_.reset();
+
   Shell::Get()->RemovePreTargetHandler(this);
+}
+
+// static
+bool TabletModeMultitaskMenuEventHandler::CanShowMenu(aura::Window* window) {
+  auto* window_state = WindowState::Get(window);
+  return !window_state->IsFloated() && window_state->CanMaximize() &&
+         window_state->CanResize();
 }
 
 void TabletModeMultitaskMenuEventHandler::ShowMultitaskMenu(
@@ -89,6 +104,10 @@ void TabletModeMultitaskMenuEventHandler::OnTouchEvent(ui::TouchEvent* event) {
       }
       const gfx::Vector2dF scroll =
           screen_location - initial_drag_data_->initial_location;
+      if (multitask_menu_ && std::fabs(scroll.y()) < kDragYThreshold) {
+        // The scroll might not have moved enough for us to process a drag yet.
+        return;
+      }
       const bool down = scroll.y() >= 0;
       // Save the window coordinates to pass to the menu. For us to arrive here
       // the event target must be the active window now.
@@ -147,15 +166,16 @@ void TabletModeMultitaskMenuEventHandler::OnTouchEvent(ui::TouchEvent* event) {
 
 bool TabletModeMultitaskMenuEventHandler::CanProcessEvent(
     aura::Window* window) const {
-  if (multitask_menu_ || multitask_cue_->cue_layer()) {
-    // If the multitask menu or cue layer is shown, we can always drag the menu.
-    return true;
-  }
   if (!window) {
     return false;
   }
-  auto* window_state = WindowState::Get(window);
-  return !window_state->IsFloated() && window_state->CanMaximize();
+
+  // If the multitask menu is shown, we can always drag the menu.
+  if (multitask_menu_) {
+    return true;
+  }
+
+  return CanShowMenu(window);
 }
 
 void TabletModeMultitaskMenuEventHandler::MaybeCreateMultitaskMenu(

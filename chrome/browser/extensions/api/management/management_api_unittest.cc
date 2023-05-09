@@ -633,7 +633,8 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser()));
     ASSERT_TRUE(value);
-    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::unique_ptr<ExtensionInfo> info =
+        ExtensionInfo::FromValueDeprecated(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     // |may_enable| is only returned for extensions which are not enabled.
@@ -656,7 +657,8 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser()));
     ASSERT_TRUE(value);
-    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::unique_ptr<ExtensionInfo> info =
+        ExtensionInfo::FromValueDeprecated(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
     ASSERT_TRUE(info->may_enable);
@@ -679,7 +681,8 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayEnable) {
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser()));
     ASSERT_TRUE(value);
-    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::unique_ptr<ExtensionInfo> info =
+        ExtensionInfo::FromValueDeprecated(*value);
     ASSERT_TRUE(info);
     EXPECT_FALSE(info->enabled);
     ASSERT_TRUE(info->may_enable);
@@ -705,7 +708,8 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayDisable) {
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser()));
     ASSERT_TRUE(value);
-    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::unique_ptr<ExtensionInfo> info =
+        ExtensionInfo::FromValueDeprecated(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     EXPECT_TRUE(info->may_disable);
@@ -727,7 +731,8 @@ TEST_F(ManagementApiUnitTest, ExtensionInfo_MayDisable) {
         extension_function_test_utils::RunFunctionAndReturnSingleResult(
             function.get(), args, browser()));
     ASSERT_TRUE(value);
-    std::unique_ptr<ExtensionInfo> info = ExtensionInfo::FromValue(*value);
+    std::unique_ptr<ExtensionInfo> info =
+        ExtensionInfo::FromValueDeprecated(*value);
     ASSERT_TRUE(info);
     EXPECT_TRUE(info->enabled);
     EXPECT_FALSE(info->may_disable);
@@ -1075,8 +1080,8 @@ class ManagementApiSupervisedUserTest : public ManagementApiUnitTest {
 
     GetSupervisedUserService()->Init();
     // Set the pref to allow the child to request extension install.
-    GetSupervisedUserService()
-        ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(true);
+    supervised_user_test_util::
+        SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), true);
 
     // Create a WebContents to simulate the Chrome Web Store.
     web_contents_ =
@@ -1118,8 +1123,8 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_BlockedByParent) {
 
   // Simulate disabling Permissions for sites, apps and extensions
   // in the testing supervised user service delegate used by the Management API.
-  GetSupervisedUserService()
-      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
+  supervised_user_test_util::
+      SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), false);
 
   // The supervised user trying to enable while Permissions for sites, apps and
   // extensions is disabled should fail.
@@ -1286,8 +1291,8 @@ TEST_F(ManagementApiSupervisedUserTest,
   // If the "Permissions for sites, apps and extensions" toggle is off, then the
   // enable attempt should fail.
   {
-    GetSupervisedUserService()
-        ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
+    supervised_user_test_util::
+        SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), false);
     std::string error;
     bool success = RunSetEnabledFunction(web_contents_.get(), extension_id,
                                          /*use_user_gesture=*/true,
@@ -1745,8 +1750,8 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup,
 
   // Simulate the parent disabling the "Permissions for sites, apps and
   // extensions" toggle.
-  GetSupervisedUserService()
-      ->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(false);
+  supervised_user_test_util::
+      SetSupervisedUserExtensionsMayRequestPermissionsPref(profile(), false);
 
   // Simulate a call to chrome.management.setEnabled(). The enable attempt
   // should be blocked.

@@ -704,6 +704,9 @@
           'linux-bionic',
           'x86-64',
         ],
+        'args': [
+          '--use-persistent-shell',
+        ],
         'os_type': 'android',
         'test_suites': {
           'gtest_tests': 'android_12_emulator_gtests',
@@ -2574,14 +2577,14 @@
     'name': 'chromium.dev',
     'mixins': ['chromium-tester-dev-service-account'],
     'machines': {
-      'android-pie-arm64-rel-swarming': {
+      'android-pie-arm64-rel-dev': {
         'mixins': [
           'has_native_resultdb_integration',
           'pie_fleet',
           'walleye',
         ],
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_android_gtests',
+           'gtest_tests': 'chromium_dev_android_gtests',
         },
         'swarming': {
           'dimension_sets': [
@@ -2593,46 +2596,46 @@
         },
         'os_type': 'android',
       },
-      'linux-rel-swarming': {
+      'linux-rel-dev': {
         'mixins': [
           'linux-bionic',
         ],
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_linux_gtests',
+           'gtest_tests': 'chromium_dev_linux_gtests',
         },
       },
-      'linux-ssd-rel-swarming': {
+      'linux-ssd-rel-dev': {
         'mixins': [
           'linux-bionic',
         ],
       },
-      'mac-arm-rel-swarming': {
+      'mac-arm-rel-dev': {
         'mixins': [
           'mac_12_arm64',
         ],
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
+           'gtest_tests': 'chromium_dev_desktop_gtests',
         },
       },
-      'mac-rel-swarming': {
+      'mac-rel-dev': {
         'mixins': [
           'mac_x64',
         ],
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
+           'gtest_tests': 'chromium_dev_desktop_gtests',
         },
       },
-      'win-rel-swarming': {
+      'win-rel-dev': {
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
+           'gtest_tests': 'chromium_dev_desktop_gtests',
         },
       },
-      'win11-rel-swarming': {
+      'win11-rel-dev': {
         'mixins': [
           'win11',
         ],
         'test_suites': {
-           'gtest_tests': 'chromium_swarm_desktop_gtests',
+           'gtest_tests': 'chromium_dev_desktop_gtests',
         },
       },
     },
@@ -2692,6 +2695,7 @@
         'browser_config': 'web-engine-shell',
         'os_type': 'fuchsia',
         'mixins': [
+          'isolate_profile_data',
           'linux-bionic',
         ],
         'swarming': {
@@ -2800,6 +2804,29 @@
         'test_suites': {
           'gtest_tests': 'fuchsia_gtests',
           'isolated_scripts': 'gpu_angle_fuchsia_unittests_isolated_scripts',
+        },
+      },
+      'fuchsia-fyi-x64-dbg-persistent-emulator' : {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'browser_config': 'web-engine-shell',
+        'os_type': 'fuchsia',
+        'mixins': [
+          'fuchsia-persistent-emulator',
+          'linux-bionic',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'kvm': '1',
+              'machine_type': 'e2-standard-2',
+              'pool': 'chromium.tests.fuchsia',
+            },
+          ],
+        },
+        'test_suites': {
+          'gtest_tests': 'fuchsia_facility_gtests',
         },
       },
       'fuchsia-x64-chrome-rel': {
@@ -3759,7 +3786,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'isolate_profile_data',
-          'mac_beta_x64',
+          'mac_beta_arm64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',
@@ -3770,7 +3797,7 @@
         'mixins': [
           'has_native_resultdb_integration',
           'isolate_profile_data',
-          'mac_beta_arm64',
+          'mac_beta_x64',
         ],
         'test_suites': {
           'isolated_scripts': 'wpt_web_tests_content_shell',
@@ -5362,6 +5389,14 @@
           'all'
         ],
       },
+      'Comparison Linux (reclient vs reclient remote links)(compression)': {
+        'mixins': [
+          'isolate_profile_data',
+        ],
+        'additional_compile_targets': [
+          'all'
+        ],
+      },
       'Comparison Linux (reclient vs reclient remote links)(small)': {
         'mixins': [
           'isolate_profile_data',
@@ -6597,6 +6632,25 @@
         ],
         # no tests, stay compile only.
       },
+      'win-arm64-dbg': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      'win-arm64-rel': {
+        'additional_compile_targets': [
+          'chrome',
+          'chromedriver_group',
+        ],
+        'mixins': [
+          'win_arm64',
+          'isolate_profile_data',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_win10_gtests',
+          'isolated_scripts': 'chromium_win_rel_isolated_scripts',
+        },
+      },
       'win-chrome-reclient': {
         'additional_compile_targets': [
            # same build target as win-chrome even if it doesn't run the tests
@@ -6647,6 +6701,17 @@
         'test_suites': {
           'gtest_tests': 'chromeos_browser_finch_tests',
         },
+      },
+      'chromeos-octopus-chrome-skylab-fyi': {
+        'additional_compile_targets': [
+          "chrome",
+          "linux_symbols",
+          "symupload",
+        ],
+        'test_suites': {
+          'skylab_tests': 'chromeos_octopus_skylab_tests',
+        },
+        'os_type': 'chromeos',
       },
       'lacros-amd64-generic-chrome-fyi': {
         'additional_compile_targets': [

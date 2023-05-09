@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.accessibility.settings;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
-import static androidx.test.espresso.action.ViewActions.swipeUp;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import android.app.Instrumentation;
@@ -16,7 +17,7 @@ import android.provider.Settings;
 import android.support.test.InstrumentationRegistry;
 
 import androidx.preference.Preference;
-import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.SmallTest;
 
 import org.junit.After;
@@ -27,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -39,7 +41,6 @@ import org.chromium.components.browser_ui.accessibility.FontSizePrefs;
 import org.chromium.components.browser_ui.accessibility.TextScalePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.content_public.browser.ContentFeatureList;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
 
@@ -182,8 +183,10 @@ public class AccessibilitySettingsTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(
                         new IntentFilter(Settings.ACTION_CAPTIONING_SETTINGS), null, false);
 
-        // First scroll to bottom of the page, then click.
-        onView(ViewMatchers.isRoot()).perform(swipeUp());
+        // First scroll to the Captions preference, then click.
+        onView(withId(org.chromium.chrome.R.id.recycler_view))
+                .perform(RecyclerViewActions.scrollTo(hasDescendant(
+                        withText(org.chromium.chrome.R.string.accessibility_captions_title))));
         onView(withText(org.chromium.chrome.R.string.accessibility_captions_title))
                 .perform(click());
         monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
@@ -215,14 +218,17 @@ public class AccessibilitySettingsTest {
                 InstrumentationRegistry.getInstrumentation().addMonitor(
                         new IntentFilter(Intent.ACTION_MAIN), null, true);
 
-        // First scroll to bottom of the page, then click.
-        onView(ViewMatchers.isRoot()).perform(swipeUp());
+        // First scroll to the Image Descriptions preference, then click.
+        onView(withId(org.chromium.chrome.R.id.recycler_view))
+                .perform(RecyclerViewActions.scrollTo(hasDescendant(
+                        withText(org.chromium.chrome.R.string.image_descriptions_settings_title))));
         onView(withText(org.chromium.chrome.R.string.image_descriptions_settings_title))
                 .perform(click());
 
-        monitor.waitForActivityWithTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
-        Assert.assertEquals(
-                "Clicking image descriptions should open subpage", 1, monitor.getHits());
+        // The activity is blocked, so just wait for the ActivityMonitor to capture an Intent.
+        CriteriaHelper.pollInstrumentationThread(
+                () -> monitor.getHits() >= 1, "Clicking image descriptions should open subpage");
+
         InstrumentationRegistry.getInstrumentation().removeMonitor(monitor);
     }
 
@@ -238,13 +244,13 @@ public class AccessibilitySettingsTest {
 
     private static void userSetTextScale(final AccessibilitySettings accessibilitySettings,
             final TextScalePreference textScalePref, final float textScale) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT,
                 () -> accessibilitySettings.onPreferenceChange(textScalePref, textScale));
     }
 
     private static void userSetForceEnableZoom(final AccessibilitySettings accessibilitySettings,
             final ChromeSwitchPreference forceEnableZoomPref, final boolean enabled) {
-        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+        PostTask.runOrPostTask(TaskTraits.UI_DEFAULT,
                 () -> accessibilitySettings.onPreferenceChange(forceEnableZoomPref, enabled));
     }
 }

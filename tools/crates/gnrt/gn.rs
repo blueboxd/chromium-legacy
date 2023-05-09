@@ -4,6 +4,7 @@
 
 //! GN build file generation.
 
+use crate::config;
 use crate::crates::*;
 use crate::deps;
 use crate::manifest::CargoPackage;
@@ -12,7 +13,7 @@ use crate::platforms;
 
 use std::collections::HashMap;
 use std::convert::From;
-use std::fmt;
+use std::fmt::{self, Display, Write};
 use std::path::Path;
 
 /// Describes a BUILD.gn file for a single crate epoch. Each file may have
@@ -66,6 +67,8 @@ pub struct RuleConcrete {
     pub features: Vec<String>,
     pub build_root: Option<String>,
     pub build_script_outputs: Vec<String>,
+    pub rustflags: Vec<String>,
+    pub rustenv: Vec<String>,
     pub gn_variables_lib: String,
 }
 
@@ -144,18 +147,10 @@ pub fn build_files_from_chromium_deps<'a, 'b, Iter: IntoIterator<Item = &'a deps
 pub fn build_file_from_std_deps<'a, 'b, Iter: IntoIterator<Item = &'a deps::Package>>(
     deps: Iter,
     paths: &'b paths::ChromiumPaths,
-    extra_gn_for_pkg_name: &HashMap<String, String>,
+    extra_config: &'b config::BuildConfig,
 ) -> BuildFile {
-    let rules = deps
-        .into_iter()
-        .map(|dep| {
-            build_rule_from_std_dep(
-                dep,
-                paths,
-                &extra_gn_for_pkg_name.get(&dep.package_name).map(|s| s.as_str()).unwrap_or(""),
-            )
-        })
-        .collect();
+    let rules =
+        deps.into_iter().map(|dep| build_rule_from_std_dep(dep, paths, extra_config)).collect();
 
     BuildFile { rules }
 }
@@ -163,13 +158,44 @@ pub fn build_file_from_std_deps<'a, 'b, Iter: IntoIterator<Item = &'a deps::Pack
 pub fn build_rule_from_std_dep(
     dep: &deps::Package,
     paths: &paths::ChromiumPaths,
-    extra_gn: &str,
+    extra_config: &config::BuildConfig,
 ) -> (String, Rule) {
     let lib_target = dep.lib_target.as_ref().expect("dependency had no lib target");
     let crate_root_from_src = paths.to_gn_abs_path(&lib_target.root).unwrap();
     let normalize_target_name = |package_name: &str| package_name.replace("-", "_");
     let cargo_pkg_authors =
         if dep.authors.is_empty() { None } else { Some(dep.authors.join(", ")) };
+
+    let crate_config = extra_config.per_crate_config.get(&dep.package_name);
+
+    // Collect the set of rustflags for this crate. This is a combination of
+    // those for the crate specifically, and any overall ones set. Additionally,
+    // the `cfg` options become flags but we have to format them here.
+    //
+    // This expression is complicated to avoid creating unnecessary clones. We
+    // only need to clone each String once, and create one new Vec with
+    // collect() at the end.
+    let rustflags = crate_config
+        .into_iter()
+        .flat_map(|c| c.cfg.iter())
+        .chain(extra_config.all_config.cfg.iter())
+        .map(|cfg| format!("--cfg={cfg}"))
+        .chain(
+            crate_config
+                .into_iter()
+                .flat_map(|c| c.rustflags.iter())
+                .chain(extra_config.all_config.rustflags.iter())
+                .cloned(),
+        )
+        .collect();
+
+    // Do the same for rustenv, which is simpler.
+    let rustenv = crate_config
+        .into_iter()
+        .flat_map(|c| c.env.iter())
+        .chain(extra_config.all_config.env.iter())
+        .cloned()
+        .collect();
 
     let mut rule = RuleConcrete {
         crate_name: None,
@@ -189,7 +215,9 @@ pub fn build_rule_from_std_dep(
         features: vec![],
         build_root: None,
         build_script_outputs: vec![],
-        gn_variables_lib: extra_gn.to_string(),
+        rustflags,
+        rustenv,
+        gn_variables_lib: String::new(),
     };
 
     rule.features = dep
@@ -273,6 +301,8 @@ fn make_build_file_for_chromium_dep(
         features: Vec::new(),
         build_root: dep.build_script.as_ref().map(|p| to_gn_path(p.as_path())),
         build_script_outputs: build_script_outputs.get(&crate_id).cloned().unwrap_or_default(),
+        rustflags: vec![],
+        rustenv: vec![],
         gn_variables_lib: String::new(),
     };
 
@@ -431,7 +461,7 @@ impl<'a> fmt::Display for BuildFileFormatter<'a> {
     }
 }
 
-fn write_build_file<W: fmt::Write>(
+fn write_build_file<W: Write>(
     mut writer: W,
     build_file: &BuildFile,
     with_preamble: bool,
@@ -466,7 +496,7 @@ impl<'a> fmt::Display for RuleFormatter<'a> {
     }
 }
 
-fn write_concrete<W: fmt::Write>(
+fn write_concrete<W: Write>(
     mut writer: W,
     name: &str,
     common: &RuleCommon,
@@ -499,13 +529,14 @@ fn write_concrete<W: fmt::Write>(
     writeln!(writer, "edition = \"{}\"", details.edition)?;
     writeln!(writer, "cargo_pkg_version = \"{}\"", details.cargo_pkg_version)?;
     if let Some(authors) = &details.cargo_pkg_authors {
-        writeln!(writer, "cargo_pkg_authors = \"{authors}\"")?;
+        writeln!(writer, "cargo_pkg_authors = \"{}\"", escaped(authors))?;
     }
     writeln!(writer, "cargo_pkg_name = \"{}\"", details.cargo_pkg_name)?;
     if let Some(description) = &details.cargo_pkg_description {
-        write!(writer, "cargo_pkg_description = \"")?;
-        write_str_escaped(&mut writer, description)?;
-        writeln!(writer, "\"")?;
+        // Use trim_end() to remove the trailing newline, which unattractively
+        // comes out as a space. escaped() can't do this because its internal
+        // Write implementation does not know where the end of input will be.
+        writeln!(writer, "cargo_pkg_description = \"{}\"", escaped(description.trim_end()))?;
     }
     writeln!(writer, "library_configs -= [ \"//build/config/compiler:chromium_code\" ]")?;
     writeln!(writer, "library_configs += [ \"//build/config/compiler:no_chromium_code\" ]")?;
@@ -539,6 +570,16 @@ fn write_concrete<W: fmt::Write>(
         }
     }
 
+    if !details.rustenv.is_empty() {
+        write!(writer, "rustenv = ")?;
+        write_list(&mut writer, &details.rustenv)?;
+    }
+
+    if !details.rustflags.is_empty() {
+        write!(writer, "rustflags = ")?;
+        write_list(&mut writer, &details.rustflags)?;
+    }
+
     if !details.gn_variables_lib.is_empty() {
         writeln!(writer, "{}", details.gn_variables_lib)?;
     }
@@ -546,7 +587,7 @@ fn write_concrete<W: fmt::Write>(
     writeln!(writer, "}}")
 }
 
-fn write_group<W: fmt::Write>(
+fn write_group<W: Write>(
     mut writer: W,
     name: &str,
     common: &RuleCommon,
@@ -564,7 +605,7 @@ fn write_group<W: fmt::Write>(
     writeln!(writer, "}}")
 }
 
-fn write_deps<W: fmt::Write>(mut writer: W, kind: &str, mut deps: Vec<RuleDep>) -> fmt::Result {
+fn write_deps<W: Write>(mut writer: W, kind: &str, mut deps: Vec<RuleDep>) -> fmt::Result {
     // Group dependencies by platform condition via sorting.
     deps.sort();
 
@@ -600,54 +641,72 @@ fn write_deps<W: fmt::Write>(mut writer: W, kind: &str, mut deps: Vec<RuleDep>) 
     Ok(())
 }
 
-fn write_list<W: fmt::Write, T: fmt::Display, I: IntoIterator<Item = T>>(
+fn write_list<W: Write, T: fmt::Display, I: IntoIterator<Item = T>>(
     mut writer: W,
     items: I,
 ) -> fmt::Result {
     writeln!(writer, "[")?;
     for item in items.into_iter() {
-        writeln!(writer, "\"{item}\",")?;
+        writeln!(writer, r#""{}","#, escaped(item))?;
     }
     writeln!(writer, "]")
 }
 
-fn write_set<W: fmt::Write, T: fmt::Display, U: fmt::Display, I: IntoIterator<Item = (T, U)>>(
+fn write_set<W: Write, T: fmt::Display, U: fmt::Display, I: IntoIterator<Item = (T, U)>>(
     mut writer: W,
     items: I,
 ) -> fmt::Result {
     writeln!(writer, "{{")?;
     for (left, right) in items.into_iter() {
-        writeln!(writer, "{left} = \"{right}\"")?;
+        writeln!(writer, r#"{left} = "{}""#, escaped(right))?;
     }
     writeln!(writer, "}}")
 }
 
-fn write_str_escaped<W: fmt::Write>(mut writer: W, s: &str) -> fmt::Result {
-    // This escaping isn't entirely correct; it misses some characters that
-    // should be escaped and unnecessarily changes " to '. See
-    // https://gn.googlesource.com/gn/+/main/docs/language.md#strings
-    //
-    // We keep the crates.py behavior for now to keep build file output as
-    // similar as possible.
-    //
-    // TODO(https://crbug.com/1291994): do escaping as specified in GN docs.
-    for c in s.chars() {
-        let mut buf = [0u8; 4];
-        let s = match c {
-            // Skip newlines to match crates.py behavior.
-            '\n' => continue,
-            '"' => r#"'"#,
-            c => c.encode_utf8(&mut buf),
-        };
-
-        writer.write_str(s)?;
-    }
-
-    Ok(())
+/// Wraps a `Display`-able type with another `Display` implementation that
+/// escapes all characters according to GN string rules.
+///
+/// Note that it does not escape '$', since we want to use GN "$var" syntax in
+/// some cases. Also due to an apparent bug in GN's output to Ninja files, we
+/// replace newlines with spaces.
+///
+/// See https://gn.googlesource.com/gn/+/refs/heads/main/docs/language.md#Strings
+fn escaped<T: Display>(x: T) -> impl Display {
+    Escaped(x)
 }
 
-pub fn write_str_escaped_for_testing<W: fmt::Write>(writer: W, s: &str) -> fmt::Result {
-    write_str_escaped(writer, s)
+pub fn escaped_for_testing<T: Display>(x: T) -> impl Display {
+    escaped(x)
+}
+
+struct Escaped<T>(T);
+
+impl<T: Display> Display for Escaped<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(EscapedWriter(f), "{}", self.0)
+    }
+}
+
+struct EscapedWriter<W>(W);
+
+impl<W: Write> Write for EscapedWriter<W> {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        s.chars().try_for_each(|c| self.write_char(c))
+    }
+
+    fn write_char(&mut self, c: char) -> fmt::Result {
+        match c {
+            // Note: we don't escape '$' here because we sometimes want to use
+            // $var syntax.
+            c @ ('"' | '\\') => write!(self.0, "\\{c}"),
+            // GN strings can encode literal ASCII with "$0x<hex_code>" syntax,
+            // so we could embed newlines with "$0x0A". However, GN seems to
+            // escape these incorrectly in its Ninja output so we just replace
+            // it with a space.
+            '\n' => self.0.write_char(' '),
+            c => self.0.write_char(c),
+        }
+    }
 }
 
 /// Describes a condition for some GN declaration.

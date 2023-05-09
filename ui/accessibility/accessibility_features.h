@@ -152,6 +152,12 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 // Returns true if kAccessibilityAcceleratorNotificationsTimeout is enabled.
 AX_BASE_EXPORT bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled();
 
+// Enables the deprecation of ChromeVox tabs menu.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityDeprecateChromeVoxTabs);
+
+// Returns true if kAccessibilityDeprecateChromeVoxTabs is enabled.
+AX_BASE_EXPORT bool IsAccessibilityDeprecateChromeVoxTabsEnabled();
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 // Enables Get Image Descriptions to augment existing images labels,
@@ -200,10 +206,6 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityFormControlsMode);
 
 // Returns true if the form controls AXMode is enabled.
 AX_BASE_EXPORT bool IsAccessibilityFormControlsAXModeEnabled();
-
-AX_BASE_EXPORT BASE_DECLARE_FEATURE(kOptimizeAccessibilityUiThreadWork);
-
-bool IsOptimizeAccessibilityUiThreadWorkEnabled();
 
 #endif  // BUILDFLAG(IS_ANDROID)
 

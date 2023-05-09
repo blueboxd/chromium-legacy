@@ -3,21 +3,21 @@
 // found in the LICENSE file.
 
 #include "ash/system/phonehub/phone_hub_more_apps_button.h"
+
 #include <memory>
 
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/phonehub/phone_hub_app_count_icon.h"
+#include "ash/system/phonehub/phone_hub_app_icon.h"
+#include "ash/system/phonehub/phone_hub_app_loading_icon.h"
 #include "ash/system/phonehub/phone_hub_metrics.h"
-#include "ash/system/phonehub/phone_hub_small_app_icon.h"
-#include "ash/system/phonehub/phone_hub_small_app_loading_icon.h"
 #include "base/metrics/histogram_functions.h"
 #include "chromeos/ash/components/phonehub/app_stream_launcher_data_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/table_layout.h"
 
@@ -28,11 +28,9 @@ constexpr int kMoreAppsButtonRowPadding = 20;
 constexpr int kMoreAppsButtonColumnPadding = 2;
 constexpr int kMoreAppsButtonBackgroundRadius = 18;
 
-// Animation constants for loading card
-constexpr float kAnimationLoadingCardOpacity = 1.0f;
-constexpr int kAnimationLoadingCardDelayInMs = 83;
-constexpr int kAnimationLoadingCardTransitDurationInMs = 200;
-constexpr int kAnimationLoadingCardFreezeDurationInMs = 150;
+// The app icons in the LoadingView stagger the start of the loading animation
+// to make the appearance of a ripple.
+constexpr int kAnimationLoadingIconStaggerDelayInMs = 100;
 
 class MoreAppsButtonBackground : public views::Background {
  public:
@@ -51,11 +49,16 @@ class MoreAppsButtonBackground : public views::Background {
   }
 };
 
+PhoneHubMoreAppsButton::PhoneHubMoreAppsButton() {
+  InitLayout();
+}
+
 PhoneHubMoreAppsButton::PhoneHubMoreAppsButton(
     phonehub::AppStreamLauncherDataModel* app_stream_launcher_data_model,
     views::Button::PressedCallback callback)
     : views::Button(std::move(callback)),
       app_stream_launcher_data_model_(app_stream_launcher_data_model) {
+  CHECK(app_stream_launcher_data_model_);
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ASH_PHONE_HUB_FULL_APPS_LIST_BUTTON_TITLE));
@@ -64,7 +67,9 @@ PhoneHubMoreAppsButton::PhoneHubMoreAppsButton(
 }
 
 PhoneHubMoreAppsButton::~PhoneHubMoreAppsButton() {
-  app_stream_launcher_data_model_->RemoveObserver(this);
+  if (app_stream_launcher_data_model_) {
+    app_stream_launcher_data_model_->RemoveObserver(this);
+  }
 }
 
 void PhoneHubMoreAppsButton::InitLayout() {
@@ -91,9 +96,14 @@ void PhoneHubMoreAppsButton::InitLayout() {
                          kMoreAppsButtonRowPadding);
 
   SetEnabled(false);
+  SetBackground(std::make_unique<MoreAppsButtonBackground>());
+  if (!app_stream_launcher_data_model_) {
+    return;
+  }
+
   if (app_stream_launcher_data_model_->GetAppsListSortedByName()->empty()) {
     load_app_list_latency_ = base::TimeTicks::Now();
-    InitGlimmer();
+    StartLoadingAnimation(/*initial_delay=*/absl::nullopt);
     SetEnabled(false);
     phone_hub_metrics::LogMoreAppsButtonAnimationOnShow(
         phone_hub_metrics::MoreAppsButtonLoadingState::kAnimationShown);
@@ -108,30 +118,32 @@ void PhoneHubMoreAppsButton::InitLayout() {
     phone_hub_metrics::LogMoreAppsButtonAnimationOnShow(
         phone_hub_metrics::MoreAppsButtonLoadingState::kMoreAppsButtonLoaded);
   }
-
-  SetBackground(std::make_unique<MoreAppsButtonBackground>());
 }
 
-void PhoneHubMoreAppsButton::InitGlimmer() {
-  for (auto i = 0; i < 4; i++) {
-    auto* app_loading_icon = new SmallAppLoadingIcon();
-    views::AnimationBuilder animation_builder;
-    animation_builder.Once().SetOpacity(app_loading_icon,
-                                        kAnimationLoadingCardOpacity);
+void PhoneHubMoreAppsButton::StartLoadingAnimation(
+    absl::optional<base::TimeDelta> initial_delay) {
+  app_loading_icons_.clear();
+  RemoveAllChildViews();
+  for (size_t i = 0; i < 4; i++) {
+    AppLoadingIcon* app_loading_icon =
+        AddChildView(new AppLoadingIcon(AppIcon::kSizeSmall));
+    app_loading_icons_.push_back(app_loading_icon);
 
-    animation_builder.Repeatedly()
-        .Offset(base::Milliseconds(kAnimationLoadingCardDelayInMs))
-        .SetDuration(
-            base::Milliseconds(kAnimationLoadingCardTransitDurationInMs))
-        .SetOpacity(app_loading_icon, 0.0f, gfx::Tween::LINEAR)
-        .Then()
-        .Offset(base::Milliseconds(kAnimationLoadingCardFreezeDurationInMs))
-        .Then()
-        .SetDuration(
-            base::Milliseconds(kAnimationLoadingCardTransitDurationInMs))
-        .SetOpacity(app_loading_icon, kAnimationLoadingCardOpacity,
-                    gfx::Tween::LINEAR);
-    AddChildView(app_loading_icon);
+    size_t x = i % 2;
+    size_t y = i / 2;
+    base::TimeDelta stagger_delay =
+        (x + y) * base::Milliseconds(kAnimationLoadingIconStaggerDelayInMs);
+    if (initial_delay) {
+      stagger_delay += *initial_delay;
+    }
+
+    app_loading_icon->StartLoadingAnimation(stagger_delay);
+  }
+}
+
+void PhoneHubMoreAppsButton::StopLoadingAnimation() {
+  for (AppLoadingIcon* app_loading_icon : app_loading_icons_) {
+    app_loading_icon->StopLoadingAnimation();
   }
 }
 
@@ -148,13 +160,16 @@ void PhoneHubMoreAppsButton::OnAppListChanged() {
 }
 
 void PhoneHubMoreAppsButton::LoadAppList() {
+  CHECK(app_stream_launcher_data_model_);
+  app_loading_icons_.clear();
   RemoveAllChildViews();
   const std::vector<phonehub::Notification::AppMetadata>* app_list =
       app_stream_launcher_data_model_->GetAppsListSortedByName();
   if (!app_list->empty()) {
     auto app_count = std::min(app_list->size(), size_t{3});
     for (size_t i = 0; i < app_count; i++) {
-      AddChildView(std::make_unique<SmallAppIcon>(app_list->at(i).icon));
+      AddChildView(
+          std::make_unique<AppIcon>(app_list->at(i).icon, AppIcon::kSizeSmall));
     }
   }
 

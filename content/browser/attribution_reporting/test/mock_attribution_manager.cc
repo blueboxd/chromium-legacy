@@ -20,6 +20,10 @@
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "content/browser/attribution_reporting/os_registration.h"
+#endif
+
 namespace content {
 
 MockAttributionManager::MockAttributionManager() = default;
@@ -98,6 +102,17 @@ void MockAttributionManager::NotifyDebugReportSent(
     observer.OnDebugReportSent(report, status, time);
   }
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void MockAttributionManager::NotifyOsRegistration(
+    const OsRegistration& registration,
+    bool is_debug_key_allowed) {
+  base::Time now = base::Time::Now();
+  for (auto& observer : observers_) {
+    observer.OnOsRegistration(now, registration, is_debug_key_allowed);
+  }
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 void MockAttributionManager::SetDataHostManager(
     std::unique_ptr<AttributionDataHostManager> manager) {

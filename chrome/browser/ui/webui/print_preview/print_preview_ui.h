@@ -74,8 +74,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   void PrintPreviewCancelled(int32_t document_cookie,
                              int32_t request_id) override;
   void PrinterSettingsInvalid(int32_t document_cookie,
-                              int32_t request_id,
-                              const std::string& details) override;
+                              int32_t request_id) override;
   void DidGetDefaultPageLayout(mojom::PageSizeMarginsPtr page_layout_in_points,
                                const gfx::Rect& printable_area_in_points,
                                bool has_custom_page_size_style,
@@ -167,12 +166,16 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   class TestDelegate {
    public:
     // Provides the total number of pages requested for the preview.
-    virtual void DidGetPreviewPageCount(uint32_t page_count) = 0;
+    virtual void DidGetPreviewPageCount(uint32_t page_count) {}
 
     // Notifies that a page was rendered for the preview.  This occurs after
     // any possible N-up processing, so each rendered page could represent
     // multiple pages that were counted in `DidGetPreviewPageCount()`.
-    virtual void DidRenderPreviewPage(content::WebContents* preview_dialog) = 0;
+    virtual void DidRenderPreviewPage(content::WebContents* preview_dialog) {}
+
+    // Notifies that the document to print from preview is ready.  This occurs
+    // after any possible N-up processing.
+    virtual void PreviewDocumentReady(content::WebContents* preview_dialog) {}
 
    protected:
     virtual ~TestDelegate() = default;

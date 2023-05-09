@@ -8,7 +8,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Process;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.task.PostTask;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -78,13 +81,18 @@ public class ThreadUtils {
         }
     }
 
+    @VisibleForTesting
+    public static void clearUiThreadForTesting() {
+        synchronized (sLock) {
+            sUiThreadHandler = null;
+            sWillOverride = false;
+            PostTask.resetUiThreadForTesting(); // IN-TEST
+        }
+    }
+
     public static void setUiThread(Looper looper) {
         synchronized (sLock) {
-            if (looper == null) {
-                // Used to reset the looper after tests.
-                sUiThreadHandler = null;
-                return;
-            }
+            assert looper != null;
             if (sUiThreadHandler != null && sUiThreadHandler.getLooper() != looper) {
                 throw new RuntimeException("UI thread looper is already set to "
                         + sUiThreadHandler.getLooper() + " (Main thread looper is "
@@ -92,6 +100,7 @@ public class ThreadUtils {
             } else {
                 sUiThreadHandler = new Handler(looper);
             }
+            PostTask.onUiThreadReady();
         }
         TraceEvent.onUiThreadReady();
     }
@@ -104,6 +113,7 @@ public class ThreadUtils {
                     throw new RuntimeException("Did not yet override the UI thread");
                 }
                 sUiThreadHandler = new Handler(Looper.getMainLooper());
+                PostTask.onUiThreadReady();
                 createdHandler = true;
             }
         }
@@ -122,7 +132,7 @@ public class ThreadUtils {
      *         TestThreadUtils.runOnUiThreadBlocking(r)} instead. For non-test usage (heavily
      * discouraged) use {@link org.chromium.base.task.PostTask#runSynchronously(TaskTraits,
      * Runnable) PostTask.runSynchronously(TaskTraits, Runnable)} with task traits chosen from
-     * {@link org.chromium.content_public.browser.UiThreadTaskTraits}. If the call site can't import
+     * {@link org.chromium.base.task.TaskTraits}. If the call site can't import
      * content, it means it shouldn't be posting to the UI thread at all; all such usages will
      * gradually get rewritten.
      * @param r The Runnable to run.
@@ -189,7 +199,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#runOrPostTask(TaskTraits, Runnable)
      *         PostTask.runOrPostTask(TaskTraits, Runnable)} with task traits chosen from {@link
-     *         org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param task The FutureTask to run
@@ -211,7 +221,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#runOrPostTask(TaskTraits, Runnable)
      *         PostTask.runOrPostTask(TaskTraits, Runnable)} with task traits chosen from {@link
-     *         org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param c The Callable to run
@@ -228,7 +238,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#runOrPostTask(TaskTraits, Runnable)
      *         PostTask.runOrPostTask(TaskTraits, Runnable)} with task traits chosen from {@link
-     *         org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param r The Runnable to run
@@ -248,7 +258,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#postTask(TaskTraits, Runnable)
      *         PostTask.postTask(TaskTraits, Runnable)} with task traits chosen from {@link
-     *         org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param task The FutureTask to run
@@ -266,7 +276,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#postTask(TaskTraits, Runnable)
      *         PostTask.postTask(TaskTraits, Runnable)} with task traits chosen from {@link
-     *         org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param task The Runnable to run
@@ -282,7 +292,7 @@ public class ThreadUtils {
      *
      * @deprecated Use {@link org.chromium.base.task.PostTask#postDelayedTask(TaskTraits, Runnable,
      *         long) PostTask.postDelayedTask(TaskTraits, Runnable, long)} with task traits chosen
-     *         from {@link org.chromium.content_public.browser.UiThreadTaskTraits}.
+     *         from {@link org.chromium.base.task.TaskTraits}.
      *         If the call site can't import content, it means it shouldn't be posting to the UI
      *         thread at all; all such usages will gradually get rewritten.
      * @param task The Runnable to run

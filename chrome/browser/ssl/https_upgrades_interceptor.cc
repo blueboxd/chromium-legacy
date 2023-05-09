@@ -6,13 +6,17 @@
 
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ssl/https_only_mode_tab_helper.h"
 #include "chrome/browser/ssl/https_upgrades_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/https_only_mode_metrics.h"
@@ -108,6 +112,42 @@ net::RedirectInfo SetupRedirect(
       /*referrer_policy_header=*/absl::nullopt,
       /*insecure_scheme_was_upgraded=*/false);
   return redirect_info;
+}
+
+// Check whether the HTTP or HTTPS versions of the URL has "Insecure
+// Content" allowed in content settings. A user can manually specify hosts
+// or hostname patterns (e.g., [*.]example.com) in site settings.
+bool DoesInsecureContentSettingDisableUpgrading(const GURL& url,
+                                                Profile* profile) {
+  // Mixed content isn't an overridable content setting on Android.
+#if BUILDFLAG(IS_ANDROID)
+  return false;
+#else
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  if (!content_settings) {
+    return false;
+  }
+
+  if (content_settings->GetContentSetting(url, GURL(),
+                                          ContentSettingsType::MIXEDSCRIPT) ==
+      CONTENT_SETTING_ALLOW) {
+    return true;
+  }
+
+  // Also check for the HTTPS version of the URL -- if an upgraded page is
+  // broken and the user goes through Page Info -> Site Settings and sets
+  // "Insecure Content" to be allowed, this will store a site setting only for
+  // the HTTPS version of the site.
+  GURL https_url = url.SchemeIsCryptographic() ? url : UpgradeUrlToHttps(url);
+  if (content_settings->GetContentSetting(https_url, GURL(),
+                                          ContentSettingsType::MIXEDSCRIPT) ==
+      CONTENT_SETTING_ALLOW) {
+    return true;
+  }
+  return false;
+#endif
 }
 
 }  // namespace
@@ -215,6 +255,14 @@ void HttpsUpgradesInterceptor::MaybeCreateLoader(
     return;
   }
 
+  // Don't exclude local-network requests (for now) but record metrics for them.
+  // TODO(crbug.com/1394910): Extend the exemption list for HTTPS-Upgrades
+  // beyond just localhost.
+  if (net::IsHostnameNonUnique(tentative_resource_request.url.host())) {
+    RecordNavigationRequestSecurityLevel(
+        NavigationRequestSecurityLevel::kNonUniqueHostname);
+  }
+
   // Check whether this host would be upgraded to HTTPS by HSTS. This requires a
   // Mojo call to the network service, so set up a callback to continue the rest
   // of the MaybeCreateLoader() logic (passing along the necessary state). The
@@ -269,7 +317,20 @@ void HttpsUpgradesInterceptor::MaybeCreateLoaderOnHstsQueryCompleted(
   if (IsHostnameInAllowlist(tentative_resource_request.url,
                             prefs->GetList(prefs::kHttpAllowlist))) {
     RecordNavigationRequestSecurityLevel(
-        NavigationRequestSecurityLevel::kInsecure);
+        NavigationRequestSecurityLevel::kAllowlisted);
+    std::move(callback).Run({});
+    return;
+  }
+
+  // Next check whether the HTTP or HTTPS versions of the URL has "Insecure
+  // Content" allowed in content settings. We treat this as a sign to not do
+  // silent HTTPS Upgrades for the site overall. (HTTPS-First Mode ignores this
+  // setting.)
+  if (!http_interstitial_enabled_ &&
+      DoesInsecureContentSettingDisableUpgrading(tentative_resource_request.url,
+                                                 profile)) {
+    RecordNavigationRequestSecurityLevel(
+        NavigationRequestSecurityLevel::kAllowlisted);
     std::move(callback).Run({});
     return;
   }
@@ -328,12 +389,22 @@ void HttpsUpgradesInterceptor::MaybeCreateLoaderOnHstsQueryCompleted(
     return;
   }
 
+  // The `HttpsUpgradesEnabled` enterprise policy can be set to `false` to
+  // disable HTTPS-Upgrades entirely. Abort if HFM is disabled and the
+  // enterprise policy is set.
+  if (!prefs->GetBoolean(prefs::kHttpsUpgradesEnabled) &&
+      !http_interstitial_enabled_) {
+    RecordHttpsFirstModeNavigation(Event::kUpgradeNotAttempted);
+    RecordNavigationRequestSecurityLevel(
+        NavigationRequestSecurityLevel::kAllowlisted);
+    std::move(callback).Run({});
+    return;
+  }
+
   // Both HTTPS-First Mode and HTTPS-Upgrades are forms of upgrading all HTTP
   // navigations to HTTPS, with HTTPS-First Mode additionally enabling the
-  // HTTP interstitial on fallback. The `HttpsUpgradesEnabled` enterprise policy
-  // can also be set to `false` to disable HTTPS-Upgrades.
-  if ((!base::FeatureList::IsEnabled(features::kHttpsUpgrades) ||
-       !prefs->GetBoolean(prefs::kHttpsUpgradesEnabled)) &&
+  // HTTP interstitial on fallback.
+  if (!base::FeatureList::IsEnabled(features::kHttpsUpgrades) &&
       !http_interstitial_enabled_) {
     // Don't upgrade the request and let the default loader continue, but record
     // that the request *would have* upgraded, had upgrading been enabled.
@@ -477,10 +548,13 @@ void HttpsUpgradesInterceptor::RedirectHandler(
     mojo::PendingReceiver<network::mojom::URLLoader> receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!receiver_.is_bound());
-  DCHECK(!client_.is_bound());
 
-  // Set up Mojo connection and initiate the redirect.
+  // Set up Mojo connection and initiate the redirect. `client_` and `receiver_`
+  // may have been previously bound from handling a previous upgrade earlier in
+  // the same navigation, so reset them before re-binding them to handle a new
+  // redirect.
+  receiver_.reset();
+  client_.reset();
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
       base::BindOnce(&HttpsUpgradesInterceptor::OnConnectionClosed,

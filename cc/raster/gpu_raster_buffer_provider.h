@@ -37,7 +37,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       viz::ContextProvider* compositor_context_provider,
       viz::RasterContextProvider* worker_context_provider,
       bool use_gpu_memory_buffer_resources,
-      viz::ResourceFormat tile_format,
+      viz::SharedImageFormat tile_format,
       const gfx::Size& max_tile_size,
       bool unpremultiply_and_dither_low_bit_depth_tiles,
       RasterQueryQueue* const pending_raster_queries,
@@ -56,7 +56,7 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
       bool depends_on_hardware_accelerated_jpeg_candidates,
       bool depends_on_hardware_accelerated_webp_candidates) override;
   void Flush() override;
-  viz::ResourceFormat GetResourceFormat() const override;
+  viz::SharedImageFormat GetFormat() const override;
   bool IsResourcePremultiplied() const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
@@ -136,12 +136,13 @@ class CC_EXPORT GpuRasterBufferProvider : public RasterBufferProvider {
     base::TimeTicks creation_time_;
   };
 
-  bool ShouldUnpremultiplyAndDitherResource(viz::ResourceFormat format) const;
+  bool ShouldUnpremultiplyAndDitherResource(
+      viz::SharedImageFormat format) const;
 
   const raw_ptr<viz::ContextProvider> compositor_context_provider_;
   const raw_ptr<viz::RasterContextProvider> worker_context_provider_;
   const bool use_gpu_memory_buffer_resources_;
-  const viz::ResourceFormat tile_format_;
+  const viz::SharedImageFormat tile_format_;
   const gfx::Size max_tile_size_;
 
   const raw_ptr<RasterQueryQueue> pending_raster_queries_;

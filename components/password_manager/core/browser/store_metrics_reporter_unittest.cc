@@ -19,6 +19,7 @@
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/sync_username_test_base.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -26,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync/base/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -152,6 +154,8 @@ class StoreMetricsReporterTest : public SyncUsernameTestBase {
                                            false);
     prefs_.registry()->RegisterDoublePref(
         prefs::kLastTimePasswordStoreMetricsReported, 0.0);
+    prefs_.registry()->RegisterBooleanPref(::prefs::kSafeBrowsingEnabled,
+                                           false);
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
     prefs_.registry()->RegisterBooleanPref(
         prefs::kBiometricAuthenticationBeforeFilling, false);
@@ -370,6 +374,124 @@ TEST_F(StoreMetricsReporterTest, ReportAccountsPerSiteHiResMetricsTest) {
 
   account_store->ShutdownOnUIThread();
   profile_store->ShutdownOnUIThread();
+  // Make sure the PasswordStore destruction parts on the background sequence
+  // finish, otherwise we get memory leak reports.
+  RunUntilIdle();
+}
+
+TEST_F(StoreMetricsReporterTest, ReportPasswordProtectedMetricsTest) {
+  // Set up custom preferences for this test because we want safe browsing
+  // enabled
+  prefs_.SetBoolean(::prefs::kSafeBrowsingEnabled, true);
+
+  auto profile_store =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
+  profile_store->Init(&prefs_,
+                      /*affiliated_match_helper=*/nullptr);
+  auto account_store =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
+  account_store->Init(&prefs_,
+                      /*affiliated_match_helper=*/nullptr);
+
+  // Fill Password Store with 1000 account and profile logins
+  const std::string kRealm = "https://example.com";
+  const int kNumberOfLogins = 1000;
+  const int kHalfOfLogins = kNumberOfLogins / 2;
+  for (int protected_num = 0; protected_num < kHalfOfLogins; ++protected_num) {
+    account_store->AddLogin(CreateForm(
+        kRealm, "protectedaccount" + base::NumberToString(protected_num),
+        "protectedaccountpass" + base::NumberToString(protected_num)));
+    profile_store->AddLogin(CreateForm(
+        kRealm, "protectedprofile" + base::NumberToString(protected_num),
+        "protectedprofilepass" + base::NumberToString(protected_num)));
+  }
+  for (int unprotected_num = 0; unprotected_num < kHalfOfLogins;
+       ++unprotected_num) {
+    account_store->AddLogin(CreateForm(
+        kRealm, "unprotectedaccount" + base::NumberToString(unprotected_num),
+        base::NumberToString(unprotected_num)));
+    profile_store->AddLogin(CreateForm(
+        kRealm, "unprotectedprofile" + base::NumberToString(unprotected_num),
+        base::NumberToString(unprotected_num)));
+  }
+
+  base::HistogramTester histogram_tester;
+  StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
+                                sync_service(), identity_manager(), &prefs_,
+                                /*password_reuse_manager=*/nullptr,
+                                /*is_under_advanced_protection=*/false,
+                                /*done_callback*/ base::DoNothing());
+  // Wait for the metrics to get reported, which involves queries to the
+  // stores, i.e. to background task runners.
+  RunUntilIdle();
+
+  const int kTotalAccountAndProfileLogins = 2 * kNumberOfLogins;
+  // Since there is 10% noise in this histogram, we can't deterministically say
+  // what the exact sample count for each bucket will be. Instead, test that the
+  // number of samples is within a reasonable range.
+  histogram_tester.ExpectTotalCount("PasswordManager.IsPasswordProtected2",
+                                    kTotalAccountAndProfileLogins);
+  EXPECT_GE(histogram_tester.GetBucketCount(
+                "PasswordManager.IsPasswordProtected2", true),
+            0.4 * kTotalAccountAndProfileLogins);
+  EXPECT_LE(histogram_tester.GetBucketCount(
+                "PasswordManager.IsPasswordProtected2", true),
+            0.6 * kTotalAccountAndProfileLogins);
+  EXPECT_GE(histogram_tester.GetBucketCount(
+                "PasswordManager.IsPasswordProtected2", false),
+            0.4 * kTotalAccountAndProfileLogins);
+  EXPECT_LE(histogram_tester.GetBucketCount(
+                "PasswordManager.IsPasswordProtected2", false),
+            0.6 * kTotalAccountAndProfileLogins);
+
+  profile_store->ShutdownOnUIThread();
+  account_store->ShutdownOnUIThread();
+  // Make sure the PasswordStore destruction parts on the background sequence
+  // finish, otherwise we get memory leak reports.
+  RunUntilIdle();
+}
+
+TEST_F(StoreMetricsReporterTest,
+       ReportPasswordProtectedMetricsTestWithBlockedPasswords) {
+  // Set up custom preferences for this test because we want safe browsing
+  // enabled
+  prefs_.SetBoolean(::prefs::kSafeBrowsingEnabled, true);
+
+  // Add both non-blocking and blocking credentials to stores
+  const std::string kRealm1 = "https://example1.com";
+  const std::string kRealm2 = "https://example2.com";
+  const std::string kRealm3 = "https://example3.com";
+  auto profile_store =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(false));
+  profile_store->Init(&prefs_,
+                      /*affiliated_match_helper=*/nullptr);
+  profile_store->AddLogin(CreateForm(kRealm1, "aprofileuser", "aprofilepass"));
+  profile_store->AddLogin(password_manager_util::MakeNormalizedBlocklistedForm(
+      PasswordFormDigest(PasswordForm::Scheme::kHtml, kRealm2, GURL(kRealm2))));
+  auto account_store =
+      base::MakeRefCounted<TestPasswordStore>(IsAccountStore(true));
+  account_store->Init(&prefs_,
+                      /*affiliated_match_helper=*/nullptr);
+  account_store->AddLogin(
+      CreateForm(kRealm1, "anaccountuser", "anaccountpass"));
+  account_store->AddLogin(password_manager_util::MakeNormalizedBlocklistedForm(
+      PasswordFormDigest(PasswordForm::Scheme::kHtml, kRealm3, GURL(kRealm3))));
+
+  base::HistogramTester histogram_tester;
+  StoreMetricsReporter reporter(profile_store.get(), account_store.get(),
+                                sync_service(), identity_manager(), &prefs_,
+                                /*password_reuse_manager=*/nullptr,
+                                /*is_under_advanced_protection=*/false,
+                                /*done_callback*/ base::DoNothing());
+  // Wait for the metrics to get reported, which involves queries to the
+  // stores, i.e. to background task runners.
+  RunUntilIdle();
+
+  // We expect that our histogram logs for only non-blocking credentials.
+  histogram_tester.ExpectTotalCount("PasswordManager.IsPasswordProtected2", 2);
+
+  profile_store->ShutdownOnUIThread();
+  account_store->ShutdownOnUIThread();
   // Make sure the PasswordStore destruction parts on the background sequence
   // finish, otherwise we get memory leak reports.
   RunUntilIdle();

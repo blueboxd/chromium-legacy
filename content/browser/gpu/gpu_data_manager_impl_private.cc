@@ -448,7 +448,8 @@ void CollectExtraDevicePerfInfo(const gpu::GPUInfo& gpu_info,
   if (device.vendor_id == 0xffff /* internal flag for software rendering */ ||
       device.vendor_id == 0x15ad /* VMware */ ||
       device.vendor_id == 0x1414 /* Microsoft software renderer */ ||
-      gpu_info.software_rendering /* SwiftShader */) {
+      gl::IsSoftwareGLImplementation(
+          gpu_info.gl_implementation_parts) /* SwiftShader */) {
     device_perf_info->software_rendering = true;
   }
 }
@@ -1721,5 +1722,15 @@ void GpuDataManagerImplPrivate::RecordCompositingMode() {
 
   UMA_HISTOGRAM_ENUMERATION("GPU.CompositingMode", compositing_mode);
 }
+
+#if BUILDFLAG(IS_LINUX)
+bool GpuDataManagerImplPrivate::IsGpuMemoryBufferNV12Supported() {
+  return is_gpu_memory_buffer_NV12_supported_;
+}
+void GpuDataManagerImplPrivate::SetGpuMemoryBufferNV12Supported(
+    bool supported) {
+  is_gpu_memory_buffer_NV12_supported_ = supported;
+}
+#endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace content

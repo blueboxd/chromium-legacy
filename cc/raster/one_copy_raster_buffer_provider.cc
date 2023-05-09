@@ -95,7 +95,7 @@ OneCopyRasterBufferProvider::RasterBufferImpl::RasterBufferImpl(
     : client_(client),
       backing_(backing),
       resource_size_(in_use_resource.size()),
-      format_(viz::SharedImageFormat::SinglePlane(in_use_resource.format())),
+      format_(in_use_resource.format()),
       color_space_(in_use_resource.color_space()),
       previous_content_id_(previous_content_id),
       before_raster_sync_token_(backing->returned_sync_token),
@@ -154,7 +154,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
     bool use_partial_raster,
     bool use_gpu_memory_buffer_resources,
     int max_staging_buffer_usage_in_bytes,
-    viz::ResourceFormat tile_format)
+    viz::SharedImageFormat tile_format)
     : compositor_context_provider_(compositor_context_provider),
       worker_context_provider_(worker_context_provider),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
@@ -173,7 +173,7 @@ OneCopyRasterBufferProvider::OneCopyRasterBufferProvider(
                     max_staging_buffer_usage_in_bytes) {
   DCHECK(compositor_context_provider);
   DCHECK(worker_context_provider);
-  DCHECK(!IsResourceFormatCompressed(tile_format));
+  DCHECK(!tile_format.IsCompressed());
 }
 
 OneCopyRasterBufferProvider::~OneCopyRasterBufferProvider() {}
@@ -211,7 +211,7 @@ void OneCopyRasterBufferProvider::Flush() {
   compositor_context_provider_->ContextSupport()->FlushPendingWork();
 }
 
-viz::ResourceFormat OneCopyRasterBufferProvider::GetResourceFormat() const {
+viz::SharedImageFormat OneCopyRasterBufferProvider::GetFormat() const {
   return tile_format_;
 }
 
@@ -292,8 +292,8 @@ gpu::SyncToken OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
     uint64_t previous_content_id,
     uint64_t new_content_id) {
   std::unique_ptr<StagingBuffer> staging_buffer =
-      staging_pool_.AcquireStagingBuffer(
-          resource_size, format.resource_format(), previous_content_id);
+      staging_pool_.AcquireStagingBuffer(resource_size, format,
+                                         previous_content_id);
   DCHECK(staging_buffer->size.width() >= raster_full_rect.width() &&
          staging_buffer->size.height() >= raster_full_rect.height());
 
@@ -478,7 +478,7 @@ gpu::SyncToken OneCopyRasterBufferProvider::CopyOnWorkerThread(
   }
 
   int bytes_per_row = viz::ResourceSizes::UncheckedWidthInBytes<int>(
-      rect_to_copy.width(), staging_buffer->format);
+      rect_to_copy.width(), staging_buffer->format.resource_format());
   int chunk_size_in_rows =
       std::max(1, max_bytes_per_copy_operation_ / bytes_per_row);
   // Align chunk size to 4. Required to support compressed texture formats.

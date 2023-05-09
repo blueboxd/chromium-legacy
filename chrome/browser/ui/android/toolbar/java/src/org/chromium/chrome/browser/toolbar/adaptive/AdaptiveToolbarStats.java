@@ -21,7 +21,10 @@ public class AdaptiveToolbarStats {
             AdaptiveToolbarRadioButtonState.AUTO_WITH_SHARE,
             AdaptiveToolbarRadioButtonState.AUTO_WITH_VOICE,
             AdaptiveToolbarRadioButtonState.NEW_TAB, AdaptiveToolbarRadioButtonState.SHARE,
-            AdaptiveToolbarRadioButtonState.VOICE})
+            AdaptiveToolbarRadioButtonState.VOICE, AdaptiveToolbarRadioButtonState.TRANSLATE,
+            AdaptiveToolbarRadioButtonState.AUTO_WITH_TRANSLATE,
+            AdaptiveToolbarRadioButtonState.ADD_TO_BOOKMARKS,
+            AdaptiveToolbarRadioButtonState.AUTO_WITH_ADD_TO_BOOKMARKS})
     @Retention(RetentionPolicy.SOURCE)
     private @interface AdaptiveToolbarRadioButtonState {
         int UNKNOWN = 0;
@@ -31,7 +34,11 @@ public class AdaptiveToolbarStats {
         int NEW_TAB = 4;
         int SHARE = 5;
         int VOICE = 6;
-        int NUM_ENTRIES = 7;
+        int TRANSLATE = 7;
+        int AUTO_WITH_TRANSLATE = 8;
+        int ADD_TO_BOOKMARKS = 9;
+        int AUTO_WITH_ADD_TO_BOOKMARKS = 10;
+        int NUM_ENTRIES = 11;
     }
 
     /**
@@ -82,6 +89,10 @@ public class AdaptiveToolbarStats {
                 return AdaptiveToolbarRadioButtonState.SHARE;
             case AdaptiveToolbarButtonVariant.VOICE:
                 return AdaptiveToolbarRadioButtonState.VOICE;
+            case AdaptiveToolbarButtonVariant.ADD_TO_BOOKMARKS:
+                return AdaptiveToolbarRadioButtonState.ADD_TO_BOOKMARKS;
+            case AdaptiveToolbarButtonVariant.TRANSLATE:
+                return AdaptiveToolbarRadioButtonState.TRANSLATE;
             case AdaptiveToolbarButtonVariant.AUTO:
                 switch (uiState.autoButtonCaption) {
                     case AdaptiveToolbarButtonVariant.NEW_TAB:
@@ -90,6 +101,10 @@ public class AdaptiveToolbarStats {
                         return AdaptiveToolbarRadioButtonState.AUTO_WITH_SHARE;
                     case AdaptiveToolbarButtonVariant.VOICE:
                         return AdaptiveToolbarRadioButtonState.AUTO_WITH_VOICE;
+                    case AdaptiveToolbarButtonVariant.ADD_TO_BOOKMARKS:
+                        return AdaptiveToolbarRadioButtonState.AUTO_WITH_ADD_TO_BOOKMARKS;
+                    case AdaptiveToolbarButtonVariant.TRANSLATE:
+                        return AdaptiveToolbarRadioButtonState.AUTO_WITH_TRANSLATE;
                 }
         }
         assert false : "Invalid radio button state";

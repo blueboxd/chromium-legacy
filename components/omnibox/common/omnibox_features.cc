@@ -4,6 +4,8 @@
 
 #include "components/omnibox/common/omnibox_features.h"
 
+#include <string>
+
 #include "base/feature_list.h"
 #include "build/build_config.h"
 
@@ -394,9 +396,10 @@ BASE_FEATURE(kOmniboxFuzzyUrlSuggestions,
              enabled_by_default_desktop_only);
 
 // Feature used to enable the default browser pedal.
+// TODO(orinj): Enabled by default 2023-03-17; clean up after M113 settles.
 BASE_FEATURE(kOmniboxDefaultBrowserPedal,
              "OmniboxDefaultBrowserPedal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to synchronize the toolbar's and status bar's color.
 BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
@@ -436,11 +439,44 @@ BASE_FEATURE(kOmniboxAssistantVoiceSearch,
              "OmniboxAssistantVoiceSearch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables all chrome-refresh-2023 features. The features are guarded by an OR;
+// enabling either this feature or the feature-specific features will enable the
+// respective features. The omnibox CR23 features aren't controlled by
+// `kChromeRefresh2023` as we need to experiment with all of non-omnibox CR23 +
+// a subset of omnibox CR23.
+BASE_FEATURE(kCr2023Umbrella,
+             "OmniboxCr2023Umbrella",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, Omnibox "steady state" background color is updated to match GM3
 // guidelines.
 BASE_FEATURE(kOmniboxSteadyStateBackgroundColor,
              "OmniboxSteadyStateBackgroundColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Specifies the GM3 omnibox background color in Dark Mode.
+const base::FeatureParam<std::string> kOmniboxDarkBackgroundColor(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxDarkBackgroundColor",
+    "0x2A2A2A");
+
+// Specifies the GM3 omnibox background color in Dark Mode (on-hover).
+const base::FeatureParam<std::string> kOmniboxDarkBackgroundColorHovered(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxDarkBackgroundColorHovered",
+    "0x4C4C4B");
+
+// Specifies the GM3 omnibox background color in Light Mode.
+const base::FeatureParam<std::string> kOmniboxLightBackgroundColor(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxLightBackgroundColor",
+    "0xEBEFF7");
+
+// Specifies the GM3 omnibox background color in Light Mode (on-hover).
+const base::FeatureParam<std::string> kOmniboxLightBackgroundColorHovered(
+    &omnibox::kOmniboxSteadyStateBackgroundColor,
+    "OmniboxLightBackgroundColorHovered",
+    "0xE3E7F0");
 
 // If enabled, Omnibox "steady state" height is increased from 28 dp to 34 dp to
 // match GM3 guidelines.
@@ -453,6 +489,76 @@ BASE_FEATURE(kOmniboxSteadyStateHeight,
 BASE_FEATURE(kOmniboxSteadyStateTextStyle,
              "OmniboxSteadyStateTextStyle",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// If enabled, Omnibox "steady state" text color is updated to match GM3
+// guidelines.
+BASE_FEATURE(kOmniboxSteadyStateTextColor,
+             "OmniboxSteadyStateTextColor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Specifies the GM3 omnibox text color in Dark Mode.
+//
+// In order to control the value of this param via Finch, the
+// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
+//
+// Enabling only the `kCr2023Umbrella` flag, while leaving the
+// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither `kCr2023Umbrella` nor `kOmniboxSteadyStateTextColor` are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDarkMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDarkMode",
+    "0xE3E3E3");
+
+// Specifies the GM3 omnibox text color in Dark Mode (dimmed).
+//
+// In order to control the value of this param via Finch, the
+// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
+//
+// Enabling only the `kCr2023Umbrella` flag, while leaving the
+// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither `kCr2023Umbrella` nor `kOmniboxSteadyStateTextColor` are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDimmedDarkMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDimmedDarkMode",
+    "0xC7C7C7");
+
+// Specifies the GM3 omnibox text color in Light Mode.
+//
+// In order to control the value of this param via Finch, the
+// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
+//
+// Enabling only the `kCr2023Umbrella` flag, while leaving the
+// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither `kCr2023Umbrella` nor `kOmniboxSteadyStateTextColor` are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorLightMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorLightMode",
+    "0x1F1F1F");
+
+// Specifies the GM3 omnibox text color in Light Mode (dimmed).
+//
+// In order to control the value of this param via Finch, the
+// `kOmniboxSteadyStateTextColor` feature flag must be enabled.
+//
+// Enabling only the `kCr2023Umbrella` flag, while leaving the
+// `kOmniboxSteadyStateTextColor` flag disabled, will result in the param being
+// locked to its default value and ignoring any overrides provided via Finch.
+//
+// If neither `kCr2023Umbrella` nor `kOmniboxSteadyStateTextColor` are enabled,
+// then this feature param will have zero effect on Chrome UI.
+const base::FeatureParam<std::string> kOmniboxTextColorDimmedLightMode(
+    &omnibox::kOmniboxSteadyStateTextColor,
+    "OmniboxTextColorDimmedLightMode",
+    "0x474747");
 
 // If enabled, switching tabs will not restore the omnibox state.
 // TODO(manukh): Should also blur the omnibox on tab switch.

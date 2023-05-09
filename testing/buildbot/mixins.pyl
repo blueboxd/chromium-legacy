@@ -546,6 +546,13 @@
       ],
     },
   },
+  'fuchsia-persistent-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--everlasting'
+      ],
+    },
+  },
   'fuchsia_logs': {
     '$mixin_append': {
       'args': [
@@ -1421,6 +1428,20 @@
       'dimensions': {
         'os': 'Windows-11-22000',
       },
+    },
+  },
+  'win_arm64': {
+    'swarming': {
+      'dimensions': {
+        # TODO(https://crbug.com/1422826): Update the right cpu value.
+        'cpu': None,
+        'os': 'Windows-11',
+        'pool': 'chrome.tests.arm64',
+      },
+      # The resources are limited in the pool.
+      # The slowest test is expected to run >9 hours.
+      'expiration': 64800,  # 18 hours
+      'hard_timeout': 43200,  # 12 hours
     },
   },
   'x86-64': {

@@ -48,4 +48,12 @@ CREATE INDEX aggregate_trigger_time_idx ON aggregatable_report_metadata(trigger_
 
 CREATE INDEX aggregate_report_time_idx ON aggregatable_report_metadata(report_time);
 
+INSERT INTO sources VALUES
+(2,3,4,5,1643235573000000,1643235593000000,1643235583000000,9,10,11,12,0,14,15,16,17,18,19,20),
+(3,4,5,6,1643235574000000,1643235594000000,1643235584000000,10,11,12,13,1,15,16,17,18,19,20,21);
+
+INSERT INTO event_level_reports VALUES
+(2,2,3,1643235574000000,5,6,7,8,9,10),
+(3,3,3,1643235575000000,6,7,8,9,10,11);
+
 COMMIT;

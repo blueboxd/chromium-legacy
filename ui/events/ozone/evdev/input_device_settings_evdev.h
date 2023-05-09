@@ -74,7 +74,7 @@ struct COMPONENT_EXPORT(EVDEV) InputDeviceSettingsEvdev {
   const PointingStickSettingsEvdev& GetPointingStickSettings(
       int device_id) const;
 
-  bool enable_per_device_settings = false;
+  bool enable_per_device_settings;
   // Pausing of tap to click applies to all touchpad devices.
   bool tap_to_click_paused = false;
   // Three finger click applies to all touchpad devices.
@@ -88,9 +88,10 @@ struct COMPONENT_EXPORT(EVDEV) InputDeviceSettingsEvdev {
   std::vector<DomCode> internal_keyboard_allowed_keys;
 
  private:
-  base::flat_map<int, TouchpadSettingsEvdev> touchpad_settings_;
-  base::flat_map<int, MouseSettingsEvdev> mouse_settings_;
-  base::flat_map<int, PointingStickSettingsEvdev> pointing_stick_settings_;
+  mutable base::flat_map<int, TouchpadSettingsEvdev> touchpad_settings_;
+  mutable base::flat_map<int, MouseSettingsEvdev> mouse_settings_;
+  mutable base::flat_map<int, PointingStickSettingsEvdev>
+      pointing_stick_settings_;
 };
 
 }  // namespace ui

@@ -81,9 +81,11 @@ enum class FeedRefreshTrigger {
   kForegroundFeedNotVisible = 8,
   kForegroundNewFeedViewController = 9,
   kForegroundAppClose = 10,
+  kBackgroundColdStartAppClose = 11,
+  kBackgroundWarmStartAppClose = 12,
 
   // Change this to match max value.
-  kMaxValue = kForegroundAppClose,
+  kMaxValue = kBackgroundWarmStartAppClose,
 };
 
 // Enum class contains values indicating the type of follow request. Ex.
@@ -308,6 +310,9 @@ extern const char kDiscoverIndexWhenSwitchingFeed[];
 // Discover feed.
 extern const char kFollowingIndexWhenSwitchingFeed[];
 
+// Histogram name for sign-in related UI triggered by Feed entry points.
+extern const char kFeedSignInUI[];
+
 #pragma mark - User Actions
 
 // User action names for the device orientation having changed.
@@ -389,9 +394,23 @@ extern const char kUnfollowFromMenu[];
 extern const char kFollowingFeedGroupByPublisher[];
 extern const char kFollowingFeedSortByLatest[];
 
+#pragma mark - User Actions for Feed Sign-in Promo
+
 // User actions triggered when a user clicks the buttons on the Feed sign-in
 // promo UI.
 extern const char kFeedSignInPromoUIContinueTapped[];
 extern const char kFeedSignInPromoUICancelTapped[];
+
+// User actions triggered when a user taps on Feed Back of Card menu
+// personalization options when not signed in.
+extern const char kShowFeedSignInOnlyUIWithUserId[];
+extern const char kShowFeedSignInOnlyUIWithoutUserId[];
+
+// User actions triggered when a user taps on Feed personalization controls and
+// a corresponding sign-in related UI is shown. Ex. A sign in half sheet, a
+// sign-in only flow, or a disabled toast is shown.
+extern const char kShowSyncHalfSheetFromFeed[];
+extern const char kShowSignInOnlyFlowFromFeed[];
+extern const char kShowSignInDisableToastFromFeed[];
 
 #endif  // IOS_CHROME_BROWSER_UI_NTP_METRICS_FEED_METRICS_CONSTANTS_H_

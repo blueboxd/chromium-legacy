@@ -82,6 +82,8 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
     kMaxValue = kRequestDestination,
   };
 
+  // Observes a triggered prerender. Note that the observer should overlive the
+  // prerender host instance, or be removed properly upon destruction.
   class Observer : public base::CheckedObserver {
    public:
     // Called on the page activation.
@@ -229,6 +231,11 @@ class CONTENT_EXPORT PrerenderHost : public FrameTree::Delegate,
   // a renderer using Speculation Rules API).
   absl::optional<url::Origin> initiator_origin() const {
     return attributes_.initiator_origin;
+  }
+
+  absl::optional<base::UnguessableToken> initiator_devtools_navigation_token()
+      const {
+    return attributes_.initiator_devtools_navigation_token;
   }
 
   const GURL& prerendering_url() const { return attributes_.prerendering_url; }

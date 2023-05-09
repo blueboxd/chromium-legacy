@@ -23,6 +23,10 @@ class WebState;
 NSString* GetSyncErrorDescriptionForSyncService(
     syncer::SyncService* syncService);
 
+// Gets the title of the Sync error info bar.
+std::u16string GetSyncErrorInfoBarTitleForBrowserState(
+    ChromeBrowserState* browserState);
+
 // Gets the string message associated with the sync error state of
 // `browserState`. The returned error message does not contain any links.
 // Returns nil if there is no sync error.
@@ -42,9 +46,5 @@ bool ShouldShowSyncSettings(syncer::SyncService::UserActionableError error);
 bool DisplaySyncErrors(ChromeBrowserState* browser_state,
                        web::WebState* web_state,
                        id<SyncPresenter> presenter);
-
-// Returns a data object with the needed information and handlers to display the
-// account error UI. Returns nil if there is no account error to display.
-AccountErrorUIInfo* GetAccountErrorUIInfo(ChromeBrowserState* browserState);
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_SYNC_UTILS_SYNC_UTIL_H_

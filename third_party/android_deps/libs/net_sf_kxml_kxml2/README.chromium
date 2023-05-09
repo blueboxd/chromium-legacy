@@ -1,8 +1,8 @@
 Name: kXML 2 is a small XML pull parser based on the common XML pull API
 Short Name: kxml2
-URL: http://kxml.sourceforge.net/
+URL: https://github.com/kobjects/kxml2
 Version: 2.3.0
-License: MIT
+License: The MIT License
 License File: NOT_SHIPPED
 CPEPrefix: unknown
 Security Critical: no

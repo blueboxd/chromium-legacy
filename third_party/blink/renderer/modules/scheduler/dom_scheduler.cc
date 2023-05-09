@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/scheduler/dom_scheduler.h"
 
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -53,7 +54,7 @@ DOMScheduler::DOMScheduler(ExecutionContext* context)
   CHECK(context->GetScheduler());
   CreateFixedPriorityTaskQueues(context, WebSchedulingQueueType::kTaskQueue,
                                 fixed_priority_task_queues_);
-  if (RuntimeEnabledFeatures::SchedulerYieldEnabled()) {
+  if (RuntimeEnabledFeatures::SchedulerYieldEnabled(context)) {
     CreateFixedPriorityTaskQueues(context,
                                   WebSchedulingQueueType::kContinuationQueue,
                                   fixed_priority_continuation_queues_);
@@ -81,7 +82,7 @@ ScriptPromise DOMScheduler::postTask(
     V8SchedulerPostTaskCallback* callback_function,
     SchedulerPostTaskOptions* options,
     ExceptionState& exception_state) {
-  if (!GetExecutionContext()) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
     // The bindings layer implicitly converts thrown exceptions in
     // promise-returning functions to promise rejections.
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
@@ -113,35 +114,44 @@ ScriptPromise DOMScheduler::postTask(
 ScriptPromise DOMScheduler::yield(ScriptState* script_state,
                                   SchedulerYieldOptions* options,
                                   ExceptionState& exception_state) {
-  if (!GetExecutionContext()) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                       "Current window is detached");
     return ScriptPromise();
   }
 
-  // TODO(crbug.com/979020): Remove once inheritance is implemented.
-  if ((options->hasSignal() && options->signal()->IsSchedulerSignalInherit()) ||
-      (options->hasPriority() && options->priority() == "inherit")) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Signal inheritance is not yet supported");
-    return ScriptPromise();
-  }
-
-  AbortSignal* signal_option = nullptr;
+  // Abort and priority can be inherited together or separately. Abort
+  // inheritance only depends on the signal option. Signal inheritance implies
+  // priority inheritance, but can be overridden by specifying a fixed
+  // priority.
+  absl::variant<AbortSignal*, InheritOption> signal_option(nullptr);
   if (options->hasSignal()) {
-    signal_option = options->signal()->GetAsAbortSignal();
+    if (options->signal()->IsSchedulerSignalInherit()) {
+      // {signal: "inherit"}
+      signal_option = InheritOption::kInherit;
+    } else {
+      // {signal: signalObject}
+      signal_option = options->signal()->GetAsAbortSignal();
+    }
   }
 
-  AtomicString priority_option = g_null_atom;
-  if (options->hasPriority()) {
+  absl::variant<AtomicString, InheritOption> priority_option(g_null_atom);
+  if ((options->hasPriority() && options->priority() == "inherit")) {
+    // {priority: "inherit"}
+    priority_option = InheritOption::kInherit;
+  } else if (!options->hasPriority() &&
+             absl::holds_alternative<InheritOption>(signal_option)) {
+    // {signal: "inherit"} with no priority override.
+    priority_option = InheritOption::kInherit;
+  } else if (options->hasPriority()) {
+    // Priority override.
     priority_option = AtomicString(IDLEnumAsString(options->priority()));
   }
 
   auto* task_signal = GetTaskSignalFromOptions(script_state, exception_state,
                                                signal_option, priority_option);
   if (exception_state.HadException()) {
-    // The given signal was aborted.
+    // The given or inherited signal was aborted.
     return ScriptPromise();
   }
 
@@ -210,11 +220,12 @@ DOMScheduler::DOMTaskQueue* DOMScheduler::CreateDynamicPriorityTaskQueue(
     DOMTaskSignal* signal,
     WebSchedulingQueueType queue_type) {
   FrameOrWorkerScheduler* scheduler = GetExecutionContext()->GetScheduler();
-  DCHECK(scheduler);
+  CHECK(scheduler);
   WebSchedulingPriority priority =
       WebSchedulingPriorityFromString(signal->priority());
   std::unique_ptr<WebSchedulingTaskQueue> task_queue =
       scheduler->CreateWebSchedulingTaskQueue(queue_type, priority);
+  CHECK(task_queue);
   auto* dom_task_queue =
       MakeGarbageCollected<DOMTaskQueue>(std::move(task_queue), priority);
   auto* handle = signal->AddPriorityChangeAlgorithm(WTF::BindRepeating(
@@ -227,11 +238,28 @@ DOMScheduler::DOMTaskQueue* DOMScheduler::CreateDynamicPriorityTaskQueue(
 DOMTaskSignal* DOMScheduler::GetTaskSignalFromOptions(
     ScriptState* script_state,
     ExceptionState& exception_state,
-    AbortSignal* signal_option,
-    AtomicString priority_option) {
-  // TODO(crbug.com/979020): Make `signal_option` a variant such that it can be
-  // a signal or "inherit", matching the yield() options.
-  AbortSignal* abort_source = signal_option;
+    absl::variant<AbortSignal*, InheritOption> signal_option,
+    absl::variant<AtomicString, InheritOption> priority_option) {
+  // `inherited_signal` will be null if no inheritance was specified or there's
+  // nothing to inherit, e.g. yielding from a non-postTask task.
+  // Note: `inherited_signal` will be the one from the original task, i.e. it
+  // doesn't get reset by continuations.
+  DOMTaskSignal* inherited_signal = nullptr;
+  if (absl::holds_alternative<InheritOption>(signal_option) ||
+      absl::holds_alternative<InheritOption>(priority_option)) {
+    CHECK(RuntimeEnabledFeatures::SchedulerYieldEnabled(
+        ExecutionContext::From(script_state)));
+    if (auto* inherited_state =
+            ScriptWrappableTaskState::GetCurrent(script_state)) {
+      inherited_signal = inherited_state->GetSignal();
+    }
+  }
+
+  AbortSignal* abort_source =
+      absl::holds_alternative<AbortSignal*>(signal_option)
+          ? absl::get<AbortSignal*>(signal_option)
+          : inherited_signal;
+  // Short-circuit things now that we know if `abort_source` is aborted.
   if (abort_source && abort_source->aborted()) {
     exception_state.RethrowV8Exception(
         ToV8Traits<IDLAny>::ToV8(script_state,
@@ -241,14 +269,19 @@ DOMTaskSignal* DOMScheduler::GetTaskSignalFromOptions(
   }
 
   DOMTaskSignal* priority_source = nullptr;
-  if (priority_option != g_null_atom) {
+  if (absl::holds_alternative<InheritOption>(priority_option)) {
+    priority_source = inherited_signal;
+  } else if (absl::get<AtomicString>(priority_option) != g_null_atom) {
     // The priority option overrides the signal for priority.
     priority_source = GetFixedPriorityTaskSignal(
-        script_state, WebSchedulingPriorityFromString(priority_option));
-  } else if (IsA<DOMTaskSignal>(signal_option)) {
-    priority_source = To<DOMTaskSignal>(signal_option);
-  } else {
-    // No signal or priority was specified.
+        script_state, WebSchedulingPriorityFromString(
+                          absl::get<AtomicString>(priority_option)));
+  } else if (IsA<DOMTaskSignal>(absl::get<AbortSignal*>(signal_option))) {
+    priority_source = To<DOMTaskSignal>(absl::get<AbortSignal*>(signal_option));
+  }
+  // `priority_source` is null if there was nothing to inherit or no signal or
+  // priority was specified.
+  if (!priority_source) {
     priority_source =
         GetFixedPriorityTaskSignal(script_state, kDefaultPriority);
   }
@@ -335,7 +368,7 @@ DOMScheduler::DOMTaskQueue* DOMScheduler::GetTaskQueue(
 
 void DOMScheduler::OnPriorityChange(DOMTaskSignal* signal,
                                     DOMTaskQueue* task_queue) {
-  if (!GetExecutionContext()) {
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed()) {
     return;
   }
   DCHECK(signal);

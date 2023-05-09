@@ -22,6 +22,7 @@ void SaveUpdateAddressProfileFlowManager::OfferSave(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
+    bool is_migration_to_account,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   DCHECK(web_contents);
   DCHECK(callback);
@@ -38,7 +39,7 @@ void SaveUpdateAddressProfileFlowManager::OfferSave(
   if (base::FeatureList::IsEnabled(
           messages::kMessagesForAndroidInfrastructure)) {
     ShowConfirmationMessage(web_contents, profile, original_profile,
-                            std::move(callback));
+                            is_migration_to_account, std::move(callback));
   } else {
     // Fallback to the default behavior without confirmation.
     std::move(callback).Run(
@@ -61,9 +62,11 @@ void SaveUpdateAddressProfileFlowManager::ShowConfirmationMessage(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
+    bool is_migration_to_account,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   save_update_address_profile_message_controller_.DisplayMessage(
-      web_contents, profile, original_profile, std::move(callback),
+      web_contents, profile, original_profile, is_migration_to_account,
+      std::move(callback),
       base::BindOnce(
           &SaveUpdateAddressProfileFlowManager::ShowPromptWithDetails,
           // Passing base::Unretained(this) is safe since |this|
@@ -75,13 +78,14 @@ void SaveUpdateAddressProfileFlowManager::ShowPromptWithDetails(
     content::WebContents* web_contents,
     const AutofillProfile& profile,
     const AutofillProfile* original_profile,
+    bool is_migration_to_account,
     AutofillClient::AddressProfileSavePromptCallback callback) {
   auto prompt_view_android =
       std::make_unique<SaveUpdateAddressProfilePromptViewAndroid>(web_contents);
   save_update_address_profile_prompt_controller_ = std::make_unique<
       SaveUpdateAddressProfilePromptController>(
       std::move(prompt_view_android), profile, original_profile,
-      std::move(callback),
+      is_migration_to_account, std::move(callback),
       /*dismissal_callback=*/
       base::BindOnce(
           &SaveUpdateAddressProfileFlowManager::OnPromptWithDetailsDismissed,

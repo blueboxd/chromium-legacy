@@ -74,10 +74,7 @@ std::vector<Frame> CaptureScenario(
 }  // namespace
 
 // Checks that the expected information is present in sampled frames.
-// TODO(https://crbug.com/1147315): Fix, re-enable  on all ASAN bots.
-// TODO(https://crbug.com/1368981): After fix, re-enable on all bots except
-// if defined(ADDRESS_SANITIZER).
-TEST(LibunwindstackUnwinderAndroidTest, DISABLED_PlainFunction) {
+TEST(LibunwindstackUnwinderAndroidTest, PlainFunction) {
   UnwindScenario scenario(BindRepeating(&CallWithPlainFunction));
 
   ModuleCache module_cache;
@@ -107,10 +104,7 @@ TEST(LibunwindstackUnwinderAndroidTest, DISABLED_PlainFunction) {
 
 // Checks that the unwinder handles stacks containing dynamically-allocated
 // stack memory.
-// TODO(https://crbug.com/1147315): Fix, re-enable  on all ASAN bots.
-// TODO(https://crbug.com/1368981): After fix, re-enable on all bots except
-// if defined(ADDRESS_SANITIZER).
-TEST(LibunwindstackUnwinderAndroidTest, DISABLED_Alloca) {
+TEST(LibunwindstackUnwinderAndroidTest, Alloca) {
   UnwindScenario scenario(BindRepeating(&CallWithAlloca));
 
   ModuleCache module_cache;
@@ -140,10 +134,7 @@ TEST(LibunwindstackUnwinderAndroidTest, DISABLED_Alloca) {
 
 // Checks that a stack that runs through another library produces a stack with
 // the expected functions.
-// TODO(https://crbug.com/1147315): Fix, re-enable  on all ASAN bots.
-// TODO(https://crbug.com/1368981): After fix, re-enable on all bots except
-// if defined(ADDRESS_SANITIZER).
-TEST(LibunwindstackUnwinderAndroidTest, DISABLED_OtherLibrary) {
+TEST(LibunwindstackUnwinderAndroidTest, OtherLibrary) {
   NativeLibrary other_library = LoadOtherLibrary();
   UnwindScenario scenario(
       BindRepeating(&CallThroughOtherLibrary, Unretained(other_library)));
@@ -169,22 +160,14 @@ TEST(LibunwindstackUnwinderAndroidTest, DISABLED_OtherLibrary) {
                                scenario.GetOuterFunctionAddressRange()});
 }
 
-// TODO(crbug/1384173): investigate whether this test should pass on 32-bit ARM
-#if defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_ARM64)
-#define MAYBE_JavaFunction DISABLED_JavaFunction
-#else
-#define MAYBE_JavaFunction JavaFunction
-#endif
 // Checks that java frames can be unwound through and have function names.
-TEST(LibunwindstackUnwinderAndroidTest, MAYBE_JavaFunction) {
+TEST(LibunwindstackUnwinderAndroidTest, JavaFunction) {
   auto* build_info = base::android::BuildInfo::GetInstance();
   // Due to varying availability of compiled/JITed java unwind tables, unwinding
   // is only expected to reliably succeed on Android P+
   // https://android.googlesource.com/platform/system/unwinding/+/refs/heads/master/libunwindstack/AndroidVersions.md#android-9-pie_api-level-28
   // The libunwindstack doc mentions in Android 9 it got the support for
   // unwinding through JIT'd frames.
-  // TODO(crbug/1370137): Figure out more accurate bound to where we will
-  // always succeed to unwind.
   bool can_unwind = build_info->sdk_int() >= base::android::SDK_VERSION_P;
   if (!can_unwind) {
     GTEST_SKIP() << "Unwind info is not available on older version of Android";
@@ -220,13 +203,7 @@ TEST(LibunwindstackUnwinderAndroidTest, MAYBE_JavaFunction) {
                                     "callWithJavaFunction"});
 }
 
-// TODO(crbug/1384173): Investigate whether this test should pass on 32-bit ARM.
-#if defined(ARCH_CPU_ARM_FAMILY) && !defined(ARCH_CPU_ARM64)
-#define MAYBE_ReparsesMapsOnNewDynamicLibraryLoad DISABLED_ReparsesMapsOnNewDynamicLibraryLoad
-#else
-#define MAYBE_ReparsesMapsOnNewDynamicLibraryLoad ReparsesMapsOnNewDynamicLibraryLoad
-#endif
-TEST(LibunwindstackUnwinderAndroidTest, MAYBE_ReparsesMapsOnNewDynamicLibraryLoad) {
+TEST(LibunwindstackUnwinderAndroidTest, ReparsesMapsOnNewDynamicLibraryLoad) {
   // The current version of /proc/self/maps is used to create
   // memory_regions_map_ object.
   auto unwinder = std::make_unique<LibunwindstackUnwinderAndroid>();

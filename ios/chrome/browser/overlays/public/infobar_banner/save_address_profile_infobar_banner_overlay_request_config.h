@@ -34,11 +34,10 @@ class SaveAddressProfileBannerRequestConfig
   // The description.
   std::u16string description() const { return description_; }
 
-  // The name of the icon image.
-  NSString* icon_image_name() const { return icon_image_name_; }
-
   // The banner type.
   BOOL is_update_banner() const { return is_update_banner_; }
+
+  BOOL is_migration_to_account() const { return is_migration_to_account_; }
 
  private:
   OVERLAY_USER_DATA_SETUP(SaveAddressProfileBannerRequestConfig);
@@ -54,7 +53,9 @@ class SaveAddressProfileBannerRequestConfig
   std::u16string message_text_;
   std::u16string description_;
   std::u16string button_label_text_;
-  NSString* icon_image_name_ = nil;
+
+  // Denotes that the profile will be saved to Google Account.
+  bool is_migration_to_account_ = false;
 
   // Determines the type of the banner, true for save and false for the update.
   bool is_update_banner_ = false;

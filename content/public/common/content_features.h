@@ -33,6 +33,7 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheEntryTimeout);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheMemoryControls);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheTimeToLiveControl);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardCacheMediaSessionService);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kBackForwardTransitions);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBlockInsecurePrivateNetworkRequests);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kBlockInsecurePrivateNetworkRequestsFromPrivate);
@@ -46,7 +47,6 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kBrokerFileOperationsOnDiskCacheInNetworkService);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationKeyboard);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserVerifiedUserActivationMouse);
-CONTENT_EXPORT BASE_DECLARE_FEATURE(kBrowserSideDownloadPolicySandbox);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kCanvas2DImageChromium);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(
     kClearCrossSiteCrossBrowsingContextGroupWindowName);
@@ -209,6 +209,8 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kSendBeaconThrowForBlobWithNonSimpleType);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kServiceWorkerPaymentApps);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSharedArrayBuffer);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSharedArrayBufferOnDesktop);
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kShouldAllowFirstPartyStorageKeyOverrideFromEmbedder);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSignedExchangeReportingForDistributors);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSignedHTTPExchange);
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationForCrossOriginOpenerPolicy);
@@ -256,6 +258,11 @@ enum class ServiceWorkerBypassFetchHandlerTarget {
   // subresources. If the ServiceWorker is running, it invokes fetch handlers as
   // usual.
   kAllOnlyIfServiceWorkerNotStarted,
+  // BestEffortServiceWorker(crbug.com/1420517). It allows the browser to
+  // dispatch a request directly to the network even if there is a registered
+  // ServiceWorker. This behavior races the network request and the
+  // ServiceWorker fetch handler and uses the result of whichever is faster.
+  kAllWithRaceNetworkRequest,
   // Bypass fetch handlers for subresource requests. Fetch handlers will be
   // bypassed regardless of the current ServiceWorker running status.
   kSubResource,

@@ -81,6 +81,7 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/storage_partition_config.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_features.h"
@@ -882,6 +883,7 @@ void SiteSettingsHandler::OnGetUsageInfo() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // Site Details Page does not display the number of cookies for the origin.
   const CookieTreeNode* root = cookies_tree_model_->GetRoot();
+  int64_t size = 0;
   std::string usage_string;
   std::string cookie_string;
   std::string fps_string;
@@ -897,9 +899,7 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     if (title != usage_hostname) {
       continue;
     }
-    int64_t size = site->InclusiveSize();
-    if (size != 0)
-      usage_string = base::UTF16ToUTF8(ui::FormatBytes(size));
+    size += site->InclusiveSize();
 
     // Usage info only includes unpartitioned cookies, so each cookie must be
     // inspected.
@@ -944,6 +944,19 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     }
     break;
   }
+
+  for (const BrowsingDataModel::BrowsingDataEntryView& entry :
+       *browsing_data_model_) {
+    if (*entry.primary_host != usage_hostname) {
+      continue;
+    }
+    size += entry.data_details->storage_size;
+  }
+
+  if (size > 0) {
+    usage_string = base::UTF16ToUTF8(ui::FormatBytes(size));
+  }
+
   FireWebUIListener("usage-total-changed", base::Value(usage_origin_),
                     base::Value(usage_string), base::Value(cookie_string),
                     base::Value(fps_string), base::Value(fpsPolicy));
@@ -2130,11 +2143,8 @@ void SiteSettingsHandler::RebuildModels() {
 
   num_models_being_built_ = 2;
 
-  content::StoragePartition* storage_partition =
-      profile_->GetDefaultStoragePartition();
   BrowsingDataModel::BuildFromDisk(
-      storage_partition,
-      ChromeBrowsingDataModelDelegate::CreateForProfile(profile_),
+      profile_, ChromeBrowsingDataModelDelegate::CreateForProfile(profile_),
       base::BindOnce(&SiteSettingsHandler::BrowsingDataModelCreated,
                      weak_ptr_factory_.GetWeakPtr()));
 
@@ -2420,8 +2430,16 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
   // TODO(crbug.com/1271155) - When the browsing data model supports all storage
   // types, re-work this handler to work directly with primary hosts as defined
   // by the model.
-  for (const auto& origin : origins)
-    browsing_data_model_->RemoveBrowsingData(origin.host(), base::DoNothing());
+  // TODO(crbug.com/1368048) - Permission info loading before storage info
+  // can result in an interleaving of actions that means this pointer is
+  // null (as it hasn't loaded yet, but the user can delete an entry which has
+  // been created by permission info).
+  if (browsing_data_model_) {
+    for (const auto& origin : origins) {
+      browsing_data_model_->RemoveBrowsingData(origin.host(),
+                                               base::DoNothing());
+    }
+  }
 
 #if BUILDFLAG(IS_WIN)
   // Removes any Media License Data associated with the origin that is not

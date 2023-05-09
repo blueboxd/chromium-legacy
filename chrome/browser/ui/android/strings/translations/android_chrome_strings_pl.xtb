@@ -283,6 +283,7 @@ Tokeny prywatności zwiększają prywatność w sieci i nie można za ich pomo
 <translation id="2581165646603367611">Spowoduje to skasowanie plików cookie, pamięci podręcznej i innych danych witryn, które Chrome uzna za nieistotne.</translation>
 <translation id="2587052924345400782">Dostępna jest nowsza wersja</translation>
 <translation id="2593272815202181319">Stała szerokość znaków</translation>
+<translation id="2603212228005142861">Zaloguj się, aby zarządzać ustawieniami</translation>
 <translation id="2604446170045642109">Ciemny motyw witryn możesz wyłączyć w ustawieniach.</translation>
 <translation id="2612676031748830579">Numer karty</translation>
 <translation id="2625189173221582860">Hasło zostało skopiowane</translation>
@@ -476,6 +477,7 @@ Tokeny prywatności zwiększają prywatność w sieci i nie można za ich pomo
 <translation id="3587596251841506391">Pomóż poprawić bezpieczeństwo w sieci</translation>
 <translation id="3597179440835065298">Otrzymuj lepsze sugestie</translation>
 <translation id="3602290021589620013">Podgląd</translation>
+<translation id="360901359071773787">Usunąć ostatnie 15 minut?</translation>
 <translation id="3616113530831147358">Dźwięk</translation>
 <translation id="3622349720008044802">Zarządzaj oknami</translation>
 <translation id="3631987586758005671">Udostępniam urządzeniu <ph name="DEVICE_NAME" /></translation>
@@ -623,7 +625,7 @@ Tokeny prywatności zwiększają prywatność w sieci i nie można za ich pomo
 <translation id="4504667196171871375">Przez Wi-Fi i mobilną transmisję danych</translation>
 <translation id="4508528996305412043">Menu karty kanału jest otwarte</translation>
 <translation id="4508642716788467538">Wybierz język</translation>
-<translation id="4509501256689523862">Personalizacja reklam wyświetlanych podczas przeglądania internetu zależy od tego ustawienia, od opcji <ph name="BEGIN_LINK_1" />Tematy reklam<ph name="END_LINK_1" />, od <ph name="BEGIN_LINK_2" />ustawień plików cookie<ph name="END_LINK_2" /> oraz od tego, czy wyświetlasz reklamy spersonalizowane</translation>
+<translation id="4509501256689523862">Personalizacja reklam wyświetlanych podczas przeglądania internetu zależy od tego ustawienia, od opcji <ph name="BEGIN_LINK_1" />Tematy reklam<ph name="END_LINK_1" />, od <ph name="BEGIN_LINK_2" />ustawień plików cookie<ph name="END_LINK_2" /> oraz od tego, czy odwiedzana witryna wyświetla reklamy spersonalizowane</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
 <translation id="451872707440238414">Szukaj zakładek</translation>
 <translation id="4521489764227272523">Wybrane dane zostały usunięte z Chrome i ze zsynchronizowanych urządzeń.
@@ -821,6 +823,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5517095782334947753">Masz zakładki, historię, hasła i inne ustawienia z konta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Gdy testy są włączone i w wyniku losowego wyboru Chrome obejmuje Cię aktywny test, Twoja historia przeglądania wpływa na wyświetlane reklamy i oszacowane zainteresowania (patrz poniżej). Żeby chronić Twoją prywatność, Chrome co miesiąc automatycznie usuwa Twoje zainteresowania.</translation>
 <translation id="5524843473235508879">Przekierowanie zostało zablokowane.</translation>
+<translation id="554297709083131118">Te dane z ostatnich 15 minut zostaną usunięte</translation>
 <translation id="5548606607480005320">Kontrola zabezpieczeń</translation>
 <translation id="5555525474779371165">Wybierz poziom ochrony Bezpiecznego przeglądania</translation>
 <translation id="5556459405103347317">Odśwież</translation>
@@ -1075,6 +1078,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6824899148643461612">Wybrano kartę <ph name="TAB_TITLE" /></translation>
 <translation id="6828070228333235514">Przestań monitorować cenę</translation>
 <translation id="6830728435402077660">Niezabezpieczona</translation>
+<translation id="6831043979455480757">Tłumacz</translation>
 <translation id="6833996806551876956">Okres próbny piaskownicy prywatności</translation>
 <translation id="6836206421467243968">Przywróć grupę kart <ph name="TITLE_OF_GROUP" /> jako nową grupę kart w tle.</translation>
 <translation id="6846298663435243399">Wczytuję…</translation>
@@ -1102,7 +1106,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6963766334940102469">Usuń zakładki</translation>
 <translation id="696447261358045621">Wyłącz tryb incognito</translation>
 <translation id="6971862865055170158">Nie zatwierdzaj</translation>
-<translation id="6978717888677691380">Witryny zablokowane</translation>
+<translation id="6978717888677691380">Zablokowane witryny</translation>
 <translation id="6979737339423435258">Od początku</translation>
 <translation id="6987047470128880212">Na tym urządzeniu tryb incognito jest niedostępny</translation>
 <translation id="6995899638241819463">Ostrzegaj, jeśli wskutek naruszenia bezpieczeństwa danych doszło do ujawnienia haseł</translation>
@@ -1148,7 +1152,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7242755609445462077">Stylizowane wyróżnienie: <ph name="CURRENT_DATE" /></translation>
 <translation id="7248069434667874558">Sprawdź, czy <ph name="TARGET_DEVICE_NAME" /> ma włączoną synchronizację w Chrome</translation>
 <translation id="7252076891734325316">Przybliż telefon do komputera</translation>
-<translation id="7260367682327802201">Twoje urządzenie z Androidem może mieć podobne ustawienie. Jeśli w Chrome i na Twoim urządzeniu z Androidem jest włączony pomiar skuteczności reklam, firma może mierzyć skuteczność reklam w odwiedzanych przez Ciebie witrynach i w aplikacjach, z których korzystasz.</translation>
+<translation id="7260367682327802201">Twoje urządzenie z Androidem może mieć podobne ustawienie. Jeśli w Chrome i na Twoim urządzeniu z Androidem jest włączony pomiar skuteczności reklam, firma może mierzyć skuteczność reklam w odwiedzanych przez Ciebie witrynach i w aplikacjach, z których korzystasz</translation>
 <translation id="727288900855680735">Przesłać <ph name="ONE_TIME_CODE" /> do <ph name="ORIGIN" />?</translation>
 <translation id="7274013316676448362">Zablokowana witryna</translation>
 <translation id="7286572596625053347">Zmienić język <ph name="LANGUAGE" /> na inny?</translation>
@@ -1261,11 +1265,12 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="78270725016672455">Twój komputer chce zarejestrować to urządzenie, aby umożliwić Ci zalogowanie się na stronie</translation>
 <translation id="7844171778363018843">Nie wybrano danych do synchronizacji</translation>
 <translation id="7846296061357476882">Usługi Google</translation>
+<translation id="7847228556075070294">Usunięte pliki cookie, historia i inne dane</translation>
 <translation id="784934925303690534">Zakres czasu</translation>
 <translation id="7851858861565204677">Inne urządzenia</translation>
 <translation id="7853202427316060426">Aktywność</translation>
 <translation id="7859988229622350291">Nigdy nie tłumacz</translation>
-<translation id="7864208933699511058">Personalizacja reklam wyświetlanych podczas przeglądania internetu zależy od tego ustawienia, od ustawienia dotyczącego <ph name="BEGIN_LINK_1" />reklam sugerowanych przez witryny<ph name="END_LINK_1" />, od <ph name="BEGIN_LINK_2" />ustawień plików cookie<ph name="END_LINK_2" /> oraz od tego, czy wyświetlasz reklamy spersonalizowane.</translation>
+<translation id="7864208933699511058">Personalizacja reklam wyświetlanych podczas przeglądania internetu zależy od tego ustawienia, od ustawienia dotyczącego <ph name="BEGIN_LINK_1" />reklam sugerowanych przez witryny<ph name="END_LINK_1" />, od <ph name="BEGIN_LINK_2" />ustawień plików cookie<ph name="END_LINK_2" /> oraz od tego, czy odwiedzana witryna wyświetla reklamy spersonalizowane.</translation>
 <translation id="7866213166286285359">Tu możesz przetłumaczyć strony</translation>
 <translation id="78707286264420418">Aby połączyć się z Twoim urządzeniem, <ph name="PRODUCT_NAME" /> potrzebuje uprawnień Urządzenia w pobliżu</translation>
 <translation id="7875915731392087153">Utwórz e-maila</translation>
@@ -1315,6 +1320,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8058746566562539958">Otwórz w nowej karcie Chrome</translation>
 <translation id="8062594758852531064">Wczytywanie rozszerzone:</translation>
 <translation id="8063895661287329888">Nie udało się dodać zakładki.</translation>
+<translation id="8066816452984416180">W łatwy sposób dodaj tę stronę do zakładek. Aby edytować ten skrót, naciśnij i przytrzymaj.</translation>
 <translation id="806745655614357130">Przechowuj dane oddzielnie</translation>
 <translation id="8073388330009372546">Otwórz grafikę w nowej karcie</translation>
 <translation id="8076492880354921740">Karty</translation>
@@ -1346,6 +1352,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8216351761227087153">Zobacz</translation>
 <translation id="8218622182176210845">Zarządzaj kontem</translation>
 <translation id="8223642481677794647">Menu karty kanału</translation>
+<translation id="8236097722223016103">Dodaj do zakładek</translation>
 <translation id="8250920743982581267">Dokumenty</translation>
 <translation id="8255617931166444521">Witryny mogą używać plików cookie tylko do śledzenia Twojej aktywności związanej z przeglądaniem tych witryn</translation>
 <translation id="8259179246279078674">Wstępnie wczytywane strony są zaszyfrowane, dlatego Google nie dowie się niczego o ich zawartości. Serwery Google wiedzą, jakie witryny są wstępnie wczytywane w trybie prywatnym. Te informacje są używane tylko w celu wczytywania stron i nie są łączone z innymi informacjami na Twoim koncie Google.</translation>
@@ -1440,6 +1447,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8699120352855309748">Nie proponuj tłumaczenia tych języków</translation>
 <translation id="8712637175834984815">OK</translation>
+<translation id="8723453889042591629">Szybko przetłumacz tę stronę. Aby edytować ten skrót, naciśnij i przytrzymaj.</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
 <translation id="8746155870861185046">Udostępnij zaznaczenie</translation>
 <translation id="874726034427945498">Aby otrzymywać lepsze sugestie na pasku adresu, włącz synchronizację kart i historii</translation>
@@ -1492,6 +1500,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8989968390305463310">Historia przeglądania wpływa na wyświetlane reklamy i oszacowane zainteresowania (patrz poniżej). Żeby chronić Twoją prywatność, Chrome co miesiąc automatycznie usuwa Twoje zainteresowania. Zainteresowania mogą być odświeżane, chyba że je usuniesz.</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8996847606757455498">Wybierz innego dostawcę</translation>
+<translation id="8998289560386111590">Niedostępne na Twoim urządzeniu</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
 <translation id="9022774213089566801">Często odwiedzane</translation>
 <translation id="9022871169049522985">Witryny i reklamodawcy mogą mierzyć skuteczność reklam</translation>

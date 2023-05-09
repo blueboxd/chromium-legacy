@@ -2874,6 +2874,12 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.threaded_scrolling_enabled =
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
 
+  if (prefs.viewport_enabled &&
+      base::FeatureList::IsEnabled(
+          blink::features::kDefaultViewportIsDeviceWidth)) {
+    prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
+  }
+
   if (GetController().GetVisibleEntry() &&
       GetController().GetVisibleEntry()->GetIsOverridingUserAgent()) {
 #if BUILDFLAG(IS_ANDROID)
@@ -3075,6 +3081,30 @@ void WebContentsImpl::OnCookiesAccessed(RenderFrameHostImpl* rfh,
   void (WebContentsObserver::*func)(RenderFrameHost*,
                                     const CookieAccessDetails&) =
       &WebContentsObserver::OnCookiesAccessed;
+  observers_.NotifyObservers(func, rfh, details);
+}
+
+void WebContentsImpl::OnTrustTokensAccessed(
+    NavigationHandle* navigation,
+    const TrustTokenAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnTrustTokensAccessed",
+                        "navigation_handle", navigation);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(NavigationHandle*,
+                                    const TrustTokenAccessDetails&) =
+      &WebContentsObserver::OnTrustTokensAccessed;
+  observers_.NotifyObservers(func, navigation, details);
+}
+
+void WebContentsImpl::OnTrustTokensAccessed(
+    RenderFrameHostImpl* rfh,
+    const TrustTokenAccessDetails& details) {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::OnTrustTokensAccessed",
+                        "render_frame_host", rfh);
+  // Use a variable to select between overloads.
+  void (WebContentsObserver::*func)(RenderFrameHost*,
+                                    const TrustTokenAccessDetails&) =
+      &WebContentsObserver::OnTrustTokensAccessed;
   observers_.NotifyObservers(func, rfh, details);
 }
 

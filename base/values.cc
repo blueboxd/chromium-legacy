@@ -1161,10 +1161,6 @@ absl::optional<int> Value::FindIntKey(StringPiece key) const {
   return GetDict().FindInt(key);
 }
 
-absl::optional<double> Value::FindDoubleKey(StringPiece key) const {
-  return GetDict().FindDouble(key);
-}
-
 const std::string* Value::FindStringKey(StringPiece key) const {
   return GetDict().FindString(key);
 }
@@ -1287,10 +1283,6 @@ Value* Value::FindListPath(StringPiece path) {
 
 Value* Value::SetPath(StringPiece path, Value&& value) {
   return GetDict().SetByDottedPath(path, std::move(value));
-}
-
-Value* Value::SetBoolPath(StringPiece path, bool value) {
-  return GetDict().SetByDottedPath(path, value);
 }
 
 Value* Value::SetIntPath(StringPiece path, int value) {

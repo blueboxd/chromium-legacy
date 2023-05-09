@@ -1155,6 +1155,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("textOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    OpenHostedFiles, /* open_hosted_files.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("hostedOpenDrive"),
+                      TestCase("encryptedHostedOpenDrive")));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
@@ -2175,10 +2181,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchWithRecencyOptions").EnableSearchV2(),
         TestCase("searchDriveWithRecencyOptions").EnableSearchV2(),
         TestCase("searchRemovableDevice").EnableSearchV2(),
+        TestCase("searchPartitionedRemovableDevice").EnableSearchV2(),
         TestCase("resetSearchOptionsOnFolderChange").EnableSearchV2(),
         TestCase("showSearchResultMessageWhenSearching").EnableSearchV2(),
         TestCase("showsEducationNudge").EnableSearchV2(),
-        TestCase("searchFromMyFiles").EnableSearchV2()
+        TestCase("searchFromMyFiles").EnableSearchV2(),
+        TestCase("selectionPath").EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));

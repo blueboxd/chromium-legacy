@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.browserservices;
 
 import static org.chromium.chrome.browser.browserservices.permissiondelegation.InstalledWebappGeolocationBridge.EXTRA_NEW_LOCATION_ERROR_CALLBACK;
 
+import android.app.ActivityOptions;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -30,9 +31,11 @@ import androidx.browser.trusted.TrustedWebActivityCallback;
 import androidx.browser.trusted.TrustedWebActivityService;
 import androidx.browser.trusted.TrustedWebActivityServiceConnectionPool;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplicationImpl;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClientWrappers.Connection;
@@ -48,7 +51,6 @@ import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.List;
 import java.util.Set;
@@ -245,7 +247,10 @@ public class TrustedWebActivityClient {
                 Intent extraIntent = new Intent();
                 extraIntent.putExtra(EXTRA_MESSENGER, new Messenger(handler));
                 try {
-                    pendingIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent);
+                    ActivityOptions options = ActivityOptions.makeBasic();
+                    ApiCompatibilityUtils.setActivityOptionsBackgroundActivityStartMode(options);
+                    pendingIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent, null,
+                            null, null, options.toBundle());
                 } catch (PendingIntent.CanceledException e) {
                     Log.e(TAG, "The PendingIntent was canceled.", e);
                 }
@@ -271,7 +276,7 @@ public class TrustedWebActivityClient {
                     @Override
                     public void onExtraCallback(String callbackName, @Nullable Bundle bundle) {
                         // Hop back to the UI thread because we are on a binder thread.
-                        PostTask.postTask(UiThreadTaskTraits.USER_VISIBLE, () -> {
+                        PostTask.postTask(TaskTraits.UI_USER_VISIBLE, () -> {
                             boolean granted = false;
                             if (TextUtils.equals(
                                         callbackName, CHECK_LOCATION_PERMISSION_COMMAND_NAME)

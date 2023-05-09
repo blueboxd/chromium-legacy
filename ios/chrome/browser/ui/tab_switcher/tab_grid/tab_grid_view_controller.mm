@@ -1283,10 +1283,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                     nil);
   }
   if (IsPinnedTabsEnabled()) {
-    BOOL isTabGridPageRegularTabs =
-        currentPage == TabGridPage::TabGridPageRegularTabs;
-    [self.pinnedTabsViewController
-        pinnedTabsAvailable:isTabGridPageRegularTabs];
+    const BOOL pinnedTabsAvailable =
+        currentPage == TabGridPage::TabGridPageRegularTabs &&
+        self.tabGridMode == TabGridModeNormal;
+    [self.pinnedTabsViewController pinnedTabsAvailable:pinnedTabsAvailable];
   }
   [self updateToolbarsAppearance];
   // Make sure the current page becomes the first responder, so that it can
@@ -1594,15 +1594,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Adds the top toolbar and sets constraints.
 - (void)setupTopToolbar {
-  UIVisualEffectView* topToolbarBlurView;
-  if (!UseSymbols() && base::ios::HasDynamicIsland()) {
-    UIBlurEffect* blurEffect =
-        [UIBlurEffect effectWithStyle:UIBlurEffectStyleDark];
-    topToolbarBlurView = [[UIVisualEffectView alloc] initWithEffect:blurEffect];
-    topToolbarBlurView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self.view addSubview:topToolbarBlurView];
-  }
-
   // In iOS 13+, constraints break if the UIToolbar is initialized with a null
   // or zero rect frame. An arbitrary non-zero frame fixes this issue.
   TabGridTopToolbar* topToolbar =
@@ -1641,19 +1632,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [topToolbar.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [topToolbar.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor]
   ]];
-
-  if (!UseSymbols() && base::ios::HasDynamicIsland()) {
-    [NSLayoutConstraint activateConstraints:@[
-      [topToolbarBlurView.topAnchor
-          constraintEqualToAnchor:self.view.topAnchor],
-      [topToolbarBlurView.bottomAnchor
-          constraintEqualToAnchor:topToolbar.bottomAnchor],
-      [topToolbarBlurView.leadingAnchor
-          constraintEqualToAnchor:topToolbar.leadingAnchor],
-      [topToolbarBlurView.trailingAnchor
-          constraintEqualToAnchor:topToolbar.trailingAnchor],
-    ]];
-  }
 }
 
 // Adds the bottom toolbar and sets constraints.
@@ -2458,6 +2436,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.regularTabsViewController.dropAnimationInProgress = NO;
 }
 
+- (void)pinnedViewControllerDragSessionDidEnd:
+    (PinnedTabsViewController*)pinnedTabsViewController {
+  [self.topToolbar setSearchButtonEnabled:YES];
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -2980,16 +2963,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
-  // Other key commands are already declared in the menu.
-  return @[
-    UIKeyCommand.cr_openNewRegularTab,
-    UIKeyCommand.cr_undo,
-    UIKeyCommand.cr_close,
-    // TODO(crbug.com/1385469): Move it to the menu builder once we have the
-    // strings.
-    UIKeyCommand.cr_select2,
-    UIKeyCommand.cr_select3,
-  ];
+  // On iOS 15+, key commands visible in the app's menu are created in
+  // MenuBuilder.
+  if (@available(iOS 15, *)) {
+    // Return the key commands that are not already present in the menu.
+    return @[
+      UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_undo,
+      UIKeyCommand.cr_close,
+      // TODO(crbug.com/1385469): Move it to the menu builder once we have the
+      // strings.
+      UIKeyCommand.cr_select2,
+      UIKeyCommand.cr_select3,
+    ];
+  } else {
+    // Return all the commands supported by TabGridViewController.
+    return @[
+      UIKeyCommand.cr_openNewTab,
+      UIKeyCommand.cr_openNewIncognitoTab,
+      UIKeyCommand.cr_openNewRegularTab,
+      UIKeyCommand.cr_close,
+    ];
+  }
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {

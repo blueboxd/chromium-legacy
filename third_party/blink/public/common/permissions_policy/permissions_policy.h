@@ -112,6 +112,9 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
     // Adds a single origin with possible wildcards to the allowlist.
     void Add(const blink::OriginWithPossibleWildcards& origin);
 
+    // Add an origin representing self to the allowlist.
+    void AddSelf(absl::optional<url::Origin> self);
+
     // Adds all origins to the allowlist.
     void AddAll();
 
@@ -121,6 +124,9 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
 
     // Returns true if the given origin has been added to the allowlist.
     bool Contains(const url::Origin& origin) const;
+
+    // Returns the origin for self if included in the allowlist.
+    const absl::optional<url::Origin>& SelfIfMatches() const;
 
     // Returns true if the allowlist matches all origins.
     bool MatchesAll() const;
@@ -148,6 +154,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
 
    private:
     std::vector<OriginWithPossibleWildcards> allowed_origins_;
+    absl::optional<url::Origin> self_if_matches_;
     bool matches_all_origins_{false};
     bool matches_opaque_src_{false};
   };
@@ -170,7 +177,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   // parent to prevent cross-channel communication.
   static std::unique_ptr<PermissionsPolicy> CreateForFencedFrame(
       const url::Origin& origin,
-      blink::mojom::FencedFrameMode mode);
+      bool is_opaque_ads_mode);
 
   static std::unique_ptr<PermissionsPolicy> CreateFromParsedPolicy(
       const ParsedPermissionsPolicy& parsed_policy,
@@ -259,7 +266,7 @@ class BLINK_COMMON_EXPORT PermissionsPolicy {
   static std::unique_ptr<PermissionsPolicy> CreateForFencedFrame(
       const url::Origin& origin,
       const PermissionsPolicyFeatureList& features,
-      blink::mojom::FencedFrameMode mode);
+      bool is_opaque_ads_mode);
 
   // Returns whether or not the given feature is enabled by this policy for a
   // specific origin given a set of opt-in features. The opt-in features cannot

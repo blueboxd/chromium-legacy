@@ -269,7 +269,10 @@ void AutofillClientImpl::ScanCreditCard(CreditCardScanCallback callback) {
   NOTREACHED();
 }
 
-bool AutofillClientImpl::IsFastCheckoutSupported() {
+bool AutofillClientImpl::IsFastCheckoutSupported(
+    const autofill::FormData& form,
+    const autofill::FormFieldData& field,
+    const autofill::AutofillManager& autofill_manager) {
   return false;
 }
 
@@ -357,6 +360,13 @@ bool AutofillClientImpl::IsPasswordManagerEnabled() {
 void AutofillClientImpl::PropagateAutofillPredictions(
     autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
+  NOTREACHED();
+}
+
+void AutofillClientImpl::DidFillOrPreviewForm(
+    autofill::mojom::RendererFormDataAction action,
+    autofill::AutofillTriggerSource trigger_source,
+    bool is_refill) {
   NOTREACHED();
 }
 

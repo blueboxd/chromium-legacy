@@ -81,7 +81,7 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kManagedDefaultPopupsSetting,
     base::Value::Type::INTEGER },
   { policy::key::kIncognitoModeAvailability,
-    prefs::kIncognitoModeAvailability,
+    policy::policy_prefs::kIncognitoModeAvailability,
     base::Value::Type::INTEGER },
   { policy::key::kNTPContentSuggestionsEnabled,
     prefs::kNTPContentSuggestionsEnabled,
@@ -125,6 +125,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { policy::key::kMixedContentAutoupgradeEnabled,
     prefs::kMixedContentAutoupgradeEnabled,
     base::Value::Type::BOOLEAN},
+  { policy::key::kLensCameraAssistedSearchEnabled,
+    prefs::kLensCameraAssistedSearchPolicyAllowed,
+    base::Value::Type::BOOLEAN },
 };
 // clang-format on
 

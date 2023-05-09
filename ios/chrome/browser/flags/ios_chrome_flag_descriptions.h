@@ -257,6 +257,11 @@ extern const char kEnableFeedImageCachingDescription[];
 extern const char kEnableFeedSyntheticCapabilitiesName[];
 extern const char kEnableFeedSyntheticCapabilitiesDescription[];
 
+// Title and description for the flag to enable follow IPH experiment
+// parameters.
+extern const char kEnableFollowIPHExpParamsName[];
+extern const char kEnableFollowIPHExpParamsDescription[];
+
 // Title and description for the flag to enable follow management page instant
 // reload when opening.
 extern const char kEnableFollowManagementInstantReloadName[];
@@ -361,13 +366,19 @@ extern const char kExpandedTabStripDescription[];
 extern const char kFeedBackgroundRefreshName[];
 extern const char kFeedBackgroundRefreshDescription[];
 
+// Title and description for the flag to disable Discover-controlled
+// foregrounding refresh.
+extern const char kFeedDisableHotStartRefreshName[];
+extern const char kFeedDisableHotStartRefreshDescription[];
+
 // Title and description for the flag to enable feed experiment tagging.
 extern const char kFeedExperimentTaggingName[];
 extern const char kFeedExperimentTaggingDescription[];
 
-// Title and description for the flag to enable feed foreground refresh.
-extern const char kFeedForegroundRefreshName[];
-extern const char kFeedForegroundRefreshDescription[];
+// Title and description for the flag to enable feed invisible foreground
+// refresh.
+extern const char kFeedInvisibleForegroundRefreshName[];
+extern const char kFeedInvisibleForegroundRefreshDescription[];
 
 // Title and description for the flag to enable filling across affiliated
 // websites.
@@ -410,10 +421,20 @@ extern const char kIncognitoNtpRevampDescription[];
 extern const char kIndicateAccountStorageErrorInAccountCellName[];
 extern const char kIndicateAccountStorageErrorInAccountCellDescription[];
 
+// Title and description for the flag to indicate the identity error in
+// the overflow menu.
+extern const char kIndicateIdentityErrorInOverflowMenuName[];
+extern const char kIndicateIdentityErrorInOverflowMenuDescription[];
+
 // Title and description for the flag to enable feature_engagement::Tracker
 // demo mode.
 extern const char kInProductHelpDemoModeName[];
 extern const char kInProductHelpDemoModeDescription[];
+
+// Title and description for the flag to enable metrics collection for edit
+// menu.
+extern const char kIOSBrowserEditMenuMetricsName[];
+extern const char kIOSBrowserEditMenuMetricsDescription[];
 
 // Title and description for the flag to enable new API for browser edit menu.
 extern const char kIOSCustomBrowserEditMenuName[];
@@ -840,6 +861,10 @@ extern const char kEnableLensContextMenuAltTextDescription[];
 // copied images in the omnibox.
 extern const char kEnableLensInOmniboxCopiedImageName[];
 extern const char kEnableLensInOmniboxCopiedImageDescription[];
+
+// Title and description for the flag to enable the follow up of the SF Symbols.
+extern const char kSFSymbolsFollowupName[];
+extern const char kSFSymbolsFollowupDescription[];
 
 // Title and description for the flag to sort the tab by recency in the TabGrid.
 extern const char kTabGridRecencySortName[];

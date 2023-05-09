@@ -10,7 +10,6 @@
 #include "extensions/browser/permissions_manager.h"
 
 class Profile;
-class GURL;
 
 namespace content {
 class WebContents;
@@ -58,18 +57,13 @@ class SitePermissionsHelper {
 
   // Updates the user site settings pointed to by `web_contents` to
   // `site_setting` for `action_ids`.
+  // TODO(crbug.com/1390958): Remove after removing ExtensionsTabbedMenuView
+  // related code. New code should directly call
+  // PermissionsManager::UpdateUserSiteSetting.
   void UpdateUserSiteSettings(
       const base::flat_set<ToolbarActionsModel::ActionId>& action_ids,
       content::WebContents* web_contents,
       PermissionsManager::UserSiteSetting site_setting);
-
-  // Returns whether `site_access` option can be selected for `extension` in
-  // `url`.
-  // TODO(crbug.com/1289441): Move to PermissionsManager.
-  bool CanSelectSiteAccess(
-      const Extension& extension,
-      const GURL& gurl,
-      PermissionsManager::UserSiteAccess site_access) const;
 
   // Returns whether the `extension` has been blocked on the given
   // `web_contents`.

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_edit_menu_handler.h"
 #import "ios/chrome/browser/ui/browser_container/edit_menu_alert_delegate.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/link_to_text/link_to_text_mediator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/partial_translate/partial_translate_mediator.h"
@@ -88,17 +89,19 @@
 
   self.browserEditMenuHandler = [[BrowserEditMenuHandler alloc] init];
   self.viewController.browserEditMenuHandler = self.browserEditMenuHandler;
-  self.browserEditMenuHandler.rootView = self.viewController.view;
   self.browserEditMenuHandler.linkToTextDelegate = self.linkToTextMediator;
 
   if (base::FeatureList::IsEnabled(kIOSEditMenuPartialTranslate)) {
     PrefService* prefService =
         browserState->GetOriginalChromeBrowserState()->GetPrefs();
+    FullscreenController* fullscreenController =
+        FullscreenController::FromBrowser(self.browser);
 
     self.partialTranslateMediator = [[PartialTranslateMediator alloc]
           initWithWebStateList:webStateList->AsWeakPtr()
         withBaseViewController:self.viewController
                    prefService:prefService
+          fullscreenController:fullscreenController
                      incognito:incognito];
     self.partialTranslateMediator.alertDelegate = self;
     CommandDispatcher* dispatcher = browser->GetCommandDispatcher();
@@ -109,6 +112,7 @@
         self.partialTranslateMediator;
   }
 
+  self.browserEditMenuHandler.rootView = self.viewController.view;
   [self.webContentAreaOverlayContainerCoordinator start];
   self.viewController.webContentsOverlayContainerViewController =
       self.webContentAreaOverlayContainerCoordinator.viewController;

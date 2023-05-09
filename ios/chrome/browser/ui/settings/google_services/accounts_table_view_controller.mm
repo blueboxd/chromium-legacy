@@ -13,6 +13,7 @@
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/driver/sync_service.h"
+#import "components/sync/driver/sync_service_utils.h"
 #import "ios/chrome/browser/application_context/application_context.h"
 #import "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
@@ -53,6 +54,7 @@
 #import "ios/chrome/browser/ui/settings/settings_root_view_controlling.h"
 #import "ios/chrome/browser/ui/settings/sync/sync_encryption_passphrase_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/account_error_ui_info.h"
+#import "ios/chrome/browser/ui/settings/sync/utils/identity_error_util.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
 #import "ios/chrome/browser/url/chrome_url_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -411,12 +413,8 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
   item.accessibilityIdentifier = kSettingsAccountsTableViewAddAccountCellId;
-  item.image =
-      UseSymbols()
-          ? CustomSymbolWithPointSize(kPlusCircleFillSymbol,
-                                      kSymbolAddAccountPointSize)
-          : [[UIImage imageNamed:@"settings_accounts_add_account"]
-                imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  item.image = CustomSymbolWithPointSize(kPlusCircleFillSymbol,
+                                         kSymbolAddAccountPointSize);
   return item;
 }
 
@@ -458,8 +456,10 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 // updated without reloading the view. Can refresh, add or remove the error
 // section when an update is needed.
 - (void)updateErrorSectionModelAndReloadViewIfNeeded:(BOOL)reloadViewIfNeeded {
-  AccountErrorUIInfo* errorInfo =
-      GetAccountErrorUIInfo(_browser->GetBrowserState());
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(_browser->GetBrowserState());
+  DCHECK(syncService);
+  AccountErrorUIInfo* errorInfo = GetAccountErrorUIInfo(syncService);
   BOOL hadErrorSection = [self.tableViewModel
       hasSectionForSectionIdentifier:SectionIdentifierError];
   syncer::SyncService::UserActionableError newErrorType =
@@ -928,9 +928,36 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       [self openPassphraseDialog];
       break;
     }
+    case AccountErrorUserActionableType::kReauthForFetchKeys: {
+      [self openTrustedVaultReauthForFetchKeys];
+      break;
+    }
+    case AccountErrorUserActionableType::kReauthForDegradedRecoverability: {
+      [self openTrustedVaultReauthForDegradedRecoverability];
+      break;
+    }
     case AccountErrorUserActionableType::kNoAction:
       break;
   }
+}
+
+// Opens the trusted vault reauth dialog for fetch keys.
+- (void)openTrustedVaultReauthForFetchKeys {
+  syncer::TrustedVaultUserActionTriggerForUMA trigger =
+      syncer::TrustedVaultUserActionTriggerForUMA::kSettings;
+  [self.applicationCommandsHandler
+      showTrustedVaultReauthForFetchKeysFromViewController:self
+                                                   trigger:trigger];
+}
+
+// Opens the trusted vault reauth dialog for degraded recoverability.
+- (void)openTrustedVaultReauthForDegradedRecoverability {
+  syncer::TrustedVaultUserActionTriggerForUMA trigger =
+      syncer::TrustedVaultUserActionTriggerForUMA::kSettings;
+  [self.applicationCommandsHandler
+      showTrustedVaultReauthForDegradedRecoverabilityFromViewController:self
+                                                                trigger:
+                                                                    trigger];
 }
 
 // Opens the passphrase dialog.

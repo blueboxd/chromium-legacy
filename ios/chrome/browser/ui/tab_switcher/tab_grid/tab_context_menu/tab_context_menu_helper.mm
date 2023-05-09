@@ -13,11 +13,11 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/tab_context_menu_delegate.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_cell.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
@@ -38,20 +38,16 @@
 
 #pragma mark - TabContextMenuProvider
 
-- (instancetype)initWithBrowser:(Browser*)browser
-         tabContextMenuDelegate:
-             (id<TabContextMenuDelegate>)tabContextMenuDelegate {
+- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
+              tabContextMenuDelegate:
+                  (id<TabContextMenuDelegate>)tabContextMenuDelegate {
   self = [super init];
   if (self) {
-    _browser = browser;
+    _browserState = browserState;
     _contextMenuDelegate = tabContextMenuDelegate;
-    _incognito = _browser->GetBrowserState()->IsOffTheRecord();
+    _incognito = _browserState->IsOffTheRecord();
   }
   return self;
-}
-
-- (void)dealloc {
-  self.browser = nullptr;
 }
 
 - (UIContextMenuConfiguration*)
@@ -86,10 +82,10 @@
 
   ActionFactory* actionFactory =
       [[ActionFactory alloc] initWithScenario:scenario];
-
   const BOOL pinned = scenario == MenuScenarioHistogram::kPinnedTabsEntry;
+  const BOOL inactive = scenario == MenuScenarioHistogram::kInactiveTabsEntry;
 
-  TabItem* item = [self tabItemForIdentifier:cell.itemIdentifier pinned:pinned];
+  TabItem* item = [self tabItemForIdentifier:cell.itemIdentifier];
 
   if (!item) {
     return @[];
@@ -97,7 +93,7 @@
 
   NSMutableArray<UIMenuElement*>* menuElements = [[NSMutableArray alloc] init];
 
-  if (IsPinnedTabsEnabled() && !self.incognito) {
+  if (IsPinnedTabsEnabled() && !self.incognito && !inactive) {
     if (pinned) {
       [menuElements addObject:[actionFactory actionToUnpinTabWithBlock:^{
                       [self.contextMenuDelegate
@@ -141,10 +137,9 @@
     }
     // Bookmarking can be disabled from prefs (from an enterprise policy),
     // if that's the case grey out the option in the menu.
-    if (self.browser) {
-      BOOL isEditBookmarksEnabled =
-          self.browser->GetBrowserState()->GetPrefs()->GetBoolean(
-              bookmarks::prefs::kEditBookmarksEnabled);
+    if (_browserState) {
+      BOOL isEditBookmarksEnabled = _browserState->GetPrefs()->GetBoolean(
+          bookmarks::prefs::kEditBookmarksEnabled);
       if (!isEditBookmarksEnabled && bookmarkAction) {
         bookmarkAction.attributes = UIMenuElementAttributesDisabled;
       }
@@ -154,11 +149,12 @@
     }
   }
 
-  // Thumb strip, pinned tabs and search results menus don't support tab
-  // selection.
+  // Thumb strip, pinned tabs, inactive tabs and search results menus don't
+  // support tab selection.
   BOOL scenarioDisablesSelection =
       scenario == MenuScenarioHistogram::kTabGridSearchResult ||
       scenario == MenuScenarioHistogram::kPinnedTabsEntry ||
+      scenario == MenuScenarioHistogram::kInactiveTabsEntry ||
       scenario == MenuScenarioHistogram::kThumbStrip;
   if (!scenarioDisablesSelection) {
     [menuElements addObject:[actionFactory actionToSelectTabsWithBlock:^{
@@ -181,22 +177,21 @@
 - (BOOL)isTabItemBookmarked:(TabItem*)item {
   bookmarks::BookmarkModel* bookmarkModel =
       ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-          _browser->GetBrowserState());
+          _browserState);
   return item && bookmarkModel &&
          bookmarkModel->GetMostRecentlyAddedUserNodeForURL(item.URL);
 }
 
 // Returns the TabItem object representing the tab with `identifier.
-// `pinned` tracks the pinned state of
-// the tab we are looking for.
-- (TabItem*)tabItemForIdentifier:(NSString*)identifier pinned:(BOOL)pinned {
+- (TabItem*)tabItemForIdentifier:(NSString*)identifier {
   BrowserList* browserList =
-      BrowserListFactory::GetForBrowserState(_browser->GetBrowserState());
+      BrowserListFactory::GetForBrowserState(_browserState);
   std::set<Browser*> browsers = _incognito ? browserList->AllIncognitoBrowsers()
                                            : browserList->AllRegularBrowsers();
   for (Browser* browser : browsers) {
     WebStateList* webStateList = browser->GetWebStateList();
-    TabItem* item = GetTabItem(webStateList, identifier, /*pinned=*/pinned);
+    TabItem* item = GetTabItem(
+        webStateList, WebStateSearchCriteria{.identifier = identifier});
     if (item != nil) {
       return item;
     }

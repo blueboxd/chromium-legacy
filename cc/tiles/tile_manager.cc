@@ -596,11 +596,11 @@ bool TileManager::PrepareTiles(
   return true;
 }
 
-void TileManager::CheckForCompletedTasks() {
-  TRACE_EVENT0("cc", "TileManager::CheckForCompletedTasks");
+void TileManager::PrepareToDraw() {
+  TRACE_EVENT0("cc", "TileManager::PrepareToDraw");
 
   if (!tile_task_manager_) {
-    TRACE_EVENT_INSTANT0("cc", "TileManager::CheckForCompletedTasksAborted",
+    TRACE_EVENT_INSTANT0("cc", "TileManager::PrepareToDrawAborted",
                          TRACE_EVENT_SCOPE_THREAD);
     return;
   }
@@ -608,12 +608,16 @@ void TileManager::CheckForCompletedTasks() {
   tile_task_manager_->CheckForCompletedTasks();
   did_check_for_completed_tasks_since_last_schedule_tasks_ = true;
 
+  if (base::FeatureList::IsEnabled(features::kFlushGpuAtDraw)) {
+    // Flush the GPU before calling SetReadyToDrawCallback, which happens in
+    // CheckPendingGpuWorkAndIssueSignals.
+    raster_buffer_provider_->Flush();
+  }
   CheckPendingGpuWorkAndIssueSignals();
 
   TRACE_EVENT_INSTANT1(
-      "cc", "TileManager::CheckForCompletedTasksFinished",
-      TRACE_EVENT_SCOPE_THREAD, "stats",
-      RasterTaskCompletionStatsAsValue(raster_task_completion_stats_));
+      "cc", "TileManager::PrepareToDrawFinished", TRACE_EVENT_SCOPE_THREAD,
+      "stats", RasterTaskCompletionStatsAsValue(raster_task_completion_stats_));
   raster_task_completion_stats_ = RasterTaskCompletionStats();
 }
 
@@ -806,7 +810,7 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     MemoryUsage memory_required_by_tile_to_be_scheduled;
     if (!tile->raster_task_.get()) {
       memory_required_by_tile_to_be_scheduled = MemoryUsage::FromConfig(
-          tile->desired_texture_size(), DetermineResourceFormat(tile));
+          tile->desired_texture_size(), DetermineFormat(tile));
     }
 
     // This is the memory limit that will be used by this tile. Depending on
@@ -1205,11 +1209,11 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   //
   // TODO(crbug.com/1076568): Once we have access to the display's buffer format
   // via gfx::DisplayColorSpaces, we should also do this for HBD images.
-  auto format = DetermineResourceFormat(tile);
+  auto format = DetermineFormat(tile);
   if (target_color_params.color_space.IsHDR() &&
       GetContentColorUsageForPrioritizedTile(prioritized_tile) ==
           gfx::ContentColorUsage::kHDR) {
-    format = viz::ResourceFormat::RGBA_F16;
+    format = viz::SinglePlaneFormat::kRGBA_F16;
   }
 
   // Get the resource.
@@ -1693,9 +1697,8 @@ void TileManager::NeedsInvalidationForCheckerImagedTiles() {
   client_->RequestImplSideInvalidationForCheckerImagedTiles();
 }
 
-viz::ResourceFormat TileManager::DetermineResourceFormat(
-    const Tile* tile) const {
-  return raster_buffer_provider_->GetResourceFormat();
+viz::SharedImageFormat TileManager::DetermineFormat(const Tile* tile) const {
+  return raster_buffer_provider_->GetFormat();
 }
 
 std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
@@ -1898,12 +1901,11 @@ TileManager::MemoryUsage::MemoryUsage(size_t memory_bytes,
 // static
 TileManager::MemoryUsage TileManager::MemoryUsage::FromConfig(
     const gfx::Size& size,
-    viz::ResourceFormat format) {
-  // We can use UncheckedSizeInBytes here since this is used with a tile
+    viz::SharedImageFormat format) {
+  // We don't need to validate the computed size since this is used with a tile
   // size which is determined by the compositor (it's at most max texture
   // size).
-  return MemoryUsage(
-      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(size, format), 1);
+  return MemoryUsage(format.EstimatedSizeInBytes(size), 1);
 }
 
 // static

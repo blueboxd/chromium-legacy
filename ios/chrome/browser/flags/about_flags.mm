@@ -72,6 +72,7 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/flags/system_flags.h"
+#import "ios/chrome/browser/follow/follow_features.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_constants.h"
 #import "ios/chrome/browser/policy/cloud/user_policy_switch.h"
@@ -88,7 +89,6 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/first_run/trending_queries_field_trial.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_retention_field_trial_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -425,24 +425,28 @@ const FeatureEntry::FeatureVariation kFeedBackgroundRefreshVariations[] = {
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
 
 // Feed Foreground Refresh Feature Params.
-const FeatureEntry::FeatureParam kFeedRefreshPostFeedSessionOnly[] = {
-    {kEnableFeedRefreshPostFeedSession, "true"},
-    {kEnableFeedRefreshOnAppBackgrounding, "false"}};
-const FeatureEntry::FeatureParam kFeedRefreshOnAppBackgroundingOnly[] = {
-    {kEnableFeedRefreshPostFeedSession, "false"},
-    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
-const FeatureEntry::FeatureParam kFeedForegroundRefreshAll[] = {
-    {kEnableFeedRefreshPostFeedSession, "true"},
-    {kEnableFeedRefreshOnAppBackgrounding, "true"}};
+const FeatureEntry::FeatureParam kFeedSessionCloseForegroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "true"},
+    {kEnableFeedAppCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseBackgroundRefresh, "false"}};
+const FeatureEntry::FeatureParam kFeedAppCloseForegroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseForegroundRefresh, "true"},
+    {kEnableFeedAppCloseBackgroundRefresh, "false"}};
+const FeatureEntry::FeatureParam kFeedAppCloseBackgroundRefresh[] = {
+    {kEnableFeedSessionCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseForegroundRefresh, "false"},
+    {kEnableFeedAppCloseBackgroundRefresh, "true"}};
 
-// Feed Foreground Refresh Feature Variations.
-const FeatureEntry::FeatureVariation kFeedForegroundRefreshVariations[] = {
-    {"Post Feed session", kFeedRefreshPostFeedSessionOnly,
-     std::size(kFeedRefreshPostFeedSessionOnly), nullptr},
-    {"On app backgrounding", kFeedRefreshOnAppBackgroundingOnly,
-     std::size(kFeedRefreshOnAppBackgroundingOnly), nullptr},
-    {"All foreground refresh methods", kFeedForegroundRefreshAll,
-     std::size(kFeedForegroundRefreshAll), nullptr},
+// Feed Invisible Foreground Refresh Feature Variations.
+const FeatureEntry::FeatureVariation
+    kFeedInvisibleForegroundRefreshVariations[] = {
+        {"session close foreground refresh", kFeedSessionCloseForegroundRefresh,
+         std::size(kFeedSessionCloseForegroundRefresh), nullptr},
+        {"app close foreground refresh", kFeedAppCloseForegroundRefresh,
+         std::size(kFeedAppCloseForegroundRefresh), nullptr},
+        {"app close background refresh", kFeedAppCloseBackgroundRefresh,
+         std::size(kFeedAppCloseBackgroundRefresh), nullptr},
 };
 
 const FeatureEntry::FeatureParam kTrendingQueriesEnableAllUsers[] = {
@@ -714,7 +718,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"fullscreen-viewport-adjustment-experiment",
      flag_descriptions::kFullscreenSmoothScrollingName,
      flag_descriptions::kFullscreenSmoothScrollingDescription, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(fullscreen::features::kSmoothScrollingDefault)},
+     FEATURE_VALUE_TYPE(web::features::kSmoothScrollingDefault)},
     {"webpage-default-zoom-from-dynamic-type",
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeName,
      flag_descriptions::kWebPageDefaultZoomFromDynamicTypeDescription,
@@ -1218,12 +1222,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
                                     kFeedBackgroundRefreshVariations,
                                     "FeedBackgroundRefresh")},
 #endif  // BUILDFLAG(IOS_BACKGROUND_MODE_ENABLED)
-    {"feed-foreground-refresh-ios",
-     flag_descriptions::kFeedForegroundRefreshName,
-     flag_descriptions::kFeedForegroundRefreshDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedForegroundRefresh,
-                                    kFeedForegroundRefreshVariations,
-                                    "FeedForegroundRefresh")},
+    {"feed-invisible-foreground-refresh-ios",
+     flag_descriptions::kFeedInvisibleForegroundRefreshName,
+     flag_descriptions::kFeedInvisibleForegroundRefreshDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFeedInvisibleForegroundRefresh,
+                                    kFeedInvisibleForegroundRefreshVariations,
+                                    "FeedInvisibleForegroundRefresh")},
     {"omnibox-keyboard-paste-button",
      flag_descriptions::kOmniboxKeyboardPasteButtonName,
      flag_descriptions::kOmniboxKeyboardPasteButtonDescription,
@@ -1425,7 +1430,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIndicateAccountStorageErrorInAccountCellName,
      flag_descriptions::kIndicateAccountStorageErrorInAccountCellDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kIndicateAccountStorageErrorInAccountCell)},
+     FEATURE_VALUE_TYPE(syncer::kIndicateAccountStorageErrorInAccountCell)},
     {"enable-bookmarks-account-storage",
      flag_descriptions::kEnableBookmarksAccountStorageName,
      flag_descriptions::kEnableBookmarksAccountStorageDescription,
@@ -1443,6 +1448,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kBringYourOwnTabsIOS,
                                     kBringYourOwnTabsIOSVariations,
                                     "BringYourOwnTabsIOS")},
+    {"enable-follow-IPH-exp-params",
+     flag_descriptions::kEnableFollowIPHExpParamsName,
+     flag_descriptions::kEnableFollowIPHExpParamsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kEnableFollowIPHExpParams)},
     {"enable-follow-management-instant-reload",
      flag_descriptions::kEnableFollowManagementInstantReloadName,
      flag_descriptions::kEnableFollowManagementInstantReloadDescription,
@@ -1469,6 +1478,21 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnablePreferencesAccountStorageDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(syncer::kEnablePreferencesAccountStorage)},
+    {"indicate-identity-error-overflow-menu",
+     flag_descriptions::kIndicateIdentityErrorInOverflowMenuName,
+     flag_descriptions::kIndicateIdentityErrorInOverflowMenuDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kIndicateSyncErrorInOverflowMenu)},
+    {"ios-browser-edit-menu-metrics",
+     flag_descriptions::kIOSBrowserEditMenuMetricsName,
+     flag_descriptions::kIOSBrowserEditMenuMetricsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSBrowserEditMenuMetrics)},
+    {"sf-symbols-follow-up", flag_descriptions::kSFSymbolsFollowupName,
+     flag_descriptions::kSFSymbolsFollowupDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kSFSymbolsFollowup)},
+    {"feed-disable-hot-start-refresh-ios",
+     flag_descriptions::kFeedDisableHotStartRefreshName,
+     flag_descriptions::kFeedDisableHotStartRefreshDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kFeedDisableHotStartRefresh)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

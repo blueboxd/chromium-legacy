@@ -55,20 +55,6 @@ SubscriptionsManager::SubscriptionsManager(
       storage_(std::move(storage)),
       account_checker_(account_checker),
       observers_(base::ObserverListPolicy::EXISTING_ONLY) {
-  // Populate the cache from local stoarge.
-  storage_->LoadAllSubscriptions(base::BindOnce(
-      [](base::WeakPtr<SubscriptionsManager> manager,
-         std::unique_ptr<std::vector<CommerceSubscription>> subscriptions) {
-        if (!manager) {
-          return;
-        }
-        for (auto& sub : *subscriptions) {
-          manager->subscriptions_cache_.insert(
-              GetStorageKeyForSubscription(sub));
-        }
-      },
-      weak_ptr_factory_.GetWeakPtr()));
-
   SyncSubscriptions();
   scoped_identity_manager_observation_.Observe(identity_manager);
 }
@@ -135,8 +121,7 @@ void SubscriptionsManager::IsSubscribed(
 
 bool SubscriptionsManager::IsSubscribedFromCache(
     const CommerceSubscription& subscription) {
-  return subscriptions_cache_.contains(
-      GetStorageKeyForSubscription(subscription));
+  return storage_->IsSubscribedFromCache(subscription);
 }
 
 void SubscriptionsManager::GetAllSubscriptions(
@@ -243,14 +228,7 @@ void SubscriptionsManager::OnSubscribeStatusFetched(
   base::UmaHistogramEnumeration(kTrackResultHistogramName, result);
   bool succeeded = result == SubscriptionsRequestStatus::kSuccess ||
                    result == SubscriptionsRequestStatus::kNoOp;
-  if (succeeded) {
-    for (auto& sub : notified_subscriptions) {
-      subscriptions_cache_.insert(GetStorageKeyForSubscription(sub));
-    }
-  }
-  for (SubscriptionsObserver& observer : observers_) {
-    observer.OnSubscribe(notified_subscriptions, succeeded);
-  }
+  OnSubscribe(notified_subscriptions, succeeded);
   std::move(callback).Run(succeeded);
   // We sync local cache with server only when the product is successfully added
   // on server. The sync states should be updated after notifying all observers
@@ -310,14 +288,7 @@ void SubscriptionsManager::OnUnsubscribeStatusFetched(
   base::UmaHistogramEnumeration(kUntrackResultHistogramName, result);
   bool succeeded = result == SubscriptionsRequestStatus::kSuccess ||
                    result == SubscriptionsRequestStatus::kNoOp;
-  if (succeeded) {
-    for (auto& sub : notified_subscriptions) {
-      subscriptions_cache_.erase(GetStorageKeyForSubscription(sub));
-    }
-  }
-  for (SubscriptionsObserver& observer : observers_) {
-    observer.OnUnsubscribe(notified_subscriptions, succeeded);
-  }
+  OnUnsubscribe(notified_subscriptions, succeeded);
   std::move(callback).Run(succeeded);
   // We sync local cache with server only when the product is successfully
   // removed on server. The sync states should be updated after notifying all
@@ -363,14 +334,6 @@ void SubscriptionsManager::HandleGetSubscriptionsResponse(
   if (status != SubscriptionsRequestStatus::kSuccess) {
     std::move(callback).Run(status);
   } else {
-    // TODO(b/268383748): This assumes we get the whole list of subscriptions
-    //                    every time. Once observation of subscriptions from
-    //                    other devices is available, we should switch to that.
-    subscriptions_cache_.clear();
-    for (auto& sub : *remote_subscriptions) {
-      subscriptions_cache_.insert(GetStorageKeyForSubscription(sub));
-    }
-
     storage_->UpdateStorage(type, std::move(callback),
                             std::move(remote_subscriptions));
   }
@@ -429,16 +392,65 @@ void SubscriptionsManager::HandleCheckTimestampOnBookmarkChange(
     OnRequestCompletion();
     return;
   }
-  GetRemoteSubscriptionsAndUpdateStorage(
+
+  server_proxy_->Get(
       SubscriptionType::kPriceTrack,
-      base::BindOnce(&SubscriptionsManager::OnSyncStatusFetched,
-                     weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(
+          &SubscriptionsManager::HandleGetSubscriptionsResponseOnBookmarkChange,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SubscriptionsManager::HandleGetSubscriptionsResponseOnBookmarkChange(
+    SubscriptionsRequestStatus status,
+    std::unique_ptr<std::vector<CommerceSubscription>> remote_subscriptions) {
+  if (status != SubscriptionsRequestStatus::kSuccess) {
+    UpdateSyncStates(false);
+    OnRequestCompletion();
+    return;
+  }
+
+  storage_->UpdateStorageAndNotifyModifiedSubscriptions(
+      SubscriptionType::kPriceTrack,
+      base::BindOnce(&SubscriptionsManager::OnStorageUpdatedOnBookmarkChange,
+                     weak_ptr_factory_.GetWeakPtr()),
+      std::move(remote_subscriptions));
+}
+
+void SubscriptionsManager::OnStorageUpdatedOnBookmarkChange(
+    SubscriptionsRequestStatus status,
+    std::vector<CommerceSubscription> added_subs,
+    std::vector<CommerceSubscription> removed_subs) {
+  if (status == SubscriptionsRequestStatus::kSuccess) {
+    if (added_subs.size() > 0) {
+      OnSubscribe(added_subs, true);
+    }
+    if (removed_subs.size() > 0) {
+      OnUnsubscribe(removed_subs, true);
+    }
+  }
+  UpdateSyncStates(status == SubscriptionsRequestStatus::kSuccess);
+  OnRequestCompletion();
+}
+
+void SubscriptionsManager::OnSubscribe(
+    const std::vector<CommerceSubscription>& subscriptions,
+    bool succeeded) {
+  for (SubscriptionsObserver& observer : observers_) {
+    observer.OnSubscribe(subscriptions, succeeded);
+  }
+}
+
+void SubscriptionsManager::OnUnsubscribe(
+    const std::vector<CommerceSubscription>& subscriptions,
+    bool succeeded) {
+  for (SubscriptionsObserver& observer : observers_) {
+    observer.OnUnsubscribe(subscriptions, succeeded);
+  }
 }
 
 void SubscriptionsManager::OnPrimaryAccountChanged(
     const signin::PrimaryAccountChangeEvent& event_details) {
   storage_->DeleteAll();
-  subscriptions_cache_.clear();
   SyncSubscriptions();
 }
 

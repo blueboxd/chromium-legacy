@@ -1694,7 +1694,8 @@ TEST_F(MenuControllerTest, AsynchronousPerformDrop) {
                                    ui::DragDropTypes::DRAG_MOVE);
   auto drop_cb = controller->GetDropCallback(source, target_event);
   ui::mojom::DragOperation output_drag_op = ui::mojom::DragOperation::kNone;
-  std::move(drop_cb).Run(target_event, output_drag_op);
+  std::move(drop_cb).Run(target_event, output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
 
   TestMenuDelegate* menu_delegate =
       static_cast<TestMenuDelegate*>(target->GetDelegate());
@@ -1776,7 +1777,8 @@ TEST_F(MenuControllerTest, AsycDropCallback) {
   EXPECT_EQ(0, controller_delegate->on_menu_closed_called());
 
   ui::mojom::DragOperation output_drag_op;
-  std::move(drop_cb).Run(target_event, output_drag_op);
+  std::move(drop_cb).Run(target_event, output_drag_op,
+                         /*drag_image_layer_owner=*/nullptr);
   EXPECT_TRUE(menu_delegate->is_drop_performed());
 }
 
@@ -3348,6 +3350,26 @@ TEST_F(MenuControllerTest, BrowserHotkeysCancelMenusAndAreRedispatched) {
   EXPECT_FALSE(press_f.stopped_propagation());
 }
 #endif
+
+TEST_F(MenuControllerTest, SubmenuOpenByKey) {
+  // Create a submenu.
+  MenuItemView* const child_menu = menu_item()->GetSubmenu()->GetMenuItemAt(0);
+  SubmenuView* sub_menu = child_menu->CreateSubmenu();
+  child_menu->AppendMenuItem(5, u"Five");
+  child_menu->AppendMenuItem(6, u"Six");
+
+  // Open the menu and select the menu item that has a submenu.
+  OpenMenu(menu_item());
+  SetPendingStateItem(child_menu);
+  SetState(child_menu);
+  EXPECT_EQ(1, pending_state_item()->GetCommand());
+  EXPECT_EQ(nullptr, sub_menu->host());
+
+  // Dispatch a key to open the submenu.
+  DispatchKey(ui::VKEY_RIGHT);
+  EXPECT_EQ(5, pending_state_item()->GetCommand());
+  EXPECT_NE(nullptr, sub_menu->host());
+}
 
 class ExecuteCommandWithoutClosingMenuTest : public MenuControllerTest {
  public:

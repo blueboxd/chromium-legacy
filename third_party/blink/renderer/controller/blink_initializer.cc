@@ -35,6 +35,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/task/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -57,9 +58,11 @@
 #include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/loader_factory_for_frame.h"
+#include "third_party/blink/renderer/core/loader/resource_cache_impl.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/main_thread.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -120,8 +123,9 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   // Reserve address space on 32 bit Windows, to make it likelier that large
   // array buffer allocations succeed.
   BOOL is_wow_64 = -1;
-  if (!IsWow64Process(GetCurrentProcess(), &is_wow_64))
+  if (!IsWow64Process(GetCurrentProcess(), &is_wow_64)) {
     is_wow_64 = FALSE;
+  }
   if (!is_wow_64) {
     // Try to reserve as much address space as we reasonably can.
     const size_t kMB = 1024 * 1024;
@@ -156,7 +160,7 @@ void InitializeCommon(Platform* platform, mojo::BinderMap* binders) {
   g_end_of_task_runner = new EndOfTaskRunner;
   Thread::Current()->AddTaskObserver(g_end_of_task_runner);
 
-  GetBlinkInitializer().RegisterMemoryWatchers();
+  GetBlinkInitializer().RegisterMemoryWatchers(platform);
 
   // Initialize performance manager.
   RendererResourceCoordinatorImpl::MaybeInitialize();
@@ -250,26 +254,29 @@ void BlinkInitializer::RegisterInterfaces(mojo::BinderMap& binders) {
       main_thread_task_runner);
 }
 
-void BlinkInitializer::RegisterMemoryWatchers() {
+void BlinkInitializer::RegisterMemoryWatchers(Platform* platform) {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
       Thread::MainThread()->GetTaskRunner(MainThreadTaskRunnerRestricted());
 #if BUILDFLAG(IS_ANDROID)
   // Initialize CrashMemoryMetricsReporterImpl in order to assure that memory
   // allocation does not happen in OnOOMCallback.
   CrashMemoryMetricsReporterImpl::Instance();
+
+  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
+  if (platform->IsUserLevelMemoryPressureSignalEnabled()) {
+    UserLevelMemoryPressureSignalGenerator::Initialize(platform,
+                                                       main_thread_task_runner);
+  }
 #endif
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) || \
     BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  // Initialize UserLevelMemoryPressureSignalGenerator so it starts monitoring.
-  UserLevelMemoryPressureSignalGenerator::Initialize(main_thread_task_runner);
-
   // Start reporting the highest private memory footprint after the first
   // navigation.
   HighestPmfReporter::Initialize(main_thread_task_runner);
 #endif
 
-#if BUILDFLAG(IS_ANDROID) && !defined(ARCH_CPU_64_BITS)
+#if BUILDFLAG(IS_ANDROID)
   // Initialize PrivateMemoryFootprintProvider to start providing the value
   // for the browser process.
   PrivateMemoryFootprintProvider::Initialize(main_thread_task_runner);
@@ -282,6 +289,7 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
         WTF::BindRepeating(&DisplayCutoutClientImpl::BindMojoReceiver,
                            WrapWeakPersistent(&frame)));
   }
+
   frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &DevToolsFrontendImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
 
@@ -290,6 +298,12 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
 
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &AnnotationAgentContainerImpl::BindReceiver, WrapWeakPersistent(&frame)));
+
+  if (base::FeatureList::IsEnabled(features::kRemoteResourceCache)) {
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &ResourceCacheImpl::Bind, WrapWeakPersistent(&frame)));
+  }
+
   ModulesInitializer::InitLocalFrame(frame);
 }
 

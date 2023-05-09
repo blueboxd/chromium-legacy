@@ -47,14 +47,13 @@ export const HelpBubbleMixin = dedupingMixin(
         private helpBubbleControllerById_: Map<string, HelpBubbleController> =
             new Map();
         private helpBubbleListenerIds_: number[] = [];
-        private helpBubbleAnchorObserver_: IntersectionObserver|null = null;
         private helpBubbleFixedAnchorObserver_: IntersectionObserver|null =
             null;
-        private helpBubbleAnchorResizeObserver_: ResizeObserver|null = null;
+        private helpBubbleResizeObserver_: ResizeObserver|null = null;
         private helpBubbleDismissedEventTracker_: EventTracker =
             new EventTracker();
-        private helpBubbleScrollCallbackDebounced_:
-            EventListenerOrEventListenerObject|null = null;
+        private debouncedAnchorMayHaveChangedCallback_:
+            (() => void)|null = null;
 
         constructor(...args: any[]) {
           super(...args);
@@ -84,27 +83,30 @@ export const HelpBubbleMixin = dedupingMixin(
             return rect.height > 0 && rect.width > 0;
           };
 
-          this.helpBubbleAnchorResizeObserver_ = new ResizeObserver(
-              entries => entries.forEach(
-                  ({target}) => this.onAnchorVisibilityChanged_(
-                      target as HTMLElement, isVisible(target))));
-          this.helpBubbleAnchorObserver_ = new IntersectionObserver(
-              entries => entries.forEach(
-                  ({target, isIntersecting}) => this.onAnchorVisibilityChanged_(
-                      target as HTMLElement, isIntersecting)),
-              {root: document.body});
+          this.debouncedAnchorMayHaveChangedCallback_ =
+              debounceEnd(this.onAnchorBoundsMayHaveChanged_.bind(this), 50);
+
+          this.helpBubbleResizeObserver_ =
+              new ResizeObserver(entries => entries.forEach(({target}) => {
+                if (target === document.body) {
+                  if (this.debouncedAnchorMayHaveChangedCallback_) {
+                    this.debouncedAnchorMayHaveChangedCallback_();
+                  }
+                } else {
+                  this.onAnchorVisibilityChanged_(
+                      target as HTMLElement, isVisible(target));
+                }
+              }));
           this.helpBubbleFixedAnchorObserver_ = new IntersectionObserver(
               entries => entries.forEach(
                   ({target, isIntersecting}) => this.onAnchorVisibilityChanged_(
                       target as HTMLElement, isIntersecting)),
               {root: null});
 
-          this.helpBubbleScrollCallbackDebounced_ =
-              debounceEnd(this.helpBubbleScrollCallback_.bind(this), 50) as
-              EventListenerOrEventListenerObject;
           document.addEventListener(
-              'scroll', this.helpBubbleScrollCallbackDebounced_,
+              'scroll', this.debouncedAnchorMayHaveChangedCallback_,
               {passive: true});
+          this.helpBubbleResizeObserver_.observe(document.body);
 
           // When the component is connected, if the target elements were
           // already registered, they should be observed now. Any targets
@@ -123,20 +125,17 @@ export const HelpBubbleMixin = dedupingMixin(
             this.helpBubbleCallbackRouter_.removeListener(listenerId);
           }
           this.helpBubbleListenerIds_ = [];
-          assert(this.helpBubbleAnchorResizeObserver_);
-          this.helpBubbleAnchorResizeObserver_.disconnect();
-          this.helpBubbleAnchorResizeObserver_ = null;
-          assert(this.helpBubbleAnchorObserver_);
-          this.helpBubbleAnchorObserver_.disconnect();
-          this.helpBubbleAnchorObserver_ = null;
+          assert(this.helpBubbleResizeObserver_);
+          this.helpBubbleResizeObserver_.disconnect();
+          this.helpBubbleResizeObserver_ = null;
           assert(this.helpBubbleFixedAnchorObserver_);
           this.helpBubbleFixedAnchorObserver_.disconnect();
           this.helpBubbleFixedAnchorObserver_ = null;
           this.helpBubbleControllerById_.clear();
-          if (this.helpBubbleScrollCallbackDebounced_) {
+          if (this.debouncedAnchorMayHaveChangedCallback_) {
             document.removeEventListener(
-                'scroll', this.helpBubbleScrollCallbackDebounced_);
-            this.helpBubbleScrollCallbackDebounced_ = null;
+                'scroll', this.debouncedAnchorMayHaveChangedCallback_);
+            this.debouncedAnchorMayHaveChangedCallback_ = null;
           }
         }
 
@@ -146,6 +145,9 @@ export const HelpBubbleMixin = dedupingMixin(
          * - a selector
          * - an array of selectors (will traverse shadow DOM elements)
          * - an arbitrary HTMLElement
+         *
+         * The referenced element should have block display and non-zero size
+         * when visible (inline elements may be supported in the future).
          *
          * Example:
          *   registerHelpBubble(
@@ -209,7 +211,7 @@ export const HelpBubbleMixin = dedupingMixin(
           // This can be called before or after `connectedCallback()`, so if the
           // component isn't connected and the observer set up yet, delay
           // observation until it is.
-          if (this.helpBubbleAnchorObserver_) {
+          if (this.helpBubbleResizeObserver_) {
             this.observeControllerAnchor_(controller);
           }
           return controller;
@@ -236,12 +238,9 @@ export const HelpBubbleMixin = dedupingMixin(
           if (controller.isAnchorFixed()) {
             assert(this.helpBubbleFixedAnchorObserver_);
             this.helpBubbleFixedAnchorObserver_.observe(anchor);
-          } else if (controller.isNonBodyScrollable()) {
-            assert(this.helpBubbleAnchorResizeObserver_);
-            this.helpBubbleAnchorResizeObserver_.observe(anchor);
           } else {
-            assert(this.helpBubbleAnchorObserver_);
-            this.helpBubbleAnchorObserver_.observe(anchor);
+            assert(this.helpBubbleResizeObserver_);
+            this.helpBubbleResizeObserver_.observe(anchor);
           }
         }
 
@@ -251,12 +250,9 @@ export const HelpBubbleMixin = dedupingMixin(
           if (controller.isAnchorFixed()) {
             assert(this.helpBubbleFixedAnchorObserver_);
             this.helpBubbleFixedAnchorObserver_.unobserve(anchor);
-          } else if (controller.isNonBodyScrollable()) {
-            assert(this.helpBubbleAnchorResizeObserver_);
-            this.helpBubbleAnchorResizeObserver_.unobserve(anchor);
           } else {
-            assert(this.helpBubbleAnchorObserver_);
-            this.helpBubbleAnchorObserver_.unobserve(anchor);
+            assert(this.helpBubbleResizeObserver_);
+            this.helpBubbleResizeObserver_.unobserve(anchor);
           }
         }
 
@@ -418,9 +414,6 @@ export const HelpBubbleMixin = dedupingMixin(
           const nativeId = target.dataset['nativeId'];
           assert(nativeId);
           const ctrl = this.helpBubbleControllerById_.get(nativeId);
-          if (ctrl) {
-            ctrl.cacheAnchorVisibility(isVisible);
-          }
           const hidden = this.hideHelpBubble(nativeId);
           if (hidden) {
             this.helpBubbleHandler_.helpBubbleClosed(
@@ -428,20 +421,24 @@ export const HelpBubbleMixin = dedupingMixin(
           }
           const bounds =
               isVisible ? this.getElementBounds_(target) : new RectF();
-          this.helpBubbleHandler_.helpBubbleAnchorVisibilityChanged(
-              nativeId, isVisible, bounds);
+          if (!ctrl || ctrl.updateAnchorVisibility(isVisible, bounds)) {
+            this.helpBubbleHandler_.helpBubbleAnchorVisibilityChanged(
+                nativeId, isVisible, bounds);
+          }
         }
 
         /**
-         * When the document scrolls, we need to update cached positions
-         * of bubble anchors
+         * When the document scrolls or resizes, we need to update cached
+         * positions of bubble anchors.
          */
-        private helpBubbleScrollCallback_() {
+        private onAnchorBoundsMayHaveChanged_() {
           for (const ctrl of this.controllers) {
             if (ctrl.hasAnchor() && ctrl.getAnchorVisibility()) {
-              this.helpBubbleHandler_.helpBubbleAnchorVisibilityChanged(
-                  ctrl.getNativeId(), ctrl.getAnchorVisibility(),
-                  this.getElementBounds_(ctrl.getAnchor()!));
+              const bounds = this.getElementBounds_(ctrl.getAnchor()!);
+              if (ctrl.updateAnchorVisibility(true, bounds)) {
+                this.helpBubbleHandler_.helpBubbleAnchorVisibilityChanged(
+                    ctrl.getNativeId(), true, bounds);
+              }
             }
           }
         }

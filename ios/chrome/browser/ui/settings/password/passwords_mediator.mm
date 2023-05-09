@@ -130,6 +130,10 @@ using password_manager::features::IsPasswordCheckupEnabled;
 
   _currentState = _passwordCheckManager->GetPasswordCheckState();
   [self updateConsumerPasswordCheckState:_currentState];
+  [self.consumer
+      setSavingPasswordsToAccount:password_manager_util::GetPasswordSyncState(
+                                      _syncService) !=
+                                  password_manager::SyncState::kNotSyncing];
 }
 
 - (void)disconnect {
@@ -160,7 +164,7 @@ using password_manager::features::IsPasswordCheckupEnabled;
 }
 
 - (NSString*)formattedElapsedTimeSinceLastCheck {
-  base::Time lastCompletedCheck =
+  absl::optional<base::Time> lastCompletedCheck =
       _passwordCheckManager->GetLastPasswordCheckTime();
   return password_manager::FormatElapsedTimeSinceLastCheck(lastCompletedCheck);
 }
@@ -251,21 +255,14 @@ using password_manager::features::IsPasswordCheckupEnabled;
   return OnDeviceEncryptionStateNotShown;
 }
 
-- (BOOL)isSyncingPasswords {
-  return password_manager_util::GetPasswordSyncState(_syncService) !=
-         password_manager::SyncState::kNotSyncing;
-}
-
 - (BOOL)shouldShowLocalOnlyIconForCredential:
     (const password_manager::CredentialUIEntry&)credential {
-  return password_manager::ShouldShowLocalOnlyIcon(
-      credential, password_manager_util::GetPasswordSyncState(_syncService));
+  return password_manager::ShouldShowLocalOnlyIcon(credential, _syncService);
 }
 
 - (BOOL)shouldShowLocalOnlyIconForGroup:
     (const password_manager::AffiliatedGroup&)group {
-  return password_manager::ShouldShowLocalOnlyIconForGroup(
-      group, password_manager_util::GetPasswordSyncState(_syncService));
+  return password_manager::ShouldShowLocalOnlyIconForGroup(group, _syncService);
 }
 
 #pragma mark - PasswordCheckObserver
@@ -441,6 +438,10 @@ using password_manager::features::IsPasswordCheckupEnabled;
 
 - (void)onSyncStateChanged {
   [self.consumer updateOnDeviceEncryptionSessionAndUpdateTableView];
+  [self.consumer
+      setSavingPasswordsToAccount:password_manager_util::GetPasswordSyncState(
+                                      _syncService) !=
+                                  password_manager::SyncState::kNotSyncing];
 }
 
 @end

@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/time/default_clock.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_util.h"
@@ -109,6 +110,13 @@ InProgressCluster::InProgressCluster() = default;
 InProgressCluster::~InProgressCluster() = default;
 InProgressCluster::InProgressCluster(const InProgressCluster&) = default;
 
+CachedEngagementScore::CachedEngagementScore(float score,
+                                             base::Time expiry_time)
+    : score(score), expiry_time(expiry_time) {}
+CachedEngagementScore::~CachedEngagementScore() = default;
+CachedEngagementScore::CachedEngagementScore(const CachedEngagementScore&) =
+    default;
+
 ContextClustererHistoryServiceObserver::ContextClustererHistoryServiceObserver(
     history::HistoryService* history_service,
     TemplateURLService* template_url_service,
@@ -117,6 +125,7 @@ ContextClustererHistoryServiceObserver::ContextClustererHistoryServiceObserver(
     : history_service_(history_service),
       template_url_service_(template_url_service),
       optimization_guide_decider_(optimization_guide_decider),
+      engagement_score_cache_(GetConfig().engagement_score_cache_size),
       engagement_score_provider_(engagement_score_provider),
       clock_(base::DefaultClock::GetInstance()) {
   if (history_service_) {
@@ -138,23 +147,28 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
     history::HistoryService* history_service,
     const history::URLRow& url_row,
     const history::VisitRow& new_visit) {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::OnURLVisited");
+
   ScopedVisitProcessingTimer url_visited_processing_timer(
       VisitProcessingStage::kUrlVisited);
 
   // Update the normalized URL if it's a search URL.
   std::string normalized_url = url_row.url().possibly_invalid_spec();
   std::u16string search_terms;
+  bool is_search_normalized_url = false;
   if (template_url_service_) {
     absl::optional<TemplateURLService::SearchMetadata> search_metadata =
         template_url_service_->ExtractSearchMetadata(url_row.url());
     if (search_metadata) {
       normalized_url = search_metadata->normalized_url.possibly_invalid_spec();
       search_terms = search_metadata->search_terms;
+      is_search_normalized_url = true;
     }
   }
 
   history::ClusterVisit cluster_visit =
-      CreateClusterVisit(normalized_url, new_visit);
+      CreateClusterVisit(normalized_url, is_search_normalized_url, new_visit);
 
   if (!new_visit.originator_cache_guid.empty()) {
     // Skip determining the exact cluster id for remote synced visits.
@@ -239,7 +253,12 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
   in_progress_cluster.last_visit_time = new_visit.visit_time;
   in_progress_cluster.visit_urls.insert(normalized_url);
   in_progress_cluster.visit_ids.emplace_back(new_visit.visit_id);
-  in_progress_cluster.search_terms = search_terms;
+  if (!search_terms.empty()) {
+    // Only update the cluster search terms if it's non-empty. It should only be
+    // set as non-empty for at most one unique term as enforced by
+    // `ShouldAddVisitToCluster()`.
+    in_progress_cluster.search_terms = search_terms;
+  }
   visit_id_to_cluster_map_[new_visit.visit_id] = *cluster_id;
   visit_url_to_cluster_map_[normalized_url] = *cluster_id;
 
@@ -284,6 +303,8 @@ void ContextClustererHistoryServiceObserver::OnURLVisited(
 void ContextClustererHistoryServiceObserver::OnURLsDeleted(
     history::HistoryService* history_service,
     const history::DeletionInfo& deletion_info) {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::OnURLsDeleted");
   ScopedVisitProcessingTimer urls_deleted_processing_timer(
       VisitProcessingStage::kUrlsDeleted);
 
@@ -322,6 +343,9 @@ void ContextClustererHistoryServiceObserver::OnURLsDeleted(
 }
 
 void ContextClustererHistoryServiceObserver::CleanUpClusters() {
+  TRACE_EVENT0("browser",
+               "ContextClusteringHistoryServiceObserver::CleanUpClusters");
+
   ScopedVisitProcessingTimer clean_up_timer(
       VisitProcessingStage::kCleanUpTimer);
 
@@ -406,19 +430,44 @@ void ContextClustererHistoryServiceObserver::OnPersistedClusterIdReceived(
 history::ClusterVisit
 ContextClustererHistoryServiceObserver::CreateClusterVisit(
     const std::string& normalized_url,
+    bool is_search_normalized_url,
     const history::VisitRow& visit_row) {
   history::ClusterVisit cluster_visit;
   cluster_visit.annotated_visit.visit_row.visit_id = visit_row.visit_id;
   cluster_visit.normalized_url = GURL(normalized_url);
   cluster_visit.url_for_deduping =
-      ComputeURLForDeduping(cluster_visit.normalized_url);
+      is_search_normalized_url
+          ? cluster_visit.normalized_url
+          : ComputeURLForDeduping(cluster_visit.normalized_url);
   cluster_visit.url_for_display =
       ComputeURLForDisplay(cluster_visit.normalized_url);
   if (engagement_score_provider_) {
     cluster_visit.engagement_score =
-        engagement_score_provider_->GetScore(cluster_visit.normalized_url);
+        GetEngagementScore(cluster_visit.normalized_url);
   }
   return cluster_visit;
+}
+
+float ContextClustererHistoryServiceObserver::GetEngagementScore(
+    const GURL& normalized_url) {
+  if (!GetConfig().use_engagement_score_cache) {
+    return engagement_score_provider_->GetScore(normalized_url);
+  }
+
+  std::string visit_host = normalized_url.host();
+  auto it = engagement_score_cache_.Peek(visit_host);
+  if (it != engagement_score_cache_.end() &&
+      it->second.expiry_time > clock_->Now()) {
+    return it->second.score;
+  }
+
+  float score = engagement_score_provider_->GetScore(normalized_url);
+  engagement_score_cache_.Put(
+      visit_host,
+      CachedEngagementScore(
+          score,
+          clock_->Now() + GetConfig().engagement_score_cache_refresh_duration));
+  return score;
 }
 
 void ContextClustererHistoryServiceObserver::OverrideClockForTesting(

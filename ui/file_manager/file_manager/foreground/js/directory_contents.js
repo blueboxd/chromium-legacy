@@ -10,6 +10,7 @@ import {mountGuest} from '../../common/js/api.js';
 import {AsyncQueue, ConcurrentQueue} from '../../common/js/async_util.js';
 import {createDOMError} from '../../common/js/dom_utils.js';
 import {FileType} from '../../common/js/file_type.js';
+import {EntryList} from '../../common/js/files_app_entry_types.js';
 import {metrics} from '../../common/js/metrics.js';
 import {getEarliestTimestamp} from '../../common/js/recent_date_bucket.js';
 import {createTrashReaders} from '../../common/js/trash.js';
@@ -18,6 +19,7 @@ import {VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
 import {EntryLocation} from '../../externs/entry_location.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {SearchFileType, SearchLocation, SearchOptions, SearchRecency} from '../../externs/ts/state.js';
+import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
 import {getDefaultSearchOptions} from '../../state/store.js';
 
@@ -228,6 +230,18 @@ export class LocalSearchContentScanner extends ContentScanner {
 }
 
 /**
+ * What we consider to be local (this chromebook) volume types.
+ * TODO(b:273843598) Refine this list.
+ */
+const LOCAL_VOLUME_TYPES = new Set([
+  VolumeManagerCommon.VolumeType.DOWNLOADS,
+  VolumeManagerCommon.VolumeType.REMOVABLE,
+  VolumeManagerCommon.VolumeType.CROSTINI,
+  VolumeManagerCommon.VolumeType.MY_FILES,
+  VolumeManagerCommon.VolumeType.ANDROID_FILES,
+]);
+
+/**
  * A content scanner capable of scanning both the local file system and Google
  * Drive. When created you need to specify the root type, current entry
  * in the directory tree, the search query and options. The `rootType` together
@@ -241,16 +255,19 @@ export class LocalSearchContentScanner extends ContentScanner {
  */
 export class SearchV2ContentScanner extends ContentScanner {
   /**
-   * @param {!VolumeManagerCommon.RootType|null} rootType The root type of the
-   *    location in the directory tree, if known.
-   * @param {!DirectoryEntry} entry The current directory.
+   * @param {!VolumeManager} volumeManager Manager of volumes available to the
+   *     files app.
+   * @param {!DirectoryEntry|!FilesAppEntry} entry The entry representing the
+   *     selected location in the directory tree.
    * @param {!string} query The query of the search.
    * @param {SearchOptions=} options The options for the search.
    */
-  constructor(rootType, entry, query, options = undefined) {
+  constructor(volumeManager, entry, query, options = undefined) {
     super();
-    this.rootType_ = rootType;
+    this.volumeManager_ = volumeManager;
     this.entry_ = entry;
+    const locationInfo = this.volumeManager_.getLocationInfo(this.entry_);
+    this.rootType_ = locationInfo ? locationInfo.rootType : null;
     this.query_ = query.toLowerCase();
     this.options_ = options || getDefaultSearchOptions();
   }
@@ -258,6 +275,8 @@ export class SearchV2ContentScanner extends ContentScanner {
   /**
    * For the given options returns the category of files to which the search
    * should be limited (e.g., images, videos, etc.).
+   *
+   * @return {chrome.fileManagerPrivate.FileCategory}
    */
   getDesiredCategory_() {
     switch (this.options_.type) {
@@ -282,7 +301,8 @@ export class SearchV2ContentScanner extends ContentScanner {
   }
 
   /**
-   * @returns Whether or not the local (MY_FILES) search should be performed.
+   * @returns {boolean} Whether or not the local (MY_FILES) search should
+   *     be performed.
    * @private
    */
   isSearchingLocal_() {
@@ -296,7 +316,8 @@ export class SearchV2ContentScanner extends ContentScanner {
   }
 
   /**
-   * @returns Whether or not the Google Drive search should be performed.
+   * @returns {boolean} Whether or not the Google Drive search should
+   *     be performed.
    * @private
    */
   isSearchingDrive_() {
@@ -310,74 +331,148 @@ export class SearchV2ContentScanner extends ContentScanner {
   }
 
   /**
+   * @param {!chrome.fileManagerPrivate.SearchMetadataParams} params
+   * @return {!Promise<!Array<!Entry>>}
+   * @private
+   */
+  makeLocalSearchPromise_(params) {
+    return new Promise((resolve, reject) => {
+      metrics.startInterval('Search.Local.Latency');
+      chrome.fileManagerPrivate.searchFiles(
+          params,
+          /**
+           * @param {!Array<!Entry>} entries
+           */
+          (entries) => {
+            if (this.cancelled_) {
+              reject(createDOMError(util.FileError.ABORT_ERR));
+            } else if (chrome.runtime.lastError) {
+              reject(createDOMError(
+                  util.FileError.NOT_READABLE_ERR,
+                  chrome.runtime.lastError.message));
+            } else {
+              metrics.recordInterval('Search.Local.Latency');
+              resolve(entries);
+            }
+          });
+    });
+  }
+
+  /**
+   * @param {!FilesAppEntry|DirectoryEntry} dirEntry
+   * @return {!Array<!DirectoryEntry>}
+   */
+  getRoots_(dirEntry) {
+    const typeName = dirEntry.type_name;
+    if (typeName === 'EntryList' || typeName == 'VolumeEntry') {
+      const allRoots = [dirEntry].concat(
+          /** @type {EntryList} */ (dirEntry).getUIChildren());
+      return allRoots.filter(entry => !util.isFakeEntry(entry))
+          .map(entry => entry.filesystem.root);
+    }
+    return [dirEntry];
+  }
+
+  /**
+   * Returns a list of roots for local search, when searching from
+   * the root of the file system.
+   * @return {!Array<DirectoryEntry>}
+   * @private
+   */
+  getLocalRootList_() {
+    const localRootDirs = [];
+    const volumeInfoList = this.volumeManager_.volumeInfoList;
+    for (let index = 0; index < volumeInfoList.length; ++index) {
+      const volumeInfo = volumeInfoList.item(index);
+      if (LOCAL_VOLUME_TYPES.has(volumeInfo.volumeType)) {
+        const root = volumeInfo.displayRoot;
+        localRootDirs.push(...this.getRoots_(root));
+      }
+    }
+    return localRootDirs;
+  }
+
+  /**
+   * @param {number} modifiedTimestamp
+   * @param {chrome.fileManagerPrivate.FileCategory} category
+   * @param {number} maxResults
+   * @return {!Array<!Promise<!Array<Entry>>>}
+   * @private
+   */
+  createLocalSearch_(modifiedTimestamp, category, maxResults) {
+    /** @type {!chrome.fileManagerPrivate.SearchMetadataParams} */
+    const baseParams = {
+      query: this.query_,
+      types: chrome.fileManagerPrivate.SearchType.ALL,
+      maxResults: maxResults,
+      timestamp: modifiedTimestamp,
+      category: category,
+    };
+    let searchDirList = [];
+    if (this.isSearchingRoot_()) {
+      searchDirList = this.getLocalRootList_();
+    } else {
+      searchDirList = this.getRoots_(this.entry_);
+    }
+    return searchDirList.map(
+        searchDir => this.makeLocalSearchPromise_(
+            /** @type {!chrome.fileManagerPrivate.SearchMetadataParams} */ ({
+              ...baseParams,
+              rootDir: searchDir,
+            })));
+  }
+
+  /**
+   * @param {number} modifiedTimestamp
+   * @param {chrome.fileManagerPrivate.FileCategory} category
+   * @return {Promise<!Array<Entry>>}
+   * @private
+   */
+  createDriveSearch_(modifiedTimestamp, category) {
+    return new Promise((resolve, reject) => {
+      metrics.startInterval('Search.Drive.Latency');
+      chrome.fileManagerPrivate.searchDrive(
+          {
+            query: this.query_,
+            category: category,
+            modifiedTimestamp: modifiedTimestamp,
+            nextFeed: '',
+          },
+          (entries, nextFeed) => {
+            if (chrome.runtime.lastError) {
+              reject(createDOMError(
+                  util.FileError.NOT_READABLE_ERR,
+                  chrome.runtime.lastError.message));
+            } else if (this.cancelled_) {
+              reject(createDOMError(util.FileError.ABORT_ERR));
+            } else if (!entries) {
+              reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
+            } else {
+              metrics.recordInterval('Search.Drive.Latency');
+              resolve(entries);
+            }
+          });
+    });
+  }
+
+  /**
    * Starts the file name search.
    * @override
    */
   async scan(
       entriesCallback, successCallback, errorCallback,
       invalidateCache = false) {
-    const searchPromises = [];
     const category = this.getDesiredCategory_();
-    const now = new Date();
-    const timestamp = getEarliestTimestamp(this.options_.recency, now);
+    const timestamp = getEarliestTimestamp(this.options_.recency, new Date());
+
+    const searchPromises = [];
     if (this.isSearchingLocal_()) {
-      searchPromises.push(new Promise((resolve, reject) => {
-        metrics.startInterval('Search.Local.Latency');
-        const rootDir = this.isSearchingRoot_() ?
-            this.entry_.filesystem.root :
-            /** @type {DirectoryEntry} */ (util.unwrapEntry(this.entry_));
-        chrome.fileManagerPrivate.searchFiles(
-            {
-              rootDir: rootDir,
-              query: this.query_,
-              types: chrome.fileManagerPrivate.SearchType.ALL,
-              maxResults: 100,
-              timestamp: timestamp,
-              category: category,
-            },
-            /**
-             * @param {!Array<!Entry>} entries
-             */
-            (entries) => {
-              if (this.cancelled_) {
-                reject(createDOMError(util.FileError.ABORT_ERR));
-              } else if (chrome.runtime.lastError) {
-                reject(createDOMError(
-                    util.FileError.NOT_READABLE_ERR,
-                    chrome.runtime.lastError.message));
-              } else {
-                metrics.recordInterval('Search.Local.Latency');
-                resolve(entries);
-              }
-            });
-      }));
+      searchPromises.push(...this.createLocalSearch_(timestamp, category, 100));
     }
     if (this.isSearchingDrive_()) {
-      searchPromises.push(new Promise((resolve, reject) => {
-        metrics.startInterval('Search.Drive.Latency');
-        chrome.fileManagerPrivate.searchDrive(
-            {
-              query: this.query_,
-              category: category,
-              modifiedTimestamp: timestamp,
-              nextFeed: '',
-            },
-            (entries, nextFeed) => {
-              if (chrome.runtime.lastError) {
-                reject(createDOMError(
-                    util.FileError.NOT_READABLE_ERR,
-                    chrome.runtime.lastError.message));
-              } else if (this.cancelled_) {
-                reject(createDOMError(util.FileError.ABORT_ERR));
-              } else if (!entries) {
-                reject(createDOMError(util.FileError.INVALID_MODIFICATION_ERR));
-              } else {
-                metrics.recordInterval('Search.Drive.Latency');
-                resolve(entries);
-              }
-            });
-      }));
+      searchPromises.push(this.createDriveSearch_(timestamp, category));
     }
+
     if (!searchPromises) {
       console.warn(
           `No search promises for options ${JSON.stringify(this.options_)}`);

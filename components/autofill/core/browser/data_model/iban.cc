@@ -54,7 +54,6 @@ static constexpr auto kCountryToIbanLength =
         {"GT", 28},  // Guatemala
         {"HR", 21},  // Croatia
         {"HU", 28},  // Hungary
-        {"IE", 22},  // Ireland
         {"IL", 23},  // Israel
         {"IQ", 23},  // Iraq
         {"IS", 26},  // Iceland
@@ -77,7 +76,6 @@ static constexpr auto kCountryToIbanLength =
         {"MT", 31},  // Malta
         {"MU", 30},  // Mauritius
         {"NL", 18},  // Netherlands
-        {"NO", 15},  // Norway
         {"PK", 24},  // Pakistan
         {"PL", 28},  // Poland
         {"PS", 29},  // Palestinian territories
@@ -221,6 +219,12 @@ bool IBAN::IsValid(const std::u16string& value) {
 
   // IBAN decimal value must have a remainder of 1 when divided by 97.
   return GetRemainderOfIbanValue(iban_value) == 1;
+}
+
+// static
+bool IBAN::IsIbanApplicableInCountry(const std::string& country_code) {
+  auto* it = kCountryToIbanLength.find(country_code);
+  return it != kCountryToIbanLength.end();
 }
 
 bool IBAN::SetMetadata(const AutofillMetadata& metadata) {

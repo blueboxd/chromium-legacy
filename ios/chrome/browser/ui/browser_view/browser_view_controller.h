@@ -11,7 +11,6 @@
 
 #import "base/memory/weak_ptr.h"
 #import "components/reading_list/core/reading_list_model.h"
-#import "components/signin/public/identity_manager/identity_manager.h"
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
@@ -26,12 +25,14 @@
 #import "ios/chrome/browser/ui/page_info/requirements/page_info_presentation.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/thumb_strip/thumb_strip_supporting.h"
+#import "ios/chrome/browser/ui/toolbar_container/toolbar_container_coordinator.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web/web_navigation_ntp_delegate.h"
 #import "ios/chrome/browser/web/web_state_container_view_provider.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/public/provider/chrome/browser/voice_search/voice_search_controller.h"
 
 @protocol ApplicationCommands;
 class Browser;
@@ -64,17 +65,15 @@ class TabUsageRecorderBrowserAgent;
 @protocol TextZoomCommands;
 @class ToolbarAccessoryPresenter;
 @protocol ToolbarCommands;
+@class ToolbarContainerCoordinator;
 @protocol IncognitoReauthCommands;
 @class LayoutGuideCenter;
 @protocol LoadQueryCommands;
 class ReadingListModel;
 class UrlLoadingBrowserAgent;
 class UrlLoadingNotifierBrowserAgent;
+@protocol VoiceSearchController;
 class WebNavigationBrowserAgent;
-
-namespace signin {
-class IdentityManager;
-}  // namespace signin
 
 // TODO(crbug.com/1328039): Remove all use of the prerender service from BVC
 typedef struct {
@@ -100,16 +99,17 @@ typedef struct {
   id<FindInPageCommands> findInPageCommandsHandler;
   id<ToolbarCommands> toolbarCommandsHandler;
   id<LoadQueryCommands> loadQueryCommandsHandler;
+  LayoutGuideCenter* layoutGuideCenter;
   id<OmniboxCommands> omniboxCommandsHandler;
   BOOL isOffTheRecord;
   ReadingListModel* readingModel;
-  signin::IdentityManager* identityManager;
   UrlLoadingBrowserAgent* urlLoadingBrowserAgent;
   UrlLoadingNotifierBrowserAgent* urlLoadingNotifierBrowserAgent;
+  id<VoiceSearchController> voiceSearchController;
   TabUsageRecorderBrowserAgent* tabUsageRecorderBrowserAgent;
   WebNavigationBrowserAgent* webNavigationBrowserAgent;
-  LayoutGuideCenter* layoutGuideCenter;
   base::WeakPtr<WebStateList> webStateList;
+  ToolbarContainerCoordinator* secondaryToolbarContainerCoordinator;
 } BrowserViewControllerDependencies;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -146,11 +146,6 @@ typedef struct {
 
 // Handler for reauth commands.
 @property(nonatomic, weak) id<IncognitoReauthCommands> reauthHandler;
-
-// TODO(crbug.com/1329104): Move voice search controller/coordinator to
-// BrowserCoordinator, remove this as a public property. Returns whether or not
-// text to speech is playing.
-@property(nonatomic, assign, readonly, getter=isPlayingTTS) BOOL playingTTS;
 
 // Whether web usage is enabled for the WebStates in `self.browser`.
 @property(nonatomic) BOOL webUsageEnabled;

@@ -237,7 +237,10 @@ void AwAutofillClient::ScanCreditCard(CreditCardScanCallback callback) {
   NOTIMPLEMENTED();
 }
 
-bool AwAutofillClient::IsFastCheckoutSupported() {
+bool AwAutofillClient::IsFastCheckoutSupported(
+    const autofill::FormData& form,
+    const autofill::FormFieldData& field,
+    const autofill::AutofillManager& autofill_manager) {
   return false;
 }
 
@@ -346,6 +349,11 @@ bool AwAutofillClient::IsPasswordManagerEnabled() {
 void AwAutofillClient::PropagateAutofillPredictions(
     autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {}
+
+void AwAutofillClient::DidFillOrPreviewForm(
+    autofill::mojom::RendererFormDataAction action,
+    autofill::AutofillTriggerSource trigger_source,
+    bool is_refill) {}
 
 void AwAutofillClient::DidFillOrPreviewField(
     const std::u16string& autofilled_value,

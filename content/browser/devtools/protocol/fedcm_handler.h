@@ -15,6 +15,7 @@
 namespace content {
 class FederatedAuthRequestImpl;
 class FederatedAuthRequestPageData;
+class FederatedIdentityApiPermissionContextDelegate;
 struct IdentityProviderData;
 }  // namespace content
 
@@ -28,6 +29,13 @@ class FedCmHandler : public DevToolsDomainHandler, public FedCm::Backend {
   FedCmHandler operator=(const FedCmHandler&) = delete;
 
   static std::vector<FedCmHandler*> ForAgentHost(DevToolsAgentHostImpl* host);
+
+  void WillSendRequest(bool* intercept, bool* disable_delay) {
+    if (enabled_) {
+      *intercept = true;
+      *disable_delay |= disable_delay_;
+    }
+  }
 
   void WillShowDialog(bool* intercept) {
     if (enabled_) {
@@ -43,21 +51,27 @@ class FedCmHandler : public DevToolsDomainHandler, public FedCm::Backend {
   void Wire(UberDispatcher* dispatcher) override;
 
   // FedCm::Backend
-  DispatchResponse Enable() override;
+  DispatchResponse Enable(Maybe<bool> in_disableRejectionDelay) override;
   DispatchResponse Disable() override;
   DispatchResponse SelectAccount(const String& in_dialogId,
                                  int in_accountIndex) override;
-  DispatchResponse DismissDialog(const String& in_dialogId) override;
+  DispatchResponse DismissDialog(const String& in_dialogId,
+                                 Maybe<bool> in_triggerCooldown) override;
+  DispatchResponse ResetCooldown() override;
+
+  url::Origin GetEmbeddingOrigin();
 
   FederatedAuthRequestPageData* GetPageData();
   FederatedAuthRequestImpl* GetFederatedAuthRequest();
   const std::vector<IdentityProviderData>* GetIdentityProviderData(
       FederatedAuthRequestImpl* auth_request);
+  FederatedIdentityApiPermissionContextDelegate* GetApiPermissionContext();
 
   RenderFrameHostImpl* frame_host_ = nullptr;
   std::unique_ptr<FedCm::Frontend> frontend_;
   std::string dialog_id_;
   bool enabled_ = false;
+  bool disable_delay_ = false;
 };
 
 }  // namespace content::protocol

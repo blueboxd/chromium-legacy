@@ -38,7 +38,7 @@
     </template>
     <template is="dom-if" if="[[isDeviceSettingsSplitEnabled_]]">
       <cr-link-row class="hr" id="perDeviceKeyboardRow"
-          label="$i18n{perDeviceKeyboardTitle}"
+          label="$i18n{keyboardTitle}"
           on-click="onPerDeviceKeyboardTap_"
           role-description="$i18n{subpageArrowRoleDescription}">
       </cr-link-row>
@@ -86,28 +86,33 @@
   <template is="dom-if" route-path="/per-device-mouse">
     <os-settings-subpage page-title="$i18n{mouseTitle}">
       <settings-per-device-mouse
-          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]">
+          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]"
+          mice="[[mice]]">
       </settings-per-device-mouse>
     </os-settings-subpage>
   </template>
   <template is="dom-if" route-path="/per-device-keyboard">
-    <os-settings-subpage page-title="$i18n{perDeviceKeyboardTitle}">
+    <os-settings-subpage page-title="$i18n{keyboardTitle}">
       <settings-per-device-keyboard
-          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]">
+          prefs="{{prefs}}"
+          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]"
+          keyboards="[[keyboards]]">
       </settings-per-device-keyboard>
     </os-settings-subpage>
   </template>
   <template is="dom-if" route-path="/per-device-touchpad">
     <os-settings-subpage page-title="$i18n{touchpadTitle}">
       <settings-per-device-touchpad
-          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]">
+          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]"
+          touchpads="[[touchpads]]">
       </settings-per-device-touchpad>
     </os-settings-subpage>
   </template>
   <template is="dom-if" route-path="/per-device-pointing-stick">
     <os-settings-subpage page-title="$i18n{pointingStickTitle}">
       <settings-per-device-pointing-stick
-          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]">
+          is-device-settings-split-enabled="[[isDeviceSettingsSplitEnabled_]]"
+          pointing-sticks="[[pointingSticks]]">
       </settings-per-device-pointing-stick>
     </os-settings-subpage>
   </template>
@@ -153,7 +158,7 @@
       route-path="/per-device-keyboard/remap-keys">
     <os-settings-subpage id="perDeviceKeyboardRemapKeysRow"
         page-title="$i18n{remapKeyboardKeysRowLabel}">
-      <settings-per-device-keyboard-remap-keys>
+      <settings-per-device-keyboard-remap-keys keyboards="[[keyboards]]">
       </settings-per-device-keyboard-remap-keys>
     </os-settings-subpage>
   </template>

@@ -27,6 +27,11 @@
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 
+#if BUILDFLAG(IS_ANDROID)
+#include "base/types/expected.h"
+#include "net/http/structured_headers.h"
+#endif
+
 namespace attribution_reporting {
 class SuitableOrigin;
 
@@ -45,6 +50,10 @@ class AttributionManager;
 class AttributionTrigger;
 
 struct GlobalRenderFrameHostId;
+
+#if BUILDFLAG(IS_ANDROID)
+struct OsRegistration;
+#endif
 
 // Manages a receiver set of all ongoing `AttributionDataHost`s and forwards
 // events to the `AttributionManager` that owns `this`. Because attributionsrc
@@ -114,14 +123,13 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
 
   // Represents a set of attribution sources which registered in a top-level
   // navigation redirect or a beacon chain, and associated info to process them.
-  struct SourceRegistrations;
+  class SourceRegistrations;
 
   using SourceRegistrationsId =
       absl::variant<blink::AttributionSrcToken, BeaconId>;
 
 #if BUILDFLAG(IS_ANDROID)
-  struct OsTrigger;
-  using TriggerPayload = absl::variant<AttributionTrigger, OsTrigger>;
+  using TriggerPayload = absl::variant<AttributionTrigger, OsRegistration>;
 #else
   using TriggerPayload = AttributionTrigger;
 #endif
@@ -143,11 +151,25 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
   void OnReceiverDisconnected();
   void OnSourceEligibleDataHostFinished(base::TimeTicks register_time);
 
+  struct RegistrarAndHeader;
+
+  void ParseSource(base::flat_set<SourceRegistrations>::iterator,
+                   attribution_reporting::SuitableOrigin reporting_origin,
+                   const RegistrarAndHeader&);
   void OnSourceParsed(
+      SourceRegistrationsId,
+      base::FunctionRef<void(const SourceRegistrations&)> handle_result);
+  void OnWebSourceParsed(
       SourceRegistrationsId,
       const attribution_reporting::SuitableOrigin& reporting_origin,
       const std::string& header_value,
       data_decoder::DataDecoder::ValueOrError result);
+
+#if BUILDFLAG(IS_ANDROID)
+  using OsParseResult =
+      base::expected<net::structured_headers::ParameterizedItem, std::string>;
+  void OnOsSourceParsed(SourceRegistrationsId, OsParseResult);
+#endif
 
   void MaybeOnRegistrationsFinished(
       base::flat_set<SourceRegistrations>::const_iterator);

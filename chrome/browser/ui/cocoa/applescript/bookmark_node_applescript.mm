@@ -7,6 +7,7 @@
 #include "base/check.h"
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/app_controller_mac.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
@@ -20,26 +21,32 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-@interface BookmarkNodeAppleScript()
+@interface BookmarkNodeAppleScript ()
+
+// Contains the temporary title when a user creates a new item with the title
+// specified like:
+//
+//   make new bookmark folder with properties {title:"foo"}
 @property (nonatomic, copy) NSString* tempTitle;
+
 @end
 
-@implementation BookmarkNodeAppleScript
+@implementation BookmarkNodeAppleScript {
+  raw_ptr<const bookmarks::BookmarkNode> _bookmarkNode;  // weak.
+}
 
 @synthesize tempTitle = _tempTitle;
 
 - (instancetype)init {
   if ((self = [super init])) {
-    BookmarkModel* model = [self bookmarkModel];
+    BookmarkModel* model = self.bookmarkModel;
     if (!model) {
       [self release];
       return nil;
     }
 
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithLongLong:model->next_node_id()]);
-    [self setUniqueID:numID];
-    [self setTempTitle:@""];
+    self.uniqueID = [NSString stringWithFormat:@"%lld", model->next_node_id()];
+    self.tempTitle = @"";
   }
   return self;
 }
@@ -57,14 +64,12 @@ using bookmarks::BookmarkNode;
 
   if ((self = [super init])) {
     // It is safe to be weak, if a bookmark item/folder goes away
-    // (eg user deleting a folder) the applescript runtime calls
+    // (eg user deleting a folder) the AppleScript runtime calls
     // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
     // and this particular bookmark item/folder is never returned.
     _bookmarkNode = aBookmarkNode;
 
-    base::scoped_nsobject<NSNumber> numID(
-        [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
-    [self setUniqueID:numID];
+    self.uniqueID = [NSString stringWithFormat:@"%lld", aBookmarkNode->id()];
   }
   return self;
 }
@@ -72,37 +77,43 @@ using bookmarks::BookmarkNode;
 - (void)setBookmarkNode:(const BookmarkNode*)aBookmarkNode {
   DCHECK(aBookmarkNode);
   // It is safe to be weak, if a bookmark item/folder goes away
-  // (eg user deleting a folder) the applescript runtime calls
+  // (eg user deleting a folder) the AppleScript runtime calls
   // bookmarkFolders/bookmarkItems in BookmarkFolderAppleScript
   // and this particular bookmark item/folder is never returned.
   _bookmarkNode = aBookmarkNode;
 
-  base::scoped_nsobject<NSNumber> numID(
-      [[NSNumber alloc] initWithLongLong:aBookmarkNode->id()]);
-  [self setUniqueID:numID];
+  self.uniqueID = [NSString stringWithFormat:@"%lld", aBookmarkNode->id()];
 
   [self setTitle:[self tempTitle]];
 }
 
+- (const bookmarks::BookmarkNode*)bookmarkNode {
+  return _bookmarkNode;
+}
+
 - (NSString*)title {
-  if (!_bookmarkNode)
+  if (!_bookmarkNode) {
     return _tempTitle;
+  }
 
   return base::SysUTF16ToNSString(_bookmarkNode->GetTitle());
 }
 
 - (void)setTitle:(NSString*)aTitle {
-  // If the scripter enters |make new bookmarks folder with properties
-  // {title:"foo"}|, the node has not yet been created so title is stored in the
-  // temp title.
+  // If the scripter enters:
+  //
+  //   make new bookmarks folder with properties {title:"foo"}
+  //
+  // the node has not yet been created so title is stored in the temp title.
   if (!_bookmarkNode) {
-    [self setTempTitle:aTitle];
+    self.tempTitle = aTitle;
     return;
   }
 
-  BookmarkModel* model = [self bookmarkModel];
-  if (!model)
+  BookmarkModel* model = self.bookmarkModel;
+  if (!model) {
     return;
+  }
 
   model->SetTitle(_bookmarkNode, base::SysNSStringToUTF16(aTitle),
                   bookmarks::metrics::BookmarkEditSource::kOther);
@@ -119,17 +130,17 @@ using bookmarks::BookmarkNode;
   AppController* appDelegate =
       base::mac::ObjCCastStrict<AppController>([NSApp delegate]);
 
-  Profile* lastProfile = [appDelegate lastProfile];
+  Profile* lastProfile = appDelegate.lastProfile;
   if (!lastProfile) {
-    AppleScript::SetError(AppleScript::errGetProfile);
-    return NULL;
+    AppleScript::SetError(AppleScript::Error::kGetProfile);
+    return nullptr;
   }
 
   BookmarkModel* model =
       BookmarkModelFactory::GetForBrowserContext(lastProfile);
   if (!model->loaded()) {
-    AppleScript::SetError(AppleScript::errBookmarkModelLoad);
-    return NULL;
+    AppleScript::SetError(AppleScript::Error::kBookmarkModelLoad);
+    return nullptr;
   }
 
   return model;

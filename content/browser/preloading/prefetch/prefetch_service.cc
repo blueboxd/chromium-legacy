@@ -906,7 +906,8 @@ PrefetchStreamingURLLoaderStatus PrefetchService::OnPrefetchRedirect(
     const network::mojom::URLResponseHead& response_head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (!prefetch_container) {
+  if (!prefetch_container ||
+      !base::FeatureList::IsEnabled(features::kPrefetchRedirects)) {
     return PrefetchStreamingURLLoaderStatus::kFailedInvalidRedirect;
   }
 
@@ -916,7 +917,8 @@ PrefetchStreamingURLLoaderStatus PrefetchService::OnPrefetchRedirect(
 
   prefetch_container->AddRedirectHop(redirect_info.new_url);
 
-  if (redirect_info.new_method != "GET" || !response_head.headers ||
+  if (!base::FeatureList::IsEnabled(features::kPrefetchRedirects) ||
+      redirect_info.new_method != "GET" || !response_head.headers ||
       response_head.headers->response_code() < 300 ||
       response_head.headers->response_code() >= 400) {
     active_prefetches_.erase(prefetch_container->GetPrefetchContainerKey());
@@ -1024,6 +1026,11 @@ PrefetchStreamingURLLoaderStatus PrefetchService::OnPrefetchResponseStarted(
           net::HttpUtil::ParseRetryAfterHeader(
               retry_after_string, base::Time::Now(), &retry_after) &&
           delegate_) {
+        // Cap the retry after value to a maximum.
+        if (retry_after > PrefetchMaximumRetryAfterDelta()) {
+          retry_after = PrefetchMaximumRetryAfterDelta();
+        }
+
         delegate_->ReportOriginRetryAfter(prefetch_container->GetURL(),
                                           retry_after);
       }
@@ -1175,7 +1182,7 @@ void PrefetchService::CopyIsolatedCookies(
   prefetch_container->OnIsolatedCookieCopyStart();
   net::CookieOptions options = net::CookieOptions::MakeAllInclusive();
   prefetch_container->GetNetworkContext()->GetCookieManager()->GetCookieList(
-      prefetch_container->GetURL(), options,
+      prefetch_container->GetCurrentURLToServe(), options,
       net::CookiePartitionKeyCollection::Todo(),
       base::BindOnce(&PrefetchService::OnGotIsolatedCookiesForCopy,
                      weak_method_factory_.GetWeakPtr(), prefetch_container));
@@ -1202,9 +1209,9 @@ void PrefetchService::OnGotIsolatedCookiesForCopy(
   for (const net::CookieWithAccessResult& cookie : cookie_list) {
     browser_context_->GetDefaultStoragePartition()
         ->GetCookieManagerForBrowserProcess()
-        ->SetCanonicalCookie(cookie.cookie, prefetch_container->GetURL(),
-                             options,
-                             base::BindOnce(&CookieSetHelper, barrier));
+        ->SetCanonicalCookie(
+            cookie.cookie, prefetch_container->GetCurrentURLToServe(), options,
+            base::BindOnce(&CookieSetHelper, barrier));
   }
 }
 
@@ -1224,20 +1231,21 @@ void PrefetchService::GetPrefetchToServe(
     return;
   }
 
-  // TODO(https://crbug.com/1266876): Allow prefetches with redirects to be
-  // served.
-  if (prefetch_container->GetRedirectChainSize() > 1) {
+  if (prefetch_container->GetRedirectChainSize() > 1 &&
+      !base::FeatureList::IsEnabled(features::kPrefetchRedirects)) {
     std::move(on_prefetch_to_serve_ready).Run(nullptr);
     return;
   }
 
   if (prefetch_container->IsPrefetchServable(PrefetchCacheableDuration())) {
+    prefetch_container->OnGetPrefetchToServe(/*blocked_until_head=*/false);
     ReturnPrefetchToServe(prefetch_container,
                           std::move(on_prefetch_to_serve_ready));
     return;
   }
 
   if (prefetch_container->ShouldBlockUntilHeadReceived()) {
+    prefetch_container->OnGetPrefetchToServe(/*blocked_until_head=*/false);
     prefetch_container->GetStreamingLoader()->SetOnReceivedHeadCallback(
         base::BindOnce(&PrefetchService::ReturnPrefetchToServe,
                        weak_method_factory_.GetWeakPtr(), prefetch_container,
@@ -1259,6 +1267,7 @@ void PrefetchService::ReturnPrefetchToServe(
       !prefetch_container->IsPrefetchServable(PrefetchCacheableDuration()) ||
       prefetch_container->HaveDefaultContextCookiesChanged(
           prefetch_container->GetURL())) {
+    prefetch_container->OnReturnPrefetchToServe(/*served=*/false);
     std::move(on_prefetch_to_serve_ready).Run(nullptr);
     return;
   }
@@ -1267,8 +1276,7 @@ void PrefetchService::ReturnPrefetchToServe(
     CopyIsolatedCookies(prefetch_container);
   }
 
-  prefetch_container->OnNavigationToPrefetch();
-
+  prefetch_container->OnReturnPrefetchToServe(/*served=*/true);
   std::move(on_prefetch_to_serve_ready).Run(prefetch_container);
   return;
 }

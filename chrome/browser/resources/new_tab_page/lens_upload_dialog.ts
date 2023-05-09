@@ -193,11 +193,7 @@ export class LensUploadDialogElement extends LensUploadDialogElementBase {
 
   override connectedCallback() {
     super.connectedCallback();
-    // Provides the parent element with a reference to the openDialog function
-    // after component is (lazily) loaded so we do not need to reference this
-    // element directly in the parent to open the dialog.
-    this.dispatchEvent(new CustomEvent(
-        'bind-open-dialog', {detail: {fn: this.openDialog.bind(this)}}));
+    this.openDialog();
   }
 
   override disconnectedCallback() {
@@ -433,13 +429,16 @@ export class LensUploadDialogElement extends LensUploadDialogElementBase {
       recordLensUploadDialogAction(LensUploadDialogAction.IMAGE_DROPPED);
     }
   }
-  private onFocusOut_ = (event: FocusEvent) => {
-    const outsideDialog = !event.relatedTarget ||
-        !this.$.dialog.contains(event.relatedTarget as Node);
+
+  private onFocusOut_(event: FocusEvent) {
+    // Focus ensures that the file picker pop-up does not close dialog.
+    const outsideDialog = document.hasFocus() &&
+        (!event.relatedTarget ||
+         !this.$.dialog.contains(event.relatedTarget as Node));
     if (outsideDialog) {
       this.closeDialog();
     }
-  };
+  }
 }
 declare global {
   interface HTMLElementTagNameMap {

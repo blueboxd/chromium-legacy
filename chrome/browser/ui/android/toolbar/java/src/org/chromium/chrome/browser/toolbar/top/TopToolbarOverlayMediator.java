@@ -89,14 +89,13 @@ public class TopToolbarOverlayMediator {
         mTopUiThemeColorProvider = topUiThemeColorProvider;
         mModel = model;
         mIsVisibilityManuallyControlled = manualVisibilityControl;
-
         mIsOnValidLayout = (mLayoutStateProvider.getActiveLayoutType() & layoutsToShowOn) > 0;
         updateVisibility();
 
         mSceneChangeObserver = new LayoutStateObserver() {
             @Override
-            public void onStartedShowing(@LayoutType int layout, boolean showToolbar) {
-                mIsOnValidLayout = (layout & layoutsToShowOn) > 0;
+            public void onStartedShowing(@LayoutType int layoutType, boolean showToolbar) {
+                mIsOnValidLayout = (layoutType & layoutsToShowOn) > 0;
                 updateVisibility();
             }
         };
@@ -109,6 +108,7 @@ public class TopToolbarOverlayMediator {
             updateVisibility();
             updateThemeColor(tab);
             updateProgress();
+            updateAnonymize(tab);
         };
         mTabObserver = new CurrentTabObserver(tabSupplier, new EmptyTabObserver() {
             @Override
@@ -125,6 +125,7 @@ public class TopToolbarOverlayMediator {
             public void onContentChanged(Tab tab) {
                 updateVisibility();
                 updateThemeColor(tab);
+                updateAnonymize(tab);
             }
         }, activityTabCallback);
 
@@ -255,9 +256,17 @@ public class TopToolbarOverlayMediator {
         if (mIsVisibilityManuallyControlled) {
             mModel.set(TopToolbarOverlayProperties.VISIBLE, mManualVisibility && mIsOnValidLayout);
         } else {
-            mModel.set(TopToolbarOverlayProperties.VISIBLE,
+            boolean visibility =
                     !BrowserControlsUtils.areBrowserControlsOffScreen(mBrowserControlsStateProvider)
-                            && mIsOnValidLayout);
+                    && mIsOnValidLayout;
+            mModel.set(TopToolbarOverlayProperties.VISIBLE, visibility);
+        }
+    }
+
+    private void updateAnonymize(Tab tab) {
+        if (!mIsVisibilityManuallyControlled && ToolbarFeatures.shouldSuppressCaptures()) {
+            boolean isNativePage = tab.isNativePage();
+            mModel.set(TopToolbarOverlayProperties.ANONYMIZE, isNativePage);
         }
     }
 

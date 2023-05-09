@@ -53,7 +53,7 @@ void ReadAnythingController::OnFontChoiceChanged(int new_index) {
       model_->GetFontModel()->GetFontNameAt(new_index));
 }
 
-ui::ComboboxModel* ReadAnythingController::GetFontComboboxModel() {
+ReadAnythingFontModel* ReadAnythingController::GetFontComboboxModel() {
   return model_->GetFontModel();
 }
 
@@ -135,10 +135,16 @@ void ReadAnythingController::OnSystemThemeChanged() {
 void ReadAnythingController::OnUIReady() {
   ui_ready_ = true;
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  if (features::IsReadAnythingWithScreen2xEnabled() &&
-      !component_ready_observer_.IsObserving()) {
-    component_ready_observer_.Observe(
-        screen_ai::ScreenAIInstallState::GetInstance());
+  if (features::IsReadAnythingWithScreen2xEnabled()) {
+    if (screen_ai::ScreenAIInstallState::GetInstance()
+            ->IsComponentAvailable()) {
+      // Notify that the screen ai service is already ready so we can bind to
+      // the content extractor.
+      model_->ScreenAIServiceReady();
+    } else if (!component_ready_observer_.IsObserving()) {
+      component_ready_observer_.Observe(
+          screen_ai::ScreenAIInstallState::GetInstance());
+    }
   }
 #endif
   OnActiveWebContentsChanged();
@@ -155,9 +161,13 @@ void ReadAnythingController::OnLinkClicked(const ui::AXTreeID& target_tree_id,
   action_data.target_tree_id = target_tree_id;
   action_data.action = ax::mojom::Action::kDoDefault;
   action_data.target_node_id = target_node_id;
-  ui::AXActionHandlerRegistry::GetInstance()
-      ->GetActionHandler(target_tree_id)
-      ->PerformAction(action_data);
+  ui::AXActionHandlerBase* handler =
+      ui::AXActionHandlerRegistry::GetInstance()->GetActionHandler(
+          target_tree_id);
+  if (!handler) {
+    return;
+  }
+  handler->PerformAction(action_data);
 }
 
 void ReadAnythingController::OnSelectionChange(
@@ -173,9 +183,13 @@ void ReadAnythingController::OnSelectionChange(
   action_data.anchor_offset = anchor_offset;
   action_data.focus_node_id = focus_node_id;
   action_data.focus_offset = focus_offset;
-  ui::AXActionHandlerRegistry::GetInstance()
-      ->GetActionHandler(target_tree_id)
-      ->PerformAction(action_data);
+  ui::AXActionHandlerBase* handler =
+      ui::AXActionHandlerRegistry::GetInstance()->GetActionHandler(
+          target_tree_id);
+  if (!handler) {
+    return;
+  }
+  handler->PerformAction(action_data);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

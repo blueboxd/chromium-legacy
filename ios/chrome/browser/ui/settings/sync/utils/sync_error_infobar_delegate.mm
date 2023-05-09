@@ -33,9 +33,6 @@
 
 namespace {
 
-// Sync error icon.
-NSString* const kGoogleServicesSyncErrorImage = @"google_services_sync_error";
-
 // IconConfigs is the container for all configurations of the sync error infobar
 // icon
 struct IconConfigs {
@@ -45,7 +42,7 @@ struct IconConfigs {
   UIImage* icon_image;
 };
 
-const IconConfigs& SymbolsIconConfigs() {
+const IconConfigs& GetIconConfigs() {
   static const IconConfigs kSymbols = {
       true,
       [UIColor colorNamed:kRed500Color],
@@ -54,21 +51,6 @@ const IconConfigs& SymbolsIconConfigs() {
                                          kInfobarSymbolPointSize),
   };
   return kSymbols;
-}
-
-// TODO: remove the default configs once the SF Symbols have been launched.
-const IconConfigs& DefaultIconConfigs() {
-  static const IconConfigs kSymbols = {
-      false,
-      nil,
-      nil,
-      [UIImage imageNamed:kGoogleServicesSyncErrorImage],
-  };
-  return kSymbols;
-}
-
-const IconConfigs& GetIconConfigs(bool use_symbol) {
-  return use_symbol ? SymbolsIconConfigs() : DefaultIconConfigs();
 }
 
 }  // namespace
@@ -90,13 +72,14 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
     id<SyncPresenter> presenter)
     : browser_state_(browser_state), presenter_(presenter) {
   DCHECK(!browser_state->IsOffTheRecord());
-  icon_ = gfx::Image(GetIconConfigs(UseSymbols()).icon_image);
+  icon_ = gfx::Image(GetIconConfigs().icon_image);
   syncer::SyncService* sync_service =
       SyncServiceFactory::GetForBrowserState(browser_state_);
   DCHECK(sync_service);
   // Set all of the UI based on the sync state at the same time to ensure
   // they all correspond to the same sync error.
   error_state_ = sync_service->GetUserActionableError();
+  title_ = GetSyncErrorInfoBarTitleForBrowserState(browser_state_);
   message_ = base::SysNSStringToUTF16(
       GetSyncErrorMessageForBrowserState(browser_state_));
   button_text_ = base::SysNSStringToUTF16(
@@ -121,6 +104,10 @@ std::u16string SyncErrorInfoBarDelegate::GetMessageText() const {
   return message_;
 }
 
+std::u16string SyncErrorInfoBarDelegate::GetTitleText() const {
+  return title_;
+}
+
 int SyncErrorInfoBarDelegate::GetButtons() const {
   return button_text_.empty() ? BUTTON_NONE : BUTTON_OK;
 }
@@ -136,15 +123,15 @@ ui::ImageModel SyncErrorInfoBarDelegate::GetIcon() const {
 }
 
 bool SyncErrorInfoBarDelegate::UseIconBackgroundTint() const {
-  return GetIconConfigs(UseSymbols()).use_icon_background_tint;
+  return GetIconConfigs().use_icon_background_tint;
 }
 
 UIColor* SyncErrorInfoBarDelegate::GetIconImageTintColor() const {
-  return GetIconConfigs(UseSymbols()).image_tint_color;
+  return GetIconConfigs().image_tint_color;
 }
 
 UIColor* SyncErrorInfoBarDelegate::GetIconBackgroundColor() const {
-  return GetIconConfigs(UseSymbols()).background_color;
+  return GetIconConfigs().background_color;
 }
 
 bool SyncErrorInfoBarDelegate::Accept() {

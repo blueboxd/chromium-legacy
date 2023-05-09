@@ -44,12 +44,16 @@
 
 - (instancetype)initWithBrowser:(Browser*)browser
                        delegate:(id<BookmarkPromoControllerDelegate>)delegate
-                      presenter:(id<SigninPresenter>)presenter {
+                      presenter:(id<SigninPresenter>)presenter
+             baseViewController:(UIViewController*)baseViewController {
   DCHECK(browser);
   self = [super init];
   if (self) {
     _delegate = delegate;
-    ChromeBrowserState* browserState = browser->GetBrowserState();
+    ChromeBrowserState* browserState =
+        browser->GetBrowserState()->GetOriginalChromeBrowserState();
+    // TODO(crbug.com/1426262): Decide whether to show the signin promo in
+    // incognito mode and revisit this code.
     // Incognito browser can go away before this class is released (once the
     // last incognito winwdow is closed), this code avoids keeping a pointer to
     // it.
@@ -60,14 +64,16 @@
           new signin::IdentityManagerObserverBridge(
               IdentityManagerFactory::GetForBrowserState(browserState), self));
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-          initWithAccountManagerService:ChromeAccountManagerServiceFactory::
-                                            GetForBrowserState(browserState)
-                            authService:AuthenticationServiceFactory::
-                                            GetForBrowserState(browserState)
-                            prefService:browserState->GetPrefs()
-                            accessPoint:signin_metrics::AccessPoint::
-                                            ACCESS_POINT_BOOKMARK_MANAGER
-                              presenter:presenter];
+                initWithBrowser:browser
+          accountManagerService:ChromeAccountManagerServiceFactory::
+                                    GetForBrowserState(browserState)
+                    authService:AuthenticationServiceFactory::
+                                    GetForBrowserState(browserState)
+                    prefService:browserState->GetPrefs()
+                    accessPoint:signin_metrics::AccessPoint::
+                                    ACCESS_POINT_BOOKMARK_MANAGER
+                      presenter:presenter
+             baseViewController:baseViewController];
       _signinPromoViewMediator.consumer = self;
     }
     [self updateShouldShowSigninPromo];
@@ -106,7 +112,8 @@
   }
 
   DCHECK(_browser);
-  ChromeBrowserState* browserState = _browser->GetBrowserState();
+  ChromeBrowserState* browserState =
+      _browser->GetBrowserState()->GetOriginalChromeBrowserState();
   AuthenticationService* authenticationService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   if ([SigninPromoViewMediator

@@ -90,9 +90,14 @@ class PageSpecificSiteDataDialogBrowserTest
     content::SetupCrossSiteRedirector(https_server());
     ASSERT_TRUE(https_server()->Start());
 
+    content::CookieChangeObserver observer(
+        browser()->tab_strip_model()->GetActiveWebContents(), 2);
+
     // Load a page with cookies.
     ASSERT_TRUE(ui_test_utils::NavigateToURL(
         browser(), https_server()->GetURL("a.test", "/cookie1.html")));
+
+    observer.Wait();
   }
 
   net::EmbeddedTestServer* https_server() { return https_server_.get(); }
@@ -442,9 +447,14 @@ IN_PROC_BROWSER_TEST_P(PageSpecificSiteDataDialogBrowserTest,
     return;
   }
 
+  content::CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 8);
+
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), https_server()->GetURL(
                      "a.test", "/third_party_partitioned_cookies.html")));
+
+  observer.Wait();
 
   auto* dialog = OpenDialog();
   ui::ElementContext context =
@@ -502,9 +512,14 @@ IN_PROC_BROWSER_TEST_P(PageSpecificSiteDataDialogBrowserTest,
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kBlockThirdParty));
 
+  content::CookieChangeObserver observer(
+      browser()->tab_strip_model()->GetActiveWebContents(), 9);
+
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(), https_server()->GetURL(
                      "a.test", "/third_party_partitioned_cookies.html")));
+
+  observer.Wait();
 
   auto* dialog = OpenDialog();
   ui::ElementContext context =
@@ -553,6 +568,36 @@ IN_PROC_BROWSER_TEST_P(PageSpecificSiteDataDialogBrowserTest,
             l10n_util::GetStringUTF16(
                 IDS_PAGE_SPECIFIC_SITE_DATA_DIALOG_BLOCKED_STATE_SUBTITLE));
   // TODO(crbug.com/1344787): Check the histograms value.
+}
+
+IN_PROC_BROWSER_TEST_P(PageSpecificSiteDataDialogBrowserTest,
+                       SameOriginNavigationDeletion) {
+  if (!GetParam()) {
+    return;
+  }
+
+  // Regression test for crbug.com/1421521. As the dialog remains open during
+  // same-origin navigations, it mustn't cache any pointers owned by the
+  // PageSpecificContentSettings, which is _page_ specific, and so changes even
+  // on same-origin navigations. Attempting a deletion is sufficient to access
+  // the BrowsingDataModel, which is owned by the PageSpecificContentSettings,
+  // and so must _not_ have pointers cached by the dialog.
+
+  auto* dialog = OpenDialog();
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), https_server()->GetURL("a.test", "/cookie2.html")));
+  EXPECT_FALSE(dialog->IsClosed());
+
+  ui::ElementContext context =
+      views::ElementTrackerViews::GetContextForWidget(dialog);
+  auto* view = GetViewByIdentifier(context, kPageSpecificSiteDataDialogRow);
+  auto* row_view = static_cast<SiteDataRowView*>(view);
+  EXPECT_TRUE(row_view->GetVisible());
+
+  EXPECT_TRUE(row_view->delete_button_for_testing()->GetVisible());
+  ClickButton(row_view->delete_button_for_testing());
+  EXPECT_FALSE(dialog->IsClosed());
 }
 
 // Run tests with kPageSpecificSiteDataDialog flag enabled and disabled.

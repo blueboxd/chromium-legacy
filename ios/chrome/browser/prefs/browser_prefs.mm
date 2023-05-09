@@ -241,6 +241,9 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
                                 static_cast<int>(BrowserSigninMode::kEnabled));
   registry->RegisterBooleanPref(prefs::kAppStoreRatingPolicyEnabled, true);
 
+  registry->RegisterBooleanPref(prefs::kLensCameraAssistedSearchPolicyAllowed,
+                                true);
+
   registry->RegisterIntegerPref(kTrialGroupPrefName, 0);
 
   registry->RegisterIntegerPref(kSigninBottomSheetShownCount, 0);
@@ -372,8 +375,9 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterStringPref(prefs::kNewTabPageLocationOverride,
                                std::string());
 
-  registry->RegisterIntegerPref(prefs::kIncognitoModeAvailability,
-                                static_cast<int>(IncognitoModePrefs::kEnabled));
+  registry->RegisterIntegerPref(
+      policy::policy_prefs::kIncognitoModeAvailability,
+      static_cast<int>(IncognitoModePrefs::kEnabled));
 
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 
@@ -415,6 +419,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Register pref used to determine if the Price Tracking UI has been shown.
   registry->RegisterBooleanPref(prefs::kPriceNotificationsHasBeenShown, false);
+
+  // Register pref used to determine if the Bring Android Tabs prompt has been
+  // shown.
+  registry->RegisterBooleanPref(prefs::kIosBringAndroidTabsPromptDisplayed,
+                                false);
 }
 
 // This method should be periodically pruned of year+ old migrations.

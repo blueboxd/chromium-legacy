@@ -70,6 +70,10 @@ class TestAmbientPhotoCacheImpl : public AmbientPhotoCache {
   TestAmbientPhotoCacheImpl() = default;
   ~TestAmbientPhotoCacheImpl() override = default;
 
+  static std::unique_ptr<AmbientPhotoCache> Create() {
+    return std::make_unique<TestAmbientPhotoCacheImpl>();
+  }
+
   // AmbientPhotoCache:
   void DownloadPhoto(
       const std::string& url,
@@ -197,6 +201,8 @@ AmbientAshTestBase::AmbientAshTestBase()
 AmbientAshTestBase::~AmbientAshTestBase() = default;
 
 void AmbientAshTestBase::SetUp() {
+  AmbientPhotoCache::SetFactoryForTesting(
+      base::BindRepeating(&TestAmbientPhotoCacheImpl::Create));
   AshTestBase::SetUp();
 
   // Need to reset first and then assign the TestPhotoClient because can only
@@ -211,26 +217,15 @@ void AmbientAshTestBase::SetUp() {
 
 void AmbientAshTestBase::TearDown() {
   AshTestBase::TearDown();
+  AmbientPhotoCache::SetFactoryForTesting(base::NullCallback());
 }
 
 void AmbientAshTestBase::SetAmbientModeEnabled(bool enabled) {
   Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
       ambient::prefs::kAmbientModeEnabled, enabled);
 
-  // TODO (b/269576509) : Integrate with managed screensaver policy
-  if (ash::features::IsAmbientModeManagedScreensaverEnabled()) {
-    // We early return in case the managed screensaver is enabled, as
-    // the photo controller will not exist when the managed screensaver
-    // code path is being used.
-    return;
-  }
-
   if (enabled) {
-    photo_controller()->set_photo_cache_for_testing(
-        std::make_unique<TestAmbientPhotoCacheImpl>());
-    photo_controller()->set_backup_photo_cache_for_testing(
-        std::make_unique<TestAmbientPhotoCacheImpl>());
-    photo_controller()->backup_photo_refresh_timer_for_testing().Stop();
+    DisableBackupCacheDownloads();
   }
 }
 
@@ -238,6 +233,20 @@ void AmbientAshTestBase::SetAmbientUiSettings(
     const AmbientUiSettings& settings) {
   settings.WriteToPrefService(
       *Shell::Get()->session_controller()->GetActivePrefService());
+  DisableBackupCacheDownloads();
+}
+
+void AmbientAshTestBase::DisableBackupCacheDownloads() {
+  // Some |AmbientUiSettings| legitimately don't use a photo controller, in
+  // which case backup photos are not downloaded anyways.
+  if (photo_controller()) {
+    photo_controller()->backup_photo_refresh_timer_for_testing().Stop();
+  }
+}
+
+void AmbientAshTestBase::SetAmbientModeManagedScreensaverEnabled(bool enabled) {
+  Shell::Get()->session_controller()->GetActivePrefService()->SetBoolean(
+      ambient::prefs::kAmbientModeManagedScreensaverEnabled, enabled);
 }
 
 void AmbientAshTestBase::SetAmbientTheme(AmbientTheme theme) {
@@ -380,14 +389,14 @@ void AmbientAshTestBase::SimulateMediaPlaybackStateChanged(
 
 void AmbientAshTestBase::SetDecodedPhotoSize(int width, int height) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetDecodedPhotoSize(width, height);
 }
 
 void AmbientAshTestBase::SetDecodedPhotoColor(SkColor color) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetDecodedPhotoColor(color);
 }
@@ -555,7 +564,7 @@ base::TimeDelta AmbientAshTestBase::GetRefreshTokenDelay() {
 const std::map<int, ::ambient::PhotoCacheEntry>&
 AmbientAshTestBase::GetCachedFiles() {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   return photo_cache->get_files();
 }
@@ -563,7 +572,7 @@ AmbientAshTestBase::GetCachedFiles() {
 const std::map<int, ::ambient::PhotoCacheEntry>&
 AmbientAshTestBase::GetBackupCachedFiles() {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_backup_photo_cache_for_testing());
+      ambient_controller()->get_backup_photo_cache_for_testing());
 
   return photo_cache->get_files();
 }
@@ -583,17 +592,11 @@ AmbientManagedPhotoController* AmbientAshTestBase::managed_photo_controller() {
   AmbientManagedSlideshowUiLauncher* ui_launcher =
       static_cast<AmbientManagedSlideshowUiLauncher*>(
           ambient_controller()->ambient_ui_launcher());
-  // Used to make sure to make the ui launcher for
-  // ambient_managed_photo_controller unit tests don't fire an uninitialized
-  // callback and crash.
-  // TODO (fahadmansoor): Start using a test only method to remove the observer
-  // from the ui_launcher for testing the ambient controller
-  ui_launcher->initialization_callback_ = base::DoNothing();
   return &ui_launcher->photo_controller_;
 }
 
 AmbientPhotoCache* AmbientAshTestBase::photo_cache() {
-  return photo_controller()->get_photo_cache_for_testing();
+  return ambient_controller()->ambient_photo_cache();
 }
 
 AmbientWeatherController* AmbientAshTestBase::weather_controller() {
@@ -649,42 +652,42 @@ void AmbientAshTestBase::FetchBackupImages() {
 
 void AmbientAshTestBase::SetDownloadPhotoData(std::string data) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetDownloadData(std::make_unique<std::string>(std::move(data)));
 }
 
 void AmbientAshTestBase::ClearDownloadPhotoData() {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetDownloadData(nullptr);
 }
 
 void AmbientAshTestBase::SetBackupDownloadPhotoData(std::string data) {
   auto* backup_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_backup_photo_cache_for_testing());
+      ambient_controller()->get_backup_photo_cache_for_testing());
 
   backup_cache->SetDownloadData(std::make_unique<std::string>(std::move(data)));
 }
 
 void AmbientAshTestBase::ClearBackupDownloadPhotoData() {
   auto* backup_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_backup_photo_cache_for_testing());
+      ambient_controller()->get_backup_photo_cache_for_testing());
 
   backup_cache->SetDownloadData(nullptr);
 }
 
 void AmbientAshTestBase::SetDecodePhotoImage(const gfx::ImageSkia& image) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetDecodedPhoto(image);
 }
 
 void AmbientAshTestBase::SetPhotoDownloadDelay(base::TimeDelta delay) {
   auto* photo_cache = static_cast<TestAmbientPhotoCacheImpl*>(
-      photo_controller()->get_photo_cache_for_testing());
+      ambient_controller()->ambient_photo_cache());
 
   photo_cache->SetPhotoDownloadDelay(delay);
 }

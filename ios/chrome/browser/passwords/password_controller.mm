@@ -39,7 +39,10 @@
 #import "components/password_manager/core/browser/password_generation_frame_helper.h"
 #import "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/core/browser/password_manager_client.h"
+#import "components/password_manager/core/browser/password_manager_features_util.h"
+#import "components/password_manager/core/browser/password_manager_metrics_util.h"
 #import "components/password_manager/core/browser/password_sync_util.h"
+#import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/account_select_fill_data.h"
 #import "components/password_manager/ios/password_controller_driver_helper.h"
 #import "components/password_manager/ios/password_form_helper.h"
@@ -62,6 +65,7 @@
 #import "ios/chrome/browser/shared/public/commands/password_breach_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_protection_commands.h"
 #import "ios/chrome/browser/shared/public/commands/password_suggestion_commands.h"
+#import "ios/chrome/browser/shared/public/commands/passwords_account_storage_notice_commands.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
@@ -277,17 +281,17 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 - (void)showSavePasswordInfoBar:
             (std::unique_ptr<PasswordFormManagerForUI>)formToSave
                          manual:(BOOL)manual {
-  [self showInfoBarForForm:std::move(formToSave)
-               infoBarType:PasswordInfoBarType::SAVE
-                    manual:manual];
+  [self maybeShowAccountStorageNoticeBeforeInfobar:std::move(formToSave)
+                                            manual:manual
+                                       infobarType:PasswordInfoBarType::SAVE];
 }
 
 - (void)showUpdatePasswordInfoBar:
             (std::unique_ptr<PasswordFormManagerForUI>)formToUpdate
                            manual:(BOOL)manual {
-  [self showInfoBarForForm:std::move(formToUpdate)
-               infoBarType:PasswordInfoBarType::UPDATE
-                    manual:manual];
+  [self maybeShowAccountStorageNoticeBeforeInfobar:std::move(formToUpdate)
+                                            manual:manual
+                                       infobarType:PasswordInfoBarType::UPDATE];
 }
 
 - (void)removePasswordInfoBarManualFallback:(BOOL)manual {
@@ -422,12 +426,15 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     return;
   }
 
-  absl::optional<std::string> accountToStorePassword = absl::nullopt;
-  if (self.browserState) {
-    accountToStorePassword = password_manager::sync_util::GetAccountForSaving(
-        self.browserState->GetPrefs(),
-        SyncServiceFactory::GetForBrowserState(self.browserState));
-  }
+  CHECK(self.browserState);
+  PrefService* prefs = self.browserState->GetPrefs();
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(self.browserState);
+  const absl::optional<std::string> accountToStorePassword =
+      password_manager::sync_util::GetAccountForSaving(prefs, syncService);
+  const password_manager::metrics_util::PasswordAccountStorageUserState
+      accountStorageUserState = password_manager::features_util::
+          ComputePasswordAccountStorageUserState(prefs, syncService);
 
   infobars::InfoBarManager* infoBarManager =
       InfoBarManagerImpl::FromWebState(_webState);
@@ -443,7 +450,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
       auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
           accountToStorePassword,
-          /*password_update=*/false, std::move(form));
+          /*password_update=*/false, accountStorageUserState, std::move(form));
       std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
           InfobarType::kInfobarTypePasswordSave, std::move(delegate),
           /*skip_banner=*/manual);
@@ -461,7 +468,7 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
         auto delegate = std::make_unique<IOSChromeSavePasswordInfoBarDelegate>(
             accountToStorePassword,
-            /*password_update=*/true, std::move(form));
+            /*password_update=*/true, accountStorageUserState, std::move(form));
         std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
             InfobarType::kInfobarTypePasswordUpdate, std::move(delegate),
             /*skip_banner=*/manual);
@@ -477,6 +484,48 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
   [self.notifyAutoSigninViewController.view removeFromSuperview];
   [self.notifyAutoSigninViewController removeFromParentViewController];
   self.notifyAutoSigninViewController = nil;
+}
+
+- (void)maybeShowAccountStorageNoticeBeforeInfobar:
+            (std::unique_ptr<PasswordFormManagerForUI>)form
+                                            manual:(BOOL)manual
+                                       infobarType:
+                                           (PasswordInfoBarType)infobarType {
+  // Ignore manual saves/updates (they are infrequent enough that we don't care,
+  // this is an FYI not a consent).
+  if (manual || ![self shouldShowAccountStorageNotice]) {
+    [self showInfoBarForForm:std::move(form)
+                 infoBarType:infobarType
+                      manual:manual];
+    return;
+  }
+
+  __weak __typeof(self) weakSelf = self;
+  __block std::unique_ptr<PasswordFormManagerForUI> blockForm = std::move(form);
+  const auto entryPoint =
+      infobarType == PasswordInfoBarType::SAVE
+          ? PasswordsAccountStorageNoticeEntryPoint::kSave
+          : PasswordsAccountStorageNoticeEntryPoint::kUpdate;
+  [self showAccountStorageNoticeAndMarkShown:entryPoint
+                                  completion:^{
+                                    // No need to handle opt-outs here, the
+                                    // infobar adapts the strings.
+                                    [weakSelf
+                                        showInfoBarForForm:std::move(blockForm)
+                                               infoBarType:infobarType
+                                                    manual:manual];
+                                  }];
+}
+
+- (void)showAccountStorageNoticeAndMarkShown:
+            (PasswordsAccountStorageNoticeEntryPoint)entryPoint
+                                  completion:(void (^)())completion {
+  CHECK([self shouldShowAccountStorageNotice]);
+  self.browserState->GetPrefs()->SetBoolean(
+      password_manager::prefs::kAccountStorageNoticeShown, true);
+  [HandlerForProtocol(self.dispatcher, PasswordsAccountStorageNoticeCommands)
+      showPasswordsAccountStorageNoticeForEntryPoint:entryPoint
+                                    dismissalHandler:completion];
 }
 
 #pragma mark - SharedPasswordControllerDelegate
@@ -496,6 +545,19 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
     // Navigate to the settings list.
     [self.delegate displaySavedPasswordList];
   }
+}
+
+- (BOOL)shouldShowAccountStorageNotice {
+  return _passwordManagerClient->GetPasswordFeatureManager()
+             ->IsOptedInForAccountStorage() &&
+         !self.browserState->GetPrefs()->GetBoolean(
+             password_manager::prefs::kAccountStorageNoticeShown);
+}
+
+- (void)showAccountStorageNotice:(void (^)())completion {
+  [self showAccountStorageNoticeAndMarkShown:
+            PasswordsAccountStorageNoticeEntryPoint::kFill
+                                  completion:completion];
 }
 
 @end

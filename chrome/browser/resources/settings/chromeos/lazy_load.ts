@@ -111,6 +111,7 @@ export {SettingsTtsSubpageElement} from './os_a11y_page/tts_subpage.js';
 export {SettingsOfficePageElement} from './os_files_page/office_page.js';
 export {LanguagesBrowserProxyImpl} from './os_languages_page/languages_browser_proxy.js';
 export {InputsShortcutReminderState, LanguagesMetricsProxyImpl, LanguagesPageInteraction} from './os_languages_page/languages_metrics_proxy.js';
+export {OsSettingsSmartInputsPageElement} from './os_languages_page/smart_inputs_page.js';
 export {AccountManagerBrowserProxy, AccountManagerBrowserProxyImpl} from './os_people_page/account_manager_browser_proxy.js';
 export {SettingsUsersAddUserDialogElement} from './os_people_page/add_user_dialog.js';
 export {FingerprintBrowserProxyImpl, FingerprintResultType} from './os_people_page/fingerprint_browser_proxy.js';
@@ -120,8 +121,10 @@ export {FingerprintSetupStep} from './os_people_page/setup_fingerprint_dialog.js
 export {PrinterType} from './os_printing_page/cups_printer_types.js';
 export {CupsPrintersBrowserProxy, CupsPrintersBrowserProxyImpl, PrinterSetupResult, PrintServerResult} from './os_printing_page/cups_printers_browser_proxy.js';
 export {CupsPrintersEntryManager} from './os_printing_page/cups_printers_entry_manager.js';
+export {OsSettingsPrintingPageElement} from './os_printing_page/os_printing_page.js';
 export {MediaDevicesProxy} from './os_privacy_page/media_devices_proxy.js';
 export {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './os_privacy_page/privacy_hub_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
 export {GoogleAssistantBrowserProxyImpl} from './os_search_page/google_assistant_browser_proxy.js';
 export {ConsentStatus, DspHotwordState} from './os_search_page/google_assistant_subpage.js';
+export {SettingsSearchSubpageElement} from './os_search_page/search_subpage.js';

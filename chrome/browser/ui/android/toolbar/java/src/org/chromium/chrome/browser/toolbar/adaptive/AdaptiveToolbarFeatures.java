@@ -144,6 +144,16 @@ public class AdaptiveToolbarFeatures {
                 && isAnyContextualPageActionButtonEnabled();
     }
 
+    public static boolean isAdaptiveToolbarTranslateEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_TRANSLATE);
+    }
+
+    public static boolean isAdaptiveToolbarAddToBookmarksEnabled() {
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_ADD_TO_BOOKMARKS);
+    }
+
     private static boolean isAnyContextualPageActionButtonEnabled() {
         return isPriceTrackingPageActionEnabled() || isReaderModePageActionEnabled();
     }

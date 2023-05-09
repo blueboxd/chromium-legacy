@@ -310,7 +310,7 @@ WebViewInternalCaptureVisibleRegionFunction::Run() {
 
   std::unique_ptr<ImageDetails> image_details;
   if (args().size() > 1) {
-    image_details = ImageDetails::FromValue(args()[1]);
+    image_details = ImageDetails::FromValueDeprecated(args()[1]);
   }
 
   is_guest_transparent_ = guest_->allow_transparency();
@@ -453,8 +453,9 @@ ExecuteCodeFunction::InitResult WebViewInternalExecuteCodeFunction::Init() {
   if (args().size() <= 2 || !args()[2].is_dict())
     return set_init_result(VALIDATION_FAILURE);
   std::unique_ptr<InjectDetails> details(new InjectDetails());
-  if (!InjectDetails::Populate(args()[2], details.get()))
+  if (!InjectDetails::Populate(args()[2], *details)) {
     return set_init_result(VALIDATION_FAILURE);
+  }
 
   details_ = std::move(details);
 

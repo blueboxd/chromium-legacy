@@ -333,6 +333,9 @@ class AcceleratorConfigurationProviderTest : public AshTestBase {
     fake_keyboard_manager_ = std::make_unique<FakeDeviceManager>();
     provider_->ignore_layouts_for_testing_ = true;
     base::RunLoop().RunUntilIdle();
+    // After adding a fake keyboard, clear the observer call count.
+    observer_.clear_num_times_notified();
+    EXPECT_EQ(0, observer_.num_times_notified());
   }
 
   void TearDown() override {
@@ -1037,7 +1040,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAcceleratorNonAsh) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
+TEST_F(AcceleratorConfigurationProviderTest, RemoveAndRestoreAllDefaults) {
   FakeAcceleratorsUpdatedMojoObserver observer;
   SetUpObserver(&observer);
 
@@ -1049,6 +1052,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
   AshAcceleratorConfiguration* config =
       Shell::Get()->ash_accelerator_configuration();
   config->Initialize(test_data);
+  config->InitializeDeprecatedAccelerators({}, {});
   base::RunLoop().RunUntilIdle();
 
   // Verify accelerators are populated.
@@ -1087,6 +1091,7 @@ TEST_F(AcceleratorConfigurationProviderTest, RemoveAndResoreAllDefaults) {
   ash::shortcut_customization::mojom::
       AcceleratorConfigurationProviderAsyncWaiter(provider_.get())
           .RestoreAllDefaults(&result);
+  EXPECT_EQ(mojom::AcceleratorConfigResult::kSuccess, result->result);
 
   base::RunLoop().RunUntilIdle();
 

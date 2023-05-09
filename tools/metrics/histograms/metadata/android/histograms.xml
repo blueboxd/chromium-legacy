@@ -1692,6 +1692,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.IncognitoReauth.PromoImpressionAfterActionCount"
+    units="count" expires_after="M119">
+  <owner>arabm@google.com</owner>
+  <owner>chrome-incognito@google.com</owner>
+  <summary>
+    Records the number of impressions of the Incognito re-auth promo card when
+    user clicks accept or dismiss or when the promo expires after the max number
+    of impressions.
+  </summary>
+</histogram>
+
 <histogram name="Android.IncognitoReauth.ToggleOnOrOff" enum="BooleanToggled"
     expires_after="2023-09-03">
   <owner>roagarwal@chromium.org</owner>
@@ -1907,46 +1918,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.ManageSpace.ActionTaken"
-    enum="AndroidManageSpaceButton" expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user presses a button in the 'Manage Space' screen for
-    Chrome. Note: the 'Clear App Data' option is likely incorrect, as the result
-    of that button disables UMA recording (as we factory reset the app).
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.ClearUnimportantTime" units="ms"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Records the time it takes to delete all unimportant sites when the user
-    initiates the 'Clear Unimportant Sites' action in the 'Manage Space' screen
-    for Chrome.
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.TotalDiskUsageMB" units="MB"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user opens the 'Manage Space' screen for Chrome, after the
-    disk usage is calculated. The disk usage value represents the accumulated
-    disk usage by websites.
-  </summary>
-</histogram>
-
-<histogram name="Android.ManageSpace.UnimportantDiskUsageMB" units="MB"
-    expires_after="M95">
-  <owner>dmurph@chromium.org</owner>
-  <summary>
-    Recorded when the user opens the 'Manage Space' screen for Chrome, after the
-    disk usage is calculated. The disk usage value represents the accumulated
-    disk usage by websites that are not considered 'important'.
-  </summary>
-</histogram>
-
 <histogram name="Android.MediaPickerShown" enum="MediaPickerShown"
     expires_after="2023-08-08">
   <owner>finnur@chromium.org</owner>
@@ -2054,7 +2025,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Messages.Stacking" enum="StackingAnimationType"
-    expires_after="2023-09-10">
+    expires_after="2023-09-17">
   <owner>lazzzis@chromium.org</owner>
   <owner>src/components/messages/OWNERS</owner>
   <summary>
@@ -2382,8 +2353,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.LayoutTime"
-    units="microseconds" expires_after="2022-10-23">
+<histogram name="Android.Omnibox.SuggestionList.LayoutTime" units="ms"
+    expires_after="2022-10-23">
   <obsolete>
     Retired with M103. Please refer to .CreateTime2
   </obsolete>
@@ -2412,8 +2383,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.LayoutTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionList.LayoutTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2439,8 +2410,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.MeasureTime"
-    units="microseconds" expires_after="2022-06-19">
+<histogram name="Android.Omnibox.SuggestionList.MeasureTime" units="ms"
+    expires_after="2022-06-19">
   <obsolete>
     Retired with M103. Please refer to .MeasureTime2
   </obsolete>
@@ -2470,8 +2441,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionList.MeasureTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionList.MeasureTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2495,6 +2466,42 @@ chromium-metrics-reviews@google.com.
     This histogram is related to Android.Omnibox.SuggestionView.Reused,
     Android.Omnibox.SuggestionList.LayoutTime2,
     Android.Omnibox.SuggestionView.CreateTime2.
+  </summary>
+</histogram>
+
+<histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.First"
+    units="ms" expires_after="2023-08-20">
+  <owner>ender@google.com</owner>
+  <owner>pnoland@chromium.org</owner>
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Records time elapsed between requesting the suggestions and converting the
+    first (synchronous) set of received suggestions to the UI model.
+
+    For the complete, asynchronous iteration see the
+    Android.Omnibox.SuggestionList.RequestToUiModel.Last metric.
+
+    This metric is recorded exactly once per request, including the zero-prefix
+    suggestions request.
+  </summary>
+</histogram>
+
+<histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.Last"
+    units="ms" expires_after="2023-08-20">
+  <owner>ender@google.com</owner>
+  <owner>pnoland@chromium.org</owner>
+  <owner>gangwu@chromium.org</owner>
+  <summary>
+    Records time elapsed between requesting the suggestions and converting the
+    final (asynchronous) set of received suggestions to the UI model.
+
+    For the short, synchronous iteration see the
+    Android.Omnibox.SuggestionList.RequestToUiModel.First metric.
+
+    This metric is recorded at most once per request, including the zero-prefix
+    suggestions request. The metric will not be emitted if the current
+    Autocomplete cycle was canceled by the user - either by refining the input
+    in the omnibox, or by ending the interaction with the Omnibox.
   </summary>
 </histogram>
 
@@ -2540,8 +2547,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionView.CreateTime"
-    units="microseconds" expires_after="2022-06-19">
+<histogram name="Android.Omnibox.SuggestionView.CreateTime" units="ms"
+    expires_after="2022-06-19">
   <obsolete>
     Retired with M103. Please refer to .CreateTime2
   </obsolete>
@@ -2566,8 +2573,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.Omnibox.SuggestionView.CreateTime2"
-    units="microseconds" expires_after="2023-08-13">
+<histogram name="Android.Omnibox.SuggestionView.CreateTime2" units="ms"
+    expires_after="2023-08-13">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -3625,7 +3632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabSwitcher.SetupRecyclerView.Time" units="ms"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>skavuluru@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -3733,7 +3740,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Toolbar.BitmapCapture" enum="ToolbarCaptureType"
-    expires_after="2023-07-16">
+    expires_after="2023-09-17">
   <owner>skym@chromium.org</owner>
   <owner>seacow@google.com</owner>
   <summary>

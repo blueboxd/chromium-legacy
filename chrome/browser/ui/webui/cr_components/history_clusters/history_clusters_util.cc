@@ -7,8 +7,8 @@
 #include "base/feature_list.h"
 #include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/history/core/common/pref_names.h"
 #include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/history_clusters_prefs.h"
 #include "components/history_clusters/core/history_clusters_service.h"
@@ -49,6 +49,8 @@ void HistoryClustersUtil::PopulateSource(content::WebUIDataSource* source,
   source->AddString(
       "chromeRefresh2023Attribute",
       features::IsChromeRefresh2023() ? "chrome-refresh-2023" : "");
+  source->AddBoolean("isHistoryClustersImageCover",
+                     history_clusters::GetConfig().images_cover);
 
   static constexpr webui::LocalizedString kHistoryClustersStrings[] = {
       {"actionMenuDescription", IDS_HISTORY_CLUSTERS_ACTION_MENU_DESCRIPTION},

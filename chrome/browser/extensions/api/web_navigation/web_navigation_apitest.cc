@@ -20,7 +20,7 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
-#include "chrome/browser/download/download_browsertest.h"
+#include "chrome/browser/download/download_browsertest_utils.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -749,7 +749,6 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiFencedFrameTest, MappedURL) {
 
   const char* kScript = R"(
     var ff = document.createElement('fencedframe');
-    ff.mode = 'opaque-ads';
     document.body.appendChild(ff);
   )";
   EXPECT_TRUE(content::ExecJs(rfh, kScript));

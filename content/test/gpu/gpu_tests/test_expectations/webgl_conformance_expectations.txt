@@ -322,6 +322,20 @@ crbug.com/1321312 [ mac nvidia-0xfe9 no-passthrough ] conformance/ogles/GL/array
 crbug.com/1417485 [ android android-nexus-5x passthrough ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ Failure ]
 crbug.com/1417485 [ android android-nexus-5x passthrough ] conformance/reading/read-pixels-test.html [ Failure ]
 
+###############################
+# Permanent Slow Expectations #
+###############################
+# The "Slow" expectations in this section are expected to stick around, i.e.
+# they are not attributed to some known issue that needs resolving.
+
+# Seems to do enough JavaScript work that heartbeats are not reliably sent.
+crbug.com/1426593 conformance/uniforms/no-over-optimization-on-uniform-array-* [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/misc/uninitialized-test-2.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance/extensions/oes-texture-half-float-linear.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance/reading/read-pixels-test.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic no-passthrough ] conformance/textures/misc/tex-image-and-sub-image-2d-with-array-buffer-view.html [ Slow ]
+
 ###################
 # Failures/Flakes #
 ###################
@@ -427,6 +441,8 @@ crbug.com/1259977 [ win nvidia-0x2184 angle-vulkan passthrough ] conformance/gls
 
 crbug.com/1291276 [ win nvidia angle-vulkan passthrough ] conformance/ogles/GL/mod/mod_001_to_008.html [ Failure ]
 
+crbug.com/1364333 [ win debug angle-vulkan passthrough ] conformance/glsl/bugs/temp-expressions-should-not-crash.html [ Slow ]
+
 ####################
 # Mac failures     #
 ####################
@@ -447,22 +463,6 @@ crbug.com/1276186 [ mac amd-0x67ef angle-opengl ] conformance/rendering/clear-de
 # been made more robust.
 # crbug.com/735483 [ mac amd release ] conformance/rendering/texture-switch-performance.html [ Failure ]
 
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/rapid-resizing.html [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/to-data-url-test.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/context/context-eviction-with-garbage-collection.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/ogles/GL/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/canvas/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/svg_image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/webgl_canvas/* [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/data/gles2/shaders/* [ RetryOnFailure ]
-
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] conformance/renderbuffers/stencil-renderbuffer-initialization.html [ Failure ]
 
 ## Mac Retina NVidia failures / flakes ##
@@ -477,6 +477,8 @@ crbug.com/982294 [ mac passthrough nvidia angle-opengl ] conformance/textures/mi
 crbug.com/982294 [ mac passthrough nvidia angle-opengl ] conformance/glsl/samplers/glsl-function-texture2dprojlod.html [ RetryOnFailure ]
 
 ## Mac / Passthrough command decoder / Metal ##
+
+crbug.com/1363349 [ mac passthrough angle-metal ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Slow ]
 
 ## Mac / M1 / OpenGL ##
 
@@ -528,6 +530,12 @@ crbug.com/834933 [ android-chromium android-s android-sm-a235m angle-disabled no
 # These video tests are flakey on many configurations.
 crbug.com/1347077 [ android-nexus-5x android-nougat angle-opengles passthrough qualcomm renderer-skia-gl target-cpu-64 ] conformance/textures/misc/video-rotation.html [ Failure ]
 crbug.com/1347077 [ android-s android-sm-a235m angle-disabled no-passthrough qualcomm renderer-skia-gl target-cpu-32 ] conformance/textures/misc/video-rotation.html [ Failure ]
+
+# finder:group-start crbug.com/1426535 Flaky DCHECK on Pixel 4 and 6
+crbug.com/1426535 [ android ] conformance/state/gl-enable-enum-test.html [ RetryOnFailure ]
+crbug.com/1426535 [ android ] conformance/state/gl-get-calls.html [ RetryOnFailure ]
+crbug.com/1426535 [ android ] conformance/state/gl-initial-state.html [ RetryOnFailure ]
+# finder:group-end
 
 ## Nexus 5X ##
 
@@ -609,6 +617,10 @@ crbug.com/1372155 [ android android-sm-a135m ] conformance/offscreencanvas/conte
 crbug.com/1372155 [ android android-sm-a135m no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1372155 [ android android-sm-a135m ] conformance/uniforms/uniform-samplers-test.html [ Failure ]
 crbug.com/1372149 [ android android-sm-a235m no-passthrough ] conformance/rendering/blending.html [ Failure ]
+
+crbug.com/1426793 [ android android-sm-a135m ] conformance/extensions/webgl-compressed-texture-astc.html [ Slow ]
+crbug.com/1426793 [ android android-sm-a135m ] conformance/glsl/misc/shader-uniform-packing-restrictions.html [ Slow ]
+crbug.com/1426793 [ android android-sm-a135m ] conformance/textures/misc/tex-image-and-sub-image-2d-with-array-buffer-view.html [ Slow ]
 
 ############
 # ChromeOS #

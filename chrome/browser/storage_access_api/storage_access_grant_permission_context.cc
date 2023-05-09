@@ -37,6 +37,8 @@
 #include "third_party/blink/public/common/features_generated.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom.h"
 
+using content_settings::URLToSchemefulSitePattern;
+
 namespace {
 
 constexpr base::TimeDelta kImplicitGrantDuration = base::Hours(24);
@@ -209,6 +211,23 @@ void StorageAccessGrantPermissionContext::UseImplicitGrantOrPrompt(
       HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(settings_map);
 
+  // Normally a previous prompt rejection would already be filtered, but the
+  // requirement not to surface the user's denial back to the caller means this
+  // path can be reached on subsequent requests. Accordingly, check the default
+  // implementation, and if a denial has been persisted, respect that decision.
+  content::RenderFrameHost* const rfh =
+      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+  ContentSetting existing_setting =
+      PermissionContextBase::GetPermissionStatusInternal(rfh, requesting_origin,
+                                                         embedding_origin);
+  if (existing_setting == CONTENT_SETTING_BLOCK) {
+    NotifyPermissionSetInternal(id, requesting_origin, embedding_origin,
+                                std::move(callback),
+                                /*persist=*/true, CONTENT_SETTING_BLOCK,
+                                RequestOutcome::kReusedPreviousDecision);
+    return;
+  }
+
   // Get all of our implicit grants and see which ones apply to our
   // |requesting_origin|.
   ContentSettingsForOneType implicit_grants;
@@ -246,8 +265,15 @@ ContentSetting StorageAccessGrantPermissionContext::GetPermissionStatusInternal(
     return CONTENT_SETTING_BLOCK;
   }
 
-  return PermissionContextBase::GetPermissionStatusInternal(
+  ContentSetting setting = PermissionContextBase::GetPermissionStatusInternal(
       render_frame_host, requesting_origin, embedding_origin);
+
+  // The spec calls for avoiding exposure of rejections to prevent any attempt
+  // at retaliating against users who would reject a prompt.
+  if (setting == CONTENT_SETTING_BLOCK) {
+    return CONTENT_SETTING_ASK;
+  }
+  return setting;
 }
 
 void StorageAccessGrantPermissionContext::NotifyPermissionSet(
@@ -310,20 +336,11 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSetInternal(
   // This permission was allowed so store it either ephemerally or more
   // permanently depending on if the allow came from a prompt or automatic
   // grant.
-  const net::SchemefulSite embedding_site(embedding_origin);
-  const GURL embedding_site_as_url = embedding_site.GetURL();
-  ContentSettingsPattern secondary_site_pattern =
-      ContentSettingsPattern::CreateBuilder()
-          ->WithScheme(embedding_site_as_url.scheme())
-          ->WithDomainWildcard()
-          ->WithHost(embedding_site_as_url.host())
-          ->WithPathWildcard()
-          ->WithPortWildcard()
-          ->Build();
   settings_map->SetContentSettingCustomScope(
-      ContentSettingsPattern::FromURLNoWildcard(requesting_origin),
-      secondary_site_pattern, ContentSettingsType::STORAGE_ACCESS,
-      content_setting, ComputeConstraints(outcome, implicit_result));
+      URLToSchemefulSitePattern(requesting_origin),
+      URLToSchemefulSitePattern(embedding_origin),
+      ContentSettingsType::STORAGE_ACCESS, content_setting,
+      ComputeConstraints(outcome, implicit_result));
 
   ContentSettingsForOneType grants;
   settings_map->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS,

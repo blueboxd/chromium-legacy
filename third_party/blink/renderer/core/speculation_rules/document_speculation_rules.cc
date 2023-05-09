@@ -135,6 +135,13 @@ absl::optional<Referrer> GetReferrer(SpeculationRule* rule,
   return referrer;
 }
 
+absl::optional<base::UnguessableToken> GetDevToolsNavigationToken(
+    DocumentLoader* document_loader) {
+  return document_loader ? document_loader->GetDevToolsNavigationToken()
+                         : static_cast<absl::optional<base::UnguessableToken>>(
+                               absl::nullopt);
+}
+
 }  // namespace
 
 // static
@@ -158,7 +165,10 @@ DocumentSpeculationRules* DocumentSpeculationRules::FromIfExists(
 }
 
 DocumentSpeculationRules::DocumentSpeculationRules(Document& document)
-    : Supplement(document), host_(document.GetExecutionContext()) {}
+    : Supplement(document),
+      host_(document.GetExecutionContext()),
+      devtools_navigation_token_(
+          GetDevToolsNavigationToken(document.Loader())) {}
 
 void DocumentSpeculationRules::AddRuleSet(SpeculationRuleSet* rule_set) {
   CountSpeculationRulesLoadOutcome(SpeculationRulesLoadOutcome::kSuccess);
@@ -277,8 +287,7 @@ void DocumentSpeculationRules::DocumentBaseURLChanged() {
   for (Member<SpeculationRuleSet>& rule_set : rule_sets_) {
     SpeculationRuleSet::Source* source = rule_set->source();
     rule_set = SpeculationRuleSet::Parse(
-        source, GetSupplementable()->GetExecutionContext(),
-        /*out_error=*/nullptr);
+        source, GetSupplementable()->GetExecutionContext());
     // There should not be any parsing errors as these rule sets have already
     // been parsed once without errors, and an updated base URL should not cause
     // new errors. There may however still be warnings.
@@ -468,8 +477,11 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
 
   mojom::blink::SpeculationHost* host = GetHost();
   auto* execution_context = GetSupplementable()->GetExecutionContext();
-  if (!host || !execution_context)
+  // devtools_navigation_token is expected to be non-null because a null token
+  // means the document is detached and will be destroyed shortly.
+  if (!host || !execution_context || !devtools_navigation_token_.has_value()) {
     return;
+  }
 
   HeapVector<Member<SpeculationCandidate>> candidates;
   auto push_candidates = [&candidates, &execution_context](
@@ -556,7 +568,9 @@ void DocumentSpeculationRules::UpdateSpeculationCandidates() {
     eagerness_set.Put(candidate->eagerness());
     mojom_candidates.push_back(candidate->ToMojom());
   }
-  host->UpdateSpeculationCandidates(std::move(mojom_candidates));
+
+  host->UpdateSpeculationCandidates(devtools_navigation_token_.value(),
+                                    std::move(mojom_candidates));
 
   if (eagerness_set.Has(SpeculationEagerness::kConservative)) {
     UseCounter::Count(GetSupplementable(),
@@ -589,6 +603,10 @@ void DocumentSpeculationRules::AddLinkBasedSpeculationCandidates(
             mojom::blink::SpeculationAction action,
             SpeculationRuleSet* rule_set,
             const HeapVector<Member<SpeculationRule>>& speculation_rules) {
+          if (!link->HrefURL().ProtocolIsInHTTPFamily()) {
+            return;
+          }
+
           if (SelectorMatchesEnabled()) {
             // We exclude links that don't have a ComputedStyle stored (or have
             // a ComputedStyle only because EnsureComputedStyle was called, and

@@ -52,6 +52,7 @@
 #include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "services/network/public/mojom/trust_token_access_observer.mojom-shared.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/runtime_feature_state/runtime_feature_state_context.h"
@@ -100,7 +101,8 @@ class CONTENT_EXPORT NavigationRequest
       public FencedFrameURLMapping::MappingResultObserver,
       public mojom::NavigationRendererCancellationListener,
       private RenderProcessHostObserver,
-      private network::mojom::CookieAccessObserver {
+      private network::mojom::CookieAccessObserver,
+      private network::mojom::TrustTokenAccessObserver {
  public:
   // Keeps track of the various stages of a NavigationRequest.
   // To see what state transitions are allowed, see |SetState|.
@@ -812,6 +814,13 @@ class CONTENT_EXPORT NavigationRequest
       mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
   TakeCookieObservers();
 
+  // Take all Trust Token observers associated with this navigation.
+  // Typically this is called when navigation commits to move these observers to
+  // the committed document.
+  [[nodiscard]] std::vector<
+      mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>>
+  TakeTrustTokenObservers();
+
   // Returns the coop status information relevant to the current navigation.
   CrossOriginOpenerPolicyStatus& coop_status() { return coop_status_; }
 
@@ -980,6 +989,11 @@ class CONTENT_EXPORT NavigationRequest
     return prerender_frame_tree_node_id_.value();
   }
 
+  const absl::optional<FencedFrameProperties>& GetFencedFrameProperties()
+      const {
+    return fenced_frame_properties_;
+  }
+
   // Compute and return the `FencedFrameProperties` that this
   // `NavigationRequest` acts under, i.e. the properties attached to this
   // `NavigationRequest` if present, or the properties attached to the fenced
@@ -988,6 +1002,9 @@ class CONTENT_EXPORT NavigationRequest
       const;
 
   const absl::optional<base::UnguessableToken> ComputeFencedFrameNonce() const;
+
+  const absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+  ComputeDeprecatedFencedFrameMode() const;
 
   void RenderFallbackContentForObjectTag();
 
@@ -1222,10 +1239,6 @@ class CONTENT_EXPORT NavigationRequest
   // origin-isolation. Always returns false if
   // AreOriginAgentClustersEnabledByDefault() is false.
   bool IsOriginAgentClusterOptOutRequested();
-
-  // Returns whether defaulting to origin-keyed agent cluster (without
-  // necessarily an origin-keyed process) is enabled.
-  bool AreOriginAgentClustersEnabledByDefault() const;
 
   // Returns whether this navigation request should use an origin-keyed
   // agent cluster (but not an origin-keyed process).
@@ -1642,9 +1655,18 @@ class CONTENT_EXPORT NavigationRequest
   CreateCookieAccessObserver();
 
   // network::mojom::CookieAccessObserver:
-  void OnCookiesAccessed(
-      network::mojom::CookieAccessDetailsPtr details) override;
+  void OnCookiesAccessed(std::vector<network::mojom::CookieAccessDetailsPtr>
+                             details_vector) override;
   void Clone(mojo::PendingReceiver<network::mojom::CookieAccessObserver>
+                 observer) override;
+
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+  CreateTrustTokenAccessObserver();
+
+  // network::mojom::TrustTokenAccessObserver:
+  void OnTrustTokensAccessed(
+      network::mojom::TrustTokenAccessDetailsPtr details) override;
+  void Clone(mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>
                  observer) override;
 
   // Convenience function to return the NavigationControllerImpl this
@@ -2241,6 +2263,11 @@ class CONTENT_EXPORT NavigationRequest
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
+
+  // Observers listening to Trust Token access notifications for the network
+  // requests made by this navigation.
+  mojo::ReceiverSet<network::mojom::TrustTokenAccessObserver>
+      trust_token_observers_;
 
   OriginAgentClusterEndResult origin_agent_cluster_end_result_ =
       OriginAgentClusterEndResult::kNotRequestedAndNotOriginKeyed;

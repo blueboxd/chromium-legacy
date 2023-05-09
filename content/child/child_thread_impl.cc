@@ -95,6 +95,9 @@
 #include <stdio.h>
 #include "base/test/clang_profiling.h"
 #include "build/config/compiler/compiler_buildflags.h"
+#if BUILDFLAG(IS_POSIX)
+#include "base/files/scoped_file.h"
+#endif
 #if BUILDFLAG(IS_WIN)
 #include <io.h>
 #endif
@@ -380,17 +383,31 @@ class ChildThreadImpl::IOThreadState
 
 #if BUILDFLAG(CLANG_PROFILING_INSIDE_SANDBOX)
   void SetProfilingFile(base::File file) override {
-    // TODO(crbug.com/985574) Remove Android check when possible.
-#if BUILDFLAG(IS_POSIX) && (!BUILDFLAG(IS_ANDROID) || defined(CLANG_PGO))
+    // If |file| is unused, its DTOR will call base::File::Close(), but this
+    // would trigger DCHECK on the UI thread. Rejected fixes:
+    // * Run on IO thread: This causes sequencing checker failure, whose fix
+    //   might upend PGO use case.
+    // * Use base::ScopedDisallowBlocking: This requires making
+    //   ChildThreadImpl::IOThreadState a friend of the class. Unfortunately,
+    //   inner classes cannot be forward declared.
+    // The simple fix adopted is to explicitly close |file| if unused, thus
+    // eliding checks -- this function is rather low-level anyway.
+#if BUILDFLAG(IS_POSIX)
     // Take the file descriptor so that |file| does not close it.
-    int fd = file.TakePlatformFile();
-    FILE* f = fdopen(fd, "r+b");
+    base::ScopedFD fd(file.TakePlatformFile());
+#if BUILDFLAG(CLANG_PGO)
+    FILE* f = fdopen(fd.release(), "r+b");
     __llvm_profile_set_file_object(f, 1);
+#else
+    // Let |fd| close file descriptor.
+#endif
 #elif BUILDFLAG(IS_WIN)
     HANDLE handle = file.TakePlatformFile();
     int fd = _open_osfhandle((intptr_t)handle, 0);
     FILE* f = _fdopen(fd, "r+b");
     __llvm_profile_set_file_object(f, 1);
+#else
+#error Unsupported architecture for profiling.
 #endif
   }
 
@@ -423,8 +440,10 @@ class ChildThreadImpl::IOThreadState
 #if BUILDFLAG(IS_ANDROID)
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel level) override {
-    // Forward the notification to the registry of MemoryPressureListeners.
-    base::MemoryPressureListener::NotifyMemoryPressure(level);
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ChildThreadImpl::OnMemoryPressureFromBrowserReceived,
+                       weak_main_thread_, level));
   }
 #endif
 
@@ -916,5 +935,19 @@ void ChildThreadImpl::EnsureConnected() {
 bool ChildThreadImpl::IsInBrowserProcess() const {
   return static_cast<bool>(browser_process_io_runner_);
 }
+
+#if BUILDFLAG(IS_ANDROID)
+void ChildThreadImpl::OnMemoryPressureFromBrowserReceived(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  // Generate no memory pressure signals when --single-process is specified.
+  // Because we expect a signal for the browser process has been already
+  // generated.
+  if (IsInBrowserProcess()) {
+    return;
+  }
+  // Forward the notification to the registry of MemoryPressureListeners.
+  base::MemoryPressureListener::NotifyMemoryPressure(level);
+}
+#endif
 
 }  // namespace content

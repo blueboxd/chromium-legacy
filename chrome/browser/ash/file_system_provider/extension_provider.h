@@ -15,6 +15,7 @@
 #include "chrome/browser/ash/file_system_provider/provider_interface.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -27,26 +28,14 @@ namespace file_system_provider {
 
 class RequestDispatcher;
 
-// Holds information for a providing extension.
-struct ProvidingExtensionInfo {
-  ProvidingExtensionInfo();
-  ~ProvidingExtensionInfo();
-
-  extensions::ExtensionId extension_id;
-  std::string name;
-  extensions::FileSystemProviderCapabilities capabilities;
-};
-
 class ExtensionProvider : public ProviderInterface,
                           public apps::AppRegistryCache::Observer {
  public:
   ExtensionProvider(Profile* profile,
-                    const extensions::ExtensionId& extension_id,
-                    const ProvidingExtensionInfo& info);
-  ExtensionProvider(Profile* profile,
                     ProviderId id,
                     Capabilities capabilities,
-                    std::string name);
+                    std::string name,
+                    absl::optional<IconSet> icon_set);
 
   ~ExtensionProvider() override;
 

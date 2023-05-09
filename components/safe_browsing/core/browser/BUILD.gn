@@ -80,6 +80,7 @@ source_set("safe_browsing_url_checker_unittest") {
   sources = [
     "hash_realtime_mechanism_unittest.cc",
     "safe_browsing_url_checker_impl_unittest.cc",
+    "url_realtime_mechanism_unittest.cc",
   ]
   deps = [
     ":browser",
@@ -107,6 +108,8 @@ source_set("safe_browsing_lookup_mechanism_experimenter_unittest") {
     ":browser",
     "//base/test:test_support",
     "//components/safe_browsing/core/browser/db:v4_protocol_manager_util",
+    "//components/safe_browsing/core/browser/db:v4_test_util",
+    "//components/safe_browsing/core/common",
     "//testing/gtest",
   ]
 }

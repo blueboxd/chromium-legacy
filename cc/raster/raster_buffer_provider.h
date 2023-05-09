@@ -68,7 +68,7 @@ class CC_EXPORT RasterBufferProvider {
   virtual void Flush() = 0;
 
   // Returns the format to use for the tiles.
-  virtual viz::ResourceFormat GetResourceFormat() const = 0;
+  virtual viz::SharedImageFormat GetFormat() const = 0;
 
   // Determines if the resource is premultiplied.
   virtual bool IsResourcePremultiplied() const = 0;

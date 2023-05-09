@@ -14,10 +14,10 @@
 #import "ios/chrome/browser/main/browser_list.h"
 #import "ios/chrome/browser/main/browser_list_factory.h"
 #import "ios/chrome/browser/main/browser_observer_bridge.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/menu/menu_histograms.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tabs/tab_strip_context_menu_delegate.h"
@@ -83,8 +83,7 @@
   ActionFactory* actionFactory =
       [[ActionFactory alloc] initWithScenario:scenario];
 
-  TabItem* item = [self tabItemForIdentifier:identifier
-                                 pinnedState:pinnedState];
+  TabItem* item = [self tabItemForIdentifier:identifier];
 
   if (!item) {
     return @[];
@@ -170,9 +169,7 @@
 }
 
 // Returns the TabItem object representing the tab with `identifier`.
-// `pinnedState` tracks the pinned state of the tab we are looking for.
-- (TabItem*)tabItemForIdentifier:(NSString*)identifier
-                     pinnedState:(BOOL)pinnedState {
+- (TabItem*)tabItemForIdentifier:(NSString*)identifier {
   BrowserList* browserList =
       BrowserListFactory::GetForBrowserState(_browser->GetBrowserState());
   std::set<Browser*> browsers = _browser->GetBrowserState()->IsOffTheRecord()
@@ -180,7 +177,8 @@
                                     : browserList->AllRegularBrowsers();
   for (Browser* browser : browsers) {
     WebStateList* webStateList = browser->GetWebStateList();
-    TabItem* item = GetTabItem(webStateList, identifier, pinnedState);
+    TabItem* item = GetTabItem(
+        webStateList, WebStateSearchCriteria{.identifier = identifier});
     if (item) {
       return item;
     }

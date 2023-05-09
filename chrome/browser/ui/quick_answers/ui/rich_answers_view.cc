@@ -8,7 +8,10 @@
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/quick_answers/quick_answers_ui_controller.h"
-#include "chrome/browser/ui/quick_answers/ui/quick_answers_pre_target_handler.h"
+#include "chrome/browser/ui/quick_answers/ui/quick_answers_view.h"
+#include "chrome/browser/ui/quick_answers/ui/rich_answers_pre_target_handler.h"
+#include "chrome/browser/ui/quick_answers/ui/rich_answers_translation_view.h"
+#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
@@ -24,12 +27,17 @@
 #include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
+
+using quick_answers::QuickAnswer;
+using quick_answers::QuickAnswerResultText;
+using quick_answers::ResultType;
 
 // Buttons view.
 constexpr int kButtonsViewMarginDip = 4;
@@ -42,18 +50,39 @@ constexpr int kBorderCornerRadius = 12;
 
 }  // namespace
 
+namespace quick_answers {
+
+class RichAnswersTextLabel : public views::Label {
+ public:
+  explicit RichAnswersTextLabel(
+      const std::u16string& text,
+      ui::ColorId color_id = ui::kColorLabelForeground)
+      : Label(text) {
+    SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
+    SetEnabledColorId(color_id);
+  }
+
+  RichAnswersTextLabel(const RichAnswersTextLabel&) = delete;
+  RichAnswersTextLabel& operator=(const RichAnswersTextLabel&) = delete;
+
+  ~RichAnswersTextLabel() override = default;
+};
+
 // RichAnswersView -----------------------------------------------------------
 
 RichAnswersView::RichAnswersView(
     const gfx::Rect& anchor_view_bounds,
-    base::WeakPtr<QuickAnswersUiController> controller)
+    base::WeakPtr<QuickAnswersUiController> controller,
+    const quick_answers::QuickAnswer& result)
     : anchor_view_bounds_(anchor_view_bounds),
       controller_(std::move(controller)),
+      rich_answers_view_handler_(
+          std::make_unique<quick_answers::RichAnswersPreTargetHandler>(this)),
       focus_search_(std::make_unique<QuickAnswersFocusSearch>(
           this,
           base::BindRepeating(&RichAnswersView::GetFocusableViews,
                               base::Unretained(this)))) {
-  InitLayout();
+  InitLayout(result);
   InitWidget();
 
   // Focus.
@@ -106,10 +135,10 @@ void RichAnswersView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kDialog;
 
   node_data->SetName(
-      l10n_util::GetStringUTF8(IDS_QUICK_ANSWERS_VIEW_A11Y_NAME_TEXT));
+      l10n_util::GetStringUTF8(IDS_RICH_ANSWERS_VIEW_A11Y_NAME_TEXT));
 }
 
-void RichAnswersView::InitLayout() {
+void RichAnswersView::InitLayout(const quick_answers::QuickAnswer& result) {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
   // Base view Layout.
@@ -119,10 +148,22 @@ void RichAnswersView::InitLayout() {
   base_layout->SetOrientation(views::LayoutOrientation::kVertical)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStretch);
 
-  // TODO(b/259440976): Add child views for each result type.
-
   // Add util buttons in the top-right corner.
   AddFrameButtons();
+
+  switch (result.result_type) {
+    case quick_answers::ResultType::kTranslationResult: {
+      content_view_ = base_view_->AddChildView(
+          std::make_unique<RichAnswersTranslationView>(result));
+      return;
+    }
+    case quick_answers::ResultType::kDefinitionResult:
+    case quick_answers::ResultType::kUnitConversionResult:
+    default: {
+      // TODO(b/259440976): Add child views for each result type.
+      return;
+    }
+  }
 }
 
 void RichAnswersView::InitWidget() {
@@ -133,6 +174,7 @@ void RichAnswersView::InitWidget() {
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.z_order = ui::ZOrderLevel::kFloatingUIElement;
   params.corner_radius = kBorderCornerRadius;
+  params.name = kWidgetName;
 
   views::Widget* widget = new views::Widget();
   widget->Init(std::move(params));
@@ -188,3 +230,5 @@ std::vector<views::View*> RichAnswersView::GetFocusableViews() {
 
   return focusable_views;
 }
+
+}  // namespace quick_answers

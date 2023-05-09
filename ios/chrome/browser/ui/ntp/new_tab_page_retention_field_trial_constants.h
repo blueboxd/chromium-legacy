@@ -10,7 +10,8 @@
 namespace field_trial_constants {
 
 // Version suffix for group names.
-const char kNewTabPageRetentionVersionSuffix[] = "_20230308";
+const char kNewTabPageRetentionVersionSuffixImprovedTiles[] = "_20230308";
+const char kNewTabPageRetentionVersionSuffixTileAblation[] = "_20230504";
 
 // Variation IDs for the improved popular sites default suggestions experiment
 // arms.
@@ -46,7 +47,7 @@ const int kIOSPopularSitesImprovedSuggestionsStableWeight = 5;
 const int kIOSPopularSitesImprovedSuggestionsPrestableWeight = 16;
 
 // Group weights for the tile ablation experiments.
-const int kTileAblationStableWeight = 0;
+const int kTileAblationStableWeight = 5;
 const int kTileAblationPrestableWeight = 16;
 
 }  // namespace field_trial_constants

@@ -17,6 +17,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Looper;
@@ -70,6 +71,7 @@ public class PartialCustomTabTestRule implements TestRule {
     static final int NAVBAR_HEIGHT = 160;
     static final int STATUS_BAR_HEIGHT = 68;
     static final int FULL_HEIGHT = DEVICE_HEIGHT - NAVBAR_HEIGHT;
+    static final int MULTIWINDOW_HEIGHT = FULL_HEIGHT / 2;
 
     @Mock
     Activity mActivity;
@@ -90,6 +92,8 @@ public class PartialCustomTabTestRule implements TestRule {
     Display mDisplay;
     @Mock
     CustomTabHeightStrategy.OnResizedCallback mOnResizedCallback;
+    @Mock
+    CustomTabHeightStrategy.OnActivityLayoutCallback mOnActivityLayoutCallback;
     @Mock
     ViewGroup mCoordinatorLayout;
     @Mock
@@ -126,10 +130,13 @@ public class PartialCustomTabTestRule implements TestRule {
     PartialCustomTabHandleStrategyFactory mHandleStrategyFactory;
     @Mock
     DisplayMetrics mMetrics;
+    @Mock
+    ViewGroup mCompositorViewHolder;
 
     Context mContext;
     List<WindowManager.LayoutParams> mAttributeResults;
     DisplayMetrics mRealMetrics;
+    Point mDisplaySize;
 
     FrameLayout.LayoutParams mLayoutParams = new FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
@@ -143,6 +150,7 @@ public class PartialCustomTabTestRule implements TestRule {
         when(mActivity.getResources()).thenReturn(mResources);
         when(mActivity.getWindowManager()).thenReturn(mWindowManager);
         when(mActivity.findViewById(R.id.coordinator)).thenReturn(mCoordinatorLayout);
+        when(mActivity.findViewById(R.id.compositor_view_holder)).thenReturn(mCompositorViewHolder);
         when(mActivity.findViewById(android.R.id.content)).thenReturn(mContentFrame);
         when(mActivity.findViewById(R.id.custom_tabs_handle_view_stub)).thenReturn(mHandleViewStub);
         when(mActivity.findViewById(R.id.custom_tabs_handle_view)).thenReturn(mHandleView);
@@ -205,6 +213,14 @@ public class PartialCustomTabTestRule implements TestRule {
                 .when(mDisplay)
                 .getRealMetrics(any(DisplayMetrics.class));
 
+        mDisplaySize = new Point(DEVICE_WIDTH, DEVICE_HEIGHT - NAVBAR_HEIGHT);
+        doAnswer(invocation -> {
+            Point size = invocation.getArgument(0);
+            size.set(mDisplaySize.x, mDisplaySize.y);
+            return null;
+        })
+                .when(mDisplay)
+                .getSize(any(Point.class));
         mContext = ApplicationProvider.getApplicationContext();
         ContextUtils.initApplicationContextForTests(mContext);
     }
@@ -224,6 +240,7 @@ public class PartialCustomTabTestRule implements TestRule {
         mRealMetrics.widthPixels = DEVICE_WIDTH;
         mRealMetrics.heightPixels = DEVICE_HEIGHT;
         mRealMetrics.density = DENSITY;
+        mDisplaySize.set(DEVICE_WIDTH, DEVICE_HEIGHT - NAVBAR_HEIGHT);
         when(mContentFrame.getHeight()).thenReturn(DEVICE_HEIGHT - NAVBAR_HEIGHT);
         when(mDisplay.getRotation()).thenReturn(Surface.ROTATION_90);
     }
@@ -237,6 +254,7 @@ public class PartialCustomTabTestRule implements TestRule {
         mRealMetrics.widthPixels = DEVICE_HEIGHT;
         mRealMetrics.heightPixels = DEVICE_WIDTH;
         mRealMetrics.density = DENSITY;
+        mDisplaySize.set(DEVICE_HEIGHT, DEVICE_WIDTH);
         when(mContentFrame.getHeight()).thenReturn(DEVICE_WIDTH);
         when(mDisplay.getRotation()).thenReturn(direction);
     }
@@ -248,6 +266,21 @@ public class PartialCustomTabTestRule implements TestRule {
 
     public WindowManager.LayoutParams getWindowAttributes() {
         return mAttributeResults.get(mAttributeResults.size() - 1);
+    }
+
+    public void setupDisplayMetricsInMultiWindowMode() {
+        mMetrics = new DisplayMetrics();
+        mMetrics.widthPixels = DEVICE_WIDTH;
+        mMetrics.heightPixels = MULTIWINDOW_HEIGHT;
+        doAnswer(invocation -> {
+            DisplayMetrics displayMetrics = invocation.getArgument(0);
+            displayMetrics.setTo(mMetrics);
+            return null;
+        })
+                .when(mDisplay)
+                .getMetrics(any(DisplayMetrics.class));
+        mDisplaySize.y = MULTIWINDOW_HEIGHT;
+        when(mContentFrame.getHeight()).thenReturn(MULTIWINDOW_HEIGHT);
     }
 
     @Override

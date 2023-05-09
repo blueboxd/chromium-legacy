@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css/css_border_image_slice_value.h"
 #include "third_party/blink/renderer/core/css/css_bracketed_value_list.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
+#include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_font_family_value.h"
@@ -701,44 +702,54 @@ CSSValue* ComputedStyleUtils::ValueForPositionOffset(
   return ZoomAdjustedPixelValueForLength(offset, style);
 }
 
-CSSValueList* ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
+CSSValue* ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
     const StyleSelfAlignmentData& data) {
-  CSSValueList* result = CSSValueList::CreateSpaceSeparated();
   if (data.PositionType() == ItemPositionType::kLegacy) {
-    result->Append(*CSSIdentifierValue::Create(CSSValueID::kLegacy));
+    // Legacy is only for justify-items and may only be created with the
+    // positions "left", "right", or "center". See
+    // JustifyItems::ParseSingleValue.
+    DCHECK(data.GetPosition() == ItemPosition::kLeft ||
+           data.GetPosition() == ItemPosition::kRight ||
+           data.GetPosition() == ItemPosition::kCenter)
+        << "Unexpected position: " << (unsigned)data.GetPosition();
+    DCHECK_EQ(data.Overflow(), OverflowAlignment::kDefault);
+    return MakeGarbageCollected<CSSValuePair>(
+        CSSIdentifierValue::Create(CSSValueID::kLegacy),
+        CSSIdentifierValue::Create(data.GetPosition()),
+        CSSValuePair::kDropIdenticalValues);
   }
+
   if (data.GetPosition() == ItemPosition::kBaseline) {
-    result->Append(*MakeGarbageCollected<CSSValuePair>(
-        CSSIdentifierValue::Create(CSSValueID::kBaseline),
-        CSSIdentifierValue::Create(CSSValueID::kBaseline),
-        CSSValuePair::kDropIdenticalValues));
+    return CSSIdentifierValue::Create(CSSValueID::kBaseline);
   } else if (data.GetPosition() == ItemPosition::kLastBaseline) {
-    result->Append(*MakeGarbageCollected<CSSValuePair>(
+    return MakeGarbageCollected<CSSValuePair>(
         CSSIdentifierValue::Create(CSSValueID::kLast),
         CSSIdentifierValue::Create(CSSValueID::kBaseline),
-        CSSValuePair::kDropIdenticalValues));
+        CSSValuePair::kDropIdenticalValues);
   } else {
+    auto* position = data.GetPosition() == ItemPosition::kLegacy
+                         ? CSSIdentifierValue::Create(CSSValueID::kNormal)
+                         : CSSIdentifierValue::Create(data.GetPosition());
     if (data.GetPosition() >= ItemPosition::kCenter &&
         data.Overflow() != OverflowAlignment::kDefault) {
-      result->Append(*CSSIdentifierValue::Create(data.Overflow()));
+      return MakeGarbageCollected<CSSValuePair>(
+          CSSIdentifierValue::Create(data.Overflow()), position,
+          CSSValuePair::kDropIdenticalValues);
     }
-    if (data.GetPosition() == ItemPosition::kLegacy) {
-      result->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
-    } else {
-      result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
-    }
+    return position;
   }
-  DCHECK_LE(result->length(), 2u);
-  return result;
 }
 
-CSSValueList*
+cssvalue::CSSContentDistributionValue*
 ComputedStyleUtils::ValueForContentPositionAndDistributionWithOverflowAlignment(
     const StyleContentAlignmentData& data) {
-  CSSValueList* result = CSSValueList::CreateSpaceSeparated();
+  CSSValueID distribution = CSSValueID::kInvalid;
+  CSSValueID position = CSSValueID::kInvalid;
+  CSSValueID overflow = CSSValueID::kInvalid;
+
   // Handle content-distribution values
   if (data.Distribution() != ContentDistributionType::kDefault) {
-    result->Append(*CSSIdentifierValue::Create(data.Distribution()));
+    distribution = CSSIdentifierValue(data.Distribution()).GetValueID();
   }
 
   // Handle content-position values (either as fallback or actual value)
@@ -746,28 +757,24 @@ ComputedStyleUtils::ValueForContentPositionAndDistributionWithOverflowAlignment(
     case ContentPosition::kNormal:
       // Handle 'normal' value, not valid as content-distribution fallback.
       if (data.Distribution() == ContentDistributionType::kDefault) {
-        result->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
+        position = CSSValueID::kNormal;
       }
       break;
     case ContentPosition::kLastBaseline:
-      result->Append(*MakeGarbageCollected<CSSValuePair>(
-          CSSIdentifierValue::Create(CSSValueID::kLast),
-          CSSIdentifierValue::Create(CSSValueID::kBaseline),
-          CSSValuePair::kDropIdenticalValues));
+      position = CSSValueID::kLastBaseline;
       break;
     default:
       // Handle overflow-alignment (only allowed for content-position values)
       if ((data.GetPosition() >= ContentPosition::kCenter ||
            data.Distribution() != ContentDistributionType::kDefault) &&
           data.Overflow() != OverflowAlignment::kDefault) {
-        result->Append(*CSSIdentifierValue::Create(data.Overflow()));
+        overflow = CSSIdentifierValue::Create(data.Overflow())->GetValueID();
       }
-      result->Append(*CSSIdentifierValue::Create(data.GetPosition()));
+      position = CSSIdentifierValue::Create(data.GetPosition())->GetValueID();
   }
 
-  DCHECK_GT(result->length(), 0u);
-  DCHECK_LE(result->length(), 3u);
-  return result;
+  return MakeGarbageCollected<cssvalue::CSSContentDistributionValue>(
+      distribution, position, overflow);
 }
 
 CSSValue* ComputedStyleUtils::ValueForLineHeight(const ComputedStyle& style) {
@@ -2668,11 +2675,16 @@ CSSValue* ComputedStyleUtils::ResolvedTransform(
 
   gfx::RectF reference_box = ReferenceBoxForTransform(*layout_object);
 
+  const auto* layout_box = layout_object->IsSVGChild()
+                               ? nullptr
+                               : DynamicTo<LayoutBox>(*layout_object);
+
   gfx::Transform transform;
-  style.ApplyTransform(
-      transform, reference_box, ComputedStyle::kIncludeTransformOperations,
-      ComputedStyle::kExcludeTransformOrigin, ComputedStyle::kExcludeMotionPath,
-      ComputedStyle::kExcludeIndependentTransformProperties);
+  style.ApplyTransform(transform, layout_box, reference_box,
+                       ComputedStyle::kIncludeTransformOperations,
+                       ComputedStyle::kExcludeTransformOrigin,
+                       ComputedStyle::kExcludeMotionPath,
+                       ComputedStyle::kExcludeIndependentTransformProperties);
 
   // FIXME: Need to print out individual functions
   // (https://bugs.webkit.org/show_bug.cgi?id=23924)
@@ -2807,7 +2819,6 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
       continue;
     }
 
-    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(item.key));
     int32_t number = 0;
     switch (type) {
       case CounterNode::kIncrementType:
@@ -2820,8 +2831,11 @@ CSSValue* ComputedStyleUtils::ValueForCounterDirectives(
         number = item.value.SetValue();
         break;
     }
-    list->Append(*CSSNumericLiteralValue::Create(
-        (double)number, CSSPrimitiveValue::UnitType::kInteger));
+    list->Append(*MakeGarbageCollected<CSSValuePair>(
+        MakeGarbageCollected<CSSCustomIdentValue>(item.key),
+        CSSNumericLiteralValue::Create((double)number,
+                                       CSSPrimitiveValue::UnitType::kInteger),
+        CSSValuePair::IdenticalValuesPolicy::kDropIdenticalValues));
   }
 
   if (!list->length()) {
@@ -2939,24 +2953,27 @@ CSSValue* ComputedStyleUtils::StrokeDashArrayToCSSValueList(
 
 CSSValue* ComputedStyleUtils::ValueForSVGPaint(const SVGPaint& paint,
                                                const ComputedStyle& style) {
-  if (paint.type >= SVGPaintType::kUriNone) {
-    CSSValueList* values = CSSValueList::CreateSpaceSeparated();
-    values->Append(
-        *MakeGarbageCollected<cssvalue::CSSURIValue>(paint.GetUrl()));
-    if (paint.type == SVGPaintType::kUriNone) {
-      values->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
-    } else if (paint.type == SVGPaintType::kUriColor) {
-      values->Append(*CurrentColorOrValidColor(style, paint.GetColor(),
-                                               CSSValuePhase::kComputedValue));
+  switch (paint.type) {
+    case SVGPaintType::kColor:
+      return CurrentColorOrValidColor(style, paint.GetColor(),
+                                      CSSValuePhase::kComputedValue);
+    case SVGPaintType::kNone:
+      return CSSIdentifierValue::Create(CSSValueID::kNone);
+    case SVGPaintType::kUriNone:
+    case SVGPaintType::kUriColor: {
+      CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+      values->Append(
+          *MakeGarbageCollected<cssvalue::CSSURIValue>(paint.GetUrl()));
+      values->Append(
+          paint.type == SVGPaintType::kUriNone
+              ? *CSSIdentifierValue::Create(CSSValueID::kNone)
+              : *CurrentColorOrValidColor(style, paint.GetColor(),
+                                          CSSValuePhase::kComputedValue));
+      return values;
     }
-    return values;
+    case SVGPaintType::kUri:
+      return MakeGarbageCollected<cssvalue::CSSURIValue>(paint.GetUrl());
   }
-  if (paint.type == SVGPaintType::kNone) {
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
-  }
-
-  return CurrentColorOrValidColor(style, paint.GetColor(),
-                                  CSSValuePhase::kComputedValue);
 }
 
 CSSValue* ComputedStyleUtils::ValueForSVGResource(
@@ -3018,10 +3035,9 @@ CSSValue* ComputedStyleUtils::ValueForFilter(
     FilterOperation* filter_operation = operation.Get();
     switch (filter_operation->GetType()) {
       case FilterOperation::OperationType::kReference:
-        filter_value = MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kUrl);
-        filter_value->Append(*MakeGarbageCollected<CSSStringValue>(
-            To<ReferenceFilterOperation>(filter_operation)->Url()));
-        break;
+        list->Append(*MakeGarbageCollected<cssvalue::CSSURIValue>(AtomicString(
+            To<ReferenceFilterOperation>(filter_operation)->Url())));
+        continue;
       case FilterOperation::OperationType::kGrayscale:
         filter_value =
             MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kGrayscale);

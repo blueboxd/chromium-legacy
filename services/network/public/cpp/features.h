@@ -38,7 +38,15 @@ COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kAttributionReportingTriggerAttestation);
+
+// Both flags need to be checked for required PST components as they are being
+// used in different experiments.
+//
+// kFledgePst is the original flag used in the OT and respects
+// the TrustTrialOriginTrialSpec. It will be deprecated in favor of
+// kPrivateStateTokens when the experiment is over.
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPrivateStateTokens);
+COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kFledgePst);
 
 enum class TrustTokenOriginTrialSpec {
   // See the .cc file for definitions.
@@ -101,14 +109,8 @@ BASE_DECLARE_FEATURE(kPrivateNetworkAccessPreflightShortTimeout);
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kLocalNetworkAccessAllowPotentiallyTrustworthySameOrigin);
 
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPreconnectInNetworkService);
-
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPrefetchDNSWithURL);
-
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::FeatureParam<bool> kPrefetchDNSWithURLAllAnchorElements;
-
-COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kPreconnectOnRedirect);
 
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kOutOfProcessSystemDnsResolution);

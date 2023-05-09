@@ -450,6 +450,33 @@ void PrintSettings::SetPrinterPrintableArea(
     page_setup_device_units_.FlipOrientation();
 }
 
+#if BUILDFLAG(IS_WIN)
+void PrintSettings::UpdatePrinterPrintableArea(
+    const gfx::Rect& printable_area_um) {
+  // Scale the page size and printable area to device units.
+  // Blink doesn't support different dpi settings in X and Y axis. Because of
+  // this, printers with non-square DPIs still scale page size and printable
+  // area using device_units_per_inch() instead of their respective dimensions
+  // in device_units_per_inch_size().
+  float scale = static_cast<float>(device_units_per_inch()) / kMicronsPerInch;
+  gfx::Rect printable_area_device_units =
+      gfx::ScaleToRoundedRect(printable_area_um, scale);
+
+  // Protect against misbehaving drivers.  We have observed some drivers return
+  // incorrect values compared to page size.  E.g., HP Business Inkjet 2300 PS.
+  gfx::Rect physical_size_rect(page_setup_device_units_.physical_size());
+  if (printable_area_device_units.IsEmpty() ||
+      !physical_size_rect.Contains(printable_area_device_units)) {
+    // Invalid printable area!  Default to paper size.
+    printable_area_device_units = physical_size_rect;
+  }
+
+  page_setup_device_units_.Init(page_setup_device_units_.physical_size(),
+                                printable_area_device_units,
+                                page_setup_device_units_.text_height());
+}
+#endif
+
 void PrintSettings::SetCustomMargins(
     const PageMargins& requested_margins_in_points) {
   requested_custom_margins_in_points_ = requested_margins_in_points;

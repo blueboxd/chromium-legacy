@@ -5,9 +5,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/strings/strcat.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
+#include "build/build_config.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/https_only_mode_navigation_throttle.h"
@@ -20,6 +23,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/https_only_mode_metrics.h"
@@ -97,6 +101,9 @@ class HttpsUpgradesBrowserTest
     verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
     mock_cert_verifier_.mock_cert_verifier()->AddResultForCertAndHost(
         cert, "bad-https.test", verify_result,
+        net::ERR_CERT_COMMON_NAME_INVALID);
+    mock_cert_verifier_.mock_cert_verifier()->AddResultForCertAndHost(
+        cert, "www.bad-https.test", verify_result,
         net::ERR_CERT_COMMON_NAME_INVALID);
 
     http_server_.AddDefaultHandlers(GetChromeTestDataDir());
@@ -240,7 +247,7 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
                                     1);
 
     // Also record general request metrics.
-    histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 2);
+    histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 3);
     histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                     NavigationRequestSecurityLevel::kSecure, 1);
     histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
@@ -253,7 +260,7 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
                                     Event::kUpgradeNotAttempted, 1);
 
     // Also record general request metrics.
-    histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 1);
+    histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 2);
     histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                     NavigationRequestSecurityLevel::kInsecure,
                                     1);
@@ -294,6 +301,38 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, Localhost_ShouldNotUpgrade) {
   histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                   NavigationRequestSecurityLevel::kLocalhost,
                                   1);
+}
+
+// If the user navigates to a non-unique hostname, the navigation should be
+// upgraded, but record insecure metrics.
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, NonUniqueHost_RecordsMetrics) {
+  GURL nonunique_url1 = http_server()->GetURL("test.local", "/simple.html");
+  GURL nonunique_url2 = http_server()->GetURL("test", "/simple.html");
+  // Note that we don't test with an RFC1918 IP because the test server
+  // wouldn't receive the traffic (since it relies on DNS).
+
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  if (IsHttpUpgradingEnabled()) {
+    EXPECT_FALSE(content::NavigateToURL(contents, nonunique_url1));
+    EXPECT_FALSE(content::NavigateToURL(contents, nonunique_url2));
+    // Other histograms are still recorded.
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kUpgraded,
+                                    2);
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kSecure, 2);
+  } else {
+    EXPECT_TRUE(content::NavigateToURL(contents, nonunique_url1));
+    EXPECT_TRUE(content::NavigateToURL(contents, nonunique_url2));
+    // Other histograms are still recorded.
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kInsecure,
+                                    2);
+  }
+
+  histograms()->ExpectBucketCount(
+      kNavigationRequestSecurityLevelHistogram,
+      NavigationRequestSecurityLevel::kNonUniqueHostname, 2);
 }
 
 // If the user navigates to an HTTPS URL, the navigation should end up on that
@@ -1156,10 +1195,13 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, PreferHstsOverHttpsFirstMode) {
   histograms()->ExpectTotalCount(kEventHistogram, 0);
 
   // Verify that general navigation request metrics were recorded.
-  histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 2);
+  histograms()->ExpectTotalCount(kNavigationRequestSecurityLevelHistogram, 3);
   histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                   NavigationRequestSecurityLevel::kHstsUpgraded,
                                   1);
+  histograms()->ExpectBucketCount(
+      kNavigationRequestSecurityLevelHistogram,
+      NavigationRequestSecurityLevel::kNonUniqueHostname, 1);
   histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
                                   NavigationRequestSecurityLevel::kSecure, 1);
 }
@@ -1329,7 +1371,7 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
   EXPECT_EQ(https_url, contents->GetLastCommittedURL());
 
   // Navigate to HTTP URL on the HTTP test server's IP address. It should not
-  // get upgraded ot HTTPS and no interstitial should be shown.
+  // get upgraded to HTTPS and no interstitial should be shown.
   http_url = http_server()->GetURL("/simple.html");
   https_url = https_server()->GetURL("/simple.html");
   EXPECT_TRUE(content::NavigateToURL(contents, http_url));
@@ -1355,11 +1397,126 @@ IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
     // navigation despite the HttpsUpgradeMode policy setting.
     EXPECT_FALSE(content::NavigateToURL(contents, http_url));
     EXPECT_EQ(https_url, contents->GetLastCommittedURL());
-  } else {
-    // If HTTPS-First Mode is not enabled, then the policy should cause
-    // HTTPS-Upgrades to be disabled.
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kUpgraded,
+                                    1);
+  } else if (IsHttpUpgradingEnabled()) {
+    // If HTTPS-First Mode is not enabled but upgrading is, then the policy
+    // should prevent the upgrade.
     EXPECT_TRUE(content::NavigateToURL(contents, http_url));
     EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+    histograms()->ExpectBucketCount(
+        kNavigationRequestSecurityLevelHistogram,
+        NavigationRequestSecurityLevel::kAllowlisted, 1);
+  }
+}
+
+// Test that HTTPS Upgrades are skipped if the "Insecure content" site setting
+// is set to "allow".
+// MIXED_SCRIPT isn't enabled as a content setting on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_InsecureContentSettingDisablesUpgrades \
+  DISABLED_InsecureContentSettingDisablesUpgrades
+#else
+#define MAYBE_InsecureContentSettingDisablesUpgrades \
+  InsecureContentSettingDisablesUpgrades
+#endif
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest,
+                       MAYBE_InsecureContentSettingDisablesUpgrades) {
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL http_url = http_server()->GetURL("foo.test", "/simple.html");
+  GURL https_url = https_server()->GetURL("foo.test", "/simple.html");
+  auto* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+
+  // Set insecure content setting to allowed for `http_url`.
+  host_content_settings_map->SetContentSettingDefaultScope(
+      http_url, GURL(), ContentSettingsType::MIXEDSCRIPT,
+      CONTENT_SETTING_ALLOW);
+
+  if (IsHttpInterstitialEnabled()) {
+    // If HTTPS-First Mode is enabled, upgrades should still be applied.
+    EXPECT_FALSE(content::NavigateToURL(contents, http_url));
+    EXPECT_EQ(https_url, contents->GetLastCommittedURL());
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kUpgraded,
+                                    1);
+  } else {
+    // Otherwise, the upgrades should be skipped.
+    EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+    EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+    histograms()->ExpectBucketCount(
+        kNavigationRequestSecurityLevelHistogram,
+        NavigationRequestSecurityLevel::kAllowlisted, 1);
+  }
+
+  // Unset the content settings.
+  host_content_settings_map->ClearSettingsForOneType(
+      ContentSettingsType::MIXEDSCRIPT);
+
+  // Set insecure content setting to allowed for `https_url`.
+  HostContentSettingsMapFactory::GetForProfile(profile)
+      ->SetContentSettingDefaultScope(https_url, GURL(),
+                                      ContentSettingsType::MIXEDSCRIPT,
+                                      CONTENT_SETTING_ALLOW);
+  if (IsHttpInterstitialEnabled()) {
+    // If HTTPS-First Mode is enabled, upgrades should still be applied.
+    EXPECT_FALSE(content::NavigateToURL(contents, http_url));
+    EXPECT_EQ(https_url, contents->GetLastCommittedURL());
+    histograms()->ExpectBucketCount(kNavigationRequestSecurityLevelHistogram,
+                                    NavigationRequestSecurityLevel::kUpgraded,
+                                    2);
+  } else {
+    // Otherwise, the upgrades should be skipped.
+    EXPECT_TRUE(content::NavigateToURL(contents, http_url));
+    EXPECT_EQ(http_url, contents->GetLastCommittedURL());
+    histograms()->ExpectBucketCount(
+        kNavigationRequestSecurityLevelHistogram,
+        NavigationRequestSecurityLevel::kAllowlisted, 2);
+  }
+}
+
+// Regression test for crbug.com/1431026. Triggers a navigation where HTTPS
+// upgrades applied multiple times across redirects to different sites.
+// Should not crash when DCHECKS are enabled.
+IN_PROC_BROWSER_TEST_P(HttpsUpgradesBrowserTest, crbug1431026) {
+  GURL www_bad_https_url =
+      https_server()->GetURL("www.bad-https.test", "/simple.html");
+  GURL www_http_url =
+      http_server()->GetURL("www.bad-https.test", "/simple.html");
+
+  // Configure HTTP and bad-HTTPS URLs which redirect to www. subdomain.
+  std::string www_redirect_path =
+      base::StrCat({"/server-redirect?", www_http_url.spec()});
+  GURL redirecting_bad_https_url =
+      https_server()->GetURL("bad-https.test", www_redirect_path);
+  GURL redirecting_http_url =
+      http_server()->GetURL("bad-https.test", www_redirect_path);
+
+  // A good HTTPS URL which redirects to an HTTP URL, which also redirects.
+  GURL initial_redirecting_good_https_url = https_server()->GetURL(
+      "good-https.test",
+      base::StrCat({"/server-redirect-301?", redirecting_http_url.spec()}));
+
+  auto* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_FALSE(
+      content::NavigateToURL(contents, initial_redirecting_good_https_url));
+
+  if (IsHttpInterstitialEnabled()) {
+    // Should be showing interstitial on http://bad-https.test/.
+    EXPECT_EQ(redirecting_http_url, contents->GetLastCommittedURL());
+    EXPECT_TRUE(
+        chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+            contents));
+  } else {
+    // Either due to no upgrades, or due to fast fallback to HTTP, this should
+    // end up on http://www.bad-https.test.
+    EXPECT_EQ(www_http_url, contents->GetLastCommittedURL());
+    EXPECT_FALSE(
+        chrome_browser_interstitials::IsShowingHttpsFirstModeInterstitial(
+            contents));
   }
 }
 

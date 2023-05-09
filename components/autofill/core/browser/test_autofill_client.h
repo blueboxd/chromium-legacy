@@ -78,12 +78,6 @@ class TestAutofillClientTemplate : public T {
  public:
   static_assert(std::is_base_of_v<AutofillClient, T>);
 
-  TestAutofillClientTemplate() {
-    if (base::FeatureList::IsEnabled(features::test::kAutofillLogToTerminal)) {
-      log_router_.LogToTerminal();
-    }
-  }
-
   using T::T;
   TestAutofillClientTemplate(const TestAutofillClientTemplate&) = delete;
   TestAutofillClientTemplate& operator=(const TestAutofillClientTemplate&) =
@@ -382,7 +376,12 @@ class TestAutofillClientTemplate : public T {
 
   void HideFastCheckout(bool allow_further_runs) override {}
 
-  bool IsFastCheckoutSupported() override { return false; }
+  bool IsFastCheckoutSupported(
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillManager& autofill_manager) override {
+    return false;
+  }
 
   bool IsShowingFastCheckoutUI() override { return false; }
 
@@ -430,6 +429,10 @@ class TestAutofillClientTemplate : public T {
   void PropagateAutofillPredictions(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override {}
+
+  void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
+                            AutofillTriggerSource trigger_source,
+                            bool is_refill) override {}
 
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override {
@@ -718,6 +721,14 @@ class TestAutofillClientTemplate : public T {
 #endif
 
   LogRouter log_router_;
+  struct LogToTerminal {
+    explicit LogToTerminal(LogRouter& log_router) {
+      if (base::FeatureList::IsEnabled(
+              features::test::kAutofillLogToTerminal)) {
+        log_router.LogToTerminal();
+      }
+    }
+  } log_to_terminal_{log_router_};
   std::unique_ptr<LogManager> log_manager_ =
       LogManager::Create(&log_router_, base::NullCallback());
 };
@@ -725,8 +736,11 @@ class TestAutofillClientTemplate : public T {
 // A simple `AutofillClient` for tests. Consider `TestContentAutofillClient` as
 // an alternative for tests where the content layer is visible.
 //
-// Consider using TestAutofillClientInjector in browser tests.
-using TestAutofillClient = TestAutofillClientTemplate<AutofillClient>;
+// Consider using TestAutofillClientInjector, especially in browser tests.
+class TestAutofillClient : public TestAutofillClientTemplate<AutofillClient> {
+ public:
+  using TestAutofillClientTemplate<AutofillClient>::TestAutofillClientTemplate;
+};
 
 }  // namespace autofill
 

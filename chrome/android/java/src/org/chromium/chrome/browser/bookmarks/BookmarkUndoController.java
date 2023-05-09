@@ -8,18 +8,19 @@ import android.content.Context;
 
 import org.chromium.base.lifetime.DestroyChecker;
 import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel.BookmarkDeleteObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkItem;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 
 import java.util.Locale;
 
 /**
  * Shows an undo bar when the user modifies bookmarks, allowing them to undo their changes.
  */
+// TODO(crbug.com/1428919): Write tests for this class.
 public class BookmarkUndoController extends BookmarkModelObserver implements
         SnackbarManager.SnackbarController, BookmarkDeleteObserver {
     private static final int SNACKBAR_DURATION_MS = 3000;
@@ -37,7 +38,7 @@ public class BookmarkUndoController extends BookmarkModelObserver implements
             Context context, BookmarkModel model, SnackbarManager snackbarManager) {
         BookmarkUndoController controller = new BookmarkUndoController(
                 context, model, snackbarManager, /*destroyAfterFirstAction=*/true);
-        PostTask.postDelayedTask(UiThreadTaskTraits.BEST_EFFORT,
+        PostTask.postDelayedTask(TaskTraits.UI_BEST_EFFORT,
                 () -> { controller.destroyIfNecessary(); }, SNACKBAR_DURATION_MS + 1000);
     }
 
@@ -90,6 +91,15 @@ public class BookmarkUndoController extends BookmarkModelObserver implements
         mSnackbarManager.dismissSnackbars(this);
 
         mDestroyChecker.destroy();
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (enabled) {
+            mBookmarkModel.addDeleteObserver(this);
+        } else {
+            mSnackbarManager.dismissSnackbars(this);
+            mBookmarkModel.removeDeleteObserver(this);
+        }
     }
 
     @Override

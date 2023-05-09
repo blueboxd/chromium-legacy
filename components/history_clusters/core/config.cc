@@ -82,10 +82,19 @@ Config::Config() {
     labels_from_entities = GetFieldTrialParamByFeatureAsBool(
         internal::kJourneysLabels, "labels_from_entities",
         labels_from_entities);
+
+    labels_from_search_visit_entities = GetFieldTrialParamByFeatureAsBool(
+        internal::kJourneysLabels, "labels_from_search_visit_entities",
+        labels_from_search_visit_entities);
   }
 
   // The `kJourneysImages` feature.
-  { images = base::FeatureList::IsEnabled(internal::kJourneysImages); }
+  {
+    images = base::FeatureList::IsEnabled(internal::kJourneysImages);
+
+    images_cover = GetFieldTrialParamByFeatureAsBool(
+        internal::kJourneysImages, "JourneysImagesCover", images_cover);
+  }
 
   // The `kPersistedClusters` feature and child params.
   {
@@ -264,6 +273,9 @@ Config::Config() {
 
   // The `kUseEngagementScoreCache` feature and child params.
   {
+    use_engagement_score_cache =
+        base::FeatureList::IsEnabled(features::kUseEngagementScoreCache);
+
     engagement_score_cache_size = GetFieldTrialParamByFeatureAsInt(
         features::kUseEngagementScoreCache, "engagement_score_cache_size",
         engagement_score_cache_size);
@@ -279,6 +291,10 @@ Config::Config() {
   {
     content_clustering_enabled = base::FeatureList::IsEnabled(
         features::kOnDeviceClusteringContentClustering);
+
+    content_clustering_search_visits_only = GetFieldTrialParamByFeatureAsBool(
+        features::kOnDeviceClusteringContentClustering, "search_visits_only",
+        content_clustering_search_visits_only);
 
     content_clustering_similarity_threshold =
         GetFieldTrialParamByFeatureAsDouble(
@@ -338,6 +354,12 @@ Config::Config() {
         "search_results_page_ranking_weight",
         search_results_page_ranking_weight);
     DCHECK_GE(search_results_page_ranking_weight, 0.0f);
+
+    has_url_keyed_image_ranking_weight = GetFieldTrialParamByFeatureAsDouble(
+        features::kOnDeviceClusteringVisitRanking,
+        "has_url_keyed_image_ranking_weight",
+        has_url_keyed_image_ranking_weight);
+    DCHECK_GE(has_url_keyed_image_ranking_weight, 0.0f);
   }
 
   // The `kHistoryClustersNavigationContextClustering` feature and child params.
@@ -398,6 +420,9 @@ Config::Config() {
 
     include_synced_visits =
         base::FeatureList::IsEnabled(internal::kJourneysIncludeSyncedVisits);
+
+    persist_caches_to_prefs =
+        base::FeatureList::IsEnabled(internal::kJourneysPersistCachesToPrefs);
   }
 }
 

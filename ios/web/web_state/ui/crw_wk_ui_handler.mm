@@ -105,11 +105,16 @@ enum class PermissionRequest {
   }
   base::UmaHistogramEnumeration(kPermissionRequestsHistogram, request);
   if (web::features::IsFullscreenAPIEnabled()) {
-    [webView closeAllMediaPresentationsWithCompletionHandler:^{
-      [self displayPromptForPermissions:permissionsRequested
-                    withDecisionHandler:decisionHandler];
-    }];
-    return;
+    if (@available(iOS 16, *)) {
+      if (webView.fullscreenState == WKFullscreenStateInFullscreen ||
+          webView.fullscreenState == WKFullscreenStateEnteringFullscreen) {
+        [webView closeAllMediaPresentationsWithCompletionHandler:^{
+          [self displayPromptForPermissions:permissionsRequested
+                        withDecisionHandler:decisionHandler];
+        }];
+        return;
+      }
+    }
   }
   [self displayPromptForPermissions:permissionsRequested
                 withDecisionHandler:decisionHandler];
@@ -283,15 +288,23 @@ enum class PermissionRequest {
                 withDecisionHandler:
                     (void (^)(WKPermissionDecision decision))handler
     API_AVAILABLE(ios(15.0)) {
+  if (self.webStateImpl) {
+    DCHECK(!self.isBeingDestroyed);
+    // This call may destroy the web state. DO NOT store the web state as a
+    // local variable before this call and keep using it after.
+    web::GetWebClient()->WillDisplayMediaCapturePermissionPrompt(
+        self.webStateImpl);
+  }
   web::WebStateImpl* webStateImpl = self.webStateImpl;
   if (!webStateImpl) {
     // If the web state doesn't exist, it is likely that the web view isn't
     // visible to the user, or that some other issue has happened. Deny
     // permission.
+    DCHECK(self.isBeingDestroyed);
     handler(WKPermissionDecisionDeny);
     return;
   }
-  web::GetWebClient()->WillDisplayMediaCapturePermissionPrompt(webStateImpl);
+  // Valid web state. Request permission.
   if (web::features::IsMediaPermissionsControlEnabled()) {
     webStateImpl->RequestPermissionsWithDecisionHandler(permissions, handler);
   } else {

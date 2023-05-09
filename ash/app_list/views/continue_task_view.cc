@@ -21,8 +21,10 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/style_util.h"
+#include "ash/style/typography.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
@@ -122,15 +124,14 @@ ContinueTaskView::ContinueTaskView(AppListViewDelegate* view_delegate,
 
   title_ = label_container->AddChildView(
       std::make_unique<views::Label>(std::u16string()));
-  bubble_utils::ApplyStyle(title_, bubble_utils::TypographyStyle::kBody1);
+  bubble_utils::ApplyStyle(title_, TypographyToken::kCrosBody1);
   title_->SetAccessibleName(std::u16string());
   title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
 
   subtitle_ = label_container->AddChildView(
       std::make_unique<views::Label>(std::u16string()));
-  bubble_utils::ApplyStyle(subtitle_,
-                           bubble_utils::TypographyStyle::kAnnotation1,
+  bubble_utils::ApplyStyle(subtitle_, TypographyToken::kCrosAnnotation1,
                            kColorAshTextColorSecondary);
   subtitle_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   subtitle_->SetElideBehavior(gfx::ElideBehavior::ELIDE_MIDDLE);
@@ -361,7 +362,9 @@ void ContinueTaskView::UpdateStyleForTabletMode() {
           ColorProvider::BaseLayerType::kTransparent60)));
   SetBorder(std::make_unique<views::HighlightBorder>(
       GetCornerRadius(/*tablet_mode=*/true),
-      views::HighlightBorder::Type::kHighlightBorder2,
+      chromeos::features::IsJellyrollEnabled()
+          ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+          : views::HighlightBorder::Type::kHighlightBorder2,
       /*use_light_colors=*/false));
 }
 

@@ -110,6 +110,7 @@
               "external/wpt/html/canvas/offscreen/manual/convert-to-blob",
               "external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html",
               "external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html",
+              "external/wpt/scheduler/tentative/yield/yield-priority-idle-callbacks.html",
               "external/wpt/scroll-animations",
               "external/wpt/requestidlecallback",
               "external/wpt/web-animations/crashtests",
@@ -126,6 +127,7 @@
                         "external/wpt/pointerevents/pointerlock/pointerevent_getPredictedEvents_when_pointerlocked-manual.html",
                         "external/wpt/pointerevents/pointerevent_predicted_events_attributes-manual.html",
                         "external/wpt/requestidlecallback",
+                        "external/wpt/scheduler/tentative/yield/yield-priority-idle-callbacks.html",
                         "http/tests/devtools/isolated-code-cache"],
     "args": ["--enable-threaded-compositing"],
     "expires": "Jul 1, 2023"
@@ -728,7 +730,8 @@
     "prefix": "forced-high-contrast-colors",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/forced-colors-mode",
-              "html/details_summary/color-scheme-validation"],
+              "html/details_summary/color-scheme-validation",
+              "wpt_internal/css/css-pseudo/spelling-error-007-crash.html"],
     "exclusive_tests": ["external/wpt/forced-colors-mode"],
     "args": ["--force-high-contrast",
              "--enable-blink-features=ForcedColors,ForcedColorsPreserveParentColor"],
@@ -1137,7 +1140,7 @@
       "external/wpt/speculation-rules/prerender/csp-script-src-inline-speculation-rules.tentative.html"
     ],
     "args": [
-      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender,Prerender2ContentSecurityPolicyExtensions,Prerender2MainFrameNavigation"
+      "--enable-features=SameSiteCrossOriginForSpeculationRulesPrerender,Prerender2ContentSecurityPolicyExtensions"
     ],
     "expires": "Jul 1, 2023"
   },
@@ -1255,6 +1258,7 @@
     "prefix": "fledge",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "external/wpt/fledge",
       "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
       "http/tests/inspector-protocol/target/target-auction-worklet.js",
       "http/tests/inspector-protocol/timeline/auction-worklet.js",
@@ -1265,7 +1269,7 @@
     "args": [
       "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch"
     ],
-    "expires": "Jul 1, 2023"
+    "expires": "Dec 1, 2023"
   },
   {
     "prefix": "automatic-lazy-frame-loading",

@@ -166,6 +166,7 @@
 #include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
+#include "third_party/blink/public/mojom/loader/resource_cache.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
@@ -604,8 +605,7 @@ blink::mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
 
 WebFrameLoadType NavigationTypeToLoadType(
     blink::mojom::NavigationType navigation_type,
-    bool should_replace_current_entry,
-    bool has_valid_page_state) {
+    bool should_replace_current_entry) {
   switch (navigation_type) {
     case blink::mojom::NavigationType::RELOAD:
     case blink::mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL:
@@ -616,14 +616,9 @@ WebFrameLoadType NavigationTypeToLoadType(
 
     case blink::mojom::NavigationType::HISTORY_SAME_DOCUMENT:
     case blink::mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT:
-      return WebFrameLoadType::kBackForward;
-
     case blink::mojom::NavigationType::RESTORE:
     case blink::mojom::NavigationType::RESTORE_WITH_POST:
-      if (has_valid_page_state)
-        return WebFrameLoadType::kBackForward;
-      // If there is no valid page state, fall through to the default case.
-      [[fallthrough]];
+      return WebFrameLoadType::kBackForward;
 
     case blink::mojom::NavigationType::SAME_DOCUMENT:
     case blink::mojom::NavigationType::DIFFERENT_DOCUMENT:
@@ -1049,7 +1044,7 @@ void FillMiscNavigationParams(
 
   if (commit_params.fenced_frame_properties) {
     navigation_params->fenced_frame_properties =
-        std::move(commit_params.fenced_frame_properties);
+        commit_params.fenced_frame_properties;
 
     if (commit_params.fenced_frame_properties->nested_urn_config_pairs() &&
         commit_params.fenced_frame_properties->nested_urn_config_pairs()
@@ -2201,6 +2196,12 @@ void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
                                 save_with_empty_url);
 }
 
+void RenderFrameImpl::SetResourceCache(
+    mojo::PendingRemote<blink::mojom::ResourceCache> remote) {
+  CHECK(base::FeatureList::IsEnabled(blink::features::kRemoteResourceCache));
+  frame_->SetResourceCacheRemote(std::move(remote));
+}
+
 void RenderFrameImpl::SetWantErrorMessageStackTrace() {
   want_error_message_stack_trace_ = true;
   v8::Isolate::GetCurrent()->SetCaptureStackTraceForUncaughtExceptions(true);
@@ -2747,11 +2748,9 @@ void RenderFrameImpl::CommitNavigationWithParams(
 
   PrepareFrameForCommit(common_params->url, *commit_params);
 
-  blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
-      common_params->navigation_type,
-      common_params->should_replace_current_entry,
-      blink::PageState::CreateFromEncodedData(commit_params->page_state)
-          .IsValid());
+  blink::WebFrameLoadType load_type =
+      NavigationTypeToLoadType(common_params->navigation_type,
+                               common_params->should_replace_current_entry);
 
   WebHistoryItem item_for_history_navigation;
   blink::mojom::CommitResult commit_status = blink::mojom::CommitResult::Ok;
@@ -3008,11 +3007,9 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
 
   PrepareFrameForCommit(common_params->url, *commit_params);
 
-  blink::WebFrameLoadType load_type = NavigationTypeToLoadType(
-      common_params->navigation_type,
-      common_params->should_replace_current_entry,
-      blink::PageState::CreateFromEncodedData(commit_params->page_state)
-          .IsValid());
+  blink::WebFrameLoadType load_type =
+      NavigationTypeToLoadType(common_params->navigation_type,
+                               common_params->should_replace_current_entry);
 
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
@@ -3092,8 +3089,12 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     // WeakPtr as an easy way to detect whether this has occured. If so, this
     // method should return immediately and not touch any part of the object,
     // otherwise it will result in a use-after-free bug.
-    if (!weak_this)
+    // Similarly, check whether `navigation_state` is still the state associated
+    // with the WebDocumentLoader. It may have been preempted by a navigation
+    // started by an event handler.
+    if (!weak_this || document_state->navigation_state() != navigation_state) {
       return;
+    }
   }
 
   DCHECK_NE(commit_status, blink::mojom::CommitResult::Ok);
@@ -5782,7 +5783,8 @@ void RenderFrameImpl::BeginNavigationInternal(
               : nullptr,
           info->impression, renderer_before_unload_start,
           renderer_before_unload_end, web_bundle_token_params,
-          initiator_activation_and_ad_status, info->is_container_initiated);
+          initiator_activation_and_ad_status, info->is_container_initiated,
+          info->is_fullscreen_requested);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

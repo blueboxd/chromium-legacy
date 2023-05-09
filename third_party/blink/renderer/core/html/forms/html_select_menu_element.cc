@@ -342,14 +342,16 @@ void HTMLSelectMenuElement::setValueForBinding(const String& value) {
 }
 
 void HTMLSelectMenuElement::setValue(const String& value, bool send_events) {
-  // Find the option with innerText matching the given parameter and make it the
+  // Find the option with value matching the given parameter and make it the
   // current selection.
+  HTMLOptionElement* selected_option = nullptr;
   for (auto& option : option_parts_) {
-    if (option->innerText() == value) {
-      SetSelectedOption(option);
+    if (option->value() == value) {
+      selected_option = option;
       break;
     }
   }
+  SetSelectedOption(selected_option);
 }
 
 bool HTMLSelectMenuElement::open() const {
@@ -1013,6 +1015,7 @@ void HTMLSelectMenuElement::ResetImpl() {
   SetNeedsValidityCheck();
 }
 
+// https://html.spec.whatwg.org/C#selectedness-setting-algorithm
 void HTMLSelectMenuElement::ResetToDefaultSelection() {
   HTMLOptionElement* first_enabled_option = nullptr;
   HTMLOptionElement* last_selected_option = nullptr;
@@ -1034,8 +1037,10 @@ void HTMLSelectMenuElement::ResetToDefaultSelection() {
   }
 
   // If no option is selected, set the selection to the first non-disabled
-  // option if it exists, or null otherwise. If two or more options are
-  // selected, set the selection to the last selected option.
+  // option if it exists, or null otherwise.
+  //
+  // If two or more options are selected, set the selection to the last
+  // selected option. ResetImpl() can temporarily select multiple options.
   if (last_selected_option) {
     SetSelectedOption(last_selected_option);
   } else {

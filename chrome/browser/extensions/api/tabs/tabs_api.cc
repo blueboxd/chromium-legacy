@@ -2135,7 +2135,7 @@ ExtensionFunction::ResponseAction TabsCaptureVisibleTabFunction::Run() {
 
   std::unique_ptr<ImageDetails> image_details;
   if (args().size() > 1) {
-    image_details = ImageDetails::FromValue(args()[1]);
+    image_details = ImageDetails::FromValueDeprecated(args()[1]);
   }
 
   std::string error;
@@ -2368,8 +2368,9 @@ ExecuteCodeFunction::InitResult ExecuteCodeInTabFunction::Init() {
   if (!details_value.is_dict())
     return set_init_result(VALIDATION_FAILURE);
   std::unique_ptr<InjectDetails> details(new InjectDetails());
-  if (!InjectDetails::Populate(details_value, details.get()))
+  if (!InjectDetails::Populate(details_value.GetDict(), *details)) {
     return set_init_result(VALIDATION_FAILURE);
+  }
 
   // If the tab ID wasn't given then it needs to be converted to the
   // currently active tab's ID.

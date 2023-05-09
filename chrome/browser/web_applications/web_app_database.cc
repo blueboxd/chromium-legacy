@@ -719,6 +719,10 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
         continue;
       const std::string feature_string(feature_name->second);
       proto_policy.set_feature(feature_string);
+      // TODO(crbug.com/1418009): Consolidate code and filter opaque origins.
+      if (decl.self_if_matches) {
+        proto_policy.add_allowed_origins(decl.self_if_matches->Serialize());
+      }
       for (const auto& origin_with_possible_wildcards : decl.allowed_origins) {
         proto_policy.add_allowed_origins(
             origin_with_possible_wildcards.Serialize());
@@ -1093,16 +1097,13 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       file_handler.accept.push_back(std::move(accept_entry));
     }
 
-    if (WebAppFileHandlerManager::IconsEnabled()) {
-      absl::optional<std::vector<apps::IconInfo>> file_handler_icon_infos =
-          ParseAppIconInfos("WebApp", file_handler_proto.downloaded_icons());
-      if (!file_handler_icon_infos) {
-        // ParseAppIconInfos() reports any errors.
-        return nullptr;
-      }
-      file_handler.downloaded_icons =
-          std::move(file_handler_icon_infos.value());
+    absl::optional<std::vector<apps::IconInfo>> file_handler_icon_infos =
+        ParseAppIconInfos("WebApp", file_handler_proto.downloaded_icons());
+    if (!file_handler_icon_infos) {
+      // ParseAppIconInfos() reports any errors.
+      return nullptr;
     }
+    file_handler.downloaded_icons = std::move(file_handler_icon_infos.value());
 
     file_handlers.push_back(std::move(file_handler));
   }
@@ -1190,6 +1191,7 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     }
     shortcuts_menu_item_infos.emplace_back(std::move(shortcut_info));
   }
+  const size_t shortcut_menu_item_size = shortcuts_menu_item_infos.size();
   web_app->SetShortcutsMenuItemInfos(std::move(shortcuts_menu_item_infos));
 
   std::vector<IconSizes> shortcuts_menu_icons_sizes;
@@ -1212,6 +1214,11 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
             shortcuts_icon_sizes_proto.icon_sizes_monochrome().end()));
 
     shortcuts_menu_icons_sizes.push_back(std::move(icon_sizes));
+  }
+  // Due to the bitmaps possibly being not populated (see
+  // https://crbug.com/1427444), we just have empty bitmap data in that case.
+  while (shortcuts_menu_icons_sizes.size() < shortcut_menu_item_size) {
+    shortcuts_menu_icons_sizes.emplace_back();
   }
   web_app->SetDownloadedShortcutsMenuIconsSizes(
       std::move(shortcuts_menu_icons_sizes));
@@ -1376,9 +1383,15 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
       decl.feature = feature_enum->second;
 
       for (const std::string& origin : decl_proto.allowed_origins()) {
-        decl.allowed_origins.emplace_back(
-            blink::OriginWithPossibleWildcards::Parse(
-                origin, blink::OriginWithPossibleWildcards::NodeType::kHeader));
+        absl::optional<blink::OriginWithPossibleWildcards>
+            maybe_origin_with_possible_wildcards =
+                blink::OriginWithPossibleWildcards::Parse(
+                    origin,
+                    blink::OriginWithPossibleWildcards::NodeType::kHeader);
+        if (maybe_origin_with_possible_wildcards.has_value()) {
+          decl.allowed_origins.emplace_back(
+              *maybe_origin_with_possible_wildcards);
+        }
       }
       decl.matches_all_origins = decl_proto.matches_all_origins();
       decl.matches_opaque_src = decl_proto.matches_opaque_src();

@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/gpu/macros.h"
+#include "media/gpu/v4l2/test/upstream_pix_fmt.h"
 
 namespace media {
 
@@ -702,8 +703,9 @@ VideoDecoder::Result H264Decoder::FinishFrame(
                       (*output_candidate)->slice_header.nalu_data +
                           (*output_candidate)->slice_header.nalu_size);
 
-    scoped_refptr<MmapedBuffer> OUTPUT_buffer = OUTPUT_queue_->GetBuffer(0);
-    OUTPUT_buffer->mmaped_planes()[0].CopyIn(&slice_data[0], slice_data.size());
+    scoped_refptr<MmappedBuffer> OUTPUT_buffer = OUTPUT_queue_->GetBuffer(0);
+    OUTPUT_buffer->mmapped_planes()[0].CopyIn(&slice_data[0],
+                                              slice_data.size());
     OUTPUT_buffer->set_frame_number(frame_num);
 
     if (!v4l2_ioctl_->QBuf(OUTPUT_queue_, 0)) {
@@ -777,7 +779,7 @@ std::unique_ptr<H264Decoder> H264Decoder::Create(
   if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
                                       uncompressed_fourcc)) {
     // Fall back to MM21 for MediaTek platforms
-    uncompressed_fourcc = v4l2_fourcc('M', 'M', '2', '1');
+    uncompressed_fourcc = V4L2_PIX_FMT_MM21;
     num_planes = 2;
 
     if (!v4l2_ioctl->VerifyCapabilities(kDriverCodecFourcc,
@@ -820,7 +822,7 @@ H264Decoder::H264Decoder(std::unique_ptr<H264Parser> parser,
 H264Decoder::~H264Decoder() = default;
 
 std::set<uint32_t> H264Decoder::GetReusableReferenceSlots(
-    const MmapedBuffer& buffer,
+    const MmappedBuffer& buffer,
     std::set<uint32_t> queued_buffer_ids) {
   std::set<uint32_t> reusable_buffer_slots = {};
   for (size_t i = 0; i < CAPTURE_queue_->num_buffers(); i++) {
@@ -833,9 +835,9 @@ std::set<uint32_t> H264Decoder::GetReusableReferenceSlots(
   return reusable_buffer_slots;
 }
 
-VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<char>& y_plane,
-                                                  std::vector<char>& u_plane,
-                                                  std::vector<char>& v_plane,
+VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<uint8_t>& y_plane,
+                                                  std::vector<uint8_t>& u_plane,
+                                                  std::vector<uint8_t>& v_plane,
                                                   gfx::Size& size,
                                                   const int frame_number) {
   std::unique_ptr<H264SliceHeader> resulting_slice_header;
@@ -862,26 +864,10 @@ VideoDecoder::Result H264Decoder::DecodeNextFrame(std::vector<char>& y_plane,
       << "Buffer ID of the buffer in CAPTURE queue is greater than number of "
          "buffers";
 
-  scoped_refptr<MmapedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
+  scoped_refptr<MmappedBuffer> buffer = CAPTURE_queue_->GetBuffer(buffer_id);
   size = CAPTURE_queue_->display_size();
-  if (CAPTURE_queue_->fourcc() == V4L2_PIX_FMT_NV12) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 1u)
-        << "NV12 should have exactly 1 plane but CAPTURE queue does not.";
-
-    ConvertNV12ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else if (CAPTURE_queue_->fourcc() == v4l2_fourcc('M', 'M', '2', '1')) {
-    CHECK_EQ(buffer->mmaped_planes().size(), 2u)
-        << "MM21 should have exactly 2 planes but CAPTURE queue does not.";
-
-    ConvertMM21ToYUV(y_plane, u_plane, v_plane, size,
-                     static_cast<char*>(buffer->mmaped_planes()[0].start_addr),
-                     static_cast<char*>(buffer->mmaped_planes()[1].start_addr),
-                     CAPTURE_queue_->coded_size());
-  } else {
-    LOG(FATAL) << "Unsupported CAPTURE queue format";
-  }
+  ConvertToYUV(y_plane, u_plane, v_plane, size, buffer->mmapped_planes(),
+               CAPTURE_queue_->coded_size(), CAPTURE_queue_->fourcc());
 
   const std::set<uint32_t> reusable_buffer_slots =
       GetReusableReferenceSlots(*CAPTURE_queue_->GetBuffer(buffer_id).get(),

@@ -14,6 +14,13 @@ class LightweightDetector {
   using MetadataId = uint32_t;
   using PseudoAddresss = uint64_t;
 
+  // This enum is used during allocator initialization to control the
+  // Lightweight UaF Detector.
+  enum class State : bool {
+    kDisabled,
+    kEnabled,
+  };
+
   // Use the following format to encode 32-bit metadata IDs into 64-bit pseudo
   // addresses:
   //  - Bits 0 - 15 are set to 0x8000 so that small increments/decrements
@@ -22,7 +29,7 @@ class LightweightDetector {
   //  - Bits 48 - 63 are set to 0xEDED so that access at the address always
   //    results in a memory access error, and the address can be recognized by
   //    the crash handler.
-  static constexpr uint64_t kMetadataIdMarker = 0xEDED000000000000;
+  static constexpr uint64_t kMetadataIdMarker = 0xEFED000000000000;
   static constexpr uint64_t kMetadataIdMarkerMask = 0xFFFF000000000000;
   static constexpr uint64_t kMetadataIdShift = 16;
   static constexpr uint64_t kMetadataIdOffset = 0x8000;

@@ -65,13 +65,21 @@ class ExtensionAlarmsTest : public ApiUnitTest {
     alarm_manager_ = AlarmManager::Get(browser_context());
     alarm_manager_->SetClockForTesting(&test_clock_);
 
-    alarm_delegate_ = new AlarmDelegate();
-    alarm_manager_->set_delegate(alarm_delegate_);
+    auto delegate = std::make_unique<AlarmDelegate>();
+    alarm_delegate_ = delegate.get();
+    alarm_manager_->set_delegate(std::move(delegate));
 
     // Make sure there's a RenderViewHost for alarms to warn into.
     CreateBackgroundPage();
 
     test_clock_.SetNow(base::Time::FromDoubleT(10));
+  }
+
+  void TearDown() override {
+    // Drop unowned references before superclass destroys them.
+    alarm_delegate_ = nullptr;
+    alarm_manager_ = nullptr;
+    ApiUnitTest::TearDown();
   }
 
   void CreateAlarm(const std::string& args) {
@@ -92,7 +100,7 @@ class ExtensionAlarmsTest : public ApiUnitTest {
         ADD_FAILURE() << "Expected a list of Alarm objects.";
         return list;
       }
-      EXPECT_TRUE(JsAlarm::Populate(item, alarm.get()));
+      EXPECT_TRUE(JsAlarm::Populate(item.GetDict(), *alarm));
       list.push_back(std::move(alarm));
     }
     return list;
@@ -347,7 +355,8 @@ TEST_F(ExtensionAlarmsTest, Get) {
     absl::optional<base::Value> result =
         RunFunctionAndReturnValue(new AlarmsGetFunction(), "[null]");
     ASSERT_TRUE(result);
-    EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
+    ASSERT_TRUE(result->is_dict());
+    EXPECT_TRUE(JsAlarm::Populate(result->GetDict(), alarm));
     EXPECT_EQ("", alarm.name);
     EXPECT_DOUBLE_EQ(4060, alarm.scheduled_time);
     EXPECT_THAT(alarm.period_in_minutes, testing::Eq(0.001));
@@ -359,7 +368,8 @@ TEST_F(ExtensionAlarmsTest, Get) {
     absl::optional<base::Value> result =
         RunFunctionAndReturnValue(new AlarmsGetFunction(), "[\"7\"]");
     ASSERT_TRUE(result);
-    EXPECT_TRUE(JsAlarm::Populate(*result, &alarm));
+    ASSERT_TRUE(result->is_dict());
+    EXPECT_TRUE(JsAlarm::Populate(result->GetDict(), alarm));
     EXPECT_EQ("7", alarm.name);
     EXPECT_EQ(424000, alarm.scheduled_time);
     EXPECT_THAT(alarm.period_in_minutes, testing::Eq(7));

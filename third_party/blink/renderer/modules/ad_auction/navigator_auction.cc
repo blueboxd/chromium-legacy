@@ -42,6 +42,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group_key.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_ad_interest_group_size.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_auction_report_buyers_config.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_adproperties_adpropertiessequence.h"
@@ -174,6 +175,17 @@ class NavigatorAuction::AuctionHandle final : public AbortSignal::Algorithm {
   }
 
   ~AuctionHandle() override = default;
+
+  void AttachPromiseHandler(ScriptState& script_state,
+                            ScriptPromise& promise,
+                            ScriptFunction::Callable* success_helper) {
+    promise.Then(
+        MakeGarbageCollected<ScriptFunction>(&script_state, success_helper),
+        MakeGarbageCollected<ScriptFunction>(
+            &script_state,
+            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
+                this)));
+  }
 
   void Abort() { abortable_ad_auction_->Abort(); }
 
@@ -1020,16 +1032,11 @@ ConvertJsonPromiseFromIdlToMojo(
 
   if (auction_handle && value->IsPromise()) {
     ScriptPromise promise(&script_state, value);
-    promise.Then(
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::JsonResolved>(
-                auction_handle, auction_id->Clone(), field, input.seller(),
-                field_name)),
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
-                auction_handle)));
+    auction_handle->AttachPromiseHandler(
+        script_state, promise,
+        MakeGarbageCollected<NavigatorAuction::AuctionHandle::JsonResolved>(
+            auction_handle, auction_id->Clone(), field, input.seller(),
+            field_name));
     return mojom::blink::AuctionAdConfigMaybePromiseJson::NewPromise(0);
   } else {
     String json_payload;
@@ -1225,19 +1232,12 @@ bool CopyDirectFromSellerSignalsFromIdlToMojo(
   v8::Local<v8::Value> value = input.directFromSellerSignals().V8Value();
   if (auction_handle && value->IsPromise()) {
     ScriptPromise promise(&script_state, value);
-    promise.Then(
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::
-                                     DirectFromSellerSignalsResolved>(
-                auction_handle, auction_id->Clone(), input.seller(),
-                output.seller,
-                output.auction_ad_config_non_shared_params
-                    ->interest_group_buyers)),
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
-                auction_handle)));
+    auction_handle->AttachPromiseHandler(
+        script_state, promise,
+        MakeGarbageCollected<
+            NavigatorAuction::AuctionHandle::DirectFromSellerSignalsResolved>(
+            auction_handle, auction_id->Clone(), input.seller(), output.seller,
+            output.auction_ad_config_non_shared_params->interest_group_buyers));
     output.direct_from_seller_signals = mojom::blink::
         AuctionAdConfigMaybePromiseDirectFromSellerSignals::NewPromise(0);
     return true;
@@ -1313,16 +1313,11 @@ bool CopyPerBuyerSignalsFromIdlToMojo(
   v8::Local<v8::Value> value = input.perBuyerSignals().V8Value();
   if (auction_handle && value->IsPromise()) {
     ScriptPromise promise(&script_state, value);
-    promise.Then(
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<
-                NavigatorAuction::AuctionHandle::PerBuyerSignalsResolved>(
-                auction_handle, auction_id->Clone(), input.seller())),
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
-                auction_handle)));
+    auction_handle->AttachPromiseHandler(
+        script_state, promise,
+        MakeGarbageCollected<
+            NavigatorAuction::AuctionHandle::PerBuyerSignalsResolved>(
+            auction_handle, auction_id->Clone(), input.seller()));
     output.auction_ad_config_non_shared_params->per_buyer_signals =
         mojom::blink::AuctionAdConfigMaybePromisePerBuyerSignals::NewPromise(0);
     return true;
@@ -1410,19 +1405,13 @@ bool CopyPerBuyerTimeoutsFromIdlToMojo(
   v8::Local<v8::Value> value = input.perBuyerTimeouts().V8Value();
   if (auction_handle && value->IsPromise()) {
     ScriptPromise promise(&script_state, value);
-    promise.Then(
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<
-                NavigatorAuction::AuctionHandle::BuyerTimeoutsResolved>(
-                auction_handle, auction_id->Clone(),
-                mojom::blink::AuctionAdConfigBuyerTimeoutField::
-                    kPerBuyerTimeouts,
-                input.seller())),
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
-                auction_handle)));
+    auction_handle->AttachPromiseHandler(
+        script_state, promise,
+        MakeGarbageCollected<
+            NavigatorAuction::AuctionHandle::BuyerTimeoutsResolved>(
+            auction_handle, auction_id->Clone(),
+            mojom::blink::AuctionAdConfigBuyerTimeoutField::kPerBuyerTimeouts,
+            input.seller()));
     output.auction_ad_config_non_shared_params->buyer_timeouts =
         mojom::blink::AuctionAdConfigMaybePromiseBuyerTimeouts::NewPromise(0);
     return true;
@@ -1458,19 +1447,14 @@ bool CopyPerBuyerCumulativeTimeoutsFromIdlToMojo(
   v8::Local<v8::Value> value = input.perBuyerCumulativeTimeouts().V8Value();
   if (auction_handle && value->IsPromise()) {
     ScriptPromise promise(&script_state, value);
-    promise.Then(
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<
-                NavigatorAuction::AuctionHandle::BuyerTimeoutsResolved>(
-                auction_handle, auction_id->Clone(),
-                mojom::blink::AuctionAdConfigBuyerTimeoutField::
-                    kPerBuyerCumulativeTimeouts,
-                input.seller())),
-        MakeGarbageCollected<ScriptFunction>(
-            &script_state,
-            MakeGarbageCollected<NavigatorAuction::AuctionHandle::Rejected>(
-                auction_handle)));
+    auction_handle->AttachPromiseHandler(
+        script_state, promise,
+        MakeGarbageCollected<
+            NavigatorAuction::AuctionHandle::BuyerTimeoutsResolved>(
+            auction_handle, auction_id->Clone(),
+            mojom::blink::AuctionAdConfigBuyerTimeoutField::
+                kPerBuyerCumulativeTimeouts,
+            input.seller()));
     output.auction_ad_config_non_shared_params->buyer_cumulative_timeouts =
         mojom::blink::AuctionAdConfigMaybePromiseBuyerTimeouts::NewPromise(0);
     return true;
@@ -2214,6 +2198,11 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
     const AuctionAdInterestGroup* group,
     double duration_seconds,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
@@ -2237,13 +2226,13 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
 
 ScriptPromise NavigatorAuction::leaveAdInterestGroup(
     ScriptState* script_state,
-    const AuctionAdInterestGroup* group,
+    const AuctionAdInterestGroupKey* group_key,
     ExceptionState& exception_state) {
-  scoped_refptr<const SecurityOrigin> owner = ParseOrigin(group->owner());
+  scoped_refptr<const SecurityOrigin> owner = ParseOrigin(group_key->owner());
   if (!owner) {
-    exception_state.ThrowTypeError("owner '" + group->owner() +
+    exception_state.ThrowTypeError("owner '" + group_key->owner() +
                                    "' for AuctionAdInterestGroup with name '" +
-                                   group->name() +
+                                   group_key->name() +
                                    "' must be a valid https origin.");
     return ScriptPromise();
   }
@@ -2260,7 +2249,7 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
           WTF::BindOnce(&NavigatorAuction::LeaveComplete,
                         WrapWeakPersistent(this), is_cross_origin));
 
-  PendingLeave pending_leave{std::move(owner), std::move(group->name()),
+  PendingLeave pending_leave{std::move(owner), std::move(group_key->name()),
                              std::move(callback)};
   if (is_cross_origin) {
     queued_cross_site_leaves_.Enqueue(std::move(pending_leave));
@@ -2303,8 +2292,13 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroupForDocument(
 ScriptPromise NavigatorAuction::leaveAdInterestGroup(
     ScriptState* script_state,
     Navigator& navigator,
-    const AuctionAdInterestGroup* group,
+    const AuctionAdInterestGroupKey* group_key,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
@@ -2322,7 +2316,7 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
   }
 
   return From(context, navigator)
-      .leaveAdInterestGroup(script_state, group, exception_state);
+      .leaveAdInterestGroup(script_state, group_key, exception_state);
 }
 
 /* static */
@@ -2330,6 +2324,11 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
     ScriptState* script_state,
     Navigator& navigator,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   ExecutionContext* context = ExecutionContext::From(script_state);
   // According to the spec, implicit leave bypasses permission policy.
   return From(context, navigator)
@@ -2344,6 +2343,11 @@ void NavigatorAuction::updateAdInterestGroups() {
 void NavigatorAuction::updateAdInterestGroups(ScriptState* script_state,
                                               Navigator& navigator,
                                               ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return;
+  }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
@@ -2411,6 +2415,11 @@ ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
                                              Navigator& navigator,
                                              const AuctionAdConfig* config,
                                              ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
@@ -2436,10 +2445,15 @@ Vector<String> NavigatorAuction::adAuctionComponents(
     Navigator& navigator,
     uint16_t num_ad_components,
     ExceptionState& exception_state) {
+  Vector<String> out;
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return out;
+  }
   RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const auto& ad_auction_components =
       navigator.DomWindow()->document()->Loader()->AdAuctionComponents();
-  Vector<String> out;
   if (!ad_auction_components) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "This frame was not loaded with the "
@@ -2488,6 +2502,11 @@ ScriptPromise NavigatorAuction::deprecatedURNToURL(
     const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
     bool send_reports,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   String uuid_url_string;
   switch (urn_or_config->GetContentType()) {
     case V8UnionFencedFrameConfigOrUSVString::ContentType::kUSVString:
@@ -2548,6 +2567,11 @@ ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
     const V8UnionFencedFrameConfigOrUSVString* urn_or_config,
     const Vector<std::pair<String, String>>& replacements,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   String uuid_url_string;
   switch (urn_or_config->GetContentType()) {
     case V8UnionFencedFrameConfigOrUSVString::ContentType::kUSVString:
@@ -2616,6 +2640,11 @@ ScriptPromise NavigatorAuction::createAdRequest(
     Navigator& navigator,
     const AdRequestConfig* config,
     ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   return From(ExecutionContext::From(script_state), navigator)
       .createAdRequest(script_state, config, exception_state);
 }
@@ -2676,6 +2705,11 @@ ScriptPromise NavigatorAuction::finalizeAd(ScriptState* script_state,
                                            const Ads* ads,
                                            const AuctionAdConfig* config,
                                            ExceptionState& exception_state) {
+  if (!navigator.DomWindow()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "The document has no window associated.");
+    return ScriptPromise();
+  }
   return From(ExecutionContext::From(script_state), navigator)
       .finalizeAd(script_state, ads, config, exception_state);
 }
@@ -2803,8 +2837,8 @@ bool NavigatorAuction::canLoadAdAuctionFencedFrame(ScriptState* script_state) {
   // another mode."
   // See: https://github.com/WICG/fenced-frame/blob/master/explainer/modes.md
   if (frame_to_check->GetPage()->IsMainFrameFencedFrameRoot() &&
-      frame_to_check->GetPage()->FencedFrameMode() !=
-          mojom::blink::FencedFrameMode::kOpaqueAds) {
+      frame_to_check->GetPage()->DeprecatedFencedFrameMode() !=
+          blink::FencedFrame::DeprecatedFencedFrameMode::kOpaqueAds) {
     return false;
   }
 
@@ -2868,6 +2902,9 @@ bool NavigatorAuction::canLoadAdAuctionFencedFrame(ScriptState* script_state) {
 /* static */
 bool NavigatorAuction::canLoadAdAuctionFencedFrame(ScriptState* script_state,
                                                    Navigator& navigator) {
+  if (!navigator.DomWindow()) {
+    return false;
+  }
   return From(ExecutionContext::From(script_state), navigator)
       .canLoadAdAuctionFencedFrame(script_state);
 }

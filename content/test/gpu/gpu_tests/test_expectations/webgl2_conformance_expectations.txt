@@ -213,6 +213,22 @@ crbug.com/1345782 [ mac amd-0x6821 passthrough angle-opengl ] deqp/functional/gl
 crbug.com/1345782 [ mac amd-0x679e passthrough angle-opengl ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Skip ]
 crbug.com/1345782 [ mac amd-0x67ef passthrough angle-opengl ] deqp/functional/gles3/shadertexturefunction/texturesize.html [ Skip ]
 
+###############################
+# Permanent Slow Expectations #
+###############################
+# The "Slow" expectations in this section are expected to stick around, i.e.
+# they are not attributed to some known issue that needs resolving.
+
+# Seems to do enough JavaScript work that heartbeats are not reliably sent.
+[ android android-pixel-4 passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance/extensions/webgl-compressed-texture-astc.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance/extensions/s3tc-and-rgtc.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance/textures/canvas_sub_rectangle/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg32f-rg-float.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/canvas_sub_rectangle/tex-2d-rg8ui-rg_integer-unsigned_byte.html [ Slow ]
+crbug.com/1426916 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/uniforms/incompatible-texture-type-for-sampler.html [ Slow ]
+
 ###################
 # Failures/Flakes #
 ###################
@@ -220,6 +236,19 @@ crbug.com/1345782 [ mac amd-0x67ef passthrough angle-opengl ] deqp/functional/gl
 
 crbug.com/891953 [ mac ] WebglExtension_OVR_multiview2 [ Failure ]
 crbug.com/891953 [ android ] WebglExtension_OVR_multiview2 [ Failure ]
+
+# Can take a rather long time to load, during which heartbeats aren't sent.
+# TODO(crbug.com/1382796): Make this apply everywhere once it no longer
+# conflicts with the Android suppression.
+[ linux ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ mac ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ win ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-nexus-5x ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-pixel-2 ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-pixel-6 ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-shield-android-tv ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-sm-a135m ] conformance2/sync/sync-webgl-specific.html [ Slow ]
+[ android android-sm-a235m ] conformance2/sync/sync-webgl-specific.html [ Slow ]
 
 # ========================
 # Conformance expectations
@@ -340,44 +369,15 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/
 crbug.com/angleproject/6430 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage2d_format_depth_stencil.html [ Failure ]
 crbug.com/angleproject/7425 [ mac passthrough angle-metal amd ] deqp/functional/gles3/texturespecification/texstorage3d_format_depth_stencil.html [ Failure ]
 
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/draw-webgl-to-canvas-test.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/rapid-resizing.html [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/canvas/to-data-url-test.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/context/context-eviction-with-garbage-collection.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/ogles/GL/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/canvas/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-active-bind.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/texture-size-cube-maps.html [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/misc/tex-video-using-tex-unit-non-zero.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/svg_image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/textures/webgl_canvas/* [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/rendering/canvas-resizing-with-pbo-bound.html [ Failure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/canvas/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/image_bitmap_from_canvas/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/image_bitmap_from_image_bitmap/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/svg_image/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/video/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] conformance2/textures/webgl_canvas/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/data/gles2/shaders/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/data/gles3/shaders/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/draw/draw_arrays.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/draw/draw_elements_instanced.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/fbocolorbuffer/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/fboinvalidate/format_01.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/fborender/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/texturefiltering/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/textureformat/sized_color_3d_pot_01.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/textureformat/sized_depth_stencil.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/textureshadow/2d_array_nearest_mipmap_linear_not_equal.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/texturespecification/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/texturewrap/rgba8_npot.html [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/uniformbuffers/* [ RetryOnFailure ]
-crbug.com/1421053 [ mac amd-0x67ef angle-metal ] deqp/functional/gles3/vertexarrays/* [ RetryOnFailure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/fboinvalidate/default.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
+crbug.com/1316389 [ mac passthrough angle-metal amd ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
 
 ## Metal Intel ##
 
@@ -412,11 +412,13 @@ crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-rend
 crbug.com/angleproject/6430 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/texturefiltering/cube_sizes_04.html [ Failure ]
 crbug.com/1298619 [ mac passthrough angle-metal apple-angle-metal-renderer:-apple-m1 ] deqp/functional/gles3/occlusionquery_strict.html [ Failure ]
 
+crbug.com/1363349 [ mac passthrough angle-metal ] conformance/glsl/bugs/complex-glsl-does-not-crash.html [ Slow ]
+
 ######################################################################
 # Mac failures (mainly OpenGL; some need to be reevaluated on Metal) #
 ######################################################################
 
-crbug.com/angleproject/4242 [ mac angle-opengl ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
+crbug.com/angleproject/4242 [ angle-opengl mac mac-x86_64 oop-c ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
 
 # Regressed in 10.13, still fails in 10.14
 crbug.com/774827 [ mojave nvidia-0xfe9 ] deqp/functional/gles3/fborender/resize_03.html [ Failure ]
@@ -430,7 +432,7 @@ crbug.com/630800 [ angle-opengl intel mac ] conformance2/rendering/framebuffer-c
 crbug.com/630800 [ nvidia mac ] conformance2/rendering/framebuffer-completeness-unaffected.html [ Failure ]
 crbug.com/630800 [ angle-opengl intel mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
 crbug.com/630800 [ nvidia mac ] deqp/functional/gles3/fbocompleteness.html [ Failure ]
-crbug.com/1289803 [ mac angle-opengl ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
+crbug.com/1289803 [ angle-opengl mac mac-x86_64 oop-c ] conformance2/extensions/webgl-multi-draw-instanced-base-vertex-base-instance.html [ Failure ]
 
 ## Mac Retina NVIDIA ##
 
@@ -527,8 +529,6 @@ crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/framebuf
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/framebufferblit/conversion_18.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/framebufferblit/conversion_25.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/pixelbufferobject.html [ Failure ]
-crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/texturefiltering/2d_sizes_02.html [ Failure ]
-crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/texturefiltering/3d_combinations_17.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
 crbug.com/1422032 [ mac amd-0x67ef angle-opengl ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
@@ -656,6 +656,12 @@ crbug.com/1027125 [ android angle-disabled no-passthrough qualcomm ] deqp/functi
 # Failing test in passthrough mode when experiment DrDc is enabled via fieldtrial_testing_config.json.
 crbug.com/1276552 [ android passthrough ] conformance/canvas/render-after-resize-test.html [ Failure ]
 
+# finder:group-start crbug.com/1426535 Flaky DCHECK on Pixel 4 and 6
+crbug.com/1426535 [ android ] conformance/state/gl-enable-enum-test.html [ RetryOnFailure ]
+crbug.com/1426535 [ android ] conformance/state/gl-get-calls.html [ RetryOnFailure ]
+crbug.com/1426535 [ android ] conformance/state/gl-initial-state.html [ RetryOnFailure ]
+# finder:group-end
+
 ## Pixel 2 ##
 
 crbug.com/906742 [ android-pie android-pixel-2 no-passthrough qualcomm ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
@@ -743,6 +749,7 @@ crbug.com/1241179 [ chromeos chromeos-board-amd64-generic passthrough ] conforma
 crbug.com/1241183 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/textures/misc/immutable-tex-render-feedback.html [ Failure ]
 crbug.com/1399117 [ chromeos chromeos-board-amd64-generic passthrough ] WebglExtension_WEBGL_provoking_vertex [ Skip ]
 
+crbug.com/1426913 [ chromeos chromeos-board-amd64-generic passthrough ] conformance2/sync/sync-webgl-specific.html [ RetryOnFailure ]
 
 # Must investigate ChromeOS failures with passthrough command decoder.
 crbug.com/angleproject/5038 [ chromeos passthrough ] conformance/extensions/ext-color-buffer-half-float.html [ Failure ]

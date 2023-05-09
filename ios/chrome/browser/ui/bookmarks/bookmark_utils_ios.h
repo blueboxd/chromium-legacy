@@ -70,9 +70,6 @@ BookmarkModelType GetBookmarkModelType(
 // Whether the Cloud Slash icon should be displayed for `bookmark_node`.
 bool ShouldDisplayCloudSlashIcon(SyncSetupService* sync_setup_service);
 
-// An image view containing the cloud slash icon.
-UIImageView* CloudSlashIcon();
-
 // Creates the bookmark if `node` is NULL. Otherwise updates `node`.
 // `folder` is the intended parent of `node`.
 // Returns a snackbar with an undo action, returns nil if operation wasn't

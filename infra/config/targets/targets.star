@@ -537,6 +537,11 @@ targets.compile_target(
     label = "//chrome/test/chromedriver:chromedriver_server",
 )
 
+targets.compile_target(
+    name = "chromedriver_group",
+    label = "//:chromedriver_group",
+)
+
 targets.script(
     name = "chromedriver_py_tests",
     label = "//chrome/test/chromedriver:chromedriver_py_tests",
@@ -1423,11 +1428,6 @@ targets.console_test_launcher(
 targets.console_test_launcher(
     name = "monochrome_public_bundle_smoke_test",
     label = "//chrome/android:monochrome_public_bundle_smoke_test",
-)
-
-targets.console_test_launcher(
-    name = "mojo_core_unittests",
-    label = "//mojo/core:mojo_core_unittests",
 )
 
 targets.script(

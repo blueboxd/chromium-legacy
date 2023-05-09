@@ -100,13 +100,19 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_NO_FATAL_FAILURE(EnterTestMode(GURL("http://localhost:1234")));
 
 #if BUILDFLAG(IS_LINUX)
-    // On LUCI the XDG_RUNTIME_DIR environment variable may not be set. This is
-    // required for systemctl to connect to its bus in user mode.
+    // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
+    // variables may not be set. These are required for systemctl to connect to
+    // its bus in user mode.
     std::unique_ptr<base::Environment> env = base::Environment::Create();
+    const std::string xdg_runtime_dir =
+        base::StrCat({"/run/user/", base::NumberToString(getuid())});
     if (!env->HasVar("XDG_RUNTIME_DIR")) {
-      ASSERT_TRUE(env->SetVar(
-          "XDG_RUNTIME_DIR",
-          base::StrCat({"/run/user/", base::NumberToString(getuid())})));
+      ASSERT_TRUE(env->SetVar("XDG_RUNTIME_DIR", xdg_runtime_dir));
+    }
+    if (!env->HasVar("DBUS_SESSION_BUS_ADDRESS")) {
+      ASSERT_TRUE(
+          env->SetVar("DBUS_SESSION_BUS_ADDRESS",
+                      base::StrCat({"unix:path=", xdg_runtime_dir, "/bus"})));
     }
 #endif
   }
@@ -414,17 +420,10 @@ TEST_F(IntegrationTest, Install) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-// TODO(crbug.com/1398845) Enable test once SetupRealUpdaterLowerVersion
-// is implemented.
-#if !BUILDFLAG(IS_LINUX)
-// TODO(crbug.com/1396103): fix after implementing `CheckForUpdate` and
-// rolling out a new CIPD build.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_OverinstallWorking DISABLED_OverinstallWorking
-#else
-#define MAYBE_OverinstallWorking OverinstallWorking
-#endif
-TEST_F(IntegrationTest, MAYBE_OverinstallWorking) {
+// TODO(crbug.com/1398845) Enable test once version-skewed updater is available
+// for unbranded Linux.
+#if !(BUILDFLAG(IS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
+TEST_F(IntegrationTest, OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(ExpectVersionNotActive(kUpdaterVersion));
@@ -438,14 +437,7 @@ TEST_F(IntegrationTest, MAYBE_OverinstallWorking) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-// TODO(crbug.com/1396103): fix after implementing `CheckForUpdate` and
-// rolling out a new CIPD build.
-#if BUILDFLAG(IS_WIN)
-#define MAYBE_OverinstallBroken DISABLED_OverinstallBroken
-#else
-#define MAYBE_OverinstallBroken OverinstallBroken
-#endif
-TEST_F(IntegrationTest, MAYBE_OverinstallBroken) {
+TEST_F(IntegrationTest, OverinstallBroken) {
   ASSERT_NO_FATAL_FAILURE(SetupRealUpdaterLowerVersion());
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(DeleteUpdaterDirectory());
@@ -465,7 +457,7 @@ TEST_F(IntegrationTest, MAYBE_OverinstallBroken) {
   ASSERT_TRUE(WaitForUpdaterExit());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
-#endif  // !BUILDFLAG(IS_LINUX)
+#endif  // !(BUILDFLAG(IS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
 
 TEST_F(IntegrationTest, SelfUninstallOutdatedUpdater) {
   ASSERT_NO_FATAL_FAILURE(Install());
@@ -612,6 +604,13 @@ TEST_F(IntegrationTest, CheckForUpdate_UpdaterNotInstalled) {
 }
 
 TEST_F(IntegrationTest, CheckForUpdate) {
+#if BUILDFLAG(IS_WIN)
+  // TODO(crbug.com/1425609): Remove procmon logging once bug is fixed.
+  const base::ScopedClosureRunner stop_procmon_logging(
+      base::BindOnce(&updater::test::StopProcmonLogging,
+                     updater::test::StartProcmonLogging()));
+#endif  // #if BUILDFLAG(IS_WIN)
+
   ScopedServer test_server(test_commands_);
   ASSERT_NO_FATAL_FAILURE(Install());
 
@@ -883,9 +882,12 @@ TEST_F(IntegrationTest, UnregisterUnownedApp) {
 
 #if BUILDFLAG(CHROMIUM_BRANDING) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #if !defined(COMPONENT_BUILD)
-// TODO(crbug.com/1398845): Enable test once SetupRealUpdaterLowerVersion
-// is implemented.
-#if !BUILDFLAG(IS_LINUX)
+// TODO(crbug.com/1398845) Enable test once version-skewed updater is available
+// for unbranded Linux.
+#if !BUILDFLAG(IS_LINUX) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
+// TODO(crbug.com/1097297) Enable these tests once the `Brand the updater and
+// qualification app ids` change is available on CIPD.
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 TEST_F(IntegrationTest, SelfUpdateFromOldReal) {
   ScopedServer test_server(test_commands_);
 
@@ -942,6 +944,9 @@ TEST_F(IntegrationTest, UninstallIfUnusedSelfAndOldReal) {
 
   // Expect that the updater uninstalled itself as well as the lower version.
 }
+#endif  // #if BUILDFLAG(GOOGLE_CHROME_BRANDING) TODO(crbug.com/1097297) Enable
+        // these tests once the `Brand the updater and qualification app ids`
+        // change is available on CIPD.
 
 // Tests that installing and uninstalling an old version of the updater from
 // CIPD is possible.
@@ -962,7 +967,7 @@ TEST_F(IntegrationTest, InstallLowerVersion) {
 #endif  // IS_WIN
 }
 
-#endif  // !BUILDFLAG(IS_LINUX)
+#endif  // !BUILDFLAG(IS_LINUX) || BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif
 #endif
 

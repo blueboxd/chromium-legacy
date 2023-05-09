@@ -4,20 +4,34 @@
 
 #include "third_party/blink/common/permissions_policy/permissions_policy_mojom_traits.h"
 
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "url/mojom/origin_mojom_traits.h"
+#include "url/origin.h"
 
 namespace mojo {
 
-bool StructTraits<blink::mojom::OriginWithPossibleWildcardsDataView,
+bool StructTraits<network::mojom::CSPSourceDataView,
                   blink::OriginWithPossibleWildcards>::
-    Read(blink::mojom::OriginWithPossibleWildcardsDataView in,
+    Read(network::mojom::CSPSourceDataView in,
          blink::OriginWithPossibleWildcards* out) {
-  out->has_subdomain_wildcard = in.has_subdomain_wildcard();
-  if (!in.ReadOrigin(&out->origin))
+  // We do not support any wildcard types besides host
+  // based ones for now.
+  out->has_subdomain_wildcard = in.is_host_wildcard();
+  std::string scheme;
+  std::string host;
+  if (!in.ReadScheme(&scheme) || !in.ReadHost(&host)) {
     return false;
+  }
+  absl::optional<url::Origin> maybe_origin =
+      url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(scheme, host,
+                                                                 in.port());
+  if (!maybe_origin) {
+    return false;
+  }
+  out->origin = *maybe_origin;
 
-  // An opaque origin cannot have a wildcard.
-  return !out->origin.opaque() || !out->has_subdomain_wildcard;
+  // Origins cannot be opaque.
+  return !out->origin.opaque();
 }
 
 bool StructTraits<blink::mojom::ParsedPermissionsPolicyDeclarationDataView,
@@ -27,7 +41,8 @@ bool StructTraits<blink::mojom::ParsedPermissionsPolicyDeclarationDataView,
   out->matches_all_origins = in.matches_all_origins();
   out->matches_opaque_src = in.matches_opaque_src();
   return in.ReadFeature(&out->feature) &&
-         in.ReadAllowedOrigins(&out->allowed_origins);
+         in.ReadAllowedOrigins(&out->allowed_origins) &&
+         in.ReadSelfIfMatches(&out->self_if_matches);
 }
 
 }  // namespace mojo

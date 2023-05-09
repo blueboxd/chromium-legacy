@@ -664,16 +664,30 @@ const std::vector<FieldValue> kEmptyAddress{
     {"address2", ""},  {"city", ""},     {"state", ""},
     {"zip", ""},       {"country", ""},  {"phone", ""}};
 
+const struct {
+  const char* first_name = "Milton";
+  const char* middle_name = "C.";
+  const char* last_name = "Waddams";
+  const char* address1 = "4120 Freidrich Lane";
+  const char* address2 = "Basement";
+  const char* city = "Austin";
+  const char* state_short = "TX";
+  const char* state = "Texas";
+  const char* zip = "78744";
+  const char* country = "US";
+  const char* phone = "15125551234";
+} kDefaultAddressValues;
+
 const std::vector<FieldValue> kDefaultAddress{
-    {"firstname", "Milton"},
-    {"lastname", "Waddams"},
-    {"address1", "4120 Freidrich Lane"},
-    {"address2", "Basement"},
-    {"city", "Austin"},
-    {"state", "TX"},
-    {"zip", "78744"},
-    {"country", "US"},
-    {"phone", "15125551234"}};
+    {"firstname", kDefaultAddressValues.first_name},
+    {"lastname", kDefaultAddressValues.last_name},
+    {"address1", kDefaultAddressValues.address1},
+    {"address2", kDefaultAddressValues.address2},
+    {"city", kDefaultAddressValues.city},
+    {"state", kDefaultAddressValues.state_short},
+    {"zip", kDefaultAddressValues.zip},
+    {"country", kDefaultAddressValues.country},
+    {"phone", kDefaultAddressValues.phone}};
 
 // Returns a copy of |fields| except that the value of `update.id` is set to
 // `update.value`.
@@ -1083,10 +1097,13 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
   void CreateTestProfile() {
     AutofillProfile profile;
-    test::SetProfileInfo(&profile, "Milton", "C.", "Waddams",
-                         "red.swingline@initech.com", "Initech",
-                         "4120 Freidrich Lane", "Basement", "Austin", "Texas",
-                         "78744", "US", "15125551234");
+    test::SetProfileInfo(
+        &profile, kDefaultAddressValues.first_name,
+        kDefaultAddressValues.middle_name, kDefaultAddressValues.last_name,
+        "red.swingline@initech.com", "Initech", kDefaultAddressValues.address1,
+        kDefaultAddressValues.address2, kDefaultAddressValues.city,
+        kDefaultAddressValues.state, kDefaultAddressValues.zip,
+        kDefaultAddressValues.country, kDefaultAddressValues.phone);
     profile.set_use_count(9999999);  // We want this to be the first profile.
     AddTestProfile(browser()->profile(), profile);
   }
@@ -1305,8 +1322,7 @@ class AutofillInteractiveTestWithHistogramTester
 
 // Test the basic form-fill flow.
 // TODO(https://crbug.com/1045709): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
-                       BasicFormFill) {
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicFormFill) {
   CreateTestProfile();
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
@@ -1316,15 +1332,6 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestWithHistogramTester,
                             .after_select = ExpectValues(MergeValue(
                                 kEmptyAddress, {"firstname", "M"}))}));
   EXPECT_THAT(GetFormValues(), ValuesAre(kDefaultAddress));
-
-  ::metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-  // Assert that the network isolation key is populated for 2 requests:
-  // - Navigation: /internal/test_url_path
-  // - Autofill query: https://clients1.google.com/tbproxy/af/query?...
-  //   or "https://content-autofill.googleapis.com/..." (depending on the
-  //   finch configuration of the AutofillUseApi feature).
-  histogram_tester().ExpectBucketCount("HttpCache.NetworkIsolationKeyPresent2",
-                                       2 /*kPresent*/, 2 /*count*/);
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, BasicClear) {
@@ -1428,6 +1435,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ModifySelectFieldAndFill) {
 
   // Modify a field.
   ASSERT_TRUE(FocusField(GetElementById("state"), GetWebContents()));
+  ASSERT_NE(strcmp(kDefaultAddressValues.state_short, "CA"), 0);
   FillElementWithValue("state", "CA");
 
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));

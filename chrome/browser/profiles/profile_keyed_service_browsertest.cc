@@ -209,6 +209,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   std::set<std::string> guest_otr_active_services {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     "CleanupManagerLacros",
+    "DownloadBubbleUpdateService",
     "DownloadCoreService",
 #else
     "LiveCaptionController",
@@ -397,6 +398,9 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "InstallVerifier",
     "InstanceIDProfileService",
     "InvalidationService",
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+    "KidsChromeManagementClient",
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
     "LanguageSettingsPrivateDelegate",
     "LastTabStandingTrackerKeyedService",
     "LazyBackgroundTaskQueue",

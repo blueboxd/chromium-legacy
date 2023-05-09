@@ -530,7 +530,8 @@ void LocalFrameClientImpl::BeginNavigation(
     std::unique_ptr<SourceLocation> source_location,
     mojo::PendingRemote<mojom::blink::PolicyContainerHostKeepAliveHandle>
         initiator_policy_container_keep_alive_handle,
-    bool is_container_initiated) {
+    bool is_container_initiated,
+    bool is_fullscreen_requested) {
   if (!web_frame_->Client())
     return;
 
@@ -580,6 +581,7 @@ void LocalFrameClientImpl::BeginNavigation(
   }
 
   navigation_info->impression = impression;
+  navigation_info->is_fullscreen_requested = is_fullscreen_requested;
 
   // Propagate `has_storage_access` to the next document under certain
   // circumstances. This corresponds to the "snapshotting source snapshot
@@ -909,9 +911,8 @@ RemoteFrame* LocalFrameClientImpl::AdoptPortal(HTMLPortalElement* portal) {
 RemoteFrame* LocalFrameClientImpl::CreateFencedFrame(
     HTMLFencedFrameElement* fenced_frame,
     mojo::PendingAssociatedReceiver<mojom::blink::FencedFrameOwnerHost>
-        receiver,
-    mojom::blink::FencedFrameMode mode) {
-  return web_frame_->CreateFencedFrame(fenced_frame, std::move(receiver), mode);
+        receiver) {
+  return web_frame_->CreateFencedFrame(fenced_frame, std::move(receiver));
 }
 
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(

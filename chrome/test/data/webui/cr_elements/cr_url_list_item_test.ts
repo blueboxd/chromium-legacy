@@ -4,9 +4,12 @@
 
 import 'chrome://resources/cr_elements/cr_url_list_item/cr_url_list_item.js';
 
-import {CrUrlListItemElement} from 'chrome://resources/cr_elements/cr_url_list_item/cr_url_list_item.js';
+import {CrUrlListItemElement, CrUrlListItemSize} from 'chrome://resources/cr_elements/cr_url_list_item/cr_url_list_item.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
+import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {isVisible} from 'chrome://webui-test/test_util.js';
+import {getTrustedHtml} from 'chrome://webui-test/trusted_html.js';
 
 suite('CrUrlListItemTest', () => {
   let element: CrUrlListItemElement;
@@ -54,5 +57,40 @@ suite('CrUrlListItemTest', () => {
     assertTrue(element.classList.contains('active'));
     element.dispatchEvent(new PointerEvent('pointerleave'));
     assertFalse(element.classList.contains('active'));
+  });
+
+  test('TogglesFolderIcon', () => {
+    element.url = '';
+    element.imageUrls = ['http://google.com'];
+    element.size = CrUrlListItemSize.COMPACT;
+    const folderIcon =
+        element.shadowRoot!.querySelector<HTMLElement>('.icon-folder-open');
+    assertTrue(!!folderIcon);
+    flush();
+    assertFalse(isVisible(folderIcon));
+
+    element.url = undefined;
+    element.size = CrUrlListItemSize.LARGE;
+    flush();
+    assertFalse(isVisible(folderIcon));
+
+    element.imageUrls = [];
+    flush();
+    assertTrue(isVisible(folderIcon));
+  });
+
+  test('DisplaysAlternateFolderIcon', () => {
+    document.body.innerHTML = getTrustedHtml(`<cr-url-list-item size="compact">
+        <div id="test-icon" slot="folder-icon"></div>
+       </cr-url-list-item>`);
+    flush();
+
+    const urlListItemElement = document.body.querySelector('cr-url-list-item');
+    assertTrue(!!urlListItemElement);
+    const slot = urlListItemElement.shadowRoot!.querySelector<HTMLSlotElement>(
+        'slot[name="folder-icon"]');
+    assertTrue(!!slot);
+    const slotElements = slot.assignedElements();
+    assertEquals(1, slotElements.length);
   });
 });

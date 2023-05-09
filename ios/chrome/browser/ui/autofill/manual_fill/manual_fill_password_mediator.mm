@@ -44,6 +44,8 @@ namespace manual_fill {
 
 NSString* const ManagePasswordsAccessibilityIdentifier =
     @"kManualFillManagePasswordsAccessibilityIdentifier";
+NSString* const ManageSettingsAccessibilityIdentifier =
+    @"kManualFillManageSettingsAccessibilityIdentifier";
 NSString* const OtherPasswordsAccessibilityIdentifier =
     @"kManualFillOtherPasswordsAccessibilityIdentifier";
 NSString* const SuggestPasswordAccessibilityIdentifier =
@@ -68,8 +70,9 @@ BOOL AreCredentialsAtIndexesConnected(
                                           FormActivityObserver,
                                           ManualFillContentInjector,
                                           PasswordFetcherDelegate> {
-  // The interface for getting and manipulating a user's saved passwords.
-  scoped_refptr<password_manager::PasswordStoreInterface> _passwordStore;
+  // The interfaces for getting and manipulating a user's saved passwords.
+  scoped_refptr<password_manager::PasswordStoreInterface> _profilePasswordStore;
+  scoped_refptr<password_manager::PasswordStoreInterface> _accountPasswordStore;
 }
 
 // The password fetcher to query the user profile.
@@ -108,18 +111,23 @@ BOOL AreCredentialsAtIndexesConnected(
   GURL _URL;
 }
 
-- (instancetype)initWithPasswordStore:
-                    (scoped_refptr<password_manager::PasswordStoreInterface>)
-                        passwordStore
-                        faviconLoader:(FaviconLoader*)faviconLoader
-                             webState:(web::WebState*)webState
-                          syncService:(SyncSetupService*)syncService
-                                  URL:(const GURL&)URL
-               invokedOnPasswordField:(BOOL)invokedOnPasswordField {
+- (instancetype)
+    initWithProfilePasswordStore:
+        (scoped_refptr<password_manager::PasswordStoreInterface>)
+            profilePasswordStore
+            accountPasswordStore:
+                (scoped_refptr<password_manager::PasswordStoreInterface>)
+                    accountPasswordStore
+                   faviconLoader:(FaviconLoader*)faviconLoader
+                        webState:(web::WebState*)webState
+                     syncService:(SyncSetupService*)syncService
+                             URL:(const GURL&)URL
+          invokedOnPasswordField:(BOOL)invokedOnPasswordField {
   self = [super init];
   if (self) {
     _credentials = @[];
-    _passwordStore = passwordStore;
+    _profilePasswordStore = profilePasswordStore;
+    _accountPasswordStore = accountPasswordStore;
     _faviconLoader = faviconLoader;
     _webState = webState;
     _syncService = syncService;
@@ -142,10 +150,11 @@ BOOL AreCredentialsAtIndexesConnected(
 
 - (void)fetchPasswords {
   self.credentials = @[];
-  self.passwordFetcher =
-      [[PasswordFetcher alloc] initWithPasswordStore:_passwordStore
-                                            delegate:self
-                                                 URL:_URL];
+  self.passwordFetcher = [[PasswordFetcher alloc]
+      initWithProfilePasswordStore:_profilePasswordStore
+              accountPasswordStore:_accountPasswordStore
+                          delegate:self
+                               URL:_URL];
 }
 
 #pragma mark - PasswordFetcherDelegate
@@ -284,21 +293,36 @@ BOOL AreCredentialsAtIndexesConnected(
         manual_fill::OtherPasswordsAccessibilityIdentifier;
     [actions addObject:otherPasswordsItem];
 
-    // TODO(crbug.com/1361357) Remove IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS
-    // after kIOSPasswordUISplit is on by default.
-    NSString* managePasswordsTitle = l10n_util::GetNSString(
-        useUpdatedStrings ? IDS_IOS_MANUAL_FALLBACK_MANAGE_SETTINGS
-                          : IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);
+    // "Manage Passwords..." is available in both configurations.
+    NSString* managePasswordsTitle =
+        l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_PASSWORDS);
     ManualFillActionItem* managePasswordsItem = [[ManualFillActionItem alloc]
         initWithTitle:managePasswordsTitle
                action:^{
                  base::RecordAction(base::UserMetricsAction(
                      "ManualFallback_Password_OpenManagePassword"));
-                 [weakSelf.navigator openPasswordSettings];
+                 [weakSelf.navigator openPasswordManager];
                }];
     managePasswordsItem.accessibilityIdentifier =
         manual_fill::ManagePasswordsAccessibilityIdentifier;
     [actions addObject:managePasswordsItem];
+
+    // "Manage Settings..." also appears when updated strings are enabled.
+    if (useUpdatedStrings) {
+      NSString* manageSettingsTitle =
+          l10n_util::GetNSString(IDS_IOS_MANUAL_FALLBACK_MANAGE_SETTINGS);
+      ManualFillActionItem* manageSettingsItem = [[ManualFillActionItem alloc]
+          initWithTitle:manageSettingsTitle
+                 action:^{
+                   base::RecordAction(base::UserMetricsAction(
+                       "ManualFallback_Password_OpenManageSettings"));
+                   [weakSelf.navigator openPasswordSettings];
+                 }];
+      manageSettingsItem.accessibilityIdentifier =
+          manual_fill::ManageSettingsAccessibilityIdentifier;
+
+      [actions addObject:manageSettingsItem];
+    }
 
     [self.consumer presentActions:actions];
   }

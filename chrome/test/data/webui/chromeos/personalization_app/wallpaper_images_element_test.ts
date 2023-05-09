@@ -5,8 +5,8 @@
 import 'chrome://personalization/strings.m.js';
 import 'chrome://webui-test/mojo_webui_test_support.js';
 
-import {OnlineImageType, PersonalizationRouter, WallpaperGridItem, WallpaperImages} from 'chrome://personalization/js/personalization_app.js';
-import {assertDeepEquals, assertEquals} from 'chrome://webui-test/chai_assert.js';
+import {ColorScheme, OnlineImageType, PersonalizationRouter, TimeOfDayWallpaperDialog, WallpaperGridItem, WallpaperImages} from 'chrome://personalization/js/personalization_app.js';
+import {assertDeepEquals, assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 
 import {baseSetup, initElement, teardownElement} from './personalization_app_test_utils.js';
@@ -29,8 +29,8 @@ suite('WallpaperImagesTest', function() {
     wallpaperImagesElement = null;
   });
 
-  async function createWithDefaultData() {
-    const collectionId = wallpaperProvider.collections![0]!.id;
+  async function createWithDefaultData(
+      collectionId: string = wallpaperProvider.collections![0]!.id) {
     personalizationStore.data.wallpaper = {
       ...personalizationStore.data.wallpaper,
       backdrop: {
@@ -49,6 +49,29 @@ suite('WallpaperImagesTest', function() {
     return element;
   }
 
+  async function selectTimeOfDayWallpaper() {
+    // Click the first image that is not currently selected.
+    wallpaperImagesElement!.shadowRoot!
+        .querySelector<WallpaperGridItem>(`${
+            WallpaperGridItem
+                .is}[aria-selected='false'][data-is-time-of-day-wallpaper]`)!
+        .click();
+    await waitAfterNextRender(wallpaperImagesElement!);
+    return wallpaperImagesElement;
+  }
+
+  async function clickTimeOfDayWallpaperDialogButton(id: string) {
+    const dialog = wallpaperImagesElement!.shadowRoot!
+                       .querySelector<TimeOfDayWallpaperDialog>(
+                           TimeOfDayWallpaperDialog.is);
+    assertNotEquals(null, dialog, 'dialog element must exist to click button');
+    const button = dialog!.shadowRoot!.getElementById(id);
+    assertNotEquals(null, button, `button with id ${id} must exist`);
+    button!.click();
+    await waitAfterNextRender(wallpaperImagesElement!);
+    return wallpaperImagesElement;
+  }
+
   test('sets aria-selected for current wallpaper asset id', async () => {
     wallpaperImagesElement = await createWithDefaultData();
     const selectedElements: WallpaperGridItem[] =
@@ -58,7 +81,7 @@ suite('WallpaperImagesTest', function() {
     assertEquals(selectedElements.length, 1, '1 item aria selected');
     assertDeepEquals(
         selectedElements[0]!.src,
-        [wallpaperProvider.images![2]!.url, wallpaperProvider.images![0]!.url],
+        [wallpaperProvider.images![0]!.url, wallpaperProvider.images![2]!.url],
         `item has correct src`);
 
     const notSelectedElements: HTMLDivElement[] =
@@ -142,6 +165,67 @@ suite('WallpaperImagesTest', function() {
         'expected aria labels are displayed for collectionId `id_1`');
   });
 
+  test('displays time of day tile for images with same unitId', async () => {
+    personalizationStore.data.wallpaper.backdrop.images = {
+      'id_0': [
+        {
+          assetId: BigInt(1),
+          attribution: ['Light Image 0-1'],
+          type: OnlineImageType.kLight,
+          unitId: BigInt(1),
+          url: {url: 'https://id_0-1/'},
+        },
+        {
+          assetId: BigInt(2),
+          attribution: ['Dark Image 0-2'],
+          type: OnlineImageType.kDark,
+          unitId: BigInt(1),
+          url: {url: 'https://id_0-2/'},
+        },
+        {
+          assetId: BigInt(3),
+          attribution: ['Morning Image 0-3'],
+          type: OnlineImageType.kMorning,
+          unitId: BigInt(1),
+          url: {url: 'https://id_0-3/'},
+        },
+        {
+          assetId: BigInt(4),
+          attribution: ['Late Afternoon Image 0-4'],
+          type: OnlineImageType.kLateAfternoon,
+          unitId: BigInt(1),
+          url: {url: 'https://id_0-4/'},
+        },
+      ],
+    };
+    personalizationStore.data.wallpaper.backdrop.collections =
+        wallpaperProvider.collections;
+    personalizationStore.data.wallpaper.loading.images = {
+      'id_0': false,
+    };
+    personalizationStore.data.wallpaper.loading.collections = false;
+
+    wallpaperImagesElement =
+        initElement(WallpaperImages, {collectionId: 'id_0'});
+    await waitAfterNextRender(wallpaperImagesElement);
+
+    const elements = Array.from(
+        wallpaperImagesElement.shadowRoot!.querySelectorAll<WallpaperGridItem>(
+            `${WallpaperGridItem.is}:not([hidden])`));
+
+    assertDeepEquals(
+        [
+          {url: 'https://id_0-1/'},
+          {url: 'https://id_0-2/'},
+          {url: 'https://id_0-3/'},
+          {url: 'https://id_0-4/'},
+        ],
+        elements[0]!.src, 'time of day image has four variant urls');
+    assertTrue(
+        elements[0]!.hasAttribute('data-is-time-of-day-wallpaper'),
+        'element has correct data attribute');
+  });
+
   test('displays dark light tile for images with same unitId', async () => {
     wallpaperImagesElement = await createWithDefaultData();
 
@@ -150,7 +234,8 @@ suite('WallpaperImagesTest', function() {
             `${WallpaperGridItem.is}:not([hidden])`));
 
     assertDeepEquals(
-        ['Image 0 light', 'Image 2'], elements.map(elem => elem.ariaLabel),
+        ['Image 0 light', 'Image 2', 'Image 3'],
+        elements.map(elem => elem.ariaLabel),
         'elements have correct aria labels for light mode');
 
     assertDeepEquals(
@@ -180,6 +265,80 @@ suite('WallpaperImagesTest', function() {
     const [assetId, previewMode] =
         await wallpaperProvider.whenCalled('selectWallpaper');
     assertEquals(2n, assetId, 'correct asset id is passed');
+    assertEquals(
+        wallpaperProvider.isInTabletModeResponse, previewMode,
+        'preview mode is same as tablet mode');
+    assertEquals(
+        null,
+        wallpaperImagesElement.shadowRoot!.querySelector(
+            TimeOfDayWallpaperDialog.is),
+        'no time of day dialog when selecting a regular image');
+  });
+
+  test('shows dialog when clicking on a time of day wallpaper', async () => {
+    wallpaperImagesElement =
+        await createWithDefaultData(wallpaperProvider.timeOfDayCollectionId);
+
+    await selectTimeOfDayWallpaper();
+    assertNotEquals(
+        null,
+        wallpaperImagesElement.shadowRoot!.querySelector(
+            TimeOfDayWallpaperDialog.is),
+        'dialog element exists');
+  });
+
+  test('do not show time of day dialog with proper settings', async () => {
+    wallpaperImagesElement =
+        await createWithDefaultData(wallpaperProvider.timeOfDayCollectionId);
+    personalizationStore.data.theme.colorModeAutoScheduleEnabled = true;
+    personalizationStore.data.theme.colorSchemeSelected =
+        ColorScheme.kTonalSpot;
+    personalizationStore.notifyObservers();
+    await waitAfterNextRender(wallpaperImagesElement);
+
+    await selectTimeOfDayWallpaper();
+    assertEquals(
+        null,
+        wallpaperImagesElement.shadowRoot!.querySelector(
+            TimeOfDayWallpaperDialog.is),
+        'dialog element does not exist');
+    const [assetId, _] = await wallpaperProvider.whenCalled('selectWallpaper');
+    assertEquals(3n, assetId, 'correct asset id is passed');
+  });
+
+  test(
+      'clicking cancel dismisses the time of day wallpaper dialog',
+      async () => {
+        wallpaperImagesElement = await createWithDefaultData(
+            wallpaperProvider.timeOfDayCollectionId);
+
+        await selectTimeOfDayWallpaper();
+        await clickTimeOfDayWallpaperDialogButton('close');
+        assertEquals(
+            null,
+            wallpaperImagesElement.shadowRoot!.querySelector(
+                TimeOfDayWallpaperDialog.is),
+            'clicking cancel dismisses the dialog');
+        assertEquals(
+            wallpaperProvider.currentWallpaper,
+            personalizationStore.data.wallpaper.currentSelected,
+            'current wallpaper is not updated');
+      });
+
+  test('clicking confirm on the time of day wallpaper dialog', async () => {
+    wallpaperImagesElement =
+        await createWithDefaultData(wallpaperProvider.timeOfDayCollectionId);
+
+    await selectTimeOfDayWallpaper();
+    await clickTimeOfDayWallpaperDialogButton('accept');
+    assertEquals(
+        null,
+        wallpaperImagesElement.shadowRoot!.querySelector(
+            TimeOfDayWallpaperDialog.is),
+        'clicking accept dismisses the dialog');
+    const [assetId, previewMode] =
+        await wallpaperProvider.whenCalled('selectWallpaper');
+    assertEquals(3n, assetId, 'correct asset id is passed');
     assertEquals(
         wallpaperProvider.isInTabletModeResponse, previewMode,
         'preview mode is same as tablet mode');

@@ -46,7 +46,6 @@
 #include "chrome/browser/ash/login/ui/fake_login_display_host.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/policy/arc/fake_android_management_client.h"
-#include "chrome/browser/ash/policy/handlers/powerwash_requirements_checker.h"
 #include "chrome/browser/ash/settings/device_settings_cache.h"
 #include "chrome/browser/ash/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
@@ -62,7 +61,6 @@
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/session_manager/session_manager_client.h"
 #include "chromeos/ash/components/dbus/upstart/upstart_client.h"
-#include "chromeos/ash/components/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -389,18 +387,11 @@ class ArcSessionManagerTest : public ArcSessionManagerTestBase {
     GetFakeUserManager()->AddUser(account_id);
     GetFakeUserManager()->LoginUser(account_id);
 
-    ash::CryptohomeMiscClient::InitializeFake();
-    ash::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(false);
-    policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
-
     ASSERT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
               arc_session_manager()->state());
   }
 
-  void TearDown() override {
-    ash::CryptohomeMiscClient::Shutdown();
-    ArcSessionManagerTestBase::TearDown();
-  }
+  void TearDown() override { ArcSessionManagerTestBase::TearDown(); }
 };
 
 TEST_F(ArcSessionManagerTest, BaseWorkflow) {
@@ -873,14 +864,18 @@ TEST_F(ArcSessionManagerTest, ArcVmDataMigrationInProgress_RequestEnable) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kEnableArcVmDataMigration);
 
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 0);
+
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 1);
   EXPECT_EQ(restart_count, 1);
 
   arc_session_manager()->RequestEnable();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(arc_session_manager()->state(), ArcSessionManager::State::STOPPED);
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 1);
   EXPECT_EQ(restart_count, 1);
 
   arc_session_manager()->Shutdown();
@@ -901,9 +896,12 @@ TEST_F(ArcSessionManagerTest,
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kEnableArcVmDataMigration);
 
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 0);
+
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->Initialize();
   base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 1);
   EXPECT_EQ(restart_count, 1);
 
   arc_session_manager()->RequestArcDataRemoval();
@@ -911,7 +909,41 @@ TEST_F(ArcSessionManagerTest,
   // /data removal request should persist, i.e., /data should not be removed.
   EXPECT_TRUE(prefs->GetBoolean(prefs::kArcDataRemoveRequested));
   EXPECT_EQ(arc_session_manager()->state(), ArcSessionManager::State::STOPPED);
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount), 1);
   EXPECT_EQ(restart_count, 1);
+
+  arc_session_manager()->Shutdown();
+}
+
+TEST_F(ArcSessionManagerTest, ArcVmDataMigration_MaxAutoResumeCountReached) {
+  int restart_count = 0;
+  // Replace chrome::AttemptRestart() for testing.
+  arc_session_manager()->SetAttemptRestartCallbackForTesting(
+      base::BindLambdaForTesting([&restart_count]() { ++restart_count; }));
+
+  PrefService* const prefs = profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
+  prefs->SetBoolean(prefs::kArcSignedIn, true);
+  SetArcVmDataMigrationStatus(prefs, ArcVmDataMigrationStatus::kStarted);
+  prefs->SetInteger(prefs::kArcVmDataMigrationAutoResumeCount,
+                    kArcVmDataMigrationMaxAutoResumeCount);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(kEnableArcVmDataMigration);
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->Initialize();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount),
+            kArcVmDataMigrationMaxAutoResumeCount + 1);
+
+  arc_session_manager()->RequestEnable();
+  base::RunLoop().RunUntilIdle();
+  // ARC should be blocked and auto-resume should not be triggered.
+  EXPECT_EQ(arc_session_manager()->state(), ArcSessionManager::State::STOPPED);
+  EXPECT_EQ(restart_count, 0);
+  EXPECT_EQ(prefs->GetInteger(prefs::kArcVmDataMigrationAutoResumeCount),
+            kArcVmDataMigrationMaxAutoResumeCount + 1);
 
   arc_session_manager()->Shutdown();
 }
@@ -2099,65 +2131,6 @@ TEST_F(ArcSessionManagerTest, TrimVmMemory) {
       0);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback_called);
-}
-
-class ArcSessionManagerPowerwashTest : public ArcSessionManagerTestBase {
- public:
-  ArcSessionManagerPowerwashTest() = default;
-  ~ArcSessionManagerPowerwashTest() override = default;
-  ArcSessionManagerPowerwashTest(const ArcSessionManagerPowerwashTest&) =
-      delete;
-  ArcSessionManagerPowerwashTest& operator=(
-      const ArcSessionManagerPowerwashTest&) = delete;
-
-  void SetUp() override {
-    ArcSessionManagerTestBase::SetUp();
-    ash::CryptohomeMiscClient::InitializeFake();
-  }
-
-  void TearDown() override {
-    ash::CryptohomeMiscClient::Shutdown();
-    ArcSessionManagerTestBase::TearDown();
-  }
-};
-
-TEST_F(ArcSessionManagerPowerwashTest, PowerwashRequestBlocksArcStart) {
-  EXPECT_EQ(ArcSessionManager::State::NOT_INITIALIZED,
-            arc_session_manager()->state());
-
-  // Set up the situation that provisioning is successfully done in the
-  // previous session.
-  PrefService* const prefs = profile()->GetPrefs();
-  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
-  prefs->SetBoolean(prefs::kArcSignedIn, true);
-
-  // Login unaffiliated user.
-  const AccountId account_id(AccountId::FromUserEmailGaiaId(
-      profile()->GetProfileUserName(), "1234567890"));
-  GetFakeUserManager()->AddUserWithAffiliation(account_id, false);
-  GetFakeUserManager()->LoginUser(account_id);
-
-  // Set DeviceRebootOnUserSignout to ALWAYS.
-  ash::ScopedCrosSettingsTestHelper settings_helper{
-      /* create_settings_service=*/false};
-  settings_helper.ReplaceDeviceSettingsProviderWithStub();
-  settings_helper.SetInteger(
-      ash::kDeviceRebootOnUserSignout,
-      enterprise_management::DeviceRebootOnUserSignoutProto::ALWAYS);
-
-  // Initialize cryptohome to require powerwash.
-  ash::FakeCryptohomeMiscClient::Get()->set_requires_powerwash(true);
-  policy::PowerwashRequirementsChecker::InitializeSynchronouslyForTesting();
-
-  arc_session_manager()->SetProfile(profile());
-  arc_session_manager()->Initialize();
-
-  arc_session_manager()->RequestEnable();
-  // Wait for manager's state.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(ArcSessionManager::State::STOPPED, arc_session_manager()->state());
-
-  arc_session_manager()->Shutdown();
 }
 
 class ArcTransitionToManagedTest

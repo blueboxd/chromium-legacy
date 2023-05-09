@@ -69,6 +69,16 @@ bool AreHttpRequestHeadersCompatible(
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
+  // Remove the viewport headers as the viewport size of the initiator page can
+  // be changed during prerendering. See also https://crbug.com/1401244.
+  prerender_headers.RemoveHeader("viewport-width");
+  potential_activation_headers.RemoveHeader("viewport-width");
+  prerender_headers.RemoveHeader("sec-ch-viewport-width");
+  potential_activation_headers.RemoveHeader("sec-ch-viewport-width");
+  // Don't need to handle "viewport-height" as it is not defined in the specs.
+  prerender_headers.RemoveHeader("sec-ch-viewport-height");
+  potential_activation_headers.RemoveHeader("sec-ch-viewport-height");
+
   // Compare headers in serialized strings. The spec doesn't require serialized
   // string matches, but practically Chrome generates headers in a decisive way,
   // i.e. in the same order and cases. So we can expect serialized string
@@ -532,8 +542,10 @@ std::unique_ptr<StoredPage> PrerenderHost::Activate(
 
   // Prerender is activated. Set the status to kSuccess.
   SetTriggeringOutcome(PreloadingTriggeringOutcome::kSuccess);
-
-  devtools_instrumentation::DidActivatePrerender(navigation_request);
+  if (initiator_devtools_navigation_token().has_value()) {
+    devtools_instrumentation::DidActivatePrerender(
+        navigation_request, initiator_devtools_navigation_token().value());
+  }
   return page;
 }
 
@@ -911,8 +923,12 @@ void PrerenderHost::SetInitialNavigation(NavigationRequest* navigation) {
 }
 
 void PrerenderHost::SetTriggeringOutcome(PreloadingTriggeringOutcome outcome) {
-  devtools_instrumentation::DidUpdatePrerenderStatus(
-      initiator_frame_tree_node_id(), prerendering_url(), outcome);
+  if (initiator_devtools_navigation_token().has_value()) {
+    devtools_instrumentation::DidUpdatePrerenderStatus(
+        initiator_frame_tree_node_id(),
+        initiator_devtools_navigation_token().value(), prerendering_url(),
+        outcome);
+  }
 
   if (!attempt_)
     return;
@@ -975,11 +991,12 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kInactivePageRestriction:
     case PrerenderFinalStatus::kStartFailed:
     case PrerenderFinalStatus::kTimeoutBackgrounded:
-    case PrerenderFinalStatus::kCrossSiteNavigation:
-    case PrerenderFinalStatus::kCrossSiteRedirect:
-    case PrerenderFinalStatus::kSameSiteCrossOriginRedirect:
-    case PrerenderFinalStatus::kSameSiteCrossOriginRedirectNotOptIn:
-    case PrerenderFinalStatus::kSameSiteCrossOriginNavigationNotOptIn:
+    case PrerenderFinalStatus::kCrossSiteNavigationInInitialNavigation:
+    case PrerenderFinalStatus::kCrossSiteRedirectInInitialNavigation:
+    case PrerenderFinalStatus::
+        kSameSiteCrossOriginRedirectNotOptInInInitialNavigation:
+    case PrerenderFinalStatus::
+        kSameSiteCrossOriginNavigationNotOptInInInitialNavigation:
     case PrerenderFinalStatus::kActivationNavigationParameterMismatch:
     case PrerenderFinalStatus::kActivatedInBackground:
     case PrerenderFinalStatus::kEmbedderHostDisallowed:
@@ -991,10 +1008,19 @@ void PrerenderHost::SetFailureReason(PrerenderFinalStatus status) {
     case PrerenderFinalStatus::kBatterySaverEnabled:
     case PrerenderFinalStatus::kActivatedDuringMainFrameNavigation:
     case PrerenderFinalStatus::kPreloadingUnsupportedByWebContents:
+    case PrerenderFinalStatus::
+        kSameSiteCrossOriginNavigationNotOptInInMainFrameNavigation:
+    case PrerenderFinalStatus::
+        kSameSiteCrossOriginRedirectNotOptInInMainFrameNavigation:
+    case PrerenderFinalStatus::kCrossSiteNavigationInMainFrameNavigation:
+    case PrerenderFinalStatus::kCrossSiteRedirectInMainFrameNavigation:
       // SetFailureReason() will call SetTriggeringOutcome() with kFailure.
-      devtools_instrumentation::DidUpdatePrerenderStatus(
-          initiator_frame_tree_node_id(), prerendering_url(),
-          PreloadingTriggeringOutcome::kFailure);
+      if (initiator_devtools_navigation_token().has_value()) {
+        devtools_instrumentation::DidUpdatePrerenderStatus(
+            initiator_frame_tree_node_id(),
+            initiator_devtools_navigation_token().value(), prerendering_url(),
+            PreloadingTriggeringOutcome::kFailure);
+      }
 
       if (attempt_) {
         attempt_->SetFailureReason(ToPreloadingFailureReason(status));

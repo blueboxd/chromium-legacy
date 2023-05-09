@@ -18,6 +18,7 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/metrics/payments/card_metadata_metrics.h"
 #include "components/autofill/core/browser/mock_autofill_optimization_guide.h"
+#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -26,13 +27,17 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/feature_engagement/public/feature_constants.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/mock_resource_bundle_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/resources/grit/ui_resources.h"
+
+using gfx::test::AreImagesEqual;
 
 namespace autofill {
 
@@ -108,9 +113,17 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
     return local_card;
   }
 
-  gfx::Image& CreateCardArtImage() {
-    return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-        IDR_DEFAULT_FAVICON);
+  gfx::Image CreateFakeImage() { return gfx::test::CreateImage(32, 32); }
+
+  void SetUpIbanImageResources() {
+    if (ui::ResourceBundle::HasSharedInstance()) {
+      ui::ResourceBundle::CleanupSharedInstance();
+    }
+    ui::ResourceBundle::InitSharedInstanceWithLocale(
+        "en-US", &mock_resource_delegate_,
+        ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+    ON_CALL(mock_resource_delegate_, GetImageNamed(IDR_AUTOFILL_IBAN))
+        .WillByDefault(testing::Return(CreateFakeImage()));
   }
 
   bool VerifyCardArtImageExpectation(Suggestion& suggestion,
@@ -119,7 +132,7 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
 #if BUILDFLAG(IS_ANDROID)
     return suggestion.custom_icon_url == expected_url;
 #else
-    return gfx::test::AreImagesEqual(suggestion.custom_icon, expected_image);
+    return AreImagesEqual(suggestion.custom_icon, expected_image);
 #endif
   }
 
@@ -138,9 +151,10 @@ class AutofillSuggestionGeneratorTest : public testing::Test {
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::SYSTEM_TIME};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
-  std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   TestAutofillClient autofill_client_;
+  std::unique_ptr<TestAutofillSuggestionGenerator> suggestion_generator_;
   scoped_refptr<AutofillWebDataService> database_;
+  testing::NiceMock<ui::MockResourceBundleDelegate> mock_resource_delegate_;
 };
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -590,6 +604,8 @@ TEST_F(AutofillSuggestionGeneratorTest,
 }
 
 TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
+  SetUpIbanImageResources();
+
   auto MakeIBAN = [](const std::u16string& value,
                      const std::u16string& nickname) {
     IBAN iban(base::GenerateGUID());
@@ -607,7 +623,11 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
   std::vector<Suggestion> iban_suggestions =
       AutofillSuggestionGenerator::GetSuggestionsForIBANs(
           {&iban0, &iban1, &iban2, &iban3});
-  EXPECT_TRUE(iban_suggestions.size() == 4);
+
+  // There are 6 suggestions, 4 for IBAN suggestions, followed by a separator,
+  // and followed by "Manage payment methods..." which redirect to Chrome
+  // payment settings page.
+  ASSERT_EQ(iban_suggestions.size(), 6u);
 
   EXPECT_EQ(iban_suggestions[0].main_text.value,
             iban0.GetIdentifierStringForAutofillDisplay());
@@ -617,6 +637,8 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
   ASSERT_EQ(iban_suggestions[0].labels[0].size(), 1u);
   EXPECT_EQ(iban_suggestions[0].labels[0][0].value, u"My doctor's IBAN");
   EXPECT_EQ(iban_suggestions[0].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
+  EXPECT_TRUE(
+      AreImagesEqual(iban_suggestions[0].custom_icon, CreateFakeImage()));
 
   EXPECT_EQ(iban_suggestions[1].main_text.value,
             iban1.GetIdentifierStringForAutofillDisplay());
@@ -626,6 +648,8 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
   ASSERT_EQ(iban_suggestions[1].labels[0].size(), 1u);
   EXPECT_EQ(iban_suggestions[1].labels[0][0].value, u"My brother's IBAN");
   EXPECT_EQ(iban_suggestions[1].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
+  EXPECT_TRUE(
+      AreImagesEqual(iban_suggestions[1].custom_icon, CreateFakeImage()));
 
   EXPECT_EQ(iban_suggestions[2].main_text.value,
             iban2.GetIdentifierStringForAutofillDisplay());
@@ -635,6 +659,8 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
   ASSERT_EQ(iban_suggestions[2].labels[0].size(), 1u);
   EXPECT_EQ(iban_suggestions[2].labels[0][0].value, u"My teacher's IBAN");
   EXPECT_EQ(iban_suggestions[2].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
+  EXPECT_TRUE(
+      AreImagesEqual(iban_suggestions[2].custom_icon, CreateFakeImage()));
 
   EXPECT_EQ(iban_suggestions[3].main_text.value,
             iban3.GetIdentifierStringForAutofillDisplay());
@@ -642,6 +668,14 @@ TEST_F(AutofillSuggestionGeneratorTest, GetIBANSuggestions) {
             iban3.GetStrippedValue());
   EXPECT_EQ(iban_suggestions[3].labels.size(), 0u);
   EXPECT_EQ(iban_suggestions[3].frontend_id, POPUP_ITEM_ID_IBAN_ENTRY);
+  EXPECT_TRUE(
+      AreImagesEqual(iban_suggestions[3].custom_icon, CreateFakeImage()));
+
+  EXPECT_EQ(iban_suggestions[4].frontend_id, POPUP_ITEM_ID_SEPARATOR);
+
+  EXPECT_EQ(iban_suggestions[5].main_text.value,
+            l10n_util::GetStringUTF16(IDS_AUTOFILL_MANAGE_PAYMENT_METHODS));
+  EXPECT_EQ(iban_suggestions[5].frontend_id, POPUP_ITEM_ID_AUTOFILL_OPTIONS);
 }
 
 TEST_F(AutofillSuggestionGeneratorTest,
@@ -1027,31 +1061,22 @@ class AutofillSuggestionGeneratorTestForMetadata
     : public AutofillSuggestionGeneratorTest,
       public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
  public:
-  AutofillSuggestionGeneratorTestForMetadata()
-      : card_product_description_enabled_(std::get<0>(GetParam())),
-        card_art_image_enabled_(std::get<1>(GetParam())),
-        card_has_linked_virtual_card_(std::get<2>(GetParam())) {
+  AutofillSuggestionGeneratorTestForMetadata() {
     feature_list_card_product_description_.InitWithFeatureState(
-        features::kAutofillEnableCardProductName,
-        card_product_description_enabled_);
+        features::kAutofillEnableCardProductName, std::get<0>(GetParam()));
     feature_list_card_art_image_.InitWithFeatureState(
-        features::kAutofillEnableCardArtImage, card_art_image_enabled_);
+        features::kAutofillEnableCardArtImage, std::get<1>(GetParam()));
   }
 
   ~AutofillSuggestionGeneratorTestForMetadata() override = default;
 
   bool card_product_description_enabled() const {
-    return card_product_description_enabled_;
+    return std::get<0>(GetParam());
   }
-  bool card_art_image_enabled() const { return card_art_image_enabled_; }
-  bool card_has_linked_virtual_card() const {
-    return card_has_linked_virtual_card_;
-  }
+  bool card_art_image_enabled() const { return std::get<1>(GetParam()); }
+  bool card_has_static_art_image() const { return std::get<2>(GetParam()); }
 
  private:
-  const bool card_product_description_enabled_;
-  const bool card_art_image_enabled_;
-  const bool card_has_linked_virtual_card_;
   base::test::ScopedFeatureList feature_list_card_product_description_;
   base::test::ScopedFeatureList feature_list_card_art_image_;
 };
@@ -1068,7 +1093,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
   CreditCard server_card = CreateServerCard();
   GURL card_art_url = GURL("https://www.example.com/card-art");
   server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateCardArtImage();
+  gfx::Image fake_image = CreateFakeImage();
   personal_data()->AddCardArtImage(card_art_url, fake_image);
 
   Suggestion virtual_card_suggestion =
@@ -1124,7 +1149,7 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
 
   GURL card_art_url = GURL("https://www.example.com/card-art");
   server_card.set_card_art_url(card_art_url);
-  gfx::Image fake_image = CreateCardArtImage();
+  gfx::Image fake_image = CreateFakeImage();
   personal_data()->AddServerCreditCard(server_card);
   personal_data()->AddCardArtImage(card_art_url, fake_image);
 
@@ -1165,9 +1190,9 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
   {
     // Create one server card with no metadata.
     CreditCard server_card = CreateServerCard();
-    if (card_has_linked_virtual_card()) {
-      server_card.set_virtual_card_enrollment_state(
-          CreditCard::VirtualCardEnrollmentState::ENROLLED);
+    server_card.set_issuer_id(kCapitalOneCardIssuerId);
+    if (card_has_static_art_image()) {
+      server_card.set_card_art_url(GURL(kCapitalOneCardArtUrl));
     }
     personal_data()->AddServerCreditCard(server_card);
 
@@ -1182,6 +1207,13 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
     EXPECT_FALSE(metadata_logging_context.card_metadata_available);
     EXPECT_FALSE(metadata_logging_context.card_product_description_shown);
     EXPECT_FALSE(metadata_logging_context.card_art_image_shown);
+
+    // Verify that a record is added that a Capital One card suggestion
+    // was generated, and it did not have metadata.
+    base::flat_map<std::string, bool> expected_issuer_to_metadata_availability =
+        {{kCapitalOneCardIssuerId, false}};
+    EXPECT_EQ(metadata_logging_context.issuer_to_metadata_availability,
+              expected_issuer_to_metadata_availability);
   }
 
   personal_data()->ClearCreditCards();
@@ -1189,13 +1221,10 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
   {
     // Create a server card with card product description & card art image.
     CreditCard server_card_with_metadata = CreateServerCard();
+    server_card_with_metadata.set_issuer_id(kCapitalOneCardIssuerId);
     server_card_with_metadata.set_product_description(u"product_description");
     server_card_with_metadata.set_card_art_url(
         GURL("https://www.example.com/card-art.png"));
-    if (card_has_linked_virtual_card()) {
-      server_card_with_metadata.set_virtual_card_enrollment_state(
-          CreditCard::VirtualCardEnrollmentState::ENROLLED);
-    }
     personal_data()->AddServerCreditCard(server_card_with_metadata);
 
     bool should_display_gpay_logo;
@@ -1210,7 +1239,14 @@ TEST_P(AutofillSuggestionGeneratorTestForMetadata,
     EXPECT_EQ(metadata_logging_context.card_product_description_shown,
               card_product_description_enabled());
     EXPECT_EQ(metadata_logging_context.card_art_image_shown,
-              card_art_image_enabled() || card_has_linked_virtual_card());
+              card_art_image_enabled());
+
+    // Verify that a record is added that a Capital One card suggestion
+    // was generated, and it had metadata.
+    base::flat_map<std::string, bool> expected_issuer_to_metadata_availability =
+        {{kCapitalOneCardIssuerId, true}};
+    EXPECT_EQ(metadata_logging_context.issuer_to_metadata_availability,
+              expected_issuer_to_metadata_availability);
   }
 }
 

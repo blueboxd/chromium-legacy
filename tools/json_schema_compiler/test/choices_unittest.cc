@@ -119,10 +119,9 @@ TEST(JsonSchemaCompilerChoicesTest, PopulateChoiceType) {
   base::Value::Dict dict;
   dict.Set("integers", 4);
   dict.Set("strings", std::move(strings_value));
-  base::Value value(std::move(dict));
 
   choices::ChoiceType out;
-  ASSERT_TRUE(choices::ChoiceType::Populate(value, &out));
+  ASSERT_TRUE(choices::ChoiceType::Populate(dict, out));
   ASSERT_TRUE(out.integers.as_integer);
   EXPECT_FALSE(out.integers.as_integers);
   EXPECT_EQ(4, *out.integers.as_integer);
@@ -141,12 +140,11 @@ TEST(JsonSchemaCompilerChoicesTest, ChoiceTypeToValue) {
   base::Value::Dict dict;
   dict.Set("integers", 5);
   dict.Set("strings", std::move(strings_value));
-  base::Value value(std::move(dict));
 
   choices::ChoiceType out;
-  ASSERT_TRUE(choices::ChoiceType::Populate(value, &out));
+  ASSERT_TRUE(choices::ChoiceType::Populate(dict, out));
 
-  EXPECT_EQ(value, out.ToValue());
+  EXPECT_EQ(dict, out.ToValue());
 }
 
 TEST(JsonSchemaCompilerChoicesTest, ReturnChoices) {
@@ -180,7 +178,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
   {
     // The plain integer choice.
     base::Value value = ReadJson("42");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     ASSERT_TRUE(obj->as_integer);
@@ -194,7 +192,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
   {
     // The string choice within the first choice.
     base::Value value = ReadJson("\"foo\"");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     EXPECT_FALSE(obj->as_integer);
@@ -210,7 +208,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
   {
     // The boolean choice within the first choice.
     base::Value value = ReadJson("true");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     EXPECT_FALSE(obj->as_integer);
@@ -226,7 +224,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
   {
     // The double choice within the second choice.
     base::Value value = ReadJson("42.0");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     EXPECT_FALSE(obj->as_integer);
@@ -244,7 +242,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
     // The ChoiceType choice within the second choice.
     base::Value value =
         ReadJson("{\"integers\": [1, 2], \"strings\": \"foo\"}");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     EXPECT_FALSE(obj->as_integer);
@@ -274,7 +272,7 @@ TEST(JsonSchemaCompilerChoicesTest, NestedChoices) {
         "  {\"integers\": [1, 2], \"strings\": \"foo\"},"
         "  {\"integers\": 3, \"strings\": [\"bar\", \"baz\"]}"
         "]");
-    std::unique_ptr<NestedChoice> obj = NestedChoice::FromValue(value);
+    absl::optional<NestedChoice> obj = NestedChoice::FromValue(value);
 
     ASSERT_TRUE(obj);
     EXPECT_FALSE(obj->as_integer);

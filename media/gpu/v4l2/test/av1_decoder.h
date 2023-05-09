@@ -40,9 +40,9 @@ class Av1Decoder : public VideoDecoder {
   // Parses next frame from IVF stream and decodes the frame. This method will
   // place the Y, U, and V values into the respective vectors and update the
   // size with the display area size of the decoded frame.
-  VideoDecoder::Result DecodeNextFrame(std::vector<char>& y_plane,
-                                       std::vector<char>& u_plane,
-                                       std::vector<char>& v_plane,
+  VideoDecoder::Result DecodeNextFrame(std::vector<uint8_t>& y_plane,
+                                       std::vector<uint8_t>& u_plane,
+                                       std::vector<uint8_t>& v_plane,
                                        gfx::Size& size,
                                        const int frame_number) override;
 
@@ -86,7 +86,7 @@ class Av1Decoder : public VideoDecoder {
   std::set<int> RefreshReferenceSlots(
       const libgav1::ObuFrameHeader& frame_hdr,
       const libgav1::RefCountedBufferPtr current_frame,
-      const scoped_refptr<MmapedBuffer> buffer,
+      const scoped_refptr<MmappedBuffer> buffer,
       const uint32_t last_queued_buffer_id);
 
   // Queues reusable buffers in CAPTURE queue, indicated by
@@ -97,7 +97,7 @@ class Av1Decoder : public VideoDecoder {
       const bool is_inter_frame);
 
   // Reference frames currently in use.
-  std::array<scoped_refptr<MmapedBuffer>, kAv1NumRefFrames> ref_frames_;
+  std::array<scoped_refptr<MmappedBuffer>, kAv1NumRefFrames> ref_frames_;
 
   // Represents the least significant bits of the expected output order of the
   // frames. Corresponds to |RefOrderHint| in the AV1 spec.

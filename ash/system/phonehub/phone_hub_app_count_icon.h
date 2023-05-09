@@ -5,11 +5,11 @@
 #ifndef ASH_SYSTEM_PHONEHUB_PHONE_HUB_APP_COUNT_ICON_H_
 #define ASH_SYSTEM_PHONEHUB_PHONE_HUB_APP_COUNT_ICON_H_
 #include "ash/ash_export.h"
-#include "ash/system/phonehub/phone_hub_small_app_icon.h"
+#include "ash/system/phonehub/phone_hub_app_icon.h"
 
 namespace ash {
 
-class ASH_EXPORT AppCountIcon : public SmallAppIcon {
+class ASH_EXPORT AppCountIcon : public AppIcon {
  public:
   explicit AppCountIcon(const int count);
 };

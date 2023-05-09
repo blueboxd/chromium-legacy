@@ -546,7 +546,6 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
-        'experiment_percentage': 100,
         'merge': {
           'args': [
             '--verbose',
@@ -848,8 +847,6 @@
           # https://github.com/intel/libva/blob/master/va/va_fool.c#L47
           '--env-var', 'LIBVA_DRIVERS_PATH', './',
           '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
-          '--env-var', 'LIBVA_FOOL_DECODE', '1',
-          '--env-var', 'LIBVA_FOOL_POSTP', '1',
           '--gtest_filter="VaapiTest.*"',
         ],
       },
@@ -893,6 +890,88 @@
       'interactive_ui_tests': {
         'swarming': {
           'shards': 10,
+        },
+      },
+    },
+
+    'chromium_dev_android_gtests': {
+      'chrome_public_smoke_test': {},
+    },
+
+    'chromium_dev_desktop_gtests': {
+      'base_unittests': {},
+      'content_browsertests': {},
+      'content_unittests': {},
+      'interactive_ui_tests': {},
+      'net_unittests': {},
+      'unit_tests': {},
+    },
+
+    'chromium_dev_linux_gtests': {
+      'base_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
+      'browser_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 8,
+        },
+      },
+      'content_browsertests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 5,
+        },
+      },
+      'content_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '2',
+            },
+          ],
+        },
+      },
+      'interactive_ui_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+          'shards': 3,
+        },
+      },
+      'net_unittests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '8',
+            },
+          ],
+        },
+      },
+      'unit_tests': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'cores': '2',
+            },
+          ],
         },
       },
     },
@@ -1433,88 +1512,6 @@
       },
       'webkit_lint': {
         'script': 'blink_lint_expectations.py',
-      },
-    },
-
-    'chromium_swarm_android_gtests': {
-      'base_unittests': {},
-    },
-
-    'chromium_swarm_desktop_gtests': {
-      'base_unittests': {},
-      'content_browsertests': {},
-      'content_unittests': {},
-      'interactive_ui_tests': {},
-      'net_unittests': {},
-      'unit_tests': {},
-    },
-
-    'chromium_swarm_linux_gtests': {
-      'base_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-        },
-      },
-      'browser_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 8,
-        },
-      },
-      'content_browsertests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 5,
-        },
-      },
-      'content_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '2',
-            },
-          ],
-        },
-      },
-      'interactive_ui_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-          'shards': 3,
-        },
-      },
-      'net_unittests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '8',
-            },
-          ],
-        },
-      },
-      'unit_tests': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'cores': '2',
-            },
-          ],
-        },
       },
     },
 
@@ -2599,6 +2596,24 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.viz_unittests.filter',
         ],
       },
+    },
+
+    # This is a set of selected tests to test the test facility only. The
+    # principle of the selection includes time cost, scenario coverage,
+    # stability, etc; and it's subject to change. In theory, it should only be
+    # used by the EngProd team to verify a new test facility setup.
+    'fuchsia_facility_gtests': {
+      'aura_unittests': {},
+      'blink_common_unittests': {},
+      'courgette_unittests': {},
+      'crypto_unittests': {},
+      'filesystem_service_unittests': {},
+      'web_engine_integration_tests': {
+        'args': [
+          '--test-arg=--vmodule=test_navigation_listener=1',
+        ],
+      },
+      'web_engine_unittests': {},
     },
 
     'fuchsia_sizes_tests': {
@@ -4000,6 +4015,16 @@
           '--single-process-tests',
         ],
       },
+      'gl_unittests': {
+        'args': [
+          '--single-process-tests',
+        ],
+      },
+      'gpu_unittests': {
+        'args': [
+          '--single-process-tests',
+        ],
+      },
       'media_unittests': {
         'args': [
           '--single-process-tests',
@@ -4148,6 +4173,9 @@
     'js_code_coverage_browser_tests' : {
       'js_code_coverage_browser_tests': {
         'args': [],
+        'swarming': {
+          'shards': 16,
+        },
         'test': 'browser_tests',
       }
     },
@@ -4198,12 +4226,22 @@
       },
     },
 
-    # TODO(crbug.com/1204231): Re-enable vaapi_unittest.
     'lacros_device_or_vm_gtests': {
       'aura_unittests': {},
       'cc_unittests': {},
       'interactive_ui_tests': {},
       'ozone_unittests': {},
+      'vaapi_unittest': {
+        'args': [
+          '--stop-ui',
+          # Tell libva to do dummy encoding/decoding. For more info, see:
+          # https://github.com/intel/libva/blob/master/va/va_fool.c#L47
+          '--env-var', 'LIBVA_DRIVERS_PATH', './',
+          '--env-var', 'LIBVA_DRIVER_NAME', 'libfake',
+          '--gtest_filter="VaapiTest.*"',
+        ],
+	'ci_only': True, # https://crbug.com/1425489
+      },
     },
 
     'lacros_fyi_tast_tests': {
@@ -4789,6 +4827,9 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/pixel_tests.filter',
           '--test-launcher-jobs=1',
         ],
+        'swarming': {
+          'shards': 3,
+        },
         'test': 'browser_tests',
         'mixins': [
           'skia_gold_test',
@@ -5081,7 +5122,6 @@
           'expiration': 18000,
           'hard_timeout': 14400,
         },
-        'experiment_percentage': 100,
         'merge': {
           'args': [
             '--verbose',
@@ -7234,24 +7274,24 @@
     'ios_simulator_multi_window_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_cq_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_eg2_tests': {
         'mixins': ['xcode_parallelization'],
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_15_5',
+          'SIM_IPAD_AIR_3RD_GEN_16_2',
         ]
       }
     },
@@ -7369,8 +7409,8 @@
     'lacros_amd64_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_OCTOPUS_FULL',
-          'CROS_EVE_FULL',
+          'CROS_OCTOPUS_PUBLIC_LKGM',
+          'CROS_EVE_PUBLIC_LKGM',
         ]
       },
     },
@@ -7378,7 +7418,7 @@
     'lacros_arm64_generic_rel_skylab': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_KEVIN_PUBLIC',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },
@@ -7386,9 +7426,9 @@
     'lacros_arm64_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
-          'CROS_JACUZZI_CQ_PUBLIC',
-          'CROS_KEVIN_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
+          'CROS_JACUZZI_CQ_PUBLIC_LKGM',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },
@@ -7396,7 +7436,7 @@
     'lacros_arm_generic_rel_skylab': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
         ]
       },
     },
@@ -7404,8 +7444,8 @@
     'lacros_arm_generic_rel_skylab_fyi': {
       'lacros_skylab_tests': {
         'variants': [
-          'CROS_JACUZZI_PUBLIC',
-          'CROS_KEVIN_PUBLIC',
+          'CROS_JACUZZI_PUBLIC_LKGM',
+          'CROS_KEVIN_PUBLIC_LKGM',
         ]
       },
     },

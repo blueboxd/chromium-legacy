@@ -23,14 +23,6 @@
 
 namespace gwp_asan {
 namespace internal {
-
-// This enum is used during allocator initialization to control the
-// Lightweight UaF Detector - a secondary memory error detection mechanism.
-enum class LightweightDetectorState : bool {
-  kDisabled,
-  kEnabled,
-};
-
 // This class encompasses the allocation and deallocation logic on top of the
 // AllocatorState. Its members are not inspected or used by the crash handler.
 //
@@ -69,7 +61,7 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
             size_t total_pages,
             OutOfMemoryCallback oom_callback,
             bool is_partition_alloc,
-            LightweightDetectorState,
+            LightweightDetector::State,
             size_t num_lightweight_detector_metadata);
 
   // On success, returns a pointer to size bytes of page-guarded memory. On
@@ -261,11 +253,12 @@ class GWP_ASAN_EXPORT GuardedPageAllocator {
   std::atomic<LightweightDetector::MetadataId> next_lightweight_metadata_id_{0};
 
   friend class BaseGpaTest;
-  friend class CrashAnalyzerTest;
+  friend class BaseCrashAnalyzerTest;
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, InternalError);
   FRIEND_TEST_ALL_PREFIXES(CrashAnalyzerTest, StackTraceCollection);
   FRIEND_TEST_ALL_PREFIXES(LightweightDetectorAllocatorTest, PoisonAlloc);
   FRIEND_TEST_ALL_PREFIXES(LightweightDetectorAllocatorTest, SlotReuse);
+  FRIEND_TEST_ALL_PREFIXES(LightweightDetectorAnalyzerTest, InternalError);
 };
 
 }  // namespace internal

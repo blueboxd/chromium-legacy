@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_new_tab_button.h"
 
 #import "base/check.h"
+#import "base/notreached.h"
+#import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -41,9 +43,13 @@ const CGFloat kLargeSymbolSize = 37;
 - (instancetype)initWithLargeSize:(BOOL)largeSize {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    DCHECK(UseSymbols());
     CGFloat symbolSize = largeSize ? kLargeSymbolSize : kSmallSymbolSize;
-    _symbol = CustomSymbolWithPointSize(kPlusCircleFillSymbol, symbolSize);
+    if (base::FeatureList::IsEnabled(kSFSymbolsFollowup)) {
+      _symbol = CustomSymbolWithPointSize(kPlusCircleFillSymbol, symbolSize);
+    } else {
+      _symbol =
+          CustomSymbolWithPointSize(kLegacyPlusCircleFillSymbol, symbolSize);
+    }
     [self setImage:_symbol forState:UIControlStateNormal];
     self.pointerInteractionEnabled = YES;
     self.pointerStyleProvider = CreateLiftEffectCirclePointerStyleProvider();
@@ -55,6 +61,9 @@ const CGFloat kLargeSymbolSize = 37;
                       incognitoImage:(UIImage*)incognitoImage {
   self = [super initWithFrame:CGRectZero];
   if (self) {
+    if (@available(iOS 15, *)) {
+      NOTREACHED();
+    }
     _regularImage = regularImage;
     _incognitoImage = incognitoImage;
 
@@ -68,11 +77,7 @@ const CGFloat kLargeSymbolSize = 37;
 
 - (void)setPage:(TabGridPage)page {
   if (@available(iOS 15, *)) {
-    if (UseSymbols()) {
-      [self setSymbolPage:page];
-    } else {
-      [self setIconPage:page];
-    }
+    [self setSymbolPage:page];
   } else {
     [self setIconPage:page];
   }
@@ -82,6 +87,9 @@ const CGFloat kLargeSymbolSize = 37;
 
 // Sets page using icon images.
 - (void)setIconPage:(TabGridPage)page {
+  if (@available(iOS 15, *)) {
+    NOTREACHED();
+  }
   // self.page is inited to 0 (i.e. TabGridPageIncognito) so do not early return
   // here, otherwise when app is launched in incognito mode the image will be
   // missing.

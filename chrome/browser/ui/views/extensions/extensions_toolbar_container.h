@@ -23,6 +23,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/models/image_model.h"
+#include "ui/compositor/layer_tree_owner.h"
 #include "ui/views/widget/widget_observer.h"
 
 class Browser;
@@ -278,17 +279,21 @@ class ExtensionsToolbarContainer
   void OnUserPermissionsSettingsChanged(
       const extensions::PermissionsManager::UserPermissionsSettings& settings)
       override;
-  void OnShowAccessRequestsInToolbarChanged() override;
+  void OnShowAccessRequestsInToolbarChanged(
+      const extensions::ExtensionId& extension_id,
+      bool can_show_requests) override;
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // Moves the dragged extension `action_id`.
-  void MovePinnedAction(const ToolbarActionsModel::ActionId& action_id,
-                        size_t index,
-                        base::ScopedClosureRunner cleanup,
-                        const ui::DropTargetEvent& event,
-                        ui::mojom::DragOperation& output_drag_op);
+  void MovePinnedAction(
+      const ToolbarActionsModel::ActionId& action_id,
+      size_t index,
+      base::ScopedClosureRunner cleanup,
+      const ui::DropTargetEvent& event,
+      ui::mojom::DragOperation& output_drag_op,
+      std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner);
 
   // Performs clean up after dragging.
   void DragDropCleanup(

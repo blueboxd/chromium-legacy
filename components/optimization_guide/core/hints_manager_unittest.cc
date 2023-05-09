@@ -32,6 +32,7 @@
 #include "components/optimization_guide/core/proto_database_provider_test_base.h"
 #include "components/optimization_guide/core/tab_url_provider.h"
 #include "components/optimization_guide/core/top_host_provider.h"
+#include "components/optimization_guide/proto/hints.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -205,6 +206,7 @@ class TestHintsFetcher : public HintsFetcher {
       const base::flat_set<proto::OptimizationType>& optimization_types,
       proto::RequestContext request_context,
       const std::string& locale,
+      bool skip_cache,
       HintsFetchedCallback hints_fetched_callback) override {
     HintsFetcherEndState fetch_state =
         num_fetches_requested_ < static_cast<int>(fetch_states_.size())
@@ -476,6 +478,9 @@ class HintsManagerTest : public ProtoDatabaseProviderTestBase {
     base::RunLoop().RunUntilIdle();
   }
 
+ protected:
+  std::unique_ptr<HintsManager> hints_manager_;
+
  private:
   void WriteConfigToFile(const proto::Configuration& config,
                          const base::FilePath& filePath) {
@@ -489,7 +494,6 @@ class HintsManagerTest : public ProtoDatabaseProviderTestBase {
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<OptimizationGuideStore> hint_store_;
   std::unique_ptr<FakeTabUrlProvider> tab_url_provider_;
-  std::unique_ptr<HintsManager> hints_manager_;
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -1677,17 +1681,35 @@ class HintsManagerFetchingTest : public HintsManagerTest {
             {
                 features::kRemoteOptimizationGuideFetching,
                 {{"max_concurrent_page_navigation_fetches", "2"},
-                 {"max_concurrent_batch_update_fetches", "2"}},
+                 {"max_concurrent_batch_update_fetches",
+                  base::NumberToString(batch_concurrency_limit_)}},
             },
         },
         {features::kRemoteOptimizationGuideFetchingAnonymousDataConsent});
   }
 
+  size_t batch_concurrency_limit() const { return batch_concurrency_limit_; }
+
  private:
+  size_t batch_concurrency_limit_ = 2;
   variations::ScopedVariationsIdsProvider scoped_variations_ids_provider_{
       variations::VariationsIdsProvider::Mode::kUseSignedInState};
   base::test::ScopedFeatureList scoped_list_;
 };
+
+TEST_F(HintsManagerFetchingTest, BatchUpdateFetcherCleanup) {
+  EXPECT_GT(batch_concurrency_limit(), 1u);
+  for (size_t i = 0; i < batch_concurrency_limit() * 2; ++i) {
+    auto request_id_and_fetcher =
+        hints_manager_->CreateAndTrackBatchUpdateHintsFetcher();
+    // Now run clean up on this id and expect LRU size to be 0.
+    hints_manager_->CleanUpBatchUpdateHintsFetcher(
+        request_id_and_fetcher.first);
+    EXPECT_EQ(0u, hints_manager_->batch_update_hints_fetchers_.size());
+  }
+  EXPECT_EQ(hints_manager()->num_batch_update_hints_fetches_initiated(),
+            int(batch_concurrency_limit() * 2));
+}
 
 TEST_F(HintsManagerFetchingTest,
        HintsFetchNotAllowedIfFeatureIsEnabledButUserNotAllowed) {
@@ -3116,6 +3138,121 @@ TEST_F(HintsManagerFetchingTest, BatchUpdateCalledMoreThanMaxConcurrent) {
       "OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches", 1, 1);
   histogram_tester.ExpectBucketCount(
       "OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches", 2, 2);
+}
+
+TEST_F(HintsManagerFetchingTest,
+       CanApplyOptimizationOnDemandNoRegistrationAlwaysFetches) {
+  base::HistogramTester histogram_tester;
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithURLHints}));
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  hints_manager()->CanApplyOptimizationOnDemand(
+      {url_with_url_keyed_hint()},
+      {proto::NOSCRIPT, proto::COMPRESS_PUBLIC_IMAGES},
+      proto::RequestContext::CONTEXT_BOOKMARKS,
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const base::flat_map<proto::OptimizationType,
+                                  OptimizationGuideDecisionWithMetadata>&
+                 decisions) {
+            ASSERT_EQ(decisions.size(), 2u);
+            auto it = decisions.find(proto::COMPRESS_PUBLIC_IMAGES);
+            ASSERT_TRUE(it != decisions.end());
+            EXPECT_EQ(OptimizationGuideDecision::kTrue, it->second.decision);
+            EXPECT_TRUE(it->second.metadata.any_metadata().has_value());
+
+            it = decisions.find(proto::NOSCRIPT);
+            ASSERT_TRUE(it != decisions.end());
+            EXPECT_EQ(OptimizationGuideDecision::kFalse, it->second.decision);
+
+            run_loop->Quit();
+          },
+          run_loop.get()));
+  run_loop->Run();
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches", 1);
+}
+
+TEST_F(HintsManagerFetchingTest,
+       CanApplyOptimizationOnDemandNoRegistrationFetchFailure) {
+  base::HistogramTester histogram_tester;
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory({HintsFetcherEndState::kFetchFailed}));
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  hints_manager()->CanApplyOptimizationOnDemand(
+      {url_with_url_keyed_hint()}, {proto::COMPRESS_PUBLIC_IMAGES},
+      proto::RequestContext::CONTEXT_BOOKMARKS,
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const base::flat_map<proto::OptimizationType,
+                                  OptimizationGuideDecisionWithMetadata>&
+                 decisions) {
+            ASSERT_EQ(decisions.size(), 1u);
+            auto it = decisions.find(proto::COMPRESS_PUBLIC_IMAGES);
+            ASSERT_TRUE(it != decisions.end());
+            EXPECT_EQ(OptimizationGuideDecision::kFalse, it->second.decision);
+
+            run_loop->Quit();
+          },
+          run_loop.get()));
+  run_loop->Run();
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches", 1);
+}
+
+TEST_F(HintsManagerFetchingTest,
+       CanApplyOptimizationOnDemandMixedRegistrations) {
+  base::HistogramTester histogram_tester;
+
+  InitializeWithDefaultConfig("1.0.0.0");
+
+  hints_manager()->RegisterOptimizationTypes({proto::NOSCRIPT});
+  hints_manager()->SetHintsFetcherFactoryForTesting(
+      BuildTestHintsFetcherFactory(
+          {HintsFetcherEndState::kFetchSuccessWithURLHints}));
+  // Make sure NOSCRIPT is cached and loaded.
+  auto navigation_data =
+      CreateTestNavigationData(url_with_url_keyed_hint(), {proto::NOSCRIPT});
+  CallOnNavigationStartOrRedirect(navigation_data.get(), base::DoNothing());
+  RunUntilIdle();
+
+  std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
+  hints_manager()->CanApplyOptimizationOnDemand(
+      {url_with_hints()}, {proto::NOSCRIPT, proto::COMPRESS_PUBLIC_IMAGES},
+      proto::RequestContext::CONTEXT_BOOKMARKS,
+      base::BindRepeating(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const base::flat_map<proto::OptimizationType,
+                                  OptimizationGuideDecisionWithMetadata>&
+                 decisions) {
+            ASSERT_EQ(decisions.size(), 2u);
+            auto it = decisions.find(proto::NOSCRIPT);
+            ASSERT_TRUE(it != decisions.end());
+            // Even though this is cached/loaded, the on-demand call does not
+            // have a result from the server.
+            EXPECT_EQ(OptimizationGuideDecision::kFalse, it->second.decision);
+
+            it = decisions.find(proto::COMPRESS_PUBLIC_IMAGES);
+            ASSERT_TRUE(it != decisions.end());
+            EXPECT_EQ(OptimizationGuideDecision::kTrue, it->second.decision);
+            EXPECT_TRUE(it->second.metadata.any_metadata().has_value());
+
+            run_loop->Quit();
+          },
+          run_loop.get()));
+  run_loop->Run();
+
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches", 1);
 }
 
 TEST_F(

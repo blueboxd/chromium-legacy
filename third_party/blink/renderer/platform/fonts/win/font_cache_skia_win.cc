@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/fonts/win/font_fallback_win.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkStream.h"
@@ -122,7 +123,7 @@ void FontCache::PrewarmFamily(const AtomicString& family_name) {
   if (!prewarmer_)
     return;
 
-  static HashSet<AtomicString> prewarmed_families;
+  DEFINE_STATIC_LOCAL(HashSet<AtomicString>, prewarmed_families, ());
   const auto result = prewarmed_families.insert(family_name);
   if (!result.is_new_entry)
     return;
@@ -316,9 +317,9 @@ scoped_refptr<SimpleFontData> FontCache::GetDWriteFallbackFamily(
 
     Bcp47Vector locales;
     locales.push_back(fallback_locale->LocaleForSkFontMgr());
-    SkTypeface* typeface = font_manager_->matchFamilyStyleCharacter(
+    sk_sp<SkTypeface> typeface(font_manager_->matchFamilyStyleCharacter(
         family_name.c_str(), font_description.SkiaFontStyle(), locales.data(),
-        locales.size(), codepoint);
+        locales.size(), codepoint));
 
     if (!typeface)
       return nullptr;

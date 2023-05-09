@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
+import android.app.ActivityOptions;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -22,10 +23,12 @@ import android.os.RemoteException;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browserservices.intents.WebApkExtras;
 import org.chromium.chrome.browser.browserservices.metrics.WebApkUmaRecorder;
@@ -38,7 +41,6 @@ import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.components.content_settings.ContentSettingValues;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.embedder_support.util.Origin;
-import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.client.WebApkServiceConnectionManager;
 import org.chromium.webapk.lib.runtime_library.IWebApkApi;
 
@@ -92,7 +94,7 @@ public class WebApkServiceClient {
 
     private WebApkServiceClient() {
         mConnectionManager = new WebApkServiceConnectionManager(
-                UiThreadTaskTraits.DEFAULT, CATEGORY_WEBAPK_API, null /* action */);
+                TaskTraits.UI_DEFAULT, CATEGORY_WEBAPK_API, null /* action */);
     }
 
     /**
@@ -141,7 +143,10 @@ public class WebApkServiceClient {
             Intent extraIntent = new Intent();
             extraIntent.putExtra(EXTRA_MESSENGER, new Messenger(handler));
             try {
-                permissionRequestIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent);
+                ActivityOptions options = ActivityOptions.makeBasic();
+                ApiCompatibilityUtils.setActivityOptionsBackgroundActivityStartMode(options);
+                permissionRequestIntent.send(ContextUtils.getApplicationContext(), 0, extraIntent,
+                        null, null, null, options.toBundle());
             } catch (PendingIntent.CanceledException e) {
                 Log.e(TAG, "The PendingIntent was canceled.", e);
             }

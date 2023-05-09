@@ -195,11 +195,20 @@ bool IsAccessibilitySelectToSpeakHoverTextImprovementsEnabled() {
 
 BASE_FEATURE(kAccessibilityAcceleratorNotificationsTimeout,
              "AccessibilityAcceleratorNotificationsTimeout",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityAcceleratorNotificationsTimeout);
+}
+
+BASE_FEATURE(kAccessibilityDeprecateChromeVoxTabs,
+             "AccessibilityDeprecateChromeVoxTabs",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityDeprecateChromeVoxTabsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityDeprecateChromeVoxTabs);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -253,15 +262,6 @@ BASE_FEATURE(kAccessibilityFormControlsMode,
 bool IsAccessibilityFormControlsAXModeEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityFormControlsMode);
-}
-
-BASE_FEATURE(kOptimizeAccessibilityUiThreadWork,
-             "OptimizeAccessibilityUiThreadWork",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-bool IsOptimizeAccessibilityUiThreadWorkEnabled() {
-  return base::FeatureList::IsEnabled(
-      ::features::kOptimizeAccessibilityUiThreadWork);
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

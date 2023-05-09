@@ -859,27 +859,6 @@ TEST(ValuesTest, FindIntKey) {
   EXPECT_EQ(absl::nullopt, dict.FindInt("dict"));
 }
 
-TEST(ValuesTest, FindDoubleKey) {
-  Value::Dict dict;
-  dict.Set("null", Value());
-  dict.Set("bool", false);
-  dict.Set("int", 0);
-  dict.Set("double", 0.0);
-  dict.Set("string", std::string());
-  dict.Set("blob", Value(Value::BlobStorage()));
-  dict.Set("list", Value::List());
-  dict.Set("dict", Value::Dict());
-
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("null"));
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("bool"));
-  EXPECT_NE(absl::nullopt, dict.FindDouble("int"));
-  EXPECT_NE(absl::nullopt, dict.FindDouble("double"));
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("string"));
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("blob"));
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("list"));
-  EXPECT_EQ(absl::nullopt, dict.FindDouble("dict"));
-}
-
 TEST(ValuesTest, FindStringKey) {
   Value::Dict dict;
   dict.Set("null", Value());
@@ -1174,26 +1153,6 @@ TEST(ValuesTest, SetPath) {
   // Can't change existing non-dictionary keys to dictionaries.
   found = root.SetByDottedPath("foo.bar.baz", Value(123));
   EXPECT_FALSE(found);
-}
-
-TEST(ValuesTest, SetBoolPath) {
-  Value::Dict root;
-  Value* inserted = root.SetByDottedPath("foo.bar", true);
-  Value* found = root.FindByDottedPath("foo.bar");
-  ASSERT_TRUE(found);
-  EXPECT_EQ(inserted, found);
-  ASSERT_TRUE(found->is_bool());
-  EXPECT_TRUE(found->GetBool());
-
-  // Overwrite with a different value.
-  root.SetByDottedPath("foo.bar", false);
-  found = root.FindByDottedPath("foo.bar");
-  ASSERT_TRUE(found);
-  ASSERT_TRUE(found->is_bool());
-  EXPECT_FALSE(found->GetBool());
-
-  // Can't change existing non-dictionary keys.
-  ASSERT_FALSE(root.SetByDottedPath("foo.bar.zoo", true));
 }
 
 TEST(ValuesTest, SetIntPath) {

@@ -9,8 +9,10 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/style/ash_color_provider.h"
+#include "ash/style/ash_color_id.h"
 #include "ash/style/system_shadow.h"
+#include "ash/style/tab_slider.h"
+#include "ash/style/tab_slider_button.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "ash/wm/window_cycle/window_cycle_item_view.h"
 #include "base/check_op.h"
@@ -24,6 +26,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -38,6 +41,8 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/highlight_border.h"
 #include "ui/views/layout/box_layout.h"
@@ -61,6 +66,12 @@ constexpr int kMirrorContainerVerticalPaddingDp = 24;
 
 // Padding between the window previews within the alt-tab bandshield.
 constexpr int kBetweenChildPaddingDp = 10;
+
+// Padding between the window previews within the alt-tab bandshield when
+// feature flag Jellyroll is enabled.
+// TODO(conniekxu): Rename this to `kBetweenChildPaddingDp`, and remove
+// `kBetweenChildPaddingDp` above.
+constexpr int kBetweenChildPaddingDpCrOSNext = 12;
 
 // Padding between the tab slider button and the tab slider container.
 constexpr int kTabSliderContainerVerticalPaddingDp = 32;
@@ -111,10 +122,17 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
   layer()->SetName("WindowCycleView");
   layer()->SetMasksToBounds(true);
 
-  SetBackground(views::CreateRoundedRectBackground(
-      AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent80),
+  const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
+  SetBackground(views::CreateThemedRoundedRectBackground(
+      is_jellyroll_enabled ? cros_tokens::kCrosSysScrim2
+                           : static_cast<ui::ColorId>(kColorAshShieldAndBase80),
       kBackgroundCornerRadius));
+  SetBorder(std::make_unique<views::HighlightBorder>(
+      kBackgroundCornerRadius,
+      is_jellyroll_enabled
+          ? views::HighlightBorder::Type::kHighlightBorderOnShadow
+          : views::HighlightBorder::Type::kHighlightBorder1,
+      /*use_light_colors=*/false));
 
   // |mirror_container_| may be larger than |this|. In this case, it will be
   // shifted along the x-axis when the user tabs through. It is a container
@@ -131,22 +149,56 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
                             WindowCycleView::kInsideBorderHorizontalPaddingDp,
                             kInsideBorderVerticalPaddingDp,
                             WindowCycleView::kInsideBorderHorizontalPaddingDp),
-          kBetweenChildPaddingDp));
+          is_jellyroll_enabled ? kBetweenChildPaddingDpCrOSNext
+                               : kBetweenChildPaddingDp));
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
   if (is_interactive_alt_tab_mode_allowed) {
-    tab_slider_container_ =
-        AddChildView(std::make_unique<WindowCycleTabSlider>());
+    tab_slider_ = AddChildView(std::make_unique<TabSlider>());
+    all_desks_tab_slider_button_ =
+        tab_slider_->AddButton(std::make_unique<LabelSliderButton>(
+            base::BindRepeating(
+                &WindowCycleController::OnModeChanged,
+                base::Unretained(Shell::Get()->window_cycle_controller()),
+                /*per_desk=*/false,
+                WindowCycleController::ModeSwitchSource::kClick),
+            l10n_util::GetStringUTF16(IDS_ASH_ALT_TAB_ALL_DESKS_MODE)));
+    current_desk_tab_slider_button_ =
+        tab_slider_->AddButton(std::make_unique<LabelSliderButton>(
+            base::BindRepeating(
+                &WindowCycleController::OnModeChanged,
+                base::Unretained(Shell::Get()->window_cycle_controller()),
+                /*per_desk=*/true,
+                WindowCycleController::ModeSwitchSource::kClick),
+            l10n_util::GetStringUTF16(IDS_ASH_ALT_TAB_CURRENT_DESK_MODE)));
+
+    auto* tab_slider_selector_view = tab_slider_->GetSelectorView();
+    // Configure the focus ring for the tab slider selector view.
+    views::FocusRing::Install(tab_slider_selector_view);
+    auto* focus_ring = views::FocusRing::Get(tab_slider_selector_view);
+    focus_ring->SetColorId(is_jellyroll_enabled ? cros_tokens::kCrosSysFocusRing
+                                                : static_cast<ui::ColorId>(
+                                                      ui::kColorAshFocusRing));
+    const float halo_inset = focus_ring->GetHaloThickness() / 2.f + 2;
+    focus_ring->SetHaloInset(-halo_inset);
+    // Set a pill shaped (fully rounded rect) highlight path to focus ring.
+    focus_ring->SetPathGenerator(
+        std::make_unique<views::PillHighlightPathGenerator>());
+    focus_ring->SetHasFocusPredicate(
+        [&](views::View* view) { return IsTabSliderFocused(); });
+
+    const bool per_desk =
+        Shell::Get()->window_cycle_controller()->IsAltTabPerActiveDesk();
+    current_desk_tab_slider_button_->SetSelected(per_desk);
+    all_desks_tab_slider_button_->SetSelected(!per_desk);
 
     no_recent_items_label_ = AddChildView(std::make_unique<views::Label>(
         l10n_util::GetStringUTF16(IDS_ASH_OVERVIEW_NO_RECENT_ITEMS)));
     no_recent_items_label_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     no_recent_items_label_->SetVerticalAlignment(gfx::ALIGN_MIDDLE);
 
-    no_recent_items_label_->SetEnabledColor(
-        AshColorProvider::Get()->GetContentLayerColor(
-            AshColorProvider::ContentLayerType::kIconColorSecondary));
+    no_recent_items_label_->SetEnabledColorId(kColorAshIconColorSecondary);
     no_recent_items_label_->SetFontList(
         no_recent_items_label_->font_list()
             .DeriveWithSizeDelta(
@@ -155,7 +207,7 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
             .DeriveWithWeight(gfx::Font::Weight::NORMAL));
     no_recent_items_label_->SetVisible(windows.empty());
     no_recent_items_label_->SetPreferredSize(
-        gfx::Size(tab_slider_container_->GetPreferredSize().width() +
+        gfx::Size(tab_slider_->GetPreferredSize().width() +
                       2 * WindowCycleView::kInsideBorderHorizontalPaddingDp,
                   WindowCycleItemView::kFixedPreviewHeightDp +
                       WindowMiniView::kHeaderHeightDp +
@@ -321,12 +373,12 @@ void WindowCycleView::SetTargetWindow(aura::Window* target) {
   if (target_window_) {
     auto target_it = window_view_map_.find(target_window_);
     if (target_it != window_view_map_.end())
-      target_it->second->UpdateBorderState(/*show=*/false);
+      target_it->second->UpdateFocusState(/*focus=*/false);
   }
   target_window_ = target;
   auto target_it = window_view_map_.find(target_window_);
   if (target_it != window_view_map_.end())
-    target_it->second->UpdateBorderState(/*show=*/true);
+    target_it->second->UpdateFocusState(/*focus=*/true);
 
   // Focus the target window if the user is not currently switching the mode
   // while ChromeVox is on.
@@ -414,12 +466,18 @@ void WindowCycleView::OnFlingEnd() {
 }
 
 void WindowCycleView::SetFocusTabSlider(bool focus) {
-  tab_slider_container_->SetFocus(focus);
+  DCHECK(tab_slider_);
+  if (focus == is_tab_slider_focused_) {
+    return;
+  }
+
+  is_tab_slider_focused_ = focus;
+  views::FocusRing::Get(tab_slider_->GetSelectorView())->SchedulePaint();
 }
 
-bool WindowCycleView::IsTabSliderFocused() {
-  DCHECK(tab_slider_container_);
-  return tab_slider_container_->is_focused();
+bool WindowCycleView::IsTabSliderFocused() const {
+  DCHECK(tab_slider_);
+  return is_tab_slider_focused_;
 }
 
 aura::Window* WindowCycleView::GetWindowAtPoint(
@@ -432,8 +490,11 @@ aura::Window* WindowCycleView::GetWindowAtPoint(
 }
 
 void WindowCycleView::OnModePrefsChanged() {
-  if (tab_slider_container_)
-    tab_slider_container_->OnModePrefsChanged();
+  const bool per_desk =
+      Shell::Get()->window_cycle_controller()->IsAltTabPerActiveDesk();
+
+  current_desk_tab_slider_button_->SetSelected(per_desk);
+  all_desks_tab_slider_button_->SetSelected(!per_desk);
 }
 
 gfx::Size WindowCycleView::CalculatePreferredSize() const {
@@ -447,13 +508,13 @@ gfx::Size WindowCycleView::CalculatePreferredSize() const {
   if (Shell::Get()
           ->window_cycle_controller()
           ->IsInteractiveAltTabModeAllowed()) {
-    DCHECK(tab_slider_container_);
+    DCHECK(tab_slider_);
     // |mirror_container_| can have window list with width smaller the tab
     // slider's width. The padding should be 64px from the tab slider.
-    const int min_width = tab_slider_container_->GetPreferredSize().width() +
+    const int min_width = tab_slider_->GetPreferredSize().width() +
                           2 * WindowCycleView::kInsideBorderHorizontalPaddingDp;
     size.set_width(std::max(size.width(), min_width));
-    size.Enlarge(0, tab_slider_container_->GetPreferredSize().height() +
+    size.Enlarge(0, tab_slider_->GetPreferredSize().height() +
                         kTabSliderContainerVerticalPaddingDp);
   }
   return size;
@@ -528,19 +589,18 @@ void WindowCycleView::Layout() {
   if (is_interactive_alt_tab_mode_allowed) {
     // TODO(crbug.com/1216238): Change these back to DCHECKs once the bug is
     // resolved.
-    CHECK(tab_slider_container_);
+    CHECK(tab_slider_);
     CHECK(no_recent_items_label_);
     // Layout the tab slider.
-    const gfx::Size tab_slider_size = tab_slider_container_->GetPreferredSize();
+    const gfx::Size tab_slider_size = tab_slider_->GetPreferredSize();
     const gfx::Rect tab_slider_mirror_container_bounds(
         (width() - tab_slider_size.width()) / 2,
         kTabSliderContainerVerticalPaddingDp, tab_slider_size.width(),
         tab_slider_size.height());
-    tab_slider_container_->SetBoundsRect(tab_slider_mirror_container_bounds);
+    tab_slider_->SetBoundsRect(tab_slider_mirror_container_bounds);
 
     // Move window cycle container down.
-    content_container_bounds.set_y(tab_slider_container_->y() +
-                                   tab_slider_container_->height());
+    content_container_bounds.set_y(tab_slider_->y() + tab_slider_->height());
 
     // Unlike the bounds of scrollable mirror container, the bounds of label
     // should not overflow out of the screen.
@@ -605,23 +665,9 @@ void WindowCycleView::OnImplicitAnimationsCompleted() {
   shadow_->GetLayer()->SetVisible(true);
 }
 
-void WindowCycleView::OnThemeChanged() {
-  views::View::OnThemeChanged();
-  background()->SetNativeControlColor(
-      AshColorProvider::Get()->GetBaseLayerColor(
-          AshColorProvider::BaseLayerType::kTransparent80));
-  if (chromeos::features::IsDarkLightModeEnabled()) {
-    SetBorder(std::make_unique<views::HighlightBorder>(
-        kBackgroundCornerRadius,
-        views::HighlightBorder::Type::kHighlightBorder1,
-        /*use_light_colors=*/false));
-  }
-}
-
 bool WindowCycleView::IsEventInTabSliderContainer(
     const gfx::Point& screen_point) {
-  return tab_slider_container_ &&
-         tab_slider_container_->GetBoundsInScreen().Contains(screen_point);
+  return tab_slider_ && tab_slider_->GetBoundsInScreen().Contains(screen_point);
 }
 
 int WindowCycleView::CalculateMaxWidth() const {

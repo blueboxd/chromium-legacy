@@ -11,18 +11,17 @@
 #include "base/containers/span.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/types/pass_key.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace os_crypt_async {
 
+class EncryptorTestBase;
 class OSCryptAsync;
 
 // This class is used for data encryption. A thread-safe instance can be
 // obtained by calling `os_crypt_async::OSCryptAsync::GetInstance`.
 class Encryptor {
  public:
-  explicit Encryptor(base::PassKey<OSCryptAsync> passkey);
   ~Encryptor();
 
   // Moveable, not copyable.
@@ -50,9 +49,10 @@ class Encryptor {
                                    std::string* plaintext) const;
 
  private:
+  friend class EncryptorTestBase;
   friend class OSCryptAsync;
 
-  // Used for cloning.
+  // Used for cloning and creation of the template instance.
   Encryptor();
 
   // Clone is used by the factory to vend instances.

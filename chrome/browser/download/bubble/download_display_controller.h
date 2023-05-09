@@ -15,10 +15,6 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 
-namespace content {
-class DownloadManager;
-}  // namespace content
-
 class DownloadBubbleUIController;
 
 namespace base {
@@ -32,10 +28,9 @@ class DownloadDisplay;
 // interface. Supports both regular Download and Offline items. When in the
 // future OfflineItems include regular Download on Desktop platforms,
 // we can remove AllDownloadItemNotifier::Observer.
-class DownloadDisplayController
-    : public download::AllDownloadItemNotifier::Observer,
-      public FullscreenObserver,
-      public base::PowerSuspendObserver {
+// TODO(chlily): Consolidate this with DownloadBubbleUIController.
+class DownloadDisplayController : public FullscreenObserver,
+                                  public base::PowerSuspendObserver {
  public:
   DownloadDisplayController(DownloadDisplay* display,
                             Browser* browser,
@@ -44,6 +39,26 @@ class DownloadDisplayController
   DownloadDisplayController& operator=(const DownloadDisplayController&) =
       delete;
   ~DownloadDisplayController() override;
+
+  // Information extracted from iterating over all models, to avoid having to do
+  // so multiple times.
+  struct AllDownloadUIModelsInfo {
+    // Number of models that would be returned to display.
+    size_t all_models_size = 0;
+    // The last time that a download was completed. Will be null if no downloads
+    // were completed.
+    base::Time last_completed_time;
+    // Whether there are any downloads actively doing deep scanning.
+    bool has_deep_scanning = false;
+    // Whether any downloads are unactioned.
+    bool has_unactioned = false;
+    // From the button UI's perspective, whether the download is considered in
+    // progress. Consider dangerous downloads as completed, because we don't
+    // want to encourage users to interact with them.
+    int in_progress_count = 0;
+    // Count of in-progress downloads (by the above definition) that are paused.
+    int paused_count = 0;
+  };
 
   struct ProgressInfo {
     bool progress_certain = true;
@@ -60,9 +75,8 @@ class DownloadDisplayController
   // Returns a ProgressInfo where |download_count| is the number of currently
   // active downloads. If we know the final size of all downloads,
   // |progress_certain| is true. |progress_percentage| is the percentage
-  // complete of all in-progress  downloads.
-  //
-  // This implementation will match the one in download_status_updater.cc
+  // complete of all in-progress downloads. Forwards to the
+  // DownloadBubbleUpdateService.
   ProgressInfo GetProgress();
 
   // Returns an IconInfo that contains current state of the icon.
@@ -117,16 +131,12 @@ class DownloadDisplayController
   // Returns the DownloadDisplay. Should always return a valid display.
   DownloadDisplay* download_display_for_testing() { return display_; }
 
-  download::AllDownloadItemNotifier& get_download_notifier_for_testing() {
-    return download_notifier_;
-  }
-
-  void set_manager_for_testing(content::DownloadManager* manager) {
-    download_manager_ = manager;
-  }
-
  private:
   friend class DownloadDisplayControllerTest;
+
+  // Gets info about all models to display, then updates the toolbar button
+  // state accordingly. Returns the info about all models.
+  const AllDownloadUIModelsInfo& UpdateButtonStateFromAllModelsInfo();
 
   // Stops and restarts `icon_disappearance_timer_`. The toolbar button will
   // be hidden after the `interval`.
@@ -139,10 +149,8 @@ class DownloadDisplayController
   // button is already showing.
   void ShowToolbarButton();
 
-  // Based on the information from `download_manager_`, updates the icon state
-  // of the `display_`.
-  void UpdateToolbarButtonState(
-      std::vector<std::unique_ptr<DownloadUIModel>>& all_models);
+  // Updates the icon state of the `display_`.
+  void UpdateToolbarButtonState(const AllDownloadUIModelsInfo& info);
   // Asks `display_` to make the download icon inactive.
   void UpdateDownloadIconToInactive();
 
@@ -152,20 +160,14 @@ class DownloadDisplayController
   bool HasRecentCompleteDownload(base::TimeDelta interval,
                                  base::Time last_complete_time);
 
-  // AllDownloadItemNotifier::Observer
-  void OnManagerGoingDown(content::DownloadManager* manager) override;
-
   base::Time GetLastCompleteTime(
-      const offline_items_collection::OfflineContentAggregator::OfflineItemList&
-          offline_items);
+      base::Time last_completed_time_from_current_models) const;
 
   // The pointer is created in ToolbarView and owned by ToolbarView.
   raw_ptr<DownloadDisplay> const display_;
   raw_ptr<Browser> browser_;
   base::ScopedObservation<FullscreenController, FullscreenObserver>
       observation_{this};
-  raw_ptr<content::DownloadManager> download_manager_;
-  download::AllDownloadItemNotifier download_notifier_;
   base::OneShotTimer icon_disappearance_timer_;
   base::OneShotTimer icon_inactive_timer_;
   IconInfo icon_info_;

@@ -137,7 +137,7 @@ NSString* kPageHTMLTemplate =
 }
 
 - (NSUInteger)maximumCharacterLimit {
-  return 1000;
+  return 1100;
 }
 
 @end
@@ -167,6 +167,7 @@ class PartialTranslateMediatorTest : public PlatformTest {
           initWithWebStateList:web_state_list_.AsWeakPtr()
         withBaseViewController:base_view_controller_
                    prefService:browser_state_->GetSyncablePrefs()
+          fullscreenController:nullptr
                      incognito:NO];
     mediator_.alertDelegate = fake_alert_controller_;
     mediator_.browserHandler = mock_browser_coordinator_commands_handler_;
@@ -175,7 +176,7 @@ class PartialTranslateMediatorTest : public PlatformTest {
   void TearDown() override {
     [mediator_ shutdown];
     // Reset the factory
-    SetPartialTranslateControllerFactory(nil);
+    ios::provider::test::SetPartialTranslateControllerFactory(nil);
     PlatformTest::TearDown();
   }
 
@@ -187,7 +188,7 @@ class PartialTranslateMediatorTest : public PlatformTest {
     FakePartialTranslateControllerFactory* factory =
         [[FakePartialTranslateControllerFactory alloc]
             initWithSuccess:shouldSucceed];
-    SetPartialTranslateControllerFactory(factory);
+    ios::provider::test::SetPartialTranslateControllerFactory(factory);
     return factory;
   }
 
@@ -247,6 +248,7 @@ TEST_F(PartialTranslateMediatorTest, IncognitoSupportedSuccess) {
         initWithWebStateList:web_state_list_.AsWeakPtr()
       withBaseViewController:base_view_controller_
                  prefService:browser_state_->GetSyncablePrefs()
+        fullscreenController:nullptr
                    incognito:YES];
   base::HistogramTester histogram_tester;
   LoadPageAndSelectSize(10);
@@ -273,6 +275,7 @@ TEST_F(PartialTranslateMediatorTest, IncognitoNotSupported) {
         initWithWebStateList:web_state_list_.AsWeakPtr()
       withBaseViewController:base_view_controller_
                  prefService:browser_state_->GetSyncablePrefs()
+        fullscreenController:nullptr
                    incognito:YES];
   EXPECT_FALSE([mediator shouldInstallPartialTranslate]);
 }

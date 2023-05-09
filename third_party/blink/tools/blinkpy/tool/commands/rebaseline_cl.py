@@ -90,7 +90,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                                  dest='resultDB',
                                  action='store_false',
                                  default=True,
-                                 help='Do not Fetch results from resultDB.'),
+                                 help=optparse.SUPPRESS_HELP),
             self.no_optimize_option,
             self.dry_run_option,
             self.results_directory_option,
@@ -127,6 +127,10 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         self._tool = tool
         self._dry_run = options.dry_run
         self._resultdb_fetcher = options.resultDB
+        if not self._resultdb_fetcher:
+            _log.warning('`--no-resultDB` is unsupported and will be '
+                         'removed soon (crbug.com/1406660).')
+            self._tool.user.prompt('Press enter to acknowledge: ')
         self.git_cl = self.git_cl or GitCL(tool)
         # '--dry-run' implies '--no-trigger-jobs'.
         options.trigger_jobs = options.trigger_jobs and not self._dry_run
@@ -368,9 +372,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             A sorted list of tests to rebaseline for this build.
         """
         unexpected_results = web_test_results.didnt_run_as_expected_results()
-        tests = sorted(
-            r.test_name() for r in unexpected_results
-            if r.is_missing_baseline() or r.has_non_reftest_mismatch())
+        tests = sorted(r.test_name() for r in unexpected_results
+                       if r.is_missing_baseline() or r.has_mismatch())
         if not tests:
             # no need to fetch retry summary in this case
             return []

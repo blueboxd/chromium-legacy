@@ -47,10 +47,12 @@
 <translation id="3567399274263440288">Logga in i Chromium med Google-kontot så att du får ut mesta möjliga av programmet.</translation>
 <translation id="3639997914391704523">Chromium kan kontrollera dina lösenord när du loggar in med Google-kontot.</translation>
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> använde Chromium och har lämnat kvar bokmärken, lösenord och andra inställningar på enheten.</translation>
+<translation id="372658070733623520">Verifiera din identitet för att använda och spara Chromium-data i ditt Google-konto.</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Integritet &gt; Foton.</translation>
 <translation id="4043291146360695975">Lösenorden sparas med Lösenordshantering endast på den här enheten.</translation>
 <translation id="4099085513035183040">Stöds inte på Chromium Beta</translation>
 <translation id="4432744876818348753">Logga in så att du får ut mesta möjliga av Chromium.</translation>
+<translation id="452436063477828504">Se till att du alltid kan använda Chromium-data i Google-kontot</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4585809515399340748">Nu kan du använda Chromium varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
 <translation id="4633738821577273991">Få Förbättrad säker webbsökning även för den här Chromium-profilen</translation>
@@ -75,6 +77,7 @@
 <translation id="5945387852661427312">Du håller på att logga in med ett konto som hanteras av <ph name="DOMAIN" /> vilket ger administratören kontroll över data i Chromium. Din data kopplas permanent till det här kontot. Om du loggar ut från Chromium raderas all din data från enheten, men den lagras fortfarande på Google-kontot.</translation>
 <translation id="5983312940147103417">Gör Chromium bättre</translation>
 <translation id="6062449165341879460">Organisationen <ph name="DOMAIN" /> har åtkomst till data, bokmärken, historik, lösenord och andra inställningar i Chromium som du lagrar i det här kontot. När du loggar ut raderas din data från enheten.  Datan lagras dock fortfarande i det hanterade Google-kontot och kan kommas åt av organisationen. Organisationen kan även ställa in användarpolicyer som gäller det kontot specifikt och som kan påverka hur Chromium fungerar.</translation>
+<translation id="61109258320235597">Ange lösenfrasen om du vill använda och spara Chromium-data i ditt Google-konto.</translation>
 <translation id="6119647025869519954">Så här använder du Chromium som standard:
 1. Öppna inställningarna
 2. Tryck på Standardwebbläsarapp
@@ -86,6 +89,7 @@
 <translation id="6625409903340039086">Chromium har nu stöd för användarpolicyer för dina hanterade konton</translation>
 <translation id="6752854822223394465">Organisationen konfigurerar Chromium …</translation>
 <translation id="6820823224820483452">Chromium kunde inte kontrollera alla lösenord. Försök igen i morgon.</translation>
+<translation id="6911341667534646387">Fortsätt använda Chromium-data i Google-kontot</translation>
 <translation id="7006920032187763988">Du kan använda lösenorden som sparats med Lösenordshantering i andra iPad-appar.</translation>
 <translation id="7018284295775193585">Chromium kan inte uppdateras</translation>
 <translation id="7045244423563602563">Anpassa Chromium</translation>

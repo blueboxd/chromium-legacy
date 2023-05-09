@@ -88,6 +88,11 @@ BASE_FEATURE(kBackForwardCache,
              "BackForwardCache",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable showing a page preview during back/forward navigations.
+BASE_FEATURE(kBackForwardTransitions,
+             "BackForwardTransitions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables reporting ResourceTiming entries for document, who initiated a
 // cancelled navigation in one of their <iframe>.
 BASE_FEATURE(kResourceTimingForCancelledNavigationInFrame,
@@ -206,14 +211,6 @@ BASE_FEATURE(kBrowserVerifiedUserActivationKeyboard,
 BASE_FEATURE(kBrowserVerifiedUserActivationMouse,
              "BrowserVerifiedUserActivationMouse",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Compute the NavigationDownloadPolicy bit about sandbox flags from the browser
-// process side. This is a fix for https://crbug.com/1357366. The feature flag
-// is used as a temporary kill switch in case it breaks something important on
-// stable. To be removed by M111.
-BASE_FEATURE(kBrowserSideDownloadPolicySandbox,
-             "BrowserSideDownloadPolicySandbox",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If Canvas2D Image Chromium is allowed, this feature controls whether it is
 // enabled.
@@ -1018,6 +1015,10 @@ const base::FeatureParam<ServiceWorkerBypassFetchHandlerTarget>::Option
             "all_only_if_service_worker_not_started",
         },
         {
+            ServiceWorkerBypassFetchHandlerTarget::kAllWithRaceNetworkRequest,
+            "all_with_race_network_request",
+        },
+        {
             ServiceWorkerBypassFetchHandlerTarget::kSubResource,
             "sub_resource",
         },
@@ -1127,6 +1128,12 @@ BASE_FEATURE(kSharedArrayBuffer,
 BASE_FEATURE(kSharedArrayBufferOnDesktop,
              "SharedArrayBufferOnDesktop",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Kill switch for creating first-party StorageKeys in
+// RenderFrameHostImpl::CalculateStorageKey for frames with extension URLs.
+BASE_FEATURE(kShouldAllowFirstPartyStorageKeyOverrideFromEmbedder,
+             "ShouldAllowFirstPartyStorageKeyOverrideFromEmbedder",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Signed Exchange Reporting for distributors
 // https://www.chromestatus.com/feature/5687904902840320

@@ -308,6 +308,13 @@ class BubbleDialogDelegate::AnchorWidgetObserver : public WidgetObserver,
       owner_->OnAnchorBoundsChanged();
     }
   }
+
+  // If the native window is closed by the OS, OnWidgetDestroying() won't
+  // fire. Instead, OnWindowDestroying() will fire before aura::Window
+  // destruction. See //docs/ui/views/widget_destruction.md.
+  void OnWindowDestroying(aura::Window* window) override {
+    window_observation_.Reset();
+  }
 #endif
 
  private:
@@ -979,8 +986,13 @@ void BubbleDialogDelegate::SetAnchoredDialogKey() {
 void BubbleDialogDelegate::UpdateHighlightedButton(bool highlighted) {
   Button* button = Button::AsButton(highlighted_button_tracker_.view());
   button = button ? button : Button::AsButton(GetAnchorView());
-  if (button && highlight_button_when_shown_)
-    button->SetHighlighted(highlighted);
+  if (button && highlight_button_when_shown_) {
+    if (highlighted) {
+      button_anchor_higlight_ = button->AddAnchorHighlight();
+    } else {
+      button_anchor_higlight_.reset();
+    }
+  }
 }
 
 BEGIN_METADATA(BubbleDialogDelegateView, View)

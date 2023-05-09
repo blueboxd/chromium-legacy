@@ -4,6 +4,7 @@
 
 #import "ios/chrome/credential_provider_extension/ui/new_password_view_controller.h"
 
+#import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "ios/chrome/common/app_group/app_group_metrics.h"
 #import "ios/chrome/common/credential_provider/archivable_credential.h"
@@ -12,9 +13,11 @@
 #import "ios/chrome/common/ui/elements/form_input_accessory_view.h"
 #import "ios/chrome/common/ui/elements/form_input_accessory_view_text_data.h"
 #import "ios/chrome/credential_provider_extension/metrics_util.h"
+#import "ios/chrome/credential_provider_extension/ui/feature_flags.h"
 #import "ios/chrome/credential_provider_extension/ui/new_password_footer_view.h"
 #import "ios/chrome/credential_provider_extension/ui/new_password_table_cell.h"
 #import "ios/chrome/credential_provider_extension/ui/password_note_cell.h"
+#import "ios/chrome/credential_provider_extension/ui/password_note_footer_view.h"
 #import "ios/chrome/credential_provider_extension/ui/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -27,18 +30,16 @@ namespace {
 // view.
 const CGFloat kTableViewTopSpace = 14;
 
+// Minimal amount of characters in password note to display the warning.
+const int kMinNoteCharAmountForWarning = 901;
+// Maximal amount of characters that a password note can contain.
+const int kMaxNoteCharAmount = 1000;
+
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierPassword,
   SectionIdentifierNote,
   SectionIdentifierNumSections
 };
-
-// TODO(crbug.com/1414897): Replace with checking feature flag value when build
-// deps are resolved (as currenly importing feature file would add deps
-// disallowed in extensions).
-bool IsPasswordNotesWithBackupEnabled() {
-  return false;
-}
 
 }  // namespace
 
@@ -61,6 +62,18 @@ bool IsPasswordNotesWithBackupEnabled() {
 
 // The cell for note entry.
 @property(nonatomic, readonly) PasswordNoteCell* noteCell;
+
+// The value of the username text.
+@property(nonatomic, strong) NSString* usernameText;
+
+// The value of the password text.
+@property(nonatomic, strong) NSString* passwordText;
+
+// The value of the note text.
+@property(nonatomic, strong) NSString* noteText;
+
+// If yes, the footer informing about the max note length is shown.
+@property(nonatomic, assign) BOOL isNoteFooterShown;
 
 @end
 
@@ -113,6 +126,8 @@ bool IsPasswordNotesWithBackupEnabled() {
   if (IsPasswordNotesWithBackupEnabled()) {
     [self.tableView registerClass:[PasswordNoteCell class]
            forCellReuseIdentifier:PasswordNoteCell.reuseID];
+    [self.tableView registerClass:[PasswordNoteFooterView class]
+        forHeaderFooterViewReuseIdentifier:PasswordNoteFooterView.reuseID];
   }
 }
 
@@ -193,11 +208,32 @@ bool IsPasswordNotesWithBackupEnabled() {
         dequeueReusableHeaderFooterViewWithIdentifier:NewPasswordFooterView
                                                           .reuseID];
   }
+  if (section == SectionIdentifierNote) {
+    return [tableView
+        dequeueReusableHeaderFooterViewWithIdentifier:PasswordNoteFooterView
+                                                          .reuseID];
+  }
 
   return nil;
 }
 
 #pragma mark - UITableViewDelegate
+
+// Makes sure that the note footer is displayed correctly when it is scrolled to
+// as it could be updated when it is not visible on screen with a long note.
+- (void)tableView:(UITableView*)tableView
+    willDisplayFooterView:(UIView*)view
+               forSection:(NSInteger)section {
+  if (section == SectionIdentifierNote &&
+      [view isKindOfClass:[PasswordNoteFooterView class]]) {
+    PasswordNoteFooterView* footer =
+        base::mac::ObjCCastStrict<PasswordNoteFooterView>(view);
+    footer.textLabel.text = [self noteFooterText];
+
+    [tableView beginUpdates];
+    [tableView endUpdates];
+  }
+}
 
 - (NSIndexPath*)tableView:(UITableView*)tableView
     willSelectRowAtIndexPath:(NSIndexPath*)indexPath {
@@ -257,6 +293,19 @@ bool IsPasswordNotesWithBackupEnabled() {
 #pragma mark - PasswordNoteCellDelegate
 
 - (void)textViewDidChangeInCell:(PasswordNoteCell*)cell {
+  self.noteText = cell.textView.text;
+  int noteLength = cell.textView.text.length;
+  [cell setValid:(noteLength <= kMaxNoteCharAmount)];
+  [self updateSaveButtonState];
+
+  // Update note footer based on note's length.
+  self.isNoteFooterShown = noteLength >= kMinNoteCharAmountForWarning;
+  UITableViewHeaderFooterView* footerView =
+      [self.tableView footerViewForSection:SectionIdentifierNote];
+  PasswordNoteFooterView* noteFooter =
+      base::mac::ObjCCastStrict<PasswordNoteFooterView>(footerView);
+  noteFooter.textLabel.text = [self noteFooterText];
+
   // Refresh the cell's height to make the note fully visible while typing or to
   // clear unnecessary blank lines while removing characters.
   [self.tableView beginUpdates];
@@ -272,6 +321,7 @@ bool IsPasswordNotesWithBackupEnabled() {
 
 - (void)textFieldDidChangeInCell:(NewPasswordTableCell*)cell {
   if (cell == self.passwordCell) {
+    self.passwordText = cell.textField.text;
     // Update the password creation type so the correct histogram value can be
     // fired when the password is actually created.
     if (self.passwordCreationType == CPEPasswordCreated::kPasswordSuggested) {
@@ -283,6 +333,8 @@ bool IsPasswordNotesWithBackupEnabled() {
       self.passwordCreationType = CPEPasswordCreated::kPasswordManuallyEntered;
     }
     [self updateSaveButtonState];
+  } else if (cell == self.usernameCell) {
+    self.usernameText = cell.textField.text;
   }
 }
 
@@ -298,8 +350,14 @@ bool IsPasswordNotesWithBackupEnabled() {
 // Updates the save button state based on whether there is text in the password
 // cell.
 - (void)updateSaveButtonState {
-  self.navigationItem.rightBarButtonItem.enabled =
-      self.passwordCell.textField.text.length > 0;
+  if (IsPasswordNotesWithBackupEnabled()) {
+    self.navigationItem.rightBarButtonItem.enabled =
+        self.passwordText.length > 0 &&
+        self.noteText.length <= kMaxNoteCharAmount;
+  } else {
+    self.navigationItem.rightBarButtonItem.enabled =
+        self.passwordCell.textField.text.length > 0;
+  }
 }
 
 #pragma mark - Private
@@ -345,10 +403,13 @@ bool IsPasswordNotesWithBackupEnabled() {
 // user has already said they are aware that they are replacing a previous
 // credential.
 - (void)saveCredential:(BOOL)shouldReplace {
-  NSString* username = [self currentUsername];
-  NSString* password = [self currentPassword];
-  NSString* note =
-      IsPasswordNotesWithBackupEnabled() ? [self currentNote] : @"";
+  NSString* username = IsPasswordNotesWithBackupEnabled()
+                           ? self.usernameText
+                           : [self currentUsername];
+  NSString* password = IsPasswordNotesWithBackupEnabled()
+                           ? self.passwordText
+                           : [self currentPassword];
+  NSString* note = IsPasswordNotesWithBackupEnabled() ? self.noteText : @"";
 
   [self.credentialHandler saveCredentialWithUsername:username
                                             password:password
@@ -356,11 +417,21 @@ bool IsPasswordNotesWithBackupEnabled() {
                                        shouldReplace:shouldReplace];
 }
 
+- (NSString*)noteFooterText {
+  if (self.isNoteFooterShown) {
+    return NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_TOO_LONG_NOTE",
+                             @"Notes can save up to 1000 characters.");
+  }
+
+  return @"";
+}
+
 #pragma mark - NewPasswordUIHandler
 
 - (void)setPassword:(NSString*)password {
   NewPasswordTableCell* passwordCell = self.passwordCell;
   passwordCell.textField.text = password;
+  self.passwordText = password;
   // Move voiceover focus to the save button so the user knows that something
   // has happend and the save button is now enabled.
   UIAccessibilityPostNotification(UIAccessibilityLayoutChangedNotification,
@@ -394,11 +465,14 @@ bool IsPasswordNotesWithBackupEnabled() {
   NSString* messageBaseLocalizedString = NSLocalizedString(
       @"IDS_IOS_CREDENTIAL_PROVIDER_NEW_PASSWORD_REPLACE_MESSAGE",
       @"Message for password replace alert");
+  NSString* username = IsPasswordNotesWithBackupEnabled()
+                           ? self.usernameText
+                           : [self currentUsername];
   NSString* message = [[messageBaseLocalizedString
       stringByReplacingOccurrencesOfString:@"$2"
                                 withString:self.currentHost]
       stringByReplacingOccurrencesOfString:@"$1"
-                                withString:[self currentUsername] ?: @""];
+                                withString:username ?: @""];
   UIAlertController* alertController = [UIAlertController
       alertControllerWithTitle:
           NSLocalizedString(

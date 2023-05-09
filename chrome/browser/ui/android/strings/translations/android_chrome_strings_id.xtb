@@ -5,7 +5,7 @@
 <translation id="1028699632127661925">Mengirim ke <ph name="DEVICE_NAME" />...</translation>
 <translation id="103269572468856066">Hapus data dari situs dan aplikasi ini juga?</translation>
 <translation id="1034259925032978114">Jendela terbuka</translation>
-<translation id="1036348656032585052">Matikan</translation>
+<translation id="1036348656032585052">Nonaktifkan</translation>
 <translation id="1045899828449635435">Hapus data dari situs ini juga?</translation>
 <translation id="1049743911850919806">Samaran</translation>
 <translation id="1058669287135776095">Anda offline. Periksa koneksi internet Anda, lalu coba lagi.</translation>
@@ -60,7 +60,7 @@ Hanya orang yang memiliki frasa sandi Anda yang dapat membaca data terenkripsi A
 <translation id="1273937721055267968">Blokir <ph name="DOMAIN" /></translation>
 <translation id="1283039547216852943">Ketuk untuk meluaskan</translation>
 <translation id="1285310382777185058">Ubah bahasa</translation>
-<translation id="1291207594882862231">Menghapus histori, cookie, data situs, cache...</translation>
+<translation id="1291207594882862231">Hapus histori, cookie, data situs, cache...</translation>
 <translation id="129553762522093515">Baru saja ditutup</translation>
 <translation id="1298077576058087471">Hemat data hingga 60%, baca berita hari ini</translation>
 <translation id="1303339473099049190">Tidak dapat menemukan sandi tersebut. Periksa ejaan sandi dan coba lagi.</translation>
@@ -214,7 +214,7 @@ Jika Anda menghapus histori penjelajahan, baik semua histori maupun histori untu
 <translation id="2189903024544168260">Minat dihapus</translation>
 <translation id="2194856509914051091">Hal-hal yang perlu dipertimbangkan</translation>
 <translation id="2200113223741723867">Kelola pembagian data penggunaan</translation>
-<translation id="2218567645332692482">Mengupgrade navigasi ke HTTPS dan memperingatkan Anda sebelum memuat situs yang tidak mendukungnya</translation>
+<translation id="2218567645332692482">Upgrade navigasi ke HTTPS dan peringatkan Anda sebelum memuat situs yang tidak mendukungnya</translation>
 <translation id="2227444325776770048">Lanjutkan sebagai <ph name="USER_FULL_NAME" /></translation>
 <translation id="2230777942707397948">Jendela kosong</translation>
 <translation id="223356358902285214">Aktivitas Web &amp; Aplikasi</translation>
@@ -283,6 +283,7 @@ Private state token meningkatkan privasi di web dan tidak dapat digunakan untuk 
 <translation id="2581165646603367611">Tindakan ini akan mengosongkan cache dan menghapus cookie, serta data lain dari situs yang dianggap tidak penting oleh Chrome.</translation>
 <translation id="2587052924345400782">Versi baru telah tersedia</translation>
 <translation id="2593272815202181319">Monospace</translation>
+<translation id="2603212228005142861">Login untuk mengelola preferensi Anda</translation>
 <translation id="2604446170045642109">Anda dapat menonaktifkan tema gelap untuk situs di setelan.</translation>
 <translation id="2612676031748830579">Nomor kartu kredit</translation>
 <translation id="2625189173221582860">Sandi disalin</translation>
@@ -476,6 +477,7 @@ Private state token meningkatkan privasi di web dan tidak dapat digunakan untuk 
 <translation id="3587596251841506391">Bantu sempurnakan keamanan di web</translation>
 <translation id="3597179440835065298">Dapatkan saran yang lebih baik</translation>
 <translation id="3602290021589620013">Pratinjau</translation>
+<translation id="360901359071773787">Hapus 15 menit terakhir?</translation>
 <translation id="3616113530831147358">Audio</translation>
 <translation id="3622349720008044802">Kelola jendela</translation>
 <translation id="3631987586758005671">Membagikan ke <ph name="DEVICE_NAME" /></translation>
@@ -821,6 +823,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />reset sinkronisasi<ph name="
 <translation id="5517095782334947753">Anda memiliki bookmark, histori, sandi, dan setelan lain dari <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="5524761631371622910">Jika uji coba diaktifkan dan Chrome secara acak menempatkan Anda dalam uji coba aktif, histori penjelajahan Anda akan memengaruhi iklan yang Anda lihat dan minat seperti yang diperkirakan di bawah. Untuk melindungi privasi Anda, Chrome menghapus minat Anda secara berkala setiap bulan.</translation>
 <translation id="5524843473235508879">Pengalihan diblokir.</translation>
+<translation id="554297709083131118">Data berikut selama 15 menit terakhir akan dihapus</translation>
 <translation id="5548606607480005320">Pemeriksaan keamanan</translation>
 <translation id="5555525474779371165">Pilih perlindungan Safe Browsing Anda</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
@@ -1075,6 +1078,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6824899148643461612">Tab <ph name="TAB_TITLE" /> dipilih</translation>
 <translation id="6828070228333235514">Berhenti memantau harga</translation>
 <translation id="6830728435402077660">Tidak aman</translation>
+<translation id="6831043979455480757">Terjemahkan</translation>
 <translation id="6833996806551876956">Uji coba Privacy Sandbox</translation>
 <translation id="6836206421467243968">Pulihkan grup tab <ph name="TITLE_OF_GROUP" /> sebagai grup tab latar belakang baru.</translation>
 <translation id="6846298663435243399">Memuat...</translation>
@@ -1242,6 +1246,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7707922173985738739">Gunakan data seluler</translation>
 <translation id="7709094866268987903">Minat yang Anda hapus akan muncul di sini</translation>
 <translation id="7709918231054955894">Akses semua tab Anda</translation>
+<translation id="772434085369393266">Mengupgrade navigasi ke HTTPS dan memperingatkan Anda sebelum memuat situs yang tidak mendukungnya. Anda tidak dapat mengubah setelan ini karena Anda mengaktifkan Perlindungan Lanjutan.</translation>
 <translation id="7725024127233776428">Halaman yang Anda bookmark muncul di sini</translation>
 <translation id="7757787379047923882">Teks dibagikan dari <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">Kartu SD <ph name="SD_CARD_NUMBER" /></translation>
@@ -1260,6 +1265,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="78270725016672455">Komputer Anda ingin mendaftarkan perangkat ini untuk login ke situs</translation>
 <translation id="7844171778363018843">Tidak ada data yang dipilih untuk disinkronkan</translation>
 <translation id="7846296061357476882">Layanan Google</translation>
+<translation id="7847228556075070294">Menghapus histori, cookie, dan data lainnya</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7853202427316060426">Aktivitas</translation>
@@ -1314,6 +1320,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8058746566562539958">Buka di tab Chrome baru</translation>
 <translation id="8062594758852531064">Pramuat ekstensif:</translation>
 <translation id="8063895661287329888">Gagal menambahkan bookmark.</translation>
+<translation id="8066816452984416180">Bookmark halaman ini dengan cepat. Sentuh lama untuk mengedit pintasan ini.</translation>
 <translation id="806745655614357130">Tetap pisahkan data saya</translation>
 <translation id="8073388330009372546">Buka gambar di tab baru</translation>
 <translation id="8076492880354921740">Tab</translation>
@@ -1345,6 +1352,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8216351761227087153">Tonton</translation>
 <translation id="8218622182176210845">Kelola akun Anda</translation>
 <translation id="8223642481677794647">Menu kartu feed</translation>
+<translation id="8236097722223016103">Tambahkan ke bookmark</translation>
 <translation id="8250920743982581267">Dokumen</translation>
 <translation id="8255617931166444521">Situs hanya dapat menggunakan cookie Anda untuk melihat aktivitas penjelajahan Anda di situs itu sendiri</translation>
 <translation id="8259179246279078674">Karena halaman yang dipramuat terenkripsi, Google tidak akan mempelajari apa pun tentang konten halaman yang dipramuat. Server Google akan mempelajari situs mana yang dipramuat secara pribadi. Informasi ini hanya digunakan untuk melakukan pramuat halaman tersebut dan tidak akan ditautkan ke informasi lain dari Akun Google Anda.</translation>
@@ -1439,6 +1447,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="869891660844655955">Masa berlaku</translation>
 <translation id="8699120352855309748">Jangan tawarkan penerjemahan bahasa ini</translation>
 <translation id="8712637175834984815">Mengerti</translation>
+<translation id="8723453889042591629">Terjemahkan halaman ini dengan cepat. Sentuh lama untuk mengedit pintasan ini.</translation>
 <translation id="8725066075913043281">Coba lagi</translation>
 <translation id="8746155870861185046">Bagikan sorotan</translation>
 <translation id="874726034427945498">Untuk mendapatkan saran yang lebih baik di kolom URL, sinkronkan tab dan histori Anda</translation>
@@ -1491,6 +1500,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="8989968390305463310">Histori penjelajahan Anda memengaruhi iklan yang Anda lihat dan minat yang diperkirakan di bawah. Untuk melindungi privasi Anda, Chrome otomatis menghapus minat Anda secara berkala setiap bulan. Minat dapat diperbarui kecuali jika Anda menghapusnya.</translation>
 <translation id="8993760627012879038">Membuka tab baru dalam mode Samaran</translation>
 <translation id="8996847606757455498">Pilih penyedia lain</translation>
+<translation id="8998289560386111590">Tidak tersedia di perangkat Anda</translation>
 <translation id="8998729206196772491">Anda akan login dengan akun yang dikelola oleh <ph name="MANAGED_DOMAIN" /> dan memberikan kontrol data Chrome kepada administratornya. Data akan terikat dengan akun ini secara permanen. Bila Anda logout dari Chrome, data akan dihapus dari perangkat ini, tetapi data tetap tersimpan di Akun Google.</translation>
 <translation id="9022774213089566801">Sering dikunjungi</translation>
 <translation id="9022871169049522985">Situs dan pengiklan dapat mengukur performa iklannya</translation>

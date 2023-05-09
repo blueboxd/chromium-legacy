@@ -124,6 +124,30 @@ Button::PressedCallback& Button::PressedCallback::operator=(PressedCallback&&) =
 
 Button::PressedCallback::~PressedCallback() = default;
 
+Button::ScopedAnchorHighlight::ScopedAnchorHighlight(
+    base::WeakPtr<Button> button)
+    : button_(button) {}
+Button::ScopedAnchorHighlight::~ScopedAnchorHighlight() {
+  if (button_) {
+    button_->ReleaseAnchorHighlight();
+  }
+}
+Button::ScopedAnchorHighlight::ScopedAnchorHighlight(
+    Button::ScopedAnchorHighlight&&) = default;
+
+// We need to implement this one manually because the default move assignment
+// operator does not call the destructor on `this`. That leads to us failing to
+// release our reference on `button_`.
+Button::ScopedAnchorHighlight& Button::ScopedAnchorHighlight::operator=(
+    Button::ScopedAnchorHighlight&& other) {
+  if (button_) {
+    button_->ReleaseAnchorHighlight();
+  }
+
+  button_ = std::move(other.button_);
+  return *this;
+}
+
 // static
 constexpr Button::ButtonState Button::kButtonStates[STATE_COUNT];
 
@@ -161,11 +185,15 @@ Button::~Button() = default;
 void Button::SetTooltipText(const std::u16string& tooltip_text) {
   if (tooltip_text == tooltip_text_)
     return;
+
+  if (GetAccessibleName().empty() || GetAccessibleName() == tooltip_text_) {
+    SetAccessibleName(tooltip_text);
+  }
+
   tooltip_text_ = tooltip_text;
   OnSetTooltipText(tooltip_text);
   TooltipTextChanged();
   OnPropertyChanged(&tooltip_text_, kPropertyEffectsNone);
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
 }
 
 std::u16string Button::GetTooltipText() const {
@@ -176,9 +204,11 @@ void Button::SetCallback(PressedCallback callback) {
   callback_ = std::move(callback);
 }
 
-const std::u16string& Button::GetAccessibleName() const {
-  return View::GetAccessibleName().empty() ? tooltip_text_
-                                           : View::GetAccessibleName();
+void Button::AdjustAccessibleName(std::u16string& new_name,
+                                  ax::mojom::NameFrom& name_from) {
+  if (new_name.empty()) {
+    new_name = tooltip_text_;
+  }
 }
 
 Button::ButtonState Button::GetState() const {
@@ -340,6 +370,14 @@ void Button::SetHighlighted(bool highlighted) {
                                          ? views::InkDropState::ACTIVATED
                                          : views::InkDropState::DEACTIVATED,
                                      nullptr);
+}
+
+Button::ScopedAnchorHighlight Button::AddAnchorHighlight() {
+  if (0 == anchor_count_++) {
+    SetHighlighted(true);
+  }
+
+  return ScopedAnchorHighlight(GetWeakPtr());
 }
 
 base::CallbackListSubscription Button::AddStateChangedCallback(
@@ -679,6 +717,10 @@ bool Button::ShouldEnterHoveredState() {
   return check_mouse_position && IsMouseHovered();
 }
 
+base::WeakPtr<Button> Button::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void Button::OnEnabledChanged() {
   if (GetEnabled() ? (state_ != STATE_DISABLED) : (state_ == STATE_DISABLED))
     return;
@@ -690,6 +732,12 @@ void Button::OnEnabledChanged() {
   } else {
     SetState(STATE_DISABLED);
     InkDrop::Get(this)->GetInkDrop()->SetHovered(false);
+  }
+}
+
+void Button::ReleaseAnchorHighlight() {
+  if (0 == --anchor_count_) {
+    SetHighlighted(false);
   }
 }
 

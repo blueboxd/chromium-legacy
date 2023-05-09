@@ -35,7 +35,6 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
-#include "chrome/common/chrome_features.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/geometry/insets.h"
@@ -153,7 +152,6 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    views::View* side_search_side_panel,
     views::View* left_aligned_side_panel_separator,
     views::View* unified_side_panel,
     views::View* right_aligned_side_panel_separator,
@@ -168,7 +166,6 @@ BrowserViewLayout::BrowserViewLayout(
       toolbar_(toolbar),
       infobar_container_(infobar_container),
       contents_container_(contents_container),
-      side_search_side_panel_(side_search_side_panel),
       left_aligned_side_panel_separator_(left_aligned_side_panel_separator),
       unified_side_panel_(unified_side_panel),
       right_aligned_side_panel_separator_(right_aligned_side_panel_separator),
@@ -454,20 +451,17 @@ std::vector<views::View*> BrowserViewLayout::GetChildViewsInPaintOrder(
     const views::View* host) const {
   std::vector<views::View*> result =
       views::LayoutManager::GetChildViewsInPaintOrder(host);
-  if (base::FeatureList::IsEnabled(
-          features::kWebAppFrameToolbarInBrowserView)) {
-    // Make sure `top_container_` is last in paint order when this is a window
-    // using WindowControlsOverlay, to make sure the window controls are in fact
-    // drawn on top of anything else.
-    if (delegate_->IsWindowControlsOverlayEnabled()) {
-      auto iter = base::ranges::find(result, top_container_);
-      // When in Immersive Fullscreen `top_container_` might not be one of our
-      // children at all. While Window Controls Overlay shouldn't be enabled in
-      // fullscreen either, during the transition there is a moment where both
-      // could be true at the same time.
-      if (iter != result.end()) {
-        std::rotate(iter, iter + 1, result.end());
-      }
+  // Make sure `top_container_` is last in paint order when this is a window
+  // using WindowControlsOverlay, to make sure the window controls are in fact
+  // drawn on top of anything else.
+  if (delegate_->IsWindowControlsOverlayEnabled()) {
+    auto iter = base::ranges::find(result, top_container_);
+    // When in Immersive Fullscreen `top_container_` might not be one of our
+    // children at all. While Window Controls Overlay shouldn't be enabled in
+    // fullscreen either, during the transition there is a moment where both
+    // could be true at the same time.
+    if (iter != result.end()) {
+      std::rotate(iter, iter + 1, result.end());
     }
   }
   return result;
@@ -662,32 +656,28 @@ void BrowserViewLayout::LayoutContentsContainerView(int top, int bottom) {
   }
 
   LayoutSidePanelView(unified_side_panel_, contents_container_bounds);
-  LayoutSidePanelView(side_search_side_panel_, contents_container_bounds);
 
-  const bool side_search_visible =
-      side_search_side_panel_ && side_search_side_panel_->GetVisible();
   const bool side_panel_visible =
       unified_side_panel_ && unified_side_panel_->GetVisible();
 
   // TODO(pbos): If right-aligned side panels get merged into one View, move
   // separator visibility back into LayoutSidePanelView().
   if (left_aligned_side_panel_separator_) {
-    const bool any_left_side_panel_visible =
+    const bool side_panel_visible_on_left =
         side_panel_visible &&
         !views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned();
 
     SetViewVisibility(left_aligned_side_panel_separator_,
-                      any_left_side_panel_visible);
+                      side_panel_visible_on_left);
   }
 
   if (right_aligned_side_panel_separator_) {
-    const bool any_right_side_panel_visible =
-        side_search_visible ||
-        (side_panel_visible &&
-         views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned());
+    const bool side_panel_visible_on_right =
+        side_panel_visible &&
+        views::AsViewClass<SidePanel>(unified_side_panel_)->IsRightAligned();
 
     SetViewVisibility(right_aligned_side_panel_separator_,
-                      any_right_side_panel_visible);
+                      side_panel_visible_on_right);
   }
 
   contents_container_->SetBoundsRect(contents_container_bounds);
@@ -699,8 +689,7 @@ void BrowserViewLayout::LayoutSidePanelView(
   if (!side_panel || !side_panel->GetVisible())
     return;
 
-  DCHECK(side_panel == unified_side_panel_ ||
-         side_panel == side_search_side_panel_);
+  DCHECK(side_panel == unified_side_panel_);
   bool is_right_aligned =
       views::AsViewClass<SidePanel>(side_panel)->IsRightAligned();
 

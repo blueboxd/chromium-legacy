@@ -80,6 +80,18 @@ void LogConfirmUsernameMessageDismissalReason(
       "UpdateWithUsernameConfirmation",
       reason);
 }
+
+bool UPMExploratoryStringsEnabledWithSupportedParam() {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kExploratorySaveUpdatePasswordStrings)) {
+    return false;
+  }
+
+  int string_version =
+      password_manager::features::kSaveUpdatePromptSyncingStringVersion.Get();
+  return string_version == 2 || string_version == 3;
+}
+
 }  // namespace
 
 SaveUpdatePasswordMessageDelegate::SaveUpdatePasswordMessageDelegate()
@@ -293,8 +305,7 @@ std::u16string SaveUpdatePasswordMessageDelegate::GetMessageDescription(
     const password_manager::PasswordForm& pending_credentials,
     bool update_password,
     bool unified_password_manager) {
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kExploratorySaveUpdatePasswordStrings)) {
+  if (UPMExploratoryStringsEnabledWithSupportedParam()) {
     return GetExploratoryStringsMessageDescription(update_password);
   }
 
@@ -332,17 +343,18 @@ SaveUpdatePasswordMessageDelegate::GetExploratoryStringsMessageDescription(
 
     int string_version =
         password_manager::features::kSaveUpdatePromptSyncingStringVersion.Get();
-    DCHECK(string_version == 1 || string_version == 2);
-    if (string_version == 1) {
+    CHECK(string_version == 2 || string_version == 3);
+    if (string_version == 2) {
       return l10n_util::GetStringFUTF16(
-          IDS_PASSWORD_MANAGER_SAVE_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V1,
+          update_password
+              ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2
+              : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2,
           base::UTF8ToUTF16(account_email_));
     }
-
     return l10n_util::GetStringFUTF16(
         update_password
-            ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2
-            : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V2,
+            ? IDS_PASSWORD_MANAGER_UPDATE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3
+            : IDS_PASSWORD_MANAGER_SAVE_PASSWORD_SIGNED_IN_MESSAGE_DESCRIPTION_V3,
         base::UTF8ToUTF16(account_email_));
 }
 

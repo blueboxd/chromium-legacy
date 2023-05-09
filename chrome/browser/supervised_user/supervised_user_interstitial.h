@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/allocator/partition_allocator/pointers/raw_ref.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "build/chromeos_buildflags.h"
@@ -18,11 +19,12 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-class Profile;
+namespace supervised_user {
+class WebContentHandler;
+}
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-class SupervisedUserFaviconRequestHandler;
-#endif
+class PrefService;
+class SupervisedUserService;
 
 // This class is used by SupervisedUserNavigationObserver to handle requests
 // from supervised user error page. The error page is shown when a page is
@@ -75,13 +77,16 @@ class SupervisedUserInterstitial {
 
   static std::unique_ptr<SupervisedUserInterstitial> Create(
       content::WebContents* web_contents,
+      std::unique_ptr<supervised_user::WebContentHandler> web_content_handler,
+      SupervisedUserService& supervised_user_service,
       const GURL& url,
       supervised_user::FilteringBehaviorReason reason,
       int frame_id,
       int64_t interstitial_navigation_id);
 
   static std::string GetHTMLContents(
-      Profile* profile,
+      SupervisedUserService* supervised_user_service,
+      PrefService* pref_service,
       supervised_user::FilteringBehaviorReason reason,
       bool already_sent_request,
       bool is_main_frame);
@@ -100,11 +105,14 @@ class SupervisedUserInterstitial {
   const GURL& url() const { return url_; }
 
  private:
-  SupervisedUserInterstitial(content::WebContents* web_contents,
-                             const GURL& url,
-                             supervised_user::FilteringBehaviorReason reason,
-                             int frame_id,
-                             int64_t interstitial_navigation_id);
+  SupervisedUserInterstitial(
+      content::WebContents* web_contents,
+      std::unique_ptr<supervised_user::WebContentHandler> web_content_handler,
+      SupervisedUserService& supervised_user_service,
+      const GURL& url,
+      supervised_user::FilteringBehaviorReason reason,
+      int frame_id,
+      int64_t interstitial_navigation_id);
 
   // Tries to go back.
   void AttemptMoveAwayFromCurrentFrameURL();
@@ -113,10 +121,12 @@ class SupervisedUserInterstitial {
 
   void OutputRequestPermissionSourceMetric();
 
+  const raw_ref<SupervisedUserService> supervised_user_service_;
+
+  std::unique_ptr<supervised_user::WebContentHandler> web_content_handler_;
+
   // Owns SupervisedUserNavigationObserver which owns us.
   raw_ptr<content::WebContents> web_contents_;
-
-  raw_ptr<Profile> profile_;
 
   // The last committed url for this frame.
   GURL url_;
@@ -127,10 +137,6 @@ class SupervisedUserInterstitial {
 
   // The Navigation ID of the navigation that last triggered the interstitial.
   int64_t interstitial_navigation_id_;
-
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  std::unique_ptr<SupervisedUserFaviconRequestHandler> favicon_handler_;
-#endif
 };
 
 #endif  // CHROME_BROWSER_SUPERVISED_USER_SUPERVISED_USER_INTERSTITIAL_H_

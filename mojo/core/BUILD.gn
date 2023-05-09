@@ -344,6 +344,7 @@ source_set("test_sources") {
     "node_channel_unittest.cc",
     "options_validation_unittest.cc",
     "platform_handle_dispatcher_unittest.cc",
+    "platform_wrapper_unittest.cc",
     "quota_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
@@ -351,20 +352,14 @@ source_set("test_sources") {
     "trap_unittest.cc",
   ]
 
-  if (use_blink) {
+  if (!is_ios) {
     sources += [
       "data_pipe_unittest.cc",
+      "invitation_unittest.cc",
       "ipcz_driver/ring_buffer_test.cc",
       "ipcz_driver/transport_test.cc",
       "multiprocess_message_pipe_unittest.cc",
       "node_controller_unittest.cc",
-    ]
-  }
-
-  if (!is_ios) {
-    sources += [
-      "invitation_unittest.cc",
-      "platform_wrapper_unittest.cc",
     ]
   }
 

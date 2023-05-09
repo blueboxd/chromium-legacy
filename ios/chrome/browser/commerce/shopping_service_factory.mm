@@ -51,6 +51,7 @@ ShoppingServiceFactory::ShoppingServiceFactory()
           "ShoppingService",
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::LocalOrSyncableBookmarkModelFactory::GetInstance());
+  // TODO(crbug.com/1425818): Add AccountBookmarkModelFactory support.
   DependsOn(OptimizationGuideServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
   DependsOn(SessionProtoDBFactory<
@@ -76,15 +77,6 @@ std::unique_ptr<KeyedService> ShoppingServiceFactory::BuildServiceInstanceFor(
                                 CommerceSubscriptionContentProto>::GetInstance()
           ->GetForBrowserState(chrome_state),
       PowerBookmarkServiceFactory::GetForBrowserState(chrome_state));
-}
-
-web::BrowserState* ShoppingServiceFactory::GetBrowserStateToUse(
-    web::BrowserState* state) const {
-  return GetBrowserStateRedirectedInIncognito(state);
-}
-
-bool ShoppingServiceFactory::ServiceIsCreatedWithBrowserState() const {
-  return true;
 }
 
 bool ShoppingServiceFactory::ServiceIsNULLWhileTesting() const {

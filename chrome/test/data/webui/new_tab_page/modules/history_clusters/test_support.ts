@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {SearchQuery, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
+import {Annotation, SearchQuery, URLVisit} from 'chrome://new-tab-page/history_cluster_types.mojom-webui.js';
 import {LAYOUT_1_MIN_IMAGE_VISITS, LAYOUT_1_MIN_VISITS, MIN_RELATED_SEARCHES} from 'chrome://new-tab-page/lazy_load.js';
 
 export function createVisit(
     visitId: bigint, normalizedUrl: string, urlForDisplay: string,
-    pageTitle: string, hasUrlKeyedImage: boolean,
-    relativeDate: string = ''): URLVisit {
+    pageTitle: string, hasUrlKeyedImage: boolean, relativeDate: string = '',
+    annotations: Annotation[] = []): URLVisit {
   return {
     visitId: visitId,
     normalizedUrl: {url: normalizedUrl},
@@ -18,16 +18,18 @@ export function createVisit(
     urlForDisplayMatchPositions: [],
     duplicates: [],
     relativeDate: relativeDate,
-    annotations: [],
+    annotations: annotations,
     debugInfo: {},
     rawVisitData: {
       url: {url: ''},
       visitTime: {internalValue: BigInt(0)},
     },
     hasUrlKeyedImage: hasUrlKeyedImage,
-    isKnownToSync: false,
+    isKnownToSync: true,
   };
 }
+
+export const GOOGLE_SEARCH_BASE_URL = 'https://www.google.com/search';
 
 // Use Layout 1 as default for tests that do not care which layout.
 export function createSampleVisits(
@@ -37,7 +39,8 @@ export function createSampleVisits(
 
   // Create SRP visit.
   result.push(createVisit(
-      BigInt(0), 'https://www.google.com/', 'www.google.com', 'SRP', false));
+      BigInt(0), `${GOOGLE_SEARCH_BASE_URL}?q=foo`, 'www.google.com', 'SRP',
+      false));
 
   // Create general visits.
   for (let i = 1; i <= numVisits; i++) {
@@ -56,8 +59,7 @@ export function createRelatedSearches(num: number = MIN_RELATED_SEARCHES):
     result.push({
       query: `Test Query ${i}`,
       url: {
-        url:
-            `https://www.google.com/search?q=${encodeURIComponent(`test${i}`)}`,
+        url: `${GOOGLE_SEARCH_BASE_URL}?q=${encodeURIComponent(`test${i}`)}`,
       },
     });
   }

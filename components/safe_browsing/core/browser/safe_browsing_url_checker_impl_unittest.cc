@@ -405,7 +405,8 @@ class MockHashRealTimeService : public HashRealTimeService {
         base::BindOnce(
             std::move(response_callback),
             /*is_lookup_successful=*/!url_details_[url].should_fail_lookup,
-            /*threat_type=*/url_details_[url].threat_type));
+            /*threat_type=*/url_details_[url].threat_type,
+            /*locally_cached_results_threat_type=*/SB_THREAT_TYPE_SAFE));
   }
 
  private:
@@ -436,9 +437,10 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
     scoped_refptr<SafeBrowsingLookupMechanismExperimenter>
         mechanism_experimenter = nullptr;
     if (is_lookup_mechanism_experiment_enabled) {
-      mechanism_experimenter =
-          base::MakeRefCounted<SafeBrowsingLookupMechanismExperimenter>(
-              /*is_prefetch*/ false);
+      mechanism_experimenter = base::MakeRefCounted<
+          SafeBrowsingLookupMechanismExperimenter>(
+          /*is_prefetch=*/false, /*ping_manager_on_ui=*/nullptr,
+          /*ui_task_runner=*/base::SequencedTaskRunner::GetCurrentDefault());
       // Tell the experimenter that WillProcessResponse has been reached so that
       // once the mechanisms complete, the experiment concludes and all memory
       // is cleaned up. Otherwise, this will cause memory leaks in the test.

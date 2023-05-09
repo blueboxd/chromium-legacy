@@ -401,6 +401,14 @@ extern const base::FeatureParam<int> kSuggestionRowHeight;
 // suggestions.
 extern const base::FeatureParam<int> kRichSuggestionVerticalMargin;
 
+// Omnibox GM3 - text style.
+// Returns true if the feature to enable GM3 text styling is enabled.
+bool IsGM3TextStyleEnabled();
+// Specifies the omnibox font size (Touch UI).
+extern const base::FeatureParam<int> kFontSizeTouchUI;
+// Specifies the omnibox font size (non-Touch UI).
+extern const base::FeatureParam<int> kFontSizeNonTouchUI;
+
 // ---------------------------------------------------------
 // Clipboard URL suggestions:
 
@@ -642,6 +650,11 @@ extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 // ---------------------------------------------------------
 // ML Relevance Scoring ->
 
+// Whether the URL providers should pass more suggestion candidates to the
+// controller. If enabled, providers are no longer limited to
+// provider_max_matches.
+extern const base::FeatureParam<bool> kMlRelevanceScoringIncreaseNumCandidates;
+
 // The ML Relevance Scoring features and params configuration.
 // Use `GetMLConfig()` to get the current configuration.
 //
@@ -665,6 +678,10 @@ struct MLConfig {
   // the autocomplete controller.
   // Equivalent to omnibox::kMlRelevanceScoring.
   bool ml_relevance_scoring{false};
+
+  // If true, increases the number of candidates the url autocomplete providers
+  // pass to the controller.
+  bool increase_num_candidates{false};
 
   // If true, creates Omnibox autocompete URL scoring model.
   // Equivalent to omnibox::kUrlScoringModel.
@@ -702,6 +719,10 @@ bool AreScoringSignalsAnnotatorsEnabled();
 // changes to support ML scoring and moves the responsibility for scoring and
 // trimming results from the providers into the autocomplete controller.
 bool IsMlRelevanceScoringEnabled();
+
+// If true, increases the number of candidates the url autocomplete providers
+// pass to the controller.
+bool IsMlRelevanceScoringIncreaseNumCandidatesEnabled();
 
 // Whether the URL scoring model is enabled.
 bool IsUrlScoringModelEnabled();

@@ -54,7 +54,6 @@ import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.locale.LocaleManagerDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -77,7 +76,6 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
  * Integration tests for the first run experience with sign-in and sync decoupled.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({ChromeSwitches.FORCE_ENABLE_SIGNIN_FRE})
 @DoNotBatch(reason = "This test interacts with native initialization")
 public class FirstRunActivitySigninAndSyncTest {
     private static final String TEST_EMAIL = "test.account@gmail.com";
@@ -248,7 +246,7 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
         waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
 
-        clickButton(R.id.positive_button);
+        clickButton(R.id.button_primary);
 
         ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
         SyncTestUtil.waitForSyncFeatureEnabled();
@@ -281,7 +279,7 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
         waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
 
-        clickButton(R.id.negative_button);
+        clickButton(R.id.button_secondary);
 
         ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
 
@@ -340,7 +338,7 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
         waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
 
-        clickButton(R.id.positive_button);
+        clickButton(R.id.button_primary);
 
         ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
         SyncTestUtil.waitForSyncFeatureEnabled();
@@ -360,7 +358,7 @@ public class FirstRunActivitySigninAndSyncTest {
         clickButton(R.id.signin_fre_continue_button);
         waitUntilCurrentPageIs(SyncConsentFirstRunFragment.class);
 
-        clickButton(R.id.negative_button);
+        clickButton(R.id.button_secondary);
 
         ApplicationTestUtils.waitForActivityState(mFirstRunActivity, Stage.DESTROYED);
 

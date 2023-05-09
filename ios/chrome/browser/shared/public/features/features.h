@@ -47,6 +47,9 @@ BASE_DECLARE_FEATURE(kDefaultBrowserFullscreenPromoExperiment);
 // Feature flag that allows external apps to show default browser settings.
 BASE_DECLARE_FEATURE(kDefaultBrowserIntentsShowSettings);
 
+// Feature flag to log metrics for the edit menu.
+BASE_DECLARE_FEATURE(kIOSBrowserEditMenuMetrics);
+
 // Feature flag to use the new Edit menu API for browser view.
 BASE_DECLARE_FEATURE(kIOSCustomBrowserEditMenu);
 
@@ -103,6 +106,9 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 // Feature flag to switch images to SFSymbols in the omnibox when enabled.
 BASE_DECLARE_FEATURE(kUseSFSymbolsInOmnibox);
 
+// Feature flag for the follow up of the SF Symbols.
+BASE_DECLARE_FEATURE(kSFSymbolsFollowup);
+
 // Feature flag to enable Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kCalendarExperienceKit);
 
@@ -152,14 +158,6 @@ extern const char kAddToHomeScreenDisableIncognitoParam[];
 // Helper function to check the feature add to home screen.
 bool ShouldAddToHomeScreen(bool in_incognito);
 
-// Feature flag to enable indicating the Account Storage error in the Account
-// Cell when Sync is turned OFF.
-BASE_DECLARE_FEATURE(kIndicateAccountStorageErrorInAccountCell);
-
-// Returns true if the `kIndicateAccountStorageErrorInAccountCell` feature is
-// enabled.
-bool IsIndicateAccountStorageErrorInAccountCellEnabled();
-
 // Feature flag to enable the new layout of the NTP omnibox.
 BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 
@@ -186,5 +184,12 @@ BringYourOwnTabsPromptType GetBringYourOwnTabsPromptType();
 // Whether the email is shown in the snackbar indicating that a new bookmark
 // or reading list item is added.
 BASE_DECLARE_FEATURE(kEnableEmailInBookmarksReadingListSnackbar);
+
+// Feature flag to enable indicating Sync errors (including identity errors)
+// on the Settings destination in the overflow menu carousel.
+BASE_DECLARE_FEATURE(kIndicateSyncErrorInOverflowMenu);
+
+// Returns true if the `kIndicateSyncErrorInOverflowMenu` feature is enabled.
+bool IsIndicateSyncErrorInOverflowMenuEnabled();
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

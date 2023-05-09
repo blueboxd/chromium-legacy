@@ -18,6 +18,10 @@ BASE_FEATURE(kRunOnMainThread,
              "RunOnMainThread",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kRunOnDedicatedThreadPoolThread,
+             "RunOnDedicatedThreadPoolThread",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if !BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kBackgroundTabLoadingFromPerformanceManager,
              "BackgroundTabLoadingFromPerformanceManager",
@@ -35,7 +39,7 @@ const base::FeatureParam<base::TimeDelta> kHighEfficiencyModeTimeBeforeDiscard{
     &kHighEfficiencyModeAvailable, "time_before_discard", base::Hours(2)};
 
 const base::FeatureParam<bool> kHighEfficiencyModeDefaultState{
-    &kHighEfficiencyModeAvailable, "default_state", true};
+    &kHighEfficiencyModeAvailable, "default_state", false};
 
 // 10 tabs is the 70th percentile of tab counts based on UMA data.
 const base::FeatureParam<int> kHighEfficiencyModePromoTabCountThreshold{
@@ -88,8 +92,12 @@ BASE_FEATURE(kHeuristicMemorySaver,
              "HeuristicMemorySaver",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::FeatureParam<int> kHeuristicMemorySaverHeartbeatSeconds{
-    &kHeuristicMemorySaver, "heartbeat_seconds", 10};
+const base::FeatureParam<int>
+    kHeuristicMemorySaverThresholdReachedHeartbeatSeconds{
+        &kHeuristicMemorySaver, "threshold_reached_heartbeat_seconds", 10};
+const base::FeatureParam<int>
+    kHeuristicMemorySaverThresholdNotReachedHeartbeatSeconds{
+        &kHeuristicMemorySaver, "threshold_not_reached_heartbeat_seconds", 60};
 
 const base::FeatureParam<int>
     kHeuristicMemorySaverAvailableMemoryThresholdPercent{

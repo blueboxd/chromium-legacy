@@ -14,6 +14,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/ui_base_features.h"
 
 #include "ui/color/color_id_map_macros.inc"
 
@@ -96,6 +97,24 @@ SkColor GetToolbarTopSeparatorColor(SkColor toolbar_color,
                                              frame_color);
 }
 
+ui::ColorTransform AdjustHighlightColorForContrast(ui::ColorTransform fg,
+                                                   ui::ColorTransform bg) {
+  auto candidate_fg =
+      ui::PickGoogleColor(fg, bg, color_utils::kMinimumReadableContrastRatio);
+  // Setting highlight color will set the text to the highlight color, and the
+  // background to the same color with an alpha of
+  // kToolbarInkDropHighlightVisibleOpacity. This means that our target contrast
+  // is between the text (the highlight color) and a blend of the highlight
+  // color and the background color.
+  auto candidate_bg =
+      ui::AlphaBlend(candidate_fg, bg, kToolbarInkDropHighlightVisibleAlpha);
+  // Add a fudge factor to the minimum contrast ratio since we'll actually be
+  // blending with the adjusted color.
+  return ui::PickGoogleColor(
+      candidate_fg, candidate_bg,
+      color_utils::kMinimumReadableContrastRatio * 1.05f);
+}
+
 bool ShouldApplyHighContrastColors(const ui::ColorProviderManager::Key& key) {
   // Only apply custom high contrast handling on platforms where we are not
   // using the system theme for high contrast.
@@ -104,4 +123,10 @@ bool ShouldApplyHighContrastColors(const ui::ColorProviderManager::Key& key) {
 #else
   return key.contrast_mode == ui::ColorProviderManager::ContrastMode::kHigh;
 #endif
+}
+
+bool ShouldApplyChromeMaterialOverrides(
+    const ui::ColorProviderManager::Key& key) {
+  // Only apply material overrides when not using a custom theme.
+  return features::IsChromeRefresh2023() && !key.custom_theme;
 }

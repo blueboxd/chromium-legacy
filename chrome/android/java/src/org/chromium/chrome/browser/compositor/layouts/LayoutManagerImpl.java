@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.theme.ThemeUtils;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ControlContainer;
+import org.chromium.chrome.browser.toolbar.ToolbarFeatures;
 import org.chromium.chrome.browser.toolbar.bottom.ScrollingBottomViewSceneLayer;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarOverlayCoordinator;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -221,9 +222,8 @@ public class LayoutManagerImpl
                 float lastTapX = LocalizationUtils.isLayoutRtl() ? mHost.getWidth() * mPxToDp : 0.f;
                 float lastTapY = 0.f;
                 if (launchType != TabLaunchType.FROM_CHROME_UI) {
-                    float heightDelta = mHost.getHeightMinusBrowserControls() * mPxToDp;
                     lastTapX = mPxToDp * mLastTapX;
-                    lastTapY = mPxToDp * mLastTapY - heightDelta;
+                    lastTapY = mPxToDp * mLastTapY;
                 }
 
                 tabCreated(tabId, getTabModelSelector().getCurrentTabId(), launchType, incognito,
@@ -474,13 +474,16 @@ public class LayoutManagerImpl
         }
         mUpdateRequested = false;
 
-        // TODO(mdjones): Remove the time related params from this method. The new animation system
-        // has its own timer.
-        boolean areAnimatorsComplete = mAnimationHandler.pushUpdate();
-
         // TODO(crbug.com/1070281): Remove after the FrameRequestSupplier migrates to the animation
         //  system.
         final Layout layout = getActiveLayout();
+
+        // TODO(mdjones): Remove the time related params from this method. The new animation system
+        // has its own timer.
+        boolean areAnimatorsComplete = mAnimationHandler.pushUpdate();
+        if (layout != null && ToolbarFeatures.shouldDelayTransitionsForAnimation()) {
+            areAnimatorsComplete &= !layout.isRunningAnimations();
+        }
 
         // TODO(crbug.com/1070281): Layout itself should decide when it's done hiding and done
         //  showing.
@@ -1248,6 +1251,11 @@ public class LayoutManagerImpl
     @Override
     public boolean isLayoutStartingToHide(int layoutType) {
         return isLayoutVisible(layoutType) && getActiveLayout().isStartingToHide();
+    }
+
+    @Override
+    public boolean isLayoutStartingToShow(int layoutType) {
+        return isLayoutVisible(layoutType) && getActiveLayout().isStartingToShow();
     }
 
     @Override

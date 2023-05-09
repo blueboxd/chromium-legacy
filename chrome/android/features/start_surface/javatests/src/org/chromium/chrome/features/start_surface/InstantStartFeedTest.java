@@ -108,7 +108,6 @@ public class InstantStartFeedTest {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testFeedPlaceholderFromColdStart() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -138,7 +137,6 @@ public class InstantStartFeedTest {
     @Test
     @LargeTest
     @CommandLineFlags.Add({INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testCachedFeedVisibility() {
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
         mActivityTestRule.waitForActivityNativeInitializationComplete();
@@ -188,7 +186,6 @@ public class InstantStartFeedTest {
     // clang-format off
     @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
         INSTANT_START_TEST_BASE_PARAMS})
-    @DisabledTest(message = "https://crbug.com/1314456")
     public void testShowFeedPlaceholder() {
         // clang-format on
         StartSurfaceConfiguration.setFeedVisibilityForTesting(true);

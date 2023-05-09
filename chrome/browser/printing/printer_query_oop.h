@@ -10,6 +10,7 @@
 #include "base/functional/callback.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/printing/print_backend_service_manager.h"
 #include "chrome/browser/printing/print_job_worker_oop.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/services/printing/public/mojom/print_backend_service.mojom.h"
@@ -17,6 +18,7 @@
 #include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "printing/printing_context.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace printing {
 
@@ -25,8 +27,10 @@ class PrinterQueryOop : public PrinterQuery {
   explicit PrinterQueryOop(content::GlobalRenderFrameHostId rfh_id);
   ~PrinterQueryOop() override;
 
+  // PrinterQuery overrides:
   std::unique_ptr<PrintJobWorker> TransferContextToNewWorker(
       PrintJob* print_job) override;
+  void SetClientId(PrintBackendServiceManager::ClientId client_id) override;
 
  protected:
   // Local callback wrappers for Print Backend Service mojom call.  Virtual to
@@ -38,6 +42,11 @@ class PrinterQueryOop : public PrinterQuery {
   virtual void OnDidAskUserForSettings(
       SettingsCallback callback,
       mojom::PrintSettingsResultPtr print_settings);
+#else
+  virtual void OnDidAskUserForSettings(
+      SettingsCallback callback,
+      std::unique_ptr<PrintSettings> new_settings,
+      mojom::ResultCode result);
 #endif
   void OnDidUpdatePrintSettings(const std::string& device_name,
                                 SettingsCallback callback,
@@ -64,6 +73,11 @@ class PrinterQueryOop : public PrinterQuery {
   virtual std::unique_ptr<PrintJobWorkerOop> CreatePrintJobWorker(
       PrintJob* print_job);
 
+  const absl::optional<PrintBackendServiceManager::ClientId>&
+  print_document_client_id() const {
+    return print_document_client_id_;
+  }
+
   mojom::PrintTargetType print_target_type() const {
     return print_target_type_;
   }
@@ -71,6 +85,9 @@ class PrinterQueryOop : public PrinterQuery {
  private:
   mojom::PrintTargetType print_target_type_ =
       mojom::PrintTargetType::kDirectToDevice;
+  absl::optional<PrintBackendServiceManager::ClientId> query_with_ui_client_id_;
+  absl::optional<PrintBackendServiceManager::ClientId>
+      print_document_client_id_;
 
   base::WeakPtrFactory<PrinterQueryOop> weak_factory_{this};
 };

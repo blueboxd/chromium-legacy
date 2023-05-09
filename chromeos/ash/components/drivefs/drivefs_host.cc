@@ -80,7 +80,7 @@ class DriveFsHost::MountState : public DriveFsSession,
           FROM_HERE, kIndividualSyncStatusIntervalMs,
           base::BindRepeating(
               &DriveFsHost::MountState::DispatchBatchIndividualSyncEvents,
-              weak_ptr_factory_.GetWeakPtr()));
+              base::Unretained(this)));
     }
   }
 
@@ -170,6 +170,12 @@ class DriveFsHost::MountState : public DriveFsSession,
     for (auto& observer : host_->observers_) {
       observer.OnIndividualSyncingStatusesDelta(filtered_states);
     }
+
+    // If we still have files in the tracker, keep running, as we might have
+    // stale nodes that will eventually get removed.
+    if (sync_status_tracker_->GetFileCount()) {
+      sync_throttle_timer_->Reset();
+    }
   }
 
   void OnSyncingStatusUpdate(mojom::SyncingStatusPtr status) override {
@@ -182,7 +188,8 @@ class DriveFsHost::MountState : public DriveFsSession,
         // Currently, download syncing (AKA downsync) events are not reliably
         // delivered by DriveFs. Therefore, let's not show inline sync status
         // indicators for them until this is fixed on DriveFs/Cello.
-        if (event->is_download) {
+        // Also filter out invalid stable_ids (with value 0).
+        if (event->is_download || event->stable_id == 0) {
           continue;
         }
 
@@ -383,7 +390,6 @@ class DriveFsHost::MountState : public DriveFsSession,
   // Used to dispatch individual sync status updates in a debounced manner, only
   // sending the sync states that have changed since the last dispatched event.
   std::unique_ptr<base::RetainingOneShotTimer> sync_throttle_timer_;
-  base::WeakPtrFactory<DriveFsHost::MountState> weak_ptr_factory_{this};
 };
 
 DriveFsHost::DriveFsHost(

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.ComponentCallbacks;
+import android.content.Context;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -143,6 +144,9 @@ import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 import org.chromium.chrome.browser.user_education.IPHCommandBuilder;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.browser.util.BrowserUiUtils;
+import org.chromium.chrome.browser.util.BrowserUiUtils.HostSurface;
+import org.chromium.chrome.browser.util.BrowserUiUtils.ModuleTypeOnStartAndNTP;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceState;
@@ -597,7 +601,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         boolean isGridTabSwitcherEnabled =
                 TabUiFeatureUtilities.isGridTabSwitcherEnabled(mActivity);
-        boolean isTabToGtsAnimationEnabled = TabUiFeatureUtilities.isTabToGtsAnimationEnabled();
+        boolean isTabToGtsAnimationEnabled =
+                TabUiFeatureUtilities.isTabToGtsAnimationEnabled(mActivity);
         boolean isTabGroupsAndroidContinuationEnabled =
                 TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mActivity);
         Callback<LoadUrlParams> startSurfaceLogoClickedCallback =
@@ -932,6 +937,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 if (layoutType == LayoutType.TAB_SWITCHER) {
                     mToolbar.onTabSwitcherTransitionFinished();
                 }
+                if (ToolbarFeatures.shouldDelayTransitionsForAnimation()) {
+                    mToolbar.onTransitionEnd();
+                }
             }
 
             @Override
@@ -945,6 +953,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                     if (mToolbar.setForceTextureCapture(true)) {
                         mControlContainer.invalidateBitmap();
                     }
+                }
+                if (ToolbarFeatures.shouldDelayTransitionsForAnimation()) {
+                    mToolbar.onTransitionStart();
                 }
             }
 
@@ -1117,10 +1128,24 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         HomeButton homeButton = toolbarLayout.getHomeButton();
         if (homeButton != null) {
-            homeButton.init(mHomepageEnabledSupplier, HomepageManager.getInstance()::onMenuClick,
+            homeButton.init(mHomepageEnabledSupplier, this::onHomeButtonMenuClick,
                     mHomepageManagedByPolicySupplier);
         }
         return toolbar;
+    }
+
+    /**
+     * Menu click handler on home button and records if user long presses on home button to
+     * edit homepage on the new tab page.
+     * @param context {@link Context} used for launching a settings activity.
+     */
+    private void onHomeButtonMenuClick(Context context) {
+        boolean isNtp = getNewTabPageForCurrentTab() != null;
+        HomepageManager.getInstance().onMenuClick(context);
+        if (isNtp) {
+            BrowserUiUtils.recordModuleLongClickHistogram(
+                    HostSurface.NEW_TAB_PAGE, ModuleTypeOnStartAndNTP.HOME_BUTTON);
+        }
     }
 
     /**
@@ -1180,8 +1205,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         @Override
         public boolean hasCompletedFirstLayout() {
-            assert getNewTabPageForCurrentTab() != null;
-            return getNewTabPageForCurrentTab().hasCompletedFirstLayout();
+            NewTabPage newTabPage = getNewTabPageForCurrentTab();
+            return newTabPage != null && newTabPage.hasCompletedFirstLayout();
         }
 
         @Override
@@ -1271,6 +1296,16 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             return false;
         }
         return mLocationBar.getOmniboxStub().isUrlBarFocused();
+    }
+
+    /**
+     * Returns the UrlBar text excluding the autocomplete text.
+     */
+    public String getUrlBarTextWithoutAutocomplete() {
+        assert mLocationBar
+                instanceof LocationBarCoordinator
+            : "LocationBar should be an instance of LocationBarCoordinator.";
+        return ((LocationBarCoordinator) mLocationBar).getUrlBarTextWithoutAutocomplete();
     }
 
     /**
@@ -1779,10 +1814,23 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param reason The given reason.
      */
     public void setUrlBarFocus(boolean focused, @OmniboxFocusReason int reason) {
+        setUrlBarFocusAndText(focused, reason, null);
+    }
+
+    /**
+     * Same as {@code #setUrlBarFocus(boolean, @OmniboxFocusReason int)}, with the additional option
+     * to set URL bar text.
+     *
+     * @param focused Whether URL bar should be focused.
+     * @param reason The given reason.
+     * @param text The URL bar text. {@code null} if no text is to be set.
+     */
+    public void setUrlBarFocusAndText(
+            boolean focused, @OmniboxFocusReason int reason, String text) {
         if (!mInitializedWithNative) return;
         if (mLocationBar.getOmniboxStub() == null) return;
         boolean wasFocused = mLocationBar.getOmniboxStub().isUrlBarFocused();
-        mLocationBar.getOmniboxStub().setUrlBarFocus(focused, null, reason);
+        mLocationBar.getOmniboxStub().setUrlBarFocus(focused, text, reason);
         if (wasFocused && focused) {
             mLocationBar.selectAll();
         }
@@ -1801,8 +1849,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     /**
-     * See {@link #setUrlBarFocus}, but if native is not loaded it will queue the request instead
-     * of dropping it.
+     * See {@link #setUrlBarFocus}, but if native is not loaded it will queue the request instead of
+     * dropping it.
      */
     public void setUrlBarFocusOnceNativeInitialized(
             boolean focused, @OmniboxFocusReason int reason) {

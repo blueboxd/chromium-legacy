@@ -32,9 +32,11 @@ async function runSelectRawURL(href, resolve_to_config = false) {
     // gracefully fail rather than bring the whole test down.
   }
   return await sharedStorage.selectURL(
-      "test-url-selection-operation", [{url: href}],
-      {data: {'mockResult': 0}, resolveToConfig: resolve_to_config}
-  );
+      'test-url-selection-operation', [{url: href}], {
+        data: {'mockResult': 0},
+        resolveToConfig: resolve_to_config,
+        keepAlive: true
+      });
 }
 
 // Similar to generateURL, but creates
@@ -319,16 +321,12 @@ async function stringToStashKey(string) {
 
 // Create a fenced frame. Then navigate it using the given `target`, which can
 // be either an urn:uuid or a fenced frame config object.
-function attachFencedFrame(target, mode='') {
+function attachFencedFrame(target) {
   assert_implements(
       window.HTMLFencedFrameElement,
       'The HTMLFencedFrameElement should be exposed on the window object');
 
   const fenced_frame = document.createElement('fencedframe');
-  assert_true('mode' in fenced_frame);
-  if (mode) {
-    fenced_frame.mode = mode;
-  }
 
   if (target instanceof FencedFrameConfig) {
     fenced_frame.config = target;

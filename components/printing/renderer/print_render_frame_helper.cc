@@ -153,27 +153,6 @@ int GetDPI(const mojom::PrintParams& print_params) {
 #endif  // BUILDFLAG(IS_APPLE)
 }
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-std::string PrintMsgPrintParamsErrorDetails(const mojom::PrintParams& params) {
-  std::vector<base::StringPiece> details;
-
-  if (params.content_size.IsEmpty())
-    details.push_back("content size is empty");
-  if (params.page_size.IsEmpty())
-    details.push_back("page size is empty");
-  if (params.printable_area.IsEmpty())
-    details.push_back("printable area is empty");
-  if (!params.document_cookie)
-    details.push_back("invalid document cookie");
-  if (params.dpi.width() <= kMinDpi || params.dpi.height() <= kMinDpi)
-    details.push_back("invalid DPI dimensions");
-  if (params.margin_top < 0 || params.margin_left < 0)
-    details.push_back("invalid margins");
-
-  return base::JoinString(details, "; ");
-}
-#endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
-
 // Helper function to check for fit to page
 bool IsPrintScalingOptionFitToPage(const mojom::PrintParams& params) {
   return params.print_scaling_option ==
@@ -1392,9 +1371,6 @@ void PrintRenderFrameHelper::PrintRequestedPages() {
 void PrintRenderFrameHelper::PrintWithParams(
     mojom::PrintPagesParamsPtr settings,
     PrintWithParamsCallback callback) {
-  DCHECK(!settings->params->dpi.IsEmpty());
-  DCHECK(settings->params->document_cookie);
-
   ScopedIPC scoped_ipc(weak_ptr_factory_.GetWeakPtr());
   if (ipc_nesting_level_ > kAllowedIpcDepthForPrint) {
     std::move(callback).Run(mojom::PrintWithParamsResult::NewFailureReason(
@@ -1663,9 +1639,14 @@ void PrintRenderFrameHelper::SnapshotForContentAnalysis(
     SnapshotForContentAnalysisCallback callback) {
   // Use default print params to snapshot the page.
   mojom::PrintPagesParams print_pages_params;
-  print_pages_params.params = mojom::PrintParams::New();
   GetPrintManagerHost()->GetDefaultPrintSettings(&print_pages_params.params);
+  if (!print_pages_params.params) {
+    LOG(ERROR) << "GetDefaultPrintSettings() failed";
+    std::move(callback).Run(nullptr);
+    return;
+  }
 
+  CHECK(PrintMsgPrintParamsIsValid(*print_pages_params.params));
   ContentProxySet typeface_content_info;
   auto metafile = std::make_unique<MetafileSkia>(
       print_pages_params.params->printed_doc_type,
@@ -1682,6 +1663,7 @@ void PrintRenderFrameHelper::SnapshotForContentAnalysis(
   if (page_count == 0) {
     frame->PrintEnd();
     metafile->FinishDocument();
+    LOG(ERROR) << "PrintBegin() returned 0 pages";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -1704,6 +1686,7 @@ void PrintRenderFrameHelper::SnapshotForContentAnalysis(
 
   if (!CopyMetafileDataToDidPrintContentParams(*metafile,
                                                page_params->content.get())) {
+    LOG(ERROR) << "CopyMetafileDataToDidPrintContentParams() failed";
     std::move(callback).Run(nullptr);
     return;
   }
@@ -2180,9 +2163,6 @@ void PrintRenderFrameHelper::Print(blink::WebLocalFrame* frame,
       return;
     }
 
-    CHECK(print_settings->params->document_cookie);
-    CHECK(!print_settings->params->dpi.IsEmpty());
-
     print_settings->params->print_scaling_option =
         print_settings->params->prefer_css_page_size
             ? mojom::PrintScalingOption::kSourceSize
@@ -2253,8 +2233,7 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
       break;
     case INVALID_SETTINGS:
       if (preview_ui_)
-        preview_ui_->PrinterSettingsInvalid(
-            cookie, request_id, print_preview_context_.last_error_details());
+        preview_ui_->PrinterSettingsInvalid(cookie, request_id);
       print_preview_context_.Failed(false);
       break;
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -2424,25 +2403,24 @@ void PrintRenderFrameHelper::IPCProcessed() {
 }
 
 bool PrintRenderFrameHelper::InitPrintSettings(bool fit_to_paper_size) {
-  mojom::PrintPagesParams settings;
-  settings.params = mojom::PrintParams::New();
-  GetPrintManagerHost()->GetDefaultPrintSettings(&settings.params);
-
-  // Check if the printer returned any settings, if the settings is empty, we
-  // can safely assume there are no printer drivers configured. So we safely
-  // terminate.
-  const bool result = PrintMsgPrintParamsIsValid(*settings.params);
-
   // Reset to default values.
   ignore_css_margins_ = false;
-  settings.pages.clear();
+
+  mojom::PrintPagesParams settings;
+  GetPrintManagerHost()->GetDefaultPrintSettings(&settings.params);
+
+  // Check if the printer returned any settings, if the settings are null,
+  // assume there are no printer drivers configured. So safely terminate.
+  if (!settings.params) {
+    // Caller will reset `print_pages_params_`.
+    return false;
+  }
 
   settings.params->print_scaling_option =
       fit_to_paper_size ? mojom::PrintScalingOption::kFitToPrintableArea
                         : mojom::PrintScalingOption::kSourceSize;
-
   SetPrintPagesParams(settings);
-  return result;
+  return true;
 }
 
 bool PrintRenderFrameHelper::CalculateNumberOfPages(blink::WebLocalFrame* frame,
@@ -2522,15 +2500,7 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
       frame, node, source_is_html, *job_settings, *settings->params);
 
   SetPrintPagesParams(*settings);
-
-  if (PrintMsgPrintParamsIsValid(*settings->params))
-    return true;
-
-  // TODO(thestig): Make sure this is not reachable and delete this block.
-  print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
-  print_preview_context_.set_error_details(
-      PrintMsgPrintParamsErrorDetails(*settings->params));
-  return false;
+  return true;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -3049,11 +3019,6 @@ void PrintRenderFrameHelper::PrintPreviewContext::set_error(
   error_ = error;
 }
 
-void PrintRenderFrameHelper::PrintPreviewContext::set_error_details(
-    const std::string& details) {
-  error_details_ = details;
-}
-
 blink::WebLocalFrame*
 PrintRenderFrameHelper::PrintPreviewContext::source_frame() {
   DCHECK(state_ != UNINITIALIZED);
@@ -3110,18 +3075,12 @@ int PrintRenderFrameHelper::PrintPreviewContext::last_error() const {
   return error_;
 }
 
-const std::string&
-PrintRenderFrameHelper::PrintPreviewContext::last_error_details() const {
-  return error_details_;
-}
-
 void PrintRenderFrameHelper::PrintPreviewContext::ClearContext() {
   prep_frame_view_.reset();
   metafile_.reset();
   typeface_content_info_.clear();
   pages_to_render_.clear();
   error_ = PREVIEW_ERROR_NONE;
-  error_details_ = std::string();
 }
 
 void PrintRenderFrameHelper::PrintPreviewContext::CalculatePluginAttributes() {
@@ -3131,6 +3090,7 @@ void PrintRenderFrameHelper::PrintPreviewContext::CalculatePluginAttributes() {
 
 void PrintRenderFrameHelper::SetPrintPagesParams(
     const mojom::PrintPagesParams& settings) {
+  CHECK(PrintMsgPrintParamsIsValid(*settings.params));
   print_pages_params_ = settings.Clone();
 }
 

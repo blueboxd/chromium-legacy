@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile_key.h"
 #include "components/autofill/core/browser/data_model/credit_card_art_image.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/payments/constants.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/image_fetcher/core/cached_image_fetcher.h"
@@ -15,6 +16,9 @@
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -54,8 +58,21 @@ constexpr net::NetworkTrafficAnnotationTag kCardArtImageTrafficAnnotation =
         }
       })");
 
+// The image radius value for card art images.
+constexpr int kCardArtImageRadius = 3;  // 3dp
+
 // The SkAlpha value for the image grey overlay.
 constexpr double kImageOverlayAlpha = 0.04;  // 4%
+
+// The border color used for card art images.
+constexpr SkColor kCardArtBorderColor = SkColorSetARGB(0xFF, 0xE3, 0xE3, 0xE3);
+
+// The stroke width of the card art border.
+constexpr int kCardArtBorderStrokeWidth = 2;
+
+// The width and length card art is resized to.
+constexpr int kCardArtImageWidth = 40;
+constexpr int kCardArtImageHeight = 24;
 
 }  // namespace
 
@@ -101,11 +118,58 @@ void AutofillImageFetcherImpl::OnCardArtImageFetched(
   auto credit_card_art_image =
       std::make_unique<CreditCardArtImage>(card_art_url, gfx::Image());
   if (!card_art_image.IsEmpty()) {
-    credit_card_art_image->card_art_image =
-        base::FeatureList::IsEnabled(
-            features::kAutofillEnableNewCardArtAndNetworkImages)
-            ? card_art_image
-            : AutofillImageFetcherImpl::ApplyGreyOverlay(card_art_image);
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableNewCardArtAndNetworkImages)) {
+      if (card_art_url ==
+          "https://www.gstatic.com/autofill/virtualcard/icon/"
+          "capitalone_40_24.png") {
+        // Render Capital One asset directly. No need to calculate and add grey
+        // border to image.
+        credit_card_art_image->card_art_image = card_art_image;
+      } else {
+        // Create the outer rectange. The outer rectangle is for the
+        // entire image which includes the card art and additional border.
+        gfx::RectF outer_rect =
+            gfx::RectF(kCardArtImageWidth, kCardArtImageHeight);
+
+        // The inner rectangle only includes the card art. To calculate the
+        // inner rectangle, we need to factor the space that the border stroke
+        // will take up.
+        gfx::RectF inner_rect = gfx::RectF(
+            /*x=*/kCardArtBorderStrokeWidth, /*y=*/kCardArtBorderStrokeWidth,
+            /*width=*/kCardArtImageWidth - (kCardArtBorderStrokeWidth * 2),
+            /*height=*/kCardArtImageHeight - (kCardArtBorderStrokeWidth * 2));
+        gfx::Canvas canvas =
+            gfx::Canvas(gfx::Size(kCardArtImageWidth, kCardArtImageHeight),
+                        /*image_scale=*/1.0f, /*is_opaque=*/false);
+        cc::PaintFlags card_art_paint;
+        card_art_paint.setAntiAlias(true);
+
+        // Draw card art with rounded corners in the inner rectangle.
+        canvas.DrawRoundRect(inner_rect, kCardArtImageRadius, card_art_paint);
+        canvas.DrawImageInt(
+            gfx::ImageSkiaOperations::CreateResizedImage(
+                card_art_image.AsImageSkia(),
+                skia::ImageOperations::RESIZE_BEST,
+                gfx::Size(kCardArtImageWidth, kCardArtImageHeight)),
+            outer_rect.x(), outer_rect.y(), card_art_paint);
+
+        // Draw border around card art using outer rectangle.
+        card_art_paint.setStrokeWidth(kCardArtBorderStrokeWidth);
+        card_art_paint.setColor(kCardArtBorderColor);
+        card_art_paint.setStyle(cc::PaintFlags::kStroke_Style);
+        canvas.DrawRoundRect(outer_rect, kCardArtImageRadius, card_art_paint);
+
+        // Add radius around entire image.
+        credit_card_art_image->card_art_image =
+            gfx::Image(gfx::ImageSkiaOperations::CreateImageWithRoundRectClip(
+                kCardArtImageRadius,
+                gfx::ImageSkia::CreateFromBitmap(canvas.GetBitmap(), 1.0f)));
+      }
+    } else {
+      credit_card_art_image->card_art_image =
+          AutofillImageFetcherImpl::ApplyGreyOverlay(card_art_image);
+    }
   }
 
   std::move(barrier_callback).Run(std::move(credit_card_art_image));
@@ -135,22 +199,25 @@ void AutofillImageFetcherImpl::FetchImageForURL(
 
   GURL url;
   // TODO(crbug.com/1313616): There is only one gstatic card art image we are
-  // using currently. Remove this logic and append FIFE URL suffix by default
-  // when the static image is deprecated.
+  // using currently, that returns as metadata when it isn't. Remove this logic
+  // and append FIFE URL suffix by default when the static image is deprecated,
+  // and we send rich card art instead.
   // Check if the image is stored in Static Content Service. If not append the
   // FIFE URL option to fetch the correct image.
-  if (card_art_url ==
-      GURL(
-          "https://www.gstatic.com/autofill/virtualcard/icon/capitalone.png")) {
-    url = card_art_url;
+  if (card_art_url.spec() == kCapitalOneCardArtUrl) {
+    url = base::FeatureList::IsEnabled(
+              features::kAutofillEnableNewCardArtAndNetworkImages)
+              ? GURL(kCapitalOneLargeCardArtUrl)
+              : card_art_url;
   } else {
     // A FIFE image fetching param suffix is appended to the URL. The image
     // should be center cropped and of Size(32, 20) unless the
     // kAutofillEnableNewCardArtAndNetworkImages feature is enabled, in which
-    // case the image is of Size(40, 24).
+    // case we take the image at its raw size and resize it to Size(40, 24)
+    // later.
     url = base::FeatureList::IsEnabled(
               features::kAutofillEnableNewCardArtAndNetworkImages)
-              ? GURL(card_art_url.spec() + "=w40-h24-n")
+              ? card_art_url
               : GURL(card_art_url.spec() + "=w32-h20-n");
   }
 

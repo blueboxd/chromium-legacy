@@ -189,6 +189,7 @@ std::unique_ptr<views::ImageView> CreateDefaultTrayIcon() {
   return icon;
 }
 
+// TODO(http://b/276741422): Add pixel test for drop target state.
 // Creates the icon to be parented by the drop target overlay to indicate that
 // the parent view is a drop target and is capable of handling the current drag
 // payload.
@@ -200,7 +201,7 @@ std::unique_ptr<views::ImageView> CreateDropTargetIcon() {
       gfx::Size(kHoldingSpaceIconSize, kHoldingSpaceIconSize));
   icon->SetPaintToLayer();
   icon->layer()->SetFillsBoundsOpaquely(false);
-  icon->SetImage(gfx::CreateVectorIcon(
+  icon->SetImage(ui::ImageModel::FromVectorIcon(
       views::kUnpinIcon, kColorAshIconColorPrimary, kHoldingSpaceIconSize));
   return icon;
 }
@@ -441,7 +442,8 @@ views::View::DropCallback HoldingSpaceTray::GetDropCallback(
 void HoldingSpaceTray::PerformDrop(
     std::vector<base::FilePath> unpinned_file_paths,
     const ui::DropTargetEvent& event,
-    ui::mojom::DragOperation& output_drag_op) {
+    ui::mojom::DragOperation& output_drag_op,
+    std::unique_ptr<ui::LayerTreeOwner> drag_image_layer_owner) {
   DCHECK(!unpinned_file_paths.empty());
 
   holding_space_metrics::RecordPodAction(

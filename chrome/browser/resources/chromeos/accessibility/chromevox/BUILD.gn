@@ -202,6 +202,7 @@ group("build") {
     ":chromevox_options_script",
     ":chromevox_panel_script",
     ":chromevox_phonetic_dictionaries_js",
+    "//chrome/browser/resources/chromeos/accessibility/braille_ime:braille_ime_manifest",
     "//third_party/chromevox:chromevox_third_party_resources",
     "//third_party/liblouis",
   ]
@@ -443,6 +444,7 @@ if (is_chromeos_ash) {
       "background/logging/log_store_test.js",
       "background/output/output_test.js",
       "background/panel/i_search_test.js",
+      "background/panel/panel_background_test.js",
       "background/panel/panel_node_menu_background_test.js",
       "background/portals_test.js",
       "background/settings_test.js",

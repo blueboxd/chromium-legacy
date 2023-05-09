@@ -219,7 +219,7 @@ GPUInfo::GPUInfo()
     : optimus(false),
       amd_switchable(false),
       gl_reset_notification_strategy(0),
-      software_rendering(false),
+      gl_implementation_parts(gl::kGLImplementationNone),
       sandboxed(false),
       in_process_gpu(true),
       passthrough_cmd_decoder(false),
@@ -306,8 +306,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string max_msaa_samples;
     std::string machine_model_name;
     std::string machine_model_version;
-    std::string gl_implementation;
-    std::string angle_implementation;
     std::string display_type;
     std::string gl_version;
     std::string gl_vendor;
@@ -317,7 +315,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     std::string gl_ws_version;
     std::string gl_ws_extensions;
     uint32_t gl_reset_notification_strategy;
-    bool software_rendering;
+    gl::GLImplementationParts gl_implementation_parts;
     std::string direct_rendering_version;
     bool sandboxed;
     bool in_process_gpu;
@@ -376,8 +374,6 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddString("pixelShaderVersion", pixel_shader_version);
   enumerator->AddString("vertexShaderVersion", vertex_shader_version);
   enumerator->AddString("maxMsaaSamples", max_msaa_samples);
-  enumerator->AddString("glImplementation", gl_implementation);
-  enumerator->AddString("angleImplementation", angle_implementation);
   enumerator->AddString("displayType", display_type);
   enumerator->AddString("glVersion", gl_version);
   enumerator->AddString("glVendor", gl_vendor);
@@ -386,11 +382,10 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddString("glWsVendor", gl_ws_vendor);
   enumerator->AddString("glWsVersion", gl_ws_version);
   enumerator->AddString("glWsExtensions", gl_ws_extensions);
-  enumerator->AddInt(
-      "glResetNotificationStrategy",
-      static_cast<int>(gl_reset_notification_strategy));
-  // TODO(kbr): add performance_stats.
-  enumerator->AddBool("softwareRendering", software_rendering);
+  enumerator->AddInt("glResetNotificationStrategy",
+                     static_cast<int>(gl_reset_notification_strategy));
+  enumerator->AddString("glImplementationParts",
+                        gl_implementation_parts.ToString());
   enumerator->AddString("directRenderingVersion", direct_rendering_version);
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddBool("inProcessGpu", in_process_gpu);

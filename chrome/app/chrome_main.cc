@@ -33,6 +33,10 @@
 #include "base/base_switches.h"
 #endif
 
+#if BUILDFLAG(IS_LINUX)
+#include "chrome/app/chrome_main_linux.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 #include "base/allocator/buildflags.h"
 #include "base/dcheck_is_on.h"
@@ -152,6 +156,10 @@ int ChromeMain(int argc, const char** argv) {
 
 #if BUILDFLAG(IS_MAC)
   SetUpBundleOverrides();
+#endif
+
+#if BUILDFLAG(IS_LINUX)
+  AppendExtraArgumentsToCommandLine(command_line);
 #endif
 
   // PoissonAllocationSampler's TLS slots need to be set up before

@@ -148,10 +148,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   void OverridePrivateAggregationManagerForTesting(
       std::unique_ptr<PrivateAggregationManager> private_aggregation_manager);
 
-  // Returns the StoragePartitionConfig that represents this StoragePartition.
-  const StoragePartitionConfig& GetConfig();
-
   // StoragePartition interface.
+  const StoragePartitionConfig& GetConfig() override;
   base::FilePath GetPath() override;
   network::mojom::NetworkContext* GetNetworkContext() override;
   network::mojom::URLLoaderFactoryParamsPtr CreateURLLoaderFactoryParams();
@@ -346,6 +344,7 @@ class CONTENT_EXPORT StoragePartitionImpl
       const std::string& header_value,
       int load_flags,
       const absl::optional<net::CookiePartitionKey>& cookie_partition_key,
+      bool partitioned_state_allowed_only,
       OnClearSiteDataCallback callback) override;
   void OnLoadingStateUpdate(network::mojom::LoadInfoPtr info,
                             OnLoadingStateUpdateCallback callback) override;
@@ -411,6 +410,9 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   mojo::PendingRemote<network::mojom::CookieAccessObserver>
   CreateCookieAccessObserverForServiceWorker();
+
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+  CreateTrustTokenAccessObserverForServiceWorker();
 
   mojo::PendingRemote<network::mojom::URLLoaderNetworkServiceObserver>
   CreateAuthCertObserverForServiceWorker();
@@ -484,6 +486,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   class QuotaManagedDataDeletionHelper;
   class URLLoaderFactoryForBrowserProcess;
   class ServiceWorkerCookieAccessObserver;
+  class ServiceWorkerTrustTokenAccessObserver;
 
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTestHarness;
@@ -732,6 +735,11 @@ class CONTENT_EXPORT StoragePartitionImpl
   // about cookie reads and writes made by a service worker in this process.
   mojo::UniqueReceiverSet<network::mojom::CookieAccessObserver>
       service_worker_cookie_observers_;
+
+  // A set of connections to the network service used to notify browser process
+  // about Trust Token accesses made by a service worker in this process.
+  mojo::UniqueReceiverSet<network::mojom::TrustTokenAccessObserver>
+      service_worker_trust_token_observers_;
 
   mojo::ReceiverSet<network::mojom::URLLoaderNetworkServiceObserver,
                     URLLoaderNetworkContext>

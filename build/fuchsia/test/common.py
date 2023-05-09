@@ -7,16 +7,21 @@ import json
 import logging
 import os
 import re
+import signal
+import shutil
 import subprocess
+import sys
 import time
 
 from argparse import ArgumentParser
-from typing import Iterable, List, Optional
+from typing import Iterable, List, Optional, Tuple
 
 from compatible_utils import get_ssh_prefix, get_host_arch
 
 DIR_SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
+IMAGES_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk',
+                           'images')
 REPO_ALIAS = 'fuchsia.com'
 SDK_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
 SDK_TOOLS_DIR = os.path.join(SDK_ROOT, 'tools', get_host_arch())
@@ -32,6 +37,31 @@ def set_ffx_isolate_dir(isolate_dir: str) -> None:
 
     global _FFX_ISOLATE_DIR  # pylint: disable=global-statement
     _FFX_ISOLATE_DIR = isolate_dir
+
+
+def get_host_tool_path(tool):
+    """Get a tool from the SDK."""
+
+    return os.path.join(SDK_TOOLS_DIR, tool)
+
+
+def get_host_os():
+    """Get host operating system."""
+
+    host_platform = sys.platform
+    if host_platform.startswith('linux'):
+        return 'linux'
+    if host_platform.startswith('darwin'):
+        return 'mac'
+    raise Exception('Unsupported host platform: %s' % host_platform)
+
+
+def make_clean_directory(directory_name):
+    """If the directory exists, delete it and remake with no contents."""
+
+    if os.path.exists(directory_name):
+        shutil.rmtree(directory_name)
+    os.mkdir(directory_name)
 
 
 def _get_daemon_status():
@@ -312,3 +342,33 @@ def find_image_in_sdk(product_name: str) -> Optional[str]:
     if path:
         return find_in_dir('images', parent_dir=path)
     return path
+
+
+def catch_sigterm() -> None:
+    """Catches the kill signal and allows the process to exit cleanly."""
+    def _sigterm_handler(*_):
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, _sigterm_handler)
+
+
+def get_system_info(target: Optional[str] = None) -> Tuple[str, str]:
+    """Retrieves installed OS version frm device.
+
+    Returns:
+        Tuple of strings, containing {product, version number), or a pair of
+        empty strings to indicate an error.
+    """
+    info_cmd = run_ffx_command(('target', 'show', '--json'),
+                               target_id=target,
+                               capture_output=True,
+                               check=False)
+    if info_cmd.returncode == 0:
+        info_json = json.loads(info_cmd.stdout.strip())
+        for info in info_json:
+            if info['title'] == 'Build':
+                return (info['child'][1]['value'], info['child'][0]['value'])
+
+    # If the information was not retrieved, return empty strings to indicate
+    # unknown system info.
+    return ('', '')

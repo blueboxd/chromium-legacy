@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/client/shared_image_interface.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_htmlcanvaselement_htmlvideoelement_imagebitmap_offscreencanvas.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_command_buffer_descriptor.h"
@@ -673,17 +674,27 @@ bool GPUQueue::CopyFromCanvasSourceImage(
 // platform requires interop supported. According to the bug, this change will
 // be a long time task. So disable using webgpu mailbox texture uploading path
 // on linux platform.
+// TODO(crbug.com/1424119): using a webgpu mailbox texture on the OpenGLES
+// backend is failing for unknown reasons.
 #if BUILDFLAG(IS_LINUX)
-  use_webgpu_mailbox_texture = false;
-  unaccelerated_image = image->MakeUnaccelerated();
-  image = unaccelerated_image.get();
+  bool forceReadback = true;
+#else
+  bool forceReadback =
+      device()->adapter()->backendType() == WGPUBackendType_OpenGLES;
 #endif  // BUILDFLAG(IS_LINUX)
+  if (forceReadback) {
+    use_webgpu_mailbox_texture = false;
+    unaccelerated_image = image->MakeUnaccelerated();
+    image = unaccelerated_image.get();
+  }
 
-  // TODO(crbug.com/1424119):
-  // Using a webgpu mailbox texture to upload a cpu-backed resource on OpenGLES uploads all
-  // zeros. Disable that upload path if the image is not texture-backed.
-  auto backendType = device()->adapter()->backendType();
-  if (backendType == WGPUBackendType_OpenGLES && !image->IsTextureBacked()) {
+  // TODO(crbug.com/1426666): If disable OOP-R, using webgpu mailbox to upload
+  // cpu-backed resource which has unpremultiply alpha type causes issues
+  // due to alpha type has been dropped. Disable that
+  // upload path if the image is not texture backed, OOP-R is disabled and image
+  // alpha type is unpremultiplied.
+  if (!base::FeatureList::IsEnabled(features::kCanvasOopRasterization) &&
+      !image->IsTextureBacked() && !image->IsPremultiplied()) {
     use_webgpu_mailbox_texture = false;
   }
 

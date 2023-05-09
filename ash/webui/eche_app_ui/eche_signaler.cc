@@ -5,7 +5,11 @@
 #include "ash/webui/eche_app_ui/eche_signaler.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/system/eche/eche_tray.h"
+#include "ash/webui/eche_app_ui/apps_launch_info_provider.h"
+#include "ash/webui/eche_app_ui/mojom/eche_app.mojom-shared.h"
 #include "ash/webui/eche_app_ui/proto/exo_messages.pb.h"
 #include "ash/webui/eche_app_ui/system_info_provider.h"
 #include "base/metrics/histogram_functions.h"
@@ -22,14 +26,23 @@ using ConnectionStatus = secure_channel::ConnectionManager::Status;
 // From google3: typescript/webrtc/webrtc_peer_connection.ts
 constexpr base::TimeDelta kSignalingTimeoutDuration = base::Milliseconds(10000);
 
+EcheTray* GetEcheTray() {
+  return Shell::GetPrimaryRootWindowController()
+      ->GetStatusAreaWidget()
+      ->eche_tray();
+}
+
 }  // namespace
 
 namespace eche_app {
 
 EcheSignaler::EcheSignaler(
     EcheConnector* eche_connector,
-    secure_channel::ConnectionManager* connection_manager)
-    : eche_connector_(eche_connector), connection_manager_(connection_manager) {
+    secure_channel::ConnectionManager* connection_manager,
+    AppsLaunchInfoProvider* apps_launch_info_provider)
+    : eche_connector_(eche_connector),
+      apps_launch_info_provider_(apps_launch_info_provider),
+      connection_manager_(connection_manager) {
   connection_manager_->AddObserver(this);
 }
 
@@ -167,8 +180,28 @@ void EcheSignaler::RecordSignalingTimeout() {
 
   PA_LOG(INFO) << "echeapi EcheSignaler timeout: "
                << probably_connection_failed_reason_;
-  base::UmaHistogramEnumeration("Eche.StreamEvent.ConnectionFail",
-                                probably_connection_failed_reason_);
+  if (!features::IsEcheNetworkConnectionStateEnabled()) {
+    base::UmaHistogramEnumeration("Eche.StreamEvent.ConnectionFail",
+                                  probably_connection_failed_reason_);
+    return;
+  }
+
+  EcheTray* eche_tray = GetEcheTray();
+  if (eche_tray && eche_tray->IsBackgroundConnectionAttemptInProgress()) {
+    base::UmaHistogramEnumeration("Eche.NetworkCheck.FailureReason",
+                                  probably_connection_failed_reason_);
+  } else if (apps_launch_info_provider_->GetConnectionStatusForUi() ==
+                 mojom::ConnectionStatus::kConnectionStatusFailed &&
+             apps_launch_info_provider_->entry_point() ==
+                 mojom::AppStreamLaunchEntryPoint::NOTIFICATION) {
+    base::UmaHistogramEnumeration(
+        "Eche.StreamEvent.FromNotification.PreviousNetworkCheckFailed."
+        "ConnectionFail",
+        probably_connection_failed_reason_);
+  } else {
+    base::UmaHistogramEnumeration("Eche.StreamEvent.ConnectionFail",
+                                  probably_connection_failed_reason_);
+  }
 }
 
 std::ostream& operator<<(

@@ -28,7 +28,7 @@ bool CounterRulesEqual(const CounterDirectiveMap* a_map,
     return false;
   }
 
-  base::ranges::equal(*a_map, *b_map, [](const auto& a, const auto& b) {
+  return base::ranges::equal(*a_map, *b_map, [](const auto& a, const auto& b) {
     switch (property) {
       case CSSPropertyID::kCounterIncrement:
         if (a.value.IncrementValue() != b.value.IncrementValue()) {
@@ -53,7 +53,6 @@ bool CounterRulesEqual(const CounterDirectiveMap* a_map,
     }
     return true;
   });
-  return true;
 }
 
 template <CSSPropertyID property>
@@ -393,6 +392,9 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kFontVariantEastAsian:
       return a.GetFontDescription().VariantEastAsian() ==
              b.GetFontDescription().VariantEastAsian();
+    case CSSPropertyID::kFontVariantLigatures:
+      return a.GetFontDescription().GetVariantLigatures() ==
+             b.GetFontDescription().GetVariantLigatures();
     case CSSPropertyID::kFontVariantNumeric:
       return a.GetFontDescription().VariantNumeric() ==
              b.GetFontDescription().VariantNumeric();
@@ -850,11 +852,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.TextEmphasisColor() == b.TextEmphasisColor();
     case CSSPropertyID::kZoom:
       return a.Zoom() == b.Zoom();
-
-    // Doesn't define operator==
-    case CSSPropertyID::kFontVariantLigatures:
-      NOTREACHED() << property.GetCSSPropertyName().ToAtomicString().Ascii();
-      return true;
 
     // These properties are not animateable, but perhaps equality should still
     // be defined for them.

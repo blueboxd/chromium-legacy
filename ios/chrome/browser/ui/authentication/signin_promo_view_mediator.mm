@@ -97,6 +97,9 @@ bool IsSupportedAccessPoint(signin_metrics::AccessPoint access_point) {
     case signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER:
     case signin_metrics::AccessPoint::ACCESS_POINT_FOR_YOU_FRE:
     case signin_metrics::AccessPoint::ACCESS_POINT_CREATOR_FEED_FOLLOW:
+    // TODO(crbug.com/1420194): Change the value when the signin promo will be
+    // supported in reading list.
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
     case signin_metrics::AccessPoint::ACCESS_POINT_MAX:
       return false;
   }
@@ -121,6 +124,11 @@ void RecordImpressionsTilSigninButtonsHistogramForAccessPoint(
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       base::UmaHistogramCounts100(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilSigninButtons",
+          displayed_count);
+      break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      base::UmaHistogramCounts100(
+          "MobileSignInPromo.ReadingList.ImpressionsTilSigninButtons",
           displayed_count);
       break;
     case signin_metrics::AccessPoint::
@@ -195,6 +203,11 @@ void RecordImpressionsTilDismissHistogramForAccessPoint(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilDismiss",
           displayed_count);
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      base::UmaHistogramCounts100(
+          "MobileSignInPromo.ReadingList.ImpressionsTilDismiss",
+          displayed_count);
+      break;
     case signin_metrics::AccessPoint::
         ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
@@ -267,6 +280,11 @@ void RecordImpressionsTilXButtonHistogramForAccessPoint(
           "MobileSignInPromo.NTPFeedTop.ImpressionsTilXButton",
           displayed_count);
       break;
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      base::UmaHistogramCounts100(
+          "MobileSignInPromo.ReadingList.ImpressionsTilXButton",
+          displayed_count);
+      break;
     case signin_metrics::AccessPoint::
         ACCESS_POINT_ENTERPRISE_SIGNOUT_COORDINATOR:
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
@@ -328,6 +346,8 @@ const char* DisplayedCountPreferenceKey(
       return prefs::kIosSettingsSigninPromoDisplayedCount;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       return prefs::kIosNtpFeedTopSigninPromoDisplayedCount;
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      return prefs::kIosReadingListSigninPromoDisplayedCount;
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -387,6 +407,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
       return prefs::kIosSettingsPromoAlreadySeen;
     case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
       return prefs::kIosNtpFeedTopPromoAlreadySeen;
+    case signin_metrics::AccessPoint::ACCESS_POINT_READING_LIST:
+      return prefs::kIosReadingListPromoAlreadySeen;
     case signin_metrics::AccessPoint::ACCESS_POINT_RECENT_TABS:
     case signin_metrics::AccessPoint::ACCESS_POINT_TAB_SWITCHER:
     case signin_metrics::AccessPoint::ACCESS_POINT_START_PAGE:
@@ -438,10 +460,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 }  // namespace
 
-@interface SigninPromoViewMediator () <ChromeAccountManagerServiceObserver> {
-  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
-      _accountManagerServiceObserver;
-}
+@interface SigninPromoViewMediator () <ChromeAccountManagerServiceObserver>
 
 // Redefined to be readwrite.
 @property(nonatomic, strong, readwrite) id<SystemIdentity> identity;
@@ -476,7 +495,13 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 @end
 
-@implementation SigninPromoViewMediator
+@implementation SigninPromoViewMediator {
+  std::unique_ptr<ChromeAccountManagerServiceObserverBridge>
+      _accountManagerServiceObserver;
+  Browser* _browser;
+  // View used to present sign-in UI.
+  UIViewController* _baseViewController;
+}
 
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry {
   // Bookmarks
@@ -490,6 +515,10 @@ const char* AlreadySeenSigninViewPreferenceKey(
   // NTP Feed
   registry->RegisterBooleanPref(prefs::kIosNtpFeedTopPromoAlreadySeen, false);
   registry->RegisterIntegerPref(prefs::kIosNtpFeedTopSigninPromoDisplayedCount,
+                                0);
+  // Reading List
+  registry->RegisterBooleanPref(prefs::kIosReadingListPromoAlreadySeen, false);
+  registry->RegisterIntegerPref(prefs::kIosReadingListSigninPromoDisplayedCount,
                                 0);
 }
 
@@ -553,24 +582,25 @@ const char* AlreadySeenSigninViewPreferenceKey(
   return YES;
 }
 
-- (instancetype)
-    initWithAccountManagerService:
-        (ChromeAccountManagerService*)accountManagerService
-                      authService:(AuthenticationService*)authService
-                      prefService:(PrefService*)prefService
-                      accessPoint:(signin_metrics::AccessPoint)accessPoint
-                        presenter:(id<SigninPresenter>)presenter {
+- (instancetype)initWithBrowser:(Browser*)browser
+          accountManagerService:
+              (ChromeAccountManagerService*)accountManagerService
+                    authService:(AuthenticationService*)authService
+                    prefService:(PrefService*)prefService
+                    accessPoint:(signin_metrics::AccessPoint)accessPoint
+                      presenter:(id<SigninPresenter>)presenter
+             baseViewController:(UIViewController*)baseViewController {
   self = [super init];
   if (self) {
     DCHECK(accountManagerService);
     DCHECK(IsSupportedAccessPoint(accessPoint));
-
+    _browser = browser;
     _accountManagerService = accountManagerService;
     _authService = authService;
     _prefService = prefService;
     _accessPoint = accessPoint;
     _presenter = presenter;
-
+    _baseViewController = baseViewController;
     _accountManagerServiceObserver =
         std::make_unique<ChromeAccountManagerServiceObserverBridge>(
             self, _accountManagerService);
@@ -598,7 +628,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
       // received yet. Let's update the promo identity.
       [self identityListChanged];
     }
-    DCHECK(self.identity);
+    DCHECK(self.identity) << base::SysNSStringToUTF8([self description]);
     return [[SigninPromoViewConfigurator alloc]
         initWithSigninPromoViewMode:SigninPromoViewModeSyncWithPrimaryAccount
                           userEmail:self.identity.userEmail
@@ -626,7 +656,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewIsVisible {
-  DCHECK(!self.invalidOrClosed);
+  DCHECK(!self.invalidOrClosed) << base::SysNSStringToUTF8([self description]);
   if (self.signinPromoViewVisible) {
     return;
   }
@@ -670,7 +700,7 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewIsHidden {
-  DCHECK(!self.invalidOrClosed);
+  DCHECK(!self.invalidOrClosed) << base::SysNSStringToUTF8([self description]);
   self.signinPromoViewVisible = NO;
 }
 
@@ -705,7 +735,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
   if (self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
     return self.authService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   }
-  DCHECK(self.accountManagerService);
+  DCHECK(self.accountManagerService)
+      << base::SysNSStringToUTF8([self description]);
   return self.accountManagerService->GetDefaultIdentity();
 }
 
@@ -736,7 +767,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 // before the sign-in button is pressed, if the current access point supports
 // it.
 - (void)sendImpressionsTillSigninButtonsHistogram {
-  DCHECK(!self.invalidClosedOrNeverVisible);
+  DCHECK(!self.invalidClosedOrNeverVisible)
+      << base::SysNSStringToUTF8([self description]);
   const char* displayedCountPreferenceKey =
       DisplayedCountPreferenceKey(self.accessPoint);
   if (!displayedCountPreferenceKey)
@@ -754,8 +786,9 @@ const char* AlreadySeenSigninViewPreferenceKey(
     return;
   }
   DCHECK_EQ(ios::SigninPromoViewState::UsedAtLeastOnce,
-            self.signinPromoViewState);
-  DCHECK(self.signinInProgress);
+            self.signinPromoViewState)
+      << base::SysNSStringToUTF8([self description]);
+  DCHECK(self.signinInProgress) << base::SysNSStringToUTF8([self description]);
   self.signinInProgress = NO;
 }
 
@@ -795,7 +828,8 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 // Changes the promo view state, and records the metrics.
 - (void)signinPromoViewIsRemoved {
-  DCHECK_NE(ios::SigninPromoViewState::Invalid, self.signinPromoViewState);
+  DCHECK_NE(ios::SigninPromoViewState::Invalid, self.signinPromoViewState)
+      << base::SysNSStringToUTF8([self description]);
   BOOL wasNeverVisible =
       self.signinPromoViewState == ios::SigninPromoViewState::NeverVisible;
   BOOL wasUnused =
@@ -842,13 +876,15 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithNewAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(!self.identity);
+  DCHECK(!self.identity) << base::SysNSStringToUTF8([self description]);
   // The promo on top of the feed is only logged as visible when most of it can
   // be seen, so it can be used without `self.signinPromoViewVisible`.
   DCHECK(self.signinPromoViewVisible ||
          self.accessPoint ==
-             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO);
-  DCHECK(!self.invalidClosedOrNeverVisible);
+             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO)
+      << base::SysNSStringToUTF8([self description]);
+  DCHECK(!self.invalidClosedOrNeverVisible)
+      << base::SysNSStringToUTF8([self description]);
   [self sendImpressionsTillSigninButtonsHistogram];
   // On iOS, the promo does not have a button to add and account when there is
   // already an account on the device. That flow goes through the NOT_DEFAULT
@@ -861,9 +897,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithDefaultAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(self.identity);
-  DCHECK(self.signinPromoViewVisible);
-  DCHECK(!self.invalidClosedOrNeverVisible);
+  DCHECK(self.identity) << base::SysNSStringToUTF8([self description]);
+  DCHECK(self.signinPromoViewVisible)
+      << base::SysNSStringToUTF8([self description]);
+  DCHECK(!self.invalidClosedOrNeverVisible)
+      << base::SysNSStringToUTF8([self description]);
   [self sendImpressionsTillSigninButtonsHistogram];
   signin_metrics::RecordSigninUserActionForAccessPoint(self.accessPoint);
   [self showSigninWithIdentity:self.identity
@@ -873,9 +911,11 @@ const char* AlreadySeenSigninViewPreferenceKey(
 
 - (void)signinPromoViewDidTapSigninWithOtherAccount:
     (SigninPromoView*)signinPromoView {
-  DCHECK(self.identity);
-  DCHECK(self.signinPromoViewVisible);
-  DCHECK(!self.invalidClosedOrNeverVisible);
+  DCHECK(self.identity) << base::SysNSStringToUTF8([self description]);
+  DCHECK(self.signinPromoViewVisible)
+      << base::SysNSStringToUTF8([self description]);
+  DCHECK(!self.invalidClosedOrNeverVisible)
+      << base::SysNSStringToUTF8([self description]);
   [self sendImpressionsTillSigninButtonsHistogram];
   signin_metrics::RecordSigninUserActionForAccessPoint(self.accessPoint);
   [self showSigninWithIdentity:nil
@@ -884,16 +924,19 @@ const char* AlreadySeenSigninViewPreferenceKey(
 }
 
 - (void)signinPromoViewCloseButtonWasTapped:(SigninPromoView*)view {
-  DCHECK(!self.invalidClosedOrNeverVisible);
+  DCHECK(!self.invalidClosedOrNeverVisible)
+      << base::SysNSStringToUTF8([self description]);
   // The promo on top of the feed is only logged as visible when most of it can
   // be seen, so it can be dismissed without `self.signinPromoViewVisible`.
   DCHECK(self.signinPromoViewVisible ||
          self.accessPoint ==
-             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO);
+             signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO)
+      << base::SysNSStringToUTF8([self description]);
   self.signinPromoViewState = ios::SigninPromoViewState::Closed;
   const char* alreadySeenSigninViewPreferenceKey =
       AlreadySeenSigninViewPreferenceKey(self.accessPoint);
-  DCHECK(alreadySeenSigninViewPreferenceKey);
+  DCHECK(alreadySeenSigninViewPreferenceKey)
+      << base::SysNSStringToUTF8([self description]);
   self.prefService->SetBoolean(alreadySeenSigninViewPreferenceKey, true);
   const char* displayedCountPreferenceKey =
       DisplayedCountPreferenceKey(self.accessPoint);
@@ -907,6 +950,19 @@ const char* AlreadySeenSigninViewPreferenceKey(
                      (signinPromoViewMediatorCloseButtonWasTapped:)]) {
     [self.consumer signinPromoViewMediatorCloseButtonWasTapped:self];
   }
+}
+
+#pragma mark - NSObject
+
+- (NSString*)description {
+  return [NSString
+      stringWithFormat:@"<%@: %p, identity: %p, signinPromoViewState: %d, "
+                       @"signinInProgress: %d, accessPoint: %d, "
+                       @"signinPromoViewVisible: %d, invalidOrClosed %d>",
+                       self.class.description, self, self.identity,
+                       self.signinPromoViewState, self.signinInProgress,
+                       self.accessPoint, self.signinPromoViewVisible,
+                       self.invalidOrClosed];
 }
 
 @end

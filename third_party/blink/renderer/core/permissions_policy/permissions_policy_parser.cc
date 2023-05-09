@@ -120,6 +120,7 @@ class ParsingContext {
   struct ParsedAllowlist {
     std::vector<blink::OriginWithPossibleWildcards> allowed_origins
         ALLOW_DISCOURAGED_TYPE("Permission policy uses STL for code sharing");
+    absl::optional<url::Origin> self_if_matches;
     bool matches_all_origins{false};
     bool matches_opaque_src{false};
 
@@ -149,15 +150,6 @@ class ParsingContext {
   // during the parsing process.
   // `execution_context_` should only be `nullptr` in tests.
   ExecutionContext* execution_context_;
-
-  // Flags for the types of items which can be used in allowlists.
-  bool allowlist_includes_star_ = false;
-  bool allowlist_includes_self_ = false;
-  bool allowlist_includes_src_ = false;
-  bool allowlist_includes_none_ = false;
-  bool allowlist_includes_origin_ = false;
-
-  HashSet<FeaturePolicyAllowlistType> allowlist_types_used_;
 
   FeatureObserver feature_observer_;
 };
@@ -194,42 +186,6 @@ void ParsingContext::ReportFeatureUsage(
                   : UseCounterImpl::PermissionsPolicyUsageType::kHeader;
 
   local_dom_window->CountPermissionsPolicyUsage(feature, usage_type);
-}
-
-void ParsingContext::RecordAllowlistTypeUsage(size_t origin_count) {
-  // Record the type of allowlist used.
-  if (origin_count == 0) {
-    allowlist_types_used_.insert(FeaturePolicyAllowlistType::kEmpty);
-  } else if (origin_count == 1) {
-    if (allowlist_includes_star_) {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kStar);
-    } else if (allowlist_includes_self_) {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kSelf);
-    } else if (allowlist_includes_src_) {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kSrc);
-    } else if (allowlist_includes_none_) {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kNone);
-    } else {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kOrigins);
-    }
-  } else {
-    if (allowlist_includes_origin_) {
-      if (allowlist_includes_star_ || allowlist_includes_none_ ||
-          allowlist_includes_src_ || allowlist_includes_self_) {
-        allowlist_types_used_.insert(FeaturePolicyAllowlistType::kMixed);
-      } else {
-        allowlist_types_used_.insert(FeaturePolicyAllowlistType::kOrigins);
-      }
-    } else {
-      allowlist_types_used_.insert(FeaturePolicyAllowlistType::kKeywordsOnly);
-    }
-  }
-  // Reset all flags.
-  allowlist_includes_star_ = false;
-  allowlist_includes_self_ = false;
-  allowlist_includes_src_ = false;
-  allowlist_includes_none_ = false;
-  allowlist_includes_origin_ = false;
 }
 
 absl::optional<mojom::blink::PermissionsPolicyFeature>
@@ -287,8 +243,7 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
     //       |src_origin| is not null), |src_origin| is not opaque; or
     //     c. the opaque origin of the frame, if |src_origin| is opaque.
     if (!src_origin_) {
-      allowlist.allowed_origins.emplace_back(self_origin_->ToUrlOrigin(),
-                                             /*has_subdomain_wildcard=*/false);
+      allowlist.self_if_matches = self_origin_->ToUrlOrigin();
     } else if (!src_origin_->IsOpaque()) {
       allowlist.allowed_origins.emplace_back(src_origin_->ToUrlOrigin(),
                                              /*has_subdomain_wildcard=*/false);
@@ -318,19 +273,18 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
       // adding an origin to the allowlist.
       bool target_is_opaque = false;
       bool target_is_all = false;
+      bool target_is_self = false;
+      url::Origin self;
 
       // 'self' origin is used if the origin is exactly 'self'.
       if (EqualIgnoringASCIICase(origin_string, "'self'")) {
-        allowlist_includes_self_ = true;
-        origin_with_possible_wildcards =
-            OriginWithPossibleWildcards(self_origin_->ToUrlOrigin(),
-                                        /*has_subdomain_wildcard=*/false);
+        target_is_self = true;
+        self = self_origin_->ToUrlOrigin();
       }
       // 'src' origin is used if |src_origin| is available and the
       // origin is a match for 'src'. |src_origin| is only set
       // when parsing an iframe allow attribute.
       else if (src_origin_ && EqualIgnoringASCIICase(origin_string, "'src'")) {
-        allowlist_includes_src_ = true;
         if (!src_origin_->IsOpaque()) {
           origin_with_possible_wildcards =
               OriginWithPossibleWildcards(src_origin_->ToUrlOrigin(),
@@ -339,20 +293,20 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
           target_is_opaque = true;
         }
       } else if (EqualIgnoringASCIICase(origin_string, "'none'")) {
-        allowlist_includes_none_ = true;
         continue;
       } else if (origin_string == "*") {
-        allowlist_includes_star_ = true;
         target_is_all = true;
       }
       // Otherwise, parse the origin string and verify that the result is
       // valid. Invalid strings will produce an opaque origin, which will
       // result in an error message.
       else {
-        origin_with_possible_wildcards =
-            OriginWithPossibleWildcards::Parse(origin_string.Utf8(), type);
-        if (!origin_with_possible_wildcards.origin.opaque()) {
-          allowlist_includes_origin_ = true;
+        absl::optional<OriginWithPossibleWildcards>
+            maybe_origin_with_possible_wildcards =
+                OriginWithPossibleWildcards::Parse(origin_string.Utf8(), type);
+        if (maybe_origin_with_possible_wildcards) {
+          origin_with_possible_wildcards =
+              *maybe_origin_with_possible_wildcards;
         } else {
           logger_.Warn("Unrecognized origin: '" + origin_string + "'.");
           continue;
@@ -364,6 +318,8 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
         allowlist.matches_opaque_src = true;
       } else if (target_is_opaque) {
         allowlist.matches_opaque_src = true;
+      } else if (target_is_self) {
+        allowlist.self_if_matches = self;
       } else {
         allowlist.allowed_origins.emplace_back(origin_with_possible_wildcards);
       }
@@ -377,8 +333,6 @@ ParsingContext::ParsedAllowlist ParsingContext::ParseAllowlist(
 
   // Sort |allowed_origins| in alphabetical order.
   std::sort(allowlist.allowed_origins.begin(), allowlist.allowed_origins.end());
-
-  RecordAllowlistTypeUsage(origin_strings.size());
 
   return allowlist;
 }
@@ -402,6 +356,7 @@ absl::optional<ParsedPermissionsPolicyDeclaration> ParsingContext::ParseFeature(
 
   ParsedPermissionsPolicyDeclaration parsed_feature(*feature);
   parsed_feature.allowed_origins = std::move(parsed_allowlist.allowed_origins);
+  parsed_feature.self_if_matches = parsed_allowlist.self_if_matches;
   parsed_feature.matches_all_origins = parsed_allowlist.matches_all_origins;
   parsed_feature.matches_opaque_src = parsed_allowlist.matches_opaque_src;
 

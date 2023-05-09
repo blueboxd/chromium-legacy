@@ -116,6 +116,11 @@ NET_EXPORT BASE_DECLARE_FEATURE(kSplitCacheByIncludeCredentials);
 // available.
 NET_EXPORT BASE_DECLARE_FEATURE(kSplitCacheByNetworkIsolationKey);
 
+// Splits the generated code cache by the request's NetworkIsolationKey if one
+// is available. Note that this feature is also gated behind
+// `net::HttpCache::IsSplitCacheEnabled()`.
+NET_EXPORT BASE_DECLARE_FEATURE(kSplitCodeCacheByNetworkIsolationKey);
+
 // Splits host cache entries by the DNS request's NetworkIsolationKey if one is
 // available. Also prevents merging live DNS lookups when there is a NIK
 // mismatch.
@@ -147,6 +152,14 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionSSLSessionsByNetworkIsolationKey);
 // cache, but internal objects can be created with them (e.g., endpoints), for
 // testing.
 NET_EXPORT BASE_DECLARE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey);
+
+// Creates a <double key + is_cross_site> NetworkIsolationKey which is used
+// to partition the HTTP cache. This key will have the following properties:
+// `top_frame_site_` -> the schemeful site of the top level page.
+// `frame_site_` -> absl::nullopt.
+// `is_cross_site_` -> a boolean indicating whether the frame site is
+// schemefully cross-site from the top-level site.
+NET_EXPORT BASE_DECLARE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey);
 
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
@@ -307,8 +320,6 @@ NET_EXPORT BASE_DECLARE_FEATURE(kCookieDomainRejectNonASCII);
 // Blocks the 'Set-Cookie' request header on outbound fetch requests.
 NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
 
-NET_EXPORT BASE_DECLARE_FEATURE(kOptimisticBlockfileWrite);
-
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
 NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);
 
@@ -351,6 +362,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPrefetchFollowsNormalCacheSemantics);
 #if BUILDFLAG(IS_CHROMEOS)
 NET_EXPORT BASE_DECLARE_FEATURE(kKerberosInBrowserRedirect);
 #endif
+
+// A flag to use asynchronous session creation for new QUIC sessions.
+NET_EXPORT BASE_DECLARE_FEATURE(kAsyncQuicSession);
 
 // Enables custom proxy configuration for the IP Protection experimental proxy.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableIpProtectionProxy);

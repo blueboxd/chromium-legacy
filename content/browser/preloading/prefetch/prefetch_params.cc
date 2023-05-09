@@ -224,7 +224,7 @@ bool PrefetchShouldBlockUntilHead(
     case blink::mojom::SpeculationEagerness::kEager:
       return base::GetFieldTrialParamByFeatureAsBool(
           features::kPrefetchUseContentRefactor,
-          "block_until_head_eager_prefetch", false);
+          "block_until_head_eager_prefetch", true);
     case blink::mojom::SpeculationEagerness::kModerate:
       return base::GetFieldTrialParamByFeatureAsBool(
           features::kPrefetchUseContentRefactor,
@@ -240,4 +240,12 @@ bool IsContentPrefetchHoldback() {
   return base::GetFieldTrialParamByFeatureAsBool(
       features::kPrefetchUseContentRefactor, "prefetch_holdback", false);
 }
+
+base::TimeDelta PrefetchMaximumRetryAfterDelta() {
+  int max_seconds = base::GetFieldTrialParamByFeatureAsInt(
+      features::kPrefetchUseContentRefactor, "max_retry_after_duration_secs",
+      1 * 60 * 60 * 24 * 7 /* 1 week */);
+  return base::Seconds(max_seconds);
+}
+
 }  // namespace content

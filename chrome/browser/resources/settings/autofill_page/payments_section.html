@@ -83,6 +83,7 @@
       if="[[shouldShowIbanSettings_(showIbanSettingsEnabled_)]]">
     <cr-button class="header-aligned-button"
         id="addPaymentMethods" on-click="onAddPaymentMethodClick_"
+        aria-label="$i18n{addPaymentMethods}"
         hidden$="[[!prefs.autofill.credit_card_enabled.value]]">
       $i18n{add}
       <iron-icon icon="cr:arrow-drop-down" class="arrow-icon-down"></iron-icon>
@@ -115,7 +116,8 @@
     credit-cards="[[creditCards]]" ibans="[[ibans]]" upi-ids="[[upiIds]]"
     on-dots-iban-menu-click="onDotsIbanMenuClick_"
     on-dots-card-menu-click="onCreditCardDotsMenuClick_"
-    on-remote-card-menu-click="onRemoteEditCreditCardClick_">
+    on-remote-card-menu-click="onRemoteEditCreditCardClick_"
+    aria-label="$i18n{paymentsMethodsTableAriaLabel}">
 </settings-payments-list>
 
 <cr-action-menu id="creditCardSharedMenu" role-description="$i18n{menu}">
@@ -154,7 +156,7 @@
       </button>
       <button id="menuRemoveIban" class="dropdown-item"
           on-click="onMenuRemoveIbanClick_">
-        $i18n{removeIban}
+        $i18n{delete}
       </button>
     </cr-action-menu>
   </template>
@@ -180,7 +182,19 @@
 
 <template is="dom-if" if="[[showLocalCreditCardRemoveConfirmationDialog_]]"
     restamp>
-  <settings-local-credit-card-remove-confirmation-dialog
+  <settings-simple-confirmation-dialog id="localCardDeleteConfirmDialog"
+      title-text="$i18n{removeLocalCreditCardConfirmationTitle}"
+      body-text="$i18n{removeLocalPaymentMethodConfirmationDescription}"
+      confirm-text="$i18n{delete}"
       on-close="onLocalCreditCardRemoveConfirmationDialogClose_">
-  </setting-local-credit-card-remove-confirmation-dialog>
+  </settings-simple-confirmation-dialog>
+</template>
+
+<template is="dom-if" if="[[showLocalIbanRemoveConfirmationDialog_]]" restamp>
+  <settings-simple-confirmation-dialog id="localIbanDeleteConfirmationDialog"
+      title-text="$i18n{removeLocalIbanConfirmationTitle}"
+      body-text="$i18n{removeLocalPaymentMethodConfirmationDescription}"
+      confirm-text="$i18n{delete}"
+      on-close="onLocalIbanRemoveConfirmationDialogClose_">
+  </settings-simple-confirmation-dialog>
 </template>

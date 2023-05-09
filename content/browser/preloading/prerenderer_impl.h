@@ -23,10 +23,13 @@ class CONTENT_EXPORT PrerendererImpl : public Prerenderer, WebContentsObserver {
   void PrimaryPageChanged(Page& page) override;
 
   void ProcessCandidatesForPrerender(
+      const base::UnguessableToken& initiator_devtools_navigation_token,
       const std::vector<blink::mojom::SpeculationCandidatePtr>& candidates)
       override;
 
   bool MaybePrerender(
+      const absl::optional<base::UnguessableToken>&
+          initiator_devtools_navigation_token,
       const blink::mojom::SpeculationCandidatePtr& candidate) override;
 
   bool ShouldWaitForPrerenderResult(const GURL& url) override;
@@ -34,26 +37,13 @@ class CONTENT_EXPORT PrerendererImpl : public Prerenderer, WebContentsObserver {
  private:
   void CancelStartedPrerenders();
 
-  // Iterates started prerenders and counts how many of them were canceled
-  // due to the excessive memory usage.
-  int GetNumberOfDestroyedByMemoryExceeded();
-
   // TODO(https://crbug.com/1197133): Cancel started prerenders when candidates
   // are updated.
   // This is kept sorted by URL.
   struct PrerenderInfo;
-
-  // Counts the historical non-new-tab prerenders.
-  // TODO(crbug.com/1350676): Observe PrerenderHost created for
-  // prerendering in a new tab so that this counter can take new-tab prerender
-  // into account.
-  int count_started_same_tab_prerenders_ = 0;
   std::vector<PrerenderInfo> started_prerenders_;
 
   base::WeakPtr<PrerenderHostRegistry> registry_;
-
-  class PrerenderHostObserver;
-  std::vector<std::unique_ptr<PrerenderHostObserver>> observers_;
 
   // content::PreloadingDecider, which inherits content::DocumentUserData, owns
   // `this`, so `this` can access `render_frame_host_` safely.

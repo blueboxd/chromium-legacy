@@ -57,6 +57,14 @@ GLSurfaceContextPair GetRealContextForVulkan() {
   // not having any real EGL context in that case instead of crashing.
   if (surface) {
     gl::GLContextAttribs attribs;
+
+    // This context is used on the GPU thread. We must avoid it being put in a
+    // virtualization group with contexts that Chrome creates and uses on other
+    // threads to avoid EGL_BAD_ACCESS errors when ANGLE tries to make the
+    // underlying native context current on multiple threads simultaneously.
+    attribs.angle_context_virtualization_group_number =
+        gl::AngleContextVirtualizationGroup::kWebViewRenderThread;
+
     context = gl::init::CreateGLContext(nullptr, surface.get(), attribs);
   }
   DCHECK(context);
@@ -72,7 +80,7 @@ void OnContextLost(std::unique_ptr<bool> expect_loss, bool synthetic_loss) {
   if (expect_loss && *expect_loss)
     return;
   // TODO(https://crbug.com/1112841): Debugging contexts losts. WebView will
-  // intentionally crash in HardwareRendererViz::OnViz::DisplayOutputSurface
+  // intentionally crash in HardwareRenderer::OnViz::DisplayOutputSurface
   // that will happen after this callback. That crash happens on viz thread and
   // doesn't have any useful information. Crash here on RenderThread to
   // understand the reason of context losts.
@@ -102,10 +110,19 @@ OutputSurfaceProviderWebView::OutputSurfaceProviderWebView(
 
   InitializeContext();
 }
+
 OutputSurfaceProviderWebView::~OutputSurfaceProviderWebView() {
-  // We must to destroy |gl_surface_| before |shared_context_state_|, so we will
-  // still have context. NOTE: |shared_context_state_| holds ref to surface, but
-  // it loses it before context.
+  // We must destroy |gl_surface_| before |shared_context_state_|, so we will
+  // still have context. Note that with ANGLE we are not actually guaranteed to
+  // have a current context at this point, so ensure that it is current here (if
+  // not using ANGLE, RenderThreadManager::DestroyHardwareRendererOnRT() ensures
+  // that there is a current context via its creation of a
+  // ScopedAppGLStateRestoreImpl instance, which creates a dummy context).
+  // NOTE: |shared_context_state_| holds a ref to surface, but it explicitly
+  // drops it before releasing the context.
+  if (gl_surface_->is_angle()) {
+    shared_context_state_->MakeCurrent(nullptr);
+  }
   gl_surface_.reset();
 }
 
@@ -145,8 +162,10 @@ void OutputSurfaceProviderWebView::InitializeContext() {
     auto share_group = base::MakeRefCounted<gl::GLShareGroup>();
     gl::GLContextAttribs attribs;
     // For ANGLE EGL, we need to create ANGLE context from the current native
-    // EGL context.
+    // EGL context and restore state of the native EGL context when releasing
+    // the ANGLE context.
     attribs.angle_create_from_external_context = is_angle;
+    attribs.angle_restore_external_context_state = is_angle;
 
     if (is_angle && display->ext->b_EGL_ANGLE_create_context_client_arrays) {
       // By default client arrays are disabled as they are not supported by

@@ -38,6 +38,9 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollUnification);
 // unified scroll with main-thread repaint reasons.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMainRepaintScrollPrefersNewContent);
 
+// Flush pending GPU raster work before running the LTHI::DrawLayers stage.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kFlushGpuAtDraw);
+
 // When enabled, wheel scrolls trigger smoothness mode. When disabled,
 // smoothness mode is limited to non-animated (precision) scrolls, such as
 // touch scrolling.
@@ -108,6 +111,10 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReclaimResourcesFlushInBackground);
 // Try to play a longer list of ops before giving up in solid color analysis for
 // tiles.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kMoreAggressiveSolidColorDetection);
+
+// Allow CC FrameRateEstimater to reduce the frame rate to half of the default
+// if the condition meets the requirement.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kReducedFrameRateEstimation);
 
 }  // namespace features
 

@@ -217,7 +217,8 @@ Page::Page(base::PassKey<Page>,
       next_related_page_(this),
       prev_related_page_(this),
       autoplay_flags_(0),
-      web_text_autosizer_page_info_({0, 0, 1.f}) {
+      web_text_autosizer_page_info_({0, 0, 1.f}),
+      v8_compile_hints_(MakeGarbageCollected<V8CompileHints>(this)) {
   DCHECK(!AllPages().Contains(this));
   AllPages().insert(this);
 
@@ -713,12 +714,10 @@ void Page::SettingsChanged(ChangeType change_type) {
       }
       break;
     case ChangeType::kAccessibilityState:
-      if (!MainFrame() || !MainFrame()->IsLocalFrame())
+      if (!MainFrame() || !MainFrame()->IsLocalFrame()) {
         break;
-      DeprecatedLocalMainFrame()
-          ->GetDocument()
-          ->AXObjectCacheOwner()
-          .ClearAXObjectCache();
+      }
+      DeprecatedLocalMainFrame()->GetDocument()->RefreshAccessibilityTree();
       break;
     case ChangeType::kViewportStyle: {
       auto* main_local_frame = DynamicTo<LocalFrame>(MainFrame());
@@ -957,6 +956,7 @@ void Page::Trace(Visitor* visitor) const {
   visitor->Trace(next_related_page_);
   visitor->Trace(prev_related_page_);
   visitor->Trace(agent_group_scheduler_);
+  visitor->Trace(v8_compile_hints_);
   Supplementable<Page>::Trace(visitor);
 }
 

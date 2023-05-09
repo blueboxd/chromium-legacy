@@ -490,8 +490,9 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         if (mBackgroundTabAnimation != null && mBackgroundTabAnimation.isStarted()) {
             mBackgroundTabAnimation.end();
         }
-        mBackgroundTabAnimation = BackgroundTabAnimation.create(this, primaryTasksSurface, originX,
-                originY, getOrientation() == Orientation.PORTRAIT);
+        float dpToPx = getContext().getResources().getDisplayMetrics().density;
+        mBackgroundTabAnimation = BackgroundTabAnimation.create(this, primaryTasksSurface,
+                originX * dpToPx, originY * dpToPx, getOrientation() == Orientation.PORTRAIT);
         mBackgroundTabAnimation.start();
     }
 
@@ -896,12 +897,17 @@ public class TabSwitcherAndStartSurfaceLayout extends Layout {
         return super.canHostBeFocusable();
     }
 
+    @Override
+    public boolean isRunningAnimations() {
+        return mDeferredAnimationRunnable != null || mTabToSwitcherAnimation != null;
+    }
+
     /**
      * Shrink/Expand animation is disabled for Tablet TabSwitcher launch polish.
      * @return Whether shrink/expand animation is enabled.
      */
     private boolean isTabGtsAnimationEnabled() {
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())) return false;
-        return TabUiFeatureUtilities.isTabToGtsAnimationEnabled();
+        return TabUiFeatureUtilities.isTabToGtsAnimationEnabled(getContext());
     }
 }

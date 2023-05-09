@@ -1563,8 +1563,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   ManagedMemoryPolicy policy = host_impl()->ActualManagedMemoryPolicy();
   policy.bytes_limit_when_visible =
-      viz::ResourceSizes::UncheckedSizeInBytes<size_t>(gfx::Size(256, 256),
-                                                       viz::RGBA_8888);
+      viz::SinglePlaneFormat::kRGBA_8888.EstimatedSizeInBytes(
+          gfx::Size(256, 256));
   host_impl()->SetMemoryPolicy(policy);
 
   EXPECT_FALSE(host_impl()->is_likely_to_require_a_draw());
@@ -1573,7 +1573,8 @@ TEST_F(TileManagerTilePriorityQueueTest,
 
   ResourcePool::InUsePoolResource resource =
       host_impl()->resource_pool()->AcquireResource(
-          gfx::Size(256, 256), viz::RGBA_8888, gfx::ColorSpace());
+          gfx::Size(256, 256), viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace());
   resource.set_gpu_backing(std::make_unique<StubGpuBacking>());
 
   host_impl()->tile_manager()->CheckIfMoreTilesNeedToBePreparedForTesting();
@@ -1940,7 +1941,7 @@ class TileManagerOcclusionTest : public TileManagerTest {
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
     tile_manager()->PrepareTiles(state);
     run_loop.Run();
-    tile_manager()->CheckForCompletedTasks();
+    tile_manager()->PrepareToDraw();
   }
 
   TileManager* tile_manager() { return host_impl()->tile_manager(); }
@@ -2095,7 +2096,7 @@ TEST_F(PixelInspectTileManagerTest, LowResHasNoImage) {
         .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
     tile_manager->PrepareTiles(host_impl()->global_tile_state());
     run_loop.Run();
-    tile_manager->CheckForCompletedTasks();
+    tile_manager->PrepareToDraw();
 
     Tile* tile = tiling->TileAt(0, 0);
     // The tile in the tiling was rastered.
@@ -2309,7 +2310,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
       host_impl->resource_pool()->AcquireResource(
-          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
+          kTileSize, viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace::CreateSRGB());
 
   resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
   host_impl->resource_pool()->PrepareForExport(resource);
@@ -2374,7 +2376,8 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
       host_impl->resource_pool()->AcquireResource(
-          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
+          kTileSize, viz::SinglePlaneFormat::kRGBA_8888,
+          gfx::ColorSpace::CreateSRGB());
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));
 
@@ -2532,7 +2535,7 @@ TEST_F(InvalidResourceTileManagerTest, InvalidResource) {
       .WillOnce(testing::Invoke([&run_loop]() { run_loop.Quit(); }));
   tile_manager->PrepareTiles(host_impl()->global_tile_state());
   run_loop.Run();
-  tile_manager->CheckForCompletedTasks();
+  tile_manager->PrepareToDraw();
 
   Tile* tile = tiling->TileAt(0, 0);
   ASSERT_TRUE(tile);
@@ -3787,10 +3790,13 @@ class HdrImageTileManagerTest : public CheckerImagingTileManagerTest {
     ASSERT_FALSE(
         host_impl()->tile_manager()->HasScheduledTileTasksForTesting());
 
-    auto expected_format = output_cs.IsHDR() ? viz::RGBA_F16 : viz::RGBA_8888;
+    auto expected_format = output_cs.IsHDR()
+                               ? viz::SinglePlaneFormat::kRGBA_F16
+                               : viz::SinglePlaneFormat::kRGBA_8888;
     auto all_tiles = host_impl()->tile_manager()->AllTilesForTesting();
     for (const auto* tile : all_tiles)
-      EXPECT_EQ(expected_format, tile->draw_info().resource_format());
+      EXPECT_EQ(expected_format,
+                tile->draw_info().resource_shared_image_format());
   }
 };
 

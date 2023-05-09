@@ -9,6 +9,7 @@
 #include "base/memory/raw_ptr.h"
 #include "components/autofill/core/browser/autofill_subject.h"
 #include "components/autofill/core/browser/data_model/iban.h"
+#include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/single_field_form_filler.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -27,12 +28,10 @@ class IBANManager : public SingleFieldFormFiller,
                     public KeyedService,
                     public AutofillSubject {
  public:
-  // Initializes the instance with the given parameters. |personal_data_manager|
+  // Initializes the instance with the given parameters. `personal_data_manager`
   // is a profile-scope data manager used to retrieve IBAN data from the
-  // local autofill table. |is_off_the_record| indicates whether the user is
-  // currently operating in an off-the-record context (i.e. incognito).
-  explicit IBANManager(PersonalDataManager* personal_data_manager,
-                       bool is_off_the_record);
+  // local autofill table.
+  explicit IBANManager(PersonalDataManager* personal_data_manager);
 
   IBANManager(const IBANManager&) = delete;
   IBANManager& operator=(const IBANManager&) = delete;
@@ -53,18 +52,26 @@ class IBANManager : public SingleFieldFormFiller,
                                             const std::u16string& value,
                                             int frontend_id) override {}
   void OnSingleFieldSuggestionSelected(const std::u16string& value,
-                                       int frontend_id) override {}
+                                       int frontend_id) override;
 
   base::WeakPtr<IBANManager> GetWeakPtr();
 
-#if defined(UNIT_TEST)
-  // Assign types to the fields for the testing purposes.
-  void SetOffTheRecordForTesting(bool is_off_the_record) {
-    is_off_the_record_ = is_off_the_record;
-  }
-#endif
-
  private:
+  // Records metrics related to the IBAN suggestions popup.
+  class UmaRecorder {
+   public:
+    void OnIbanSuggestionsShown(FieldGlobalId field_global_id);
+    void OnIbanSuggestionSelected();
+
+   private:
+    // The global id of the field that most recently had IBAN suggestions shown.
+    FieldGlobalId most_recent_suggestions_shown_field_global_id_;
+
+    // The global id of the field that most recently had an IBAN suggestion
+    // selected.
+    FieldGlobalId most_recent_suggestion_selected_field_global_id_;
+  };
+
   // Sends suggestions for |ibans| to the |query_handler|'s handler for display
   // in the associated Autofill popup.
   void SendIBANSuggestions(const std::vector<IBAN*>& ibans,
@@ -73,7 +80,7 @@ class IBANManager : public SingleFieldFormFiller,
   raw_ptr<PersonalDataManager, DanglingUntriaged> personal_data_manager_ =
       nullptr;
 
-  bool is_off_the_record_ = false;
+  UmaRecorder uma_recorder_;
 
   base::WeakPtrFactory<IBANManager> weak_ptr_factory_{this};
 };

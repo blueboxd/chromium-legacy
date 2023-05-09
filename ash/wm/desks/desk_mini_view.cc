@@ -17,10 +17,10 @@
 #include "ash/wm/desks/desk_action_view.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
+#include "ash/wm/desks/desk_textfield.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_restore_util.h"
-#include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -134,7 +134,7 @@ DeskMiniView::DeskMiniView(DesksBarView* owner_bar,
             IsPointOnMiniView(
                 owner_bar_->last_dragged_item_screen_location())) ||
            desk_preview_->IsViewHighlighted() ||
-           (desk_ && desk_->is_active() &&
+           (desk_ && desk_->is_active() && owner_bar_->overview_grid() &&
             !owner_bar_->overview_grid()->IsShowingSavedDeskLibrary());
   });
 
@@ -233,7 +233,7 @@ void DeskMiniView::UpdateFocusColor() {
        IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) ||
       desk_preview_->IsViewHighlighted()) {
     new_focus_color_id = ui::kColorAshFocusRing;
-  } else if (desk_->is_active() &&
+  } else if (desk_->is_active() && owner_bar_->overview_grid() &&
              !owner_bar_->overview_grid()->IsShowingSavedDeskLibrary()) {
     new_focus_color_id = kColorAshCurrentDeskColor;
   } else {
@@ -422,9 +422,9 @@ void DeskMiniView::ContentsChanged(views::Textfield* sender,
   // To avoid potential security and memory issues, we don't allow desk names to
   // have an unbounded length. Therefore we trim if needed at kMaxLength UTF-16
   // boundary. Note that we don't care about code point boundaries in this case.
-  if (new_contents.size() > DesksTextfield::kMaxLength) {
+  if (new_contents.size() > DeskTextfield::kMaxLength) {
     std::u16string trimmed_new_contents = new_contents;
-    trimmed_new_contents.resize(DesksTextfield::kMaxLength);
+    trimmed_new_contents.resize(DeskTextfield::kMaxLength);
     desk_name_view_->SetText(trimmed_new_contents);
   }
 

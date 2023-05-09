@@ -153,15 +153,22 @@ PolicyEffect ComputeDevicePolicyEffect(Profile& profile) {
   return PolicyEffect::kNone;
 }
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class FinishedReason {
-  kFinishedFlow,
-  kProfileAlreadySetUp,
-  kSkippedByPolicies,
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  kExperimentCounterfactual = 0,
+#endif
+  kFinishedFlow = 1,
+  kProfileAlreadySetUp = 2,
+  kSkippedByPolicies = 3,
+  kMaxValue = kSkippedByPolicies,
 };
 
 void SetFirstRunFinished(FinishedReason reason) {
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetBoolean(prefs::kFirstRunFinished, true);
+  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.FinishReason", reason);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   absl::optional<ProfileMetrics::ProfileSignedInFlowOutcome> outcome;
@@ -193,37 +200,6 @@ bool IsFirstRunMarkedFinishedInPrefs() {
   const PrefService* const local_state = g_browser_process->local_state();
   return local_state && local_state->GetBoolean(prefs::kFirstRunFinished);
 }
-
-// Processes the outcome from the FRE and resumes the user's interrupted task.
-// `original_intent_callback` should be run to allow the caller to resume what
-// they were trying to do before they stopped to show the FRE. If the FRE's
-// `status` is not `ProfilePicker::FirstRunExitStatus::kCompleted`, that
-// `original_intent_callback` will be called with `proceed` set to false,
-// otherwise it will be called with true.
-void OnFirstRunHasExited(ResumeTaskCallback original_intent_callback,
-                         ProfilePicker::FirstRunExitStatus status) {
-  bool should_mark_fre_finished =
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-      status != ProfilePicker::FirstRunExitStatus::kQuitEarly;
-#else
-      true;
-#endif
-  if (should_mark_fre_finished) {
-    // The user got to the last step, we can mark the FRE as finished, whether
-    // we eventually proceed with the original intent or not.
-    SetFirstRunFinished(FinishedReason::kFinishedFlow);
-  }
-
-  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.ExitStatus", status);
-
-  bool proceed = status == ProfilePicker::FirstRunExitStatus::kCompleted;
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
-  proceed |= kForYouFreCloseShouldProceed.Get();
-#endif
-
-  std::move(original_intent_callback).Run(proceed);
-}
-
 }  // namespace
 
 // FirstRunService -------------------------------------------------------------
@@ -322,22 +298,70 @@ void FirstRunService::ClearSilentSyncEnabler() {
 }
 #endif
 
-void FirstRunService::OpenFirstRunIfNeeded(EntryPoint entry_point,
-                                           ResumeTaskCallback callback) {
-  TryMarkFirstRunAlreadyFinished(base::BindOnce(
-      &FirstRunService::OpenFirstRunInternal, weak_ptr_factory_.GetWeakPtr(),
-      entry_point, std::move(callback)));
+// `resume_task_callback_` should be run to allow the caller to resume what
+// they were trying to do before they stopped to show the FRE.
+// If the FRE's `status` is not `ProfilePicker::FirstRunExitStatus::kCompleted`,
+// that `resume_task_callback_` will be called with `proceed` set to false,
+// otherwise it will be called with true.
+void FirstRunService::OnFirstRunHasExited(
+    ProfilePicker::FirstRunExitStatus status) {
+  if (!resume_task_callback_) {
+    return;
+  }
+
+  bool proceed = false;
+  bool should_mark_fre_finished = false;
+  switch (status) {
+    case ProfilePicker::FirstRunExitStatus::kCompleted:
+      proceed = true;
+      should_mark_fre_finished = true;
+      break;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    case ProfilePicker::FirstRunExitStatus::kQuitEarly:
+#endif
+    case ProfilePicker::FirstRunExitStatus::kAbortTask:
+      proceed = false;
+      should_mark_fre_finished = false;
+      break;
+    case ProfilePicker::FirstRunExitStatus::kQuitAtEnd:
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+      proceed = kForYouFreCloseShouldProceed.Get();
+#endif
+      should_mark_fre_finished = true;
+      break;
+    case ProfilePicker::FirstRunExitStatus::kAbandonedFlow:
+      proceed = false;
+      should_mark_fre_finished = true;
+      break;
+  }
+
+  if (should_mark_fre_finished) {
+    // The user got to the last step, we can mark the FRE as finished, whether
+    // we eventually proceed with the original intent or not.
+    SetFirstRunFinished(FinishedReason::kFinishedFlow);
+  }
+
+  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.ExitStatus", status);
+  std::move(resume_task_callback_).Run(proceed);
 }
 
-void FirstRunService::OpenFirstRunInternal(EntryPoint entry_point,
+void FirstRunService::OpenFirstRunIfNeeded(EntryPoint entry_point,
                                            ResumeTaskCallback callback) {
+  OnFirstRunHasExited(ProfilePicker::FirstRunExitStatus::kAbortTask);
+  resume_task_callback_ = std::move(callback);
+  TryMarkFirstRunAlreadyFinished(
+      base::BindOnce(&FirstRunService::OpenFirstRunInternal,
+                     weak_ptr_factory_.GetWeakPtr(), entry_point));
+}
+
+void FirstRunService::OpenFirstRunInternal(EntryPoint entry_point) {
   if (IsFirstRunMarkedFinishedInPrefs()) {
     // Opening the First Run is not needed. For example it might have been
     // marked finished silently, or is suppressed by policy.
     //
     // Note that this assumes that the prefs state is the the only part of
     // `ShouldOpenFirstRun()` that can change during the service's lifetime.
-    std::move(callback).Run(/*proceed=*/true);
+    std::move(resume_task_callback_).Run(/*proceed=*/true);
     return;
   }
 
@@ -345,12 +369,24 @@ void FirstRunService::OpenFirstRunInternal(EntryPoint entry_point,
   base::UmaHistogramEnumeration(
       "Profile.LacrosPrimaryProfileFirstRunEntryPoint", entry_point);
 #endif
+  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.EntryPoint",
+                                entry_point);
 
   // Note: we call `Show()` even if the FRE might be already open and rely on
   // the ProfilePicker to decide what it wants to do with `callback`.
   ProfilePicker::Show(ProfilePicker::Params::ForFirstRun(
-      profile_->GetPath(),
-      base::BindOnce(&OnFirstRunHasExited, std::move(callback))));
+      profile_->GetPath(), base::BindOnce(&FirstRunService::OnFirstRunHasExited,
+                                          weak_ptr_factory_.GetWeakPtr())));
+}
+
+void FirstRunService::FinishFirstRunWithoutResumeTask() {
+  if (!resume_task_callback_) {
+    return;
+  }
+
+  DCHECK(ProfilePicker::IsFirstRunOpen());
+  OnFirstRunHasExited(ProfilePicker::FirstRunExitStatus::kAbandonedFlow);
+  ProfilePicker::Hide();
 }
 
 // FirstRunServiceFactory ------------------------------------------------------
@@ -382,6 +418,13 @@ FirstRunService* FirstRunServiceFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, /*create=*/true));
 }
 
+// static
+FirstRunService* FirstRunServiceFactory::GetForBrowserContextIfExists(
+    content::BrowserContext* context) {
+  return static_cast<FirstRunService*>(
+      GetInstance()->GetServiceForBrowserContext(context, /*create=*/false));
+}
+
 KeyedService* FirstRunServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
@@ -402,11 +445,14 @@ KeyedService* FirstRunServiceFactory::BuildServiceInstanceFor(
   }
 
   if (!base::FeatureList::IsEnabled(kForYouFre)) {
+    base::UmaHistogramBoolean("ProfilePicker.FirstRun.ServiceCreated", false);
+    SetFirstRunFinished(FinishedReason::kExperimentCounterfactual);
     return nullptr;
   }
 #endif
 
   auto* instance = new FirstRunService(profile);
+  base::UmaHistogramBoolean("ProfilePicker.FirstRun.ServiceCreated", true);
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Check if we should turn Sync on from the background and skip the FRE.

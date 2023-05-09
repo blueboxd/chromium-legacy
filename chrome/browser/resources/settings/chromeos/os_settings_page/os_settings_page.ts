@@ -45,7 +45,7 @@ import {getTemplate} from './os_settings_page.html.js';
 const OsSettingsPageElementBase =
     MainPageMixin(WebUiListenerMixin(PolymerElement));
 
-class OsSettingsPageElement extends OsSettingsPageElementBase {
+export class OsSettingsPageElement extends OsSettingsPageElementBase {
   static get is() {
     return 'os-settings-page';
   }
@@ -87,7 +87,9 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
        */
       isGuestMode_: {
         type: Boolean,
-        value: loadTimeData.getBoolean('isGuest'),
+        value: () => {
+          return loadTimeData.getBoolean('isGuest');
+        },
       },
 
       /**
@@ -142,6 +144,7 @@ class OsSettingsPageElement extends OsSettingsPageElementBase {
   androidAppsInfo?: AndroidAppsInfo;
   pageVisibility: OsPageVisibility;
   advancedToggleExpanded: boolean;
+  showKerberosSection: boolean;
   private allowCrostini_: boolean;
   private hasExpandedSection_: boolean;
   private showSecondaryUserBanner_: boolean;

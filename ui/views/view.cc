@@ -29,6 +29,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_node_id_forward.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
@@ -227,6 +228,8 @@ View::View() {
     SetProperty(kViewStackTraceKey,
                 std::make_unique<base::debug::StackTrace>());
   }
+
+  ax_node_data_ = std::make_unique<ui::AXNodeData>();
 }
 
 View::~View() {
@@ -1062,6 +1065,16 @@ gfx::RectF View::ConvertRectToTarget(const View* source,
 }
 
 // static
+gfx::Rect View::ConvertRectToTarget(const View* source,
+                                    const View* target,
+                                    gfx::Rect& rect) {
+  constexpr float kDefaultAllowedConversionError = 0.00001f;
+  return gfx::ToEnclosedRectIgnoringError(
+      ConvertRectToTarget(source, target, gfx::RectF(rect)),
+      kDefaultAllowedConversionError);
+}
+
+// static
 void View::ConvertPointToWidget(const View* src, gfx::Point* p) {
   DCHECK(src);
   DCHECK(p);
@@ -1091,6 +1104,13 @@ void View::ConvertPointToScreen(const View* src, gfx::Point* p) {
 }
 
 // static
+gfx::Point View::ConvertPointToScreen(const View* src, const gfx::Point& p) {
+  gfx::Point screen_pt = p;
+  ConvertPointToScreen(src, &screen_pt);
+  return screen_pt;
+}
+
+// static
 void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
   DCHECK(dst);
   DCHECK(p);
@@ -1100,6 +1120,13 @@ void View::ConvertPointFromScreen(const View* dst, gfx::Point* p) {
     return;
   *p -= widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
   ConvertPointFromWidget(dst, p);
+}
+
+// static
+gfx::Point View::ConvertPointFromScreen(const View* src, const gfx::Point& p) {
+  gfx::Point local_pt = p;
+  ConvertPointFromScreen(src, &local_pt);
+  return local_pt;
 }
 
 // static
@@ -1880,11 +1907,6 @@ View::DropCallback View::GetDropCallback(const ui::DropTargetEvent& event) {
   return base::NullCallback();
 }
 
-View::DropCallbackWithAnimation View::GetDropCallbackWithAnimation(
-    const ui::DropTargetEvent& event) {
-  return base::NullCallback();
-}
-
 // static
 bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
   return (abs(delta.x()) > GetHorizontalDragThreshold() ||
@@ -1899,18 +1921,211 @@ ViewAccessibility& View::GetViewAccessibility() const {
   return *view_accessibility_;
 }
 
+void View::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  // `ViewAccessibility::GetAccessibleNodeData` populates the id and classname
+  // values prior to asking the View for its data. We don't want to stomp on
+  // those values.
+  ax_node_data_->id = node_data->id;
+  ax_node_data_->AddStringAttribute(
+      ax::mojom::StringAttribute::kClassName,
+      node_data->GetStringAttribute(ax::mojom::StringAttribute::kClassName));
+
+  // Copy everything set by the property setters.
+  *node_data = *ax_node_data_;
+}
+
+void View::SetAccessibilityProperties(
+    absl::optional<ax::mojom::Role> role,
+    absl::optional<std::u16string> name,
+    absl::optional<std::u16string> description,
+    absl::optional<std::u16string> role_description,
+    absl::optional<ax::mojom::NameFrom> name_from,
+    absl::optional<ax::mojom::DescriptionFrom> description_from) {
+  base::AutoReset<bool> initializing(&pause_accessibility_events_, true);
+  if (role.has_value()) {
+    if (role_description.has_value()) {
+      SetAccessibleRole(role.value(), role_description.value());
+    } else {
+      SetAccessibleRole(role.value());
+    }
+  }
+
+  // Defining the NameFrom value without specifying the name doesn't make much
+  // sense. The only exception might be if the NameFrom is setting the name to
+  // explicitly empty. In order to prevent surprising/confusing behavior, we
+  // only use the NameFrom value if we have an explicit name. As a result, any
+  // caller setting the name to explicitly empty must set the name to an empty
+  // string.
+  if (name.has_value()) {
+    if (name_from.has_value()) {
+      SetAccessibleName(name.value(), name_from.value());
+    } else {
+      SetAccessibleName(name.value());
+    }
+  }
+
+  // See the comment above regarding the NameFrom value.
+  if (description.has_value()) {
+    if (description_from.has_value()) {
+      SetAccessibleDescription(description.value(), description_from.value());
+    } else {
+      SetAccessibleDescription(description.value());
+    }
+  }
+}
+
 void View::SetAccessibleName(const std::u16string& name) {
+  SetAccessibleName(
+      name, static_cast<ax::mojom::NameFrom>(ax_node_data_->GetIntAttribute(
+                ax::mojom::IntAttribute::kNameFrom)));
+}
+
+void View::SetAccessibleName(std::u16string name,
+                             ax::mojom::NameFrom name_from) {
+  // Allow subclasses to adjust the name.
+  AdjustAccessibleName(name, name_from);
+
+  // Ensure we have a current `name_from` value. For instance, the name might
+  // still be an empty string, but a view is now indicating that this is by
+  // design by setting `NameFrom::kAttributeExplicitlyEmpty`.
+  ax_node_data_->SetNameFrom(name_from);
+
   if (name == accessible_name_) {
     return;
   }
+
+  if (name.empty()) {
+    ax_node_data_->RemoveStringAttribute(ax::mojom::StringAttribute::kName);
+  } else if (ax_node_data_->role != ax::mojom::Role::kUnknown &&
+             ax_node_data_->role != ax::mojom::Role::kNone) {
+    // TODO(accessibility): This is to temporarily work around the DCHECK
+    // in `AXNodeData` that wants to have a role to calculate a name-from.
+    // If we don't have a role yet, don't add it to the data until we do.
+    // See `SetAccessibleRole` where we check for and handle this condition.
+    // Also note that the `SetAccessibilityProperties` function allows view
+    // authors to set the role and name at once, if all views use it, we can
+    // remove this workaround.
+    ax_node_data_->SetName(name);
+  }
+
   accessible_name_ = name;
   OnPropertyChanged(&accessible_name_, kPropertyEffectsNone);
-  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
   OnAccessibleNameChanged(name);
+  NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+}
+
+void View::SetAccessibleName(View* naming_view) {
+  DCHECK(naming_view);
+  DCHECK_NE(this, naming_view);
+
+  const std::u16string& name = naming_view->GetAccessibleName();
+  DCHECK(!name.empty());
+
+  SetAccessibleName(name, ax::mojom::NameFrom::kRelatedElement);
+  ax_node_data_->AddIntListAttribute(
+      ax::mojom::IntListAttribute::kLabelledbyIds,
+      {naming_view->GetViewAccessibility().GetUniqueId().Get()});
 }
 
 const std::u16string& View::GetAccessibleName() const {
   return accessible_name_;
+}
+
+void View::SetAccessibleRole(const ax::mojom::Role role) {
+  if (role == accessible_role_) {
+    return;
+  }
+
+  ax_node_data_->role = role;
+  if (role != ax::mojom::Role::kUnknown && role != ax::mojom::Role::kNone) {
+    if (ax_node_data_->GetStringAttribute(ax::mojom::StringAttribute::kName)
+            .empty() &&
+        !accessible_name_.empty()) {
+      // TODO(accessibility): This is to temporarily work around the DCHECK
+      // that wants to have a role to calculate a name-from. If we have a
+      // name in our properties but not in our `AXNodeData`, the name was
+      // set prior to the role. Now that we have a valid role, we can set
+      // the name. See `SetAccessibleName` for where we delayed setting it.
+      ax_node_data_->SetName(accessible_name_);
+    }
+  }
+
+  accessible_role_ = role;
+  OnPropertyChanged(&accessible_role_, kPropertyEffectsNone);
+}
+
+void View::SetAccessibleRole(const ax::mojom::Role role,
+                             const std::u16string& role_description) {
+  if (!role_description.empty()) {
+    ax_node_data_->AddStringAttribute(
+        ax::mojom::StringAttribute::kRoleDescription,
+        base::UTF16ToUTF8(role_description));
+  } else {
+    ax_node_data_->RemoveStringAttribute(
+        ax::mojom::StringAttribute::kRoleDescription);
+  }
+
+  SetAccessibleRole(role);
+}
+
+ax::mojom::Role View::GetAccessibleRole() const {
+  return accessible_role_;
+}
+
+void View::SetAccessibleDescription(const std::u16string& description) {
+  if (description.empty()) {
+    ax_node_data_->RemoveStringAttribute(
+        ax::mojom::StringAttribute::kDescription);
+    ax_node_data_->RemoveIntAttribute(
+        ax::mojom::IntAttribute::kDescriptionFrom);
+    accessible_description_ = description;
+    return;
+  }
+
+  SetAccessibleDescription(description,
+                           ax::mojom::DescriptionFrom::kAriaDescription);
+}
+
+void View::SetAccessibleDescription(
+    const std::u16string& description,
+    ax::mojom::DescriptionFrom description_from) {
+  // Ensure we have a current `description_from` value. For instance, the
+  // description might still be an empty string, but a view is now indicating
+  // that this is by design by setting
+  // `DescriptionFrom::kAttributeExplicitlyEmpty`.
+  ax_node_data_->SetDescriptionFrom(description_from);
+
+  if (description == accessible_description_) {
+    return;
+  }
+
+  // `AXNodeData::SetDescription` DCHECKs that the description is not empty
+  // unless it has `DescriptionFrom::kAttributeExplicitlyEmpty`.
+  if (!description.empty() ||
+      ax_node_data_->GetDescriptionFrom() ==
+          ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty) {
+    ax_node_data_->SetDescription(description);
+  }
+
+  accessible_description_ = description;
+  OnPropertyChanged(&accessible_description_, kPropertyEffectsNone);
+}
+
+void View::SetAccessibleDescription(View* describing_view) {
+  DCHECK(describing_view);
+  DCHECK_NE(this, describing_view);
+
+  const std::u16string& name = describing_view->GetAccessibleName();
+  DCHECK(!name.empty());
+
+  SetAccessibleDescription(name, ax::mojom::DescriptionFrom::kRelatedElement);
+  ax_node_data_->AddIntListAttribute(
+      ax::mojom::IntListAttribute::kDescribedbyIds,
+      {describing_view->GetViewAccessibility().GetUniqueId().Get()});
+}
+
+const std::u16string& View::GetAccessibleDescription() const {
+  return accessible_description_;
 }
 
 bool View::HandleAccessibleAction(const ui::AXActionData& action_data) {
@@ -1965,6 +2180,13 @@ void View::NotifyAccessibilityEvent(ax::mojom::Event event_type,
   // during destruction, and is likely to lead to crashes/problems.
   if (GetWidget() && !GetWidget()->GetNativeView())
     return;
+
+  // If `pause_accessibility_events_` is true, it means we are initializing
+  // property values. In this specific case, we do not want to notify platform
+  // assistive technologies that a property has changed.
+  if (pause_accessibility_events_) {
+    return;
+  }
 
   AXEventManager::Get()->NotifyViewEvent(this, event_type);
 

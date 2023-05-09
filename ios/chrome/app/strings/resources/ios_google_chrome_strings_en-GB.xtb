@@ -40,6 +40,7 @@
 <translation id="3167189358072330585">Your account does not work on Google Chrome. Please contact your domain administrator or use a regular Google Account to sign in.</translation>
 <translation id="3173834708294760622">Google Chrome page</translation>
 <translation id="3196546062792660320">Chrome saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.</translation>
+<translation id="322254490661677575">To use and save Chrome data in your Google Account, enter your passphrase.</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3345341804167540816">Use Chrome Everywhere</translation>
 <translation id="3503014945441706099">Get Enhanced Safe Browsing for this Chrome profile, too</translation>
@@ -52,6 +53,7 @@
 <translation id="3980220367029651214">You are switching sync accounts from <ph name="USER_EMAIL1" /> to <ph name="USER_EMAIL2" />. Your existing Chrome data is managed by <ph name="DOMAIN" />. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">Your organisation requires you to stay signed out of Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.</translation>
+<translation id="4064699917955374540">To use and save Chrome data in your Google Account, verify that it's you.</translation>
 <translation id="417201473131094001">Not supported on Chrome Canary</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> was using Chrome and left bookmarks, passwords and other settings on this device.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
@@ -68,6 +70,7 @@
 <translation id="5119391094379141756">Select Chrome</translation>
 <translation id="5162467219239570114">Chrome is out of date. If no update is available in the <ph name="BEGIN_LINK" />app store<ph name="END_LINK" />, it's possible that your device doesn't support new versions of Chrome anymore.</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>
+<translation id="5395376160638294582">Make sure that you can always use the Chrome data in your Google Account</translation>
 <translation id="5460571915754665838">4. Select Chrome</translation>
 <translation id="5492504007368565877">Google Password Manager can’t check your passwords.</translation>
 <translation id="5552137475244467770">Chrome periodically checks your passwords against lists that have been published online. When doing this, your passwords and usernames are encrypted, so they can’t be read by anyone, including Google.</translation>
@@ -122,6 +125,7 @@
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. All rights reserved.</translation>
 <translation id="840168496893712993">Some add-ons cause Chrome to crash. Please try uninstalling them.</translation>
 <translation id="8414886616817913619">Your organisation requires you to sign in to use Chrome. <ph name="BEGIN_LINK" />Learn more<ph name="END_LINK" /></translation>
+<translation id="84594714173170813">Keep using the Chrome data in your Google Account</translation>
 <translation id="8459495907675268833">The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.</translation>
 <translation id="850555388806794946">To make Chrome your default:
   1. Open settings

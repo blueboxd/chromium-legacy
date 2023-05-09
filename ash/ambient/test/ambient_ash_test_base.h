@@ -20,6 +20,7 @@
 #include "ash/public/cpp/ambient/proto/photo_cache_entry.pb.h"
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/test_ash_web_view_factory.h"
 #include "base/functional/callback.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/login/auth/auth_metrics_recorder.h"
@@ -53,6 +54,10 @@ class AmbientAshTestBase : public AshTestBase {
 
   // Enables/disables ambient mode for the currently active user session.
   void SetAmbientModeEnabled(bool enabled);
+
+  // Enables/disabled the managed ambient mode for the currently active user
+  // session.
+  void SetAmbientModeManagedScreensaverEnabled(bool enabled);
 
   // Sets the |AmbientUiSettings| to use when ShowAmbientScreen() is called.
   // To reflect real world usage, the incoming settings do not take effect
@@ -222,11 +227,13 @@ class AmbientAshTestBase : public AshTestBase {
                                size_t width,
                                size_t height,
                                SkColor color);
+  void DisableBackupCacheDownloads();
 
  private:
   void SpinWaitForAmbientViewAvailable(
       const base::RepeatingClosure& quit_closure);
 
+  TestAshWebViewFactory web_view_factory_;
   std::unique_ptr<views::Widget> widget_;
   power_manager::PowerSupplyProperties proto_;
   TestImageDownloader image_downloader_;

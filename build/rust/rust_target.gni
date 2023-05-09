@@ -113,11 +113,8 @@ template("rust_target") {
   if (defined(invoker.edition)) {
     _edition = invoker.edition
   }
-  _configs = [ string_join("",
-                           [
-                             "//build/rust:edition_",
-                             _edition,
-                           ]) ]
+  _configs = [ "//build/rust:edition_${_edition}" ]
+  _test_configs = []
   if (invoker.target_type == "executable") {
     if (defined(invoker.executable_configs)) {
       _configs += invoker.executable_configs
@@ -125,6 +122,7 @@ template("rust_target") {
   } else if (invoker.target_type == "rust_proc_macro") {
     if (defined(invoker.proc_macro_configs)) {
       _configs += invoker.proc_macro_configs
+      _test_configs += [ "//build/rust:proc_macro_extern" ]
     }
   } else {
     if (defined(invoker.library_configs)) {
@@ -300,11 +298,7 @@ template("rust_target") {
       aliased_deps = _rust_aliased_deps
       public_deps = _rust_public_deps
       rustflags = _rustflags
-      rustflags += [ string_join("",
-                                 [
-                                   "-Cmetadata=",
-                                   _metadata,
-                                 ]) ]
+      rustflags += [ "-Cmetadata=${_metadata}" ]
       rustenv = _rustenv
 
       # The Rust tool() declarations, like C++ ones, use the output_name and
@@ -385,7 +379,10 @@ template("rust_target") {
         if (defined(invoker.executable_configs)) {
           configs = []
           configs = invoker.executable_configs
+        } else if (!defined(configs)) {
+          configs = []
         }
+        configs += _test_configs
         rustenv = _rustenv
 
         if (!_allow_unsafe) {
@@ -397,6 +394,7 @@ template("rust_target") {
                    "_crate_root",
                    "_crate_name",
                    "_metadata",
+                   "_test_configs",
                  ])
     }
   }

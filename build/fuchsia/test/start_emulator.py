@@ -9,8 +9,10 @@ import logging
 import sys
 import time
 
-from common import register_log_args
-from ffx_integration import FfxEmulator
+from contextlib import AbstractContextManager
+
+from common import catch_sigterm, register_log_args
+from ffx_emulator import FfxEmulator
 
 
 def register_emulator_args(parser: argparse.ArgumentParser,
@@ -42,18 +44,22 @@ def register_emulator_args(parser: argparse.ArgumentParser,
     femu_args.add_argument('--with-network',
                            action='store_true',
                            help='Run emulator with emulated nic via tun/tap.')
+    femu_args.add_argument('--everlasting',
+                           action='store_true',
+                           help='If the emulator should be long-living.')
 
 
-def create_emulator_from_args(args: argparse.Namespace) -> FfxEmulator:
+def create_emulator_from_args(
+        args: argparse.Namespace) -> AbstractContextManager:
     """Helper method for initializing an FfxEmulator class with parsed
     arguments."""
-    return FfxEmulator(args.enable_graphics, args.hardware_gpu,
-                       args.product_bundle, args.with_network, args.logs_dir)
+    return FfxEmulator(args)
 
 
 def main():
     """Stand-alone function for starting an emulator."""
 
+    catch_sigterm()
     logging.basicConfig(level=logging.INFO)
     parser = argparse.ArgumentParser()
     register_emulator_args(parser, True)

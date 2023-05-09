@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/flags/system_flags.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/bookmarks_commands.h"
 #import "ios/chrome/browser/shared/public/commands/browser_commands.h"
@@ -49,8 +50,6 @@
 #import "ios/chrome/browser/ui/icons/symbols.h"
 #import "ios/chrome/browser/ui/main/scene_state.h"
 #import "ios/chrome/browser/ui/main/scene_state_browser_agent.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_util.h"
-#import "ios/chrome/browser/ui/popup_menu/public/popup_menu_long_press_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_constants.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_presentation.h"
@@ -466,7 +465,6 @@ const CGFloat kSymbolSize = 18;
 @synthesize highlightsSelectedTab = _highlightsSelectedTab;
 @synthesize tabStripView = _tabStripView;
 @synthesize view = _view;
-@synthesize longPressDelegate = _longPressDelegate;
 @synthesize presentationProvider = _presentationProvider;
 @synthesize animationWaitDuration = _animationWaitDuration;
 @synthesize panGestureHandler = _panGestureHandler;
@@ -493,7 +491,7 @@ const CGFloat kSymbolSize = 18;
             _webStateList, _webStateObserver.get());
     _style = style;
 
-    _pinnedTabCount = _webStateList->GetIndexOfFirstNonPinnedWebState();
+    [self updatePinnedTabCount];
 
     // `self.view` setup.
     _useTabStacking = [self shouldUseTabStacking];
@@ -540,14 +538,8 @@ const CGFloat kSymbolSize = 18;
                                       UIViewAutoresizingFlexibleBottomMargin);
     _buttonNewTab.imageView.contentMode = UIViewContentModeCenter;
 
-    UIImage* buttonNewTabImage;
-    if (UseSymbols()) {
-      buttonNewTabImage = DefaultSymbolWithPointSize(kPlusSymbol, kSymbolSize);
-    } else {
-      buttonNewTabImage = [UIImage imageNamed:@"tabstrip_new_tab"];
-      buttonNewTabImage = [buttonNewTabImage
-          imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-    }
+    UIImage* buttonNewTabImage =
+        DefaultSymbolWithPointSize(kPlusSymbol, kSymbolSize);
 
     // TODO(crbug.com/1418068): Simplify after minimum version required is >=
     // iOS 15.
@@ -949,6 +941,11 @@ const CGFloat kSymbolSize = 18;
   UrlLoadingBrowserAgent::FromBrowser(_browser)->Load(params);
 }
 
+// Updates pinned tab count.
+- (void)updatePinnedTabCount {
+  _pinnedTabCount = _webStateList->GetIndexOfFirstNonPinnedWebState();
+}
+
 #pragma mark - TabStripContextMenuDelegate
 
 - (void)addToReadingListURL:(const GURL&)URL title:(NSString*)title {
@@ -980,11 +977,11 @@ const CGFloat kSymbolSize = 18;
 }
 
 - (void)pinTabWithIdentifier:(NSString*)identifier {
-  SetWebStatePinnedState(_webStateList, identifier, YES);
+  SetWebStatePinnedState(_webStateList, identifier, /*pin_state=*/YES);
 }
 
 - (void)unpinTabWithIdentifier:(NSString*)identifier {
-  SetWebStatePinnedState(_webStateList, identifier, NO);
+  SetWebStatePinnedState(_webStateList, identifier, /*pin_state=*/NO);
 }
 
 - (void)closeTabWithIdentifier:(NSString*)identifier {
@@ -1341,7 +1338,7 @@ const CGFloat kSymbolSize = 18;
   [_closingTabs addObject:view];
   _targetFrames.RemoveFrame(view);
 
-  _pinnedTabCount = _webStateList->GetIndexOfFirstNonPinnedWebState();
+  [self updatePinnedTabCount];
 
   // Adjust the content size now that the tab has been removed from the model.
   [self updateContentSizeAndRepositionViews];
@@ -1382,6 +1379,7 @@ const CGFloat kSymbolSize = 18;
   TabView* view = [self createTabViewForWebState:webState
                                       isSelected:activating];
   [_tabArray insertObject:view atIndex:[self indexForWebStateListIndex:index]];
+  [self updatePinnedTabCount];
   [[self tabStripView] addSubview:view];
 
   [self updateContentSizeAndRepositionViews];
@@ -1402,7 +1400,7 @@ const CGFloat kSymbolSize = 18;
     didChangePinnedStateForWebState:(web::WebState*)webState
                             atIndex:(int)index {
   DCHECK_EQ(_webStateList, webStateList);
-  _pinnedTabCount = webStateList->GetIndexOfFirstNonPinnedWebState();
+  [self updatePinnedTabCount];
 
   [self layoutTabStripSubviews];
 }

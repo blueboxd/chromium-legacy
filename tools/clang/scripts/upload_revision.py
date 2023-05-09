@@ -52,6 +52,7 @@ BOTS = [
 ]
 
 # Keep lines in here at <= 72 columns, else they wrap in gerrit.
+# There can be no whitespace line between or below these gerrit footers.
 COMMIT_FOOTER = \
 '''
 Bug: TODO. Remove the Tricium: line below when filling this in.
@@ -72,21 +73,19 @@ Cq-Include-Trybots: chromium/try:linux-swangle-try-x64,win-swangle-try-x86
 Cq-Include-Trybots: chrome/try:iphone-device,ipad-device
 Cq-Include-Trybots: chrome/try:linux-chromeos-chrome
 Cq-Include-Trybots: chrome/try:win-chrome,win64-chrome,linux-chrome,mac-chrome
-Cq-Include-Trybots: chrome/try:linux-pgo,mac-pgo,win32-pgo,win64-pgo
-'''
+Cq-Include-Trybots: chrome/try:linux-pgo,mac-pgo,win32-pgo,win64-pgo'''
 
 RUST_BOTS = \
-'''
-Cq-Include-Trybots: luci.chromium.try:android-rust-arm32-rel
-Cq-Include-Trybots: luci.chromium.try:linux-rust-x64-dbg
-Cq-Include-Trybots: luci.chromium.try:linux-rust-x64-rel
-'''
-# TODO: Add more Rust bots as they are ready:
-# Cq-Include-Trybots: luci.chromium.try:android-rust-arm64-dbg
-# Cq-Include-Trybots: luci.chromium.try:android-rust-arm64-rel
-# Cq-Include-Trybots: luci.chromium.try:win-rust-x64-dbg
-# Cq-Include-Trybots: luci.chromium.try:win-rust-x64-rel
-# Cq-Include-Trybots: luci.chromium.try:mac-rust-x64-rel
+'''Cq-Include-Trybots: chromium/try:android-rust-arm32-rel
+Cq-Include-Trybots: chromium/try:android-rust-arm64-dbg
+Cq-Include-Trybots: chromium/try:android-rust-arm64-rel
+Cq-Include-Trybots: chromium/try:linux-rust-x64-dbg
+Cq-Include-Trybots: chromium/try:linux-rust-x64-rel'''
+
+# These do not pass yet:
+#Cq-Include-Trybots: chromium/try:mac-rust-x64-rel
+#Cq-Include-Trybots: chromium/try:win-rust-x64-dbg
+#Cq-Include-Trybots: chromium/try:win-rust-x64-rel
 
 is_win = sys.platform.startswith('win32')
 
@@ -281,10 +280,10 @@ def main():
       default=False,
       help=('Print out `git` commands instead of running them. Still generates '
             'a local diff for debugging purposes.'))
-  parser.add_argument('--roll-rust',
+  parser.add_argument('--skip-rust',
                       action='store_true',
                       default=False,
-                      help=('Update the rust revision.'))
+                      help=('Skip updating the rust revision.'))
 
   args = parser.parse_args()
 
@@ -315,10 +314,11 @@ def main():
   Git('checkout', 'origin/main', '-b', branch_name, no_run=args.no_git)
 
   old_clang_version = PatchClangRevision(clang_version)
-  # Avoiding changing Rust versions when rolling Clang until we can fetch
-  # stdlib sources at the same revisionas the compiler, from the
-  # FALLBACK_REVISION in update.py.
-  if args.roll_rust:
+  if args.skip_rust:
+    assert (clang_version !=
+            old_clang_version), ('Change the sub-revision of Clang if there is '
+                                 'no major version change.')
+  else:
     old_rust_version = PatchRustRevision(rust_version)
     assert (clang_version != old_clang_version
             or rust_version != old_rust_version), (
@@ -328,10 +328,6 @@ def main():
     # TODO: Do this when we block Clang updates without a matching Rust
     # compiler.
     # PatchRustRemoveFallback()
-  else:
-    assert (clang_version !=
-            old_clang_version), ('Change the sub-revision of Clang if there is '
-                                 'no major version change.')
 
   clang_change = f'{old_clang_version} : {clang_version}'
   clang_change_log = (
@@ -339,15 +335,15 @@ def main():
       f'{old_clang_version.short_git_hash}..{clang_version.short_git_hash}'
       f'\n\n')
 
-  if args.roll_rust:
+  if args.skip_rust:
+    rust_change = '[skipping Rust]'
+    rust_change_log = ''
+  else:
     rust_change = f'{old_rust_version} : {rust_version}'
     rust_change_log = (f'{RUST_GIT_URL}/+log/'
                        f'{old_rust_version.short_git_hash}..'
                        f'{rust_version.short_git_hash}'
                        f'\n\n')
-  else:
-    rust_change = '[skipping Rust]'
-    rust_change_log = ''
 
   title = f'Roll clang+rust {clang_change} / {rust_change}'
 
@@ -355,8 +351,8 @@ def main():
   body = f'{clang_change_log}{rust_change_log}Ran: {cmd}'
 
   commit_message = f'{title}\n\n{body}\n{COMMIT_FOOTER}'
-  if args.roll_rust:
-    commit_message += f'{RUST_BOTS}'
+  if not args.skip_rust:
+    commit_message += f'\n{RUST_BOTS}'
 
   Git('add',
       CLANG_UPDATE_PY_PATH,

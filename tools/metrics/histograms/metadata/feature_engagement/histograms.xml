@@ -28,10 +28,14 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="IPHFeature">
+  <variant name="IPH_AdaptiveButtonInTopToolbarCustomization_AddToBookmarks"
+      summary="the add to bookmarks adaptive button in the top toolbar"/>
   <variant name="IPH_AdaptiveButtonInTopToolbarCustomization_NewTab"
       summary="the new tab adaptive button in the top toolbar"/>
   <variant name="IPH_AdaptiveButtonInTopToolbarCustomization_Share"
       summary="the share adaptive button in the top toolbar"/>
+  <variant name="IPH_AdaptiveButtonInTopToolbarCustomization_Translate"
+      summary="the translate adaptive button in the top toolbar"/>
   <variant name="IPH_AdaptiveButtonInTopToolbarCustomization_VoiceSearch"
       summary="the voice search adaptive button in the top toolbar"/>
   <variant name="IPH_AddToHomescreenMessage"
@@ -112,6 +116,7 @@ chromium-metrics-reviews@google.com.
       summary="download page for screenshot"/>
   <variant name="IPH_DownloadSettings"
       summary="accessing download settings from download home"/>
+  <variant name="IPH_DownloadToolbarButton" summary="download toolbar button"/>
   <variant name="IPH_EphemeralTab"
       summary="new label on the context menu for Ephemeral Tab"/>
   <variant name="IPH_ExploreSitesTile" summary="Explore Sites feature"/>
@@ -202,6 +207,8 @@ chromium-metrics-reviews@google.com.
                during signin flows"/>
   <variant name="IPH_PasswordSuggestions"
       summary="the Autofill password suggestions on iOS"/>
+  <variant name="IPH_PasswordsWebAppProfileSwitch"
+      summary="profile switch in Password Manager web app"/>
   <variant name="IPH_PerformanceNewBadge"
       summary="New badge shows next to performance item on the app menu"/>
   <variant name="IPH_PowerBookmarksSidePanel"

@@ -217,9 +217,7 @@ void ServiceWorkerMainResourceLoaderInterceptor::MaybeCreateLoader(
   isolation_info_ = net::IsolationInfo::Create(
       isolation_info_.request_type(),
       isolation_info_.top_frame_origin().value(), new_origin,
-      new_site_for_cookies, absl::nullopt,
-      isolation_info_.nonce().has_value() ? &(isolation_info_.nonce().value())
-                                          : nullptr);
+      new_site_for_cookies, absl::nullopt, isolation_info_.nonce());
 
   // Attempt to get the storage key from |RenderFrameHostImpl|. This correctly
   // accounts for extension URLs. The absence of this logic was a potential
@@ -371,19 +369,7 @@ ServiceWorkerMainResourceLoaderInterceptor::GetStorageKeyFromRenderFrameHost(
   if (!frame_host)
     return absl::nullopt;
 
-  // Determine if we should allow partitioned StorageKeys.
-  //
-  // If this is a main frame navigation then the value of
-  // third_party_storage_partitioning_enabled is irrelevant because main frames
-  // are always first-party by definition. If this is a subframe navigation
-  // then the main frame will have the correct value.
-  bool third_party_storage_partitioning_enabled = false;
-  if (!frame_host->is_main_frame()) {
-    third_party_storage_partitioning_enabled =
-        frame_host->IsMainFrameThirdPartyStoragePartitioningEnabled();
-  }
-  return frame_host->CalculateStorageKey(
-      origin, nonce, third_party_storage_partitioning_enabled);
+  return frame_host->CalculateStorageKey(origin, nonce);
 }
 
 absl::optional<blink::StorageKey>

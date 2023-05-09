@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/css/css_axis_value.h"
 #include "third_party/blink/renderer/core/css/css_bracketed_value_list.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
+#include "third_party/blink/renderer/core/css/css_content_distribution_value.h"
 #include "third_party/blink/renderer/core/css/css_counter_value.h"
 #include "third_party/blink/renderer/core/css/css_cursor_image_value.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
@@ -586,13 +587,13 @@ const CSSValue* AspectRatio::CSSValueFromComputedStyleInternal(
                                       CSSPrimitiveValue::UnitType::kNumber),
       *CSSNumericLiteralValue::Create(ratio.GetRatio().height(),
                                       CSSPrimitiveValue::UnitType::kNumber));
-  if (ratio.GetTypeForComputedStyle() == EAspectRatioType::kRatio) {
-    return ratio_value;
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  if (ratio.GetTypeForComputedStyle() != EAspectRatioType::kRatio) {
+    DCHECK_EQ(ratio.GetTypeForComputedStyle(), EAspectRatioType::kAutoAndRatio);
+    list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
 
-  DCHECK_EQ(ratio.GetTypeForComputedStyle(), EAspectRatioType::kAutoAndRatio);
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   list->Append(*ratio_value);
   return list;
 }
@@ -4890,9 +4891,9 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
     return MakeGarbageCollected<CSSStringValue>(
         list_style_type.GetStringValue());
   }
-  // TODO(crbug.com/687225): Return a scoped CSSValue?
-  return MakeGarbageCollected<CSSCustomIdentValue>(
-      list_style_type.GetCounterStyleName());
+  return &MakeGarbageCollected<CSSCustomIdentValue>(
+              list_style_type.GetCounterStyleName())
+              ->PopulateWithTreeScope(list_style_type.GetTreeScope());
 }
 
 void ListStyleType::ApplyValue(StyleResolverState& state,
@@ -5679,14 +5680,20 @@ const CSSValue* OverflowClipMargin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
+  auto* css_value_list = CSSValueList::CreateSpaceSeparated();
+
   if (!style.OverflowClipMargin()) {
-    return CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f);
+    css_value_list->Append(
+        *CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f));
+    return css_value_list;
   }
 
   if (style.OverflowClipMargin()->GetReferenceBox() ==
           StyleOverflowClipMargin::ReferenceBox::kPaddingBox &&
       style.OverflowClipMargin()->GetMargin() == LayoutUnit()) {
-    return CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f);
+    css_value_list->Append(
+        *CSSPrimitiveValue::CreateFromLength(Length::Fixed(0), 1.f));
+    return css_value_list;
   }
 
   CSSValueID reference_box;
@@ -5702,7 +5709,6 @@ const CSSValue* OverflowClipMargin::CSSValueFromComputedStyleInternal(
       break;
   }
 
-  auto* css_value_list = CSSValueList::CreateSpaceSeparated();
   if (reference_box != CSSValueID::kPaddingBox) {
     css_value_list->Append(*CSSIdentifierValue::Create(reference_box));
   }
@@ -10072,6 +10078,28 @@ const CSSValue* InternalEmptyLineHeight::ParseSingleValue(
     const CSSParserLocalContext&) const {
   return css_parsing_utils::ConsumeIdent<CSSValueID::kFabricated,
                                          CSSValueID::kNone>(range);
+}
+
+const CSSValue* BackgroundRepeatX::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatX()));
+  }
+  return list;
+}
+
+const CSSValue* BackgroundRepeatY::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+    list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatY()));
+  }
+  return list;
 }
 
 }  // namespace css_longhand

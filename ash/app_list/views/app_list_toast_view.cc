@@ -16,6 +16,8 @@
 #include "ash/style/dark_light_mode_controller_impl.h"
 #include "ash/style/icon_button.h"
 #include "ash/style/pill_button.h"
+#include "ash/style/typography.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -201,12 +203,10 @@ AppListToastView::AppListToastView(const std::u16string title) {
 
   title_label_ =
       label_container_->AddChildView(std::make_unique<views::Label>(title));
-  bubble_utils::ApplyStyle(title_label_, bubble_utils::TypographyStyle::kBody2);
+  bubble_utils::ApplyStyle(title_label_, TypographyToken::kCrosBody2);
   title_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   title_label_->SetMultiLine(true);
-  // TODO(crbug/682266): This is a temporary fix for the issue where the multi
-  // line label appears cut-off.
-  title_label_->SetMaximumWidth(GetExpandedTitleLabelWidth());
+  SetTitleLabelMaximumWidth();
 
   layout_manager_->SetFlexForView(label_container_, 1);
 }
@@ -232,7 +232,10 @@ void AppListToastView::OnThemeChanged() {
             ColorProvider::BaseLayerType::kTransparent80),
         kCornerRadius));
     SetBorder(std::make_unique<views::HighlightBorder>(
-        kCornerRadius, views::HighlightBorder::Type::kHighlightBorder1,
+        kCornerRadius,
+        chromeos::features::IsJellyrollEnabled()
+            ? views::HighlightBorder::Type::kHighlightBorderNoShadow
+            : views::HighlightBorder::Type::kHighlightBorder1,
         /*use_light_colors=*/false));
   } else {
     SetBackground(views::CreateRoundedRectBackground(
@@ -281,8 +284,7 @@ void AppListToastView::SetSubtitle(const std::u16string subtitle) {
 
   subtitle_label_ =
       label_container_->AddChildView(std::make_unique<views::Label>(subtitle));
-  bubble_utils::ApplyStyle(subtitle_label_,
-                           bubble_utils::TypographyStyle::kAnnotation1,
+  bubble_utils::ApplyStyle(subtitle_label_, TypographyToken::kCrosAnnotation1,
                            kColorAshTextColorSecondary);
   subtitle_label_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 }
@@ -409,10 +411,18 @@ void AppListToastView::CreateIconView() {
 }
 
 int AppListToastView::GetExpandedTitleLabelWidth() {
+  // TODO(b/274260097): Investigate to use size() or GetPreferredSize().
   const int icon_width = icon_ ? icon_->size().width() : 0;
-  const int button_width = toast_button_ ? toast_button_->size().width() : 0;
+  const int button_width =
+      toast_button_ ? toast_button_->GetPreferredSize().width() : 0;
   return GetPreferredSize().width() - kInteriorMargin.width() - icon_width -
          button_width - kTitleContainerMargin.width();
+}
+
+void AppListToastView::SetTitleLabelMaximumWidth() {
+  // TODO(crbug/682266): This is a temporary fix for the issue where the multi
+  // line label appears cut-off.
+  title_label_->SetMaximumWidth(GetExpandedTitleLabelWidth());
 }
 
 }  // namespace ash

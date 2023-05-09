@@ -333,13 +333,13 @@ void ModelTypeWorker::ConnectSync(
   // |model_type_state_| might have an outdated encryption key name, e.g.
   // because |cryptographer_| was updated before this worker was constructed.
   // OnCryptographerChange() might never be called, so update the key manually
-  // here and push it to the processor. Only push if initial sync is done,
-  // otherwise this violates some of the processor assumptions; if initial sync
-  // isn't done, the now-updated key will be pushed on the first ApplyUpdates()
-  // call anyway.
+  // here and push it to the processor. SendPendingUpdatesToProcessorIfReady()
+  // takes care to only send updated if initial sync is (at least partially)
+  // done, otherwise this violates some of the processor assumptions; if initial
+  // sync isn't done, the now-updated key will be pushed on the first
+  // ApplyUpdates() call anyway.
   bool had_outdated_key_name = UpdateTypeEncryptionKeyName();
-  if (had_outdated_key_name &&
-      IsInitialSyncDone(model_type_state_.initial_sync_state())) {
+  if (had_outdated_key_name) {
     SendPendingUpdatesToProcessorIfReady();
   }
 }
@@ -618,25 +618,32 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status, bool cycle_done) {
     }
   }
 
-  // Processed pending invalidations are deleted, and unprocessed invalidations
-  // will be used in next sync cycle.
-  auto it = pending_invalidations_.begin();
-  while (it != pending_invalidations_.end()) {
-    if (it->is_processed) {
-      LogPendingInvalidationStatus(PendingInvalidationStatus::kAcknowledged);
-      it->pending_invalidation->Acknowledge();
-      it = pending_invalidations_.erase(it);
-    } else {
-      ++it;
+  // At the end of a sync cycle, clean up any invalidations that were used.
+  // (If the cycle is still ongoing, i.e. there are more updates to download,
+  // the invalidations must be kept and sent again in the next request, since
+  // they may still be relevant.)
+  if (cycle_done) {
+    // Processed pending invalidations are deleted, and unprocessed
+    // invalidations will be used again in the next sync cycle.
+    auto it = pending_invalidations_.begin();
+    while (it != pending_invalidations_.end()) {
+      if (it->is_processed) {
+        LogPendingInvalidationStatus(PendingInvalidationStatus::kAcknowledged);
+        it->pending_invalidation->Acknowledge();
+        it = pending_invalidations_.erase(it);
+      } else {
+        ++it;
+      }
     }
-  }
-  if (base::FeatureList::IsEnabled(kSyncPersistInvalidations)) {
-    UpdateModelTypeStateInvalidations();
-  }
+    if (base::FeatureList::IsEnabled(kSyncPersistInvalidations)) {
+      UpdateModelTypeStateInvalidations();
+    }
 
-  has_dropped_invalidation_ = false;
+    has_dropped_invalidation_ = false;
 
-  nudge_handler_->SetHasPendingInvalidations(type_, HasPendingInvalidations());
+    nudge_handler_->SetHasPendingInvalidations(type_,
+                                               HasPendingInvalidations());
+  }
 
   if (HasNonDeletionUpdates()) {
     status->add_updated_type(type_);
@@ -649,7 +656,8 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status, bool cycle_done) {
 void ModelTypeWorker::SendPendingUpdatesToProcessorIfReady() {
   DCHECK(model_type_processor_);
 
-  if (!IsInitialSyncDone(model_type_state_.initial_sync_state())) {
+  if (!IsInitialSyncAtLeastPartiallyDone(
+          model_type_state_.initial_sync_state())) {
     return;
   }
 
@@ -702,7 +710,8 @@ void ModelTypeWorker::NudgeIfReadyToCommit() {
 std::unique_ptr<CommitContribution> ModelTypeWorker::GetContribution(
     size_t max_entries) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(IsInitialSyncDone(model_type_state_.initial_sync_state()));
+  DCHECK(IsInitialSyncAtLeastPartiallyDone(
+      model_type_state_.initial_sync_state()));
   DCHECK(model_type_processor_);
 
   // Early return if type is not ready to commit (initial sync isn't done or
@@ -796,14 +805,12 @@ size_t ModelTypeWorker::EstimateMemoryUsage() const {
   return memory_usage;
 }
 
-bool ModelTypeWorker::IsTypeInitialized() const {
-  return IsInitialSyncDone(model_type_state_.initial_sync_state());
-}
-
 bool ModelTypeWorker::CanCommitItems() const {
   // We can only commit if we've received the initial update response and aren't
   // blocked by missing encryption keys.
-  return IsTypeInitialized() && !BlockForEncryption();
+  return IsInitialSyncAtLeastPartiallyDone(
+             model_type_state_.initial_sync_state()) &&
+         !BlockForEncryption();
 }
 
 bool ModelTypeWorker::BlockForEncryption() const {

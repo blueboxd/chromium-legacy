@@ -101,12 +101,11 @@ const gfx::ImageSkia GetResizedImage(const gfx::ImageSkia& image) {
       image, skia::ImageOperations::RESIZE_BEST, gfx::Size(width, height));
 }
 
-// Return the online wallpaper key. Use |info.asset_id| if available so we might
+// Return the online wallpaper key. Use |info.unit_id| if available so we might
 // be able to fallback to the cached attribution.
 const std::string GetOnlineWallpaperKey(ash::WallpaperInfo info) {
-  return info.asset_id.has_value()
-             ? base::NumberToString(info.asset_id.value())
-             : base::UnguessableToken::Create().ToString();
+  return info.unit_id.has_value() ? base::NumberToString(info.unit_id.value())
+                                  : base::UnguessableToken::Create().ToString();
 }
 
 scoped_refptr<base::RefCountedMemory> ResizeAndEncodeWallpaperImage(
@@ -891,18 +890,22 @@ void PersonalizationAppWallpaperProviderImpl::OnFetchCollectionImages(
     const std::vector<backdrop::Image>& images) {
   absl::optional<std::vector<backdrop::Image>> result;
   if (success && !images.empty()) {
-    for (const auto& proto_image : images) {
-      if (!proto_image.has_asset_id() || !proto_image.has_unit_id() ||
-          !proto_image.has_image_url()) {
-        LOG(WARNING) << "Invalid image discarded";
-        continue;
+    // Do first pass to clear all unit_id associated with the images.
+    base::ranges::for_each(images, [&](auto& proto_image) {
+      image_unit_id_map_.erase(proto_image.unit_id());
+    });
+    // Do second pass to repopulate the map with fresh data.
+    base::ranges::for_each(images, [&](auto& proto_image) {
+      if (proto_image.has_asset_id() && proto_image.has_unit_id() &&
+          proto_image.has_image_url()) {
+        image_unit_id_map_[proto_image.unit_id()].push_back(
+            ImageInfo(GURL(proto_image.image_url()), collection_id,
+                      proto_image.asset_id(), proto_image.unit_id(),
+                      proto_image.has_image_type()
+                          ? proto_image.image_type()
+                          : backdrop::Image::IMAGE_TYPE_UNKNOWN));
       }
-      image_unit_id_map_[proto_image.unit_id()].push_back(ImageInfo(
-          GURL(proto_image.image_url()), collection_id, proto_image.asset_id(),
-          proto_image.unit_id(),
-          proto_image.has_image_type() ? proto_image.image_type()
-                                       : backdrop::Image::IMAGE_TYPE_UNKNOWN));
-    }
+    });
     result = std::move(images);
   }
   std::move(callback).Run(std::move(result));
@@ -1063,7 +1066,7 @@ void PersonalizationAppWallpaperProviderImpl::FindImageMetadataInCollection(
     NotifyWallpaperChanged(
         ash::personalization_app::mojom::CurrentWallpaper::New(
             attributions, info.layout, info.type,
-            /*key=*/base::NumberToString(backend_image->asset_id()),
+            /*key=*/base::NumberToString(backend_image->unit_id()),
             backend_image->description()));
     wallpaper_attribution_info_fetcher_.reset();
     return;

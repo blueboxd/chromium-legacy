@@ -291,8 +291,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableUserActivationSameOriginVisibility,
      raw_ref(features::kUserActivationSameOriginVisibility)},
     {wf::EnableVideoPlaybackQuality, raw_ref(features::kVideoPlaybackQuality)},
-    {wf::EnableVideoWakeLockOptimisationHiddenMuted,
-     raw_ref(media::kWakeLockOptimisationHiddenMuted)},
     {wf::EnableWebBluetooth, raw_ref(features::kWebBluetooth),
      kSetOnlyIfOverridden},
     {wf::EnableWebBluetoothGetDevices,
@@ -555,6 +553,9 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
       content::IsBackForwardCacheEnabled());
 
   if (base::FeatureList::IsEnabled(network::features::kPrivateStateTokens)) {
+    WebRuntimeFeatures::EnablePrivateStateTokens(true);
+    WebRuntimeFeatures::EnablePrivateStateTokensAlwaysAllowIssuance(true);
+  } else if (base::FeatureList::IsEnabled(network::features::kFledgePst)) {
     // See https://bit.ly/configuring-trust-tokens.
     using network::features::TrustTokenOriginTrialSpec;
     switch (

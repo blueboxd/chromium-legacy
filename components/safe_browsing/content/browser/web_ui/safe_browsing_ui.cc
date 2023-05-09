@@ -632,6 +632,16 @@ std::string AddFullHashCacheInfo(
 
 #endif
 
+std::string SerializeClientSideDetectionType(ClientSideDetectionType csd_type) {
+  switch (csd_type) {
+    case ClientSideDetectionType::CLIENT_SIDE_DETECTION_TYPE_UNSPECIFIED:
+      return "CLIENT_SIDE_DETECTION_TYPE_UNSPECIFIED";
+    case ClientSideDetectionType::FORCE_REQUEST:
+      return "FORCE_REQUEST";
+  }
+  return "UNKNOWN_ENUM_SPECIFIED";
+}
+
 base::Value::Dict SerializeChromeUserPopulation(
     const ChromeUserPopulation& population) {
   base::Value::Dict population_dict;
@@ -1073,6 +1083,11 @@ std::string SerializeClientPhishingRequest(
     dict.Set("model_version", cpr.model_version());
   if (cpr.has_dom_model_version())
     dict.Set("dom_model_version", cpr.dom_model_version());
+  if (cpr.has_client_side_detection_type()) {
+    dict.Set(
+        "client_side_detection_type",
+        SerializeClientSideDetectionType(cpr.client_side_detection_type()));
+  }
 
   base::Value::List features;
   for (const auto& feature : cpr.feature_map()) {
@@ -1254,6 +1269,62 @@ base::Value::Dict SerializeSafeBrowsingClientProperties(
   return client_properties_dict;
 }
 
+base::Value::Dict SerializeHashRealTimeExperimentDetails(
+    const ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails&
+        details) {
+  base::Value::Dict dict;
+  auto serialize_threat_type =
+      [](ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+             ExperimentThreatType threat_type) -> std::string {
+    switch (threat_type) {
+      case ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          SAFE_OR_OTHER:
+        return "SAFE_OR_OTHER";
+      case ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          MALWARE:
+        return "MALWARE";
+      case ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          PHISHING:
+        return "PHISHING";
+      case ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          UNWANTED:
+        return "UNWANTED";
+      case ClientSafeBrowsingReportRequest::HashRealTimeExperimentDetails::
+          BILLING:
+        return "BILLING";
+      default:
+        NOTREACHED();
+        return "NOTREACHED";
+    }
+  };
+  // Hash database details:
+  dict.Set("hash_database_threat_type",
+           serialize_threat_type(details.hash_database_threat_type()));
+  // Hash real-time details:
+  dict.Set(
+      "hash_realtime_threat_type",
+      serialize_threat_type(details.hash_realtime_details().threat_type()));
+  dict.Set("hash_realtime_matched_global_cache",
+           details.hash_realtime_details().matched_global_cache());
+  if (details.hash_realtime_details()
+          .has_locally_cached_results_threat_type()) {
+    dict.Set("hash_realtime_locally_cached_results_threat_type",
+             serialize_threat_type(details.hash_realtime_details()
+                                       .locally_cached_results_threat_type()));
+  }
+  // URL real-time details:
+  dict.Set("url_realtime_threat_type",
+           serialize_threat_type(details.url_realtime_details().threat_type()));
+  dict.Set("url_realtime_matched_global_cache",
+           details.url_realtime_details().matched_global_cache());
+  if (details.url_realtime_details().has_locally_cached_results_threat_type()) {
+    dict.Set("url_realtime_locally_cached_results_threat_type",
+             serialize_threat_type(details.url_realtime_details()
+                                       .locally_cached_results_threat_type()));
+  }
+  return dict;
+}
+
 base::Value::Dict SerializeDownloadWarningAction(
     const ClientSafeBrowsingReportRequest::DownloadWarningAction&
         download_warning_action) {
@@ -1375,6 +1446,9 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
       case ClientSafeBrowsingReportRequest::BLOCKED_AD_POPUP:
         report_type = "BLOCKED_AD_POPUP";
         break;
+      case ClientSafeBrowsingReportRequest::HASH_PREFIX_REAL_TIME_EXPERIMENT:
+        report_type = "HASH_PREFIX_REAL_TIME_EXPERIMENT";
+        break;
     }
     report_request.Set("type", report_type);
   }
@@ -1439,6 +1513,11 @@ std::string SerializeCSBRR(const ClientSafeBrowsingReportRequest& report) {
   }
   report_request.Set("download_warning_actions",
                      std::move(download_warning_action_list));
+  if (report.has_hash_real_time_experiment_details()) {
+    report_request.Set("hash_real_time_experiment_details",
+                       SerializeHashRealTimeExperimentDetails(
+                           report.hash_real_time_experiment_details()));
+  }
   std::string serialized;
   if (report.SerializeToString(&serialized)) {
     std::string base64_encoded;

@@ -115,7 +115,9 @@ class PermissionsManager : public KeyedService {
 
     // Called when an extension's ability to show site access requests in the
     // toolbar has been updated.
-    virtual void OnShowAccessRequestsInToolbarChanged() {}
+    virtual void OnShowAccessRequestsInToolbarChanged(
+        const extensions::ExtensionId& extension_id,
+        bool can_show_requests) {}
   };
 
   explicit PermissionsManager(content::BrowserContext* browser_context);
@@ -175,6 +177,12 @@ class PermissionsManager : public KeyedService {
   // Returns true if the associated extension can be affected by
   // runtime host permissions.
   bool CanAffectExtension(const Extension& extension) const;
+
+  // Returns whether the user can select the `site_access` option for
+  // `extension` in `url`.
+  bool CanUserSelectSiteAccess(const Extension& extension,
+                               const GURL& gurl,
+                               UserSiteAccess site_access) const;
 
   // Returns true if the extension has been explicitly granted permission to run
   // on the origin of `url`. This will return true if any permission includes
@@ -247,7 +255,9 @@ class PermissionsManager : public KeyedService {
                                          UpdateReason reason);
 
   // Notifies `observers_`that show access requests in toolbar pref changed.
-  void NotifyShowAccessRequestsInToolbarChanged();
+  void NotifyShowAccessRequestsInToolbarChanged(
+      const extensions::ExtensionId& extension_id,
+      bool can_show_requests);
 
   // Adds or removes observers.
   void AddObserver(Observer* observer);

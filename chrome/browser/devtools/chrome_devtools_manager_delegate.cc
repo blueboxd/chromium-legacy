@@ -93,11 +93,15 @@ bool GetExtensionInfo(content::WebContents* wc,
     *type = ChromeDevToolsManagerDelegate::kTypeApp;
     return true;
   }
-  // Note that we are intentionally not setting name here, so that we can
-  // construct a name based on the URL or page title in
-  // RenderFrameDevToolsAgentHost::GetTitle()
-  *type = ChromeDevToolsManagerDelegate::kTypePage;
-  return true;
+  if (extensions::GetViewType(wc) ==
+      extensions::mojom::ViewType::kExtensionPopup) {
+    // Note that we are intentionally not setting name here, so that we can
+    // construct a name based on the URL or page title in
+    // RenderFrameDevToolsAgentHost::GetTitle()
+    *type = ChromeDevToolsManagerDelegate::kTypePage;
+    return true;
+  }
+  return false;
 }
 
 ChromeDevToolsManagerDelegate* g_instance;
@@ -282,8 +286,7 @@ bool ChromeDevToolsManagerDelegate::AllowInspection(
     case Availability::kAllowed:
       return true;
     case Availability::kDisallowedForForceInstalledExtensions:
-      return !web_app || (!web_app->IsPolicyInstalledApp() &&
-                          !web_app->IsKioskInstalledApp());
+      return !web_app || !web_app->IsKioskInstalledApp();
     default:
       NOTREACHED() << "Unknown developer tools policy";
       return true;

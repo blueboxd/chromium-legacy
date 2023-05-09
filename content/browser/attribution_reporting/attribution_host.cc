@@ -22,7 +22,6 @@
 #include "content/browser/attribution_reporting/attribution_features.h"
 #include "content/browser/attribution_reporting/attribution_input_event.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_metrics.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -116,10 +115,11 @@ AttributionInputEvent AttributionHost::GetMostRecentNavigationInputEvent()
 }
 
 void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
+  DCHECK(AttributionManager::FromWebContents(web_contents()));
+
   // Impression navigations need to navigate the primary main frame to be valid.
   if (!navigation_handle->GetImpression() ||
-      !navigation_handle->IsInPrimaryMainFrame() ||
-      !AttributionManager::FromWebContents(web_contents())) {
+      !navigation_handle->IsInPrimaryMainFrame()) {
     return;
   }
   RenderFrameHostImpl* initiator_frame_host =
@@ -136,6 +136,11 @@ void AttributionHost::DidStartNavigation(NavigationHandle* navigation_handle) {
                         initiator_frame_host == nullptr);
 
   if (!initiator_frame_host) {
+    return;
+  }
+
+  if (!initiator_frame_host->IsFeatureEnabled(
+          blink::mojom::PermissionsPolicyFeature::kAttributionReporting)) {
     return;
   }
 
@@ -183,9 +188,7 @@ void AttributionHost::DidRedirectNavigation(
 
   auto* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    return;
-  }
+  DCHECK(attribution_manager);
 
   auto* data_host_manager = attribution_manager->GetDataHostManager();
   if (!data_host_manager) {
@@ -225,16 +228,6 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     return;
   }
 
-  AttributionManager* attribution_manager =
-      AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    DCHECK(navigation_info_map_.empty());
-    if (navigation_handle->GetImpression()) {
-      RecordRegisterImpressionAllowed(false);
-    }
-    return;
-  }
-
   ScopedMapDeleter<NavigationInfoMap> navigation_source_origin_it(
       &navigation_info_map_, navigation_handle->GetNavigationId());
 
@@ -257,6 +250,10 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
     MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
+
+  AttributionManager* attribution_manager =
+      AttributionManager::FromWebContents(web_contents());
+  DCHECK(attribution_manager);
 
   auto* data_host_manager = attribution_manager->GetDataHostManager();
   if (!data_host_manager) {
@@ -281,9 +278,7 @@ void AttributionHost::MaybeNotifyFailedSourceNavigation(
     NavigationHandle* navigation_handle) {
   auto* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    return;
-  }
+  DCHECK(attribution_manager);
 
   auto* data_host_manager = attribution_manager->GetDataHostManager();
   if (!data_host_manager) {
@@ -351,9 +346,7 @@ void AttributionHost::RegisterDataHost(
   // If there is no attribution manager available, ignore any registrations.
   AttributionManager* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    return;
-  }
+  DCHECK(attribution_manager);
 
   AttributionDataHostManager* data_host_manager =
       attribution_manager->GetDataHostManager();
@@ -384,12 +377,9 @@ void AttributionHost::RegisterDataHost(
 void AttributionHost::RegisterNavigationDataHost(
     mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
     const blink::AttributionSrcToken& attribution_src_token) {
-  // If there is no attribution manager available, ignore any registrations.
   AttributionManager* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    return;
-  }
+  DCHECK(attribution_manager);
 
   AttributionDataHostManager* data_host_manager =
       attribution_manager->GetDataHostManager();
@@ -444,9 +434,7 @@ void AttributionHost::NotifyFencedFrameReportingBeaconStarted(
 
   AttributionManager* attribution_manager =
       AttributionManager::FromWebContents(web_contents());
-  if (!attribution_manager) {
-    return;
-  }
+  DCHECK(attribution_manager);
 
   AttributionDataHostManager* data_host_manager =
       attribution_manager->GetDataHostManager();

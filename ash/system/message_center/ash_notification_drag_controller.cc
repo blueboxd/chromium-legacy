@@ -19,6 +19,7 @@
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -35,14 +36,14 @@ void AshNotificationDragController::OnDragStarted() {
     // A drag-and-drop session could start before an async drop finishes. In
     // this case, neither `OnDropCompleted()` nor `OnDragCancelled()` is called.
     // Therefore, clean up the active notification drag handling.
-    CleanUp();
+    CleanUp(DragEndState::kInterruptedByNewDrag);
   } else {
     drag_in_progress_ = true;
   }
 }
 
 void AshNotificationDragController::OnDragCancelled() {
-  CleanUp();
+  CleanUp(DragEndState::kCancelled);
 }
 
 void AshNotificationDragController::OnDropCompleted(
@@ -50,29 +51,32 @@ void AshNotificationDragController::OnDropCompleted(
   // Remove the dragged notification from the message center if drag-and-drop
   // ends with copy. `MessageCenter::RemoveNotification()` guarantees that only
   // unpinned notifications are removable to users.
+  DragEndState state = DragEndState::kCompletedWithoutDrop;
   if (drag_operation == ui::mojom::DragOperation::kCopy) {
     message_center::MessageCenter::Get()->RemoveNotification(
         *dragged_notification_id_, /*by_user=*/true);
+    state = DragEndState::kCompletedWithDrop;
   }
 
-  CleanUp();
+  CleanUp(state);
 }
 
 void AshNotificationDragController::WriteDragDataForView(
     views::View* sender,
     const gfx::Point& press_pt,
     ui::OSExchangeData* data) {
+  // Sets the image to show during drag.
   AshNotificationView* notification_view =
       static_cast<AshNotificationView*>(sender);
-  const absl::optional<gfx::Rect> drag_area =
-      notification_view->GetDragAreaBounds();
-  DCHECK(drag_area);
-
-  // Set the image to show during drag.
   const absl::optional<gfx::ImageSkia> drag_image =
       notification_view->GetDragImage();
   DCHECK(drag_image);
-  data->provider().SetDragImage(*drag_image, press_pt - drag_area->origin());
+
+  // The drag point is at the top left corner, or top right corner under RTL.
+  data->provider().SetDragImage(
+      *drag_image, base::i18n::IsRTL()
+                       ? gfx::Vector2d(drag_image->size().width(), /*y=*/0)
+                       : gfx::Vector2d());
 
   notification_view->AttachDropData(data);
 }
@@ -116,7 +120,7 @@ bool AshNotificationDragController::CanStartDragForView(
     // this case, neither `OnDropCompleted()` nor `OnDragCancelled()` is called.
     // Therefore, clean up the active notification drag handling.
     if (drag_in_progress_) {
-      CleanUp();
+      CleanUp(DragEndState::kInterruptedByNewDrag);
     }
   }
 
@@ -188,11 +192,14 @@ void AshNotificationDragController::OnNotificationDragWillStart(
       /*mark_notification_as_read=*/true);
 }
 
-void AshNotificationDragController::CleanUp() {
+void AshNotificationDragController::CleanUp(DragEndState state) {
   DCHECK(drag_in_progress_);
   drag_in_progress_ = false;
   dragged_notification_id_.reset();
   drag_drop_client_observer_.Reset();
+
+  base::UmaHistogramEnumeration("Ash.NotificationView.ImageDrag.EndState",
+                                state);
 }
 
 }  // namespace ash

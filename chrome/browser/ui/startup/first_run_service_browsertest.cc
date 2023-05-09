@@ -148,6 +148,8 @@ class FirstRunServiceBrowserTest : public InProcessBrowserTest {
 
     // Also make sure we will do another attempt at creating the service now
     // that the first run state changed.
+    ASSERT_FALSE(
+        FirstRunServiceFactory::GetForBrowserContextIfExists(profile()));
     FirstRunServiceFactory::GetInstance()->Disassociate(profile());
 
     identity_test_env_adaptor_ =
@@ -219,6 +221,16 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   profiles::testing::WaitForPickerWidgetCreated();
   EXPECT_FALSE(GetFirstRunFinishedPrefValue());
 
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.ServiceCreated",
+                                      true, 1);
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  histogram_tester.ExpectUniqueSample(
+      "Profile.LacrosPrimaryProfileFirstRunEntryPoint",
+      FirstRunService::EntryPoint::kOther, 1);
+#endif
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.EntryPoint",
+                                      FirstRunService::EntryPoint::kOther, 1);
+
   // We don't expect synthetic trials to be registered here, since no group
   // is configured with the feature. For the positive test case, see
   // `FirstRunServiceCohortBrowserTest.GroupRegisteredAfterFre`.
@@ -237,6 +249,7 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "ProfilePicker.FirstRun.ExitStatus",
       ProfilePicker::FirstRunExitStatus::kQuitEarly, 1);
+  histogram_tester.ExpectTotalCount("ProfilePicker.FirstRun.FinishReason", 0);
 #elif BUILDFLAG(ENABLE_DICE_SUPPORT)
   histogram_tester.ExpectUniqueSample(
       "Signin.SignIn.Offered",
@@ -245,7 +258,65 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "ProfilePicker.FirstRun.ExitStatus",
       ProfilePicker::FirstRunExitStatus::kQuitAtEnd, 1);
+  histogram_tester.ExpectUniqueSample("ProfilePicker.FirstRun.FinishReason",
+                                      /*kFinishedFlow*/ 1, 1);
 #endif
+}
+
+#if BUILDFLAG(IS_MAC)
+IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
+                       CloseChromeWithKeyboardShortcut) {
+  base::RunLoop run_loop;
+  base::HistogramTester histogram_tester;
+
+  ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(false).Then(run_loop.QuitClosure()));
+  profiles::testing::WaitForPickerWidgetCreated();
+
+  ProfilePicker::GetViewForTesting()->AcceleratorPressed(
+      ui::Accelerator(ui::VKEY_Q, ui::EF_COMMAND_DOWN));
+  histogram_tester.ExpectBucketCount(
+      "ProfilePicker.FirstRun.ExitStatus",
+      ProfilePicker::FirstRunExitStatus::kAbandonedFlow, 1);
+  profiles::testing::WaitForPickerClosed();
+  run_loop.Run();
+}
+#endif
+
+IN_PROC_BROWSER_TEST_F(FirstRunServiceBrowserTest,
+                       OpenFirstRunIfNeededCalledTwice) {
+  // When `OpenFirstRunIfNeeded` is called twice, the callback passed to it the
+  // first time should be aborted (called with false) and replaced by the
+  // callback passed to it the second time, which will be later called with
+  // true on DICE and false on Lacros because it will quit early in the process.
+  base::RunLoop first_run_loop;
+  base::RunLoop second_run_loop;
+  base::HistogramTester histogram_tester;
+
+  ASSERT_TRUE(fre_service()->ShouldOpenFirstRun());
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(false).Then(first_run_loop.QuitClosure()));
+  profiles::testing::WaitForPickerWidgetCreated();
+
+  bool second_proceed = true;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  second_proceed = false;
+#endif
+  fre_service()->OpenFirstRunIfNeeded(
+      FirstRunService::EntryPoint::kOther,
+      ExpectProceed(second_proceed).Then(second_run_loop.QuitClosure()));
+  first_run_loop.Run();
+
+  histogram_tester.ExpectBucketCount(
+      "ProfilePicker.FirstRun.ExitStatus",
+      ProfilePicker::FirstRunExitStatus::kAbortTask, 1);
+
+  ProfilePicker::Hide();
+  profiles::testing::WaitForPickerClosed();
+  second_run_loop.Run();
 }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -474,9 +545,51 @@ IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest, PRE_GroupViaPrefs) {
   local_state->SetBoolean(prefs::kFirstRunFinished, true);
 }
 IN_PROC_BROWSER_TEST_F(FirstRunServiceCohortBrowserTest, GroupViaPrefs) {
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
   // The registered group is read from the prefs, not from the feature param.
   EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
                                                   kStudyTestGroupName2));
+}
+
+class FirstRunServiceControlBrowserTest : public FirstRunServiceBrowserTest {
+ public:
+  static constexpr char kStudyTestGroupName[] = "control";
+
+  FirstRunServiceControlBrowserTest() {
+    variations::SyntheticTrialsActiveGroupIdProvider::GetInstance()
+        ->ResetForTesting();
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {
+            {kForYouFreSyntheticTrialRegistration,
+             {{"group_name", kStudyTestGroupName}}},
+        },
+        {kForYouFre});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+IN_PROC_BROWSER_TEST_F(FirstRunServiceControlBrowserTest, PRE_Control) {
+  EXPECT_EQ(nullptr, FirstRunServiceFactory::GetForBrowserContext(profile()));
+
+  // The FRE is directly marked finished and we join the indicated cohort.
+  PrefService* local_state = g_browser_process->local_state();
+  EXPECT_TRUE(local_state->GetBoolean(prefs::kFirstRunFinished));
+  EXPECT_EQ(kStudyTestGroupName,
+            local_state->GetString(prefs::kFirstRunStudyGroup));
+
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
+  EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
+                                                  kStudyTestGroupName));
+}
+IN_PROC_BROWSER_TEST_F(FirstRunServiceControlBrowserTest, Control) {
+  EXPECT_EQ(nullptr, FirstRunServiceFactory::GetForBrowserContext(profile()));
+
+  // On subsequent startups, we continue the registration.
+  EXPECT_TRUE(variations::HasSyntheticTrial("ForYouFreSynthetic"));
+  EXPECT_TRUE(variations::IsInSyntheticTrialGroup("ForYouFreSynthetic",
+                                                  kStudyTestGroupName));
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

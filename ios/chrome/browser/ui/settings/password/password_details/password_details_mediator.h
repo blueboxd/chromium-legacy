@@ -24,6 +24,15 @@ class PrefService;
 class IOSChromePasswordCheckManager;
 @protocol PasswordDetailsConsumer;
 
+// Provides PasswordManagerClient (per-tab object) on-demand, so there's no need
+// to worry about tabs being closed.
+class PasswordManagerClientProvider {
+ public:
+  virtual ~PasswordManagerClientProvider() = default;
+
+  virtual password_manager::PasswordManagerClient* GetAny() = 0;
+};
+
 // This mediator fetches and organises the credentials for its consumer.
 @interface PasswordDetailsMediator
     : NSObject <PasswordDetailsTableViewControllerDelegate>
@@ -39,8 +48,8 @@ class IOSChromePasswordCheckManager;
                       prefService:(PrefService*)prefService
                       syncService:(syncer::SyncService*)syncService
              supportMoveToAccount:(BOOL)supportMoveToAccount
-            passwordManagerClient:
-                (password_manager::PasswordManagerClient*)passwordManagerClient
+    passwordManagerClientProvider:
+        (PasswordManagerClientProvider*)passwordManagerClientProvider
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;
@@ -56,6 +65,16 @@ class IOSChromePasswordCheckManager;
 
 // Moves credential and its duplicates to account store.
 - (void)moveCredentialToAccountStore:(PasswordDetails*)password;
+
+// Called to handle moving a credential to account store in case of a duplicate
+// conflict. Deletes the outdated password, and moves the local credential if it
+// is the recent one.
+- (void)moveCredentialToAccountStoreWithConflict:(PasswordDetails*)password;
+
+// Called when the user chooses to move a password to account store.
+// Returns YES if the account stores the same username for the website with a
+// different password, NO otherwise.
+- (BOOL)hasPasswordConflictInAccount:(PasswordDetails*)password;
 
 @end
 

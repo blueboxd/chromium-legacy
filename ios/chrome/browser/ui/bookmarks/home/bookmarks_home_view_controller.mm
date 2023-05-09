@@ -501,9 +501,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
 
   // Create the mediator and hook up the table view.
-  self.mediator =
-      [[BookmarksHomeMediator alloc] initWithSharedState:self.sharedState
-                                                 browser:_browser];
+  self.mediator = [[BookmarksHomeMediator alloc]
+      initWithSharedState:self.sharedState
+                  browser:_browser
+       baseViewController:self.navigationController];
   self.mediator.consumer = self;
   [self.mediator startMediating];
 
@@ -1341,7 +1342,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
     return nodeItem.bookmarkNode;
   }
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected item type " << item.type;
   return nullptr;
 }
 
@@ -2557,9 +2558,9 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 - (URLInfo*)tableView:(UITableView*)tableView
     URLInfoAtIndexPath:(NSIndexPath*)indexPath {
-  if (indexPath.section ==
-      [self.tableViewModel
-          sectionForSectionIdentifier:BookmarksHomeSectionIdentifierMessages]) {
+  if (indexPath.section !=
+      [self.tableViewModel sectionForSectionIdentifier:
+                               BookmarksHomeSectionIdentifierBookmarks]) {
     return nil;
   }
 

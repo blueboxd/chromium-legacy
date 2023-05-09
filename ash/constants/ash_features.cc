@@ -110,6 +110,10 @@ BASE_FEATURE(kAppCollectionFolderRefresh,
              "AppCollectionFolderRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAppLaunchAutomation,
+             "AppLaunchAutomation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls whether to enable ARC ADB sideloading support.
 BASE_FEATURE(kArcAdbSideloadingFeature,
              "ArcAdbSideloading",
@@ -129,7 +133,7 @@ BASE_FEATURE(kArcInputOverlayBeta,
 // Controls whether to enable support for ARC Input Overlay Alpha v2.
 BASE_FEATURE(kArcInputOverlayAlphaV2,
              "ArcInputOverlayAlphaV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable support for ARC ADB sideloading for managed
 // accounts and/or devices.
@@ -313,6 +317,11 @@ BASE_FEATURE(kCaptureModeDemoTools,
              "CaptureModeDemoTools",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables the tour that walks new users through the Capture Mode feature.
+BASE_FEATURE(kCaptureModeTour,
+             "CaptureModeTour",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, allow eSIM installation bypass the non-cellular internet
 // connectivity check.
 BASE_FEATURE(kCellularBypassESimInstallationConnectivityCheck,
@@ -329,6 +338,13 @@ BASE_FEATURE(kCellularUseSecondEuicc,
 // cryptohome.
 BASE_FEATURE(kCheckPasswordsAgainstCryptohomeHelper,
              "CheckPasswordsAgainstCryptohomeHelper",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled alongside the keyboard auto-repeat setting, holding down Ctrl+V
+// will cause the clipboard history menu to show. From there, the user can
+// select a clipboard history item to replace the initially pasted content.
+BASE_FEATURE(kClipboardHistoryLongpress,
+             "ClipboardHistoryLongpress",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, the clipboard nudge shown prefs will be reset at the start of
@@ -480,6 +496,10 @@ BASE_FEATURE(kCryptAuthV2Enrollment,
 BASE_FEATURE(kCryptohomeRecovery,
              "CryptohomeRecovery",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Adds a desk button to the shelf that the user can use to navigate between
+// desks.
+BASE_FEATURE(kDeskButton, "DeskButton", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables or disables Sync for desk templates on ChromeOS.
 BASE_FEATURE(kDeskTemplateSync,
@@ -748,12 +768,12 @@ BASE_FEATURE(kEolWarningNotifications,
 // Enables Device End Of Lifetime incentive notifications.
 BASE_FEATURE(kEolIncentive, "EolIncentive", base::FEATURE_DISABLED_BY_DEFAULT);
 
-const base::FeatureParam<EolIncentiveType>::Option eol_incentive_options[] = {
-    {EolIncentiveType::kNone, "none"},
-    {EolIncentiveType::kPerk, "perk"},
-    {EolIncentiveType::kCoupon, "coupon"}};
-const base::FeatureParam<EolIncentiveType> kEolIncentiveTypeParam{
-    &kEolIncentive, "incentive_type", EolIncentiveType::kNone,
+const base::FeatureParam<EolIncentiveParam>::Option eol_incentive_options[] = {
+    {EolIncentiveParam::kNoOffer, "no_offer"},
+    {EolIncentiveParam::kOffer, "offer"},
+    {EolIncentiveParam::kOfferWithWarning, "offer_with_warning"}};
+const base::FeatureParam<EolIncentiveParam> kEolIncentiveParam{
+    &kEolIncentive, "incentive_type", EolIncentiveParam::kNoOffer,
     &eol_incentive_options};
 
 // Enable or disable support for touchpad with haptic feedback.
@@ -885,6 +905,11 @@ BASE_FEATURE(kFederatedTimezoneCodePhh,
              "FederatedTimezoneCodePhh",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables scheduling of launcher query federated analytics tasks.
+BASE_FEATURE(kFederatedLauncherQueryAnalyticsTask,
+             "FederatedLauncherQueryAnalyticsTask",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables experimental UI features in Files app.
 BASE_FEATURE(kFilesAppExperimental,
              "FilesAppExperimental",
@@ -904,7 +929,7 @@ BASE_FEATURE(kFilesDriveShortcuts,
 // Enable inline sync status in Files app.
 BASE_FEATURE(kFilesInlineSyncStatus,
              "FilesInlineSyncStatus",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables V2 of search functionality in files.
 BASE_FEATURE(kFilesSearchV2,
@@ -1046,12 +1071,6 @@ BASE_FEATURE(kHandwritingLegacyRecognition,
              "HandwritingLegacyRecognition",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables new on-device recognition for legacy handwriting input in all
-// supported languages.
-BASE_FEATURE(kHandwritingLegacyRecognitionAllLang,
-             "HandwritingLegacyRecognitionAllLang",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Enables downloading the handwriting libraries via DLC.
 BASE_FEATURE(kHandwritingLibraryDlc,
              "HandwritingLibraryDlc",
@@ -1130,6 +1149,11 @@ BASE_FEATURE(kHoldingSpaceRefresh,
 // Enables suggestions in the pinned files section of Holding Space.
 BASE_FEATURE(kHoldingSpaceSuggestions,
              "HoldingSpaceSuggestions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables the tour that walks new users through the Holding Space feature.
+BASE_FEATURE(kHoldingSpaceTour,
+             "HoldingSpaceTour",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables a call-to-action label beside the home button.
@@ -1398,6 +1422,18 @@ BASE_FEATURE(kEcheNetworkConnectionState,
              "EcheNetworkConnectionState",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Time limit before re-attempting a background connection to check if the
+// network is suitable.
+const base::FeatureParam<base::TimeDelta>
+    kEcheBackgroundConnectionAttemptThrottleTimeout{
+        &kEcheNetworkConnectionState,
+        "EcheBackgroundConnectionAttemptThrottleTimeout", base::Seconds(10)};
+
+// Time limit before requiring a new connection check to show apps UI.
+const base::FeatureParam<base::TimeDelta> kEcheConnectionStatusResetTimeout{
+    &kEcheNetworkConnectionState, "EcheConnectionStatusResetTimeout",
+    base::Minutes(10)};
+
 // Enables multi-zone rgb keyboard customization.
 BASE_FEATURE(kMultiZoneRgbKeyboard,
              "MultiZoneRgbKeyboard",
@@ -1525,7 +1561,7 @@ BASE_FEATURE(kOsSyncConsentRevamp,
 // ChromeOS Settings.
 BASE_FEATURE(kOsSettingsAppBadgingToggle,
              "OsSettingsAppBadgingToggle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables search result feedback in ChromeOS Settings when no search results
 // are returned.
@@ -1605,11 +1641,15 @@ BASE_FEATURE(kPhoneHubPingOnBubbleOpen,
              "PhoneHubPingOnBubbleOpen",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Maximum number of seconds to wait for ping response before disconnecting
+const base::FeatureParam<base::TimeDelta> kPhoneHubPingTimeout{
+    &kPhoneHubPingOnBubbleOpen, "PhoneHubPingTimeout", base::Seconds(60)};
+
 // Controls whether policy provided trust anchors are allowed at the lock
 // screen.
 BASE_FEATURE(kPolicyProvidedTrustAnchorsAllowedAtLockScreen,
              "PolicyProvidedTrustAnchorsAllowedAtLockScreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables or disables the preference of using constant frame rate for camera
 // when streaming.
@@ -1780,6 +1820,11 @@ BASE_FEATURE(kReverseScrollGestures,
 
 BASE_FEATURE(kRgbKeyboard, "RgbKeyboard", base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables screensaver customized running time.
+BASE_FEATURE(kScreenSaverDuration,
+             "ScreenSaverDuration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables the "Preview" button for screensaver.
 BASE_FEATURE(kScreenSaverPreview,
              "ScreenSaverPreview",
@@ -1864,6 +1909,11 @@ BASE_FEATURE(kShimlessRMADisableDarkMode,
              "ShimlessRMADisableDarkMode",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables or disables the diagnostic page in the Shimless RMA flow.
+BASE_FEATURE(kShimlessRMADiagnosticPage,
+             "ShimlessRMADiagnosticPage",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables or disables a toggle to enable Bluetooth debug logs.
 BASE_FEATURE(kShowBluetoothDebugLogToggle,
              "ShowBluetoothDebugLogToggle",
@@ -1878,9 +1928,6 @@ BASE_FEATURE(kShowPlayInDemoMode,
 BASE_FEATURE(kShutdownConfirmationBubble,
              "ShutdownConfirmationBubble",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables or disables enterprise policy control for SIM PIN Lock.
-BASE_FEATURE(kSimLockPolicy, "SimLockPolicy", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Uses experimental component version for smart dim.
 BASE_FEATURE(kSmartDimExperimentalComponent,
@@ -1990,7 +2037,7 @@ BASE_FEATURE(kTerminalSftp, "TerminalSftp", base::FEATURE_ENABLED_BY_DEFAULT);
 // Enables tmux integration in the Terminal System App.
 BASE_FEATURE(kTerminalTmuxIntegration,
              "TerminalTmuxIntegration",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables time of day screen saver.
 BASE_FEATURE(kTimeOfDayScreenSaver,
@@ -2407,12 +2454,20 @@ bool IsCaptivePortalErrorPageEnabled() {
   return base::FeatureList::IsEnabled(kCaptivePortalErrorPage);
 }
 
+bool IsCaptureModeTourEnabled() {
+  return base::FeatureList::IsEnabled(kCaptureModeTour);
+}
+
 bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
   return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
 }
 
 bool IsChromadAvailableEnabled() {
   return base::FeatureList::IsEnabled(kChromadAvailable);
+}
+
+bool IsClipboardHistoryLongpressEnabled() {
+  return base::FeatureList::IsEnabled(kClipboardHistoryLongpress);
 }
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
@@ -2469,6 +2524,10 @@ bool IsCryptohomeRecoveryEnabled() {
 
 bool IsDarkLightModeEnabled() {
   return chromeos::features::IsDarkLightModeEnabled();
+}
+
+bool IsDeskButtonEnabled() {
+  return base::FeatureList::IsEnabled(kDeskButton);
 }
 
 bool IsDeskTemplateSyncEnabled() {
@@ -2681,6 +2740,10 @@ bool IsHoldingSpaceSuggestionsEnabled() {
   return base::FeatureList::IsEnabled(kHoldingSpaceSuggestions);
 }
 
+bool IsHoldingSpaceTourEnabled() {
+  return base::FeatureList::IsEnabled(kHoldingSpaceTour);
+}
+
 bool IsHomeButtonWithTextEnabled() {
   return base::FeatureList::IsEnabled(kHomeButtonWithText);
 }
@@ -2691,6 +2754,10 @@ bool IsHostnameSettingEnabled() {
 
 bool IsHotspotEnabled() {
   return base::FeatureList::IsEnabled(kHotspot);
+}
+
+bool IsScreenSaverDurationEnabled() {
+  return base::FeatureList::IsEnabled(kScreenSaverDuration);
 }
 
 bool IsScreenSaverPreviewEnabled() {
@@ -2749,8 +2816,7 @@ bool IsKeyboardBacklightToggleEnabled() {
 }
 
 bool IsLanguagePacksEnabled() {
-  return base::FeatureList::IsEnabled(kHandwritingLegacyRecognition) ||
-         base::FeatureList::IsEnabled(kHandwritingLegacyRecognitionAllLang);
+  return base::FeatureList::IsEnabled(kHandwritingLegacyRecognition);
 }
 
 bool IsLauncherNudgeShortIntervalEnabled() {
@@ -3142,12 +3208,12 @@ bool IsShimlessRMADarkModeDisabled() {
   return base::FeatureList::IsEnabled(kShimlessRMADisableDarkMode);
 }
 
-bool IsSmdsDbusMigrationEnabled() {
-  return base::FeatureList::IsEnabled(kSmdsDbusMigration);
+bool IsShimlessRMADiagnosticPageEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMADiagnosticPage);
 }
 
-bool IsSimLockPolicyEnabled() {
-  return base::FeatureList::IsEnabled(kSimLockPolicy);
+bool IsSmdsDbusMigrationEnabled() {
+  return base::FeatureList::IsEnabled(kSmdsDbusMigration);
 }
 
 bool IsSmartReaderEnabled() {
@@ -3211,6 +3277,11 @@ bool IsUseLoginShelfWidgetEnabled() {
 
 bool IsUseStorkSmdsServerAddressEnabled() {
   return base::FeatureList::IsEnabled(kUseStorkSmdsServerAddress);
+}
+
+bool IsUserEducationEnabled() {
+  return IsCaptureModeTourEnabled() || IsHoldingSpaceTourEnabled() ||
+         IsWelcomeTourEnabled();
 }
 
 bool IsVideoConferenceEnabled() {

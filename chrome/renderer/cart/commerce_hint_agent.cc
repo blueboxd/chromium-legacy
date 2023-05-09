@@ -841,20 +841,10 @@ void CommerceHintAgent::ExtractProducts() {
   // script from browser side.
   mojo::Remote<mojom::CommerceHintObserver> observer =
       GetObserver(render_frame());
-  // Use current script if it has already been initialized or the feature is
-  // disabled; otherwise fetch script from browser side.
-  if (extraction_script_initialized_ ||
-      !commerce::kOptimizeRendererSignal.Get()) {
-    ExtractCartWithUpdatedScript(std::move(observer),
-                                 /*product_id_json*/ std::string(),
-                                 /*cart_extraction_script*/ std::string());
-    return;
-  }
   auto* observer_ptr = observer.get();
   observer_ptr->OnCartExtraction(
       base::BindOnce(&CommerceHintAgent::ExtractCartWithUpdatedScript,
                      weak_factory_.GetWeakPtr(), std::move(observer)));
-  extraction_script_initialized_ = true;
 }
 
 void CommerceHintAgent::ExtractCartWithUpdatedScript(
@@ -937,8 +927,6 @@ void CommerceHintAgent::OnProductsExtracted(absl::optional<base::Value> results,
   if (!extracted_products) {
     return;
   }
-  bool is_partner = commerce::IsPartnerMerchant(
-      GURL(render_frame()->GetWebFrame()->GetDocument().Url()));
   std::vector<mojom::ProductPtr> products;
   for (const auto& product_val : *extracted_products) {
     if (!product_val.is_dict()) {
@@ -957,15 +945,11 @@ void CommerceHintAgent::OnProductsExtracted(absl::optional<base::Value> results,
       DVLOG(1) << "skipped";
       continue;
     }
-    if (is_partner) {
-      std::string product_id;
-      const std::string* extracted_id = product.FindString("productId");
-      if (extracted_id) {
-        product_id = *extracted_id;
-      }
-      DVLOG(1) << "product_id = " << product_id;
-      DCHECK(!product_id.empty());
-      product_ptr->product_id = std::move(product_id);
+    const std::string* product_id = product.FindString("productId");
+    if (product_id) {
+      DVLOG(1) << "product_id = " << *product_id;
+      DCHECK(!product_id->empty());
+      product_ptr->product_id = *product_id;
     }
     products.push_back(std::move(product_ptr));
   }
@@ -1051,11 +1035,6 @@ void CommerceHintAgent::DidStartNavigation(
   starting_url_ = url;
   mojo::Remote<mojom::CommerceHintObserver> observer =
       GetObserver(render_frame());
-  if (!commerce::kOptimizeRendererSignal.Get()) {
-    DidStartNavigationCallback(url, std::move(observer), false,
-                               mojom::Heuristics::New());
-    return;
-  }
   auto* observer_ptr = observer.get();
   observer_ptr->OnNavigation(
       url, CommerceHeuristicsData::GetInstance().GetVersion(),
@@ -1092,11 +1071,6 @@ void CommerceHintAgent::DidCommitProvisionalLoad(
   should_use_dom_heuristics_.reset();
   mojo::Remote<mojom::CommerceHintObserver> observer =
       GetObserver(render_frame());
-  if (!commerce::kOptimizeRendererSignal.Get()) {
-    DidCommitProvisionalLoadCallback(starting_url_, std::move(observer), false,
-                                     mojom::Heuristics::New());
-    return;
-  }
   auto* observer_ptr = observer.get();
   observer_ptr->OnNavigation(
       starting_url_, CommerceHeuristicsData::GetInstance().GetVersion(),
@@ -1157,11 +1131,6 @@ void CommerceHintAgent::DidFinishLoad() {
   extraction_count_ = 0;
   mojo::Remote<mojom::CommerceHintObserver> observer =
       GetObserver(render_frame());
-  if (!commerce::kOptimizeRendererSignal.Get()) {
-    DidFinishLoadCallback(url, std::move(observer), false,
-                          mojom::Heuristics::New());
-    return;
-  }
   auto* observer_ptr = observer.get();
   observer_ptr->OnNavigation(
       url, CommerceHeuristicsData::GetInstance().GetVersion(),

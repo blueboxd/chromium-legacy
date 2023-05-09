@@ -499,7 +499,8 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
     }
     // If enabled, call controller's Stop() to inform them to clear the
     // metadata.
-    if (base::FeatureList::IsEnabled(
+    if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA &&
+        base::FeatureList::IsEnabled(
             kSyncAllowClearingMetadataWhenDataTypeIsStopped)) {
       for (auto& [type, controller] : data_type_controllers_) {
         controller->Stop(shutdown_reason, base::DoNothing());
@@ -539,9 +540,7 @@ void SyncServiceImpl::ResetEngine(ShutdownReason shutdown_reason,
       // When aborting as part of shutdown, we should expect an aborted sync
       // configure result, else we'll dcheck when we try to read the sync error.
       expect_sync_configuration_aborted_ = true;
-      if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA ||
-          !base::FeatureList::IsEnabled(
-              kSyncDoNotPropagateBrowserShutdownToDataTypes)) {
+      if (shutdown_reason != ShutdownReason::BROWSER_SHUTDOWN_AND_KEEP_DATA) {
         data_type_manager_->Stop(shutdown_reason);
       }
     }
@@ -1044,6 +1043,14 @@ void SyncServiceImpl::CryptoRequiredUserActionChanged() {
           "Sync.TrustedVaultErrorShownOnStartup",
           user_settings_->IsTrustedVaultKeyRequiredForPreferredDataTypes(),
           engine_->GetDetailedStatus());
+
+      if (is_first_time_sync_configure_) {
+        // A 'first time sync configure' is an indication that the account was
+        // added to the browser recently (sign in).
+        base::UmaHistogramBoolean(
+            "Sync.TrustedVaultErrorShownOnFirstTimeSync",
+            user_settings_->IsTrustedVaultKeyRequiredForPreferredDataTypes());
+      }
     }
   }
 }
@@ -1565,25 +1572,6 @@ void SyncServiceImpl::OnAccountsInCookieUpdated(
     const GoogleServiceAuthError& error) {
   OnAccountsInCookieUpdatedWithCallback(
       accounts_in_cookie_jar_info.signed_in_accounts, base::NullCallback());
-}
-
-void SyncServiceImpl::OnErrorStateOfRefreshTokenUpdatedForAccount(
-    const CoreAccountInfo& account_info,
-    const GoogleServiceAuthError& error) {
-  if (error.state() == GoogleServiceAuthError::NONE &&
-      last_error_state_of_refresh_token_.IsPersistentError()) {
-    // Resolving a persistent error may or may not necessarily imply changes in
-    // the recoverability state. However, over-triggering
-    // OnTrustedVaultRecoverabilityChanged() is totally fine and should lead to
-    // no user-facing changes, either because it's a strict no-op, e.g. if the
-    // passphrase type != kTrustedVaultPassphrase, or because the recoverability
-    // hasn't changed.
-    // TODO(crbug.com/1156584): This is only needed because currently not all
-    // persistent errors stop the sync engine.
-    crypto_.OnTrustedVaultRecoverabilityChanged();
-  }
-
-  last_error_state_of_refresh_token_ = error;
 }
 
 void SyncServiceImpl::OnAccountsInCookieUpdatedWithCallback(

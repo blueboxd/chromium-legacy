@@ -45,7 +45,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       bool use_partial_raster,
       bool use_gpu_memory_buffer_resources,
       int max_staging_buffer_usage_in_bytes,
-      viz::ResourceFormat tile_format);
+      viz::SharedImageFormat tile_format);
   OneCopyRasterBufferProvider(const OneCopyRasterBufferProvider&) = delete;
   ~OneCopyRasterBufferProvider() override;
 
@@ -61,7 +61,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
       bool depends_on_hardware_accelerated_jpeg_candidates,
       bool depends_on_hardware_accelerated_webp_candidates) override;
   void Flush() override;
-  viz::ResourceFormat GetResourceFormat() const override;
+  viz::SharedImageFormat GetFormat() const override;
   bool IsResourcePremultiplied() const override;
   bool CanPartialRasterIntoProvidedResource() const override;
   bool IsResourceReadyToDraw(
@@ -167,7 +167,7 @@ class CC_EXPORT OneCopyRasterBufferProvider : public RasterBufferProvider {
   // Context lock must be acquired when accessing this member.
   int bytes_scheduled_since_last_flush_;
 
-  const viz::ResourceFormat tile_format_;
+  const viz::SharedImageFormat tile_format_;
   StagingBufferPool staging_pool_;
 };
 

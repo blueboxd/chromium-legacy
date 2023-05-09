@@ -630,6 +630,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // background paint location.
   bool ComputeNeedsCompositedScrolling(
       bool force_prefer_compositing_to_lcd_text);
+  bool NeedsHypotheticalScrollbarThickness(ScrollbarOrientation) const;
   int ComputeHypotheticalScrollbarThickness(
       ScrollbarOrientation,
       bool should_include_overlay_thickness) const;

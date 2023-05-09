@@ -1,14 +1,17 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="1014750484722996375">เดสก์</translation>
 <translation id="1018219910092211213">ไม่สามารถแปลง DNS</translation>
 <translation id="1018656279737460067">ยกเลิกแล้ว</translation>
+<translation id="1022433422498218992">การควบคุมทั่วไป</translation>
 <translation id="1047458377670401304"><ph name="CPU_NAME" /> (<ph name="THREAD_COUNT" /> เทรด, <ph name="CPU_MAX_CLOCK_SPEED" /> GHz)</translation>
 <translation id="1047773237499189053">มีฟีเจอร์ใหม่ ใช้แป้นลูกศรขึ้นเพื่อดูข้อมูลเพิ่มเติม</translation>
 <translation id="1059913517121127803">เริ่มการสแกนไม่ได้</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1071587090247825784">ตรวจพบไฟร์วอลล์</translation>
 <translation id="1075811647922107217">ขนาดหน้า</translation>
+<translation id="1082009148392559545">กำลังดาวน์โหลดโปรแกรมรักษาหน้าจอ</translation>
 <translation id="1094693127011229778">ที่อยู่ IP ไม่พร้อมใช้งาน</translation>
 <translation id="1113892970288677790">เลือกงานศิลปะและรูปภาพที่ดูแลจัดการ</translation>
 <translation id="1119447706177454957">ข้อผิดพลาดภายใน</translation>
@@ -83,14 +86,17 @@
 <translation id="1662989795263954667">หยุดพิมพ์ - หมึกหมด</translation>
 <translation id="1664796644829245314">ตัวอย่าง <ph name="PREVIEW_OBJECT" /></translation>
 <translation id="1668469839109562275">VPN ในตัว</translation>
+<translation id="1669047024429367828">ระดับการเข้าถึง</translation>
 <translation id="1672499492233627739">ฟีดวิดีโอเว็บแคม</translation>
 <translation id="1676557873873341166">กำลังถ่ายวิดีโอ</translation>
 <translation id="1703835215927279855">Letter</translation>
 <translation id="1706391837335750954">มีรีโซลเวอร์ DNS</translation>
+<translation id="1710499924611012470">การนำทางสำหรับการช่วยเหลือพิเศษ</translation>
 <translation id="1715359911173058521">เกิดปัญหาในการสื่อสารกับเครื่องสแกน ตรวจสอบการเชื่อมต่อเครือข่ายหรือ USB แล้วลองอีกครั้ง</translation>
 <translation id="1717874160321062422">จัดการโดย <ph name="FIRST_MANAGER" /> และ <ph name="SECOND_MANAGER" /></translation>
 <translation id="1726100011689679555">เซิร์ฟเวอร์ชื่อ</translation>
 <translation id="1731082422893354635">ทัชแพดบลูทูธ</translation>
+<translation id="1738949837603788263">โซน <ph name="ZONE_NUMBER" /></translation>
 <translation id="1745577949879301685">โหลดรูปภาพไม่ได้ โปรดตรวจสอบการเชื่อมต่อเครือข่ายหรือลองโหลดรูปภาพอีกครั้ง</translation>
 <translation id="1751249301761991853">ส่วนบุคคล</translation>
 <translation id="1753496554272155572">ออกจากตัวอย่างวอลเปเปอร์</translation>
@@ -100,6 +106,7 @@
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1768959921651994223">ประเภทการตรวจสอบสิทธิ์</translation>
 <translation id="1782199038061388045">การแปล</translation>
+<translation id="1790209694022261219">หน้าต่างและเดสก์</translation>
 <translation id="1792647875738159689">กำลังยกเลิกการสแกน</translation>
 <translation id="1801418420130173017">ปิดใช้ธีมมืด</translation>
 <translation id="1807246157184219062">สว่าง</translation>
@@ -119,6 +126,7 @@
 <translation id="1947737735496445907">พิมพ์แล้ว</translation>
 <translation id="1951012854035635156">ผู้ช่วย</translation>
 <translation id="1962550982027027473">ต้องมี APN เริ่มต้น</translation>
+<translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1977994649430373166">รูปโปรไฟล์ Google</translation>
 <translation id="1979103255016296513">เลยเวลาเปลี่ยนรหัสผ่านแล้ว</translation>
 <translation id="1999615961760456652">แคพทีฟพอร์ทัล</translation>
@@ -132,6 +140,7 @@
 <translation id="2056550196601855911">IPv4/IPv6</translation>
 <translation id="2080070583977670716">การตั้งค่าเพิ่มเติม</translation>
 <translation id="2085089206770112532">ลดความสว่างของหน้าจอ</translation>
+<translation id="2102231663024125441">การแก้ไขข้อความ</translation>
 <translation id="2105810540595158374">อุปกรณ์เป็นอุปกรณ์ควบคุมเกม</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" /> เวอร์ชัน <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">ใช้ได้ <ph name="AVAILABLE_MEMORY" /> GB จาก <ph name="TOTAL_MEMORY" /> GB</translation>
@@ -141,6 +150,7 @@
 <translation id="2157959690810728433">อยู่ในคิว</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: ลองอีกครั้ง</translation>
 <translation id="2161394479394250669">ยกเลิกงานพิมพ์</translation>
+<translation id="2161656808144014275">ข้อความ</translation>
 <translation id="2163937499206714165">เปิดโหมดมืด</translation>
 <translation id="2180197493692062006">เกิดข้อผิดพลาด ลองเปิดแอปอีกครั้ง</translation>
 <translation id="2209788852729124853">รีเซ็ตตัวนับการรับส่งข้อมูล</translation>
@@ -174,7 +184,6 @@
 <translation id="2421798028054665193">ภาพที่ <ph name="CURRENT_PAGE" /> จาก <ph name="TOTAL_PAGES" /></translation>
 <translation id="2446553403094072641">ความแม่นยำของจุดลอยตัว</translation>
 <translation id="2448312741937722512">ประเภท</translation>
-<translation id="2461822463642141190">ปัจจุบัน</translation>
 <translation id="248546197012830854">อุปกรณ์ออฟไลน์อยู่ เชื่อมต่อกับเครือข่าย Wi-Fi เพื่อดูเนื้อหาช่วยเหลือ</translation>
 <translation id="2491955442992294626">แป้นจะไม่ได้รับการทดสอบเมื่อใช้หน้าต่างอื่น</translation>
 <translation id="2493126929778606526">รูปภาพที่ดีที่สุดซึ่งเลือกสรรมาให้คุณโดยอัตโนมัติ</translation>
@@ -208,6 +217,7 @@
 <translation id="2859243502336719778">การอัปเดตสำคัญ</translation>
 <translation id="2860473693272905224">วางอีกหน้าบนเครื่องสแกน</translation>
 <translation id="2872961005593481000">ปิด</translation>
+<translation id="2873483161362553159">การนำทางสำหรับเบราว์เซอร์</translation>
 <translation id="2874939134665556319">แทร็กก่อนหน้า</translation>
 <translation id="2878387241690264070">คายประจุ <ph name="RATE" /> ใน <ph name="NUM_SECONDS" /> วินาที</translation>
 <translation id="2902312830803030883">การทำงานเพิ่มเติม</translation>
@@ -216,6 +226,7 @@
 <translation id="3008341117444806826">รีเฟรช</translation>
 <translation id="3009958530611748826">เลือกโฟลเดอร์ที่จะใช้บันทึก</translation>
 <translation id="3017079585324758401">พื้นหลัง</translation>
+<translation id="3020183492814296499">ทางลัด</translation>
 <translation id="3027578600144895987">ปิดกล้อง</translation>
 <translation id="3031560714565892478">อุปกรณ์เป็นกล้องวิดีโอ</translation>
 <translation id="3054177598518735801"><ph name="CURRENT_VALUE" />mA</translation>
@@ -251,6 +262,7 @@
 <translation id="3310640316857623290">เวลาในการตอบสนอง DNS สูงกว่าเกณฑ์ที่ยอมรับได้อย่างมีนัยสำคัญ</translation>
 <translation id="3328783797891415197">กำลังทดสอบ</translation>
 <translation id="3340011300870565703">อุปกรณ์มีระดับแบตเตอรี่ของหูฟังข้างขวา <ph name="BATTERY_PERCENTAGE" />%</translation>
+<translation id="3360306038446926262">หน้าต่าง</translation>
 <translation id="3368922792935385530">เชื่อมต่อแล้ว</translation>
 <translation id="3369013195428705271">คุณแน่ใจไหมว่าต้องการล้างประวัติการพิมพ์ทั้งหมด ทั้งนี้ ระบบจะไม่ล้างงานพิมพ์ที่กำลังดำเนินอยู่</translation>
 <translation id="3404249063913988450">เปิดใช้โปรแกรมรักษาหน้าจอ</translation>
@@ -262,6 +274,7 @@
 <translation id="3456078764689556234">พิมพ์แล้ว <ph name="PRINTED_PAGES" /> จาก <ph name="TOTAL_PAGES" /> หน้า</translation>
 <translation id="345898999683440380">กำลังสแกนหน้า <ph name="PAGE_NUM" /> เสร็จแล้ว <ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="3459509316159669723">การพิมพ์</translation>
+<translation id="346423161771747987">กระแสไฟฟ้า</translation>
 <translation id="346539236881580388">ถ่ายใหม่</translation>
 <translation id="3484914941826596830">ขณะอัปเดตเฟิร์มแวร์ โปรดอย่าถอดปลั๊กอุปกรณ์ภายนอกเครื่องนี้หรือปิดคอมพิวเตอร์ คุณย่อหน้าต่างนี้ให้เล็กสุดได้ การอัปเดตอาจใช้เวลาสักครู่และอุปกรณ์ภายนอกอาจใช้ไม่ได้ในช่วงเวลานี้</translation>
 <translation id="3486220673238053218">คำจำกัดความ</translation>
@@ -338,6 +351,7 @@
 <translation id="4131410914670010031">ขาวดำ</translation>
 <translation id="4145784616224233563">ไฟร์วอลล์ HTTP</translation>
 <translation id="4147897805161313378">Google Photos</translation>
+<translation id="4150201353443180367">การแสดงผล</translation>
 <translation id="4155551848414053977">ตรวจสอบว่าเครื่องสแกนเปิดอยู่และใช้งานได้ผ่านทางเครือข่ายของคุณหรือการเชื่อมต่อโดยตรง</translation>
 <translation id="4159784952369912983">ม่วง</translation>
 <translation id="4170180284036919717">ถ่ายรูป</translation>
@@ -353,6 +367,7 @@
 <translation id="4250229828105606438">ภาพหน้าจอ</translation>
 <translation id="4258281355379922695">เวลาในตอบสนองของ HTTP</translation>
 <translation id="4271957103967917607">ดูแบบเต็มหน้าจอ</translation>
+<translation id="4275663329226226506">สื่อ</translation>
 <translation id="4289540628985791613">ภาพรวม</translation>
 <translation id="4289849978083912975">แสดงภาพสไลด์</translation>
 <translation id="4297501883039923494">หยุดพิมพ์ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
@@ -360,6 +375,7 @@
 <translation id="4311195029067684288">เต็ม</translation>
 <translation id="4333390807948134856">กดปุ่ม <ph name="KEY_NAME" /> อยู่</translation>
 <translation id="435692326371619097">จัดการการตั้งค่า APN ของเครือข่าย APN จะเริ่มการเชื่อมต่อระหว่างเครือข่ายมือถือกับอินเทอร์เน็ต <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
+<translation id="437294888293595148">รีเซ็ตทางลัดทั้งหมด</translation>
 <translation id="4378373042927530923">ไม่ทำงาน</translation>
 <translation id="4378551569595875038">กำลังเชื่อมต่อ</translation>
 <translation id="4382484599443659549">PDF</translation>
@@ -445,6 +461,7 @@
 <translation id="498186245079027698">ตรวจสอบเครื่องสแกนแล้วลองอีกครั้ง ตรวจดูว่ามีพื้นที่ว่างในเครื่องเพียงพอสำหรับบันทึกไฟล์ที่สแกน</translation>
 <translation id="4985509611418653372">เรียกใช้</translation>
 <translation id="4987769320337599931">ไฟร์วอลล์</translation>
+<translation id="4988526792673242964">หน้า</translation>
 <translation id="4999333166442584738">ซ่อนรายงาน</translation>
 <translation id="500920857929044050">หยุดการทดสอบ</translation>
 <translation id="5017508259293544172">LEAP</translation>
@@ -600,6 +617,7 @@
 <translation id="636850387210749493">การลงทะเบียนองค์กร</translation>
 <translation id="6379086450106841622">หน้าจอสัมผัส</translation>
 <translation id="6381741036071372448">ทดสอบแป้นพิมพ์</translation>
+<translation id="6382182670717268353">ตัวอย่างโปรแกรมรักษาหน้าจอ</translation>
 <translation id="6388847657025262518">ตัวป้อนเอกสารของเครื่องสแกนมีกระดาษติด ตรวจสอบตัวป้อนเอกสารแล้วลองอีกครั้ง</translation>
 <translation id="6394634179843537518">เพิ่มไฟล์</translation>
 <translation id="6410257289063177456">ไฟล์ภาพ</translation>
@@ -650,6 +668,7 @@
 <translation id="6766275201586212568">การแปลง DNS ที่ไม่สำเร็จ</translation>
 <translation id="6768237774506518020">อัตราการแปลง DNS ไม่สำเร็จสูง</translation>
 <translation id="6791471867139427246">สีไฟแป้นพิมพ์</translation>
+<translation id="6798678288485555829">การนำทางสำหรับข้อความ</translation>
 <translation id="680983167891198932">คีย์</translation>
 <translation id="6816797338148849397">มีข้อมูลที่เกี่ยวข้องกับสิ่งที่คุณเลือก ใช้แป้นลูกศรขึ้นเพื่อดูข้อมูลนั้น</translation>
 <translation id="6838167112108853532">ปิดใช้หรือนํา APN นี้ออกไม่ได้ ตรวจสอบว่า APN ที่แนบมาและเปิดใช้อยู่ถูกปิดใช้หรือนำออกแล้ว</translation>
@@ -663,7 +682,9 @@
 <translation id="6957231940976260713">ชื่อบริการ</translation>
 <translation id="6961170852793647506">วางเอกสารบนเครื่องสแกนเพื่อเริ่มต้นใช้งาน</translation>
 <translation id="6965382102122355670">ตกลง</translation>
+<translation id="6965978654500191972">อุปกรณ์</translation>
 <translation id="6977381486153291903">การแก้ไขเฟิร์มแวร์</translation>
+<translation id="6981982820502123353">การช่วยเหลือพิเศษ</translation>
 <translation id="7005833343836210400">อุปกรณ์ออฟไลน์อยู่</translation>
 <translation id="7028979494427204405"><ph name="MANAGER" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
 <translation id="7040230719604914234">โอเปอเรเตอร์</translation>
@@ -677,6 +698,7 @@
 <translation id="7103252855940681301">อุปกรณ์ <ph name="INDEX" /> จาก <ph name="COUNT" /> มีชื่อว่า <ph name="NAME" /></translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7130438335435247835">จุดเข้าใช้งาน (APN)</translation>
+<translation id="7131634559772719176">ยืนยันค่าที่กำหนดล่วงหน้า</translation>
 <translation id="7134436342991564651">{0,plural, =1{เนมเซิร์ฟเวอร์}other{เนมเซิร์ฟเวอร์}}</translation>
 <translation id="7143207342074048698">กำลังเชื่อมต่อ</translation>
 <translation id="7144878232160441200">ลองอีกครั้ง</translation>
@@ -690,6 +712,7 @@
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> นี้ได้รับการจัดการโดย <ph name="MANAGER" /> ผู้ดูแลระบบอาจกำหนดค่าอุปกรณ์จากระยะไกล</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
 <translation id="7180865173735832675">กำหนดค่า</translation>
+<translation id="7184043045742675738">คลิกแป้นใดก็ได้เพื่อปรับแต่งปุ่ม เปลี่ยนตำแหน่งแป้นด้วยเมาส์หรือแป้นลูกศร</translation>
 <translation id="7212734716605298123">การอัปเดตเฟิร์มแวร์สำหรับอุปกรณ์ภายนอก</translation>
 <translation id="7216409898977639127">ผู้ให้บริการเครือข่ายมือถือ</translation>
 <translation id="725133483556299729">เลือกอีเมล</translation>
@@ -731,6 +754,7 @@
 <translation id="7569444139234840525"><ph name="QUERY_TEXT" /> · /<ph name="PHONETICS" />/</translation>
 <translation id="7570674786725311828">หน้าจอสัมผัส USB</translation>
 <translation id="7595982850646262331">เหลือ <ph name="TIME_VALUE" /></translation>
+<translation id="7613724632293948900">เปลี่ยนตำแหน่งด้วยเมาส์หรือแป้นลูกศร</translation>
 <translation id="7620771111601174153">ดูข้อมูลเพิ่มเติมในศูนย์ช่วยเหลือ</translation>
 <translation id="763165478673169849">เวลารีเซ็ตล่าสุด</translation>
 <translation id="7648838807254605802">เวลาในการตอบสนองของ HTTPS สูง</translation>
@@ -746,6 +770,7 @@
 <translation id="7762130827864645708">เปลี่ยนรหัสผ่านสำเร็จ โปรดใช้รหัสผ่านใหม่จากนี้ไป</translation>
 <translation id="7763470514545477072">การจับคู่ส่วนต่อท้ายโดเมน</translation>
 <translation id="7769672763586021400">รหัสรุ่น</translation>
+<translation id="7770834998503326261">ข้อมูลเพิ่มเติมเกี่ยวกับสิ่งที่คุณเลือก</translation>
 <translation id="7778717409420828014">ความคิดเห็นของคุณจะช่วยเราปรับปรุงประสบการณ์การใช้งาน Chromebook และได้รับการตรวจสอบจากทีม แต่เราจะตอบกลับไม่ได้เนื่องจากได้รับรายงานเข้ามาเป็นจำนวนมาก</translation>
 <translation id="7784116172884276937">ไม่มีเซิร์ฟเวอร์ DNS ที่ตั้งค่าไว้</translation>
 <translation id="7791543448312431591">เพิ่ม</translation>
@@ -766,26 +791,32 @@
 <translation id="7936303884198020182">ไม่พบเนมเซิร์ฟเวอร์</translation>
 <translation id="7942349550061667556">สีแดง</translation>
 <translation id="7943235353293548836">ระยะเวลาของ Keepalive ต่อเนื่อง</translation>
+<translation id="7953669802889559161">การป้อนข้อมูล</translation>
 <translation id="7955587717700691983">แป้นพิมพ์บลูทูธ</translation>
 <translation id="7960831585769876809">อุณหภูมิ</translation>
 <translation id="7977800524392185497">ไปที่การตั้งค่าเพื่อเข้าร่วมเครือข่าย <ph name="NETWORK_NAME" /></translation>
 <translation id="7978412674231730200">กุญแจส่วนตัว</translation>
 <translation id="7994702968232966508">วิธีการ EAP</translation>
+<translation id="8004582292198964060">เบราว์เซอร์</translation>
 <translation id="802154636333426148">การดาวน์โหลดล้มเหลว</translation>
 <translation id="8031884997696620457">HSPAPlus</translation>
 <translation id="80398733265834479">เปิดใช้โหมดปรับสีอัตโนมัติ</translation>
 <translation id="8041089156583427627">ส่งความคิดเห็น</translation>
 <translation id="8045012663542226664">ปุ่มปิดเสียงไมโครโฟน</translation>
+<translation id="8050091914317269817">การเลือกวอลเปเปอร์นี้จะเปิดโหมดมืดอัตโนมัติและการจับคู่สีวอลเปเปอร์</translation>
 <translation id="8075838845814659848">การชาร์จที่เหลือ</translation>
+<translation id="8076492880354921740">แท็บ</translation>
 <translation id="8082366717211101304">ไม่สามารถแปลง DNS จากแอป Android</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8094062939584182041">อนุญาตให้ Google ส่งอีเมลถึงคุณเกี่ยวกับปัญหานี้</translation>
 <translation id="8104083085214006426">คุณกำลังใช้เครือข่ายแบบเปิดที่ไม่ปลอดภัย</translation>
 <translation id="811820734797650957">(Android) ปิงเกตเวย์ได้</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
+<translation id="8131740175452115882">ยืนยัน</translation>
 <translation id="8132480444149501833">ขอตัวนับการรับส่งข้อมูล</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">เลือก <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
+<translation id="8151185429379586178">เครื่องมือสำหรับนักพัฒนาซอฟต์แวร์</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8183974620058026102">แนบ</translation>
 <translation id="8206859287963243715">โทรศัพท์มือถือ</translation>
@@ -853,6 +884,8 @@
 <translation id="8798441408945964110">ชื่อผู้ให้บริการ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="8818152010000655963">วอลเปเปอร์</translation>
+<translation id="8820457400746201697">ย้ายจุดสัมผัสสีน้ำเงินไปยังการดำเนินการ เลือกแป้นที่เกี่ยวข้องเพื่อปรับแต่ง</translation>
+<translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="8834539327799336565">เชื่อมต่ออยู่</translation>
 <translation id="8845001906332463065">ขอความช่วยเหลือ</translation>
 <translation id="8855781559874488009">ไม่สามารถเชื่อมต่อผ่านไฟร์วอลล์ไปยังเว็บไซต์ HTTP</translation>
@@ -882,6 +915,7 @@
 <translation id="8998289560386111590">ใช้ไม่ได้ในอุปกรณ์ของคุณ</translation>
 <translation id="9003704114456258138">ความถี่</translation>
 <translation id="9025198690966128418">ใช้เป็นอุปกรณ์ส่วนบุคคล</translation>
+<translation id="902638246363752736">การตั้งค่าแป้นพิมพ์</translation>
 <translation id="9028832514430399253">เปิดตัวสลับเพื่อเลือกตัวเลือกของโปรแกรมรักษาหน้าจอ</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9058932992221914855">IPv6</translation>
@@ -914,4 +948,5 @@
 <translation id="952992212772159698">ไม่ได้เปิดการใช้งาน</translation>
 <translation id="960719561871045870">รหัสผู้ให้บริการ</translation>
 <translation id="982713511914535780">ทดสอบการคายประจุของแบตเตอรี่</translation>
+<translation id="987264212798334818">ทั่วไป</translation>
 </translationbundle>

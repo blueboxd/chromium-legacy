@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include <memory>
+#include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -21,8 +22,10 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_combobox_model.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -228,8 +231,9 @@ void SidePanelCoordinator::SetSidePanelButtonTooltipText(
   auto* toolbar = browser_view_->toolbar();
   // On Progressive web apps, the toolbar can be null when opening the side
   // panel. This check is added as a added safeguard.
-  if (toolbar && toolbar->side_panel_button())
-    toolbar->side_panel_button()->SetTooltipText(tooltip_text);
+  if (toolbar && toolbar->GetSidePanelButton()) {
+    toolbar->GetSidePanelButton()->SetTooltipText(tooltip_text);
+  }
 }
 
 void SidePanelCoordinator::Close() {
@@ -276,13 +280,26 @@ void SidePanelCoordinator::Close() {
 }
 
 void SidePanelCoordinator::Toggle() {
-  if (IsSidePanelShowing()) {
+  auto* side_panel_container = browser_view_->toolbar()->side_panel_container();
+  if (IsSidePanelShowing() &&
+      (!side_panel_container ||
+       !side_panel_container->IsActiveEntryPinnedAndVisible())) {
     Close();
   } else {
     absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt;
     if (browser_view_->browser()->window()->IsFeaturePromoActive(
             feature_engagement::kIPHPowerBookmarksSidePanelFeature)) {
       entry_id = absl::make_optional(SidePanelEntry::Id::kBookmarks);
+    } else if (side_panel_container &&
+               side_panel_container->IsActiveEntryPinnedAndVisible()) {
+      // Update entry_id here since otherwise the entry triggered in 'Show' will
+      // be the CSC entry when instead this should toggle away from the CSC
+      // entry and show the last active global entry or the default entry if
+      // there is no last active global entry.
+      entry_id = absl::make_optional(
+          GetLastActiveGlobalEntryKey()
+              .value_or(SidePanelEntry::Key(GetDefaultEntry()))
+              .id());
     }
     Show(entry_id, SidePanelUtil::SidePanelOpenTrigger::kToolbarButton);
   }
@@ -305,6 +322,16 @@ void SidePanelCoordinator::OpenInNewTab() {
   Close();
 }
 
+void SidePanelCoordinator::UpdatePinState() {
+  PrefService* pref_service = browser_view_->GetProfile()->GetPrefs();
+  if (pref_service) {
+    bool current_state = pref_service->GetBoolean(
+        prefs::kSidePanelCompanionEntryPinnedToToolbar);
+    pref_service->SetBoolean(prefs::kSidePanelCompanionEntryPinnedToToolbar,
+                             !current_state);
+  }
+}
+
 absl::optional<SidePanelEntry::Id> SidePanelCoordinator::GetCurrentEntryId()
     const {
   return current_entry_
@@ -319,15 +346,17 @@ SidePanelEntry::Id SidePanelCoordinator::GetComboboxDisplayedEntryIdForTesting()
 }
 
 SidePanelEntry* SidePanelCoordinator::GetLoadingEntryForTesting() const {
-  SidePanelContentSwappingContainer* content_wrapper =
-      static_cast<SidePanelContentSwappingContainer*>(
-          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
-  DCHECK(content_wrapper);
-  return content_wrapper->loading_entry();
+  return GetLoadingEntry();
 }
 
-bool SidePanelCoordinator::IsSidePanelShowing() {
+bool SidePanelCoordinator::IsSidePanelShowing() const {
   return GetContentView() != nullptr;
+}
+
+bool SidePanelCoordinator::IsSidePanelEntryShowing(
+    const SidePanelEntry* entry) const {
+  return IsSidePanelShowing() && current_entry_ &&
+         current_entry_.get() == entry;
 }
 
 void SidePanelCoordinator::Show(
@@ -405,6 +434,14 @@ SidePanelEntry* SidePanelCoordinator::GetActiveContextualEntryForKey(
              : nullptr;
 }
 
+SidePanelEntry* SidePanelCoordinator::GetLoadingEntry() const {
+  SidePanelContentSwappingContainer* content_wrapper =
+      static_cast<SidePanelContentSwappingContainer*>(
+          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
+  DCHECK(content_wrapper);
+  return content_wrapper->loading_entry();
+}
+
 bool SidePanelCoordinator::IsGlobalEntryShowing(
     const SidePanelEntry::Key& entry_key) const {
   if (!GetContentView() || !current_entry_) {
@@ -479,6 +516,12 @@ void SidePanelCoordinator::PopulateSidePanel(
   header_open_in_new_tab_button_->SetVisible(
       current_entry_->SupportsNewTabButton());
   UpdateNewTabButtonState();
+  header_pin_button_->SetVisible(current_entry_->key().id() ==
+                                 SidePanelEntry::Id::kSearchCompanion);
+  if (auto* side_panel_container =
+          browser_view_->toolbar()->side_panel_container()) {
+    side_panel_container->UpdateSidePanelContainerButtonsState();
+  }
 }
 
 void SidePanelCoordinator::ClearCachedEntryViews() {
@@ -503,6 +546,13 @@ SidePanelCoordinator::GetLastActiveEntryKey() const {
     return GetActiveContextualRegistry()->active_entry().value()->key();
   }
 
+  return GetLastActiveGlobalEntryKey();
+}
+
+absl::optional<SidePanelEntry::Key>
+SidePanelCoordinator::GetLastActiveGlobalEntryKey() const {
+  // Return the last active global entry. If neither exist, fall back to the
+  // default entry.
   if (global_registry_->active_entry().has_value())
     return global_registry_->active_entry().value()->key();
 
@@ -519,12 +569,9 @@ absl::optional<SidePanelEntry::Key> SidePanelCoordinator::GetSelectedKey()
 
   // If we are waiting on content swapping delays we want to return the id for
   // the entry we are attempting to swap to.
-  const SidePanelContentSwappingContainer* content_wrapper =
-      static_cast<SidePanelContentSwappingContainer*>(
-          GetContentView()->GetViewByID(kSidePanelContentWrapperViewId));
-  DCHECK(content_wrapper);
-  if (const auto* entry = content_wrapper->loading_entry())
+  if (const auto* entry = GetLoadingEntry()) {
     return entry->key();
+  }
 
   // If we are not waiting on content swapping we want to return the active
   // selected entry id.
@@ -565,6 +612,20 @@ std::unique_ptr<views::View> SidePanelCoordinator::CreateHeader() {
   header_combobox_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   header_combobox_->SetProperty(views::kElementIdentifierKey,
                                 kSidePanelComboboxElementId);
+
+  // TODO(corising): Update icon and tooltip once provided by UX.
+  header_pin_button_ = header->AddChildView(CreateControlButton(
+      header.get(),
+      base::BindRepeating(&SidePanelCoordinator::UpdatePinState,
+                          base::Unretained(this)),
+      views::kPinIcon,
+      l10n_util::GetStringUTF16(IDS_SIDE_PANEL_TOOLBAR_BUTTON_CXMENU_UNPIN),
+      kSidePanelPinButtonElementId,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(
+          ChromeDistanceMetric::DISTANCE_SIDE_PANEL_HEADER_VECTOR_ICON_SIZE)));
+  header_pin_button_->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
+  // The icon is later set as visible for side panels that support it.
+  header_pin_button_->SetVisible(false);
 
   header_open_in_new_tab_button_ = header->AddChildView(CreateControlButton(
       header.get(),
@@ -861,4 +922,18 @@ void SidePanelCoordinator::UpdateNewTabButtonState() {
     header_open_in_new_tab_button_->SetEnabled(
         current_entry_->GetOpenInNewTabURL().is_valid());
   }
+}
+
+void SidePanelCoordinator::UpdateToolbarButtonHighlight(
+    bool side_panel_visible) {
+  auto* side_panel_button = browser_view_->toolbar()->GetSidePanelButton();
+  side_panel_button->SetHighlighted(side_panel_visible);
+  side_panel_button->SetTooltipText(l10n_util::GetStringUTF16(
+      side_panel_visible ? IDS_TOOLTIP_SIDE_PANEL_HIDE
+                         : IDS_TOOLTIP_SIDE_PANEL_SHOW));
+}
+
+void SidePanelCoordinator::OnViewVisibilityChanged(views::View* observed_view,
+                                                   views::View* starting_from) {
+  UpdateToolbarButtonHighlight(observed_view->GetVisible());
 }

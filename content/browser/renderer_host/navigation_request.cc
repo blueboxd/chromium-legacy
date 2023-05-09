@@ -1138,7 +1138,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::Create(
       base::TimeTicks() /* renderer_before_unload_start */,
       base::TimeTicks() /* renderer_before_unload_end */,
       std::move(web_bundle_token_params), initiator_activation_and_ad_status,
-      is_container_initiated);
+      is_container_initiated, false /* is_fullscreen_requested */);
 
   // Shift-Reload forces bypassing caches and service workers.
   if (common_params->navigation_type ==
@@ -1474,12 +1474,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
       ancestor_chain_bit = blink::mojom::AncestorChainBit::kCrossSite;
     }
 
-    // Because this is a synchronous commit from the renderer the RFH won't
-    // change meaning we can always query the main frame RFH for the status of
-    // storage partitioning.
-    navigation_request->commit_params_->storage_key = blink::StorageKey::Create(
-        origin, top_level_site, ancestor_chain_bit,
-        render_frame_host->IsMainFrameThirdPartyStoragePartitioningEnabled());
+    navigation_request->commit_params_->storage_key =
+        blink::StorageKey::Create(origin, top_level_site, ancestor_chain_bit);
   }
   navigation_request->commit_params_->session_storage_key =
       frame_tree_node->frame_tree().GetSessionStorageKey(
@@ -2266,15 +2262,24 @@ void NavigationRequest::OnPrerenderingActivationChecksComplete(
 }
 
 FencedFrameURLMapping& NavigationRequest::GetFencedFrameURLMap() {
-  // `inner_frame_tree` is true for navigations inside the main frame of a
-  // nested fenced frame's `FrameTree`, and false otherwise. This is only the
-  // case for the MPArch implementation of fenced frames.
-  bool is_inner_frame_tree = frame_tree_node_->IsInFencedFrameTree();
-  FrameTreeNode* node_to_use =
-      is_inner_frame_tree
-          ? frame_tree_node_->render_manager()->GetOuterDelegateNode()
-          : frame_tree_node_;
+  // The usual case here is a fenced frame root navigating to a URNs, in which
+  // case we need to consult the `FencedFrameURLMapping` in the *outer*
+  // FrameTree.
+  bool is_fenced_frame_root =
+      frame_tree_node_->current_frame_host()->IsFencedFrameRoot();
+  FrameTreeNode* node_to_use = frame_tree_node_->frame_tree()
+                                   .root()
+                                   ->render_manager()
+                                   ->GetOuterDelegateNode();
 
+  // However the very unusual case is an *iframe* (that supports navigations to
+  // URNs via `blink::features::IsAllowURNsInIframeEnabled`) navigating to a
+  // URN, possibly *inside* of a fenced frame. We can remove support for this
+  // case once third party cookies are removed.
+  if (!is_fenced_frame_root) {
+    node_to_use = frame_tree_node_;
+  }
+  DCHECK(node_to_use);
   return node_to_use->current_frame_host()->GetPage().fenced_frame_urls_map();
 }
 
@@ -3332,27 +3337,20 @@ bool NavigationRequest::IsOriginAgentClusterOptOutRequested() {
 
   // We only allow explicit opt-outs when OAC-by-default is enabled. The
   // following check will be false if IsOriginAgentClusterEnabled() is false.
-  if (!AreOriginAgentClustersEnabledByDefault())
+  if (!SiteIsolationPolicy::AreOriginAgentClustersEnabledByDefault(
+          frame_tree_node_->navigator().controller().GetBrowserContext())) {
     return false;
+  }
 
   return response_head_->parsed_headers->origin_agent_cluster ==
          network::mojom::OriginAgentClusterValue::kFalse;
 }
 
-bool NavigationRequest::AreOriginAgentClustersEnabledByDefault() const {
-  // OriginAgentClusters are enabled by default if OriginAgentCluster and
-  // kOriginAgentClusterDefaultEnabled are enabled, and if there is no
-  // enterprise policy forbidding it.
-  return SiteIsolationPolicy::IsOriginAgentClusterEnabled() &&
-         base::FeatureList::IsEnabled(
-             blink::features::kOriginAgentClusterDefaultEnabled) &&
-         !GetContentClient()->browser()->ShouldDisableOriginAgentClusterDefault(
-             frame_tree_node_->navigator().controller().GetBrowserContext());
-}
-
 bool NavigationRequest::IsIsolationImplied() {
-  if (!AreOriginAgentClustersEnabledByDefault())
+  if (!SiteIsolationPolicy::AreOriginAgentClustersEnabledByDefault(
+          frame_tree_node_->navigator().controller().GetBrowserContext())) {
     return false;
+  }
 
   return !response() || response_head_->parsed_headers->origin_agent_cluster ==
                             network::mojom::OriginAgentClusterValue::kAbsent;
@@ -3385,7 +3383,8 @@ void NavigationRequest::DetermineOriginAgentClusterEndResult() {
                                                  requested_isolation_state)
           .is_origin_agent_cluster();
 
-  if (AreOriginAgentClustersEnabledByDefault()) {
+  if (SiteIsolationPolicy::AreOriginAgentClustersEnabledByDefault(
+          frame_tree_node_->navigator().controller().GetBrowserContext())) {
     // When OAC is enabled by default, report enum values that distinguish
     // between explicitly requesting OAC (on or off) and having no related
     // header.
@@ -4053,6 +4052,8 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     bool is_download,
     absl::optional<SubresourceLoaderParams> subresource_loader_params) {
+  ScopedCrashKeys crash_keys(*this);
+
   // Select an appropriate renderer to commit the navigation.
   if (IsServedFromBackForwardCache()) {
     // If the current navigation is being restarted, it should not try to make
@@ -4139,6 +4140,36 @@ void NavigationRequest::SelectFrameHostForOnResponseStarted(
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
 
   subresource_loader_params_ = std::move(subresource_loader_params);
+
+  // Most cases where ShouldAssignSiteForURL() is false should never load
+  // actual content and reach this.  Since only empty document schemes are
+  // allowed to leave a SiteInstance's site unassigned, they should follow the
+  // !NeedsUrlLoader() path for committing the navigation early without ever
+  // making a network request, and hence they should never reach the response
+  // processing code here.
+  //
+  // The sole exception to this is about:blank URLs, since extensions are
+  // allowed to redirect to them after a regular network request/response has
+  // started.  Hence, about:blank is the only possible URL which both uses
+  // unassigned SiteInstances and can reach this point (via an extension
+  // redirect).
+  if (common_params_->url.IsAboutBlank()) {
+    // TODO(alexmos): Convert to a CHECK after verifying that this doesn't
+    // happen in practice.
+    if (!WasServerRedirect()) {
+      DVLOG(1) << "about:blank should only go through the network stack "
+               << "when an extension redirects to it.";
+      base::debug::DumpWithoutCrashing();
+    }
+  } else {
+    // TODO(alexmos): Convert to a CHECK after verifying that this doesn't
+    // happen in practice.
+    if (!SiteInstanceImpl::ShouldAssignSiteForURL(common_params_->url)) {
+      DVLOG(1) << "This URL was unexpectedly loaded through the network stack: "
+               << common_params_->url;
+      base::debug::DumpWithoutCrashing();
+    }
+  }
 
   if (HasRenderFrameHost()) {
     // Set the site URL now if it hasn't been set already. If the site requires
@@ -4355,10 +4386,14 @@ NavigationRequest::CreateNavigationEarlyHintsManagerParams(
   mojo::PendingRemote<network::mojom::CookieAccessObserver> cookie_observer;
   Clone(cookie_observer.InitWithNewPipeAndPassReceiver());
 
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+      trust_token_observer;
+  Clone(trust_token_observer.InitWithNewPipeAndPassReceiver());
+
   network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
       URLLoaderFactoryParamsHelper::CreateForEarlyHintsPreload(
           process, tentative_origin, *this, early_hints,
-          std::move(cookie_observer));
+          std::move(cookie_observer), std::move(trust_token_observer));
 
   net::IsolationInfo isolation_info = url_loader_factory_params->isolation_info;
 
@@ -4772,7 +4807,7 @@ void NavigationRequest::OnStartChecksComplete(
           allow_cookies_from_browser_),
       std::move(navigation_ui_data), service_worker_handle_.get(),
       std::move(prefetched_signed_exchange_cache_), this, loader_type,
-      CreateCookieAccessObserver(),
+      CreateCookieAccessObserver(), CreateTrustTokenAccessObserver(),
       static_cast<StoragePartitionImpl*>(partition)
           ->CreateURLLoaderNetworkObserverForNavigationRequest(*this),
       NetworkServiceDevToolsObserver::MakeSelfOwned(frame_tree_node_),
@@ -5346,24 +5381,18 @@ void NavigationRequest::CommitNavigation() {
       GetRenderFrameHost()->ComputeNonce(is_credentialless(),
                                          ComputeFencedFrameNonce());
 
-  // Determine if we should allow partitioned StorageKeys.
-  //
-  // If this is a main frame navigation then the value of
-  // third_party_storage_partitioning_enabled is irrelevant because main frames
-  // are always first-party by definition. If this is a subframe navigation
-  // then the main frame will have the correct value.
-  bool third_party_storage_partitioning_enabled = false;
-  if (!IsInMainFrame()) {
-    third_party_storage_partitioning_enabled =
-        GetRenderFrameHost()->IsMainFrameThirdPartyStoragePartitioningEnabled();
-  }
-
   commit_params_->storage_key = GetRenderFrameHost()->CalculateStorageKey(
-      GetOriginToCommit().value(), base::OptionalToPtr(nonce),
-      third_party_storage_partitioning_enabled);
+      GetOriginToCommit().value(), base::OptionalToPtr(nonce));
   commit_params_->session_storage_key =
       frame_tree_node()->frame_tree().GetSessionStorageKey(
           commit_params_->storage_key);
+
+  if (!NavigationTypeUtils::IsSameDocument(common_params_->navigation_type)) {
+    // We want to record this for the frame that we are navigating away from.
+    frame_tree_node_->render_manager()
+        ->current_frame_host()
+        ->RecordNavigationSuddenTerminationHandlers();
+  }
 
   if (IsServedFromBackForwardCache() || IsPrerenderedPageActivation()) {
     CommitPageActivation();
@@ -6706,12 +6735,6 @@ void NavigationRequest::DidCommitNavigation(
   }
   previous_main_frame_url_ = previous_main_frame_url;
 
-  // When the embedder navigates a fenced frame root, the navigation
-  // installs a new set of inner fenced frame properties.
-  if (is_embedder_initiated_fenced_frame_navigation_) {
-    frame_tree_node()->set_fenced_frame_properties(fenced_frame_properties_);
-  }
-
   // It should be kept in sync with the check in
   // RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation.
   if (DidEncounterError()) {
@@ -7036,14 +7059,17 @@ void NavigationRequest::ReadyToCommitNavigation(bool is_error) {
 
   // Create a view of the fenced frame properties from the perspective of the
   // fenced frame content, which will be sent to its renderer.
-  // On each navigation commit within the fenced frame tree, if the committed
-  // origin is same-origin to the urn's mapped_url (after redirects), the
-  // browser sends the `RedactedFencedFrameProperties` to the renderer for that
-  // frame. This is because we want to make fenced frame APIs available only
-  // in same-origin contexts.
+  // On each navigation commit within the fenced frame tree:
+  // * If the properties have no mapped url, the browser will send the renderer
+  //   the `RedactedFencedFrameProperties` unconditionally.
+  // * If the properties do have a mapped url, the browser will send the
+  //   renderer the `RedactedFencedFrameProperties` when the committed
+  //   origin is same-origin to the urn's mapped_url (after redirects).
+  // This is because we want to make fenced frame APIs available only
+  // in same-origin contexts, when "same-origin" has a coherent definition.
   const auto& computed_fenced_frame_properties = ComputeFencedFrameProperties();
   if (computed_fenced_frame_properties.has_value()) {
-    if (computed_fenced_frame_properties->mapped_url_.has_value() &&
+    if (!computed_fenced_frame_properties->mapped_url_.has_value() ||
         url::Origin::Create(common_params_->url)
             .IsSameOriginWith(computed_fenced_frame_properties->mapped_url_
                                   ->GetValueIgnoringVisibility())) {
@@ -8264,38 +8290,49 @@ NavigationRequest::CreateCookieAccessObserver() {
   return remote;
 }
 
+mojo::PendingRemote<network::mojom::TrustTokenAccessObserver>
+NavigationRequest::CreateTrustTokenAccessObserver() {
+  mojo::PendingRemote<network::mojom::TrustTokenAccessObserver> remote;
+  trust_token_observers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
+}
+
 void NavigationRequest::OnCookiesAccessed(
-    network::mojom::CookieAccessDetailsPtr details) {
-  // TODO(721329): We should not send information to the current frame about
-  // (potentially unrelated) ongoing navigation, but at the moment we don't
-  // have another way to add messages to DevTools console.
-  EmitCookieWarningsAndMetrics(frame_tree_node()->current_frame_host(),
-                               details);
+    std::vector<network::mojom::CookieAccessDetailsPtr> details_vector) {
+  for (auto& details : details_vector) {
+    // TODO(721329): We should not send information to the current frame about
+    // (potentially unrelated) ongoing navigation, but at the moment we don't
+    // have another way to add messages to DevTools console.
+    EmitCookieWarningsAndMetrics(frame_tree_node()->current_frame_host(),
+                                 details);
 
-  CookieAccessDetails allowed;
-  CookieAccessDetails blocked;
-  SplitCookiesIntoAllowedAndBlocked(details, &allowed, &blocked);
-  if (!allowed.cookie_list.empty())
-    GetDelegate()->OnCookiesAccessed(this, allowed);
-  if (!blocked.cookie_list.empty())
-    GetDelegate()->OnCookiesAccessed(this, blocked);
-
-  // When determining the BFCache eligibility, we explicitly ignore the cookie
-  // changes from the navigation itself because we want the
-  // `CookieChangeListener` to only track the cookie changes that potentially
-  // make the document initially rendered by the navigation request outdated.
-  if (allowed.type == CookieAccessDetails::Type::kChange) {
-    uint64_t cookie_modification_count = allowed.cookie_list.size();
-    uint64_t http_only_cookie_modification_count = 0u;
-    for (net::CanonicalCookie& cookie : allowed.cookie_list) {
-      if (cookie.IsHttpOnly()) {
-        http_only_cookie_modification_count++;
-      }
+    CookieAccessDetails allowed;
+    CookieAccessDetails blocked;
+    SplitCookiesIntoAllowedAndBlocked(details, &allowed, &blocked);
+    if (!allowed.cookie_list.empty()) {
+      GetDelegate()->OnCookiesAccessed(this, allowed);
     }
-    if (cookie_change_listener_) {
-      cookie_change_listener_->RemoveNavigationCookieModificationCount(
-          base::PassKey<NavigationRequest>(), cookie_modification_count,
-          http_only_cookie_modification_count);
+    if (!blocked.cookie_list.empty()) {
+      GetDelegate()->OnCookiesAccessed(this, blocked);
+    }
+
+    // When determining the BFCache eligibility, we explicitly ignore the cookie
+    // changes from the navigation itself because we want the
+    // `CookieChangeListener` to only track the cookie changes that potentially
+    // make the document initially rendered by the navigation request outdated.
+    if (allowed.type == CookieAccessDetails::Type::kChange) {
+      uint64_t cookie_modification_count = allowed.cookie_list.size();
+      uint64_t http_only_cookie_modification_count = 0u;
+      for (net::CanonicalCookie& cookie : allowed.cookie_list) {
+        if (cookie.IsHttpOnly()) {
+          http_only_cookie_modification_count++;
+        }
+      }
+      if (cookie_change_listener_) {
+        cookie_change_listener_->RemoveNavigationCookieModificationCount(
+            base::PassKey<NavigationRequest>(), cookie_modification_count,
+            http_only_cookie_modification_count);
+      }
     }
   }
 }
@@ -8308,6 +8345,21 @@ void NavigationRequest::Clone(
 std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
 NavigationRequest::TakeCookieObservers() {
   return cookie_observers_.TakeReceivers();
+}
+
+void NavigationRequest::OnTrustTokensAccessed(
+    network::mojom::TrustTokenAccessDetailsPtr details) {
+  GetDelegate()->OnTrustTokensAccessed(this, TrustTokenAccessDetails(details));
+}
+
+void NavigationRequest::Clone(
+    mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver> observer) {
+  trust_token_observers_.Add(this, std::move(observer));
+}
+
+std::vector<mojo::PendingReceiver<network::mojom::TrustTokenAccessObserver>>
+NavigationRequest::TakeTrustTokenObservers() {
+  return trust_token_observers_.TakeReceivers();
 }
 
 RenderFrameHostImpl* NavigationRequest::GetInitiatorDocumentRenderFrameHost() {
@@ -8686,13 +8738,23 @@ NavigationRequest::ComputeFencedFrameNonce() const {
   }
   if (!computed_fenced_frame_properties->partition_nonce_.has_value()) {
     // It is only possible for there to be `FencedFrameProperties` but no
-    // partition nonce in urn iframes (when not nested inside a fenced frame).
-    CHECK(blink::features::IsAllowURNsInIframeEnabled() &&
-          !frame_tree_node_->IsInFencedFrameTree());
+    // partition nonce in urn iframes (which could indeed be nested inside a
+    // fenced frame).
+    CHECK(blink::features::IsAllowURNsInIframeEnabled());
     return absl::nullopt;
   }
   return computed_fenced_frame_properties->partition_nonce_
       ->GetValueIgnoringVisibility();
+}
+
+const absl::optional<blink::FencedFrame::DeprecatedFencedFrameMode>
+NavigationRequest::ComputeDeprecatedFencedFrameMode() const {
+  const absl::optional<FencedFrameProperties>&
+      computed_fenced_frame_properties = ComputeFencedFrameProperties();
+  if (!computed_fenced_frame_properties.has_value()) {
+    return absl::nullopt;
+  }
+  return computed_fenced_frame_properties->mode_;
 }
 
 void NavigationRequest::RenderFallbackContentForObjectTag() {
@@ -9002,11 +9064,9 @@ void NavigationRequest::ComputeDownloadPolicy() {
   }
 
   // [Sandbox]
-  if (base::FeatureList::IsEnabled(
-          features::kBrowserSideDownloadPolicySandbox) &&
-      (commit_params_->frame_policy.sandbox_flags &
+  if ((commit_params_->frame_policy.sandbox_flags &
        network::mojom::WebSandboxFlags::kDownloads) ==
-          network::mojom::WebSandboxFlags::kDownloads) {
+      network::mojom::WebSandboxFlags::kDownloads) {
     download_policy().SetDisallowed(blink::NavigationDownloadType::kSandbox);
   }
 

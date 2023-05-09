@@ -62,7 +62,7 @@ bool SwapUninstallCmdLine(UpdaterScope scope,
                           const base::FilePath& updater_path,
                           HKEY root,
                           WorkItemList* list) {
-  DCHECK(list);
+  CHECK(list);
 
   base::CommandLine uninstall_if_unused_command(updater_path);
 
@@ -145,7 +145,7 @@ bool SwapGoogleUpdate(UpdaterScope scope,
                       const base::FilePath& temp_path,
                       HKEY root,
                       WorkItemList* list) {
-  DCHECK(list);
+  CHECK(list);
 
   const absl::optional<base::FilePath> target_path =
       GetGoogleUpdateExePath(scope);
@@ -236,6 +236,21 @@ bool UninstallGoogleUpdate(UpdaterScope scope,
 }
 
 }  // namespace
+
+HRESULT IsCOMCallerAllowed() {
+  if (!IsSystemInstall()) {
+    return S_OK;
+  }
+
+  HResultOr<bool> result = IsCOMCallerAdmin();
+  if (!result.has_value()) {
+    HRESULT hr = result.error();
+    LOG(ERROR) << __func__ << ": IsCOMCallerAdmin failed: " << std::hex << hr;
+    return hr;
+  }
+
+  return result.value() ? S_OK : E_ACCESSDENIED;
+}
 
 // Returns a leaky singleton of the App instance.
 scoped_refptr<ComServerApp> AppServerSingletonInstance() {
@@ -352,6 +367,12 @@ bool ComServerApp::SwapInNewVersion() {
     LOG_IF(ERROR,
            UninstallGoogleUpdate(updater_scope(), temp_dir->GetPath(),
                                  UpdaterScopeToHKeyRoot(updater_scope())));
+
+    // TODO(crbug.com/1425609) - revert the CL that introduced this logging
+    // after the bug is resolved.
+    for (const auto& clsid : GetServers(false, updater_scope())) {
+      LogClsidEntries(clsid);
+    }
   }
 
   return succeeded;

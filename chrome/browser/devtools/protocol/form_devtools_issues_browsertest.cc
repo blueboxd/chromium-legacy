@@ -78,17 +78,6 @@ IN_PROC_BROWSER_TEST_F(AutofillFormDevtoolsProtocolTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AutofillFormDevtoolsProtocolTest,
-                       FormHasInputWithNoLabels) {
-  NavigateToFormPageAndEnableAudits();
-  base::Value::Dict notification =
-      WaitForGenericIssueAdded("FormInputWithNoLabelError");
-  EXPECT_TRUE(notification
-                  .FindIntByDottedPath(
-                      "issue.details.genericIssueDetails.violatingNodeId")
-                  .has_value());
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillFormDevtoolsProtocolTest,
                        FormHasInputWithEmptyAutocompleteAttribute) {
   NavigateToFormPageAndEnableAudits();
   base::Value::Dict notification =
@@ -150,6 +139,17 @@ IN_PROC_BROWSER_TEST_F(AutofillFormDevtoolsProtocolTest,
   NavigateToFormPageAndEnableAudits();
   base::Value::Dict notification =
       WaitForGenericIssueAdded("FormLabelForMatchesNonExistingIdError");
+  EXPECT_TRUE(notification
+                  .FindIntByDottedPath(
+                      "issue.details.genericIssueDetails.violatingNodeId")
+                  .has_value());
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillFormDevtoolsProtocolTest,
+                       FormInputHasWrongButWellIntendedAutocompleteValueError) {
+  NavigateToFormPageAndEnableAudits();
+  base::Value::Dict notification = WaitForGenericIssueAdded(
+      "FormInputHasWrongButWellIntendedAutocompleteValueError");
   EXPECT_TRUE(notification
                   .FindIntByDottedPath(
                       "issue.details.genericIssueDetails.violatingNodeId")

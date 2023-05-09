@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.bookmarks;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import static org.chromium.ui.test.util.MockitoHelper.doRunnable;
@@ -36,6 +37,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.services.SigninManager;
 import org.chromium.chrome.browser.sync.SyncService;
+import org.chromium.chrome.browser.sync.SyncService.SyncStateChangedListener;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
@@ -163,6 +165,23 @@ public class BookmarkManagerMediatorTest {
     }
 
     @Test
+    public void syncStateChangedBeforeModelLoaded() {
+        SyncStateChangedListener syncStateChangedListener =
+                mMediator.getSyncStateChangedListenerForTesting();
+        syncStateChangedListener.syncStateChanged();
+        verify(mBookmarkModel, times(0)).getDesktopFolderId();
+        verify(mBookmarkModel, times(0)).getMobileFolderId();
+        verify(mBookmarkModel, times(0)).getOtherFolderId();
+        verify(mBookmarkModel, times(0)).getTopLevelFolderIDs(true, false);
+
+        finishLoading();
+        verify(mBookmarkModel, times(1)).getDesktopFolderId();
+        verify(mBookmarkModel, times(1)).getMobileFolderId();
+        verify(mBookmarkModel, times(1)).getOtherFolderId();
+        verify(mBookmarkModel, times(1)).getTopLevelFolderIDs(true, false);
+    }
+
+    @Test
     public void testDestroy() {
         finishLoading();
 
@@ -202,5 +221,14 @@ public class BookmarkManagerMediatorTest {
         mMediator.openFolder(mFolderId);
         mMediator.openFolder(mFolder2Id);
         Assert.assertTrue(mMediator.onBackPressed());
+    }
+
+    @Test
+    public void testAttachmentChanges() {
+        mMediator.onAttachedToWindow();
+        verify(mBookmarkUndoController).setEnabled(true);
+
+        mMediator.onDetachedFromWindow();
+        verify(mBookmarkUndoController).setEnabled(false);
     }
 }

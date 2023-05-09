@@ -340,7 +340,7 @@ ci.gpu.linux_builder(
         ),
         run_tests_serially = True,
         skylab_upload_location = builder_config.skylab_upload_location(
-            gs_bucket = "lacros-arm64-generic-rel-skylab-try",
+            gs_bucket = "chromium-ci-skylab",
             gs_extra = "chromeos_gpu",
         ),
     ),
@@ -348,6 +348,9 @@ ci.gpu.linux_builder(
         category = "ChromeOS|ARM",
         short_name = "kvn",
     ),
+    # Given the capacity constraints, the default 6 hour timeout is not
+    # sufficient.
+    execution_timeout = 12 * time.hour,
     reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CI,
 )
 

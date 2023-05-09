@@ -73,10 +73,17 @@ class TestBubbleView : public AccountSelectionBubbleViewInterface {
     account_ids_ = {account.id};
   }
 
-  void ShowFailureDialog(const std::u16string& top_frame_for_display,
-                         const std::u16string& idp_for_display) override {
+  void ShowFailureDialog(
+      const std::u16string& top_frame_for_display,
+      const std::u16string& idp_for_display,
+      const content::IdentityProviderMetadata& idp_metadata) override {
     sheet_type_ = SheetType::kFailure;
     account_ids_ = {};
+  }
+
+  std::string GetDialogTitle() const override { return std::string(); }
+  absl::optional<std::string> GetDialogSubtitle() const override {
+    return absl::nullopt;
   }
 
   bool show_back_button_{false};
@@ -108,7 +115,7 @@ class TestFedCmAccountSelectionView : public FedCmAccountSelectionView {
 
  protected:
   views::Widget* CreateBubbleWithAccessibleTitle(
-      const std::u16string& rp_etld_plus_one,
+      const std::u16string& top_frame_etld_plus_one,
       const absl::optional<std::u16string>& iframe_etld_plus_one,
       const absl::optional<std::u16string>& idp_title,
       blink::mojom::RpContext rp_context,
@@ -314,7 +321,8 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
-  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne);
+  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne,
+                                content::IdentityProviderMetadata());
   EXPECT_EQ(TestBubbleView::SheetType::kFailure, bubble_view_->sheet_type_);
 
   const char kAccountId[] = "account_id";
@@ -343,7 +351,8 @@ TEST_F(FedCmAccountSelectionViewDesktopTest,
   AccountSelectionBubbleView::Observer* observer =
       static_cast<AccountSelectionBubbleView::Observer*>(controller.get());
 
-  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne);
+  controller->ShowFailureDialog(kTopFrameEtldPlusOne, kIdpEtldPlusOne,
+                                content::IdentityProviderMetadata());
   EXPECT_EQ(TestBubbleView::SheetType::kFailure, bubble_view_->sheet_type_);
 
   const char kAccountId[] = "account_id";

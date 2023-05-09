@@ -163,6 +163,10 @@ public abstract class ChromeFeatureList {
 
     /* Alphabetical: */
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR = "AdaptiveButtonInTopToolbar";
+    public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_TRANSLATE =
+            "AdaptiveButtonInTopToolbarTranslate";
+    public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_ADD_TO_BOOKMARKS =
+            "AdaptiveButtonInTopToolbarAddToBookmarks";
     public static final String ADAPTIVE_BUTTON_IN_TOP_TOOLBAR_CUSTOMIZATION_V2 =
             "AdaptiveButtonInTopToolbarCustomizationV2";
     public static final String ADD_EDU_ACCOUNT_FROM_ACCOUNT_SETTINGS_FOR_SUPERVISED_USERS =
@@ -190,6 +194,8 @@ public abstract class ChromeFeatureList {
     public static final String AUTOFILL_ENABLE_CARD_PRODUCT_NAME = "AutofillEnableCardProductName";
     public static final String AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS =
             "AutofillEnableManualFallbackForVirtualCards";
+    public static final String AUTOFILL_ENABLE_NEW_CARD_ART_AND_NETWORK_IMAGES =
+            "AutofillEnableNewCardArtAndNetworkImages";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_HONORIFIC_PREFIXES =
             "AutofillEnableSupportForHonorificPrefixes";
     public static final String AUTOFILL_ENABLE_SUPPORT_FOR_MORE_STRUCTURE_IN_ADDRESSES =
@@ -204,6 +210,9 @@ public abstract class ChromeFeatureList {
             "AutofillTouchToFillForCreditCardsAndroid";
     public static final String BACKGROUND_THREAD_POOL = "BackgroundThreadPool";
     public static final String BACK_FORWARD_CACHE = "BackForwardCache";
+    public static final String BACK_FORWARD_TRANSITIONS = "BackForwardTransitions";
+    public static final String BACK_GESTURE_ACTIVITY_TAB_PROVIDER =
+            "BackGestureActivityTabProvider";
     public static final String BACK_GESTURE_REFACTOR = "BackGestureRefactorAndroid";
     public static final String BACK_GESTURE_REFACTOR_ACTIVITY =
             "BackGestureRefactorActivityAndroid";
@@ -243,6 +252,8 @@ public abstract class ChromeFeatureList {
             "CCTResizableAllowResizeByUserGesture";
     public static final String CCT_RESIZABLE_FOR_THIRD_PARTIES = "CCTResizableForThirdParties";
     public static final String CCT_RESIZABLE_SIDE_SHEET = "CCTResizableSideSheet";
+    public static final String CCT_RESIZABLE_SIDE_SHEET_DISCOVER_FEED_SETTINGS =
+            "CCTResizableSideSheetDiscoverFeedSettings";
     public static final String CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES =
             "CCTResizableSideSheetForThirdParties";
     public static final String CCT_RESOURCE_PREFETCH = "CCTResourcePrefetch";
@@ -291,6 +302,7 @@ public abstract class ChromeFeatureList {
     public static final String DEFER_KEEP_SCREEN_ON_DURING_GESTURE =
             "DeferKeepScreenOnDuringGesture";
     public static final String DEFER_NOTIFY_IN_MOTION = "DeferNotifyInMotion";
+    public static final String DELAY_TRANSITIONS_FOR_ANIMATION = "DelayTransitionsForAnimation";
     public static final String DETAILED_LANGUAGE_SETTINGS = "DetailedLanguageSettings";
     public static final String DISCO_FEED_ENDPOINT = "DiscoFeedEndpoint";
     public static final String DNS_OVER_HTTPS = "DnsOverHttps";
@@ -427,7 +439,7 @@ public abstract class ChromeFeatureList {
     public static final String PRIVACY_SANDBOX_FPS_UI = "PrivacySandboxFirstPartySetsUI";
     public static final String PRIVACY_SANDBOX_SETTINGS_3 = "PrivacySandboxSettings3";
     public static final String PRIVACY_SANDBOX_SETTINGS_4 = "PrivacySandboxSettings4";
-    public static final String PRIVATE_STATE_TOKENS = "TrustTokens";
+    public static final String PRIVATE_STATE_TOKENS = "PrivateStateTokens";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
     public static final String PUSH_MESSAGING_DISALLOW_SENDER_IDS =
             "PushMessagingDisallowSenderIDs";
@@ -556,6 +568,9 @@ public abstract class ChromeFeatureList {
     public static final String WEB_APK_TRAMPOLINE_ON_INITIAL_INTENT =
             "WebApkTrampolineOnInitialIntent";
     public static final String WEB_APK_UNIQUE_ID = "WebApkUniqueId";
+    public static final String WEB_APK_INSTALL_FAILURE_NOTIFICATION =
+            "kWebApkInstallFailureNotification";
+    public static final String WEB_APK_INSTALL_RETRY = "WebApkInstallFailureRetry";
     public static final String WEB_FEED = "WebFeed";
     public static final String WEB_FEED_AWARENESS = "WebFeedAwareness";
     public static final String WEB_FEED_ONBOARDING = "WebFeedOnboarding";
@@ -567,6 +582,8 @@ public abstract class ChromeFeatureList {
     /* Alphabetical: */
     public static final CachedFlag sAppMenuMobileSiteOption =
             new CachedFlag(APP_MENU_MOBILE_SITE_OPTION, false);
+    public static final CachedFlag sBackGestureActivityTabProvider =
+            new CachedFlag(BACK_GESTURE_ACTIVITY_TAB_PROVIDER, false);
     public static final CachedFlag sBackGestureRefactorActivityAndroid =
             new CachedFlag(BACK_GESTURE_REFACTOR_ACTIVITY, false);
     public static final CachedFlag sBackGestureRefactorAndroid =
@@ -594,6 +611,8 @@ public abstract class ChromeFeatureList {
             new CachedFlag(CCT_RESIZABLE_FOR_THIRD_PARTIES, true);
     public static final CachedFlag sCctResizableSideSheet =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET, false);
+    public static final CachedFlag sCctResizableSideSheetDiscoverFeedSettings =
+            new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_DISCOVER_FEED_SETTINGS, false);
     public static final CachedFlag sCctResizableSideSheetForThirdParties =
             new CachedFlag(CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES, false);
     public static final CachedFlag sCctRetainableStateInMemory =

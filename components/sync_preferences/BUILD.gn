@@ -61,6 +61,7 @@ source_set("common_syncable_prefs_database") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/search_engines",
     "//components/translate/core/browser",
+    "//components/variations/service",
   ]
 }
 
@@ -69,6 +70,8 @@ static_library("test_support") {
   sources = [
     "pref_service_mock_factory.cc",
     "pref_service_mock_factory.h",
+    "test_syncable_prefs_database.cc",
+    "test_syncable_prefs_database.h",
     "testing_pref_service_syncable.cc",
     "testing_pref_service_syncable.h",
   ]

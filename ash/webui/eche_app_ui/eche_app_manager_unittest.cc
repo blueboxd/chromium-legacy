@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "ash/webui/eche_app_ui/eche_connection_status_observer.h"
+#include "ash/webui/eche_app_ui/eche_connection_status_handler.h"
 #include "ash/webui/eche_app_ui/eche_stream_orientation_observer.h"
 #include "ash/webui/eche_app_ui/eche_stream_status_change_handler.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
@@ -35,12 +35,14 @@ namespace ash::eche_app {
 
 namespace {
 
-void LaunchEcheAppFunction(const absl::optional<int64_t>& notification_id,
-                           const std::string& package_name,
-                           const std::u16string& visible_name,
-                           const absl::optional<int64_t>& user_id,
-                           const gfx::Image& icon,
-                           const std::u16string& phone_name) {}
+void LaunchEcheAppFunction(
+    const absl::optional<int64_t>& notification_id,
+    const std::string& package_name,
+    const std::u16string& visible_name,
+    const absl::optional<int64_t>& user_id,
+    const gfx::Image& icon,
+    const std::u16string& phone_name,
+    AppsLaunchInfoProvider* apps_launcher_info_provider) {}
 
 void LaunchNotificationFunction(
     const absl::optional<std::u16string>& title,

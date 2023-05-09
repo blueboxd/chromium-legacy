@@ -58,10 +58,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
-#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -1768,83 +1764,53 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 }
 
 class DevToolsExtensionFileAccessTest : public DevToolsExtensionTest {
- public:
-  void SetUpOnMainThread() override {
-    embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
-        [&](const net::test_server::HttpRequest& request)
-            -> std::unique_ptr<net::test_server::HttpResponse> {
-          const GURL& url = request.GetURL();
-          if (url.path() != "/file-access-test")
-            return nullptr;
+ protected:
+  void Run(bool allow_file_access) {
+    extensions::TestExtensionDir dir;
 
-          auto response =
-              std::make_unique<net::test_server::BasicHttpResponse>();
-          response->set_code(net::HTTP_OK);
-          response->set_content_type("text/html");
-          GURL file_url = net::FilePathToFileURL(
-              base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
-                  .AppendASCII("content/test/data/devtools/navigation.html"));
-          response->set_content(base::StringPrintf(
-              R"(<script>//# sourceMappingURL=data:application/json,{"version":3,"sources":["%s"]}</script>)",
-              file_url.spec().c_str()));
-          return response;
-        }));
-    DevToolsTest::SetUpOnMainThread();
+    dir.WriteManifest(BuildExtensionManifest("File Access", "devtools.html"));
+    dir.WriteFile(
+        FILE_PATH_LITERAL("devtools.html"),
+        "<html><head><script src='devtools.js'></script></head></html>");
+    dir.WriteFile(FILE_PATH_LITERAL("devtools.js"),
+                  base::StringPrintf(R"(
+        chrome.devtools.inspectedWindow.getResources((resources) => {
+          const hasFile = !!resources.find(r => r.url.startsWith('file:'));
+          setInterval(() => {
+            top.postMessage(
+                {testOutput: (hasFile == %d) ? 'PASS' : 'FAIL'}, '*');
+          }, 10);
+        });)",
+                                     allow_file_access));
+
+    std::string file_url =
+        net::FilePathToFileURL(
+            base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
+                .AppendASCII("content/test/data/devtools/navigation.html"))
+            .spec();
+
+    base::ReplaceFirstSubstringAfterOffset(&file_url, 0, "file:///", "file:");
+
+    const Extension* extension =
+        LoadExtensionFromPath(dir.UnpackedPath(), allow_file_access);
+    ASSERT_TRUE(extension);
+
+    std::string url = base::StringPrintf(
+        R"(data:text/html,<script>//%%23%%20sourceMappingURL=data:application/json,{"version":3,"sources":["file:%s"]}</script>)",
+        file_url.c_str());
+    OpenDevToolsWindow(url, false);
+    RunTestFunction(window_, "waitForTestResultsAsMessage");
   }
 };
 
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
                        CantGetFileResourceWithoutFileAccess) {
-  extensions::TestExtensionDir dir;
-
-  dir.WriteManifest(BuildExtensionManifest("File Access", "devtools.html"));
-  dir.WriteFile(
-      FILE_PATH_LITERAL("devtools.html"),
-      "<html><head><script src='devtools.js'></script></head></html>");
-  dir.WriteFile(FILE_PATH_LITERAL("devtools.js"), R"(
-        let result = 'PASS';
-        chrome.devtools.inspectedWindow.getResources((resources) => {
-          for (const resource of resources) {
-            if (resource.url.startsWith('file://')) {
-              result = 'FAIL';
-            }
-          }
-          chrome.devtools.inspectedWindow.eval(`console.log('${result}')`);
-        });)");
-
-  const Extension* extension =
-      LoadExtensionFromPath(dir.UnpackedPath(), /*allow_file_access=*/false);
-  ASSERT_TRUE(extension);
-
-  OpenDevToolsWindow("/file-access-test", false);
-  RunTestFunction(window_, "waitForTestResultsInConsole");
+  Run(false);
 }
 
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionFileAccessTest,
                        CanGetFileResourceWithFileAccess) {
-  extensions::TestExtensionDir dir;
-
-  dir.WriteManifest(BuildExtensionManifest("File Access", "devtools.html"));
-  dir.WriteFile(
-      FILE_PATH_LITERAL("devtools.html"),
-      "<html><head><script src='devtools.js'></script></head></html>");
-  dir.WriteFile(FILE_PATH_LITERAL("devtools.js"), R"(
-        let result = 'FAIL';
-        chrome.devtools.inspectedWindow.getResources((resources) => {
-          for (const resource of resources) {
-            if (resource.url.startsWith('file://')) {
-              result = 'PASS';
-            }
-          }
-          chrome.devtools.inspectedWindow.eval(`console.log('${result}')`);
-        });)");
-
-  const Extension* extension =
-      LoadExtensionFromPath(dir.UnpackedPath(), /*allow_file_access=*/true);
-  ASSERT_TRUE(extension);
-
-  OpenDevToolsWindow("/file-access-test", false);
-  RunTestFunction(window_, "waitForTestResultsInConsole");
+  Run(true);
 }
 
 // Tests that scripts are not duplicated after Scripts Panel switch.
@@ -2480,97 +2446,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsAllowedByCommandLineSwitch,
 #else
   ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 #endif
-}
-
-// Tests disallowed devtools for force-installed web apps.
-class DevToolsWebAppForceInstallTest
-    : public web_app::WebAppControllerBrowserTest {
- protected:
-  // WebAppControllerBrowserTest overrides:
-  void SetUpOnMainThread() override {
-    web_app::WebAppControllerBrowserTest::SetUpOnMainThread();
-    // Allow different origins to be handled by the embedded_test_server.
-    host_resolver()->AddRule("*", "127.0.0.1");
-    web_app::test::WaitUntilReady(
-        web_app::WebAppProvider::GetForTest(profile()));
-    ASSERT_TRUE(embedded_test_server()->Start());
-  }
-
-  // Installs a web app, emulating that it has been force-installed by policy.
-  // Fills |*out_web_contents| with a |WebContents| that has been navigated to
-  // the force-installed web app.
-  void ForceInstallWebAppAndOpen(content::WebContents** out_web_contents) {
-    web_app::ForceInstallWebApp(profile(), GetWebAppUrl());
-    ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetWebAppUrl()));
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    *out_web_contents = web_contents;
-  }
-
-  GURL GetWebAppUrl() const {
-    return embedded_test_server()->GetURL("/banners/manifest_test_page.html");
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(DevToolsWebAppForceInstallTest,
-                       PolicyDisallowedForForceInstalledWebApp) {
-  // DevTools are disallowed for force-installed web apps by default.
-  content::WebContents* web_contents = nullptr;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallWebAppAndOpen(&web_contents));
-
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-}
-
-IN_PROC_BROWSER_TEST_F(DevToolsWebAppForceInstallTest,
-                       PolicyDisallowedForForceInstalledWebAppCloseConnection) {
-  AllowDevTools(browser());
-  content::WebContents* web_contents = nullptr;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallWebAppAndOpen(&web_contents));
-
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-
-  // Policy change must close the connection with the force installed extension.
-  DisallowDevToolsForForceInstalledExtenions(browser());
-  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    DevToolsWebAppForceInstallTest,
-    PolicyDisallowedForForceInstalledWebAppNavigateToAboutBlank) {
-  // DevTools are disallowed for force-installed web apps by default.
-  content::WebContents* web_contents = nullptr;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallWebAppAndOpen(&web_contents));
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-  ASSERT_FALSE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-
-  // It's possible to open DevTools for about:blank.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-}
-
-IN_PROC_BROWSER_TEST_F(
-    DevToolsWebAppForceInstallTest,
-    PolicyDisallowedForForceInstalledWebAppKeepConnectionAboutBlank) {
-  AllowDevTools(browser());
-
-  content::WebContents* web_contents;
-  ASSERT_NO_FATAL_FAILURE(ForceInstallWebAppAndOpen(&web_contents));
-
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("about:blank")));
-  DevToolsWindow::OpenDevToolsWindow(web_contents);
-  auto agent_host = content::DevToolsAgentHost::GetOrCreateFor(web_contents);
-  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
-
-  // Policy change to must not disrupt CDP coneciton unrelated to a force
-  // installed extension.
-  DisallowDevToolsForForceInstalledExtenions(browser());
-  ASSERT_TRUE(DevToolsWindow::FindDevToolsWindow(agent_host.get()));
 }
 
 class DevToolsPixelOutputTests : public DevToolsTest {

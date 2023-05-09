@@ -991,8 +991,8 @@ void InspectorStyle::Trace(Visitor* visitor) const {
   visitor->Trace(source_data_);
 }
 
-InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener)
-    : id_(IdentifiersFactory::CreateIdentifier()),
+InspectorStyleSheetBase::InspectorStyleSheetBase(Listener* listener, String id)
+    : id_(id),
       listener_(listener),
       line_endings_(std::make_unique<LineEndings>()) {}
 
@@ -1046,7 +1046,9 @@ InspectorStyleSheet::InspectorStyleSheet(
     const String& document_url,
     InspectorStyleSheetBase::Listener* listener,
     InspectorResourceContainer* resource_container)
-    : InspectorStyleSheetBase(listener),
+    : InspectorStyleSheetBase(
+          listener,
+          IdentifiersFactory::IdForCSSStyleSheet(page_style_sheet)),
       resource_container_(resource_container),
       network_agent_(network_agent),
       page_style_sheet_(page_style_sheet),
@@ -1854,6 +1856,18 @@ InspectorStyleSheet::BuildObjectForRuleWithoutAncestorData(CSSStyleRule* rule) {
           .setStyle(BuildObjectForStyle(rule->style()))
           .build();
 
+  auto nesting_selectors = std::make_unique<protocol::Array<String>>();
+  CSSRule* ancestor_rule = rule->parentRule();
+  while (ancestor_rule) {
+    if (auto* style_rule = DynamicTo<CSSStyleRule>(ancestor_rule)) {
+      nesting_selectors->emplace_back(style_rule->selectorText());
+    }
+    ancestor_rule = ancestor_rule->parentRule();
+  }
+  if (nesting_selectors->size() > 0) {
+    result->setNestingSelectors(std::move(nesting_selectors));
+  }
+
   if (CanBind(origin_)) {
     if (!Id().empty())
       result->setStyleSheetId(Id());
@@ -2286,7 +2300,8 @@ bool InspectorStyleSheet::InspectorStyleSheetText(String* result) {
 InspectorStyleSheetForInlineStyle::InspectorStyleSheetForInlineStyle(
     Element* element,
     Listener* listener)
-    : InspectorStyleSheetBase(listener), element_(element) {
+    : InspectorStyleSheetBase(listener, IdentifiersFactory::CreateIdentifier()),
+      element_(element) {
   DCHECK(element_);
 }
 

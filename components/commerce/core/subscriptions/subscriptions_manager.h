@@ -8,7 +8,6 @@
 #include <queue>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 
 #include "base/check.h"
 #include "base/functional/callback.h"
@@ -246,6 +245,20 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   void HandleCheckTimestampOnBookmarkChange(
       int64_t bookmark_subscription_change_time);
 
+  void HandleGetSubscriptionsResponseOnBookmarkChange(
+      SubscriptionsRequestStatus status,
+      std::unique_ptr<std::vector<CommerceSubscription>> remote_subscriptions);
+
+  void OnStorageUpdatedOnBookmarkChange(
+      SubscriptionsRequestStatus status,
+      std::vector<CommerceSubscription> added_subs,
+      std::vector<CommerceSubscription> removed_subs);
+
+  void OnSubscribe(const std::vector<CommerceSubscription>& subscriptions,
+                   bool succeeded);
+  void OnUnsubscribe(const std::vector<CommerceSubscription>& subscriptions,
+                     bool succeeded);
+
   void OnPrimaryAccountChanged(
       const signin::PrimaryAccountChangeEvent& event_details) override;
 
@@ -279,11 +292,6 @@ class SubscriptionsManager : public signin::IdentityManager::Observer {
   raw_ptr<AccountChecker> account_checker_;
 
   base::ObserverList<SubscriptionsObserver>::Unchecked observers_;
-
-  // An in-memory cache of subscriptions that can be accessed synchronously.
-  // This may not have the most up-to-date information as it does not check
-  // the backend.
-  std::unordered_set<std::string> subscriptions_cache_;
 
   base::WeakPtrFactory<SubscriptionsManager> weak_ptr_factory_{this};
 };

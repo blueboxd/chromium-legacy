@@ -233,7 +233,9 @@ void TranslateAgent::PageCaptured(const std::u16string& contents) {
   if (base::FeatureList::IsEnabled(
           translate::kSkipLanguageDetectionOnEmptyContent) &&
       page_contents_length_ == 0) {
-    language = translate::kUnknownLanguageCode;
+    // Use the page-provided language if available.
+    language = translate::DeterminePageLanguage(
+        content_language, html_lang, translate::kUnknownLanguageCode, false);
   } else if (translate::IsTFLiteLanguageDetectionEnabled()) {
     translate::LanguageDetectionModel& language_detection_model =
         GetLanguageDetectionModel();
@@ -264,8 +266,6 @@ void TranslateAgent::PageCaptured(const std::u16string& contents) {
 
   language_determined_time_ = base::TimeTicks::Now();
 
-  // TODO(crbug.com/1157983): Update the language detection details struct to be
-  // model agnostic.
   details.time = base::Time::Now();
   details.url = web_detection_details.url;
   details.content_language = content_language;

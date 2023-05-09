@@ -83,7 +83,6 @@ GEN('#include "content/public/test/browser_test.h"');
  ['ActivationCodePage', 'cellular_setup/activation_code_page_test.js'],
  ['BasePage', 'cellular_setup/base_page_test.js'],
  ['ButtonBar', 'cellular_setup/button_bar_test.js'],
- ['CellularEidDialog', 'cellular_setup/cellular_eid_dialog_test.js'],
  ['CellularSetup', 'cellular_setup/cellular_setup_test.js'],
  ['ConfirmationCodePage', 'cellular_setup/confirmation_code_page_test.js'],
  ['EsimFlowUi', 'cellular_setup/esim_flow_ui_test.js'],
@@ -107,15 +106,6 @@ function registerTest(componentName, webuiHost, testName, module) {
           webuiHost}/test_loader.html?module=cr_components/chromeos/${
           module}&host=test`;
     }
-
-    /** @override */
-    get featureList() {
-      return {
-        enabled: [
-          'ash::features::kSimLockPolicy',
-        ],
-      };
-    }
   };
 
   TEST_F(className, 'All', () => mocha.run());
@@ -131,15 +121,6 @@ function registerWebUiTest(componentName, webuiHost, testName, module) {
       return `chrome://${
           webuiHost}/test_loader.html?module=cr_components/chromeos/${
           module}`;
-    }
-
-    /** @override */
-    get featureList() {
-      return {
-        enabled: [
-          'ash::features::kSimLockPolicy',
-        ],
-      };
     }
   };
 

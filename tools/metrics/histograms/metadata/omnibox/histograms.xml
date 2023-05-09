@@ -1219,7 +1219,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Omnibox.NumEvents" enum="UsedOmnibox"
-    expires_after="2023-07-13">
+    expires_after="2023-09-17">
   <owner>jdonnelly@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>chrome-omnibox-team@google.com</owner>
@@ -1917,7 +1917,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart"
+<histogram name="Omnibox.SuggestionUsed.Search.InputToNavigationStart2"
     units="ms" expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -2012,7 +2012,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart" units="ms"
+<histogram name="Omnibox.SuggestionUsed.URL.InputToNavigationStart2" units="ms"
     expires_after="2023-08-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>

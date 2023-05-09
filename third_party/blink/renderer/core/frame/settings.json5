@@ -884,6 +884,21 @@
       initial: "AutoplayPolicy::Type::kNoUserGestureRequired",
     },
 
+    // `getDisplayMedia()`'s transient activation requirement can be bypassed via
+    // `ScreenCaptureWithoutGestureAllowedForOrigins` policy.
+    {
+      name: "requireTransientActivationForGetDisplayMedia",
+      initial: true,
+    },
+
+    // `show{OpenFile|SaveFile|Directory}Picker()`'s transient activation
+    // requirement can be bypassed via
+    // `FileOrDirectoryPickerWithoutGestureAllowedForOrigins` policy.
+    {
+      name: "requireTransientActivationForShowFileOrDirectoryPicker",
+      initial: true,
+    },
+
     //
     // Dark mode
     //

@@ -328,6 +328,9 @@ class CORE_EXPORT WebFrameWidgetImpl
   void ReportLongAnimationFrameTiming(AnimationFrameTimingInfo* info) override;
   bool ShouldReportLongAnimationFrameTiming() const override;
   bool RequestedMainFramePending() override;
+  ukm::UkmRecorder* MainFrameUkmRecorder() override;
+  ukm::SourceId MainFrameUkmSourceId() override;
+  bool IsMainFrameFullyLoaded() const override;
 
   // WebFrameWidget overrides.
   void InitializeNonCompositing(WebNonCompositedWidgetClient* client) override;
@@ -510,6 +513,12 @@ class CORE_EXPORT WebFrameWidgetImpl
 
   // Pause all rendering (main and compositor thread) in the compositor.
   [[nodiscard]] std::unique_ptr<cc::ScopedPauseRendering> PauseRendering();
+
+  // Returns the maximum bounds for buffers allocated for rasterization and
+  // compositing. This is is max texture size for GPU compositing and a browser
+  // chosen limit in software mode.
+  // Returns null if the compositing stack has not been initialized yet.
+  absl::optional<int> GetMaxRenderBufferBounds() const;
 
   // Prevents any updates to the input for the layer tree, and the layer tree
   // itself, and the layer tree from becoming visible.

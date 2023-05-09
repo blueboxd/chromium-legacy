@@ -475,13 +475,8 @@ void StyleRule::TraceAfterDispatch(blink::Visitor* visitor) const {
 void StyleRuleBase::Reparent(StyleRule* old_parent, StyleRule* new_parent) {
   switch (GetType()) {
     case kStyle:
-      for (CSSSelector* s = DynamicTo<StyleRule>(this)->SelectorArray(); s;
-           s = CSSSelectorList::Next(*s)) {
-        if (s->Match() == CSSSelector::kPseudoClass &&
-            s->GetPseudoType() == CSSSelector::kPseudoParent) {
-          s->Reparent(old_parent, new_parent);
-        }
-      }
+      CSSSelectorList::Reparent(To<StyleRule>(this)->SelectorArray(),
+                                old_parent, new_parent);
       break;
     case kScope:
     case kLayerBlock:
@@ -611,7 +606,13 @@ void StyleRuleScope::SetPreludeText(const ExecutionContext* execution_context,
   auto* parser_context =
       MakeGarbageCollected<CSSParserContext>(*execution_context);
   Vector<CSSParserToken, 32> tokens = CSSTokenizer(value).TokenizeToEOF();
+
+  StyleRule* old_parent = style_scope_->RuleForNesting();
+  // Note that we do not need to explicitly reparent <scope-end>
+  // (StyleScope::From), because that selector is reparsed as part of
+  // StyleScope::Parse.
   style_scope_ = StyleScope::Parse(tokens, parser_context, nullptr);
+  Reparent(old_parent, style_scope_->RuleForNesting());
 }
 
 StyleRuleGroup::StyleRuleGroup(RuleType type,
